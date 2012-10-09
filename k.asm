@@ -23,13 +23,16 @@ VIAPB = $E840   ;VIA PortB
 VIA0C = $E84C   ;VIA Register C
 CHROUT = $FFD2   ;Kernal Print a byte
 ;
+;
 *=0400
-;
-;----- Code
-;
+
+;"50 sys(1039)"
 $0400:           .BYT 00,0D,04,32,00,9E,28,31 ;tokenized basic
 $0408:           .BYT 30,33,39,29,00,00,00    ;tokenized basic
 $040F: 4C 66 04  JMP L_0466
+
+;"  SOFTBOX LOADER (C) COPYRIGHT 1981 KEITH FREWIN   "
+;"----  REVISON :  5 JULY 1981     "
 $0412:           .BYT 20,20,53,4F,46,54,42,4F ;copyright text
 $041A:           .BYT 58,20,4C,4F,41,44,45,52 ;copyright text
 $0422:           .BYT 20,28,43,29,20,43,4F,50 ;copyright text
@@ -41,6 +44,7 @@ $044A:           .BYT 20,52,45,56,49,53,4F,4E ;copyright text
 $0452:           .BYT 20,3A,20,20,35,20,4A,55 ;copyright text
 $045A:           .BYT 4C,59,20,31,39,38,31,20 ;copyright text
 $0462:           .BYT 20,20,20,20             ;copyright text
+
 :L_0466
 $0466: 78        SEI
 $0467: A9 4F     LDA #$4F
