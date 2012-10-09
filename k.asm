@@ -49,12 +49,12 @@ $045A:           .BYT 4C,59,20,31,39,38,31,20 ;copyright text
 $0462:           .BYT 20,20,20,20             ;copyright text
 
 :L_0466
-$0466: 78        SEI
+$0466: 78        SEI             ;Disable interrupts
 $0467: A9 4F     LDA #$4F
-$0469: 85 90     STA $<INTVEC ;hardware interrupt vector LO
+$0469: 85 90     STA $<INTVEC
 $046B: A9 06     LDA #$06
-$046D: 85 91     STA $<INTVEC+1 ;hardware interupt vector HI
-$046F: A9 00     LDA #$00
+$046D: 85 91     STA $<INTVEC+1  ;Install interrupt handler
+$046F: A9 00     LDA #$00        ;Initialize zero page locations
 $0471: 85 08     STA $08
 $0473: A9 00     LDA #$00
 $0475: 85 14     STA $14
@@ -65,11 +65,12 @@ $047D: 85 18     STA $18
 $047F: 85 19     STA $19
 $0481: 85 1A     STA $1A
 $0483: A9 0A     LDA #$0A
-$0485: 8D 3D 0B  STA $0B3D
-$0488: 58        CLI
+$0485: 8D 3D 0B  STA $0B3D       ;Store #$0A in $0B3d (?)
+$0488: 58        CLI             ;Enable interrupts again
+
 $0489: A9 0E     LDA #$0E
-$048B: 8D 4C E8  STA VIA0C ;VIA Register C
-$048E: 20 84 07  JSR L_0784
+$048B: 8D 4C E8  STA VIA0C       ;Store #$0E in VIA0C (?)
+$048E: 20 84 07  JSR CMD_02      ;Command 02 stores #$7F in $13
 $0491: A9 14     LDA #$14
 $0493: 85 01     STA $01
 $0495: A9 00     LDA #$00
@@ -301,6 +302,9 @@ $0649: 58        CLI
 $064A: C9 FF     CMP #$FF
 $064C: F0 E0     BEQ L_062E
 $064E: 60        RTS
+
+;START OF INTERRUPT HANDLER
+INT_HANDLER:
 $064F: E6 1A     INC $1A
 $0651: D0 06     BNE L_0659
 $0653: E6 19     INC $19
@@ -381,6 +385,7 @@ $06E4: 68        PLA
 $06E5: AA        TAX
 $06E6: 68        PLA
 $06E7: 40        RTI
+
 :L_06E8
 $06E8: 48        PHA
 $06E9: A5 06     LDA $06
