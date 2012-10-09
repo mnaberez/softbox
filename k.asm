@@ -640,7 +640,7 @@ $0856: 85 0A     STA $0A
 $0858: 60        RTS
 
 ;START OF COMMAND 0F
-;CMD_OF
+;CMD_0F
 $0859: A9 00     LDA #$00
 $085B: 85 0A     STA $0A
 $085D: 60        RTS
@@ -1064,4 +1064,4 @@ $0BD7:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0BDF:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0BE7:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0BEF:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
-$0BF7:           .BYT AA,AA,AA,AA,AA,AA      
+$0BF7:           .BYT AA,AA,AA,AA,AA,AA
