@@ -400,16 +400,48 @@ $0715: 4C B8 09  JMP  L_09B8
 $0718: 4C 99 07  JMP  L_0799
 :L_071B
 $071B: 6C 0D 00  JMP ($000D)
-$071E:           .BYT 89,07,7F,07,84,07,89,07 ;command jump table
-$0726:           .BYT C9,08,CC,08,D4,08,5E,07 ;command jump table
-$072E:           .BYT DD,07,DF,08,0B,08,ED,07 ;command jump table
-$0736:           .BYT FF,07,45,08,54,08,59,08 ;command jump table
-$073E:           .BYT 4A,08,3B,09,1E,09,5E,08 ;command jump table
-$0746:           .BYT 6B,08,D1,07,D7,07,71,07 ;command jump table
-$074E:           .BYT 63,07,4F,08,1F,08,B3,09 ;command jump table
-$0756:           .BYT EE,08,06,09,18,08,89,07 ;command jump table
+
+; Command Table
+$071E:           .BYT 89,07    ;CMD_00 @ $0789
+$0720:           .BYT 7F,07    ;CMD_01 @ $077F
+$0722:           .BYT 84,07    ;CMD_02 @ $0784
+$0724:           .BYT 89,07    ;CMD_03 @ $0789
+$0726:           .BYT C9,08    ;CMD_04 @ $08C9
+$0728:           .BYT CC,08    ;CMD_05 @ $08CC
+$072A:           .BYT D4,08    ;CMD_06 @ $08D4
+$072C:           .BYT 5E,07    ;CMD_07 @ $075E
+$072E:           .BYT DD,07    ;CMD_08 @ $07DD
+$0730:           .BYT DF,08    ;CMD_09 @ $08DF
+$0732:           .BYT 0B,08    ;CMD_0A @ $080B
+$0734:           .BYT ED,07    ;CMD_0B @ $07ED
+$0736:           .BYT FF,07    ;CMD_0C @ $07FF
+$0738:           .BYT 45,08    ;CMD_0D @ $0845
+$073A:           .BYT 54,08    ;CMD_0E @ $0854
+$073C:           .BYT 59,08    ;CMD_0F @ $0859
+$073E:           .BYT 4A,08    ;CMD_10 @ $084A
+$0740:           .BYT 3B,09    ;CMD_11 @ $093B
+$0742:           .BYT 1E,09    ;CMD_12 @ $091E
+$0744:           .BYT 5E,08    ;CMD_13 @ $085E
+$0746:           .BYT 6B,08    ;CMD_14 @ $086B
+$0748:           .BYT D1,07    ;CMD_15 @ $07D1
+$074A:           .BYT D7,07    ;CMD_16 @ $07D7
+$074C:           .BYT 71,07    ;CMD_17 @ $0771
+$074E:           .BYT 63,07    ;CMD_18 @ $0763
+$0750:           .BYT 4F,08    ;CMD_19 @ $084F
+$0752:           .BYT 1F,08    ;CMD_1A @ $081F
+$0754:           .BYT B3,09    ;CMD_1B @ $09B3
+$0756:           .BYT EE,08    ;CMD_1C @ $08EE
+$0758:           .BYT 06,09    ;CMD_1D @ $0906
+$075A:           .BYT 18,08    ;CMD_1E @ $0818
+$075C:           .BYT 89,07    ;CMD_1F @ $0789
+
+;START OF COMMAND 07
+:CMD_07
 $075E: A9 07     LDA #$07
 $0760: 4C D2 FF  JMP CHROUT ;Kernal Print a byte
+
+;START OF COMMAND 18
+:CMD_18
 $0763: AD 4C E8  LDA VIA0C ;VIA Register C
 $0766: 48        PHA
 $0767: A9 0E     LDA #$0E
@@ -417,6 +449,9 @@ $0769: 20 D2 FF  JSR CHROUT ;Kernal Print a byte
 $076C: 68        PLA
 $076D: 8D 4C E8  STA VIA0C ;VIA Register C
 $0770: 60        RTS
+
+;START OF COMMAND 17
+;CMD_17
 $0771: AD 4C E8  LDA VIA0C ;VIA Register C
 $0774: 48        PHA
 $0775: A9 8E     LDA #$8E
@@ -424,14 +459,26 @@ $0777: 20 D2 FF  JSR CHROUT ;Kernal Print a byte
 $077A: 68        PLA
 $077B: 8D 4C E8  STA VIA0C ;VIA Register C
 $077E: 60        RTS
+
+;START OF COMMAND 01
+:CMD_01
 $077F: A9 FF     LDA #$FF
 $0781: 85 13     STA $13
 $0783: 60        RTS
+
+;START OF COMMAND 02
+:CMD_02
 :L_0784
 $0784: A9 7F     LDA #$7F
 $0786: 85 13     STA $13
 $0788: 60        RTS
+
+;START OF COMMANDS 00, 03, 1F
+:CMD_00
+:CMD_03
+:CMD_1F
 $0789: 60        RTS
+
 :L_078A
 $078A: 20 F4 07  JSR  L_07F4
 :L_078D
@@ -475,12 +522,21 @@ $07C7: 4C 8A 07  JMP  L_078A
 $07CA: 29 7F     AND #$7F
 $07CC: 09 40     ORA #$40
 $07CE: 4C 8A 07  JMP  L_078A
+
+;START OF COMMAND 15
+:CMD_15
 $07D1: A9 0C     LDA #$0C
 $07D3: 8D 4C E8  STA VIA0C ;VIA Register C
 $07D6: 60        RTS
+
+;START OF COMMAND 16
+:CMD_16
 $07D7: A9 0E     LDA #$0E
 $07D9: 8D 4C E8  STA VIA0C ;VIA Register C
 $07DC: 60        RTS
+
+;START OF COMMAND 08
+:CMD_08
 $07DD: A6 04     LDX $04
 $07DF: D0 08     BNE L_07E9
 $07E1: A6 09     LDX $09
@@ -492,6 +548,9 @@ $07E9: CA        DEX
 $07EA: 86 04     STX $04
 :L_07EC
 $07EC: 60        RTS
+
+;START OF COMMAND 0B
+;CMD_0B
 $07ED: A4 05     LDY $05
 $07EF: F0 FB     BEQ L_07EC
 $07F1: C6 05     DEC $05
@@ -503,12 +562,18 @@ $07F8: 49 80     EOR #$80
 :L_07FA
 $07FA: 20 88 09  JSR  L_0988
 $07FD: 91 02     STA ($02),Y
+
+;START OF COMMAND 0C
+:CMD_0C
 $07FF: E6 04     INC $04
 $0801: A6 04     LDX $04
 $0803: E4 09     CPX $09
 $0805: D0 10     BNE L_0817
 $0807: A9 00     LDA #$00
 $0809: 85 04     STA $04
+
+;START OF COMMAND 0A
+:CMD_0A
 $080B: A4 05     LDY $05
 $080D: C0 18     CPY #$18
 $080F: D0 03     BNE L_0814
@@ -518,10 +583,16 @@ $0814: E6 05     INC $05
 $0816: 60        RTS
 :L_0817
 $0817: 60        RTS
+
+;START OF COMMAND 1E
+:CMD_1E
 $0818: A9 00     LDA #$00
 $081A: 85 05     STA $05
 $081C: 85 04     STA $04
 $081E: 60        RTS
+
+;START OF COMMAND 1A
+:CMD_1A
 $081F: A2 00     LDX #$00
 $0821: 86 04     STX $04
 $0823: 86 05     STX $05
@@ -539,21 +610,39 @@ $083E: 9D 00 87  STA SCREEN8,X ;screen page 8
 $0841: E8        INX
 $0842: D0 E5     BNE L_0829
 $0844: 60        RTS
+
+;START OF COMMAND 0D
+:CMD_0D
 $0845: A9 00     LDA #$00
 $0847: 85 04     STA $04
 $0849: 60        RTS
+
+;START OF COMMAND 10
+:CMD_10
 $084A: A9 00     LDA #$00
 $084C: 85 0C     STA $0C
 $084E: 60        RTS
+
+;START OF COMMAND 19
+:CMD_19
 $084F: A9 FF     LDA #$FF
 $0851: 85 0C     STA $0C
 $0853: 60        RTS
+
+;START OF COMMAND 0E
+:CMD_0E
 $0854: A9 01     LDA #$01
 $0856: 85 0A     STA $0A
 $0858: 60        RTS
+
+;START OF COMMAND 0F
+;CMD_OF
 $0859: A9 00     LDA #$00
 $085B: 85 0A     STA $0A
 $085D: 60        RTS
+
+;START OF COMMAND 13
+:CMD_13
 :L_085E
 $085E: 20 88 09  JSR  L_0988
 $0861: A9 20     LDA #$20
@@ -563,6 +652,9 @@ $0865: C8        INY
 $0866: C4 09     CPY $09
 $0868: D0 F9     BNE L_0863
 $086A: 60        RTS
+
+;START OF COMMAND 14
+:CMD_14
 $086B: 20 5E 08  JSR  L_085E
 $086E: A6 05     LDX $05
 :L_0870
@@ -622,11 +714,21 @@ $08C3: C8        INY
 $08C4: C4 09     CPY $09
 $08C6: D0 F9     BNE L_08C1
 $08C8: 60        RTS
+
+;START OF COMMAND 04
+:CMD_04
 $08C9: A9 01     LDA #$01
-$08CB: 2C A9 00  BIT $00A9
+$08CB:           .BYT 2C
+
+;START OF COMMAND 05
+:CMD_05
+$08CC: A9 00     LDA #$00
 $08CE: A6 04     LDX $04
 $08D0: 9D 3F 0B  STA $0B3F,X
 $08D3: 60        RTS
+
+;START OF COMMAND 06
+:CMD_06
 :L_08D4
 $08D4: A2 4F     LDX #$4F
 $08D6: A9 00     LDA #$00
@@ -635,6 +737,9 @@ $08D8: 9D 3F 0B  STA $0B3F,X
 $08DB: CA        DEX
 $08DC: 10 FA     BPL L_08D8
 $08DE: 60        RTS
+
+;START OF COMMAND 09
+:CMD_09
 $08DF: A6 04     LDX $04
 :L_08E1
 $08E1: E8        INX
@@ -645,6 +750,9 @@ $08E9: F0 F6     BEQ L_08E1
 $08EB: 86 04     STX $04
 :L_08ED
 $08ED: 60        RTS
+
+;START OF COMMAND 1C
+:CMD_1C
 $08EE: 20 88 09  JSR  L_0988
 $08F1: A4 09     LDY $09
 $08F3: 88        DEY
@@ -661,6 +769,9 @@ $08FF: D0 F3     BNE L_08F4
 $0901: A9 20     LDA #$20
 $0903: 91 02     STA ($02),Y
 $0905: 60        RTS
+
+;START OF COMMAND 1D
+:CMD_1D
 $0906: 20 88 09  JSR  L_0988
 $0909: A4 04     LDY $04
 :L_090B
@@ -677,6 +788,9 @@ $0918: 88        DEY
 $0919: A9 20     LDA #$20
 $091B: 91 02     STA ($02),Y
 $091D: 60        RTS
+
+;START OF COMMAND 12
+:CMD_12
 $091E: A9 00     LDA #$00
 $0920: 85 04     STA $04
 $0922: 20 88 09  JSR  L_0988
@@ -692,6 +806,9 @@ $0934: 38        SEC
 $0935: E5 05     SBC $05
 $0937: AA        TAX
 $0938: 4C 9E 08  JMP  L_089E
+
+;START OF COMMAND 11
+:CMD_11
 $093B: A9 C0     LDA #$C0
 $093D: A0 83     LDY #$83
 $093F: A6 09     LDX $09
@@ -766,6 +883,9 @@ $09AD: 69 80     ADC #$80
 $09AF: 85 03     STA $03
 $09B1: 68        PLA
 $09B2: 60        RTS
+
+;START OF COMMAND 1B
+:CMD_1B
 $09B3: A9 02     LDA #$02
 $09B5: 85 0B     STA $0B
 $09B7: 60        RTS
