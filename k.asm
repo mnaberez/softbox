@@ -402,38 +402,38 @@ $0718: 4C 99 07  JMP L_0799
 $071B: 6C 0D 00  JMP ($000D)
 
 ; Command Table
-$071E:           .BYT 89,07    ;CMD_00 @ $0789
-$0720:           .BYT 7F,07    ;CMD_01 @ $077F
-$0722:           .BYT 84,07    ;CMD_02 @ $0784
-$0724:           .BYT 89,07    ;CMD_03 @ $0789
-$0726:           .BYT C9,08    ;CMD_04 @ $08C9
-$0728:           .BYT CC,08    ;CMD_05 @ $08CC
-$072A:           .BYT D4,08    ;CMD_06 @ $08D4
+$071E:           .BYT 89,07    ;CMD_00 @ $0789 (Do nothing)
+$0720:           .BYT 7F,07    ;CMD_01 @ $077F (Store #$FF in $13)
+$0722:           .BYT 84,07    ;CMD_02 @ $0784 (Store #$7F in $13)
+$0724:           .BYT 89,07    ;CMD_03 @ $0789 (Do nothing)
+$0726:           .BYT C9,08    ;CMD_04 @ $08C9 (Works on buffer at $0B3F)
+$0728:           .BYT CC,08    ;CMD_05 @ $08CC (Works on buffer at $0B3F)
+$072A:           .BYT D4,08    ;CMD_06 @ $08D4 (Works on buffer at $0B3F)
 $072C:           .BYT 5E,07    ;CMD_07 @ $075E (Ring bell)
 $072E:           .BYT DD,07    ;CMD_08 @ $07DD
-$0730:           .BYT DF,08    ;CMD_09 @ $08DF
+$0730:           .BYT DF,08    ;CMD_09 @ $08DF (Works on buffer at $0B3F)
 $0732:           .BYT 0B,08    ;CMD_0A @ $080B
 $0734:           .BYT ED,07    ;CMD_0B @ $07ED
 $0736:           .BYT FF,07    ;CMD_0C @ $07FF
-$0738:           .BYT 45,08    ;CMD_0D @ $0845
-$073A:           .BYT 54,08    ;CMD_0E @ $0854
-$073C:           .BYT 59,08    ;CMD_0F @ $0859
-$073E:           .BYT 4A,08    ;CMD_10 @ $084A
+$0738:           .BYT 45,08    ;CMD_0D @ $0845 (Store #$00 in $04)
+$073A:           .BYT 54,08    ;CMD_0E @ $0854 (Store #$01 in $0A)
+$073C:           .BYT 59,08    ;CMD_0F @ $0859 (Store #$00 in $0A)
+$073E:           .BYT 4A,08    ;CMD_10 @ $084A (Store #$00 in $0C)
 $0740:           .BYT 3B,09    ;CMD_11 @ $093B
 $0742:           .BYT 1E,09    ;CMD_12 @ $091E
 $0744:           .BYT 5E,08    ;CMD_13 @ $085E
 $0746:           .BYT 6B,08    ;CMD_14 @ $086B
-$0748:           .BYT D1,07    ;CMD_15 @ $07D1
-$074A:           .BYT D7,07    ;CMD_16 @ $07D7
+$0748:           .BYT D1,07    ;CMD_15 @ $07D1 (Store #$0C in VIA0C)
+$074A:           .BYT D7,07    ;CMD_16 @ $07D7 (Store #$0E in VIA0C)
 $074C:           .BYT 71,07    ;CMD_17 @ $0771 (Go to uppercase mode)
 $074E:           .BYT 63,07    ;CMD_18 @ $0763 (Go to lowercase mode)
-$0750:           .BYT 4F,08    ;CMD_19 @ $084F
+$0750:           .BYT 4F,08    ;CMD_19 @ $084F (Store #$FF in $0C)
 $0752:           .BYT 1F,08    ;CMD_1A @ $081F (Clear screen)
-$0754:           .BYT B3,09    ;CMD_1B @ $09B3
+$0754:           .BYT B3,09    ;CMD_1B @ $09B3 (Store #$02 in $0B)
 $0756:           .BYT EE,08    ;CMD_1C @ $08EE
 $0758:           .BYT 06,09    ;CMD_1D @ $0906
-$075A:           .BYT 18,08    ;CMD_1E @ $0818
-$075C:           .BYT 89,07    ;CMD_1F @ $0789
+$075A:           .BYT 18,08    ;CMD_1E @ $0818 (Store #$00 in $05 and $04)
+$075C:           .BYT 89,07    ;CMD_1F @ $0789 (Do nothing)
 
 ;START OF COMMAND 07
 ;Ring bell
@@ -477,6 +477,7 @@ $0786: 85 13     STA $13
 $0788: 60        RTS
 
 ;START OF COMMANDS 00, 03, 1F
+;Do nothing
 :CMD_00
 :CMD_03
 :CMD_1F
@@ -893,6 +894,7 @@ $09B2: 60        RTS
 $09B3: A9 02     LDA #$02
 $09B5: 85 0B     STA $0B
 $09B7: 60        RTS
+
 :L_09B8
 $09B8: C6 0B     DEC $0B
 $09BA: F0 0C     BEQ L_09C8
@@ -1041,6 +1043,8 @@ $0B1F:           .BYT 5A,56,4E,AC,30,FF,FF,32 ;keyboard table 2
 $0B27:           .BYT 00,58,20,4D,1E,FF,AF,31 ;keyboard table 2
 $0B2F:           .BYT 5F,B3,B6,B9,FF,BA,FF,FF ;keyboard table 2
 $0B37:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
+
+;Start of buffer used by commands 05, 06, and 09
 $0B3F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B47:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B4F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
