@@ -1041,27 +1041,27 @@ $0B1F:           .BYT 5A,56,4E,AC,30,FF,FF,32 ;keyboard table 2
 $0B27:           .BYT 00,58,20,4D,1E,FF,AF,31 ;keyboard table 2
 $0B2F:           .BYT 5F,B3,B6,B9,FF,BA,FF,FF ;keyboard table 2
 $0B37:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0B3F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0B47:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0B4F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0B57:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0B5F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0B67:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0B6F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0B77:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0B7F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0B87:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0B8F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0B97:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0B9F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0BA7:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0BAF:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0BB7:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0BBF:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0BC7:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0BCF:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0BD7:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0BDF:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0BE7:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0BEF:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
-$0BF7:           .BYT AA,AA,AA,AA,AA,AA       ;filler
+$0B3F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0B47:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0B4F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0B57:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0B5F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0B67:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0B6F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0B77:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0B7F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0B87:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0B8F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0B97:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0B9F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0BA7:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0BAF:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0BB7:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0BBF:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0BC7:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0BCF:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0BD7:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0BDF:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0BE7:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0BEF:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+$0BF7:           .BYT AA,AA,AA,AA,AA,AA      
