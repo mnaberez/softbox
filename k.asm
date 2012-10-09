@@ -436,8 +436,8 @@ $075A:           .BYT 18,08    ;CMD_1E @ $0818
 $075C:           .BYT 89,07    ;CMD_1F @ $0789
 
 ;START OF COMMAND 07
-:CMD_07
 ;Ring bell
+:CMD_07
 $075E: A9 07     LDA #$07
 $0760: 4C D2 FF  JMP CHROUT ;Kernal Print a byte
 
