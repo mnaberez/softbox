@@ -23,6 +23,9 @@ VIAPB = $E840   ;VIA PortB
 VIA0C = $E84C   ;VIA Register C
 CHROUT = $FFD2   ;Kernal Print a byte
 ;
+CURSOR_X = $04  ;Current X position: 0-79
+CURSOR_Y = $05  ;Current Y position: 0-24
+X_WIDTH  = $09  ;Width of X in characters (40 or 80)
 ;
 *=0400
 
@@ -72,8 +75,10 @@ $0493: 85 01     STA $01
 $0495: A9 00     LDA #$00
 $0497: 85 06     STA $06
 $0499: 85 0B     STA $0B
-$049B: A9 28     LDA #$28
-$049D: 85 09     STA $09
+
+;Detect 40/80 column screen and store in X_WIDTH
+$049B: A9 28     LDA #$28   ;X_WIDTH = 40 characters
+$049D: 85 09     STA X_WIDTH
 $049F: A9 55     LDA #$55
 $04A1: 8D 00 80  STA SCREEN ;start of screen ram
 $04A4: 0A        ASL A
@@ -83,7 +88,8 @@ $04AB: D0 08     BNE L_04B5
 $04AD: 4A        LSR A
 $04AE: CD 00 80  CMP SCREEN ;start of screen ram
 $04B1: D0 02     BNE L_04B5
-$04B3: 06 09     ASL $09
+$04B3: 06 09     ASL X_WIDTH ;X_WIDTH = 80 characters
+
 :L_04B5
 $04B5: A9 1A     LDA #$1A
 $04B7: 20 E8 06  JSR L_06E8
@@ -416,10 +422,10 @@ $072A:           .BYT D4,08    ;CMD_06 @ $08D4 (Works on buffer at $0B3F)
 $072C:           .BYT 5E,07    ;CMD_07 @ $075E (Ring bell)
 $072E:           .BYT DD,07    ;CMD_08 @ $07DD
 $0730:           .BYT DF,08    ;CMD_09 @ $08DF (Works on buffer at $0B3F)
-$0732:           .BYT 0B,08    ;CMD_0A @ $080B
+$0732:           .BYT 0B,08    ;CMD_0A @ $080B (Line feed)
 $0734:           .BYT ED,07    ;CMD_0B @ $07ED
 $0736:           .BYT FF,07    ;CMD_0C @ $07FF
-$0738:           .BYT 45,08    ;CMD_0D @ $0845 (Store #$00 in $04)
+$0738:           .BYT 45,08    ;CMD_0D @ $0845 (Carriage return)
 $073A:           .BYT 54,08    ;CMD_0E @ $0854 (Store #$01 in $0A)
 $073C:           .BYT 59,08    ;CMD_0F @ $0859 (Store #$00 in $0A)
 $073E:           .BYT 4A,08    ;CMD_10 @ $084A (Store #$00 in $0C)
@@ -436,7 +442,7 @@ $0752:           .BYT 1F,08    ;CMD_1A @ $081F (Clear screen)
 $0754:           .BYT B3,09    ;CMD_1B @ $09B3 (Store #$02 in $0B)
 $0756:           .BYT EE,08    ;CMD_1C @ $08EE
 $0758:           .BYT 06,09    ;CMD_1D @ $0906
-$075A:           .BYT 18,08    ;CMD_1E @ $0818 (Store #$00 in $05 and $04)
+$075A:           .BYT 18,08    ;CMD_1E @ $0818 (Home cursor)
 $075C:           .BYT 89,07    ;CMD_1F @ $0789 (Do nothing)
 
 ;START OF COMMAND 07
@@ -545,23 +551,23 @@ $07DC: 60        RTS
 
 ;START OF COMMAND 08
 :CMD_08
-$07DD: A6 04     LDX $04
+$07DD: A6 04     LDX CURSOR_X
 $07DF: D0 08     BNE L_07E9
-$07E1: A6 09     LDX $09
-$07E3: A5 05     LDA $05
+$07E1: A6 09     LDX X_WIDTH
+$07E3: A5 05     LDA CURSOR_Y
 $07E5: F0 05     BEQ L_07EC
-$07E7: C6 05     DEC $05
+$07E7: C6 05     DEC CURSOR_Y
 :L_07E9
 $07E9: CA        DEX
-$07EA: 86 04     STX $04
+$07EA: 86 04     STX CURSOR_X
 :L_07EC
 $07EC: 60        RTS
 
 ;START OF COMMAND 0B
 ;CMD_0B
-$07ED: A4 05     LDY $05
+$07ED: A4 05     LDY CURSOR_Y
 $07EF: F0 FB     BEQ L_07EC
-$07F1: C6 05     DEC $05
+$07F1: C6 05     DEC CURSOR_Y
 $07F3: 60        RTS
 :L_07F4
 $07F4: A6 0A     LDX $0A
@@ -573,40 +579,42 @@ $07FD: 91 02     STA ($02),Y
 
 ;START OF COMMAND 0C
 :CMD_0C
-$07FF: E6 04     INC $04
-$0801: A6 04     LDX $04
-$0803: E4 09     CPX $09
+$07FF: E6 04     INC CURSOR_X
+$0801: A6 04     LDX CURSOR_X
+$0803: E4 09     CPX X_WIDTH
 $0805: D0 10     BNE L_0817
 $0807: A9 00     LDA #$00
-$0809: 85 04     STA $04
+$0809: 85 04     STA CURSOR_X
 
 ;START OF COMMAND 0A
+;Line feed
 :CMD_0A
-$080B: A4 05     LDY $05
-$080D: C0 18     CPY #$18
-$080F: D0 03     BNE L_0814
-$0811: 4C 8E 08  JMP L_088E
+$080B: A4 05     LDY CURSOR_Y
+$080D: C0 18     CPY #$18       ;Are we on line 24?
+$080F: D0 03     BNE L_0814     ; - No, scroll is not needed
+$0811: 4C 8E 08  JMP SCROLL_UP  ; - Yes, scroll the screen up first
 :L_0814
-$0814: E6 05     INC $05
+$0814: E6 05     INC CURSOR_Y   ;Increment Y position
 $0816: 60        RTS
 :L_0817
 $0817: 60        RTS
 
 ;START OF COMMAND 1E
+;Home cursor
 :CMD_1E
-$0818: A9 00     LDA #$00
-$081A: 85 05     STA $05
-$081C: 85 04     STA $04
+$0818: A9 00     LDA #$00       ;Home cursor
+$081A: 85 05     STA CURSOR_Y
+$081C: 85 04     STA CURSOR_X
 $081E: 60        RTS
 
 ;START OF COMMAND 1A
 ;Clear screen
 :CMD_1A
-$081F: A2 00     LDX #$00
-$0821: 86 04     STX $04
-$0823: 86 05     STX $05
+$081F: A2 00     LDX #$00      ; Home cursor
+$0821: 86 04     STX CURSOR_X
+$0823: 86 05     STX CURSOR_Y
 $0825: 86 0A     STX $0A
-$0827: A9 20     LDA #$20
+$0827: A9 20     LDA #$20      ;Space character
 :L_0829
 $0829: 9D 00 80  STA SCREEN,X ;start of screen ram
 $082C: 9D 00 81  STA SCREEN2,X ;screen page 2
@@ -621,9 +629,10 @@ $0842: D0 E5     BNE L_0829
 $0844: 60        RTS
 
 ;START OF COMMAND 0D
+;Carriage return
 :CMD_0D
-$0845: A9 00     LDA #$00
-$0847: 85 04     STA $04
+$0845: A9 00     LDA #$00       ;Move to X=0 on this line
+$0847: 85 04     STA CURSOR_X
 $0849: 60        RTS
 
 ;START OF COMMAND 10
@@ -658,21 +667,21 @@ $0861: A9 20     LDA #$20
 :L_0863
 $0863: 91 02     STA ($02),Y
 $0865: C8        INY
-$0866: C4 09     CPY $09
+$0866: C4 09     CPY X_WIDTH
 $0868: D0 F9     BNE L_0863
 $086A: 60        RTS
 
 ;START OF COMMAND 14
 :CMD_14
 $086B: 20 5E 08  JSR L_085E
-$086E: A6 05     LDX $05
+$086E: A6 05     LDX CURSOR_Y
 :L_0870
 $0870: E8        INX
 $0871: E0 19     CPX #$19
 $0873: F0 18     BEQ L_088D
 $0875: 18        CLC
 $0876: A5 02     LDA $02
-$0878: 65 09     ADC $09
+$0878: 65 09     ADC X_WIDTH
 $087A: 85 02     STA $02
 $087C: 90 02     BCC L_0880
 $087E: E6 03     INC $03
@@ -682,15 +691,18 @@ $0882: A0 00     LDY #$00
 :L_0884
 $0884: 91 02     STA ($02),Y
 $0886: C8        INY
-$0887: C4 09     CPY $09
+$0887: C4 09     CPY X_WIDTH
 $0889: D0 F9     BNE L_0884
 $088B: F0 E3     BEQ L_0870
 :L_088D
 $088D: 60        RTS
+
+;Scroll the screen up one line
+:SCROLL_UP
 :L_088E
 $088E: A9 00     LDA #$00
 $0890: 85 02     STA $02
-$0892: A5 09     LDA $09
+$0892: A5 09     LDA X_WIDTH
 $0894: 85 0D     STA $0D
 $0896: A9 80     LDA #$80
 $0898: 85 03     STA $03
@@ -702,12 +714,12 @@ $089E: A0 00     LDY #$00
 $08A0: B1 0D     LDA ($0D),Y
 $08A2: 91 02     STA ($02),Y
 $08A4: C8        INY
-$08A5: C4 09     CPY $09
+$08A5: C4 09     CPY X_WIDTH
 $08A7: D0 F7     BNE L_08A0
 $08A9: A5 0D     LDA $0D
 $08AB: 85 02     STA $02
 $08AD: 18        CLC
-$08AE: 65 09     ADC $09
+$08AE: 65 09     ADC X_WIDTH
 $08B0: 85 0D     STA $0D
 $08B2: A5 0E     LDA $0E
 $08B4: 85 03     STA $03
@@ -720,7 +732,7 @@ $08BF: A9 20     LDA #$20
 :L_08C1
 $08C1: 91 02     STA ($02),Y
 $08C3: C8        INY
-$08C4: C4 09     CPY $09
+$08C4: C4 09     CPY X_WIDTH
 $08C6: D0 F9     BNE L_08C1
 $08C8: 60        RTS
 
@@ -732,7 +744,7 @@ $08CB:           .BYT 2C
 ;START OF COMMAND 05
 :CMD_05
 $08CC: A9 00     LDA #$00
-$08CE: A6 04     LDX $04
+$08CE: A6 04     LDX CURSOR_X
 $08D0: 9D 3F 0B  STA $0B3F,X
 $08D3: 60        RTS
 
@@ -749,24 +761,24 @@ $08DE: 60        RTS
 
 ;START OF COMMAND 09
 :CMD_09
-$08DF: A6 04     LDX $04
+$08DF: A6 04     LDX CURSOR_X
 :L_08E1
 $08E1: E8        INX
-$08E2: E0 50     CPX #$50
+$08E2: E0 50     CPX #$50      ; 80 characters?
 $08E4: B0 07     BCS L_08ED
 $08E6: BD 3F 0B  LDA $0B3F,X
 $08E9: F0 F6     BEQ L_08E1
-$08EB: 86 04     STX $04
+$08EB: 86 04     STX CURSOR_X
 :L_08ED
 $08ED: 60        RTS
 
 ;START OF COMMAND 1C
 :CMD_1C
 $08EE: 20 88 09  JSR L_0988
-$08F1: A4 09     LDY $09
+$08F1: A4 09     LDY X_WIDTH
 $08F3: 88        DEY
 :L_08F4
-$08F4: C4 04     CPY $04
+$08F4: C4 04     CPY CURSOR_X
 $08F6: F0 09     BEQ L_0901
 $08F8: 88        DEY
 $08F9: B1 02     LDA ($02),Y
@@ -782,10 +794,10 @@ $0905: 60        RTS
 ;START OF COMMAND 1D
 :CMD_1D
 $0906: 20 88 09  JSR L_0988
-$0909: A4 04     LDY $04
+$0909: A4 04     LDY CURSOR_X
 :L_090B
 $090B: C8        INY
-$090C: C4 09     CPY $09
+$090C: C4 09     CPY X_WIDTH
 $090E: F0 08     BEQ L_0918
 $0910: B1 02     LDA ($02),Y
 $0912: 88        DEY
@@ -801,18 +813,18 @@ $091D: 60        RTS
 ;START OF COMMAND 12
 :CMD_12
 $091E: A9 00     LDA #$00
-$0920: 85 04     STA $04
+$0920: 85 04     STA CURSOR_X
 $0922: 20 88 09  JSR L_0988
 $0925: A5 02     LDA $02
 $0927: 18        CLC
-$0928: 65 09     ADC $09
+$0928: 65 09     ADC X_WIDTH
 $092A: 85 0D     STA $0D
 $092C: A5 03     LDA $03
 $092E: 69 00     ADC #$00
 $0930: 85 0E     STA $0E
 $0932: A9 18     LDA #$18
 $0934: 38        SEC
-$0935: E5 05     SBC $05
+$0935: E5 05     SBC CURSOR_Y
 $0937: AA        TAX
 $0938: 4C 9E 08  JMP L_089E
 
@@ -820,7 +832,7 @@ $0938: 4C 9E 08  JMP L_089E
 :CMD_11
 $093B: A9 C0     LDA #$C0
 $093D: A0 83     LDY #$83
-$093F: A6 09     LDX $09
+$093F: A6 09     LDX X_WIDTH
 $0941: E0 50     CPX #$50
 $0943: D0 04     BNE L_0949
 $0945: A9 80     LDA #$80
@@ -829,7 +841,7 @@ $0947: A0 87     LDY #$87
 $0949: 85 0D     STA $0D
 $094B: 84 0E     STY $0E
 $094D: A9 00     LDA #$00
-$094F: 85 04     STA $04
+$094F: 85 04     STA CURSOR_X
 :L_0951
 $0951: A5 0D     LDA $0D
 $0953: C5 02     CMP $02
@@ -841,7 +853,7 @@ $095B: F0 1F     BEQ L_097C
 $095D: A5 0D     LDA $0D
 $095F: 85 0F     STA $0F
 $0961: 38        SEC
-$0962: E5 09     SBC $09
+$0962: E5 09     SBC X_WIDTH
 $0964: 85 0D     STA $0D
 $0966: A5 0E     LDA $0E
 $0968: 85 10     STA $10
@@ -852,7 +864,7 @@ $096E: A0 00     LDY #$00
 $0970: B1 0D     LDA ($0D),Y
 $0972: 91 0F     STA ($0F),Y
 $0974: C8        INY
-$0975: C4 09     CPY $09
+$0975: C4 09     CPY X_WIDTH
 $0977: D0 F7     BNE L_0970
 $0979: 4C 51 09  JMP L_0951
 :L_097C
@@ -861,14 +873,14 @@ $097E: A9 20     LDA #$20
 :L_0980
 $0980: 91 02     STA ($02),Y
 $0982: C8        INY
-$0983: C4 09     CPY $09
+$0983: C4 09     CPY X_WIDTH
 $0985: D0 F9     BNE L_0980
 $0987: 60        RTS
 :L_0988
 $0988: 48        PHA
 $0989: A9 00     LDA #$00
 $098B: 85 03     STA $03
-$098D: A5 05     LDA $05
+$098D: A5 05     LDA CURSOR_Y
 $098F: 85 02     STA $02
 $0991: 0A        ASL A
 $0992: 0A        ASL A
@@ -879,14 +891,14 @@ $0997: 26 03     ROL $03
 $0999: 0A        ASL A
 $099A: 26 03     ROL $03
 $099C: 85 02     STA $02
-$099E: A5 09     LDA $09
+$099E: A5 09     LDA X_WIDTH
 $09A0: C9 50     CMP #$50
 $09A2: D0 04     BNE L_09A8
 $09A4: 06 02     ASL $02
 $09A6: 26 03     ROL $03
 :L_09A8
 $09A8: 18        CLC
-$09A9: A4 04     LDY $04
+$09A9: A4 04     LDY CURSOR_X
 $09AB: A5 03     LDA $03
 $09AD: 69 80     ADC #$80
 $09AF: 85 03     STA $03
@@ -904,9 +916,9 @@ $09B8: C6 0B     DEC $0B
 $09BA: F0 0C     BEQ L_09C8
 $09BC: 38        SEC
 $09BD: E9 20     SBC #$20
-$09BF: C5 09     CMP $09
+$09BF: C5 09     CMP X_WIDTH
 $09C1: B0 02     BCS L_09C5
-$09C3: 85 04     STA $04
+$09C3: 85 04     STA CURSOR_X
 :L_09C5
 $09C5: 4C 8D 07  JMP L_078D
 :L_09C8
@@ -914,7 +926,7 @@ $09C8: 38        SEC
 $09C9: E9 20     SBC #$20
 $09CB: C9 19     CMP #$19
 $09CD: B0 F6     BCS L_09C5
-$09CF: 85 05     STA $05
+$09CF: 85 05     STA CURSOR_Y
 $09D1: 4C 8D 07  JMP L_078D
 :L_09D4
 $09D4: AD 37 0B  LDA $0B37
@@ -937,8 +949,8 @@ $09F7: D0 F8     BNE L_09F1
 $09F9: 4A        LSR A
 $09FA: 48        PHA
 $09FB: B0 22     BCS L_0A1F
-$09FD: A5 09     LDA $09
-$09FF: C9 50     CMP #$50
+$09FD: A5 09     LDA X_WIDTH
+$09FF: C9 50     CMP #$50      ;Is this an 80 column screen?
 $0A01: D0 06     BNE L_0A09
 $0A03: BD E7 0A  LDA $0AE7,X
 $0A06: 4C 0C 0A  JMP L_0A0C
