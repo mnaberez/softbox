@@ -409,7 +409,7 @@ $0724:           .BYT 89,07    ;CMD_03 @ $0789
 $0726:           .BYT C9,08    ;CMD_04 @ $08C9
 $0728:           .BYT CC,08    ;CMD_05 @ $08CC
 $072A:           .BYT D4,08    ;CMD_06 @ $08D4
-$072C:           .BYT 5E,07    ;CMD_07 @ $075E
+$072C:           .BYT 5E,07    ;CMD_07 @ $075E (Ring bell)
 $072E:           .BYT DD,07    ;CMD_08 @ $07DD
 $0730:           .BYT DF,08    ;CMD_09 @ $08DF
 $0732:           .BYT 0B,08    ;CMD_0A @ $080B
@@ -425,10 +425,10 @@ $0744:           .BYT 5E,08    ;CMD_13 @ $085E
 $0746:           .BYT 6B,08    ;CMD_14 @ $086B
 $0748:           .BYT D1,07    ;CMD_15 @ $07D1
 $074A:           .BYT D7,07    ;CMD_16 @ $07D7
-$074C:           .BYT 71,07    ;CMD_17 @ $0771
-$074E:           .BYT 63,07    ;CMD_18 @ $0763
+$074C:           .BYT 71,07    ;CMD_17 @ $0771 (Go to uppercase mode)
+$074E:           .BYT 63,07    ;CMD_18 @ $0763 (Go to lowercase mode)
 $0750:           .BYT 4F,08    ;CMD_19 @ $084F
-$0752:           .BYT 1F,08    ;CMD_1A @ $081F
+$0752:           .BYT 1F,08    ;CMD_1A @ $081F (Clear screen)
 $0754:           .BYT B3,09    ;CMD_1B @ $09B3
 $0756:           .BYT EE,08    ;CMD_1C @ $08EE
 $0758:           .BYT 06,09    ;CMD_1D @ $0906
@@ -437,10 +437,12 @@ $075C:           .BYT 89,07    ;CMD_1F @ $0789
 
 ;START OF COMMAND 07
 :CMD_07
+;Ring bell
 $075E: A9 07     LDA #$07
 $0760: 4C D2 FF  JMP CHROUT ;Kernal Print a byte
 
 ;START OF COMMAND 18
+;Go to lowercase mode
 :CMD_18
 $0763: AD 4C E8  LDA VIA0C ;VIA Register C
 $0766: 48        PHA
@@ -451,6 +453,7 @@ $076D: 8D 4C E8  STA VIA0C ;VIA Register C
 $0770: 60        RTS
 
 ;START OF COMMAND 17
+;Go to uppercase mode
 ;CMD_17
 $0771: AD 4C E8  LDA VIA0C ;VIA Register C
 $0774: 48        PHA
@@ -592,6 +595,7 @@ $081C: 85 04     STA $04
 $081E: 60        RTS
 
 ;START OF COMMAND 1A
+;Clear screen
 :CMD_1A
 $081F: A2 00     LDX #$00
 $0821: 86 04     STX $04
