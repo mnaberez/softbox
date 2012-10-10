@@ -426,10 +426,10 @@ $0726:           .BYT C9,08    ;CMD_04 @ $08C9 (Works on buffer at $0B3F)
 $0728:           .BYT CC,08    ;CMD_05 @ $08CC (Works on buffer at $0B3F)
 $072A:           .BYT D4,08    ;CMD_06 @ $08D4 (Fill buffer at $0B3F with zeroes)
 $072C:           .BYT 5E,07    ;CMD_07 @ $075E (Ring bell)
-$072E:           .BYT DD,07    ;CMD_08 @ $07DD
+$072E:           .BYT DD,07    ;CMD_08 @ $07DD (Cursor left)
 $0730:           .BYT DF,08    ;CMD_09 @ $08DF (Works on buffer at $0B3F)
 $0732:           .BYT 0B,08    ;CMD_0A @ $080B (Line feed)
-$0734:           .BYT ED,07    ;CMD_0B @ $07ED
+$0734:           .BYT ED,07    ;CMD_0B @ $07ED (Cursor up)
 $0736:           .BYT FF,07    ;CMD_0C @ $07FF
 $0738:           .BYT 45,08    ;CMD_0D @ $0845 (Carriage return)
 $073A:           .BYT 54,08    ;CMD_0E @ $0854 (Store #$01 in $0A)
@@ -556,25 +556,28 @@ $07D9: 8D 4C E8  STA VIA0C ;VIA Register C
 $07DC: 60        RTS
 
 ;START OF COMMAND 08
+;Cursor left
 :CMD_08
 $07DD: A6 04     LDX CURSOR_X
-$07DF: D0 08     BNE L_07E9
-$07E1: A6 09     LDX X_WIDTH
+$07DF: D0 08     BNE L_07E9     ; X > 0? Y will not change.
+$07E1: A6 09     LDX X_WIDTH    ; X = max X + 1
 $07E3: A5 05     LDA CURSOR_Y
-$07E5: F0 05     BEQ L_07EC
-$07E7: C6 05     DEC CURSOR_Y
+$07E5: F0 05     BEQ L_07EC     ; Y=0? Can't move up.
+$07E7: C6 05     DEC CURSOR_Y   ; Y=Y-1
 :L_07E9
 $07E9: CA        DEX
-$07EA: 86 04     STX CURSOR_X
+$07EA: 86 04     STX CURSOR_X   ; X=X-1
 :L_07EC
 $07EC: 60        RTS
 
 ;START OF COMMAND 0B
+;Cursor up
 ;CMD_0B
 $07ED: A4 05     LDY CURSOR_Y
-$07EF: F0 FB     BEQ L_07EC
-$07F1: C6 05     DEC CURSOR_Y
+$07EF: F0 FB     BEQ L_07EC     ; Y=0? Can't move up.
+$07F1: C6 05     DEC CURSOR_Y   ; Y=Y-1
 $07F3: 60        RTS
+
 :L_07F4
 $07F4: A6 0A     LDX $0A
 $07F6: F0 02     BEQ L_07FA
