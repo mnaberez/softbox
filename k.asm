@@ -84,7 +84,8 @@ $049F: A9 55     LDA #$55
 $04A1: 8D 00 80  STA SCREEN ;start of screen ram
 $04A4: 0A        ASL A
 $04A5: 8D 00 84  STA SCREEN5 ;screen page 5
-$04A8: CD 00 84  CMP SCREEN5 ;screen page 5
+$04A8: CD 00 84  CMP SCREEN5 ;check if byte written matches what is read. if not assume 40 columns 
+;                             (could fail on converted systems, ie: 8296 converted to 40 col!!!!)
 $04AB: D0 08     BNE L_04B5
 $04AD: 4A        LSR A
 $04AE: CD 00 80  CMP SCREEN ;start of screen ram
@@ -211,7 +212,7 @@ $05A1: 85 0E     STA $0E
 $05A3: A0 00     LDY #$00
 :L_05A5
 $05A5: 88        DEY
-$05A6: D0 FD     BNE L_05A5
+$05A6: D0 FD     BNE L_05A5   ; delay
 :L_05A8
 $05A8: B1 0D     LDA ($0D),Y
 $05AA: 20 FB 05  JSR L_05FB
@@ -283,24 +284,24 @@ $062B: B0 FA     BCS L_0627
 $062D: 60        RTS
 :L_062E
 $062E: A9 FF     LDA #$FF
-$0630: 78        SEI
+$0630: 78        SEI        ;Disable interrupts
 $0631: A6 08     LDX $08
 $0633: F0 14     BEQ L_0649
 $0635: AD 6F 02  LDA KEYBUF ;Keyboard Input Buffer
-$0638: 48        PHA
-$0639: A2 00     LDX #$00
-$063B: C6 08     DEC $08
+$0638: 48        PHA        ;push key onto stack
+$0639: A2 00     LDX #$00   ;loop counter = 0
+$063B: C6 08     DEC $08    ;number if keys in buffer?
 :L_063D
 $063D: BD 70 02  LDA KEYBUF+1,X ;Keyboard Input Buffer
 $0640: 9D 6F 02  STA KEYBUF,X ;Keyboard Input Buffer
 $0643: E8        INX
 $0644: E4 08     CPX $08
-$0646: D0 F5     BNE L_063D
-$0648: 68        PLA
+$0646: D0 F5     BNE L_063D ;loop back for more
+$0648: 68        PLA        ;pull the key from stack
 :L_0649
-$0649: 58        CLI
-$064A: C9 FF     CMP #$FF
-$064C: F0 E0     BEQ L_062E
+$0649: 58        CLI        ;enable interrupts
+$064A: C9 FF     CMP #$FF   ;check for FF (no key?)
+$064C: F0 E0     BEQ L_062E 
 $064E: 60        RTS
 
 ;START OF INTERRUPT HANDLER
@@ -423,7 +424,7 @@ $0722:           .BYT 84,07    ;CMD_02 @ $0784 (Store #$7F in $13)
 $0724:           .BYT 89,07    ;CMD_03 @ $0789 (Do nothing)
 $0726:           .BYT C9,08    ;CMD_04 @ $08C9 (Works on buffer at $0B3F)
 $0728:           .BYT CC,08    ;CMD_05 @ $08CC (Works on buffer at $0B3F)
-$072A:           .BYT D4,08    ;CMD_06 @ $08D4 (Works on buffer at $0B3F)
+$072A:           .BYT D4,08    ;CMD_06 @ $08D4 (Clear the buffer (fill with 00's) Works on buffer at $0B3F)
 $072C:           .BYT 5E,07    ;CMD_07 @ $075E (Ring bell)
 $072E:           .BYT DD,07    ;CMD_08 @ $07DD
 $0730:           .BYT DF,08    ;CMD_09 @ $08DF (Works on buffer at $0B3F)
@@ -744,7 +745,7 @@ $08C8: 60        RTS
 ;START OF COMMAND 04
 :CMD_04
 $08C9: A9 01     LDA #$01
-$08CB:           .BYT 2C
+$08CB:           .BYT 2C    ; "BIT absolute command. Saves one byte
 
 ;START OF COMMAND 05
 :CMD_05
@@ -756,10 +757,10 @@ $08D3: 60        RTS
 ;START OF COMMAND 06
 :CMD_06
 :L_08D4
-$08D4: A2 4F     LDX #$4F
-$08D6: A9 00     LDA #$00
+$08D4: A2 4F     LDX #$4F  ; 80 characters-1
+$08D6: A9 00     LDA #$00  ; zero
 :L_08D8
-$08D8: 9D 3F 0B  STA $0B3F,X
+$08D8: 9D 3F 0B  STA BUFFER,X  ;store in the buffer
 $08DB: CA        DEX
 $08DC: 10 FA     BPL L_08D8
 $08DE: 60        RTS
@@ -771,7 +772,7 @@ $08DF: A6 04     LDX CURSOR_X
 $08E1: E8        INX
 $08E2: E0 50     CPX #$50      ; 80 characters?
 $08E4: B0 07     BCS L_08ED
-$08E6: BD 3F 0B  LDA $0B3F,X
+$08E6: BD 3F 0B  LDA BUFFER,X   ; read from the buffer
 $08E9: F0 F6     BEQ L_08E1
 $08EB: 86 04     STX CURSOR_X
 :L_08ED
@@ -949,7 +950,7 @@ $09EF: A0 08     LDY #$08
 :L_09F1
 $09F1: AD 12 E8  LDA PIA1COL ;PIA#1 Keyboard Columns Read
 $09F4: CD 12 E8  CMP PIA1COL ;PIA#1 Keyboard Columns Read
-$09F7: D0 F8     BNE L_09F1
+$09F7: D0 F8     BNE L_09F1  ;wait for stable value on keyboard switches (debounce)
 :L_09F9
 $09F9: 4A        LSR A
 $09FA: 48        PHA
@@ -1066,6 +1067,7 @@ $0B2F:           .BYT 5F,B3,B6,B9,FF,BA,FF,FF ;keyboard table 2
 $0B37:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
 
 ;Start of buffer used by commands 05, 06, and 09
+:BUFFER
 $0B3F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B47:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B4F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
