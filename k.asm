@@ -968,7 +968,7 @@ $0A01: D0 06     BNE L_0A09
 $0A03: BD E7 0A  LDA BUSINESS_KEYS,X    ;  Yes: read from business keyboard table
 $0A06: 4C 0C 0A  JMP L_0A0C
 :L_0A09
-$0A09: BD 97 0A  LDA $GRAPHICS_KEYS,X   ;  No: read from graphics keyboard table
+$0A09: BD 97 0A  LDA GRAPHICS_KEYS,X   ;  No: read from graphics keyboard table
 :L_0A0C
 $0A0C: C9 01     CMP #$01
 $0A0E: F0 07     BEQ L_0A17
@@ -1053,7 +1053,7 @@ $0A94: C9 00     CMP #$00
 $0A96: 60        RTS
 
 ;40-column graphics keyboard table               ----- ----- ----- ----- ----- ----- ----- -----    Notes
-:GRAPHICS_KEYS                                 
+:GRAPHICS_KEYS
 $0A97:           .BYT 21,23,25,26,28,5F,1E,0C  ; !     #     %     &     (     BARRW HOME  RIGHT    BARRW= Back Arrow
 $0A9F:           .BYT 22,24,27,5C,29,FF,0A,7F  ; "     $     '     \     )     NONE  CSRDN DEL      NONE = No key
 $0AA7:           .BYT 51,45,54,55,4F,5E,37,39  ; Q     E     T     U     O     ^     7     9
@@ -1067,7 +1067,7 @@ $0ADF:           .BYT 00,5B,20,3C,1B,FF,2E,3D  ; RVS   [     SPACE >     STOP  N
 
 ;80-column business keyboard table               ----- ----- ----- ----- ----- ----- ----- -----
 :BUSINESS_KEYS
-$0AE7:           .BYT B2,B5,B8,AD,38,0C,FF,FF  ; ^2    ^5    ^8    -     8     CSRRT NONE  NONE     ^ = Extra Bits Set 
+$0AE7:           .BYT B2,B5,B8,AD,38,0C,FF,FF  ; ^2    ^5    ^8    -     8     CSRRT NONE  NONE     ^ = Extra Bits Set
 $0AEF:           .BYT B1,B4,B7,30,37,5E,FF,39  ; ^1    ^4    ^7    0     7     UARRW NONE  9        UARROW = Up Arrow
 $0AF7:           .BYT 1B,53,46,48,5D,4B,BB,35  ; ESC   S     F     H     ]     K     ;     5
 $0AFF:           .BYT 41,44,47,4A,0D,4C,40,36  ; A     D     G     J     RTRN  L     @     6
@@ -1075,7 +1075,7 @@ $0B07:           .BYT 09,57,52,59,5C,49,50,7F  ; TAB   W     R     Y     \     I
 $0B0F:           .BYT 51,45,54,55,0A,4F,5B,34  ; Q     E     T     U     CSRDN O     [     4
 $0B17:           .BYT 01,43,42,AE,2E,FF,01,33  ; SHIFT C     B     ^.    .     NONE  SHIFT 3
 $0B1F:           .BYT 5A,56,4E,AC,30,FF,FF,32  ; Z     V     N     ,     0     NONE  NONE  2
-$0B27:           .BYT 00,58,20,4D,1E,FF,AF,31  ; RVS   X     SPACE M     HOME  NONE  ^/    1 
+$0B27:           .BYT 00,58,20,4D,1E,FF,AF,31  ; RVS   X     SPACE M     HOME  NONE  ^/    1
 $0B2F:           .BYT 5F,B3,B6,B9,FF,BA,FF,FF  ; BARRW ^3    ^6    ^9    STOP  ^:    NONE  NONE
 
 ;Storage locations that are not yet documented
