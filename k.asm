@@ -23,6 +23,8 @@ VIAPB = $E840   ;VIA PortB
 VIA0C = $E84C   ;VIA Register C
 CHROUT = $FFD2   ;Kernal Print a byte
 ;
+SCNPOSL  = $02  ;Pointer to current screen LO byte
+SCNPOSH  = $03  ;Pointer to current screen HI byte
 CURSOR_X = $04  ;Current X position: 0-79
 CURSOR_Y = $05  ;Current Y position: 0-24
 X_WIDTH  = $09  ;Width of X in characters (40 or 80)
@@ -318,47 +320,47 @@ $064E: 60        RTS
 
 ;START OF INTERRUPT HANDLER
 INT_HANDLER:
-$064F: E6 1A     INC $1A
+$064F: E6 1A     INC $1A       ;seem to be cursor blink counter
 $0651: D0 06     BNE L_0659
-$0653: E6 19     INC $19
+$0653: E6 19     INC $19       ;counter
 $0655: D0 02     BNE L_0659
-$0657: E6 18     INC $18
+$0657: E6 18     INC $18       ;counter
 :L_0659
 $0659: E6 14     INC $14
 $065B: A5 14     LDA $14
-$065D: CD 03 04  CMP $0403
+$065D: CD 03 04  CMP $0403     ;?? this is in the BASIC header area
 $0660: D0 28     BNE L_068A
 $0662: A9 00     LDA #$00
 $0664: 85 14     STA $14
 $0666: E6 15     INC $15
 $0668: A5 15     LDA $15
-$066A: C9 3C     CMP #$3C
+$066A: C9 3C     CMP #$3C      ;60
 $066C: D0 1C     BNE L_068A
 $066E: A9 00     LDA #$00
 $0670: 85 15     STA $15
 $0672: E6 16     INC $16
 $0674: A5 16     LDA $16
-$0676: C9 3C     CMP #$3C
+$0676: C9 3C     CMP #$3C      ;60
 $0678: D0 10     BNE L_068A
 $067A: A9 00     LDA #$00
 $067C: 85 16     STA $16
 $067E: E6 17     INC $17
 $0680: A5 17     LDA $17
-$0682: C9 18     CMP #$18
+$0682: C9 18     CMP #$18      ;24
 $0684: D0 04     BNE L_068A
 $0686: A9 00     LDA #$00
 $0688: 85 17     STA $17
 :L_068A
-$068A: A5 06     LDA $06
-$068C: D0 11     BNE L_069F
+$068A: A5 06     LDA $06       ;could this be a flag to indicate output mode?
+$068C: D0 11     BNE L_069F    ;bypass blink
 $068E: C6 01     DEC $01
-$0690: D0 0D     BNE L_069F
+$0690: D0 0D     BNE L_069F    ;bypass blink
 $0692: A9 14     LDA #$14
 $0694: 85 01     STA $01
 $0696: 20 88 09  JSR L_0988
-$0699: B1 02     LDA ($02),Y
-$069B: 49 80     EOR #$80
-$069D: 91 02     STA ($02),Y
+$0699: B1 02     LDA (SCNPOSL),Y   ;Read character at cursor
+$069B: 49 80     EOR #$80      ;Flip the REVERSE bit
+$069D: 91 02     STA (SCNPOSL),Y   ;Write it back
 :L_069F
 $069F: AD 37 0B  LDA $0B37
 $06A2: CD 3E 0B  CMP $0B3E
@@ -407,7 +409,7 @@ $06ED: A9 FF     LDA #$FF
 $06EF: 85 06     STA $06
 $06F1: 20 88 09  JSR L_0988
 $06F4: A5 07     LDA $07
-$06F6: 91 02     STA ($02),Y
+$06F6: 91 02     STA (SCNPOSL),Y
 $06F8: 68        PLA
 $06F9: 25 13     AND $13
 $06FB: A6 0B     LDX $0B
@@ -458,15 +460,15 @@ $074E:           .BYT 63,07    ;CMD_18 @ $0763 (Go to lowercase mode)
 $0750:           .BYT 4F,08    ;CMD_19 @ $084F (Store #$FF in $0C)
 $0752:           .BYT 1F,08    ;CMD_1A @ $081F (Clear screen)
 $0754:           .BYT B3,09    ;CMD_1B @ $09B3 (Store #$02 in $0B)
-$0756:           .BYT EE,08    ;CMD_1C @ $08EE
-$0758:           .BYT 06,09    ;CMD_1D @ $0906
+$0756:           .BYT EE,08    ;CMD_1C @ $08EE (insert a space on current line)
+$0758:           .BYT 06,09    ;CMD_1D @ $0906 (delete character at cursor)
 $075A:           .BYT 18,08    ;CMD_1E @ $0818 (Home cursor)
 $075C:           .BYT 89,07    ;CMD_1F @ $0789 (Do nothing)
 
 ;START OF COMMAND 07
 ;Ring bell
 :CMD_07
-$075E: A9 07     LDA #$07
+$075E: A9 07     LDA #$07   ; CHR(7)=BELL
 $0760: 4C D2 FF  JMP CHROUT ;Kernal Print a byte
 
 ;START OF COMMAND 18
@@ -474,7 +476,7 @@ $0760: 4C D2 FF  JMP CHROUT ;Kernal Print a byte
 :CMD_18
 $0763: AD 4C E8  LDA VIA0C ;VIA Register C
 $0766: 48        PHA
-$0767: A9 0E     LDA #$0E
+$0767: A9 0E     LDA #$0E   ;CHR(14)=Switch to Lowercase mode
 $0769: 20 D2 FF  JSR CHROUT ;Kernal Print a byte
 $076C: 68        PLA
 $076D: 8D 4C E8  STA VIA0C ;VIA Register C
@@ -485,7 +487,7 @@ $0770: 60        RTS
 ;CMD_17
 $0771: AD 4C E8  LDA VIA0C ;VIA Register C
 $0774: 48        PHA
-$0775: A9 8E     LDA #$8E
+$0775: A9 8E     LDA #$8E  ;CHR(142)=Switch to Uppercase mode
 $0777: 20 D2 FF  JSR CHROUT ;Kernal Print a byte
 $077A: 68        PLA
 $077B: 8D 4C E8  STA VIA0C ;VIA Register C
@@ -515,7 +517,7 @@ $0789: 60        RTS
 $078A: 20 F4 07  JSR L_07F4
 :L_078D
 $078D: 20 88 09  JSR L_0988
-$0790: B1 02     LDA ($02),Y
+$0790: B1 02     LDA (SCNPOSL),Y
 $0792: 85 07     STA $07
 $0794: A5 0C     LDA $0C
 $0796: 85 06     STA $06
@@ -596,7 +598,7 @@ $07F6: F0 02     BEQ L_07FA
 $07F8: 49 80     EOR #$80
 :L_07FA
 $07FA: 20 88 09  JSR L_0988
-$07FD: 91 02     STA ($02),Y
+$07FD: 91 02     STA (SCNPOSL),Y
 
 ;START OF COMMAND 0C
 ;Cursor right
@@ -688,7 +690,7 @@ $085D: 60        RTS
 $085E: 20 88 09  JSR L_0988    ;Leaves CURSOR_X in Y register
 $0861: A9 20     LDA #$20      ;Space character
 :L_0863
-$0863: 91 02     STA ($02),Y   ;Write space to screen RAM
+$0863: 91 02     STA (SCNPOSL),Y   ;Write space to screen RAM
 $0865: C8        INY           ;X=X+1
 $0866: C4 09     CPY X_WIDTH
 $0868: D0 F9     BNE L_0863    ;Loop until end of line
@@ -703,16 +705,16 @@ $0870: E8        INX
 $0871: E0 19     CPX #$19
 $0873: F0 18     BEQ L_088D
 $0875: 18        CLC
-$0876: A5 02     LDA $02
+$0876: A5 02     LDA SCNPOSL
 $0878: 65 09     ADC X_WIDTH
-$087A: 85 02     STA $02
+$087A: 85 02     STA SCNPOSL
 $087C: 90 02     BCC L_0880
 $087E: E6 03     INC $03
 :L_0880
 $0880: A9 20     LDA #$20
 $0882: A0 00     LDY #$00
 :L_0884
-$0884: 91 02     STA ($02),Y
+$0884: 91 02     STA (SCNPOSL),Y
 $0886: C8        INY
 $0887: C4 09     CPY X_WIDTH
 $0889: D0 F9     BNE L_0884
@@ -724,7 +726,7 @@ $088D: 60        RTS
 :SCROLL_UP
 :L_088E
 $088E: A9 00     LDA #$00
-$0890: 85 02     STA $02
+$0890: 85 02     STA SCNPOSL
 $0892: A5 09     LDA X_WIDTH
 $0894: 85 0D     STA $0D
 $0896: A9 80     LDA #$80
@@ -735,12 +737,12 @@ $089C: A2 18     LDX #$18
 $089E: A0 00     LDY #$00
 :L_08A0
 $08A0: B1 0D     LDA ($0D),Y
-$08A2: 91 02     STA ($02),Y
+$08A2: 91 02     STA (SCNPOSL),Y
 $08A4: C8        INY
 $08A5: C4 09     CPY X_WIDTH
 $08A7: D0 F7     BNE L_08A0
 $08A9: A5 0D     LDA $0D
-$08AB: 85 02     STA $02
+$08AB: 85 02     STA SCNPOSL
 $08AD: 18        CLC
 $08AE: 65 09     ADC X_WIDTH
 $08B0: 85 0D     STA $0D
@@ -753,7 +755,7 @@ $08BB: D0 E1     BNE L_089E
 $08BD: A0 00     LDY #$00
 $08BF: A9 20     LDA #$20
 :L_08C1
-$08C1: 91 02     STA ($02),Y
+$08C1: 91 02     STA (SCNPOSL),Y
 $08C3: C8        INY
 $08C4: C4 09     CPY X_WIDTH
 $08C6: D0 F9     BNE L_08C1
@@ -796,26 +798,26 @@ $08EB: 86 04     STX CURSOR_X
 :L_08ED
 $08ED: 60        RTS
 
-;START OF COMMAND 1C
+;START OF COMMAND 1C  - Insert space at current cursor position
 :CMD_1C
 $08EE: 20 88 09  JSR L_0988
-$08F1: A4 09     LDY X_WIDTH
-$08F3: 88        DEY
+$08F1: A4 09     LDY X_WIDTH       ;number of characters on line
+$08F3: 88        DEY               
 :L_08F4
 $08F4: C4 04     CPY CURSOR_X
 $08F6: F0 09     BEQ L_0901
 $08F8: 88        DEY
-$08F9: B1 02     LDA ($02),Y
-$08FB: C8        INY
-$08FC: 91 02     STA ($02),Y
-$08FE: 88        DEY
-$08FF: D0 F3     BNE L_08F4
+$08F9: B1 02     LDA (SCNPOSL),Y    ;read a character from line
+$08FB: C8        INY                ;position to the right
+$08FC: 91 02     STA (SCNPOSL),Y    ;write it back
+$08FE: 88        DEY                ;we are counting down to zero
+$08FF: D0 F3     BNE L_08F4         ;loop for another character
 :L_0901
-$0901: A9 20     LDA #$20
-$0903: 91 02     STA ($02),Y
+$0901: A9 20     LDA #$20           ; SPACE
+$0903: 91 02     STA (SCNPOSL),Y    ; Write it to current character position
 $0905: 60        RTS
 
-;START OF COMMAND 1D
+;START OF COMMAND 1D - delete character
 :CMD_1D
 $0906: 20 88 09  JSR L_0988
 $0909: A4 04     LDY CURSOR_X
@@ -823,15 +825,15 @@ $0909: A4 04     LDY CURSOR_X
 $090B: C8        INY
 $090C: C4 09     CPY X_WIDTH
 $090E: F0 08     BEQ L_0918
-$0910: B1 02     LDA ($02),Y
-$0912: 88        DEY
-$0913: 91 02     STA ($02),Y
-$0915: C8        INY
-$0916: D0 F3     BNE L_090B
+$0910: B1 02     LDA (SCNPOSL),Y    ;read a character from the line
+$0912: 88        DEY                ;position to the left
+$0913: 91 02     STA (SCNPOSL),Y    ;write it back
+$0915: C8        INY                ;we are counting UP
+$0916: D0 F3     BNE L_090B         ;loop for another character
 :L_0918
 $0918: 88        DEY
-$0919: A9 20     LDA #$20
-$091B: 91 02     STA ($02),Y
+$0919: A9 20     LDA #$20           ;SPACE
+$091B: 91 02     STA (SCNPOSL),Y    ;write it to the current character position
 $091D: 60        RTS
 
 ;START OF COMMAND 12
