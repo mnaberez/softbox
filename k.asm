@@ -437,7 +437,7 @@ $073C:           .BYT 59,08    ;CMD_0F @ $0859 (Store #$00 in $0A)
 $073E:           .BYT 4A,08    ;CMD_10 @ $084A (Store #$00 in $0C)
 $0740:           .BYT 3B,09    ;CMD_11 @ $093B
 $0742:           .BYT 1E,09    ;CMD_12 @ $091E
-$0744:           .BYT 5E,08    ;CMD_13 @ $085E
+$0744:           .BYT 5E,08    ;CMD_13 @ $085E (Clear to end of line)
 $0746:           .BYT 6B,08    ;CMD_14 @ $086B
 $0748:           .BYT D1,07    ;CMD_15 @ $07D1 (Store #$0C in VIA0C)
 $074A:           .BYT D7,07    ;CMD_16 @ $07D7 (Store #$0E in VIA0C)
@@ -670,15 +670,16 @@ $085B: 85 0A     STA $0A
 $085D: 60        RTS
 
 ;START OF COMMAND 13
+;Clear to end of line
 :CMD_13
 :L_085E
-$085E: 20 88 09  JSR L_0988
-$0861: A9 20     LDA #$20
+$085E: 20 88 09  JSR L_0988    ;Leaves CURSOR_X in Y register
+$0861: A9 20     LDA #$20      ;Space character
 :L_0863
-$0863: 91 02     STA ($02),Y
-$0865: C8        INY
+$0863: 91 02     STA ($02),Y   ;Write space to screen RAM
+$0865: C8        INY           ;X=X+1
 $0866: C4 09     CPY X_WIDTH
-$0868: D0 F9     BNE L_0863
+$0868: D0 F9     BNE L_0863    ;Loop until end of line
 $086A: 60        RTS
 
 ;START OF COMMAND 14
@@ -887,6 +888,7 @@ $0982: C8        INY
 $0983: C4 09     CPY X_WIDTH
 $0985: D0 F9     BNE L_0980
 $0987: 60        RTS
+
 :L_0988
 $0988: 48        PHA
 $0989: A9 00     LDA #$00
