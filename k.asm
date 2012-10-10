@@ -963,12 +963,12 @@ $09F9: 4A        LSR A
 $09FA: 48        PHA
 $09FB: B0 22     BCS L_0A1F
 $09FD: A5 09     LDA X_WIDTH
-$09FF: C9 50     CMP #$50      ;Is this an 80 column screen?
+$09FF: C9 50     CMP #$50               ;Is this an 80 column screen?
 $0A01: D0 06     BNE L_0A09
-$0A03: BD E7 0A  LDA $0AE7,X
+$0A03: BD E7 0A  LDA BUSINESS_KEYS,X    ;  Yes: read from business keyboard table
 $0A06: 4C 0C 0A  JMP L_0A0C
 :L_0A09
-$0A09: BD 97 0A  LDA $0A97,X
+$0A09: BD 97 0A  LDA $GRAPHICS_KEYS,X   ;  No: read from graphics keyboard table
 :L_0A0C
 $0A0C: C9 01     CMP #$01
 $0A0E: F0 07     BEQ L_0A17
@@ -1051,26 +1051,34 @@ $0A93: 60        RTS
 :L_0A94
 $0A94: C9 00     CMP #$00
 $0A96: 60        RTS
-$0A97:           .BYT 21,23,25,26,28,5F,1E,0C ;keyboard table 1
-$0A9F:           .BYT 22,24,27,5C,29,FF,0A,7F ;keyboard table 1
-$0AA7:           .BYT 51,45,54,55,4F,5E,37,39 ;keyboard table 1
-$0AAF:           .BYT 57,52,59,49,50,FF,38,2F ;keyboard table 1
-$0AB7:           .BYT 41,44,47,4A,4C,FF,34,36 ;keyboard table 1
-$0ABF:           .BYT 53,46,48,4B,3A,FF,35,2A ;keyboard table 1
-$0AC7:           .BYT 5A,43,42,4D,3B,0D,31,33 ;keyboard table 1
-$0ACF:           .BYT 58,56,4E,2C,3F,FF,32,2B ;keyboard table 1
-$0AD7:           .BYT 01,40,5D,FF,3E,01,30,2D ;keyboard table 1
-$0ADF:           .BYT 00,5B,20,3C,1B,FF,2E,3D ;keyboard table 1
-$0AE7:           .BYT B2,B5,B8,AD,38,0C,FF,FF ;keyboard table 2
-$0AEF:           .BYT B1,B4,B7,30,37,5E,FF,39 ;keyboard table 2
-$0AF7:           .BYT 1B,53,46,48,5D,4B,BB,35 ;keyboard table 2
-$0AFF:           .BYT 41,44,47,4A,0D,4C,40,36 ;keyboard table 2
-$0B07:           .BYT 09,57,52,59,5C,49,50,7F ;keyboard table 2
-$0B0F:           .BYT 51,45,54,55,0A,4F,5B,34 ;keyboard table 2
-$0B17:           .BYT 01,43,42,AE,2E,FF,01,33 ;keyboard table 2
-$0B1F:           .BYT 5A,56,4E,AC,30,FF,FF,32 ;keyboard table 2
-$0B27:           .BYT 00,58,20,4D,1E,FF,AF,31 ;keyboard table 2
-$0B2F:           .BYT 5F,B3,B6,B9,FF,BA,FF,FF ;keyboard table 2
+
+;40-column graphics keyboard table
+:GRAPHICS_KEYS
+$0A97:           .BYT 21,23,25,26,28,5F,1E,0C
+$0A9F:           .BYT 22,24,27,5C,29,FF,0A,7F
+$0AA7:           .BYT 51,45,54,55,4F,5E,37,39
+$0AAF:           .BYT 57,52,59,49,50,FF,38,2F
+$0AB7:           .BYT 41,44,47,4A,4C,FF,34,36
+$0ABF:           .BYT 53,46,48,4B,3A,FF,35,2A
+$0AC7:           .BYT 5A,43,42,4D,3B,0D,31,33
+$0ACF:           .BYT 58,56,4E,2C,3F,FF,32,2B
+$0AD7:           .BYT 01,40,5D,FF,3E,01,30,2D
+$0ADF:           .BYT 00,5B,20,3C,1B,FF,2E,3D
+
+;80-column business keyboard table
+:BUSINESS_KEYS
+$0AE7:           .BYT B2,B5,B8,AD,38,0C,FF,FF
+$0AEF:           .BYT B1,B4,B7,30,37,5E,FF,39
+$0AF7:           .BYT 1B,53,46,48,5D,4B,BB,35
+$0AFF:           .BYT 41,44,47,4A,0D,4C,40,36
+$0B07:           .BYT 09,57,52,59,5C,49,50,7F
+$0B0F:           .BYT 51,45,54,55,0A,4F,5B,34
+$0B17:           .BYT 01,43,42,AE,2E,FF,01,33
+$0B1F:           .BYT 5A,56,4E,AC,30,FF,FF,32
+$0B27:           .BYT 00,58,20,4D,1E,FF,AF,31
+$0B2F:           .BYT 5F,B3,B6,B9,FF,BA,FF,FF
+
+;Storage locations that are not yet documented
 $0B37:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
 
 ;Start of buffer used by commands 05, 06, and 09
