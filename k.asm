@@ -84,7 +84,7 @@ $049F: A9 55     LDA #$55
 $04A1: 8D 00 80  STA SCREEN ;start of screen ram
 $04A4: 0A        ASL A
 $04A5: 8D 00 84  STA SCREEN5 ;screen page 5
-$04A8: CD 00 84  CMP SCREEN5 ;check if byte written matches what is read. if not assume 40 columns 
+$04A8: CD 00 84  CMP SCREEN5 ;check if byte written matches what is read. if not assume 40 columns
 ;                             (could fail on converted systems, ie: 8296 converted to 40 col!!!!)
 $04AB: D0 08     BNE L_04B5
 $04AD: 4A        LSR A
@@ -95,7 +95,7 @@ $04B3: 06 09     ASL X_WIDTH ;X_WIDTH = 80 characters
 :L_04B5
 $04B5: A9 1A     LDA #$1A
 $04B7: 20 E8 06  JSR L_06E8
-$04BA: 20 D4 08  JSR L_08D4
+$04BA: 20 D4 08  JSR CMD_06   ;Fill buffer at $0B3F with zeroes
 $04BD: AD 22 E8  LDA PIA2IOUT ;PIA#2 IEEE Output
 $04C0: AD 40 E8  LDA VIAPB ;VIA PortB
 $04C3: 29 FB     AND #$FB
@@ -301,7 +301,7 @@ $0648: 68        PLA        ;pull the key from stack
 :L_0649
 $0649: 58        CLI        ;enable interrupts
 $064A: C9 FF     CMP #$FF   ;check for FF (no key?)
-$064C: F0 E0     BEQ L_062E 
+$064C: F0 E0     BEQ L_062E
 $064E: 60        RTS
 
 ;START OF INTERRUPT HANDLER
@@ -424,7 +424,7 @@ $0722:           .BYT 84,07    ;CMD_02 @ $0784 (Store #$7F in $13)
 $0724:           .BYT 89,07    ;CMD_03 @ $0789 (Do nothing)
 $0726:           .BYT C9,08    ;CMD_04 @ $08C9 (Works on buffer at $0B3F)
 $0728:           .BYT CC,08    ;CMD_05 @ $08CC (Works on buffer at $0B3F)
-$072A:           .BYT D4,08    ;CMD_06 @ $08D4 (Clear the buffer (fill with 00's) Works on buffer at $0B3F)
+$072A:           .BYT D4,08    ;CMD_06 @ $08D4 (Fill buffer at $0B3F with zeroes)
 $072C:           .BYT 5E,07    ;CMD_07 @ $075E (Ring bell)
 $072E:           .BYT DD,07    ;CMD_08 @ $07DD
 $0730:           .BYT DF,08    ;CMD_09 @ $08DF (Works on buffer at $0B3F)
@@ -755,6 +755,7 @@ $08D0: 9D 3F 0B  STA $0B3F,X
 $08D3: 60        RTS
 
 ;START OF COMMAND 06
+;Fill buffer at $0B3F with zeroes
 :CMD_06
 :L_08D4
 $08D4: A2 4F     LDX #$4F  ; 80 characters-1
