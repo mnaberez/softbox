@@ -460,8 +460,8 @@ $074E:           .BYT 63,07    ;CMD_18 @ $0763 (Go to lowercase mode)
 $0750:           .BYT 4F,08    ;CMD_19 @ $084F (Store #$FF in $0C)
 $0752:           .BYT 1F,08    ;CMD_1A @ $081F (Clear screen)
 $0754:           .BYT B3,09    ;CMD_1B @ $09B3 (Store #$02 in $0B)
-$0756:           .BYT EE,08    ;CMD_1C @ $08EE (insert a space on current line)
-$0758:           .BYT 06,09    ;CMD_1D @ $0906 (delete character at cursor)
+$0756:           .BYT EE,08    ;CMD_1C @ $08EE (Insert a space on current line)
+$0758:           .BYT 06,09    ;CMD_1D @ $0906 (Delete character at cursor)
 $075A:           .BYT 18,08    ;CMD_1E @ $0818 (Home cursor)
 $075C:           .BYT 89,07    ;CMD_1F @ $0789 (Do nothing)
 
@@ -709,7 +709,7 @@ $0876: A5 02     LDA SCNPOSL
 $0878: 65 09     ADC X_WIDTH
 $087A: 85 02     STA SCNPOSL
 $087C: 90 02     BCC L_0880
-$087E: E6 03     INC $03
+$087E: E6 03     INC SCNPOSH
 :L_0880
 $0880: A9 20     LDA #$20
 $0882: A0 00     LDY #$00
@@ -730,7 +730,7 @@ $0890: 85 02     STA SCNPOSL
 $0892: A5 09     LDA X_WIDTH
 $0894: 85 0D     STA $0D
 $0896: A9 80     LDA #$80
-$0898: 85 03     STA $03
+$0898: 85 03     STA SCNPOSH
 $089A: 85 0E     STA $0E
 $089C: A2 18     LDX #$18
 :L_089E
@@ -747,7 +747,7 @@ $08AD: 18        CLC
 $08AE: 65 09     ADC X_WIDTH
 $08B0: 85 0D     STA $0D
 $08B2: A5 0E     LDA $0E
-$08B4: 85 03     STA $03
+$08B4: 85 03     STA SCNPOSH
 $08B6: 69 00     ADC #$00
 $08B8: 85 0E     STA $0E
 $08BA: CA        DEX
@@ -798,11 +798,12 @@ $08EB: 86 04     STX CURSOR_X
 :L_08ED
 $08ED: 60        RTS
 
-;START OF COMMAND 1C  - Insert space at current cursor position
+;START OF COMMAND 1C
+;Insert space at current cursor position
 :CMD_1C
 $08EE: 20 88 09  JSR L_0988
 $08F1: A4 09     LDY X_WIDTH       ;number of characters on line
-$08F3: 88        DEY               
+$08F3: 88        DEY
 :L_08F4
 $08F4: C4 04     CPY CURSOR_X
 $08F6: F0 09     BEQ L_0901
@@ -817,7 +818,8 @@ $0901: A9 20     LDA #$20           ; SPACE
 $0903: 91 02     STA (SCNPOSL),Y    ; Write it to current character position
 $0905: 60        RTS
 
-;START OF COMMAND 1D - delete character
+;START OF COMMAND 1D
+;Delete a character
 :CMD_1D
 $0906: 20 88 09  JSR L_0988
 $0909: A4 04     LDY CURSOR_X
@@ -845,7 +847,7 @@ $0925: A5 02     LDA $02
 $0927: 18        CLC
 $0928: 65 09     ADC X_WIDTH
 $092A: 85 0D     STA $0D
-$092C: A5 03     LDA $03
+$092C: A5 03     LDA SCNPOSH
 $092E: 69 00     ADC #$00
 $0930: 85 0E     STA $0E
 $0932: A9 18     LDA #$18
@@ -870,10 +872,10 @@ $094D: A9 00     LDA #$00
 $094F: 85 04     STA CURSOR_X
 :L_0951
 $0951: A5 0D     LDA $0D
-$0953: C5 02     CMP $02
+$0953: C5 02     CMP SCNPOSL
 $0955: D0 06     BNE L_095D
 $0957: A5 0E     LDA $0E
-$0959: C5 03     CMP $03
+$0959: C5 03     CMP SCNPOSH
 $095B: F0 1F     BEQ L_097C
 :L_095D
 $095D: A5 0D     LDA $0D
@@ -897,7 +899,7 @@ $0979: 4C 51 09  JMP L_0951
 $097C: A0 00     LDY #$00
 $097E: A9 20     LDA #$20
 :L_0980
-$0980: 91 02     STA ($02),Y
+$0980: 91 02     STA (SCNPOSL),Y
 $0982: C8        INY
 $0983: C4 09     CPY X_WIDTH
 $0985: D0 F9     BNE L_0980
@@ -906,29 +908,29 @@ $0987: 60        RTS
 :L_0988
 $0988: 48        PHA
 $0989: A9 00     LDA #$00
-$098B: 85 03     STA $03
+$098B: 85 03     STA SCNPOSH
 $098D: A5 05     LDA CURSOR_Y
-$098F: 85 02     STA $02
+$098F: 85 02     STA SCNPOSL
 $0991: 0A        ASL A
 $0992: 0A        ASL A
-$0993: 65 02     ADC $02
+$0993: 65 02     ADC SCNPOSL
 $0995: 0A        ASL A
 $0996: 0A        ASL A
-$0997: 26 03     ROL $03
+$0997: 26 03     ROL SCNPOSH
 $0999: 0A        ASL A
-$099A: 26 03     ROL $03
-$099C: 85 02     STA $02
+$099A: 26 03     ROL SCNPOSH
+$099C: 85 02     STA SCNPOSL
 $099E: A5 09     LDA X_WIDTH
 $09A0: C9 50     CMP #$50
 $09A2: D0 04     BNE L_09A8
-$09A4: 06 02     ASL $02
-$09A6: 26 03     ROL $03
+$09A4: 06 02     ASL SCNPOSL
+$09A6: 26 03     ROL SCNPOSH
 :L_09A8
 $09A8: 18        CLC
 $09A9: A4 04     LDY CURSOR_X
-$09AB: A5 03     LDA $03
+$09AB: A5 03     LDA SCNPOSH
 $09AD: 69 80     ADC #$80
-$09AF: 85 03     STA $03
+$09AF: 85 03     STA SCNPOSH
 $09B1: 68        PLA
 $09B2: 60        RTS
 
