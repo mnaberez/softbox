@@ -1,33 +1,33 @@
 ; Auto Disassembly of: k
 ;----- Equates
 ;
-INTVEC = $0090   ;hardware interrupt vector LO
+INTVEC   = $0090   ;hardware interrupt vector LO
 INTVEC+1 = $0091   ;hardware interupt vector HI
-KEYBUF = $026F   ;Keyboard Input Buffer
+KEYBUF   = $026F   ;Keyboard Input Buffer
 KEYBUF+1 = $0270   ;Keyboard Input Buffer
-SCREEN0 = $8000   ;screen page 0 (start of screen ram)
-SCREEN1 = $8100   ;screen page 1
-SCREEN2 = $8200   ;screen page 2
-SCREEN3 = $8300   ;screen page 3
-SCREEN4 = $8400   ;screen page 4
-SCREEN5 = $8500   ;screen page 5
-SCREEN6 = $8600   ;screen page 6
-SCREEN7 = $8700   ;screen page 7
-PIA1ROW = $E810   ;PIA#1 Keyboard Row Select
-PIA1COL = $E812   ;PIA#1 Keyboard Columns Read
+SCREEN0  = $8000   ;screen page 0 (start of screen ram)
+SCREEN1  = $8100   ;screen page 1
+SCREEN2  = $8200   ;screen page 2
+SCREEN3  = $8300   ;screen page 3
+SCREEN4  = $8400   ;screen page 4
+SCREEN5  = $8500   ;screen page 5
+SCREEN6  = $8600   ;screen page 6
+SCREEN7  = $8700   ;screen page 7
+PIA1ROW  = $E810   ;PIA#1 Keyboard Row Select
+PIA1COL  = $E812   ;PIA#1 Keyboard Columns Read
 PIA2IEEE = $E820   ;PIA#2 IEEE Input
 PIA2NDAC = $E821   ;PIA#2 IEEE NDAC control
 PIA2IOUT = $E822   ;PIA#2 IEEE Output
-PIA2DAV = $E823   ;PIA#2 IEEE DAV control
-VIAPB = $E840   ;VIA PortB
-VIA0C = $E84C   ;VIA Register C
-CHROUT = $FFD2   ;Kernal Print a byte
+PIA2DAV  = $E823   ;PIA#2 IEEE DAV control
+VIAPB    = $E840   ;VIA PortB
+VIA0C    = $E84C   ;VIA Register C
+CHROUT   = $FFD2   ;Kernal Print a byte
 ;
-SCNPOSL  = $02  ;Pointer to current screen LO byte
-SCNPOSH  = $03  ;Pointer to current screen HI byte
-CURSOR_X = $04  ;Current X position: 0-79
-CURSOR_Y = $05  ;Current Y position: 0-24
-X_WIDTH  = $09  ;Width of X in characters (40 or 80)
+SCNPOSL  = $02     ;Pointer to current screen -LO byte
+SCNPOSH  = $03     ;Pointer to current screen -HI byte
+CURSOR_X = $04     ;Current X position: 0-79
+CURSOR_Y = $05     ;Current Y position: 0-24
+X_WIDTH  = $09     ;Width of X in characters (40 or 80)
 ;
 *=0400
 
@@ -304,7 +304,7 @@ $0633: F0 14     BEQ L_0649
 $0635: AD 6F 02  LDA KEYBUF ;Keyboard Input Buffer
 $0638: 48        PHA        ;push key onto stack
 $0639: A2 00     LDX #$00   ;loop counter = 0
-$063B: C6 08     DEC $08    ;number if keys in buffer?
+$063B: C6 08     DEC $08    ;number of keys in buffer?
 :L_063D
 $063D: BD 70 02  LDA KEYBUF+1,X ;Keyboard Input Buffer
 $0640: 9D 6F 02  STA KEYBUF,X ;Keyboard Input Buffer
