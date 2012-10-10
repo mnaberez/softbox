@@ -450,7 +450,7 @@ $073A:           .BYT 54,08    ;CMD_0E @ $0854 (Store #$01 in $0A)
 $073C:           .BYT 59,08    ;CMD_0F @ $0859 (Store #$00 in $0A)
 $073E:           .BYT 4A,08    ;CMD_10 @ $084A (Store #$00 in $0C)
 $0740:           .BYT 3B,09    ;CMD_11 @ $093B (Insert a blank line)
-$0742:           .BYT 1E,09    ;CMD_12 @ $091E
+$0742:           .BYT 1E,09    ;CMD_12 @ $091E (Scroll up one line)
 $0744:           .BYT 5E,08    ;CMD_13 @ $085E (Clear to end of line)
 $0746:           .BYT 6B,08    ;CMD_14 @ $086B
 $0748:           .BYT D1,07    ;CMD_15 @ $07D1 (Store #$0C in VIA0C)
@@ -840,6 +840,12 @@ $091D: 60        RTS
 
 ;START OF COMMAND 12
 :CMD_12
+;Scroll up one line
+;
+;The screen is shifted upward so that each line Y+1 is copied into Y.  Screen
+;contents are preserved except for the bottommost line, which is erased
+;(filled with spaces).  The current cursor position will not be changed.
+;
 $091E: A9 00     LDA #$00
 $0920: 85 04     STA CURSOR_X
 $0922: 20 88 09  JSR L_0988
@@ -854,7 +860,7 @@ $0932: A9 18     LDA #$18
 $0934: 38        SEC
 $0935: E5 05     SBC CURSOR_Y
 $0937: AA        TAX
-$0938: 4C 9E 08  JMP L_089E
+$0938: 4C 9E 08  JMP L_089E        ;Jump into SCROLL_UP, bypassing some init
 
 ;START OF COMMAND 11
 ;Insert a blank line
