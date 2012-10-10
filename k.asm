@@ -449,7 +449,7 @@ $0738:           .BYT 45,08    ;CMD_0D @ $0845 (Carriage return)
 $073A:           .BYT 54,08    ;CMD_0E @ $0854 (Store #$01 in $0A)
 $073C:           .BYT 59,08    ;CMD_0F @ $0859 (Store #$00 in $0A)
 $073E:           .BYT 4A,08    ;CMD_10 @ $084A (Store #$00 in $0C)
-$0740:           .BYT 3B,09    ;CMD_11 @ $093B
+$0740:           .BYT 3B,09    ;CMD_11 @ $093B (Insert a blank line)
 $0742:           .BYT 1E,09    ;CMD_12 @ $091E
 $0744:           .BYT 5E,08    ;CMD_13 @ $085E (Clear to end of line)
 $0746:           .BYT 6B,08    ;CMD_14 @ $086B
@@ -468,29 +468,29 @@ $075C:           .BYT 89,07    ;CMD_1F @ $0789 (Do nothing)
 ;START OF COMMAND 07
 ;Ring bell
 :CMD_07
-$075E: A9 07     LDA #$07   ; CHR(7)=BELL
+$075E: A9 07     LDA #$07   ;CHR$(7) = Bell
 $0760: 4C D2 FF  JMP CHROUT ;Kernal Print a byte
 
 ;START OF COMMAND 18
 ;Go to lowercase mode
 :CMD_18
-$0763: AD 4C E8  LDA VIA0C ;VIA Register C
+$0763: AD 4C E8  LDA VIA0C  ;VIA Register C
 $0766: 48        PHA
-$0767: A9 0E     LDA #$0E   ;CHR(14)=Switch to Lowercase mode
+$0767: A9 0E     LDA #$0E   ;CHR$(14) = Switch to lowercase mode
 $0769: 20 D2 FF  JSR CHROUT ;Kernal Print a byte
 $076C: 68        PLA
-$076D: 8D 4C E8  STA VIA0C ;VIA Register C
+$076D: 8D 4C E8  STA VIA0C  ;VIA Register C
 $0770: 60        RTS
 
 ;START OF COMMAND 17
 ;Go to uppercase mode
 ;CMD_17
-$0771: AD 4C E8  LDA VIA0C ;VIA Register C
+$0771: AD 4C E8  LDA VIA0C  ;VIA Register C
 $0774: 48        PHA
-$0775: A9 8E     LDA #$8E  ;CHR(142)=Switch to Uppercase mode
+$0775: A9 8E     LDA #$8E   ;CHR$(142) = Switch to uppercase mode
 $0777: 20 D2 FF  JSR CHROUT ;Kernal Print a byte
 $077A: 68        PLA
-$077B: 8D 4C E8  STA VIA0C ;VIA Register C
+$077B: 8D 4C E8  STA VIA0C  ;VIA Register C
 $077E: 60        RTS
 
 ;START OF COMMAND 01
@@ -857,6 +857,12 @@ $0937: AA        TAX
 $0938: 4C 9E 08  JMP L_089E
 
 ;START OF COMMAND 11
+;Insert a blank line
+;
+;The screen is shifted downward so that each line Y is copied into Y+1.
+;The line at the current position will be erased (filled with spaces).
+;The current cursor position will not be changed.
+;
 :CMD_11
 $093B: A9 C0     LDA #$C0
 $093D: A0 83     LDY #$83
