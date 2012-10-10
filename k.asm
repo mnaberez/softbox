@@ -78,19 +78,31 @@ $0497: 85 06     STA $06
 $0499: 85 0B     STA $0B
 
 ;Detect 40/80 column screen and store in X_WIDTH
-$049B: A9 28     LDA #$28   ;X_WIDTH = 40 characters
-$049D: 85 09     STA X_WIDTH
+;
+;This routine checks for an 80 column screen by writing to screen RAM
+;that should not be present on a 40 column machine.  If the computer
+;has been modified so that it has a 40 column screen but the extra
+;screen RAM is present, this routine will think the machine has 80 columns.
+;
+;X_WIDTH is also used in the keyboard scanning routine to select between
+;business keyboard (80 columns) or graphics keyboard (40 columns).  This
+;means the 2001B machines (40-column, business keyboard) are not supported.
+;
+;Question: assuming good screen RAM, under what circumstances
+;          would the check at $04AE fail?
+;
+$049B: A9 28     LDA #$28
+$049D: 85 09     STA X_WIDTH   ;X_WIDTH = 40 characters
 $049F: A9 55     LDA #$55
-$04A1: 8D 00 80  STA SCREEN ;start of screen ram
+$04A1: 8D 00 80  STA SCREEN    ;Start of screen RAM for both 40 and 80 cols
 $04A4: 0A        ASL A
-$04A5: 8D 00 84  STA SCREEN5 ;screen page 5
-$04A8: CD 00 84  CMP SCREEN5 ;check if byte written matches what is read. if not assume 40 columns
-;                             (could fail on converted systems, ie: 8296 converted to 40 col!!!!)
-$04AB: D0 08     BNE L_04B5
+$04A5: 8D 00 84  STA SCREEN5   ;Store test byte in first page of 80 col RAM
+$04A8: CD 00 84  CMP SCREEN5   ;Test byte for 80 column RAM successful?
+$04AB: D0 08     BNE L_04B5    ;  No: we're done, X_WIDTH = 40.
 $04AD: 4A        LSR A
-$04AE: CD 00 80  CMP SCREEN ;start of screen ram
-$04B1: D0 02     BNE L_04B5
-$04B3: 06 09     ASL X_WIDTH ;X_WIDTH = 80 characters
+$04AE: CD 00 80  CMP SCREEN    ;Test byte for common screen RAM successful?
+$04B1: D0 02     BNE L_04B5    ;  No:  we're done, X_WIDTH = 40.
+$04B3: 06 09     ASL X_WIDTH   ;  Yes: X_WIDTH = 80 characters
 
 :L_04B5
 $04B5: A9 1A     LDA #$1A
