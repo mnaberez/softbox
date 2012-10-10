@@ -430,7 +430,7 @@ $072E:           .BYT DD,07    ;CMD_08 @ $07DD (Cursor left)
 $0730:           .BYT DF,08    ;CMD_09 @ $08DF (Works on buffer at $0B3F)
 $0732:           .BYT 0B,08    ;CMD_0A @ $080B (Line feed)
 $0734:           .BYT ED,07    ;CMD_0B @ $07ED (Cursor up)
-$0736:           .BYT FF,07    ;CMD_0C @ $07FF
+$0736:           .BYT FF,07    ;CMD_0C @ $07FF (Cursor right)
 $0738:           .BYT 45,08    ;CMD_0D @ $0845 (Carriage return)
 $073A:           .BYT 54,08    ;CMD_0E @ $0854 (Store #$01 in $0A)
 $073C:           .BYT 59,08    ;CMD_0F @ $0859 (Store #$00 in $0A)
@@ -587,21 +587,22 @@ $07FA: 20 88 09  JSR L_0988
 $07FD: 91 02     STA ($02),Y
 
 ;START OF COMMAND 0C
+;Cursor right
 :CMD_0C
-$07FF: E6 04     INC CURSOR_X
+$07FF: E6 04     INC CURSOR_X   ;X=X+1
 $0801: A6 04     LDX CURSOR_X
-$0803: E4 09     CPX X_WIDTH
-$0805: D0 10     BNE L_0817
-$0807: A9 00     LDA #$00
-$0809: 85 04     STA CURSOR_X
+$0803: E4 09     CPX X_WIDTH    ;X > max X?
+$0805: D0 10     BNE L_0817     ;  No:  Done, no need to scroll up.
+$0807: A9 00     LDA #$00       ;  Yes: Set X=0 and fall through into
+$0809: 85 04     STA CURSOR_X   ;       CMD_0A below to scroll up one line.
 
 ;START OF COMMAND 0A
 ;Line feed
 :CMD_0A
 $080B: A4 05     LDY CURSOR_Y
 $080D: C0 18     CPY #$18       ;Are we on line 24?
-$080F: D0 03     BNE L_0814     ; - No, scroll is not needed
-$0811: 4C 8E 08  JMP SCROLL_UP  ; - Yes, scroll the screen up first
+$080F: D0 03     BNE L_0814     ;  No:  Done, scroll is not needed
+$0811: 4C 8E 08  JMP SCROLL_UP  ;  Yes: Scroll the screen up first
 :L_0814
 $0814: E6 05     INC CURSOR_Y   ;Increment Y position
 $0816: 60        RTS
