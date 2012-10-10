@@ -1052,31 +1052,31 @@ $0A93: 60        RTS
 $0A94: C9 00     CMP #$00
 $0A96: 60        RTS
 
-;40-column graphics keyboard table
-:GRAPHICS_KEYS
-$0A97:           .BYT 21,23,25,26,28,5F,1E,0C
-$0A9F:           .BYT 22,24,27,5C,29,FF,0A,7F
-$0AA7:           .BYT 51,45,54,55,4F,5E,37,39
-$0AAF:           .BYT 57,52,59,49,50,FF,38,2F
-$0AB7:           .BYT 41,44,47,4A,4C,FF,34,36
-$0ABF:           .BYT 53,46,48,4B,3A,FF,35,2A
-$0AC7:           .BYT 5A,43,42,4D,3B,0D,31,33
-$0ACF:           .BYT 58,56,4E,2C,3F,FF,32,2B
-$0AD7:           .BYT 01,40,5D,FF,3E,01,30,2D
-$0ADF:           .BYT 00,5B,20,3C,1B,FF,2E,3D
+;40-column graphics keyboard table               ----- ----- ----- ----- ----- ----- ----- -----    Notes
+:GRAPHICS_KEYS                                 
+$0A97:           .BYT 21,23,25,26,28,5F,1E,0C  ; !     #     %     &     (     BARRW HOME  RIGHT    BARRW= Back Arrow
+$0A9F:           .BYT 22,24,27,5C,29,FF,0A,7F  ; "     $     '     \     )     NONE  CSRDN DEL      NONE = No key
+$0AA7:           .BYT 51,45,54,55,4F,5E,37,39  ; Q     E     T     U     O     ^     7     9
+$0AAF:           .BYT 57,52,59,49,50,FF,38,2F  ; W     R     Y     I     P     NONE  8     /
+$0AB7:           .BYT 41,44,47,4A,4C,FF,34,36  ; A     D     G     J     L     NONE  4     6
+$0ABF:           .BYT 53,46,48,4B,3A,FF,35,2A  ; S     F     H     K     :     NONE  5     *
+$0AC7:           .BYT 5A,43,42,4D,3B,0D,31,33  ; Z     C     B     M     ;     RETRN 1     3
+$0ACF:           .BYT 58,56,4E,2C,3F,FF,32,2B  ; X     V     N     ,     ?     NONE  2     +
+$0AD7:           .BYT 01,40,5D,FF,3E,01,30,2D  ; SHIFT @     ]     NONE  >     SHIFT 0     -
+$0ADF:           .BYT 00,5B,20,3C,1B,FF,2E,3D  ; RVS   [     SPACE >     STOP  NONE  .     =
 
-;80-column business keyboard table
+;80-column business keyboard table               ----- ----- ----- ----- ----- ----- ----- -----
 :BUSINESS_KEYS
-$0AE7:           .BYT B2,B5,B8,AD,38,0C,FF,FF
-$0AEF:           .BYT B1,B4,B7,30,37,5E,FF,39
-$0AF7:           .BYT 1B,53,46,48,5D,4B,BB,35
-$0AFF:           .BYT 41,44,47,4A,0D,4C,40,36
-$0B07:           .BYT 09,57,52,59,5C,49,50,7F
-$0B0F:           .BYT 51,45,54,55,0A,4F,5B,34
-$0B17:           .BYT 01,43,42,AE,2E,FF,01,33
-$0B1F:           .BYT 5A,56,4E,AC,30,FF,FF,32
-$0B27:           .BYT 00,58,20,4D,1E,FF,AF,31
-$0B2F:           .BYT 5F,B3,B6,B9,FF,BA,FF,FF
+$0AE7:           .BYT B2,B5,B8,AD,38,0C,FF,FF  ; ^2    ^5    ^8    -     8     CSRRT NONE  NONE     ^ = Extra Bits Set 
+$0AEF:           .BYT B1,B4,B7,30,37,5E,FF,39  ; ^1    ^4    ^7    0     7     UARRW NONE  9        UARROW = Up Arrow
+$0AF7:           .BYT 1B,53,46,48,5D,4B,BB,35  ; ESC   S     F     H     ]     K     ;     5
+$0AFF:           .BYT 41,44,47,4A,0D,4C,40,36  ; A     D     G     J     RTRN  L     @     6
+$0B07:           .BYT 09,57,52,59,5C,49,50,7F  ; TAB   W     R     Y     \     I     P     DEL
+$0B0F:           .BYT 51,45,54,55,0A,4F,5B,34  ; Q     E     T     U     CSRDN O     [     4
+$0B17:           .BYT 01,43,42,AE,2E,FF,01,33  ; SHIFT C     B     ^.    .     NONE  SHIFT 3
+$0B1F:           .BYT 5A,56,4E,AC,30,FF,FF,32  ; Z     V     N     ,     0     NONE  NONE  2
+$0B27:           .BYT 00,58,20,4D,1E,FF,AF,31  ; RVS   X     SPACE M     HOME  NONE  ^/    1 
+$0B2F:           .BYT 5F,B3,B6,B9,FF,BA,FF,FF  ; BARRW ^3    ^6    ^9    STOP  ^:    NONE  NONE
 
 ;Storage locations that are not yet documented
 $0B37:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
