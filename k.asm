@@ -27,6 +27,7 @@ SCNPOSL  = $02  ;Pointer to current screen LO byte
 SCNPOSH  = $03  ;Pointer to current screen HI byte
 CURSOR_X = $04  ;Current X position: 0-79
 CURSOR_Y = $05  ;Current Y position: 0-24
+KEYCOUNT = $08  ;Number of keys in the buffer at KEYBUF
 X_WIDTH  = $09  ;Width of X in characters (40 or 80)
 ;
 *=0400
@@ -56,9 +57,9 @@ $0467: A9 4F     LDA #$4F
 $0469: 85 90     STA $<INTVEC
 $046B: A9 06     LDA #$06
 $046D: 85 91     STA $<INTVEC+1  ;Install interrupt handler
-$046F: A9 00     LDA #$00        ;Initialize zero page locations
-$0471: 85 08     STA $08
-$0473: A9 00     LDA #$00
+$046F: A9 00     LDA #$00
+$0471: 85 08     STA KEYCOUNT    ;Initialize key counter (no keys hit)
+$0473: A9 00     LDA #$00        ;Initialize other zero page locations
 $0475: 85 14     STA $14
 $0477: 85 15     STA $15
 $0479: 85 16     STA $16
@@ -146,7 +147,7 @@ $0505: 8A        TXA
 $0506: 6A        ROR A
 $0507: A9 7F     LDA #$7F
 $0509: B0 06     BCS L_0511
-$050B: A4 08     LDY $08
+$050B: A4 08     LDY KEYCOUNT
 $050D: D0 02     BNE L_0511
 $050F: A9 BF     LDA #$BF
 :L_0511
@@ -298,23 +299,23 @@ $062B: B0 FA     BCS L_0627
 $062D: 60        RTS
 :L_062E
 $062E: A9 FF     LDA #$FF
-$0630: 78        SEI        ;Disable interrupts
-$0631: A6 08     LDX $08
+$0630: 78        SEI             ;Disable interrupts
+$0631: A6 08     LDX KEYCOUNT
 $0633: F0 14     BEQ L_0649
-$0635: AD 6F 02  LDA KEYBUF ;Keyboard Input Buffer
-$0638: 48        PHA        ;push key onto stack
-$0639: A2 00     LDX #$00   ;loop counter = 0
-$063B: C6 08     DEC $08    ;number if keys in buffer?
+$0635: AD 6F 02  LDA KEYBUF      ;Keyboard Input Buffer
+$0638: 48        PHA             ;push key onto stack
+$0639: A2 00     LDX #$00        ;loop counter = 0
+$063B: C6 08     DEC KEYCOUNT
 :L_063D
-$063D: BD 70 02  LDA KEYBUF+1,X ;Keyboard Input Buffer
-$0640: 9D 6F 02  STA KEYBUF,X ;Keyboard Input Buffer
+$063D: BD 70 02  LDA KEYBUF+1,X  ;Keyboard Input Buffer
+$0640: 9D 6F 02  STA KEYBUF,X    ;Keyboard Input Buffer
 $0643: E8        INX
-$0644: E4 08     CPX $08
-$0646: D0 F5     BNE L_063D ;loop back for more
-$0648: 68        PLA        ;pull the key from stack
+$0644: E4 08     CPX KEYCOUNT
+$0646: D0 F5     BNE L_063D      ;loop back for more
+$0648: 68        PLA             ;pull the key from stack
 :L_0649
-$0649: 58        CLI        ;enable interrupts
-$064A: C9 FF     CMP #$FF   ;check for FF (no key?)
+$0649: 58        CLI             ;enable interrupts
+$064A: C9 FF     CMP #$FF        ;check for FF (no key?)
 $064C: F0 E0     BEQ L_062E
 $064E: 60        RTS
 
@@ -388,11 +389,11 @@ $06D0: 85 01     STA $01
 :L_06D2
 $06D2: 20 D4 09  JSR L_09D4
 $06D5: F0 0B     BEQ L_06E2
-$06D7: A6 08     LDX $08
+$06D7: A6 08     LDX KEYCOUNT
 $06D9: E0 50     CPX #$50
 $06DB: F0 05     BEQ L_06E2
 $06DD: 9D 6F 02  STA KEYBUF,X ;Keyboard Input Buffer
-$06E0: E6 08     INC $08
+$06E0: E6 08     INC KEYCOUNT
 :L_06E2
 $06E2: 68        PLA
 $06E3: A8        TAY
