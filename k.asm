@@ -94,7 +94,7 @@ $0495: A9 00     LDA #$00
 $0497: 85 06     STA $06
 $0499: 85 0B     STA $0B
 
-INIT_4080:
+:INIT_4080
 ;Detect 40/80 column screen and store in X_WIDTH
 ;
 ;This routine checks for an 80 column screen by writing to screen RAM
