@@ -32,6 +32,8 @@ X_WIDTH  = $09     ;Width of X in characters (40 or 80)
 REVERSE  = $0A     ;Reverse video flag (reverse on = 1)
 CMDVECTL = $0D     ;Command dispatch Vector - LO
 CMDVECTH = $0E     ;Command dispatch Vector - HI
+XFER_LO  = $11     ;Memory transfer byte counter - LO
+XFER_HI  = $12     ;Memory transfer byte counter - HI
 ;
 *=0400
 
@@ -212,9 +214,9 @@ $0558: 4C E7 04  JMP MAIN_LOOP
 ;Transfer bytes from PET memory to the SoftBox
 :L_055B
 $055B: 20 CF 05  JSR IEEE_GET_BYTE
-$055E: 85 11     STA $11
+$055E: 85 11     STA XFER_LO
 $0560: 20 CF 05  JSR IEEE_GET_BYTE
-$0563: 85 12     STA $12
+$0563: 85 12     STA XFER_HI
 $0565: 20 CF 05  JSR IEEE_GET_BYTE
 $0568: 85 0D     STA CMDVECTL
 $056A: 20 CF 05  JSR IEEE_GET_BYTE
@@ -227,14 +229,14 @@ $0576: C8        INY
 $0577: D0 02     BNE L_057B
 $0579: E6 0E     INC CMDVECTH
 :L_057B
-$057B: A5 11     LDA $11
+$057B: A5 11     LDA XFER_LO
 $057D: 38        SEC
 $057E: E9 01     SBC #$01
-$0580: 85 11     STA $11
-$0582: A5 12     LDA $12
+$0580: 85 11     STA XFER_LO
+$0582: A5 12     LDA XFER_HI
 $0584: E9 00     SBC #$00
-$0586: 85 12     STA $12
-$0588: 05 11     ORA $11
+$0586: 85 12     STA XFER_HI
+$0588: 05 11     ORA XFER_LO
 $058A: D0 E5     BNE L_0571
 $058C: 4C E7 04  JMP MAIN_LOOP
 
@@ -242,9 +244,9 @@ $058C: 4C E7 04  JMP MAIN_LOOP
 ;Transfer from the SoftBox to PET memory
 :L_058F
 $058F: 20 CF 05  JSR IEEE_GET_BYTE
-$0592: 85 11     STA $11
+$0592: 85 11     STA XFER_LO
 $0594: 20 CF 05  JSR IEEE_GET_BYTE
-$0597: 85 12     STA $12
+$0597: 85 12     STA XFER_HI
 $0599: 20 CF 05  JSR IEEE_GET_BYTE
 $059C: 85 0D     STA CMDVECTL
 $059E: 20 CF 05  JSR IEEE_GET_BYTE
@@ -260,14 +262,14 @@ $05AD: C8        INY
 $05AE: D0 02     BNE L_05B2
 $05B0: E6 0E     INC CMDVECTH
 :L_05B2
-$05B2: A5 11     LDA $11
+$05B2: A5 11     LDA XFER_LO
 $05B4: 38        SEC
 $05B5: E9 01     SBC #$01
-$05B7: 85 11     STA $11
-$05B9: A5 12     LDA $12
+$05B7: 85 11     STA XFER_LO
+$05B9: A5 12     LDA XFER_HI
 $05BB: E9 00     SBC #$00
-$05BD: 85 12     STA $12
-$05BF: 05 11     ORA $11
+$05BD: 85 12     STA XFER_HI
+$05BF: 05 11     ORAXFER_LO
 $05C1: D0 E5     BNE L_05A8
 $05C3: 4C E7 04  JMP MAIN_LOOP
 
