@@ -114,8 +114,8 @@ $04B1: D0 02     BNE L_04B5    ;  No:  we're done, X_WIDTH = 40.
 $04B3: 06 09     ASL X_WIDTH   ;  Yes: X_WIDTH = 80 characters
 
 :L_04B5
-$04B5: A9 1A     LDA #$1A
-$04B7: 20 E8 06  JSR L_06E8
+$04B5: A9 1A     LDA #$1A      ;Load #$1A = CMD_1A Clear Screen
+$04B7: 20 E8 06  JSR L_06E8    ;Call into terminal to execute clear screen
 $04BA: 20 D4 08  JSR CMD_06    ;Fill BUFFER with zeroes
 $04BD: AD 22 E8  LDA PIA2IOUT  ;PIA#2 IEEE Output
 $04C0: AD 40 E8  LDA VIAPB     ;VIA PortB
