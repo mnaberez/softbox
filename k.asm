@@ -1,48 +1,51 @@
 ; Auto Disassembly of: k
 ;----- Equates
 ;
-INTVEC    = $0090   ;hardware interrupt vector LO
-INTVEC+1  = $0091   ;hardware interupt vector HI
-KEYBUF    = $026F   ;Keyboard Input Buffer
-KEYBUF+1  = $0270   ;Keyboard Input Buffer
-SCREEN0   = $8000   ;screen page 0 (start of screen ram)
-SCREEN1   = $8100   ;screen page 1
-SCREEN2   = $8200   ;screen page 2
-SCREEN3   = $8300   ;screen page 3
-SCREEN4   = $8400   ;screen page 4
-SCREEN5   = $8500   ;screen page 5
-SCREEN6   = $8600   ;screen page 6
-SCREEN7   = $8700   ;screen page 7
-PIA1ROW   = $E810   ;PIA#1 Keyboard Row Select
-PIA1COL   = $E812   ;PIA#1 Keyboard Columns Read
-PIA2IEEE  = $E820   ;PIA#2 IEEE Input
-PIA2NDAC  = $E821   ;PIA#2 IEEE NDAC control
-PIA2IOUT  = $E822   ;PIA#2 IEEE Output
-PIA2DAV   = $E823   ;PIA#2 IEEE DAV control
-VIAPB     = $E840   ;VIA PortB
-VIA_PCR   = $E84C   ;VIA Peripheral Control Register (PCR)
-CHROUT    = $FFD2   ;Kernal Print a byte
+INTVEC     = $0090   ;hardware interrupt vector LO
+INTVEC+1   = $0091   ;hardware interupt vector HI
+KEYBUF     = $026F   ;Keyboard Input Buffer
+KEYBUF+1   = $0270   ;Keyboard Input Buffer
+SCREEN0    = $8000   ;screen page 0 (start of screen ram)
+SCREEN1    = $8100   ;screen page 1
+SCREEN2    = $8200   ;screen page 2
+SCREEN3    = $8300   ;screen page 3
+SCREEN4    = $8400   ;screen page 4
+SCREEN5    = $8500   ;screen page 5
+SCREEN6    = $8600   ;screen page 6
+SCREEN7    = $8700   ;screen page 7
+PIA1ROW    = $E810   ;PIA#1 Keyboard Row Select
+PIA1COL    = $E812   ;PIA#1 Keyboard Columns Read
+PIA2IEEE   = $E820   ;PIA#2 IEEE Input
+PIA2NDAC   = $E821   ;PIA#2 IEEE NDAC control
+PIA2IOUT   = $E822   ;PIA#2 IEEE Output
+PIA2DAV    = $E823   ;PIA#2 IEEE DAV control
+VIAPB      = $E840   ;VIA PortB
+VIA_PCR    = $E84C   ;VIA Peripheral Control Register (PCR)
+CHROUT     = $FFD2   ;Kernal Print a byte
 ;
-BLINKCNT  = $01     ;Counter used for cursor blink timing
-SCNPOSL   = $02     ;Pointer to current screen -LO
-SCNPOSH   = $03     ;Pointer to current screen -HI
-CURSOR_X  = $04     ;Current X position: 0-79
-CURSOR_Y  = $05     ;Current Y position: 0-24
-; ?????   = $07     ;???????? character under cursor?
-KEYCOUNT  = $08     ;Number of keys in the buffer at KEYBUF
-X_WIDTH   = $09     ;Width of X in characters (40 or 80)
-REVERSE   = $0A     ;Reverse video flag (reverse on = 1)
-TARGET_LO = $0D     ;Target address for mem transfers and indirect jump - LO
-TARGET_HI = $0E     ;Target address for mem transfers and indirect jump - HI
-XFER_LO   = $11     ;Memory transfer byte counter - LO
-XFER_HI   = $12     ;Memory transfer byte counter - HI
-; ?????   = $14     ;????????
-; ?????   = $15     ;????????
-; ?????   = $16     ;????????
-; ?????   = $17     ;????????
-; ?????   = $18     ;????????
-; ?????   = $19     ;????????
-; ?????   = $1A     ;????????
+BLINKCNT   = $01     ;Counter used for cursor blink timing
+SCNPOSL    = $02     ;Pointer to current screen -LO
+SCNPOSH    = $03     ;Pointer to current screen -HI
+CURSOR_X   = $04     ;Current X position: 0-79
+CURSOR_Y   = $05     ;Current Y position: 0-24
+CURSOR_OFF = $06     ;Cursor state: hide cursor if 0, else show cursor
+; ?????    = $07     ;???????? character under cursor?
+KEYCOUNT   = $08     ;Number of keys in the buffer at KEYBUF
+X_WIDTH    = $09     ;Width of X in characters (40 or 80)
+REVERSE    = $0A     ;Reverse video flag (reverse on = 1)
+; ?????    = $0B     ;????????
+CURSOR_TMP = $0C     ;Pending cursor state used with CURSOR_OFF
+TARGET_LO  = $0D     ;Target address for mem transfers and indirect jump - LO
+TARGET_HI  = $0E     ;Target address for mem transfers and indirect jump - HI
+XFER_LO    = $11     ;Memory transfer byte counter - LO
+XFER_HI    = $12     ;Memory transfer byte counter - HI
+; ?????    = $14     ;????????
+; ?????    = $15     ;????????
+; ?????    = $16     ;????????
+; ?????    = $17     ;????????
+; ?????    = $18     ;????????
+; ?????    = $19     ;????????
+; ?????    = $1A     ;????????
 ;
 *=0400
 
@@ -92,7 +95,7 @@ $048E: 20 84 07  JSR CMD_02         ;Command 02 stores #$7F in $13
 $0491: A9 14     LDA #$14
 $0493: 85 01     STA BLINKCNT       ;Initialize cursor blink countdown
 $0495: A9 00     LDA #$00
-$0497: 85 06     STA $06
+$0497: 85 06     STA CURSOR_OFF     ;Cursor state = show the cursor
 $0499: 85 0B     STA $0B
 
 :INIT_4080
@@ -412,8 +415,8 @@ $0686: A9 00     LDA #$00
 $0688: 85 17     STA $17
 :BLINK_CURSOR
 :L_068A
-$068A: A5 06     LDA $06           ;could this be a flag to indicate output mode?
-$068C: D0 11     BNE L_069F        ;bypass blink
+$068A: A5 06     LDA CURSOR_OFF    ;Is the cursor off?
+$068C: D0 11     BNE L_069F        ;  Yes: skip cursor blink
 $068E: C6 01     DEC BLINKCNT      ;Decrement cursor blink countdown
 $0690: D0 0D     BNE L_069F        ;Not time to blink? Done.
 $0692: A9 14     LDA #$14
@@ -464,10 +467,10 @@ $06E7: 40        RTI
 
 :L_06E8
 $06E8: 48        PHA
-$06E9: A5 06     LDA $06
-$06EB: 85 0C     STA $0C
+$06E9: A5 06     LDA CURSOR_OFF    ;Get the current cursor state
+$06EB: 85 0C     STA CURSOR_TMP    ;Remember it
 $06ED: A9 FF     LDA #$FF
-$06EF: 85 06     STA $06
+$06EF: 85 06     STA CURSOR_OFF    ;Hide the cursor
 $06F1: 20 88 09  JSR CALC_SCNPOS
 $06F4: A5 07     LDA $07
 $06F6: 91 02     STA (SCNPOSL),Y
@@ -511,7 +514,7 @@ $0736:           .BYT FF,07    ;CMD_0C @ $07FF (Cursor right)
 $0738:           .BYT 45,08    ;CMD_0D @ $0845 (Carriage return)
 $073A:           .BYT 54,08    ;CMD_0E @ $0854 (Reverse video on)
 $073C:           .BYT 59,08    ;CMD_0F @ $0859 (Reverse video off)
-$073E:           .BYT 4A,08    ;CMD_10 @ $084A (Store #$00 in $0C)
+$073E:           .BYT 4A,08    ;CMD_10 @ $084A (Cursor off)
 $0740:           .BYT 3B,09    ;CMD_11 @ $093B (Insert a blank line)
 $0742:           .BYT 1E,09    ;CMD_12 @ $091E (Scroll up one line)
 $0744:           .BYT 5E,08    ;CMD_13 @ $085E (Clear to end of line)
@@ -520,7 +523,7 @@ $0748:           .BYT D1,07    ;CMD_15 @ $07D1 (Set IEEE-488 /NDAC = 0)
 $074A:           .BYT D7,07    ;CMD_16 @ $07D7 (Set IEEE-488 /NDAC = 1)
 $074C:           .BYT 71,07    ;CMD_17 @ $0771 (Go to uppercase mode)
 $074E:           .BYT 63,07    ;CMD_18 @ $0763 (Go to lowercase mode)
-$0750:           .BYT 4F,08    ;CMD_19 @ $084F (Store #$FF in $0C)
+$0750:           .BYT 4F,08    ;CMD_19 @ $084F (Cursor on)
 $0752:           .BYT 1F,08    ;CMD_1A @ $081F (Clear screen)
 $0754:           .BYT B3,09    ;CMD_1B @ $09B3 (Store #$02 in $0B)
 $0756:           .BYT EE,08    ;CMD_1C @ $08EE (Insert a space on current line)
@@ -582,8 +585,8 @@ $078A: 20 F4 07  JSR PUT_CHAR
 $078D: 20 88 09  JSR CALC_SCNPOS
 $0790: B1 02     LDA (SCNPOSL),Y
 $0792: 85 07     STA $07
-$0794: A5 0C     LDA $0C
-$0796: 85 06     STA $06
+$0794: A5 0C     LDA CURSOR_TMP    ;Remember the previous state of the cursor
+$0796: 85 06     STA CURSOR_OFF    ;Restore it
 $0798: 60        RTS
 :L_0799
 $0799: C9 40     CMP #$40
@@ -727,15 +730,17 @@ $0847: 85 04     STA CURSOR_X
 $0849: 60        RTS
 
 ;START OF COMMAND 10
+;Cursor on
 :CMD_10
 $084A: A9 00     LDA #$00
-$084C: 85 0C     STA $0C
+$084C: 85 0C     STA CURSOR_TMP
 $084E: 60        RTS
 
 ;START OF COMMAND 19
+;Cursor off
 :CMD_19
 $084F: A9 FF     LDA #$FF
-$0851: 85 0C     STA $0C
+$0851: 85 0C     STA CURSOR_TMP
 $0853: 60        RTS
 
 ;START OF COMMAND 0E
