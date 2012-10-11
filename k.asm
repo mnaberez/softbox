@@ -500,7 +500,7 @@ $073E:           .BYT 4A,08    ;CMD_10 @ $084A (Store #$00 in $0C)
 $0740:           .BYT 3B,09    ;CMD_11 @ $093B (Insert a blank line)
 $0742:           .BYT 1E,09    ;CMD_12 @ $091E (Scroll up one line)
 $0744:           .BYT 5E,08    ;CMD_13 @ $085E (Clear to end of line)
-$0746:           .BYT 6B,08    ;CMD_14 @ $086B
+$0746:           .BYT 6B,08    ;CMD_14 @ $086B (Clear to end of screen)
 $0748:           .BYT D1,07    ;CMD_15 @ $07D1 (Set IEEE-488 /NDAC = 0)
 $074A:           .BYT D7,07    ;CMD_16 @ $07D7 (Set IEEE-488 /NDAC = 1)
 $074C:           .BYT 71,07    ;CMD_17 @ $0771 (Go to uppercase mode)
@@ -752,27 +752,29 @@ $086A: 60        RTS
 
 ;START OF COMMAND 14
 :CMD_14
+;Clear from Current line to end of screen
+;
 $086B: 20 5E 08  JSR L_085E
-$086E: A6 05     LDX CURSOR_Y
+$086E: A6 05     LDX CURSOR_Y    ;Get the Current line#
 :L_0870
-$0870: E8        INX
-$0871: E0 19     CPX #$19
-$0873: F0 18     BEQ L_088D
-$0875: 18        CLC
-$0876: A5 02     LDA SCNPOSL
-$0878: 65 09     ADC X_WIDTH
-$087A: 85 02     STA SCNPOSL
-$087C: 90 02     BCC L_0880
-$087E: E6 03     INC SCNPOSH
+$0870: E8        INX             ;Next Row
+$0871: E0 19     CPX #$19        ;Is it 25 (last line of screen?
+$0873: F0 18     BEQ L_088D      ;  Yes, we're done
+$0875: 18        CLC             ;  No, continue
+$0876: A5 02     LDA SCNPOSL     ;Current screen position
+$0878: 65 09     ADC X_WIDTH     ;Add the line width
+$087A: 85 02     STA SCNPOSL     ;Save it
+$087C: 90 02     BCC L_0880      ;Need to update HI?
+$087E: E6 03     INC SCNPOSH     ;  Yes, increment HI pointer 
 :L_0880
 $0880: A9 20     LDA #$20        ;SPACE
-$0882: A0 00     LDY #$00
+$0882: A0 00     LDY #$00        ;Position 0
 :L_0884
-$0884: 91 02     STA (SCNPOSL),Y
-$0886: C8        INY
-$0887: C4 09     CPY X_WIDTH
-$0889: D0 F9     BNE L_0884
-$088B: F0 E3     BEQ L_0870
+$0884: 91 02     STA (SCNPOSL),Y ;Write a space
+$0886: C8        INY             ;Next character
+$0887: C4 09     CPY X_WIDTH     ;Is it end of line?
+$0889: D0 F9     BNE L_0884      ;No, loop back for more on this line
+$088B: F0 E3     BEQ L_0870      ;Yes, loop back for next line
 :L_088D
 $088D: 60        RTS
 
