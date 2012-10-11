@@ -23,6 +23,7 @@ VIAPB     = $E840   ;VIA PortB
 VIA_PCR   = $E84C   ;VIA Peripheral Control Register (PCR)
 CHROUT    = $FFD2   ;Kernal Print a byte
 ;
+BLINKCNT  = $01     ;Counter used for cursor blink timing
 SCNPOSL   = $02     ;Pointer to current screen -LO
 SCNPOSH   = $03     ;Pointer to current screen -HI
 CURSOR_X  = $04     ;Current X position: 0-79
@@ -67,14 +68,14 @@ $0462:           .BYT 20,20,20,20             ;copyright text
 
 :INIT
 :L_0466
-$0466: 78        SEI             ;Disable interrupts
-$0467: A9 4F     LDA #<INT_HANDLER ;Interrupt handler address LO (#$4F)
+$0466: 78        SEI                ;Disable interrupts
+$0467: A9 4F     LDA #<INT_HANDLER  ;Interrupt handler address LO (#$4F)
 $0469: 85 90     STA INTVECL
-$046B: A9 06     LDA #>INT_HANDLER ;Interrupt handler address HI (#$06)
-$046D: 85 91     STA INTVECH     ;Install interrupt handler
+$046B: A9 06     LDA #>INT_HANDLER  ;Interrupt handler address HI (#$06)
+$046D: 85 91     STA INTVECH        ;Install interrupt handler
 $046F: A9 00     LDA #$00
-$0471: 85 08     STA KEYCOUNT    ;Initialize key counter (no keys hit)
-$0473: A9 00     LDA #$00        ;Initialize other zero page locations
+$0471: 85 08     STA KEYCOUNT       ;Initialize key counter (no keys hit)
+$0473: A9 00     LDA #$00           ;Initialize other zero page locations
 $0475: 85 14     STA $14
 $0477: 85 15     STA $15
 $0479: 85 16     STA $16
@@ -83,13 +84,13 @@ $047D: 85 18     STA $18
 $047F: 85 19     STA $19
 $0481: 85 1A     STA $1A
 $0483: A9 0A     LDA #$0A
-$0485: 8D 3D 0B  STA $0B3D       ;Store #$0A in $0B3d (?)
-$0488: 58        CLI             ;Enable interrupts again
+$0485: 8D 3D 0B  STA $0B3D          ;Store #$0A in $0B3d (?)
+$0488: 58        CLI                ;Enable interrupts again
 $0489: A9 0E     LDA #$0E
-$048B: 8D 4C E8  STA VIA_PCR     ;CA2 = High Output (IEEE-488 /NDAC = 1)
-$048E: 20 84 07  JSR CMD_02      ;Command 02 stores #$7F in $13
+$048B: 8D 4C E8  STA VIA_PCR        ;CA2 = High Output (IEEE-488 /NDAC = 1)
+$048E: 20 84 07  JSR CMD_02         ;Command 02 stores #$7F in $13
 $0491: A9 14     LDA #$14
-$0493: 85 01     STA $01
+$0493: 85 01     STA BLINKCNT       ;Initialize cursor blink countdown
 $0495: A9 00     LDA #$00
 $0497: 85 06     STA $06
 $0499: 85 0B     STA $0B
@@ -379,7 +380,7 @@ $064E: 60        RTS             ;  Got key: done.  Key is now in A.
 
 ;START OF INTERRUPT HANDLER
 INT_HANDLER:
-$064F: E6 1A     INC $1A       ;seem to be cursor blink counter
+$064F: E6 1A     INC $1A       ;counter
 $0651: D0 06     BNE L_0659
 $0653: E6 19     INC $19       ;counter
 $0655: D0 02     BNE L_0659
@@ -394,28 +395,29 @@ $0664: 85 14     STA $14
 $0666: E6 15     INC $15
 $0668: A5 15     LDA $15
 $066A: C9 3C     CMP #$3C      ;60
-$066C: D0 1C     BNE L_068A
+$066C: D0 1C     BNE BLINK_CURSOR
 $066E: A9 00     LDA #$00
 $0670: 85 15     STA $15
 $0672: E6 16     INC $16
 $0674: A5 16     LDA $16
 $0676: C9 3C     CMP #$3C      ;60
-$0678: D0 10     BNE L_068A
+$0678: D0 10     BNE BLINK_CURSOR
 $067A: A9 00     LDA #$00
 $067C: 85 16     STA $16
 $067E: E6 17     INC $17
 $0680: A5 17     LDA $17
 $0682: C9 18     CMP #$18      ;24
-$0684: D0 04     BNE L_068A
+$0684: D0 04     BNE BLINK_CURSOR
 $0686: A9 00     LDA #$00
 $0688: 85 17     STA $17
+:BLINK_CURSOR
 :L_068A
-$068A: A5 06     LDA $06       ;could this be a flag to indicate output mode?
-$068C: D0 11     BNE L_069F    ;bypass blink
-$068E: C6 01     DEC $01
-$0690: D0 0D     BNE L_069F    ;bypass blink
+$068A: A5 06     LDA $06           ;could this be a flag to indicate output mode?
+$068C: D0 11     BNE L_069F        ;bypass blink
+$068E: C6 01     DEC BLINKCNT      ;Decrement cursor blink countdown
+$0690: D0 0D     BNE L_069F        ;Not time to blink? Done.
 $0692: A9 14     LDA #$14
-$0694: 85 01     STA $01
+$0694: 85 01     STA BLINKCNT      ;Reset cursor blink countdown
 $0696: 20 88 09  JSR CALC_SCNPOS
 $0699: B1 02     LDA (SCNPOSL),Y   ;Read character at cursor
 $069B: 49 80     EOR #$80          ;Flip the REVERSE bit
@@ -443,7 +445,7 @@ $06C6: 8D 3D 0B  STA $0B3D
 $06C9: A9 00     LDA #$00
 $06CB: 8D 37 0B  STA $0B37
 $06CE: A9 02     LDA #$02
-$06D0: 85 01     STA $01
+$06D0: 85 01     STA BLINKCNT  ;Fast cursor blink(?)
 :L_06D2
 $06D2: 20 D4 09  JSR SCAN_KEYB ;Scan the keyboard
 $06D5: F0 0B     BEQ L_06E2    ;Nothing to do if no key was pressed.
