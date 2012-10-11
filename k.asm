@@ -23,19 +23,22 @@ VIAPB    = $E840   ;VIA PortB
 VIA_PCR  = $E84C   ;VIA Peripheral Control Register (PCR)
 CHROUT   = $FFD2   ;Kernal Print a byte
 ;
-SCNPOSL  = $02     ;Pointer to current screen -LO byte
-SCNPOSH  = $03     ;Pointer to current screen -HI byte
+SCNPOSL  = $02     ;Pointer to current screen -LO
+SCNPOSH  = $03     ;Pointer to current screen -HI
 CURSOR_X = $04     ;Current X position: 0-79
 CURSOR_Y = $05     ;Current Y position: 0-24
 KEYCOUNT = $08     ;Number of keys in the buffer at KEYBUF
 X_WIDTH  = $09     ;Width of X in characters (40 or 80)
 REVERSE  = $0A     ;Reverse video flag (reverse on = 1)
+CMDVECTL = $0D     ;Command dispatch Vector - LO
+CMDVECTH = $0E     ;Command dispatch Vector - HI
 ;
 *=0400
 
 ;"50 sys(1039)"
 $0400:           .BYT 00,0D,04,32,00,9E,28,31 ;tokenized basic
 $0408:           .BYT 30,33,39,29,00,00,00    ;tokenized basic
+;
 $040F: 4C 66 04  JMP L_0466
 
 ;"  SOFTBOX LOADER (C) COPYRIGHT 1981 KEITH FREWIN   "
@@ -182,9 +185,9 @@ $0540: 20 E8 06  JSR L_06E8
 $0543: 4C E7 04  JMP L_04E7
 :L_0546
 $0546: 20 CF 05  JSR L_05CF
-$0549: 85 0D     STA $0D
+$0549: 85 0D     STA CMDVECTL
 $054B: 20 CF 05  JSR L_05CF
-$054E: 85 0E     STA $0E
+$054E: 85 0E     STA CMDVECTH
 $0550: A2 3C     LDX #$3C
 $0552: 8E 21 E8  STX PIA2NDAC ;PIA#2 IEEE NDAC control
 $0555: 20 1B 07  JSR L_071B
@@ -195,13 +198,13 @@ $055E: 85 11     STA $11
 $0560: 20 CF 05  JSR L_05CF
 $0563: 85 12     STA $12
 $0565: 20 CF 05  JSR L_05CF
-$0568: 85 0D     STA $0D
+$0568: 85 0D     STA CMDVECTL
 $056A: 20 CF 05  JSR L_05CF
-$056D: 85 0E     STA $0E
+$056D: 85 0E     STA CMDVECTH
 $056F: A0 00     LDY #$00
 :L_0571
 $0571: 20 CF 05  JSR L_05CF
-$0574: 91 0D     STA ($0D),Y
+$0574: 91 0D     STA (CMDVECTL),Y
 $0576: C8        INY
 $0577: D0 02     BNE L_057B
 $0579: E6 0E     INC $0E
@@ -222,19 +225,19 @@ $0592: 85 11     STA $11
 $0594: 20 CF 05  JSR L_05CF
 $0597: 85 12     STA $12
 $0599: 20 CF 05  JSR L_05CF
-$059C: 85 0D     STA $0D
+$059C: 85 0D     STA CMDVECTL
 $059E: 20 CF 05  JSR L_05CF
-$05A1: 85 0E     STA $0E
+$05A1: 85 0E     STA CMDVECTH
 $05A3: A0 00     LDY #$00
 :L_05A5
 $05A5: 88        DEY
 $05A6: D0 FD     BNE L_05A5   ; delay
 :L_05A8
-$05A8: B1 0D     LDA ($0D),Y
+$05A8: B1 0D     LDA (CMDVECTL),Y
 $05AA: 20 FB 05  JSR L_05FB
 $05AD: C8        INY
 $05AE: D0 02     BNE L_05B2
-$05B0: E6 0E     INC $0E
+$05B0: E6 0E     INC CMDVECTH
 :L_05B2
 $05B2: A5 11     LDA $11
 $05B4: 38        SEC
@@ -428,9 +431,9 @@ $0701: B0 15     BCS L_0718
 $0703: 0A        ASL A
 $0704: AA        TAX
 $0705: BD 1E 07  LDA $071E,X
-$0708: 85 0D     STA $0D
+$0708: 85 0D     STA CMDVECTL
 $070A: BD 1F 07  LDA $071F,X
-$070D: 85 0E     STA $0E
+$070D: 85 0E     STA CMDVECTH
 $070F: 20 1B 07  JSR L_071B
 $0712: 4C 8D 07  JMP L_078D
 :L_0715
@@ -438,7 +441,7 @@ $0715: 4C B8 09  JMP L_09B8
 :L_0718
 $0718: 4C 99 07  JMP L_0799
 :L_071B
-$071B: 6C 0D 00  JMP ($000D)
+$071B: 6C 0D 00  JMP (CMDVECTL)
 
 ; Command Table
 $071E:           .BYT 89,07    ;CMD_00 @ $0789 (Do nothing)
@@ -726,7 +729,7 @@ $087A: 85 02     STA SCNPOSL
 $087C: 90 02     BCC L_0880
 $087E: E6 03     INC SCNPOSH
 :L_0880
-$0880: A9 20     LDA #$20
+$0880: A9 20     LDA #$20        ;SPACE
 $0882: A0 00     LDY #$00
 :L_0884
 $0884: 91 02     STA (SCNPOSL),Y
@@ -743,10 +746,10 @@ $088D: 60        RTS
 $088E: A9 00     LDA #$00
 $0890: 85 02     STA SCNPOSL
 $0892: A5 09     LDA X_WIDTH
-$0894: 85 0D     STA $0D
+$0894: 85 0D     STA CMDVECTL
 $0896: A9 80     LDA #$80
 $0898: 85 03     STA SCNPOSH
-$089A: 85 0E     STA $0E
+$089A: 85 0E     STA CMDVECTH
 $089C: A2 18     LDX #$18
 :L_089E
 $089E: A0 00     LDY #$00
@@ -756,19 +759,19 @@ $08A2: 91 02     STA (SCNPOSL),Y
 $08A4: C8        INY
 $08A5: C4 09     CPY X_WIDTH
 $08A7: D0 F7     BNE L_08A0
-$08A9: A5 0D     LDA $0D
+$08A9: A5 0D     LDA CMDVECTL
 $08AB: 85 02     STA SCNPOSL
 $08AD: 18        CLC
 $08AE: 65 09     ADC X_WIDTH
-$08B0: 85 0D     STA $0D
-$08B2: A5 0E     LDA $0E
+$08B0: 85 0D     STA CMDVECTL
+$08B2: A5 0E     LDA CMDVECTH
 $08B4: 85 03     STA SCNPOSH
 $08B6: 69 00     ADC #$00
-$08B8: 85 0E     STA $0E
+$08B8: 85 0E     STA CMDVECTL
 $08BA: CA        DEX
 $08BB: D0 E1     BNE L_089E
 $08BD: A0 00     LDY #$00
-$08BF: A9 20     LDA #$20
+$08BF: A9 20     LDA #$20          ;SPACE
 :L_08C1
 $08C1: 91 02     STA (SCNPOSL),Y
 $08C3: C8        INY
@@ -867,10 +870,10 @@ $0922: 20 88 09  JSR L_0988
 $0925: A5 02     LDA $02
 $0927: 18        CLC
 $0928: 65 09     ADC X_WIDTH
-$092A: 85 0D     STA $0D
+$092A: 85 0D     STA CMDVECTL
 $092C: A5 03     LDA SCNPOSH
 $092E: 69 00     ADC #$00
-$0930: 85 0E     STA $0E
+$0930: 85 0E     STA CMDVECTH
 $0932: A9 18     LDA #$18
 $0934: 38        SEC
 $0935: E5 05     SBC CURSOR_Y
@@ -893,30 +896,30 @@ $0943: D0 04     BNE L_0949
 $0945: A9 80     LDA #$80
 $0947: A0 87     LDY #$87
 :L_0949
-$0949: 85 0D     STA $0D
-$094B: 84 0E     STY $0E
+$0949: 85 0D     STA CMDVECTL
+$094B: 84 0E     STY CMDVECTH
 $094D: A9 00     LDA #$00
 $094F: 85 04     STA CURSOR_X
 :L_0951
-$0951: A5 0D     LDA $0D
+$0951: A5 0D     LDA CMDVECTL
 $0953: C5 02     CMP SCNPOSL
 $0955: D0 06     BNE L_095D
-$0957: A5 0E     LDA $0E
+$0957: A5 0E     LDA CMDVECTH
 $0959: C5 03     CMP SCNPOSH
 $095B: F0 1F     BEQ L_097C
 :L_095D
-$095D: A5 0D     LDA $0D
+$095D: A5 0D     LDA CMDVECTL
 $095F: 85 0F     STA $0F
 $0961: 38        SEC
 $0962: E5 09     SBC X_WIDTH
-$0964: 85 0D     STA $0D
-$0966: A5 0E     LDA $0E
+$0964: 85 0D     STA CMDVECTL
+$0966: A5 0E     LDA CMDVECTH
 $0968: 85 10     STA $10
 $096A: E9 00     SBC #$00
-$096C: 85 0E     STA $0E
+$096C: 85 0E     STA CMDVECTH
 $096E: A0 00     LDY #$00
 :L_0970
-$0970: B1 0D     LDA ($0D),Y
+$0970: B1 0D     LDA (CMDVECTL),Y
 $0972: 91 0F     STA ($0F),Y
 $0974: C8        INY
 $0975: C4 09     CPY X_WIDTH
@@ -924,7 +927,7 @@ $0977: D0 F7     BNE L_0970
 $0979: 4C 51 09  JMP L_0951
 :L_097C
 $097C: A0 00     LDY #$00
-$097E: A9 20     LDA #$20
+$097E: A9 20     LDA #$20          ;SPACE
 :L_0980
 $0980: 91 02     STA (SCNPOSL),Y
 $0982: C8        INY
