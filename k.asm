@@ -39,7 +39,7 @@ CMDVECTH = $0E     ;Command dispatch Vector - HI
 $0400:           .BYT 00,0D,04,32,00,9E,28,31 ;tokenized basic
 $0408:           .BYT 30,33,39,29,00,00,00    ;tokenized basic
 ;
-$040F: 4C 66 04  JMP L_0466
+$040F: 4C 66 04  JMP INIT
 
 ;"  SOFTBOX LOADER (C) COPYRIGHT 1981 KEITH FREWIN   "
 ;"----  REVISON :  5 JULY 1981     "
@@ -55,6 +55,7 @@ $0452:           .BYT 20,3A,20,20,35,20,4A,55 ;copyright text
 $045A:           .BYT 4C,59,20,31,39,38,31,20 ;copyright text
 $0462:           .BYT 20,20,20,20             ;copyright text
 
+:INIT
 :L_0466
 $0466: 78        SEI             ;Disable interrupts
 $0467: A9 4F     LDA #$4F
@@ -74,7 +75,6 @@ $0481: 85 1A     STA $1A
 $0483: A9 0A     LDA #$0A
 $0485: 8D 3D 0B  STA $0B3D       ;Store #$0A in $0B3d (?)
 $0488: 58        CLI             ;Enable interrupts again
-
 $0489: A9 0E     LDA #$0E
 $048B: 8D 4C E8  STA VIA_PCR     ;CA2 = High Output (IEEE-488 /NDAC = 1)
 $048E: 20 84 07  JSR CMD_02      ;Command 02 stores #$7F in $13
@@ -114,39 +114,41 @@ $04B3: 06 09     ASL X_WIDTH   ;  Yes: X_WIDTH = 80 characters
 :L_04B5
 $04B5: A9 1A     LDA #$1A
 $04B7: 20 E8 06  JSR L_06E8
-$04BA: 20 D4 08  JSR CMD_06   ;Fill buffer at $0B3F with zeroes
-$04BD: AD 22 E8  LDA PIA2IOUT ;PIA#2 IEEE Output
-$04C0: AD 40 E8  LDA VIAPB ;VIA PortB
+$04BA: 20 D4 08  JSR CMD_06    ;Fill buffer at $0B3F with zeroes
+$04BD: AD 22 E8  LDA PIA2IOUT  ;PIA#2 IEEE Output
+$04C0: AD 40 E8  LDA VIAPB     ;VIA PortB
 $04C3: 29 FB     AND #$FB
-$04C5: 8D 40 E8  STA VIAPB ;VIA PortB
+$04C5: 8D 40 E8  STA VIAPB     ;VIA PortB
 $04C8: A9 34     LDA #$34
-$04CA: 8D 23 E8  STA PIA2DAV ;PIA#2 IEEE DAV control
+$04CA: 8D 23 E8  STA PIA2DAV   ;PIA#2 IEEE DAV control
 $04CD: A9 C6     LDA #$C6
-$04CF: 8D 22 E8  STA PIA2IOUT ;PIA#2 IEEE Output
+$04CF: 8D 22 E8  STA PIA2IOUT  ;PIA#2 IEEE Output
 $04D2: A0 00     LDY #$00
 :L_04D4
 $04D4: 88        DEY
 $04D5: D0 FD     BNE L_04D4
 $04D7: A9 FF     LDA #$FF
-$04D9: 8D 22 E8  STA PIA2IOUT ;PIA#2 IEEE Output
+$04D9: 8D 22 E8  STA PIA2IOUT  ;PIA#2 IEEE Output
 $04DC: A9 3C     LDA #$3C
 $04DE: 8D 11 E8  STA $E811
-$04E1: 8D 21 E8  STA PIA2NDAC ;PIA#2 IEEE NDAC control
-$04E4: 8D 23 E8  STA PIA2DAV ;PIA#2 IEEE DAV control
+$04E1: 8D 21 E8  STA PIA2NDAC  ;PIA#2 IEEE NDAC control
+$04E4: 8D 23 E8  STA PIA2DAV   ;PIA#2 IEEE DAV control
+
+:MAIN_LOOP
 :L_04E7
 $04E7: A9 3C     LDA #$3C
-$04E9: 8D 21 E8  STA PIA2NDAC ;PIA#2 IEEE NDAC control
-$04EC: AD 40 E8  LDA VIAPB ;VIA PortB
+$04E9: 8D 21 E8  STA PIA2NDAC   ;PIA#2 IEEE NDAC control
+$04EC: AD 40 E8  LDA VIAPB      ;VIA PortB
 $04EF: 09 06     ORA #$06
-$04F1: 8D 40 E8  STA VIAPB ;VIA PortB
+$04F1: 8D 40 E8  STA VIAPB      ;VIA PortB
 :L_04F4
-$04F4: AD 23 E8  LDA PIA2DAV ;PIA#2 IEEE DAV control
+$04F4: AD 23 E8  LDA PIA2DAV    ;PIA#2 IEEE DAV control
 $04F7: 0A        ASL A
 $04F8: 90 FA     BCC L_04F4
-$04FA: AD 22 E8  LDA PIA2IOUT ;PIA#2 IEEE Output
+$04FA: AD 22 E8  LDA PIA2IOUT   ;PIA#2 IEEE Output
 $04FD: A9 34     LDA #$34
-$04FF: 8D 21 E8  STA PIA2NDAC ;PIA#2 IEEE NDAC control
-$0502: AE 20 E8  LDX PIA2IEEE ;PIA#2 IEEE Input
+$04FF: 8D 21 E8  STA PIA2NDAC   ;PIA#2 IEEE NDAC control
+$0502: AE 20 E8  LDX PIA2IEEE   ;PIA#2 IEEE Input
 $0505: 8A        TXA
 $0506: 6A        ROR A
 $0507: A9 7F     LDA #$7F
@@ -155,55 +157,71 @@ $050B: A4 08     LDY KEYCOUNT
 $050D: D0 02     BNE L_0511
 $050F: A9 BF     LDA #$BF
 :L_0511
-$0511: 8D 22 E8  STA PIA2IOUT ;PIA#2 IEEE Output
+$0511: 8D 22 E8  STA PIA2IOUT   ;PIA#2 IEEE Output
 :L_0514
-$0514: AD 20 E8  LDA PIA2IEEE ;PIA#2 IEEE Input
+$0514: AD 20 E8  LDA PIA2IEEE   ;PIA#2 IEEE Input
 $0517: 29 3F     AND #$3F
 $0519: C9 3F     CMP #$3F
 $051B: D0 F7     BNE L_0514
 $051D: A9 FF     LDA #$FF
-$051F: 8D 22 E8  STA PIA2IOUT ;PIA#2 IEEE Output
+$051F: 8D 22 E8  STA PIA2IOUT   ;PIA#2 IEEE Output
 $0522: 8A        TXA
+;
+; It looks like a control byte is received first where
+; each bit indicates a different function to perform:
+;
 $0523: 6A        ROR A
-$0524: 90 C1     BCC L_04E7
+$0524: 90 C1     BCC MAIN_LOOP      ;Do nothing
 $0526: 6A        ROR A
-$0527: 90 0C     BCC L_0535
+$0527: 90 0C     BCC DO_GET_KEY     ;Wait for a key and send it to the SoftBox
 $0529: 6A        ROR A
-$052A: 90 0C     BCC L_0538
+$052A: 90 0C     BCC DO_TERMINAL    ;Write to the terminal screen
 $052C: 6A        ROR A
-$052D: 90 17     BCC L_0546
+$052D: 90 17     BCC DO_JUMP        ;Jump to an address
 $052F: 6A        ROR A
-$0530: 90 5D     BCC L_058F
-$0532: 4C 5B 05  JMP L_055B
+$0530: 90 5D     BCC DO_WRITE_MEM   ;Transfer from the SoftBox to PET memory
+$0532: 4C 5B 05  JMP DO_READ_MEM    ;Transfer from PET memory to the SoftBox
+
+:DO_GET_KEY
+;Wait for a key and send it to the SoftBox.
 :L_0535
 $0535: 4C C6 05  JMP L_05C6
+
+:DO_TERMINAL
+;Write to the terminal screen
 :L_0538
-$0538: 20 CF 05  JSR L_05CF
+$0538: 20 CF 05  JSR IEEE_GET_BYTE
 $053B: A2 3C     LDX #$3C
-$053D: 8E 21 E8  STX PIA2NDAC ;PIA#2 IEEE NDAC control
+$053D: 8E 21 E8  STX PIA2NDAC       ;PIA#2 IEEE NDAC control
 $0540: 20 E8 06  JSR L_06E8
-$0543: 4C E7 04  JMP L_04E7
+$0543: 4C E7 04  JMP MAIN_LOOP
+
+:DO_JUMP
+;Jump to an address
 :L_0546
-$0546: 20 CF 05  JSR L_05CF
-$0549: 85 0D     STA CMDVECTL
-$054B: 20 CF 05  JSR L_05CF
-$054E: 85 0E     STA CMDVECTH
+$0546: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
+$0549: 85 0D     STA CMDVECTL       ; -> Command vector lo
+$054B: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
+$054E: 85 0E     STA CMDVECTH       ; -> Command vector hi
 $0550: A2 3C     LDX #$3C
-$0552: 8E 21 E8  STX PIA2NDAC ;PIA#2 IEEE NDAC control
-$0555: 20 1B 07  JSR L_071B
-$0558: 4C E7 04  JMP L_04E7
+$0552: 8E 21 E8  STX PIA2NDAC       ;PIA#2 IEEE NDAC control
+$0555: 20 1B 07  JSR JUMP_CMD       ;Jump to the command through CMDVECL
+$0558: 4C E7 04  JMP MAIN_LOOP
+
+:DO_READ_MEM
+;Transfer bytes from PET memory to the SoftBox
 :L_055B
-$055B: 20 CF 05  JSR L_05CF
+$055B: 20 CF 05  JSR IEEE_GET_BYTE
 $055E: 85 11     STA $11
-$0560: 20 CF 05  JSR L_05CF
+$0560: 20 CF 05  JSR IEEE_GET_BYTE
 $0563: 85 12     STA $12
-$0565: 20 CF 05  JSR L_05CF
+$0565: 20 CF 05  JSR IEEE_GET_BYTE
 $0568: 85 0D     STA CMDVECTL
-$056A: 20 CF 05  JSR L_05CF
+$056A: 20 CF 05  JSR IEEE_GET_BYTE
 $056D: 85 0E     STA CMDVECTH
 $056F: A0 00     LDY #$00
 :L_0571
-$0571: 20 CF 05  JSR L_05CF
+$0571: 20 CF 05  JSR IEEE_GET_BYTE
 $0574: 91 0D     STA (CMDVECTL),Y
 $0576: C8        INY
 $0577: D0 02     BNE L_057B
@@ -218,15 +236,18 @@ $0584: E9 00     SBC #$00
 $0586: 85 12     STA $12
 $0588: 05 11     ORA $11
 $058A: D0 E5     BNE L_0571
-$058C: 4C E7 04  JMP L_04E7
+$058C: 4C E7 04  JMP MAIN_LOOP
+
+:DO_WRITE_MEM
+;Transfer from the SoftBox to PET memory
 :L_058F
-$058F: 20 CF 05  JSR L_05CF
+$058F: 20 CF 05  JSR IEEE_GET_BYTE
 $0592: 85 11     STA $11
-$0594: 20 CF 05  JSR L_05CF
+$0594: 20 CF 05  JSR IEEE_GET_BYTE
 $0597: 85 12     STA $12
-$0599: 20 CF 05  JSR L_05CF
+$0599: 20 CF 05  JSR IEEE_GET_BYTE
 $059C: 85 0D     STA CMDVECTL
-$059E: 20 CF 05  JSR L_05CF
+$059E: 20 CF 05  JSR IEEE_GET_BYTE
 $05A1: 85 0E     STA CMDVECTH
 $05A3: A0 00     LDY #$00
 :L_05A5
@@ -234,7 +255,7 @@ $05A5: 88        DEY
 $05A6: D0 FD     BNE L_05A5   ; delay
 :L_05A8
 $05A8: B1 0D     LDA (CMDVECTL),Y
-$05AA: 20 FB 05  JSR L_05FB
+$05AA: 20 FB 05  JSR IEEE_SEND_BYTE
 $05AD: C8        INY
 $05AE: D0 02     BNE L_05B2
 $05B0: E6 0E     INC CMDVECTH
@@ -248,11 +269,18 @@ $05BB: E9 00     SBC #$00
 $05BD: 85 12     STA $12
 $05BF: 05 11     ORA $11
 $05C1: D0 E5     BNE L_05A8
-$05C3: 4C E7 04  JMP L_04E7
+$05C3: 4C E7 04  JMP MAIN_LOOP
+
 :L_05C6
-$05C6: 20 2E 06  JSR GET_KEY    ;Block until we get a key.  Key will be in A.
-$05C9: 20 FB 05  JSR L_05FB
-$05CC: 4C E7 04  JMP L_04E7
+;Wait for a key and send it to the SoftBox.
+$05C6: 20 2E 06  JSR GET_KEY         ;Block until we get a key.  Key will be in A.
+$05C9: 20 FB 05  JSR IEEE_SEND_BYTE  ;Send the key to the Softbox.
+$05CC: 4C E7 04  JMP MAIN_LOOP
+
+:IEEE_GET_BYTE
+;
+;TODO: It looks like this routine reads a byte from IEEE.  Needs disassembly.
+;
 :L_05CF
 $05CF: AD 40 E8  LDA VIAPB ;VIA PortB
 $05D2: 09 02     ORA #$02
@@ -275,6 +303,11 @@ $05F4: A9 34     LDA #$34
 $05F6: 8D 21 E8  STA PIA2NDAC ;PIA#2 IEEE NDAC control
 $05F9: 68        PLA
 $05FA: 60        RTS
+
+:IEEE_SEND_BYTE
+;
+;TODO: It looks like this routine writes a byte to IEEE.  Needs disassembly.
+;
 :L_05FB
 $05FB: 49 FF     EOR #$FF
 $05FD: 8D 22 E8  STA PIA2IOUT ;PIA#2 IEEE Output
@@ -434,12 +467,13 @@ $0705: BD 1E 07  LDA $071E,X
 $0708: 85 0D     STA CMDVECTL
 $070A: BD 1F 07  LDA $071F,X
 $070D: 85 0E     STA CMDVECTH
-$070F: 20 1B 07  JSR L_071B
+$070F: 20 1B 07  JSR JUMP_CMD
 $0712: 4C 8D 07  JMP L_078D
 :L_0715
 $0715: 4C B8 09  JMP L_09B8
 :L_0718
 $0718: 4C 99 07  JMP L_0799
+:JUMP_CMD
 :L_071B
 $071B: 6C 0D 00  JMP (CMDVECTL)
 
