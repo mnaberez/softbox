@@ -1047,39 +1047,47 @@ $09D1: 4C 8D 07  JMP L_078D
 
 :SCAN_KEYB
 ;Scan the keyboard.
+; USES: $0B37 - Shift Flag?
+;       $0B38 -
+;       $0B39 - Row counter?
+;       $0B3A -
+;       $0B3B -
 :L_09D4
 $09D4: AD 37 0B  LDA $0B37
 $09D7: 8D 38 0B  STA $0B38
-$09DA: A2 00     LDX #$00
-$09DC: 8E 3A 0B  STX $0B3A
-$09DF: 8E 3B 0B  STX $0B3B
-$09E2: 8E 10 E8  STX PIA1ROW ;PIA#1 Keyboard Row Select
+$09DA: A2 00     LDX #$00               ;Start at ROW 0
+$09DC: 8E 3A 0B  STX $0B3A              ;save it
+$09DF: 8E 3B 0B  STX $0B3B              ;save it
+$09E2: 8E 10 E8  STX PIA1ROW            ;Select a keyboard ROW
 $09E5: A9 FF     LDA #$FF
 $09E7: 8D 37 0B  STA $0B37
-$09EA: A9 0A     LDA #$0A
+$09EA: A9 0A     LDA #$0A               ;10 rows in table????
 $09EC: 8D 39 0B  STA $0B39
 :L_09EF
-$09EF: A0 08     LDY #$08
+;---- top of loop for keyboard ROWS
+$09EF: A0 08     LDY #$08               ;8 bits???
 :L_09F1
-$09F1: AD 12 E8  LDA PIA1COL ;PIA#1 Keyboard Columns Read
-$09F4: CD 12 E8  CMP PIA1COL ;PIA#1 Keyboard Columns Read
-$09F7: D0 F8     BNE L_09F1  ;wait for stable value on keyboard switches (debounce)
+$09F1: AD 12 E8  LDA PIA1COL            ;PIA#1 Keyboard Columns Read
+$09F4: CD 12 E8  CMP PIA1COL            ;PIA#1 Keyboard Columns Read
+$09F7: D0 F8     BNE L_09F1             ;wait for stable value on keyboard switches (debounce)
 :L_09F9
-$09F9: 4A        LSR A
-$09FA: 48        PHA
-$09FB: B0 22     BCS L_0A1F
+;---- top of loop to go through each bit returned from scan.
+;     each "1" bit represents a key pressed down
+$09F9: 4A        LSR A                  ;Shift byte RIGHT leaving CARRY flag set if it is a "1"
+$09FA: 48        PHA                    ;Push it to the stack
+$09FB: B0 22     BCS L_0A1F             ;was the BIT a "1"? Yes, skip
 $09FD: A5 09     LDA X_WIDTH
 $09FF: C9 50     CMP #$50               ;Is this an 80 column screen?
-$0A01: D0 06     BNE L_0A09
-$0A03: BD E7 0A  LDA BUSINESS_KEYS,X    ;  Yes: read from business keyboard table
+$0A01: D0 06     BNE L_0A09             ;
+$0A03: BD E7 0A  LDA BUSINESS_KEYS,X    ;  Yes: read from Business keyboard table
 $0A06: 4C 0C 0A  JMP L_0A0C
 :L_0A09
-$0A09: BD 97 0A  LDA GRAPHICS_KEYS,X   ;  No: read from graphics keyboard table
+$0A09: BD 97 0A  LDA GRAPHICS_KEYS,X    ;  No:  read from Graphics keyboard table
 :L_0A0C
-$0A0C: C9 01     CMP #$01
+$0A0C: C9 01     CMP #$01               ;SHIFT KEY?
 $0A0E: F0 07     BEQ L_0A17
 $0A10: 90 0A     BCC L_0A1C
-$0A12: 8D 37 0B  STA $0B37
+$0A12: 8D 37 0B  STA $0B37              ;SHIFT FLAG?
 $0A15: B0 08     BCS L_0A1F
 :L_0A17
 $0A17: EE 3A 0B  INC $0B3A
@@ -1087,13 +1095,13 @@ $0A1A: D0 03     BNE L_0A1F
 :L_0A1C
 $0A1C: EE 3B 0B  INC $0B3B
 :L_0A1F
-$0A1F: 68        PLA
-$0A20: E8        INX
-$0A21: 88        DEY
-$0A22: D0 D5     BNE L_09F9
-$0A24: EE 10 E8  INC PIA1ROW ;PIA#1 Keyboard Row Select
-$0A27: CE 39 0B  DEC $0B39
-$0A2A: D0 C3     BNE L_09EF
+$0A1F: 68        PLA                    ;pull the original scan value from stack
+$0A20: E8        INX                    ;next entry in table
+$0A21: 88        DEY                    ;next BIT?
+$0A22: D0 D5     BNE L_09F9             ;Is it ZERO? No, go back for more table entries
+$0A24: EE 10 E8  INC PIA1ROW            ;PIA#1 Keyboard Row Select
+$0A27: CE 39 0B  DEC $0B39              ;previous row?
+$0A2A: D0 C3     BNE L_09EF             ; Is it Zero? No, loop back up
 $0A2C: AD 37 0B  LDA $0B37
 $0A2F: C9 FF     CMP #$FF
 $0A31: F0 22     BEQ L_0A55
@@ -1101,25 +1109,25 @@ $0A33: CD 38 0B  CMP $0B38
 $0A36: F0 1D     BEQ L_0A55
 $0A38: C9 00     CMP #$00
 $0A3A: 10 0A     BPL L_0A46
-$0A3C: 29 7F     AND #$7F
+$0A3C: 29 7F     AND #$7F               ;remove the TOP bit (shift flag for character?)
 $0A3E: AC 3A 0B  LDY $0B3A
 $0A41: F0 03     BEQ L_0A46
-$0A43: 49 10     EOR #$10
+$0A43: 49 10     EOR #$10               ;convert to ASCII?
 $0A45: 60        RTS
 :L_0A46
-$0A46: C9 40     CMP #$40
+$0A46: C9 40     CMP #$40               ;"@"?
 $0A48: 90 25     BCC L_0A6F
-$0A4A: C9 60     CMP #$60
+$0A4A: C9 60     CMP #$60               ;upper ascii limit?
 $0A4C: B0 21     BCS L_0A6F
 $0A4E: AC 3B 0B  LDY $0B3B
 $0A51: F0 03     BEQ L_0A56
-$0A53: 29 1F     AND #$1F
+$0A53: 29 1F     AND #$1F               ;CTRL key?
 :L_0A55
 $0A55: 60        RTS
 :L_0A56
-$0A56: C9 40     CMP #$40
+$0A56: C9 40     CMP #$40               ;"@"?
 $0A58: F0 15     BEQ L_0A6F
-$0A5A: C9 5B     CMP #$5B
+$0A5A: C9 5B     CMP #$5B               ;"["?
 $0A5C: B0 11     BCS L_0A6F
 $0A5E: AC 3A 0B  LDY $0B3A
 $0A61: D0 0C     BNE L_0A6F
@@ -1184,7 +1192,7 @@ $0B1F:           .BYT 5A,56,4E,AC,30,FF,FF,32  ; Z     V     N     ,     0     N
 $0B27:           .BYT 00,58,20,4D,1E,FF,AF,31  ; RVS   X     SPACE M     HOME  NONE  ^/    1
 $0B2F:           .BYT 5F,B3,B6,B9,FF,BA,FF,FF  ; BARRW ^3    ^6    ^9    STOP  ^:    NONE  NONE
 
-;Storage locations that are not yet documented
+;Storage locations used in keyboard scanning routine SCAN_KEYB
 $0B37:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
 
 ;Start of buffer used by commands 05, 06, and 09
