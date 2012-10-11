@@ -29,6 +29,7 @@ CURSOR_X = $04     ;Current X position: 0-79
 CURSOR_Y = $05     ;Current Y position: 0-24
 KEYCOUNT = $08     ;Number of keys in the buffer at KEYBUF
 X_WIDTH  = $09     ;Width of X in characters (40 or 80)
+REVERSE  = $0A     ;Reverse video flag (reverse on = 1)
 ;
 *=0400
 
@@ -367,7 +368,7 @@ $0692: A9 14     LDA #$14
 $0694: 85 01     STA $01
 $0696: 20 88 09  JSR L_0988
 $0699: B1 02     LDA (SCNPOSL),Y   ;Read character at cursor
-$069B: 49 80     EOR #$80      ;Flip the REVERSE bit
+$069B: 49 80     EOR #$80          ;Flip the REVERSE bit
 $069D: 91 02     STA (SCNPOSL),Y   ;Write it back
 :L_069F
 $069F: AD 37 0B  LDA $0B37
@@ -454,8 +455,8 @@ $0732:           .BYT 0B,08    ;CMD_0A @ $080B (Line feed)
 $0734:           .BYT ED,07    ;CMD_0B @ $07ED (Cursor up)
 $0736:           .BYT FF,07    ;CMD_0C @ $07FF (Cursor right)
 $0738:           .BYT 45,08    ;CMD_0D @ $0845 (Carriage return)
-$073A:           .BYT 54,08    ;CMD_0E @ $0854 (Store #$01 in $0A)
-$073C:           .BYT 59,08    ;CMD_0F @ $0859 (Store #$00 in $0A)
+$073A:           .BYT 54,08    ;CMD_0E @ $0854 (Reverse video on)
+$073C:           .BYT 59,08    ;CMD_0F @ $0859 (Reverse video off)
 $073E:           .BYT 4A,08    ;CMD_10 @ $084A (Store #$00 in $0C)
 $0740:           .BYT 3B,09    ;CMD_11 @ $093B (Insert a blank line)
 $0742:           .BYT 1E,09    ;CMD_12 @ $091E (Scroll up one line)
@@ -522,7 +523,7 @@ $0788: 60        RTS
 $0789: 60        RTS
 
 :L_078A
-$078A: 20 F4 07  JSR L_07F4
+$078A: 20 F4 07  JSR PUT_CHAR
 :L_078D
 $078D: 20 88 09  JSR L_0988
 $0790: B1 02     LDA (SCNPOSL),Y
@@ -602,13 +603,15 @@ $07EF: F0 FB     BEQ L_07EC     ; Y=0? Can't move up.
 $07F1: C6 05     DEC CURSOR_Y   ; Y=Y-1
 $07F3: 60        RTS
 
+:PUT_CHAR
+;Put the character in A at the current screen position
 :L_07F4
-$07F4: A6 0A     LDX $0A
-$07F6: F0 02     BEQ L_07FA
-$07F8: 49 80     EOR #$80
+$07F4: A6 0A     LDX REVERSE      ;Is reverse video mode on?
+$07F6: F0 02     BEQ L_07FA       ;  No:  leave character alone
+$07F8: 49 80     EOR #$80         ;  Yes: Flip bit 7 to reverse the character
 :L_07FA
 $07FA: 20 88 09  JSR L_0988
-$07FD: 91 02     STA (SCNPOSL),Y
+$07FD: 91 02     STA (SCNPOSL),Y  ;Write the character to the screen
 
 ;START OF COMMAND 0C
 ;Cursor right
@@ -647,7 +650,7 @@ $081E: 60        RTS
 $081F: A2 00     LDX #$00      ; Home cursor
 $0821: 86 04     STX CURSOR_X
 $0823: 86 05     STX CURSOR_Y
-$0825: 86 0A     STX $0A
+$0825: 86 0A     STX REVERSE   ;Reverse video off
 $0827: A9 20     LDA #$20      ;Space character
 :L_0829
 $0829: 9D 00 80  STA SCREEN0,X ;screen page 0
@@ -682,15 +685,17 @@ $0851: 85 0C     STA $0C
 $0853: 60        RTS
 
 ;START OF COMMAND 0E
+;Reverse video on
 :CMD_0E
 $0854: A9 01     LDA #$01
-$0856: 85 0A     STA $0A
+$0856: 85 0A     STA REVERSE
 $0858: 60        RTS
 
 ;START OF COMMAND 0F
+;Reverse video off
 ;CMD_0F
 $0859: A9 00     LDA #$00
-$085B: 85 0A     STA $0A
+$085B: 85 0A     STA REVERSE
 $085D: 60        RTS
 
 ;START OF COMMAND 13
