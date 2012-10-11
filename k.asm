@@ -116,7 +116,7 @@ $04B3: 06 09     ASL X_WIDTH   ;  Yes: X_WIDTH = 80 characters
 :L_04B5
 $04B5: A9 1A     LDA #$1A
 $04B7: 20 E8 06  JSR L_06E8
-$04BA: 20 D4 08  JSR CMD_06    ;Fill buffer at $0B3F with zeroes
+$04BA: 20 D4 08  JSR CMD_06    ;Fill BUFFER with zeroes
 $04BD: AD 22 E8  LDA PIA2IOUT  ;PIA#2 IEEE Output
 $04C0: AD 40 E8  LDA VIAPB     ;VIA PortB
 $04C3: 29 FB     AND #$FB
@@ -484,12 +484,12 @@ $071E:           .BYT 89,07    ;CMD_00 @ $0789 (Do nothing)
 $0720:           .BYT 7F,07    ;CMD_01 @ $077F (Store #$FF in $13)
 $0722:           .BYT 84,07    ;CMD_02 @ $0784 (Store #$7F in $13)
 $0724:           .BYT 89,07    ;CMD_03 @ $0789 (Do nothing)
-$0726:           .BYT C9,08    ;CMD_04 @ $08C9 (Works on buffer at $0B3F)
-$0728:           .BYT CC,08    ;CMD_05 @ $08CC (Works on buffer at $0B3F)
-$072A:           .BYT D4,08    ;CMD_06 @ $08D4 (Fill buffer at $0B3F with zeroes)
+$0726:           .BYT C9,08    ;CMD_04 @ $08C9 (Works on BUFFER)
+$0728:           .BYT CC,08    ;CMD_05 @ $08CC (Works on BUFFER)
+$072A:           .BYT D4,08    ;CMD_06 @ $08D4 (Fill BUFFER with zeroes)
 $072C:           .BYT 5E,07    ;CMD_07 @ $075E (Ring bell)
 $072E:           .BYT DD,07    ;CMD_08 @ $07DD (Cursor left)
-$0730:           .BYT DF,08    ;CMD_09 @ $08DF (Works on buffer at $0B3F)
+$0730:           .BYT DF,08    ;CMD_09 @ $08DF (Works on BUFFER)
 $0732:           .BYT 0B,08    ;CMD_0A @ $080B (Line feed)
 $0734:           .BYT ED,07    ;CMD_0B @ $07ED (Cursor up)
 $0736:           .BYT FF,07    ;CMD_0C @ $07FF (Cursor right)
@@ -824,11 +824,11 @@ $08CB:           .BYT 2C    ; "BIT absolute command. Saves one byte
 :CMD_05
 $08CC: A9 00     LDA #$00
 $08CE: A6 04     LDX CURSOR_X
-$08D0: 9D 3F 0B  STA $0B3F,X
+$08D0: 9D 3F 0B  STA BUFFER,X
 $08D3: 60        RTS
 
 ;START OF COMMAND 06
-;Fill buffer at $0B3F with zeroes
+;Fill BUFFER with zeroes
 :CMD_06
 :L_08D4
 $08D4: A2 4F     LDX #$4F  ; 80 characters-1
