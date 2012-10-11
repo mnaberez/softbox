@@ -502,7 +502,7 @@ $0728:           .BYT CC,08    ;CMD_05 @ $08CC (Works on BUFFER)
 $072A:           .BYT D4,08    ;CMD_06 @ $08D4 (Fill BUFFER with zeroes)
 $072C:           .BYT 5E,07    ;CMD_07 @ $075E (Ring bell)
 $072E:           .BYT DD,07    ;CMD_08 @ $07DD (Cursor left)
-$0730:           .BYT DF,08    ;CMD_09 @ $08DF (Works on BUFFER)
+$0730:           .BYT DF,08    ;CMD_09 @ $08DF (Preform TAB)
 $0732:           .BYT 0B,08    ;CMD_0A @ $080B (Line feed)
 $0734:           .BYT ED,07    ;CMD_0B @ $07ED (Cursor up)
 $0736:           .BYT FF,07    ;CMD_0C @ $07FF (Cursor right)
@@ -855,15 +855,16 @@ $08DC: 10 FA     BPL L_08D8
 $08DE: 60        RTS
 
 ;START OF COMMAND 09
+; perform TAB - Move to next TAB stop as indicated in the BUFFER
 :CMD_09
 $08DF: A6 04     LDX CURSOR_X
 :L_08E1
-$08E1: E8        INX
-$08E2: E0 50     CPX #$50      ; 80 characters?
-$08E4: B0 07     BCS L_08ED
+$08E1: E8        INX            ; next position
+$08E2: E0 50     CPX #$50       ; 80 characters?
+$08E4: B0 07     BCS L_08ED     ; yes, exit
 $08E6: BD 3F 0B  LDA BUFFER,X   ; read from the buffer
-$08E9: F0 F6     BEQ L_08E1
-$08EB: 86 04     STX CURSOR_X
+$08E9: F0 F6     BEQ L_08E1     ; is it zero? yes, loop again     
+$08EB: 86 04     STX CURSOR_X   ; no, store the position
 :L_08ED
 $08ED: 60        RTS
 
