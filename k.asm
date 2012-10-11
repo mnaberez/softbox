@@ -857,16 +857,16 @@ $08DC: 10 FA     BPL L_08D8
 $08DE: 60        RTS
 
 ;START OF COMMAND 09
-; perform TAB - Move to next TAB stop as indicated in the BUFFER
+; perform TAB - Move to next TAB STOP as indicated in the TAB_STOP table
 :CMD_09
 $08DF: A6 04     LDX CURSOR_X
 :L_08E1
 $08E1: E8        INX               ; next position
 $08E2: E0 50     CPX #$50          ; 80 characters?
 $08E4: B0 07     BCS L_08ED        ; yes, exit
-$08E6: BD 3F 0B  LDA TAB_STOPS,X   ; read from the buffer
+$08E6: BD 3F 0B  LDA TAB_STOPS,X   ; read from the TAB STOPS table
 $08E9: F0 F6     BEQ L_08E1        ; is it zero? yes, loop again     
-$08EB: 86 04     STX CURSOR_X      ; no, store the position
+$08EB: 86 04     STX CURSOR_X      ; no, we hit a STOP, so store the position
 :L_08ED
 $08ED: 60        RTS
 
