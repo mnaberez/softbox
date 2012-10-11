@@ -497,12 +497,12 @@ $071E:           .BYT 89,07    ;CMD_00 @ $0789 (Do nothing)
 $0720:           .BYT 7F,07    ;CMD_01 @ $077F (Store #$FF in $13)
 $0722:           .BYT 84,07    ;CMD_02 @ $0784 (Store #$7F in $13)
 $0724:           .BYT 89,07    ;CMD_03 @ $0789 (Do nothing)
-$0726:           .BYT C9,08    ;CMD_04 @ $08C9 (Works on BUFFER)
-$0728:           .BYT CC,08    ;CMD_05 @ $08CC (Works on BUFFER)
-$072A:           .BYT D4,08    ;CMD_06 @ $08D4 (Fill BUFFER with zeroes)
+$0726:           .BYT C9,08    ;CMD_04 @ $08C9 (Set TAB STOP at current position)
+$0728:           .BYT CC,08    ;CMD_05 @ $08CC (Clear TAB STOP at current position)
+$072A:           .BYT D4,08    ;CMD_06 @ $08D4 (Clear all TAB STOPS)
 $072C:           .BYT 5E,07    ;CMD_07 @ $075E (Ring bell)
 $072E:           .BYT DD,07    ;CMD_08 @ $07DD (Cursor left)
-$0730:           .BYT DF,08    ;CMD_09 @ $08DF (Works on BUFFER)
+$0730:           .BYT DF,08    ;CMD_09 @ $08DF (Preform TAB)
 $0732:           .BYT 0B,08    ;CMD_0A @ $080B (Line feed)
 $0734:           .BYT ED,07    ;CMD_0B @ $07ED (Cursor up)
 $0736:           .BYT FF,07    ;CMD_0C @ $07FF (Cursor right)
@@ -831,39 +831,42 @@ $08C6: D0 F9     BNE L_08C1
 $08C8: 60        RTS
 
 ;START OF COMMAND 04
+; Set TAB STOP at current Position
 :CMD_04
-$08C9: A9 01     LDA #$01
-$08CB:           .BYT 2C    ; "BIT absolute command. Saves one byte
+$08C9: A9 01     LDA #$01         ;1=TAB STOP yes
+$08CB:           .BYT 2C          ;BIT absolute command. allows hiding command and code flowthru
 
 ;START OF COMMAND 05
+; Clear TAB STOP at current position
 :CMD_05
-$08CC: A9 00     LDA #$00
-$08CE: A6 04     LDX CURSOR_X
-$08D0: 9D 3F 0B  STA BUFFER,X
+$08CC: A9 00     LDA #$00         ;0=No TAB STOP
+$08CE: A6 04     LDX CURSOR_X     ;Get cursor position
+$08D0: 9D 3F 0B  STA TAB_STOPS,X  ;Clear the TAB at that position
 $08D3: 60        RTS
 
 ;START OF COMMAND 06
-;Fill BUFFER with zeroes
+; Clear ALL TAB STOPS
 :CMD_06
 :L_08D4
 $08D4: A2 4F     LDX #$4F  ; 80 characters-1
 $08D6: A9 00     LDA #$00  ; zero
 :L_08D8
-$08D8: 9D 3F 0B  STA BUFFER,X  ;store in the buffer
+$08D8: 9D 3F 0B  STA TAB_STOPS,X  ;store in the buffer
 $08DB: CA        DEX
 $08DC: 10 FA     BPL L_08D8
 $08DE: 60        RTS
 
 ;START OF COMMAND 09
+; perform TAB - Move to next TAB STOP as indicated in the TAB_STOP table
 :CMD_09
 $08DF: A6 04     LDX CURSOR_X
 :L_08E1
-$08E1: E8        INX
-$08E2: E0 50     CPX #$50      ; 80 characters?
-$08E4: B0 07     BCS L_08ED
-$08E6: BD 3F 0B  LDA BUFFER,X   ; read from the buffer
-$08E9: F0 F6     BEQ L_08E1
-$08EB: 86 04     STX CURSOR_X
+$08E1: E8        INX               ; next position
+$08E2: E0 50     CPX #$50          ; 80 characters?
+$08E4: B0 07     BCS L_08ED        ; yes, exit
+$08E6: BD 3F 0B  LDA TAB_STOPS,X   ; read from the TAB STOPS table
+$08E9: F0 F6     BEQ L_08E1        ; is it zero? yes, loop again     
+$08EB: 86 04     STX CURSOR_X      ; no, we hit a STOP, so store the position
 :L_08ED
 $08ED: 60        RTS
 
@@ -1182,7 +1185,7 @@ $0B2F:           .BYT 5F,B3,B6,B9,FF,BA,FF,FF  ; BARRW ^3    ^6    ^9    STOP  ^
 $0B37:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
 
 ;Start of buffer used by commands 05, 06, and 09
-:BUFFER
+:TAB_STOPS
 $0B3F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B47:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B4F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
