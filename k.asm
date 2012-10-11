@@ -20,7 +20,7 @@ PIA2NDAC = $E821   ;PIA#2 IEEE NDAC control
 PIA2IOUT = $E822   ;PIA#2 IEEE Output
 PIA2DAV  = $E823   ;PIA#2 IEEE DAV control
 VIAPB    = $E840   ;VIA PortB
-VIA0C    = $E84C   ;VIA Register C
+VIA_PCR  = $E84C   ;VIA Peripheral Control Register (PCR)
 CHROUT   = $FFD2   ;Kernal Print a byte
 ;
 SCNPOSL  = $02     ;Pointer to current screen -LO byte
@@ -72,7 +72,7 @@ $0485: 8D 3D 0B  STA $0B3D       ;Store #$0A in $0B3d (?)
 $0488: 58        CLI             ;Enable interrupts again
 
 $0489: A9 0E     LDA #$0E
-$048B: 8D 4C E8  STA VIA0C       ;Store #$0E in VIA0C (?)
+$048B: 8D 4C E8  STA VIA_PCR     ;CA2 = High Output (IEEE-488 /NDAC = 1)
 $048E: 20 84 07  JSR CMD_02      ;Command 02 stores #$7F in $13
 $0491: A9 14     LDA #$14
 $0493: 85 01     STA $01
@@ -461,8 +461,8 @@ $0740:           .BYT 3B,09    ;CMD_11 @ $093B (Insert a blank line)
 $0742:           .BYT 1E,09    ;CMD_12 @ $091E (Scroll up one line)
 $0744:           .BYT 5E,08    ;CMD_13 @ $085E (Clear to end of line)
 $0746:           .BYT 6B,08    ;CMD_14 @ $086B
-$0748:           .BYT D1,07    ;CMD_15 @ $07D1 (Store #$0C in VIA0C)
-$074A:           .BYT D7,07    ;CMD_16 @ $07D7 (Store #$0E in VIA0C)
+$0748:           .BYT D1,07    ;CMD_15 @ $07D1 (Set IEEE-488 /NDAC = 0)
+$074A:           .BYT D7,07    ;CMD_16 @ $07D7 (Set IEEE-488 /NDAC = 1)
 $074C:           .BYT 71,07    ;CMD_17 @ $0771 (Go to uppercase mode)
 $074E:           .BYT 63,07    ;CMD_18 @ $0763 (Go to lowercase mode)
 $0750:           .BYT 4F,08    ;CMD_19 @ $084F (Store #$FF in $0C)
@@ -482,23 +482,23 @@ $0760: 4C D2 FF  JMP CHROUT ;Kernal Print a byte
 ;START OF COMMAND 18
 ;Go to lowercase mode
 :CMD_18
-$0763: AD 4C E8  LDA VIA0C  ;VIA Register C
+$0763: AD 4C E8  LDA VIA_PCR
 $0766: 48        PHA
-$0767: A9 0E     LDA #$0E   ;CHR$(14) = Switch to lowercase mode
-$0769: 20 D2 FF  JSR CHROUT ;Kernal Print a byte
+$0767: A9 0E     LDA #$0E     ;CHR$(14) = Switch to lowercase mode
+$0769: 20 D2 FF  JSR CHROUT   ;Kernal Print a byte
 $076C: 68        PLA
-$076D: 8D 4C E8  STA VIA0C  ;VIA Register C
+$076D: 8D 4C E8  STA VIA_PCR
 $0770: 60        RTS
 
 ;START OF COMMAND 17
 ;Go to uppercase mode
 ;CMD_17
-$0771: AD 4C E8  LDA VIA0C  ;VIA Register C
+$0771: AD 4C E8  LDA VIA_PCR
 $0774: 48        PHA
-$0775: A9 8E     LDA #$8E   ;CHR$(142) = Switch to uppercase mode
-$0777: 20 D2 FF  JSR CHROUT ;Kernal Print a byte
+$0775: A9 8E     LDA #$8E     ;CHR$(142) = Switch to uppercase mode
+$0777: 20 D2 FF  JSR CHROUT   ;Kernal Print a byte
 $077A: 68        PLA
-$077B: 8D 4C E8  STA VIA0C  ;VIA Register C
+$077B: 8D 4C E8  STA VIA_PCR
 $077E: 60        RTS
 
 ;START OF COMMAND 01
@@ -550,7 +550,7 @@ $07B3: B0 11     BCS L_07C6
 $07B5: 8A        TXA
 $07B6: 49 40     EOR #$40
 $07B8: AA        TAX
-$07B9: AD 4C E8  LDA VIA0C ;VIA Register C
+$07B9: AD 4C E8  LDA VIA_PCR
 $07BC: 4A        LSR A
 $07BD: 4A        LSR A
 $07BE: B0 06     BCS L_07C6
@@ -566,15 +566,17 @@ $07CC: 09 40     ORA #$40
 $07CE: 4C 8A 07  JMP L_078A
 
 ;START OF COMMAND 15
+;Set IEEE-488 /NDAC = 0
 :CMD_15
 $07D1: A9 0C     LDA #$0C
-$07D3: 8D 4C E8  STA VIA0C ;VIA Register C
+$07D3: 8D 4C E8  STA VIA_PCR  ;CA2 = Low Output (IEEE-488 /NDAC = 0)
 $07D6: 60        RTS
 
 ;START OF COMMAND 16
+;Set IEEE-488 /NDAC = 1
 :CMD_16
 $07D7: A9 0E     LDA #$0E
-$07D9: 8D 4C E8  STA VIA0C ;VIA Register C
+$07D9: 8D 4C E8  STA VIA_PCR  ;CA2 = High Output (IEEE-488 /NDAC = 1)
 $07DC: 60        RTS
 
 ;START OF COMMAND 08
@@ -1057,7 +1059,7 @@ $0A5C: B0 11     BCS L_0A6F
 $0A5E: AC 3A 0B  LDY $0B3A
 $0A61: D0 0C     BNE L_0A6F
 $0A63: 48        PHA
-$0A64: AD 4C E8  LDA VIA0C ;VIA Register C
+$0A64: AD 4C E8  LDA VIA_PCR
 $0A67: 4A        LSR A
 $0A68: 4A        LSR A
 $0A69: 68        PLA
@@ -1077,7 +1079,7 @@ $0A80: A2 1A     LDX #$1A
 $0A82: C9 1E     CMP #$1E
 $0A84: F0 0C     BEQ L_0A92
 $0A86: 48        PHA
-$0A87: AD 4C E8  LDA VIA0C ;VIA Register C
+$0A87: AD 4C E8  LDA VIA_PCR
 $0A8A: 4A        LSR A
 $0A8B: 4A        LSR A
 $0A8C: 68        PLA
