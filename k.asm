@@ -86,6 +86,7 @@ $0495: A9 00     LDA #$00
 $0497: 85 06     STA $06
 $0499: 85 0B     STA $0B
 
+INIT_4080:
 ;Detect 40/80 column screen and store in X_WIDTH
 ;
 ;This routine checks for an 80 column screen by writing to screen RAM
@@ -107,16 +108,19 @@ $04A1: 8D 00 80  STA SCREEN0   ;Start of screen RAM for both 40 and 80 cols
 $04A4: 0A        ASL A
 $04A5: 8D 00 84  STA SCREEN4   ;Store test byte in first page of 80 col RAM
 $04A8: CD 00 84  CMP SCREEN4   ;Test byte for 80 column RAM successful?
-$04AB: D0 08     BNE L_04B5    ;  No: we're done, X_WIDTH = 40.
+$04AB: D0 08     BNE INIT_TERM ;  No: we're done, X_WIDTH = 40.
 $04AD: 4A        LSR A
 $04AE: CD 00 80  CMP SCREEN0   ;Test byte for common screen RAM successful?
-$04B1: D0 02     BNE L_04B5    ;  No:  we're done, X_WIDTH = 40.
+$04B1: D0 02     BNE INIT_TERM ;  No:  we're done, X_WIDTH = 40.
 $04B3: 06 09     ASL X_WIDTH   ;  Yes: X_WIDTH = 80 characters
 
+:INIT_TERM
 :L_04B5
 $04B5: A9 1A     LDA #$1A      ;Load #$1A = CMD_1A Clear Screen
 $04B7: 20 E8 06  JSR L_06E8    ;Call into terminal to execute clear screen
 $04BA: 20 D4 08  JSR CMD_06    ;Fill BUFFER with zeroes
+
+:INIT_IEEE
 $04BD: AD 22 E8  LDA PIA2IOUT  ;PIA#2 IEEE Output
 $04C0: AD 40 E8  LDA VIAPB     ;VIA PortB
 $04C3: 29 FB     AND #$FB
@@ -128,7 +132,7 @@ $04CF: 8D 22 E8  STA PIA2IOUT  ;PIA#2 IEEE Output
 $04D2: A0 00     LDY #$00
 :L_04D4
 $04D4: 88        DEY
-$04D5: D0 FD     BNE L_04D4
+$04D5: D0 FD     BNE L_04D4    ;delay loop
 $04D7: A9 FF     LDA #$FF
 $04D9: 8D 22 E8  STA PIA2IOUT  ;PIA#2 IEEE Output
 $04DC: A9 3C     LDA #$3C
@@ -765,7 +769,7 @@ $0876: A5 02     LDA SCNPOSL     ;Current screen position
 $0878: 65 09     ADC X_WIDTH     ;Add the line width
 $087A: 85 02     STA SCNPOSL     ;Save it
 $087C: 90 02     BCC L_0880      ;Need to update HI?
-$087E: E6 03     INC SCNPOSH     ;  Yes, increment HI pointer 
+$087E: E6 03     INC SCNPOSH     ;  Yes, increment HI pointer
 :L_0880
 $0880: A9 20     LDA #$20        ;SPACE
 $0882: A0 00     LDY #$00        ;Position 0
