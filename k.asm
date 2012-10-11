@@ -27,6 +27,7 @@ SCNPOSL   = $02     ;Pointer to current screen -LO
 SCNPOSH   = $03     ;Pointer to current screen -HI
 CURSOR_X  = $04     ;Current X position: 0-79
 CURSOR_Y  = $05     ;Current Y position: 0-24
+; ?????   = $07     ;???????? character under cursor?
 KEYCOUNT  = $08     ;Number of keys in the buffer at KEYBUF
 X_WIDTH   = $09     ;Width of X in characters (40 or 80)
 REVERSE   = $0A     ;Reverse video flag (reverse on = 1)
@@ -34,6 +35,13 @@ TARGET_LO = $0D     ;Target address for mem transfers and indirect jump - LO
 TARGET_HI = $0E     ;Target address for mem transfers and indirect jump - HI
 XFER_LO   = $11     ;Memory transfer byte counter - LO
 XFER_HI   = $12     ;Memory transfer byte counter - HI
+; ?????   = $14     ;????????
+; ?????   = $15     ;????????
+; ?????   = $16     ;????????
+; ?????   = $17     ;????????
+; ?????   = $18     ;????????
+; ?????   = $19     ;????????
+; ?????   = $1A     ;????????
 ;
 *=0400
 
@@ -60,10 +68,10 @@ $0462:           .BYT 20,20,20,20             ;copyright text
 :INIT
 :L_0466
 $0466: 78        SEI             ;Disable interrupts
-$0467: A9 4F     LDA #$4F
-$0469: 85 90     STA $<INTVEC
-$046B: A9 06     LDA #$06
-$046D: 85 91     STA $<INTVEC+1  ;Install interrupt handler
+$0467: A9 4F     LDA #<INT_HANDLER ;Interrupt handler address LO (#$4F)
+$0469: 85 90     STA INTVECL
+$046B: A9 06     LDA #>INT_HANDLER ;Interrupt handler address HI (#$06)
+$046D: 85 91     STA INTVECH     ;Install interrupt handler
 $046F: A9 00     LDA #$00
 $0471: 85 08     STA KEYCOUNT    ;Initialize key counter (no keys hit)
 $0473: A9 00     LDA #$00        ;Initialize other zero page locations
@@ -469,9 +477,9 @@ $06FF: C9 20     CMP #$20
 $0701: B0 15     BCS L_0718
 $0703: 0A        ASL A
 $0704: AA        TAX
-$0705: BD 1E 07  LDA $071E,X
+$0705: BD 1E 07  LDA CMDTABLE,X
 $0708: 85 0D     STA TARGET_LO
-$070A: BD 1F 07  LDA $071F,X
+$070A: BD 1F 07  LDA CMDTABLE+1,X
 $070D: 85 0E     STA TARGET_HI
 $070F: 20 1B 07  JSR JUMP_CMD
 $0712: 4C 8D 07  JMP L_078D
@@ -484,6 +492,7 @@ $0718: 4C 99 07  JMP L_0799
 $071B: 6C 0D 00  JMP (TARGET_LO)
 
 ; Command Table
+:CMDTABLE
 $071E:           .BYT 89,07    ;CMD_00 @ $0789 (Do nothing)
 $0720:           .BYT 7F,07    ;CMD_01 @ $077F (Store #$FF in $13)
 $0722:           .BYT 84,07    ;CMD_02 @ $0784 (Store #$7F in $13)
