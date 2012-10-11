@@ -246,7 +246,7 @@ $05BF: 05 11     ORA $11
 $05C1: D0 E5     BNE L_05A8
 $05C3: 4C E7 04  JMP L_04E7
 :L_05C6
-$05C6: 20 2E 06  JSR L_062E
+$05C6: 20 2E 06  JSR GET_KEY    ;Block until we get a key.  Key will be in A.
 $05C9: 20 FB 05  JSR L_05FB
 $05CC: 4C E7 04  JMP L_04E7
 :L_05CF
@@ -297,27 +297,34 @@ $0627: AD 40 E8  LDA VIAPB ;VIA PortB
 $062A: 4A        LSR A
 $062B: B0 FA     BCS L_0627
 $062D: 60        RTS
+
+:GET_KEY
+;Get the next key waiting from the keyboard buffer and return
+;it in the accumulator.  If there is no key, this routine will
+;block until it gets one.  Meanwhile, the interrupt handler
+;calls SCAN_KEYB and puts any key into the buffer.
+;
 :L_062E
-$062E: A9 FF     LDA #$FF
+$062E: A9 FF     LDA #$FF        ;FF = no key
 $0630: 78        SEI             ;Disable interrupts
-$0631: A6 08     LDX KEYCOUNT
-$0633: F0 14     BEQ L_0649
-$0635: AD 6F 02  LDA KEYBUF      ;Keyboard Input Buffer
-$0638: 48        PHA             ;push key onto stack
-$0639: A2 00     LDX #$00        ;loop counter = 0
-$063B: C6 08     DEC KEYCOUNT
+$0631: A6 08     LDX KEYCOUNT    ;Is there a key waiting in the buffer?
+$0633: F0 14     BEQ L_0649      ;  No: nothing to do with the buffer.
+$0635: AD 6F 02  LDA KEYBUF      ;Read the next key in the buffer (FIFO)
+$0638: 48        PHA             ;Push the key onto the stack
+$0639: A2 00     LDX #$00
+$063B: C6 08     DEC KEYCOUNT    ;Keycount = Keycount - 1
 :L_063D
-$063D: BD 70 02  LDA KEYBUF+1,X  ;Keyboard Input Buffer
-$0640: 9D 6F 02  STA KEYBUF,X    ;Keyboard Input Buffer
+$063D: BD 70 02  LDA KEYBUF+1,X  ;Remove the key from the buffer by rotating
+$0640: 9D 6F 02  STA KEYBUF,X    ;  bytes in the buffer to the left
 $0643: E8        INX
-$0644: E4 08     CPX KEYCOUNT
-$0646: D0 F5     BNE L_063D      ;loop back for more
-$0648: 68        PLA             ;pull the key from stack
+$0644: E4 08     CPX KEYCOUNT    ;Finished updating the buffer?
+$0646: D0 F5     BNE L_063D      ;  No: loop until we're done.
+$0648: 68        PLA             ;Pull the key off the stack.
 :L_0649
-$0649: 58        CLI             ;enable interrupts
-$064A: C9 FF     CMP #$FF        ;check for FF (no key?)
-$064C: F0 E0     BEQ L_062E
-$064E: 60        RTS
+$0649: 58        CLI             ;Enable interrupts again
+$064A: C9 FF     CMP #$FF        ;No key or key is "NONE" in the tables?
+$064C: F0 E0     BEQ GET_KEY     ;  No key:  loop until we get one.
+$064E: 60        RTS             ;  Got key: done.  Key is now in A.
 
 ;START OF INTERRUPT HANDLER
 INT_HANDLER:
@@ -387,13 +394,13 @@ $06CB: 8D 37 0B  STA $0B37
 $06CE: A9 02     LDA #$02
 $06D0: 85 01     STA $01
 :L_06D2
-$06D2: 20 D4 09  JSR L_09D4
-$06D5: F0 0B     BEQ L_06E2
+$06D2: 20 D4 09  JSR SCAN_KEYB ;Scan the keyboard
+$06D5: F0 0B     BEQ L_06E2    ;Nothing to do if no key was pressed.
 $06D7: A6 08     LDX KEYCOUNT
-$06D9: E0 50     CPX #$50
-$06DB: F0 05     BEQ L_06E2
-$06DD: 9D 6F 02  STA KEYBUF,X ;Keyboard Input Buffer
-$06E0: E6 08     INC KEYCOUNT
+$06D9: E0 50     CPX #$50      ;Is the keyboard buffer full?
+$06DB: F0 05     BEQ L_06E2    ;  Yes:  Nothing we can do.  Forget the key.
+$06DD: 9D 6F 02  STA KEYBUF,X  ;  No:   Store the key in the buffer
+$06E0: E6 08     INC KEYCOUNT  ;        and increment the keycount.
 :L_06E2
 $06E2: 68        PLA
 $06E3: A8        TAY
@@ -970,6 +977,9 @@ $09CB: C9 19     CMP #$19
 $09CD: B0 F6     BCS L_09C5
 $09CF: 85 05     STA CURSOR_Y
 $09D1: 4C 8D 07  JMP L_078D
+
+:SCAN_KEYB
+;Scan the keyboard.
 :L_09D4
 $09D4: AD 37 0B  LDA $0B37
 $09D7: 8D 38 0B  STA $0B38
