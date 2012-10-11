@@ -1,39 +1,39 @@
 ; Auto Disassembly of: k
 ;----- Equates
 ;
-INTVEC   = $0090   ;hardware interrupt vector LO
-INTVEC+1 = $0091   ;hardware interupt vector HI
-KEYBUF   = $026F   ;Keyboard Input Buffer
-KEYBUF+1 = $0270   ;Keyboard Input Buffer
-SCREEN0  = $8000   ;screen page 0 (start of screen ram)
-SCREEN1  = $8100   ;screen page 1
-SCREEN2  = $8200   ;screen page 2
-SCREEN3  = $8300   ;screen page 3
-SCREEN4  = $8400   ;screen page 4
-SCREEN5  = $8500   ;screen page 5
-SCREEN6  = $8600   ;screen page 6
-SCREEN7  = $8700   ;screen page 7
-PIA1ROW  = $E810   ;PIA#1 Keyboard Row Select
-PIA1COL  = $E812   ;PIA#1 Keyboard Columns Read
-PIA2IEEE = $E820   ;PIA#2 IEEE Input
-PIA2NDAC = $E821   ;PIA#2 IEEE NDAC control
-PIA2IOUT = $E822   ;PIA#2 IEEE Output
-PIA2DAV  = $E823   ;PIA#2 IEEE DAV control
-VIAPB    = $E840   ;VIA PortB
-VIA_PCR  = $E84C   ;VIA Peripheral Control Register (PCR)
-CHROUT   = $FFD2   ;Kernal Print a byte
+INTVEC    = $0090   ;hardware interrupt vector LO
+INTVEC+1  = $0091   ;hardware interupt vector HI
+KEYBUF    = $026F   ;Keyboard Input Buffer
+KEYBUF+1  = $0270   ;Keyboard Input Buffer
+SCREEN0   = $8000   ;screen page 0 (start of screen ram)
+SCREEN1   = $8100   ;screen page 1
+SCREEN2   = $8200   ;screen page 2
+SCREEN3   = $8300   ;screen page 3
+SCREEN4   = $8400   ;screen page 4
+SCREEN5   = $8500   ;screen page 5
+SCREEN6   = $8600   ;screen page 6
+SCREEN7   = $8700   ;screen page 7
+PIA1ROW   = $E810   ;PIA#1 Keyboard Row Select
+PIA1COL   = $E812   ;PIA#1 Keyboard Columns Read
+PIA2IEEE  = $E820   ;PIA#2 IEEE Input
+PIA2NDAC  = $E821   ;PIA#2 IEEE NDAC control
+PIA2IOUT  = $E822   ;PIA#2 IEEE Output
+PIA2DAV   = $E823   ;PIA#2 IEEE DAV control
+VIAPB     = $E840   ;VIA PortB
+VIA_PCR   = $E84C   ;VIA Peripheral Control Register (PCR)
+CHROUT    = $FFD2   ;Kernal Print a byte
 ;
-SCNPOSL  = $02     ;Pointer to current screen -LO
-SCNPOSH  = $03     ;Pointer to current screen -HI
-CURSOR_X = $04     ;Current X position: 0-79
-CURSOR_Y = $05     ;Current Y position: 0-24
-KEYCOUNT = $08     ;Number of keys in the buffer at KEYBUF
-X_WIDTH  = $09     ;Width of X in characters (40 or 80)
-REVERSE  = $0A     ;Reverse video flag (reverse on = 1)
-CMDVECTL = $0D     ;Command dispatch Vector - LO
-CMDVECTH = $0E     ;Command dispatch Vector - HI
-XFER_LO  = $11     ;Memory transfer byte counter - LO
-XFER_HI  = $12     ;Memory transfer byte counter - HI
+SCNPOSL   = $02     ;Pointer to current screen -LO
+SCNPOSH   = $03     ;Pointer to current screen -HI
+CURSOR_X  = $04     ;Current X position: 0-79
+CURSOR_Y  = $05     ;Current Y position: 0-24
+KEYCOUNT  = $08     ;Number of keys in the buffer at KEYBUF
+X_WIDTH   = $09     ;Width of X in characters (40 or 80)
+REVERSE   = $0A     ;Reverse video flag (reverse on = 1)
+TARGET_LO = $0D     ;Target address for mem transfers and indirect jump - LO
+TARGET_HI = $0E     ;Target address for mem transfers and indirect jump - HI
+XFER_LO   = $11     ;Memory transfer byte counter - LO
+XFER_HI   = $12     ;Memory transfer byte counter - HI
 ;
 *=0400
 
@@ -206,9 +206,9 @@ $0543: 4C E7 04  JMP MAIN_LOOP
 ;Jump to an address
 :L_0546
 $0546: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
-$0549: 85 0D     STA CMDVECTL       ; -> Command vector lo
+$0549: 85 0D     STA TARGET_LO       ; -> Command vector lo
 $054B: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
-$054E: 85 0E     STA CMDVECTH       ; -> Command vector hi
+$054E: 85 0E     STA TARGET_HI       ; -> Command vector hi
 $0550: A2 3C     LDX #$3C
 $0552: 8E 21 E8  STX PIA2NDAC       ;PIA#2 IEEE NDAC control
 $0555: 20 1B 07  JSR JUMP_CMD       ;Jump to the command through CMDVECL
@@ -222,16 +222,16 @@ $055E: 85 11     STA XFER_LO
 $0560: 20 CF 05  JSR IEEE_GET_BYTE
 $0563: 85 12     STA XFER_HI
 $0565: 20 CF 05  JSR IEEE_GET_BYTE
-$0568: 85 0D     STA CMDVECTL
+$0568: 85 0D     STA TARGET_LO
 $056A: 20 CF 05  JSR IEEE_GET_BYTE
-$056D: 85 0E     STA CMDVECTH
+$056D: 85 0E     STA TARGET_HI
 $056F: A0 00     LDY #$00
 :L_0571
 $0571: 20 CF 05  JSR IEEE_GET_BYTE
-$0574: 91 0D     STA (CMDVECTL),Y
+$0574: 91 0D     STA (TARGET_LO),Y
 $0576: C8        INY
 $0577: D0 02     BNE L_057B
-$0579: E6 0E     INC CMDVECTH
+$0579: E6 0E     INC TARGET_HI
 :L_057B
 $057B: A5 11     LDA XFER_LO
 $057D: 38        SEC
@@ -252,19 +252,19 @@ $0592: 85 11     STA XFER_LO
 $0594: 20 CF 05  JSR IEEE_GET_BYTE
 $0597: 85 12     STA XFER_HI
 $0599: 20 CF 05  JSR IEEE_GET_BYTE
-$059C: 85 0D     STA CMDVECTL
+$059C: 85 0D     STA TARGET_LO
 $059E: 20 CF 05  JSR IEEE_GET_BYTE
-$05A1: 85 0E     STA CMDVECTH
+$05A1: 85 0E     STA TARGET_HI
 $05A3: A0 00     LDY #$00
 :L_05A5
 $05A5: 88        DEY
 $05A6: D0 FD     BNE L_05A5   ; delay
 :L_05A8
-$05A8: B1 0D     LDA (CMDVECTL),Y
+$05A8: B1 0D     LDA (TARGET_LO),Y
 $05AA: 20 FB 05  JSR IEEE_SEND_BYTE
 $05AD: C8        INY
 $05AE: D0 02     BNE L_05B2
-$05B0: E6 0E     INC CMDVECTH
+$05B0: E6 0E     INC TARGET_HI
 :L_05B2
 $05B2: A5 11     LDA XFER_LO
 $05B4: 38        SEC
@@ -470,9 +470,9 @@ $0701: B0 15     BCS L_0718
 $0703: 0A        ASL A
 $0704: AA        TAX
 $0705: BD 1E 07  LDA $071E,X
-$0708: 85 0D     STA CMDVECTL
+$0708: 85 0D     STA TARGET_LO
 $070A: BD 1F 07  LDA $071F,X
-$070D: 85 0E     STA CMDVECTH
+$070D: 85 0E     STA TARGET_HI
 $070F: 20 1B 07  JSR JUMP_CMD
 $0712: 4C 8D 07  JMP L_078D
 :L_0715
@@ -481,7 +481,7 @@ $0715: 4C B8 09  JMP L_09B8
 $0718: 4C 99 07  JMP L_0799
 :JUMP_CMD
 :L_071B
-$071B: 6C 0D 00  JMP (CMDVECTL)
+$071B: 6C 0D 00  JMP (TARGET_LO)
 
 ; Command Table
 $071E:           .BYT 89,07    ;CMD_00 @ $0789 (Do nothing)
@@ -788,10 +788,10 @@ $088D: 60        RTS
 $088E: A9 00     LDA #$00
 $0890: 85 02     STA SCNPOSL
 $0892: A5 09     LDA X_WIDTH
-$0894: 85 0D     STA CMDVECTL
+$0894: 85 0D     STA TARGET_LO
 $0896: A9 80     LDA #$80
 $0898: 85 03     STA SCNPOSH
-$089A: 85 0E     STA CMDVECTH
+$089A: 85 0E     STA TARGET_HI
 $089C: A2 18     LDX #$18
 :L_089E
 $089E: A0 00     LDY #$00
@@ -801,15 +801,15 @@ $08A2: 91 02     STA (SCNPOSL),Y
 $08A4: C8        INY
 $08A5: C4 09     CPY X_WIDTH
 $08A7: D0 F7     BNE L_08A0
-$08A9: A5 0D     LDA CMDVECTL
+$08A9: A5 0D     LDA TARGET_LO
 $08AB: 85 02     STA SCNPOSL
 $08AD: 18        CLC
 $08AE: 65 09     ADC X_WIDTH
-$08B0: 85 0D     STA CMDVECTL
-$08B2: A5 0E     LDA CMDVECTH
+$08B0: 85 0D     STA TARGET_LO
+$08B2: A5 0E     LDA TARGET_HI
 $08B4: 85 03     STA SCNPOSH
 $08B6: 69 00     ADC #$00
-$08B8: 85 0E     STA CMDVECTL
+$08B8: 85 0E     STA TARGET_LO
 $08BA: CA        DEX
 $08BB: D0 E1     BNE L_089E
 $08BD: A0 00     LDY #$00
@@ -912,10 +912,10 @@ $0922: 20 88 09  JSR L_0988
 $0925: A5 02     LDA $02
 $0927: 18        CLC
 $0928: 65 09     ADC X_WIDTH
-$092A: 85 0D     STA CMDVECTL
+$092A: 85 0D     STA TARGET_LO
 $092C: A5 03     LDA SCNPOSH
 $092E: 69 00     ADC #$00
-$0930: 85 0E     STA CMDVECTH
+$0930: 85 0E     STA TARGET_HI
 $0932: A9 18     LDA #$18
 $0934: 38        SEC
 $0935: E5 05     SBC CURSOR_Y
@@ -938,30 +938,30 @@ $0943: D0 04     BNE L_0949
 $0945: A9 80     LDA #$80
 $0947: A0 87     LDY #$87
 :L_0949
-$0949: 85 0D     STA CMDVECTL
-$094B: 84 0E     STY CMDVECTH
+$0949: 85 0D     STA TARGET_LO
+$094B: 84 0E     STY TARGET_HI
 $094D: A9 00     LDA #$00
 $094F: 85 04     STA CURSOR_X
 :L_0951
-$0951: A5 0D     LDA CMDVECTL
+$0951: A5 0D     LDA TARGET_LO
 $0953: C5 02     CMP SCNPOSL
 $0955: D0 06     BNE L_095D
-$0957: A5 0E     LDA CMDVECTH
+$0957: A5 0E     LDA TARGET_HI
 $0959: C5 03     CMP SCNPOSH
 $095B: F0 1F     BEQ L_097C
 :L_095D
-$095D: A5 0D     LDA CMDVECTL
+$095D: A5 0D     LDA TARGET_LO
 $095F: 85 0F     STA $0F
 $0961: 38        SEC
 $0962: E5 09     SBC X_WIDTH
-$0964: 85 0D     STA CMDVECTL
-$0966: A5 0E     LDA CMDVECTH
+$0964: 85 0D     STA TARGET_LO
+$0966: A5 0E     LDA TARGET_HI
 $0968: 85 10     STA $10
 $096A: E9 00     SBC #$00
-$096C: 85 0E     STA CMDVECTH
+$096C: 85 0E     STA TARGET_HI
 $096E: A0 00     LDY #$00
 :L_0970
-$0970: B1 0D     LDA (CMDVECTL),Y
+$0970: B1 0D     LDA (TARGET_LO),Y
 $0972: 91 0F     STA ($0F),Y
 $0974: C8        INY
 $0975: C4 09     CPY X_WIDTH
