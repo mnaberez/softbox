@@ -416,7 +416,7 @@ $068E: C6 01     DEC $01
 $0690: D0 0D     BNE L_069F    ;bypass blink
 $0692: A9 14     LDA #$14
 $0694: 85 01     STA $01
-$0696: 20 88 09  JSR L_0988
+$0696: 20 88 09  JSR CALC_SCNPOS
 $0699: B1 02     LDA (SCNPOSL),Y   ;Read character at cursor
 $069B: 49 80     EOR #$80          ;Flip the REVERSE bit
 $069D: 91 02     STA (SCNPOSL),Y   ;Write it back
@@ -466,7 +466,7 @@ $06E9: A5 06     LDA $06
 $06EB: 85 0C     STA $0C
 $06ED: A9 FF     LDA #$FF
 $06EF: 85 06     STA $06
-$06F1: 20 88 09  JSR L_0988
+$06F1: 20 88 09  JSR CALC_SCNPOS
 $06F4: A5 07     LDA $07
 $06F6: 91 02     STA (SCNPOSL),Y
 $06F8: 68        PLA
@@ -577,7 +577,7 @@ $0789: 60        RTS
 :L_078A
 $078A: 20 F4 07  JSR PUT_CHAR
 :L_078D
-$078D: 20 88 09  JSR L_0988
+$078D: 20 88 09  JSR CALC_SCNPOS
 $0790: B1 02     LDA (SCNPOSL),Y
 $0792: 85 07     STA $07
 $0794: A5 0C     LDA $0C
@@ -662,7 +662,7 @@ $07F4: A6 0A     LDX REVERSE      ;Is reverse video mode on?
 $07F6: F0 02     BEQ L_07FA       ;  No:  leave character alone
 $07F8: 49 80     EOR #$80         ;  Yes: Flip bit 7 to reverse the character
 :L_07FA
-$07FA: 20 88 09  JSR L_0988
+$07FA: 20 88 09  JSR CALC_SCNPOS
 $07FD: 91 02     STA (SCNPOSL),Y  ;Write the character to the screen
 
 ;START OF COMMAND 0C
@@ -754,7 +754,7 @@ $085D: 60        RTS
 ;Clear to end of line
 :CMD_13
 :L_085E
-$085E: 20 88 09  JSR L_0988    ;Leaves CURSOR_X in Y register
+$085E: 20 88 09  JSR CALC_SCNPOS    ;Leaves CURSOR_X in Y register
 $0861: A9 20     LDA #$20      ;Space character
 :L_0863
 $0863: 91 02     STA (SCNPOSL),Y   ;Write space to screen RAM
@@ -873,7 +873,7 @@ $08ED: 60        RTS
 ;START OF COMMAND 1C
 ;Insert space at current cursor position
 :CMD_1C
-$08EE: 20 88 09  JSR L_0988
+$08EE: 20 88 09  JSR CALC_SCNPOS
 $08F1: A4 09     LDY X_WIDTH       ;number of characters on line
 $08F3: 88        DEY
 :L_08F4
@@ -893,7 +893,7 @@ $0905: 60        RTS
 ;START OF COMMAND 1D
 ;Delete a character
 :CMD_1D
-$0906: 20 88 09  JSR L_0988
+$0906: 20 88 09  JSR CALC_SCNPOS
 $0909: A4 04     LDY CURSOR_X
 :L_090B
 $090B: C8        INY
@@ -920,7 +920,7 @@ $091D: 60        RTS
 ;
 $091E: A9 00     LDA #$00
 $0920: 85 04     STA CURSOR_X
-$0922: 20 88 09  JSR L_0988
+$0922: 20 88 09  JSR CALC_SCNPOS
 $0925: A5 02     LDA $02
 $0927: 18        CLC
 $0928: 65 09     ADC X_WIDTH
@@ -989,6 +989,9 @@ $0983: C4 09     CPY X_WIDTH
 $0985: D0 F9     BNE L_0980
 $0987: 60        RTS
 
+:CALC_SCNPOS
+;Calculate a new pointer to screen memory (SCNPOSL/SCNPOSH)
+;from cursor position at CURSOR_X and CURSOR_Y
 :L_0988
 $0988: 48        PHA
 $0989: A9 00     LDA #$00
