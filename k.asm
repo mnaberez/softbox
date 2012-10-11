@@ -834,7 +834,7 @@ $08C8: 60        RTS
 ; Set TAB STOP at current Position
 :CMD_04
 $08C9: A9 01     LDA #$01         ;1=TAB STOP yes
-$08CB:           .BYT 2C          ;BIT absolute command. allows hiding command and code flowthru
+$08CB:           .BYT 2C          ;Falls through to become BIT $00A9
 
 ;START OF COMMAND 05
 ; Clear TAB STOP at current position
@@ -865,7 +865,7 @@ $08E1: E8        INX               ; next position
 $08E2: E0 50     CPX #$50          ; 80 characters?
 $08E4: B0 07     BCS L_08ED        ; yes, exit
 $08E6: BD 3F 0B  LDA TAB_STOPS,X   ; read from the TAB STOPS table
-$08E9: F0 F6     BEQ L_08E1        ; is it zero? yes, loop again     
+$08E9: F0 F6     BEQ L_08E1        ; is it zero? yes, loop again
 $08EB: 86 04     STX CURSOR_X      ; no, we hit a STOP, so store the position
 :L_08ED
 $08ED: 60        RTS
