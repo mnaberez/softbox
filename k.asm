@@ -22,7 +22,7 @@ VIAPB      = $E840   ;VIA PortB
 VIA_PCR    = $E84C   ;VIA Peripheral Control Register (PCR)
 CHROUT     = $FFD2   ;Kernal Print a byte
 ;
-BLINKCNT   = $01     ;Counter used for cursor blink timing
+BLINK_CNT  = $01     ;Counter used for cursor blink timing
 SCNPOSL    = $02     ;Pointer to current screen -LO
 SCNPOSH    = $03     ;Pointer to current screen -HI
 CURSOR_X   = $04     ;Current X position: 0-79
@@ -95,7 +95,7 @@ $0489: A9 0E     LDA #$0E
 $048B: 8D 4C E8  STA VIA_PCR        ;CA2 = High Output (IEEE-488 /NDAC = 1)
 $048E: 20 84 07  JSR CMD_02         ;Command 02 stores #$7F in $13
 $0491: A9 14     LDA #$14
-$0493: 85 01     STA BLINKCNT       ;Initialize cursor blink countdown
+$0493: 85 01     STA BLINK_CNT      ;Initialize cursor blink countdown
 $0495: A9 00     LDA #$00
 $0497: 85 06     STA CURSOR_OFF     ;Cursor state = show the cursor
 $0499: 85 0B     STA $0B
@@ -419,10 +419,10 @@ $0688: 85 17     STA $17
 :L_068A
 $068A: A5 06     LDA CURSOR_OFF    ;Is the cursor off?
 $068C: D0 11     BNE L_069F        ;  Yes: skip cursor blink
-$068E: C6 01     DEC BLINKCNT      ;Decrement cursor blink countdown
+$068E: C6 01     DEC BLINK_CNT     ;Decrement cursor blink countdown
 $0690: D0 0D     BNE L_069F        ;Not time to blink? Done.
 $0692: A9 14     LDA #$14
-$0694: 85 01     STA BLINKCNT      ;Reset cursor blink countdown
+$0694: 85 01     STA BLINK_CNT     ;Reset cursor blink countdown
 $0696: 20 88 09  JSR CALC_SCNPOS
 $0699: B1 02     LDA (SCNPOSL),Y   ;Read character at cursor
 $069B: 49 80     EOR #$80          ;Flip the REVERSE bit
@@ -450,7 +450,7 @@ $06C6: 8D 3D 0B  STA $0B3D
 $06C9: A9 00     LDA #$00
 $06CB: 8D 37 0B  STA $0B37
 $06CE: A9 02     LDA #$02
-$06D0: 85 01     STA BLINKCNT  ;Fast cursor blink(?)
+$06D0: 85 01     STA BLINK_CNT ;Fast cursor blink(?)
 :L_06D2
 $06D2: 20 D4 09  JSR SCAN_KEYB ;Scan the keyboard
 $06D5: F0 0B     BEQ L_06E2    ;Nothing to do if no key was pressed.
