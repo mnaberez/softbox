@@ -4,7 +4,6 @@
 INTVECL    = $0090   ;hardware interrupt vector LO
 INTVECH    = $0091   ;hardware interupt vector HI
 KEYBUF     = $026F   ;Keyboard Input Buffer
-KEYBUF+1   = $0270   ;Keyboard Input Buffer
 SCREEN0    = $8000   ;screen page 0 (start of screen ram)
 SCREEN1    = $8100   ;screen page 1
 SCREEN2    = $8200   ;screen page 2
@@ -39,6 +38,7 @@ TARGET_LO  = $0D     ;Target address for mem transfers and indirect jump - LO
 TARGET_HI  = $0E     ;Target address for mem transfers and indirect jump - HI
 XFER_LO    = $11     ;Memory transfer byte counter - LO
 XFER_HI    = $12     ;Memory transfer byte counter - HI
+; ?????    = $13     ;????????
 ; ?????    = $14     ;????????
 ; ?????    = $15     ;????????
 ; ?????    = $16     ;????????
