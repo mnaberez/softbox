@@ -762,12 +762,12 @@ $085D: 60        RTS
 :CMD_13
 :L_085E
 $085E: 20 88 09  JSR CALC_SCNPOS    ;Leaves CURSOR_X in Y register
-$0861: A9 20     LDA #$20      ;Space character
+$0861: A9 20     LDA #$20           ;Space character
 :L_0863
-$0863: 91 02     STA (SCNPOSL),Y   ;Write space to screen RAM
-$0865: C8        INY           ;X=X+1
+$0863: 91 02     STA (SCNPOSL),Y    ;Write space to screen RAM
+$0865: C8        INY                ;X=X+1
 $0866: C4 09     CPY X_WIDTH
-$0868: D0 F9     BNE L_0863    ;Loop until end of line
+$0868: D0 F9     BNE L_0863         ;Loop until end of line
 $086A: 60        RTS
 
 ;START OF COMMAND 14
