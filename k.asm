@@ -34,8 +34,10 @@ X_WIDTH    = $09     ;Width of X in characters (40 or 80)
 REVERSE    = $0A     ;Reverse video flag (reverse on = 1)
 ; ?????    = $0B     ;????????
 CURSOR_TMP = $0C     ;Pending cursor state used with CURSOR_OFF
-TARGET_LO  = $0D     ;Target address for mem transfers and indirect jump - LO
-TARGET_HI  = $0E     ;Target address for mem transfers and indirect jump - HI
+TARGET_LO  = $0D     ;Target address for mem xfers, ind jump, & CMD_11 - LO
+TARGET_HI  = $0E     ;Target address for mem xfers, ind jump, & CMD_11 - HI
+INSERT_LO  = $0F     ;Insert line (CMD_11) destination screen address - LO
+INSERT_HI  = $10     ;Insert line (CMD_11) destination screen address - HI
 XFER_LO    = $11     ;Memory transfer byte counter - LO
 XFER_HI    = $12     ;Memory transfer byte counter - HI
 ; ?????    = $13     ;????????
@@ -977,18 +979,18 @@ $0959: C5 03     CMP SCNPOSH
 $095B: F0 1F     BEQ L_097C
 :L_095D
 $095D: A5 0D     LDA TARGET_LO
-$095F: 85 0F     STA $0F
+$095F: 85 0F     STA INSERT_LO
 $0961: 38        SEC
 $0962: E5 09     SBC X_WIDTH
 $0964: 85 0D     STA TARGET_LO
 $0966: A5 0E     LDA TARGET_HI
-$0968: 85 10     STA $10
+$0968: 85 10     STA INSERT_HI
 $096A: E9 00     SBC #$00
 $096C: 85 0E     STA TARGET_HI
 $096E: A0 00     LDY #$00
 :L_0970
 $0970: B1 0D     LDA (TARGET_LO),Y
-$0972: 91 0F     STA ($0F),Y
+$0972: 91 0F     STA (INSERT_LO),Y
 $0974: C8        INY
 $0975: C4 09     CPY X_WIDTH
 $0977: D0 F7     BNE L_0970
