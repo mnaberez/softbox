@@ -1,8 +1,8 @@
 ; Auto Disassembly of: k
 ;----- Equates
 ;
-INTVECL    = $0090   ;hardware interrupt vector LO
-INTVECH    = $0091   ;hardware interupt vector HI
+INTVECL    = $90     ;hardware interrupt vector LO
+INTVECH    = $91     ;hardware interupt vector HI
 KEYBUF     = $026F   ;Keyboard Input Buffer
 SCREEN0    = $8000   ;screen page 0 (start of screen ram)
 SCREEN1    = $8100   ;screen page 1
