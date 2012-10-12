@@ -32,7 +32,7 @@ CHAR_TMP   = $07     ;Temporary storage for the last screen character
 KEYCOUNT   = $08     ;Number of keys in the buffer at KEYBUF
 X_WIDTH    = $09     ;Width of X in characters (40 or 80)
 REVERSE    = $0A     ;Reverse video flag (reverse on = 1)
-; ?????    = $0B     ;????????
+MOVETO_CNT = $0B     ;Counts down bytes to consume in a move-to (CMD_1B) seq
 CURSOR_TMP = $0C     ;Pending cursor state used with CURSOR_OFF
 TARGET_LO  = $0D     ;Target address for mem xfers, ind jump, & CMD_11 - LO
 TARGET_HI  = $0E     ;Target address for mem xfers, ind jump, & CMD_11 - HI
@@ -98,7 +98,7 @@ $0491: A9 14     LDA #$14
 $0493: 85 01     STA BLINK_CNT      ;Initialize cursor blink countdown
 $0495: A9 00     LDA #$00
 $0497: 85 06     STA CURSOR_OFF     ;Cursor state = show the cursor
-$0499: 85 0B     STA $0B
+$0499: 85 0B     STA MOVETO_CNT     ;Move-to counter = not in a move-to seq
 
 :INIT_4080
 ;Detect 40/80 column screen and store in X_WIDTH
@@ -483,8 +483,8 @@ $06F4: A5 07     LDA CHAR_TMP      ;Get the character previously saved
 $06F6: 91 02     STA (SCNPOSL),Y   ;  Put it on the screen
 $06F8: 68        PLA
 $06F9: 25 13     AND $13
-$06FB: A6 0B     LDX $0B
-$06FD: D0 16     BNE L_0715
+$06FB: A6 0B     LDX MOVETO_CNT    ;More bytes to consume for a move-to seq?
+$06FD: D0 16     BNE L_0715        ;  Yes: branch to jump to move-to handler
 $06FF: C9 20     CMP #$20
 $0701: B0 15     BCS L_0718        ;It's not a command if A <= #$20
 $0703: 0A        ASL A
@@ -496,7 +496,7 @@ $070D: 85 0E     STA TARGET_HI
 $070F: 20 1B 07  JSR JUMP_CMD      ;Jump to vector to execute command
 $0712: 4C 8D 07  JMP L_078D
 :L_0715
-$0715: 4C B8 09  JMP L_09B8
+$0715: 4C B8 09  JMP MOVE_TO       ;Jump to handle move-to sequence
 :L_0718
 $0718: 4C 99 07  JMP L_0799
 :JUMP_CMD
@@ -532,7 +532,7 @@ $074C:           .BYT 71,07    ;CMD_17 @ $0771 (Go to uppercase mode)
 $074E:           .BYT 63,07    ;CMD_18 @ $0763 (Go to lowercase mode)
 $0750:           .BYT 4F,08    ;CMD_19 @ $084F (Cursor on)
 $0752:           .BYT 1F,08    ;CMD_1A @ $081F (Clear screen)
-$0754:           .BYT B3,09    ;CMD_1B @ $09B3 (Store #$02 in $0B)
+$0754:           .BYT B3,09    ;CMD_1B @ $09B3 (Move cursor to X,Y position)
 $0756:           .BYT EE,08    ;CMD_1C @ $08EE (Insert a space on current line)
 $0758:           .BYT 06,09    ;CMD_1D @ $0906 (Delete character at cursor)
 $075A:           .BYT 18,08    ;CMD_1E @ $0818 (Home cursor)
@@ -1038,28 +1038,48 @@ $09B1: 68        PLA
 $09B2: 60        RTS
 
 ;START OF COMMAND 1B
+;Move cursor to X,Y position
+;
+;This command is unlike the others because it requires an additional
+;two bytes to follow: first X-position, then Y-position.
+;
+;The MOVETO_CNT byte counts down the remaining bytes to consume.  On
+;successive passes through PROCESS_BYTE, the X and Y bytes are handled
+;by MOVE_TO.
+;
+;Note: The X and Y values accepted by this command use the same layout
+;as CURSOR_X and CURSOR_Y but they require an offset.  You must add
+;decimal 32 to each value to get the equivalent CURSOR_X and CURSOR_Y.
+;The offset is because the command emulates the behavior of the
+;Lear Siegler ADM-3A terminal.
+;
 :CMD_1B
-$09B3: A9 02     LDA #$02
-$09B5: 85 0B     STA $0B
+$09B3: A9 02     LDA #$02          ;Two more bytes to consume (X-pos, Y-pos)
+$09B5: 85 0B     STA MOVETO_CNT    ;Store count for next pass of PROCESS_BYTE
 $09B7: 60        RTS
 
+:MOVE_TO
+;Implements CMD_1B by handling the X-position byte on the first call
+;and the Y-position byte on the second call.  After the Y-position byte
+;has been consumed, MOVETO_CNT = 0, exiting the move-to sequence.
+;
 :L_09B8
-$09B8: C6 0B     DEC $0B
-$09BA: F0 0C     BEQ L_09C8
+$09B8: C6 0B     DEC MOVETO_CNT    ;Decrement bytes remaining to consume
+$09BA: F0 0C     BEQ L_09C8        ;Already got X pos?  Handle this byte as Y.
 $09BC: 38        SEC
-$09BD: E9 20     SBC #$20
-$09BF: C5 09     CMP X_WIDTH
-$09C1: B0 02     BCS L_09C5
-$09C3: 85 04     STA CURSOR_X
+$09BD: E9 20     SBC #$20          ;X-pos = X-pos - #$20
+$09BF: C5 09     CMP X_WIDTH       ;Requested X position out of range?
+$09C1: B0 02     BCS L_09C5        ;  Yes: Do nothing.
+$09C3: 85 04     STA CURSOR_X      ;  No:  Move cursor to requested X.
 :L_09C5
-$09C5: 4C 8D 07  JMP L_078D
+$09C5: 4C 8D 07  JMP L_078D        ;Done.
 :L_09C8
 $09C8: 38        SEC
-$09C9: E9 20     SBC #$20
-$09CB: C9 19     CMP #$19
-$09CD: B0 F6     BCS L_09C5
-$09CF: 85 05     STA CURSOR_Y
-$09D1: 4C 8D 07  JMP L_078D
+$09C9: E9 20     SBC #$20          ;Y-pos = Y-pos - #$20
+$09CB: C9 19     CMP #$19          ;Requested Y position out of range?
+$09CD: B0 F6     BCS L_09C5        ;  Yes: Do nothing.
+$09CF: 85 05     STA CURSOR_Y      ;  No:  Move cursor to requested Y.
+$09D1: 4C 8D 07  JMP L_078D        ;Done.
 
 :SCAN_KEYB
 ;Scan the keyboard.
