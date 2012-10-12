@@ -384,7 +384,7 @@ $064C: F0 E0     BEQ GET_KEY     ;  No key:  loop until we get one.
 $064E: 60        RTS             ;  Got key: done.  Key is now in A.
 
 ;START OF INTERRUPT HANDLER
-INT_HANDLER:
+:INT_HANDLER
 $064F: E6 1A     INC $1A       ;counter
 $0651: D0 06     BNE L_0659
 $0653: E6 19     INC $19       ;counter
