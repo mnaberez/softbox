@@ -392,7 +392,7 @@ $0657: E6 18     INC $18       ;counter
 $0659: E6 14     INC $14
 $065B: A5 14     LDA $14
 $065D: CD 03 04  CMP $0403     ;?? this is in the BASIC header area
-$0660: D0 28     BNE L_068A
+$0660: D0 28     BNE BLINK_CURSOR
 $0662: A9 00     LDA #$00
 $0664: 85 14     STA $14
 $0666: E6 15     INC $15
