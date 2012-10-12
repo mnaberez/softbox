@@ -29,7 +29,7 @@ SCNPOSH    = $03     ;Pointer to current screen -HI
 CURSOR_X   = $04     ;Current X position: 0-79
 CURSOR_Y   = $05     ;Current Y position: 0-24
 CURSOR_OFF = $06     ;Cursor state: hide cursor if 0, else show cursor
-; ?????    = $07     ;???????? character under cursor?
+CHAR_TMP   = $07     ;Temporary storage for the last screen character
 KEYCOUNT   = $08     ;Number of keys in the buffer at KEYBUF
 X_WIDTH    = $09     ;Width of X in characters (40 or 80)
 REVERSE    = $0A     ;Reverse video flag (reverse on = 1)
@@ -468,12 +468,12 @@ $06E7: 40        RTI
 :L_06E8
 $06E8: 48        PHA
 $06E9: A5 06     LDA CURSOR_OFF    ;Get the current cursor state
-$06EB: 85 0C     STA CURSOR_TMP    ;Remember it
+$06EB: 85 0C     STA CURSOR_TMP    ;  Remember it
 $06ED: A9 FF     LDA #$FF
 $06EF: 85 06     STA CURSOR_OFF    ;Hide the cursor
-$06F1: 20 88 09  JSR CALC_SCNPOS
-$06F4: A5 07     LDA $07
-$06F6: 91 02     STA (SCNPOSL),Y
+$06F1: 20 88 09  JSR CALC_SCNPOS   ;Calculate screen RAM pointer
+$06F4: A5 07     LDA CHAR_TMP      ;Get the character previously saved
+$06F6: 91 02     STA (SCNPOSL),Y   ;  Put it on the screen
 $06F8: 68        PLA
 $06F9: 25 13     AND $13
 $06FB: A6 0B     LDX $0B
@@ -583,10 +583,10 @@ $0789: 60        RTS
 $078A: 20 F4 07  JSR PUT_CHAR
 :L_078D
 $078D: 20 88 09  JSR CALC_SCNPOS
-$0790: B1 02     LDA (SCNPOSL),Y
-$0792: 85 07     STA $07
-$0794: A5 0C     LDA CURSOR_TMP    ;Remember the previous state of the cursor
-$0796: 85 06     STA CURSOR_OFF    ;Restore it
+$0790: B1 02     LDA (SCNPOSL),Y   ;Get the current character on the screen
+$0792: 85 07     STA CHAR_TMP      ;  Remember it
+$0794: A5 0C     LDA CURSOR_TMP    ;Get the previous state of the cursor
+$0796: 85 06     STA CURSOR_OFF    ;  Restore it
 $0798: 60        RTS
 :L_0799
 $0799: C9 40     CMP #$40
