@@ -114,59 +114,59 @@ $0499: 85 0B     STA $0B
 ;          would the check at $04AE fail?
 ;
 $049B: A9 28     LDA #$28
-$049D: 85 09     STA X_WIDTH   ;X_WIDTH = 40 characters
+$049D: 85 09     STA X_WIDTH        ;X_WIDTH = 40 characters
 $049F: A9 55     LDA #$55
-$04A1: 8D 00 80  STA SCREEN0   ;Start of screen RAM for both 40 and 80 cols
+$04A1: 8D 00 80  STA SCREEN0        ;Start of screen RAM for both 40 and 80 cols
 $04A4: 0A        ASL A
-$04A5: 8D 00 84  STA SCREEN4   ;Store test byte in first page of 80 col RAM
-$04A8: CD 00 84  CMP SCREEN4   ;Test byte for 80 column RAM successful?
-$04AB: D0 08     BNE INIT_TERM ;  No: we're done, X_WIDTH = 40.
+$04A5: 8D 00 84  STA SCREEN4        ;Store test byte in first page of 80 col RAM
+$04A8: CD 00 84  CMP SCREEN4        ;Test byte for 80 column RAM successful?
+$04AB: D0 08     BNE INIT_TERM      ;  No: we're done, X_WIDTH = 40.
 $04AD: 4A        LSR A
-$04AE: CD 00 80  CMP SCREEN0   ;Test byte for common screen RAM successful?
-$04B1: D0 02     BNE INIT_TERM ;  No:  we're done, X_WIDTH = 40.
-$04B3: 06 09     ASL X_WIDTH   ;  Yes: X_WIDTH = 80 characters
+$04AE: CD 00 80  CMP SCREEN0        ;Test byte for common screen RAM successful?
+$04B1: D0 02     BNE INIT_TERM      ;  No:  we're done, X_WIDTH = 40.
+$04B3: 06 09     ASL X_WIDTH        ;  Yes: X_WIDTH = 80 characters
 
 :INIT_TERM
 :L_04B5
-$04B5: A9 1A     LDA #$1A      ;Load #$1A = CMD_1A Clear Screen
-$04B7: 20 E8 06  JSR L_06E8    ;Call into terminal to execute clear screen
-$04BA: 20 D4 08  JSR CMD_06    ;Fill BUFFER with zeroes
+$04B5: A9 1A     LDA #$1A           ;Load #$1A = CMD_1A Clear Screen
+$04B7: 20 E8 06  JSR PROCESS_BYTE   ;Call into terminal to execute clear screen
+$04BA: 20 D4 08  JSR CMD_06         ;Fill BUFFER with zeroes
 
 :INIT_IEEE
-$04BD: AD 22 E8  LDA PIA2IOUT  ;PIA#2 IEEE Output
-$04C0: AD 40 E8  LDA VIAPB     ;VIA PortB
+$04BD: AD 22 E8  LDA PIA2IOUT       ;PIA#2 IEEE Output
+$04C0: AD 40 E8  LDA VIAPB          ;VIA PortB
 $04C3: 29 FB     AND #$FB
-$04C5: 8D 40 E8  STA VIAPB     ;VIA PortB
+$04C5: 8D 40 E8  STA VIAPB          ;VIA PortB
 $04C8: A9 34     LDA #$34
-$04CA: 8D 23 E8  STA PIA2DAV   ;PIA#2 IEEE DAV control
+$04CA: 8D 23 E8  STA PIA2DAV        ;PIA#2 IEEE DAV control
 $04CD: A9 C6     LDA #$C6
-$04CF: 8D 22 E8  STA PIA2IOUT  ;PIA#2 IEEE Output
+$04CF: 8D 22 E8  STA PIA2IOUT       ;PIA#2 IEEE Output
 $04D2: A0 00     LDY #$00
 :L_04D4
 $04D4: 88        DEY
-$04D5: D0 FD     BNE L_04D4    ;delay loop
+$04D5: D0 FD     BNE L_04D4         ;delay loop
 $04D7: A9 FF     LDA #$FF
-$04D9: 8D 22 E8  STA PIA2IOUT  ;PIA#2 IEEE Output
+$04D9: 8D 22 E8  STA PIA2IOUT       ;PIA#2 IEEE Output
 $04DC: A9 3C     LDA #$3C
 $04DE: 8D 11 E8  STA $E811
-$04E1: 8D 21 E8  STA PIA2NDAC  ;PIA#2 IEEE NDAC control
-$04E4: 8D 23 E8  STA PIA2DAV   ;PIA#2 IEEE DAV control
+$04E1: 8D 21 E8  STA PIA2NDAC       ;PIA#2 IEEE NDAC control
+$04E4: 8D 23 E8  STA PIA2DAV        ;PIA#2 IEEE DAV control
 
 :MAIN_LOOP
 :L_04E7
 $04E7: A9 3C     LDA #$3C
-$04E9: 8D 21 E8  STA PIA2NDAC   ;PIA#2 IEEE NDAC control
-$04EC: AD 40 E8  LDA VIAPB      ;VIA PortB
+$04E9: 8D 21 E8  STA PIA2NDAC       ;PIA#2 IEEE NDAC control
+$04EC: AD 40 E8  LDA VIAPB          ;VIA PortB
 $04EF: 09 06     ORA #$06
-$04F1: 8D 40 E8  STA VIAPB      ;VIA PortB
+$04F1: 8D 40 E8  STA VIAPB          ;VIA PortB
 :L_04F4
-$04F4: AD 23 E8  LDA PIA2DAV    ;PIA#2 IEEE DAV control
+$04F4: AD 23 E8  LDA PIA2DAV        ;PIA#2 IEEE DAV control
 $04F7: 0A        ASL A
 $04F8: 90 FA     BCC L_04F4
-$04FA: AD 22 E8  LDA PIA2IOUT   ;PIA#2 IEEE Output
+$04FA: AD 22 E8  LDA PIA2IOUT       ;PIA#2 IEEE Output
 $04FD: A9 34     LDA #$34
-$04FF: 8D 21 E8  STA PIA2NDAC   ;PIA#2 IEEE NDAC control
-$0502: AE 20 E8  LDX PIA2IEEE   ;PIA#2 IEEE Input
+$04FF: 8D 21 E8  STA PIA2NDAC       ;PIA#2 IEEE NDAC control
+$0502: AE 20 E8  LDX PIA2IEEE       ;PIA#2 IEEE Input
 $0505: 8A        TXA
 $0506: 6A        ROR A
 $0507: A9 7F     LDA #$7F
@@ -175,14 +175,14 @@ $050B: A4 08     LDY KEYCOUNT
 $050D: D0 02     BNE L_0511
 $050F: A9 BF     LDA #$BF
 :L_0511
-$0511: 8D 22 E8  STA PIA2IOUT   ;PIA#2 IEEE Output
+$0511: 8D 22 E8  STA PIA2IOUT       ;PIA#2 IEEE Output
 :L_0514
-$0514: AD 20 E8  LDA PIA2IEEE   ;PIA#2 IEEE Input
+$0514: AD 20 E8  LDA PIA2IEEE       ;PIA#2 IEEE Input
 $0517: 29 3F     AND #$3F
 $0519: C9 3F     CMP #$3F
 $051B: D0 F7     BNE L_0514
 $051D: A9 FF     LDA #$FF
-$051F: 8D 22 E8  STA PIA2IOUT   ;PIA#2 IEEE Output
+$051F: 8D 22 E8  STA PIA2IOUT       ;PIA#2 IEEE Output
 $0522: 8A        TXA
 ;
 ; It looks like a control byte is received first where
@@ -211,7 +211,7 @@ $0535: 4C C6 05  JMP L_05C6
 $0538: 20 CF 05  JSR IEEE_GET_BYTE
 $053B: A2 3C     LDX #$3C
 $053D: 8E 21 E8  STX PIA2NDAC       ;PIA#2 IEEE NDAC control
-$0540: 20 E8 06  JSR L_06E8
+$0540: 20 E8 06  JSR RECV_BYTE      ;
 $0543: 4C E7 04  JMP MAIN_LOOP
 
 :DO_JUMP
@@ -465,6 +465,11 @@ $06E5: AA        TAX
 $06E6: 68        PLA
 $06E7: 40        RTI
 
+:PROCESS_BYTE
+;This is the core of the terminal emulator.  It accepts a byte in
+;the accumulator, determines if it is a control code or character
+;to display, and dispatches it accordingly.
+;
 :L_06E8
 $06E8: 48        PHA
 $06E9: A5 06     LDA CURSOR_OFF    ;Get the current cursor state
@@ -479,14 +484,14 @@ $06F9: 25 13     AND $13
 $06FB: A6 0B     LDX $0B
 $06FD: D0 16     BNE L_0715
 $06FF: C9 20     CMP #$20
-$0701: B0 15     BCS L_0718
+$0701: B0 15     BCS L_0718        ;It's not a command if A <= #$20
 $0703: 0A        ASL A
 $0704: AA        TAX
-$0705: BD 1E 07  LDA CMDTABLE,X
+$0705: BD 1E 07  LDA CMDTABLE,X    ;Load vector from command dispatch table
 $0708: 85 0D     STA TARGET_LO
 $070A: BD 1F 07  LDA CMDTABLE+1,X
 $070D: 85 0E     STA TARGET_HI
-$070F: 20 1B 07  JSR JUMP_CMD
+$070F: 20 1B 07  JSR JUMP_CMD      ;Jump to vector to execute command
 $0712: 4C 8D 07  JMP L_078D
 :L_0715
 $0715: 4C B8 09  JMP L_09B8
@@ -588,6 +593,7 @@ $0792: 85 07     STA CHAR_TMP      ;  Remember it
 $0794: A5 0C     LDA CURSOR_TMP    ;Get the previous state of the cursor
 $0796: 85 06     STA CURSOR_OFF    ;  Restore it
 $0798: 60        RTS
+
 :L_0799
 $0799: C9 40     CMP #$40
 $079B: 90 ED     BCC L_078A
@@ -667,8 +673,9 @@ $07F4: A6 0A     LDX REVERSE      ;Is reverse video mode on?
 $07F6: F0 02     BEQ L_07FA       ;  No:  leave character alone
 $07F8: 49 80     EOR #$80         ;  Yes: Flip bit 7 to reverse the character
 :L_07FA
-$07FA: 20 88 09  JSR CALC_SCNPOS
+$07FA: 20 88 09  JSR CALC_SCNPOS  ;Calculate screen RAM pointer
 $07FD: 91 02     STA (SCNPOSL),Y  ;Write the character to the screen
+                                  ;Fall through into CMD_0C to advance cursor
 
 ;START OF COMMAND 0C
 ;Cursor right
@@ -677,8 +684,8 @@ $07FF: E6 04     INC CURSOR_X   ;X=X+1
 $0801: A6 04     LDX CURSOR_X
 $0803: E4 09     CPX X_WIDTH    ;X > max X?
 $0805: D0 10     BNE L_0817     ;  No:  Done, no need to scroll up.
-$0807: A9 00     LDA #$00       ;  Yes: Set X=0 and fall through into
-$0809: 85 04     STA CURSOR_X   ;       CMD_0A below to scroll up one line.
+$0807: A9 00     LDA #$00       ;  Yes: Set X=0 and then
+$0809: 85 04     STA CURSOR_X   ;       fall through into CMD_0A to scroll.
 
 ;START OF COMMAND 0A
 ;Line feed
