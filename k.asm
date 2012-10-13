@@ -483,8 +483,11 @@ $0718: 4C 99 07  JMP PUT_CHAR      ;Jump to put character on the screen
 :JUMP_CMD
 $071B: 6C 0D 00  JMP (TARGET_LO)   ;Jump to handle the control ocde
 
-;Terminal control code dispatch table
 :CTRL_CODES
+;Terminal control code dispatch table.  These control codes are based
+;on the Lear Seigler ADM-3A terminal.  Some bytes that are unused on
+;that terminal are used for other purposes here.
+;
 $071E:           .WORD CTRL_00  ;Do nothing
 $0720:           .WORD CTRL_01  ;Store #$FF in $13
 $0722:           .WORD CTRL_02  ;Store #$7F in $13
