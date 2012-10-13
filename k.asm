@@ -89,7 +89,7 @@ $047D: 85 18     STA $18
 $047F: 85 19     STA $19
 $0481: 85 1A     STA $1A
 $0483: A9 0A     LDA #$0A
-$0485: 8D 3D 0B  STA $0B3D          ;Store #$0A in $0B3d (?)
+$0485: 8D 3D 0B  STA UNKNOWN_7      ;Store #$0A in UNKNOWN_7 (?)
 $0488: 58        CLI                ;Enable interrupts again
 $0489: A9 0E     LDA #$0E
 $048B: 8D 4C E8  STA VIA_PCR        ;CA2 = High Output (IEEE-488 /NDAC = 1)
@@ -428,27 +428,27 @@ $0699: B1 02     LDA (SCNPOSL),Y   ;Read character at cursor
 $069B: 49 80     EOR #$80          ;Flip the REVERSE bit
 $069D: 91 02     STA (SCNPOSL),Y   ;Write it back
 :L_069F
-$069F: AD 37 0B  LDA $0B37
-$06A2: CD 3E 0B  CMP $0B3E
+$069F: AD 37 0B  LDA UNKNOWN_1
+$06A2: CD 3E 0B  CMP UNKNOWN_8
 $06A5: F0 0A     BEQ L_06B1
-$06A7: 8D 3E 0B  STA $0B3E
+$06A7: 8D 3E 0B  STA UNKNOWN_8
 $06AA: A9 10     LDA #$10
-$06AC: 8D 3C 0B  STA $0B3C
+$06AC: 8D 3C 0B  STA UNKNOWN_6
 $06AF: D0 21     BNE L_06D2
 :L_06B1
 $06B1: C9 FF     CMP #$FF
 $06B3: F0 1D     BEQ L_06D2
-$06B5: AD 3C 0B  LDA $0B3C
+$06B5: AD 3C 0B  LDA UNKNOWN_6
 $06B8: F0 05     BEQ L_06BF
-$06BA: CE 3C 0B  DEC $0B3C
+$06BA: CE 3C 0B  DEC UNKNOWN_6
 $06BD: D0 13     BNE L_06D2
 :L_06BF
-$06BF: CE 3D 0B  DEC $0B3D
+$06BF: CE 3D 0B  DEC UNKNOWN_7
 $06C2: D0 0E     BNE L_06D2
 $06C4: A9 04     LDA #$04
-$06C6: 8D 3D 0B  STA $0B3D
+$06C6: 8D 3D 0B  STA UNKNOWN_7
 $06C9: A9 00     LDA #$00
-$06CB: 8D 37 0B  STA $0B37
+$06CB: 8D 37 0B  STA UNKNOWN_1
 $06CE: A9 02     LDA #$02
 $06D0: 85 01     STA BLINK_CNT ;Fast cursor blink(?)
 :L_06D2
@@ -1083,22 +1083,22 @@ $09D1: 4C 8D 07  JMP L_078D        ;Done.
 
 :SCAN_KEYB
 ;Scan the keyboard.
-; USES: $0B37 - Shift Flag?
-;       $0B38 -
-;       $0B39 - Row counter?
-;       $0B3A -
-;       $0B3B -
+; USES: UNKNOWN_1 - Shift Flag?
+;       UNKNOWN_2 -
+;       UNKNOWN_3 - Row counter?
+;       UNKNOWN_4 -
+;       UNKNOWN_5 -
 :L_09D4
-$09D4: AD 37 0B  LDA $0B37
-$09D7: 8D 38 0B  STA $0B38
+$09D4: AD 37 0B  LDA UNKNOWN_1
+$09D7: 8D 38 0B  STA UNKNOWN_2
 $09DA: A2 00     LDX #$00               ;Start at ROW 0
-$09DC: 8E 3A 0B  STX $0B3A              ;save it
-$09DF: 8E 3B 0B  STX $0B3B              ;save it
+$09DC: 8E 3A 0B  STX UNKNOWN_4          ;save it
+$09DF: 8E 3B 0B  STX UNKNOWN_5          ;save it
 $09E2: 8E 10 E8  STX PIA1ROW            ;Select a keyboard ROW
 $09E5: A9 FF     LDA #$FF
-$09E7: 8D 37 0B  STA $0B37
+$09E7: 8D 37 0B  STA UNKNOWN_1
 $09EA: A9 0A     LDA #$0A               ;10 rows in table????
-$09EC: 8D 39 0B  STA $0B39
+$09EC: 8D 39 0B  STA UNKNOWN_3
 :L_09EF
 ;---- top of loop for keyboard ROWS
 $09EF: A0 08     LDY #$08               ;8 bits???
@@ -1123,30 +1123,30 @@ $0A09: BD 97 0A  LDA GRAPHICS_KEYS,X    ;  No:  read from Graphics keyboard tabl
 $0A0C: C9 01     CMP #$01               ;SHIFT KEY?
 $0A0E: F0 07     BEQ L_0A17
 $0A10: 90 0A     BCC L_0A1C
-$0A12: 8D 37 0B  STA $0B37              ;SHIFT FLAG?
+$0A12: 8D 37 0B  STA UNKNOWN_1          ;SHIFT FLAG?
 $0A15: B0 08     BCS L_0A1F
 :L_0A17
-$0A17: EE 3A 0B  INC $0B3A
+$0A17: EE 3A 0B  INC UNKNOWN_4
 $0A1A: D0 03     BNE L_0A1F
 :L_0A1C
-$0A1C: EE 3B 0B  INC $0B3B
+$0A1C: EE 3B 0B  INC UNKNOWN_5
 :L_0A1F
 $0A1F: 68        PLA                    ;pull the original scan value from stack
 $0A20: E8        INX                    ;next entry in table
 $0A21: 88        DEY                    ;next BIT?
 $0A22: D0 D5     BNE L_09F9             ;Is it ZERO? No, go back for more table entries
 $0A24: EE 10 E8  INC PIA1ROW            ;PIA#1 Keyboard Row Select
-$0A27: CE 39 0B  DEC $0B39              ;previous row?
+$0A27: CE 39 0B  DEC UNKNOWN_3          ;previous row?
 $0A2A: D0 C3     BNE L_09EF             ; Is it Zero? No, loop back up
-$0A2C: AD 37 0B  LDA $0B37
+$0A2C: AD 37 0B  LDA UNKNOWN_1
 $0A2F: C9 FF     CMP #$FF
 $0A31: F0 22     BEQ L_0A55
-$0A33: CD 38 0B  CMP $0B38
+$0A33: CD 38 0B  CMP UNKNOWN_2
 $0A36: F0 1D     BEQ L_0A55
 $0A38: C9 00     CMP #$00
 $0A3A: 10 0A     BPL L_0A46
 $0A3C: 29 7F     AND #$7F               ;remove the TOP bit (shift flag for character?)
-$0A3E: AC 3A 0B  LDY $0B3A
+$0A3E: AC 3A 0B  LDY UNKNOWN_4
 $0A41: F0 03     BEQ L_0A46
 $0A43: 49 10     EOR #$10               ;convert to ASCII?
 $0A45: 60        RTS
@@ -1155,7 +1155,7 @@ $0A46: C9 40     CMP #$40               ;"@"?
 $0A48: 90 25     BCC L_0A6F
 $0A4A: C9 60     CMP #$60               ;upper ascii limit?
 $0A4C: B0 21     BCS L_0A6F
-$0A4E: AC 3B 0B  LDY $0B3B
+$0A4E: AC 3B 0B  LDY UNKNOWN_5
 $0A51: F0 03     BEQ L_0A56
 $0A53: 29 1F     AND #$1F               ;CTRL key?
 :L_0A55
@@ -1165,7 +1165,7 @@ $0A56: C9 40     CMP #$40               ;"@"?
 $0A58: F0 15     BEQ L_0A6F
 $0A5A: C9 5B     CMP #$5B               ;"["?
 $0A5C: B0 11     BCS L_0A6F
-$0A5E: AC 3A 0B  LDY $0B3A
+$0A5E: AC 3A 0B  LDY UNKNOWN_4
 $0A61: D0 0C     BNE L_0A6F
 $0A63: 48        PHA
 $0A64: AD 4C E8  LDA VIA_PCR
@@ -1176,7 +1176,7 @@ $0A6A: 90 03     BCC L_0A6F
 $0A6C: 09 20     ORA #$20
 $0A6E: 60        RTS
 :L_0A6F
-$0A6F: AC 3A 0B  LDY $0B3A
+$0A6F: AC 3A 0B  LDY UNKNOWN_4
 $0A72: F0 20     BEQ L_0A94
 $0A74: A2 0B     LDX #$0B
 $0A76: C9 0A     CMP #$0A
@@ -1229,7 +1229,22 @@ $0B27:           .BYT 00,58,20,4D,1E,FF,AF,31  ; RVS   X     SPACE M     HOME  N
 $0B2F:           .BYT 5F,B3,B6,B9,FF,BA,FF,FF  ; BARRW ^3    ^6    ^9    STOP  ^:    NONE  NONE
 
 ;Storage locations used in keyboard scanning routine SCAN_KEYB
-$0B37:           .BYT AA,AA,AA,AA,AA,AA,AA,AA ;filler
+UNKNOWN_1:
+$0B37:           .BYT AA
+UNKNOWN_2:
+$0B38:           .BYT AA
+UNKNOWN_3:
+$0B39:           .BYT AA
+UNKNOWN_4:
+$0B3A:           .BYT AA
+UNKNOWN_5:
+$0B3B:           .BYT AA
+UNKNOWN_6:
+$0B3C:           .BYT AA
+UNKNOWN_7:
+$0B3D:           .BYT AA
+UNKNOWN_8:
+$0B3E:           .BYT AA
 
 ;Start of buffer used by commands 05, 06, and 09
 :TAB_STOPS
