@@ -451,7 +451,8 @@ $06E7: 40        RTI
 :PROCESS_BYTE
 ;This is the core of the terminal emulator.  It accepts a byte in
 ;the accumulator, determines if it is a control code or character
-;to display, and dispatches it accordingly.
+;to display, and then jumps accordingly.  After the jump, all
+;code paths will end up at PROCESS_DONE.
 ;
 $06E8: 48        PHA
 $06E9: A5 06     LDA CURSOR_OFF    ;Get the current cursor state
@@ -465,24 +466,24 @@ $06F8: 68        PLA
 $06F9: 25 13     AND $13
 $06FB: A6 0B     LDX MOVETO_CNT    ;More bytes to consume for a move-to seq?
 $06FD: D0 16     BNE L_0715        ;  Yes: branch to jump to move-to handler
-$06FF: C9 20     CMP #$20
-$0701: B0 15     BCS L_0718        ;It's not a command if A <= #$20
+$06FF: C9 20     CMP #$20          ;Is this byte a control code?
+$0701: B0 15     BCS L_0718        ;  No: branch to put char on screen
 $0703: 0A        ASL A
 $0704: AA        TAX
-$0705: BD 1E 07  LDA CMDTABLE,X    ;Load vector from command dispatch table
+$0705: BD 1E 07  LDA CMDTABLE,X    ;Load vector from control code table
 $0708: 85 0D     STA TARGET_LO
 $070A: BD 1F 07  LDA CMDTABLE+1,X
 $070D: 85 0E     STA TARGET_HI
-$070F: 20 1B 07  JSR JUMP_CMD      ;Jump to vector to execute command
-$0712: 4C 8D 07  JMP L_078D
+$070F: 20 1B 07  JSR JUMP_CMD      ;Jump to vector to handle control code
+$0712: 4C 8D 07  JMP PROCESS_DONE
 :L_0715
 $0715: 4C B8 09  JMP MOVE_TO       ;Jump to handle move-to sequence
 :L_0718
-$0718: 4C 99 07  JMP L_0799
+$0718: 4C 99 07  JMP PUT_CHAR      ;Jump to put character on the screen
 :JUMP_CMD
-$071B: 6C 0D 00  JMP (TARGET_LO)
+$071B: 6C 0D 00  JMP (TARGET_LO)   ;Jump to handle the control ocde
 
-; Command Table
+;Terminal control code dispatch table
 :CMDTABLE
 $071E:           .WORD CMD_00  ;Do nothing
 $0720:           .WORD CMD_01  ;Store #$FF in $13
@@ -564,19 +565,30 @@ $0788: 60        RTS
 :CMD_1F
 $0789: 60        RTS
 
-:L_078A
-$078A: 20 F4 07  JSR PUT_CHAR
-:L_078D
-$078D: 20 88 09  JSR CALC_SCNPOS
+:PUTSCN_THEN_DONE
+;Put the screen code in the accumulator on the screen
+;and then fall through to PROCESS_DONE.
+;
+$078A: 20 F4 07  JSR PUT_SCNCODE
+
+:PROCESS_DONE
+;This routine always returns to DO_TERMINAL except during init.
+;
+$078D: 20 88 09  JSR CALC_SCNPOS   ;Calculate screen RAM pointer
 $0790: B1 02     LDA (SCNPOSL),Y   ;Get the current character on the screen
 $0792: 85 07     STA CHAR_TMP      ;  Remember it
 $0794: A5 0C     LDA CURSOR_TMP    ;Get the previous state of the cursor
 $0796: 85 06     STA CURSOR_OFF    ;  Restore it
 $0798: 60        RTS
 
-:L_0799
+:PUT_CHAR
+;Puts an ASCII (not PETSCII) character in the accumulator on the screen
+;at the current CURSOR_X and CURSOR_Y position.  This routine first
+;converts the character to its equivalent CBM screen code and then
+;jumps out to print it to the screen.
+;
 $0799: C9 40     CMP #$40
-$079B: 90 ED     BCC L_078A
+$079B: 90 ED     BCC PUTSCN_THEN_DONE
 $079D: C9 60     CMP #$60
 $079F: B0 05     BCS L_07A6
 $07A1: 29 3F     AND #$3F
@@ -600,14 +612,14 @@ $07BD: 4A        LSR A
 $07BE: B0 06     BCS L_07C6
 $07C0: 8A        TXA
 $07C1: 29 1F     AND #$1F
-$07C3: 4C 8A 07  JMP L_078A
+$07C3: 4C 8A 07  JMP PUTSCN_THEN_DONE
 :L_07C6
 $07C6: 8A        TXA
-$07C7: 4C 8A 07  JMP L_078A
+$07C7: 4C 8A 07  JMP PUTSCN_THEN_DONE
 :L_07CA
 $07CA: 29 7F     AND #$7F
 $07CC: 09 40     ORA #$40
-$07CE: 4C 8A 07  JMP L_078A
+$07CE: 4C 8A 07  JMP PUTSCN_THEN_DONE
 
 ;START OF COMMAND 15
 ;Set IEEE-488 /NDAC = 0
@@ -646,8 +658,8 @@ $07EF: F0 FB     BEQ L_07EC     ; Y=0? Can't move up.
 $07F1: C6 05     DEC CURSOR_Y   ; Y=Y-1
 $07F3: 60        RTS
 
-:PUT_CHAR
-;Put the character in A at the current screen position
+:PUT_SCNCODE
+;Put the screen code in A on the screen at the current cursor position
 $07F4: A6 0A     LDX REVERSE      ;Is reverse video mode on?
 $07F6: F0 02     BEQ L_07FA       ;  No:  leave character alone
 $07F8: 49 80     EOR #$80         ;  Yes: Flip bit 7 to reverse the character
@@ -1045,14 +1057,14 @@ $09BF: C5 09     CMP X_WIDTH       ;Requested X position out of range?
 $09C1: B0 02     BCS L_09C5        ;  Yes: Do nothing.
 $09C3: 85 04     STA CURSOR_X      ;  No:  Move cursor to requested X.
 :L_09C5
-$09C5: 4C 8D 07  JMP L_078D        ;Done.
+$09C5: 4C 8D 07  JMP PROCESS_DONE  ;Done.
 :L_09C8
 $09C8: 38        SEC
 $09C9: E9 20     SBC #$20          ;Y-pos = Y-pos - #$20
 $09CB: C9 19     CMP #$19          ;Requested Y position out of range?
 $09CD: B0 F6     BCS L_09C5        ;  Yes: Do nothing.
 $09CF: 85 05     STA CURSOR_Y      ;  No:  Move cursor to requested Y.
-$09D1: 4C 8D 07  JMP L_078D        ;Done.
+$09D1: 4C 8D 07  JMP PROCESS_DONE  ;Done.
 
 :SCAN_KEYB
 ;Scan the keyboard.
