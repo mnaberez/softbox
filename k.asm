@@ -1222,21 +1222,21 @@ $0B27:           .BYT 00,58,20,4D,1E,FF,AF,31  ; RVS   X     SPACE M     HOME  N
 $0B2F:           .BYT 5F,B3,B6,B9,FF,BA,FF,FF  ; BARRW ^3    ^6    ^9    STOP  ^:    NONE  NONE
 
 ;Storage locations used in keyboard scanning routine SCAN_KEYB
-UNKNOWN_1:
+:UNKNOWN_1
 $0B37:           .BYT AA
-UNKNOWN_2:
+:UNKNOWN_2
 $0B38:           .BYT AA
-UNKNOWN_3:
+:UNKNOWN_3
 $0B39:           .BYT AA
-UNKNOWN_4:
+:UNKNOWN_4
 $0B3A:           .BYT AA
-UNKNOWN_5:
+:UNKNOWN_5
 $0B3B:           .BYT AA
-UNKNOWN_6:
+:UNKNOWN_6
 $0B3C:           .BYT AA
-UNKNOWN_7:
+:UNKNOWN_7
 $0B3D:           .BYT AA
-UNKNOWN_8:
+:UNKNOWN_8
 $0B3E:           .BYT AA
 
 ;Start of buffer used by commands 05, 06, and 09
