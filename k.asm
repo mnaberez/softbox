@@ -1256,4 +1256,4 @@ $0BD7:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0BDF:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0BE7:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0BEF:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
-$0BF7:           .BYT AA,AA,AA,AA,AA,AA
+$0BF7:           .BYT AA,AA,AA,AA,AA,AA,AA
