@@ -498,38 +498,38 @@ $071B: 6C 0D 00  JMP (TARGET_LO)
 
 ; Command Table
 :CMDTABLE
-$071E:           .BYT <CMD_00, >CMD_00    ;Do nothing
-$0720:           .BYT <CMD_01, >CMD_01    ;Store #$FF in $13
-$0722:           .BYT <CMD_02, >CMD_02    ;Store #$7F in $13
-$0724:           .BYT <CMD_03, >CMD_03    ;Do nothing
-$0726:           .BYT <CMD_04, >CMD_04    ;Set TAB STOP at current position
-$0728:           .BYT <CMD_05, >CMD_05    ;Clear TAB STOP at current position
-$072A:           .BYT <CMD_06, >CMD_06    ;Clear all TAB STOPS
-$072C:           .BYT <CMD_07, >CMD_07    ;Ring bell
-$072E:           .BYT <CMD_08, >CMD_08    ;Cursor left
-$0730:           .BYT <CMD_09, >CMD_09    ;Preform TAB
-$0732:           .BYT <CMD_0A, >CMD_0A    ;Line feed
-$0734:           .BYT <CMD_0B, >CMD_0B    ;Cursor up
-$0736:           .BYT <CMD_0C, >CMD_0C    ;Cursor right
-$0738:           .BYT <CMD_0D, >CMD_0D    ;Carriage return
-$073A:           .BYT <CMD_0E, >CMD_0E    ;Reverse video on
-$073C:           .BYT <CMD_0F, >CMD_0F    ;Reverse video off
-$073E:           .BYT <CMD_10, >CMD_10    ;Cursor off
-$0740:           .BYT <CMD_11, >CMD_11    ;Insert a blank line
-$0742:           .BYT <CMD_12, >CMD_12    ;Scroll up one line
-$0744:           .BYT <CMD_13, >CMD_13    ;Clear to end of line
-$0746:           .BYT <CMD_14, >CMD_14    ;Clear to end of screen
-$0748:           .BYT <CMD_15, >CMD_15    ;Set IEEE-488 /NDAC = 0
-$074A:           .BYT <CMD_16, >CMD_16    ;Set IEEE-488 /NDAC = 1
-$074C:           .BYT <CMD_17, >CMD_17    ;Go to uppercase mode
-$074E:           .BYT <CMD_18, >CMD_18    ;Go to lowercase mode
-$0750:           .BYT <CMD_19, >CMD_19    ;Cursor on
-$0752:           .BYT <CMD_1A, >CMD_1A    ;Clear screen
-$0754:           .BYT <CMD_1B, >CMD_1B    ;Move cursor to X,Y position
-$0756:           .BYT <CMD_1C, >CMD_1C    ;Insert a space on current line
-$0758:           .BYT <CMD_1D, >CMD_1D    ;Delete character at cursor
-$075A:           .BYT <CMD_1E, >CMD_1E    ;Home cursor
-$075C:           .BYT <CMD_1F, >CMD_1F    ;Do nothing
+$071E:           .WORD CMD_00  ;Do nothing
+$0720:           .WORD CMD_01  ;Store #$FF in $13
+$0722:           .WORD CMD_02  ;Store #$7F in $13
+$0724:           .WORD CMD_03  ;Do nothing
+$0726:           .WORD CMD_04  ;Set TAB STOP at current position
+$0728:           .WORD CMD_05  ;Clear TAB STOP at current position
+$072A:           .WORD CMD_06  ;Clear all TAB STOPS
+$072C:           .WORD CMD_07  ;Ring bell
+$072E:           .WORD CMD_08  ;Cursor left
+$0730:           .WORD CMD_09  ;Preform TAB
+$0732:           .WORD CMD_0A  ;Line feed
+$0734:           .WORD CMD_0B  ;Cursor up
+$0736:           .WORD CMD_0C  ;Cursor right
+$0738:           .WORD CMD_0D  ;Carriage return
+$073A:           .WORD CMD_0E  ;Reverse video on
+$073C:           .WORD CMD_0F  ;Reverse video off
+$073E:           .WORD CMD_10  ;Cursor off
+$0740:           .WORD CMD_11  ;Insert a blank line
+$0742:           .WORD CMD_12  ;Scroll up one line
+$0744:           .WORD CMD_13  ;Clear to end of line
+$0746:           .WORD CMD_14  ;Clear to end of screen
+$0748:           .WORD CMD_15  ;Set IEEE-488 /NDAC = 0
+$074A:           .WORD CMD_16  ;Set IEEE-488 /NDAC = 1
+$074C:           .WORD CMD_17  ;Go to uppercase mode
+$074E:           .WORD CMD_18  ;Go to lowercase mode
+$0750:           .WORD CMD_19  ;Cursor on
+$0752:           .WORD CMD_1A  ;Clear screen
+$0754:           .WORD CMD_1B  ;Move cursor to X,Y position
+$0756:           .WORD CMD_1C  ;Insert a space on current line
+$0758:           .WORD CMD_1D  ;Delete character at cursor
+$075A:           .WORD CMD_1E  ;Home cursor
+$075C:           .WORD CMD_1F  ;Do nothing
 
 ;START OF COMMAND 07
 ;Ring bell
