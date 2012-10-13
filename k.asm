@@ -1,46 +1,46 @@
 ; Auto Disassembly of: k
 ;----- Equates
 ;
-INTVECL    = $90     ;hardware interrupt vector LO
-INTVECH    = $91     ;hardware interrupt vector HI
-KEYBUF     = $026F   ;Keyboard Input Buffer
-SCREEN     = $8000   ;Start of screen ram
-PIA1ROW    = $E810   ;PIA#1 Keyboard Row Select
-PIA1COL    = $E812   ;PIA#1 Keyboard Columns Read
-PIA2IEEE   = $E820   ;PIA#2 IEEE Input
-PIA2NDAC   = $E821   ;PIA#2 IEEE NDAC control
-PIA2IOUT   = $E822   ;PIA#2 IEEE Output
-PIA2DAV    = $E823   ;PIA#2 IEEE DAV control
-VIAPB      = $E840   ;VIA PortB
-VIA_PCR    = $E84C   ;VIA Peripheral Control Register (PCR)
-CHROUT     = $FFD2   ;Kernal Print a byte
+INTVECL     = $90     ;hardware interrupt vector LO
+INTVECH     = $91     ;hardware interrupt vector HI
+KEYBUF      = $026F   ;Keyboard Input Buffer
+SCREEN      = $8000   ;Start of screen ram
+PIA1ROW     = $E810   ;PIA#1 Keyboard Row Select
+PIA1COL     = $E812   ;PIA#1 Keyboard Columns Read
+PIA2IEEE    = $E820   ;PIA#2 IEEE Input
+PIA2NDAC    = $E821   ;PIA#2 IEEE NDAC control
+PIA2IOUT    = $E822   ;PIA#2 IEEE Output
+PIA2DAV     = $E823   ;PIA#2 IEEE DAV control
+VIAPB       = $E840   ;VIA PortB
+VIA_PCR     = $E84C   ;VIA Peripheral Control Register (PCR)
+CHROUT      = $FFD2   ;Kernal Print a byte
 ;
-BLINK_CNT  = $01     ;Counter used for cursor blink timing
-SCNPOSL    = $02     ;Pointer to current screen -LO
-SCNPOSH    = $03     ;Pointer to current screen -HI
-CURSOR_X   = $04     ;Current X position: 0-79
-CURSOR_Y   = $05     ;Current Y position: 0-24
-CURSOR_OFF = $06     ;Cursor state: hide cursor if 0, else show cursor
-CHAR_TMP   = $07     ;Temporary storage for the last screen character
-KEYCOUNT   = $08     ;Number of keys in the buffer at KEYBUF
-X_WIDTH    = $09     ;Width of X in characters (40 or 80)
-REVERSE    = $0A     ;Reverse video flag (reverse on = 1)
-MOVETO_CNT = $0B     ;Counts down bytes to consume in a move-to (CMD_1B) seq
-CURSOR_TMP = $0C     ;Pending cursor state used with CURSOR_OFF
-TARGET_LO  = $0D     ;Target address for mem xfers, ind jump, & CMD_11 - LO
-TARGET_HI  = $0E     ;Target address for mem xfers, ind jump, & CMD_11 - HI
-INSERT_LO  = $0F     ;Insert line (CMD_11) destination screen address - LO
-INSERT_HI  = $10     ;Insert line (CMD_11) destination screen address - HI
-XFER_LO    = $11     ;Memory transfer byte counter - LO
-XFER_HI    = $12     ;Memory transfer byte counter - HI
-; ?????    = $13     ;????????
-; ?????    = $14     ;????????
-; ?????    = $15     ;????????
-; ?????    = $16     ;????????
-; ?????    = $17     ;????????
-; ?????    = $18     ;????????
-; ?????    = $19     ;????????
-; ?????    = $1A     ;????????
+BLINK_CNT   = $01     ;Counter used for cursor blink timing
+SCNPOSL     = $02     ;Pointer to current screen -LO
+SCNPOSH     = $03     ;Pointer to current screen -HI
+CURSOR_X    = $04     ;Current X position: 0-79
+CURSOR_Y    = $05     ;Current Y position: 0-24
+CURSOR_OFF  = $06     ;Cursor state: hide cursor if 0, else show cursor
+SCNCODE_TMP = $07     ;Temporary storage for the last screen code
+KEYCOUNT    = $08     ;Number of keys in the buffer at KEYBUF
+X_WIDTH     = $09     ;Width of X in characters (40 or 80)
+REVERSE     = $0A     ;Reverse video flag (reverse on = 1)
+MOVETO_CNT  = $0B     ;Counts down bytes to consume in a move-to (CMD_1B) seq
+CURSOR_TMP  = $0C     ;Pending cursor state used with CURSOR_OFF
+TARGET_LO   = $0D     ;Target address for mem xfers, ind jump, & CMD_11 - LO
+TARGET_HI   = $0E     ;Target address for mem xfers, ind jump, & CMD_11 - HI
+INSERT_LO   = $0F     ;Insert line (CMD_11) destination screen address - LO
+INSERT_HI   = $10     ;Insert line (CMD_11) destination screen address - HI
+XFER_LO     = $11     ;Memory transfer byte counter - LO
+XFER_HI     = $12     ;Memory transfer byte counter - HI
+; ?????     = $13     ;????????
+; ?????     = $14     ;????????
+; ?????     = $15     ;????????
+; ?????     = $16     ;????????
+; ?????     = $17     ;????????
+; ?????     = $18     ;????????
+; ?????     = $19     ;????????
+; ?????     = $1A     ;????????
 ;
 *=$0400
 
@@ -460,7 +460,7 @@ $06EB: 85 0C     STA CURSOR_TMP    ;  Remember it
 $06ED: A9 FF     LDA #$FF
 $06EF: 85 06     STA CURSOR_OFF    ;Hide the cursor
 $06F1: 20 88 09  JSR CALC_SCNPOS   ;Calculate screen RAM pointer
-$06F4: A5 07     LDA CHAR_TMP      ;Get the character previously saved
+$06F4: A5 07     LDA SCNCODE_TMP   ;Get the screen code previously saved
 $06F6: 91 02     STA (SCNPOSL),Y   ;  Put it on the screen
 $06F8: 68        PLA
 $06F9: 25 13     AND $13
@@ -576,7 +576,7 @@ $078A: 20 F4 07  JSR PUT_SCNCODE
 ;
 $078D: 20 88 09  JSR CALC_SCNPOS   ;Calculate screen RAM pointer
 $0790: B1 02     LDA (SCNPOSL),Y   ;Get the current character on the screen
-$0792: 85 07     STA CHAR_TMP      ;  Remember it
+$0792: 85 07     STA SCNCODE_TMP   ;  Remember it
 $0794: A5 0C     LDA CURSOR_TMP    ;Get the previous state of the cursor
 $0796: 85 06     STA CURSOR_OFF    ;  Restore it
 $0798: 60        RTS
