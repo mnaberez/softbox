@@ -123,7 +123,7 @@ $04B3: 06 09     ASL X_WIDTH        ;  Yes: X_WIDTH = 80 characters
 :INIT_TERM
 $04B5: A9 1A     LDA #$1A           ;Load #$1A = CMD_1A Clear Screen
 $04B7: 20 E8 06  JSR PROCESS_BYTE   ;Call into terminal to execute clear screen
-$04BA: 20 D4 08  JSR CMD_06         ;Fill BUFFER with zeroes
+$04BA: 20 D4 08  JSR CMD_06         ;Clear all tab stops
 
 :INIT_IEEE
 $04BD: AD 22 E8  LDA PIA2IOUT       ;PIA#2 IEEE Output
@@ -493,7 +493,7 @@ $0728:           .WORD CMD_05  ;Clear TAB STOP at current position
 $072A:           .WORD CMD_06  ;Clear all TAB STOPS
 $072C:           .WORD CMD_07  ;Ring bell
 $072E:           .WORD CMD_08  ;Cursor left
-$0730:           .WORD CMD_09  ;Preform TAB
+$0730:           .WORD CMD_09  ;Perform TAB
 $0732:           .WORD CMD_0A  ;Line feed
 $0734:           .WORD CMD_0B  ;Cursor up
 $0736:           .WORD CMD_0C  ;Cursor right
