@@ -65,7 +65,6 @@ $045A:           .BYT 4C,59,20,31,39,38,31,20 ;copyright text
 $0462:           .BYT 20,20,20,20             ;copyright text
 
 :INIT
-:L_0466
 $0466: 78        SEI                ;Disable interrupts
 $0467: A9 4F     LDA #<INT_HANDLER  ;Interrupt handler address LO (#$4F)
 $0469: 85 90     STA INTVECL
@@ -122,7 +121,6 @@ $04B1: D0 02     BNE INIT_TERM      ;  No:  we're done, X_WIDTH = 40.
 $04B3: 06 09     ASL X_WIDTH        ;  Yes: X_WIDTH = 80 characters
 
 :INIT_TERM
-:L_04B5
 $04B5: A9 1A     LDA #$1A           ;Load #$1A = CMD_1A Clear Screen
 $04B7: 20 E8 06  JSR PROCESS_BYTE   ;Call into terminal to execute clear screen
 $04BA: 20 D4 08  JSR CMD_06         ;Fill BUFFER with zeroes
@@ -148,7 +146,6 @@ $04E1: 8D 21 E8  STA PIA2NDAC       ;PIA#2 IEEE NDAC control
 $04E4: 8D 23 E8  STA PIA2DAV        ;PIA#2 IEEE DAV control
 
 :MAIN_LOOP
-:L_04E7
 $04E7: A9 3C     LDA #$3C
 $04E9: 8D 21 E8  STA PIA2NDAC       ;PIA#2 IEEE NDAC control
 $04EC: AD 40 E8  LDA VIAPB          ;VIA PortB
@@ -197,12 +194,10 @@ $0532: 4C 5B 05  JMP DO_READ_MEM    ;Transfer from PET memory to the SoftBox
 
 :DO_GET_KEY
 ;Wait for a key and send it to the SoftBox.
-:L_0535
 $0535: 4C C6 05  JMP L_05C6
 
 :DO_TERMINAL
 ;Write to the terminal screen
-:L_0538
 $0538: 20 CF 05  JSR IEEE_GET_BYTE
 $053B: A2 3C     LDX #$3C
 $053D: 8E 21 E8  STX PIA2NDAC       ;PIA#2 IEEE NDAC control
@@ -211,7 +206,6 @@ $0543: 4C E7 04  JMP MAIN_LOOP
 
 :DO_JUMP
 ;Jump to an address
-:L_0546
 $0546: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
 $0549: 85 0D     STA TARGET_LO       ; -> Command vector lo
 $054B: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
@@ -223,7 +217,6 @@ $0558: 4C E7 04  JMP MAIN_LOOP
 
 :DO_READ_MEM
 ;Transfer bytes from PET memory to the SoftBox
-:L_055B
 $055B: 20 CF 05  JSR IEEE_GET_BYTE
 $055E: 85 11     STA XFER_LO
 $0560: 20 CF 05  JSR IEEE_GET_BYTE
@@ -253,7 +246,6 @@ $058C: 4C E7 04  JMP MAIN_LOOP
 
 :DO_WRITE_MEM
 ;Transfer from the SoftBox to PET memory
-:L_058F
 $058F: 20 CF 05  JSR IEEE_GET_BYTE
 $0592: 85 11     STA XFER_LO
 $0594: 20 CF 05  JSR IEEE_GET_BYTE
@@ -294,7 +286,6 @@ $05CC: 4C E7 04  JMP MAIN_LOOP
 ;
 ;TODO: It looks like this routine reads a byte from IEEE.  Needs disassembly.
 ;
-:L_05CF
 $05CF: AD 40 E8  LDA VIAPB ;VIA PortB
 $05D2: 09 02     ORA #$02
 $05D4: 8D 40 E8  STA VIAPB ;VIA PortB
@@ -321,7 +312,6 @@ $05FA: 60        RTS
 ;
 ;TODO: It looks like this routine writes a byte to IEEE.  Needs disassembly.
 ;
-:L_05FB
 $05FB: 49 FF     EOR #$FF
 $05FD: 8D 22 E8  STA PIA2IOUT ;PIA#2 IEEE Output
 $0600: AD 40 E8  LDA VIAPB ;VIA PortB
@@ -354,7 +344,6 @@ $062D: 60        RTS
 ;block until it gets one.  Meanwhile, the interrupt handler
 ;calls SCAN_KEYB and puts any key into the buffer.
 ;
-:L_062E
 $062E: A9 FF     LDA #$FF        ;FF = no key
 $0630: 78        SEI             ;Disable interrupts
 $0631: A6 08     LDX KEYCOUNT    ;Is there a key waiting in the buffer?
@@ -409,7 +398,6 @@ $0684: D0 04     BNE BLINK_CURSOR
 $0686: A9 00     LDA #$00
 $0688: 85 17     STA $17
 :BLINK_CURSOR
-:L_068A
 $068A: A5 06     LDA CURSOR_OFF    ;Is the cursor off?
 $068C: D0 11     BNE L_069F        ;  Yes: skip cursor blink
 $068E: C6 01     DEC BLINK_CNT     ;Decrement cursor blink countdown
@@ -465,7 +453,6 @@ $06E7: 40        RTI
 ;the accumulator, determines if it is a control code or character
 ;to display, and dispatches it accordingly.
 ;
-:L_06E8
 $06E8: 48        PHA
 $06E9: A5 06     LDA CURSOR_OFF    ;Get the current cursor state
 $06EB: 85 0C     STA CURSOR_TMP    ;  Remember it
@@ -493,7 +480,6 @@ $0715: 4C B8 09  JMP MOVE_TO       ;Jump to handle move-to sequence
 :L_0718
 $0718: 4C 99 07  JMP L_0799
 :JUMP_CMD
-:L_071B
 $071B: 6C 0D 00  JMP (TARGET_LO)
 
 ; Command Table
@@ -567,7 +553,6 @@ $0783: 60        RTS
 
 ;START OF COMMAND 02
 :CMD_02
-:L_0784
 $0784: A9 7F     LDA #$7F
 $0786: 85 13     STA $13
 $0788: 60        RTS
@@ -663,7 +648,6 @@ $07F3: 60        RTS
 
 :PUT_CHAR
 ;Put the character in A at the current screen position
-:L_07F4
 $07F4: A6 0A     LDX REVERSE      ;Is reverse video mode on?
 $07F6: F0 02     BEQ L_07FA       ;  No:  leave character alone
 $07F8: 49 80     EOR #$80         ;  Yes: Flip bit 7 to reverse the character
@@ -802,7 +786,6 @@ $088D: 60        RTS
 
 ;Scroll the screen up one line
 :SCROLL_UP
-:L_088E
 $088E: A9 00     LDA #$00
 $0890: 85 02     STA SCNPOSL
 $0892: A5 09     LDA X_WIDTH
@@ -856,7 +839,6 @@ $08D3: 60        RTS
 ;START OF COMMAND 06
 ; Clear ALL TAB STOPS
 :CMD_06
-:L_08D4
 $08D4: A2 4F     LDX #$4F  ; 80 characters-1
 $08D6: A9 00     LDA #$00  ; zero
 :L_08D8
@@ -1001,7 +983,6 @@ $0987: 60        RTS
 :CALC_SCNPOS
 ;Calculate a new pointer to screen memory (SCNPOSL/SCNPOSH)
 ;from cursor position at CURSOR_X and CURSOR_Y
-:L_0988
 $0988: 48        PHA
 $0989: A9 00     LDA #$00
 $098B: 85 03     STA SCNPOSH
@@ -1056,7 +1037,6 @@ $09B7: 60        RTS
 ;and the Y-position byte on the second call.  After the Y-position byte
 ;has been consumed, MOVETO_CNT = 0, exiting the move-to sequence.
 ;
-:L_09B8
 $09B8: C6 0B     DEC MOVETO_CNT    ;Decrement bytes remaining to consume
 $09BA: F0 0C     BEQ L_09C8        ;Already got X pos?  Handle this byte as Y.
 $09BC: 38        SEC
@@ -1081,7 +1061,6 @@ $09D1: 4C 8D 07  JMP L_078D        ;Done.
 ;       UNKNOWN_3 - Row counter?
 ;       UNKNOWN_4 -
 ;       UNKNOWN_5 -
-:L_09D4
 $09D4: AD 37 0B  LDA UNKNOWN_1
 $09D7: 8D 38 0B  STA UNKNOWN_2
 $09DA: A2 00     LDX #$00               ;Start at ROW 0
