@@ -505,38 +505,38 @@ $071B: 6C 0D 00  JMP (TARGET_LO)
 
 ; Command Table
 :CMDTABLE
-$071E:           .BYT 89,07    ;CMD_00 @ $0789 (Do nothing)
-$0720:           .BYT 7F,07    ;CMD_01 @ $077F (Store #$FF in $13)
-$0722:           .BYT 84,07    ;CMD_02 @ $0784 (Store #$7F in $13)
-$0724:           .BYT 89,07    ;CMD_03 @ $0789 (Do nothing)
-$0726:           .BYT C9,08    ;CMD_04 @ $08C9 (Set TAB STOP at current position)
-$0728:           .BYT CC,08    ;CMD_05 @ $08CC (Clear TAB STOP at current position)
-$072A:           .BYT D4,08    ;CMD_06 @ $08D4 (Clear all TAB STOPS)
-$072C:           .BYT 5E,07    ;CMD_07 @ $075E (Ring bell)
-$072E:           .BYT DD,07    ;CMD_08 @ $07DD (Cursor left)
-$0730:           .BYT DF,08    ;CMD_09 @ $08DF (Preform TAB)
-$0732:           .BYT 0B,08    ;CMD_0A @ $080B (Line feed)
-$0734:           .BYT ED,07    ;CMD_0B @ $07ED (Cursor up)
-$0736:           .BYT FF,07    ;CMD_0C @ $07FF (Cursor right)
-$0738:           .BYT 45,08    ;CMD_0D @ $0845 (Carriage return)
-$073A:           .BYT 54,08    ;CMD_0E @ $0854 (Reverse video on)
-$073C:           .BYT 59,08    ;CMD_0F @ $0859 (Reverse video off)
-$073E:           .BYT 4A,08    ;CMD_10 @ $084A (Cursor off)
-$0740:           .BYT 3B,09    ;CMD_11 @ $093B (Insert a blank line)
-$0742:           .BYT 1E,09    ;CMD_12 @ $091E (Scroll up one line)
-$0744:           .BYT 5E,08    ;CMD_13 @ $085E (Clear to end of line)
-$0746:           .BYT 6B,08    ;CMD_14 @ $086B (Clear to end of screen)
-$0748:           .BYT D1,07    ;CMD_15 @ $07D1 (Set IEEE-488 /NDAC = 0)
-$074A:           .BYT D7,07    ;CMD_16 @ $07D7 (Set IEEE-488 /NDAC = 1)
-$074C:           .BYT 71,07    ;CMD_17 @ $0771 (Go to uppercase mode)
-$074E:           .BYT 63,07    ;CMD_18 @ $0763 (Go to lowercase mode)
-$0750:           .BYT 4F,08    ;CMD_19 @ $084F (Cursor on)
-$0752:           .BYT 1F,08    ;CMD_1A @ $081F (Clear screen)
-$0754:           .BYT B3,09    ;CMD_1B @ $09B3 (Move cursor to X,Y position)
-$0756:           .BYT EE,08    ;CMD_1C @ $08EE (Insert a space on current line)
-$0758:           .BYT 06,09    ;CMD_1D @ $0906 (Delete character at cursor)
-$075A:           .BYT 18,08    ;CMD_1E @ $0818 (Home cursor)
-$075C:           .BYT 89,07    ;CMD_1F @ $0789 (Do nothing)
+$071E:           .BYT <CMD_00, >CMD_00    ;Do nothing
+$0720:           .BYT <CMD_01, >CMD_01    ;Store #$FF in $13
+$0722:           .BYT <CMD_02, >CMD_02    ;Store #$7F in $13
+$0724:           .BYT <CMD_03, >CMD_03    ;Do nothing
+$0726:           .BYT <CMD_04, >CMD_04    ;Set TAB STOP at current position
+$0728:           .BYT <CMD_05, >CMD_05    ;Clear TAB STOP at current position
+$072A:           .BYT <CMD_06, >CMD_06    ;Clear all TAB STOPS
+$072C:           .BYT <CMD_07, >CMD_07    ;Ring bell
+$072E:           .BYT <CMD_08, >CMD_08    ;Cursor left
+$0730:           .BYT <CMD_09, >CMD_09    ;Preform TAB
+$0732:           .BYT <CMD_0A, >CMD_0A    ;Line feed
+$0734:           .BYT <CMD_0B, >CMD_0B    ;Cursor up
+$0736:           .BYT <CMD_0C, >CMD_0C    ;Cursor right
+$0738:           .BYT <CMD_0D, >CMD_0D    ;Carriage return
+$073A:           .BYT <CMD_0E, >CMD_0E    ;Reverse video on
+$073C:           .BYT <CMD_0F, >CMD_0F    ;Reverse video off
+$073E:           .BYT <CMD_10, >CMD_10    ;Cursor off
+$0740:           .BYT <CMD_11, >CMD_11    ;Insert a blank line
+$0742:           .BYT <CMD_12, >CMD_12    ;Scroll up one line
+$0744:           .BYT <CMD_13, >CMD_13    ;Clear to end of line
+$0746:           .BYT <CMD_14, >CMD_14    ;Clear to end of screen
+$0748:           .BYT <CMD_15, >CMD_15    ;Set IEEE-488 /NDAC = 0
+$074A:           .BYT <CMD_16, >CMD_16    ;Set IEEE-488 /NDAC = 1
+$074C:           .BYT <CMD_17, >CMD_17    ;Go to uppercase mode
+$074E:           .BYT <CMD_18, >CMD_18    ;Go to lowercase mode
+$0750:           .BYT <CMD_19, >CMD_19    ;Cursor on
+$0752:           .BYT <CMD_1A, >CMD_1A    ;Clear screen
+$0754:           .BYT <CMD_1B, >CMD_1B    ;Move cursor to X,Y position
+$0756:           .BYT <CMD_1C, >CMD_1C    ;Insert a space on current line
+$0758:           .BYT <CMD_1D, >CMD_1D    ;Delete character at cursor
+$075A:           .BYT <CMD_1E, >CMD_1E    ;Home cursor
+$075C:           .BYT <CMD_1F, >CMD_1F    ;Do nothing
 
 ;START OF COMMAND 07
 ;Ring bell
@@ -557,7 +557,7 @@ $0770: 60        RTS
 
 ;START OF COMMAND 17
 ;Go to uppercase mode
-;CMD_17
+:CMD_17
 $0771: AD 4C E8  LDA VIA_PCR
 $0774: 48        PHA
 $0775: A9 8E     LDA #$8E     ;CHR$(142) = Switch to uppercase mode
@@ -662,7 +662,7 @@ $07EC: 60        RTS
 
 ;START OF COMMAND 0B
 ;Cursor up
-;CMD_0B
+:CMD_0B
 $07ED: A4 05     LDY CURSOR_Y
 $07EF: F0 FB     BEQ L_07EC     ; Y=0? Can't move up.
 $07F1: C6 05     DEC CURSOR_Y   ; Y=Y-1
@@ -761,7 +761,7 @@ $0858: 60        RTS
 
 ;START OF COMMAND 0F
 ;Reverse video off
-;CMD_0F
+:CMD_0F
 $0859: A9 00     LDA #$00
 $085B: 85 0A     STA REVERSE
 $085D: 60        RTS
