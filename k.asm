@@ -4,14 +4,7 @@
 INTVECL    = $90     ;hardware interrupt vector LO
 INTVECH    = $91     ;hardware interrupt vector HI
 KEYBUF     = $026F   ;Keyboard Input Buffer
-SCREEN0    = $8000   ;screen page 0 (start of screen ram)
-SCREEN1    = $8100   ;screen page 1
-SCREEN2    = $8200   ;screen page 2
-SCREEN3    = $8300   ;screen page 3
-SCREEN4    = $8400   ;screen page 4
-SCREEN5    = $8500   ;screen page 5
-SCREEN6    = $8600   ;screen page 6
-SCREEN7    = $8700   ;screen page 7
+SCREEN     = $8000   ;Start of screen ram
 PIA1ROW    = $E810   ;PIA#1 Keyboard Row Select
 PIA1COL    = $E812   ;PIA#1 Keyboard Columns Read
 PIA2IEEE   = $E820   ;PIA#2 IEEE Input
@@ -118,13 +111,13 @@ $0499: 85 0B     STA MOVETO_CNT     ;Move-to counter = not in a move-to seq
 $049B: A9 28     LDA #$28
 $049D: 85 09     STA X_WIDTH        ;X_WIDTH = 40 characters
 $049F: A9 55     LDA #$55
-$04A1: 8D 00 80  STA SCREEN0        ;Start of screen RAM for both 40 and 80 cols
+$04A1: 8D 00 80  STA SCREEN         ;Start of screen RAM for both 40 and 80 cols
 $04A4: 0A        ASL A
-$04A5: 8D 00 84  STA SCREEN4        ;Store test byte in first page of 80 col RAM
-$04A8: CD 00 84  CMP SCREEN4        ;Test byte for 80 column RAM successful?
+$04A5: 8D 00 84  STA SCREEN+$400    ;Store test byte in first page of 80 col RAM
+$04A8: CD 00 84  CMP SCREEN+$400    ;Test byte for 80 column RAM successful?
 $04AB: D0 08     BNE INIT_TERM      ;  No: we're done, X_WIDTH = 40.
 $04AD: 4A        LSR A
-$04AE: CD 00 80  CMP SCREEN0        ;Test byte for common screen RAM successful?
+$04AE: CD 00 80  CMP SCREEN         ;Test byte for common screen RAM successful?
 $04B1: D0 02     BNE INIT_TERM      ;  No:  we're done, X_WIDTH = 40.
 $04B3: 06 09     ASL X_WIDTH        ;  Yes: X_WIDTH = 80 characters
 
@@ -719,14 +712,14 @@ $0823: 86 05     STX CURSOR_Y
 $0825: 86 0A     STX REVERSE   ;Reverse video off
 $0827: A9 20     LDA #$20      ;Space character
 :L_0829
-$0829: 9D 00 80  STA SCREEN0,X ;screen page 0
-$082C: 9D 00 81  STA SCREEN1,X ;screen page 1
-$082F: 9D 00 82  STA SCREEN2,X ;screen page 2
-$0832: 9D 00 83  STA SCREEN3,X ;screen page 3
-$0835: 9D 00 84  STA SCREEN4,X ;screen page 4
-$0838: 9D 00 85  STA SCREEN5,X ;screen page 5
-$083B: 9D 00 86  STA SCREEN6,X ;screen page 6
-$083E: 9D 00 87  STA SCREEN7,X ;screen page 7
+$0829: 9D 00 80  STA SCREEN,X
+$082C: 9D 00 81  STA SCREEN+$100,X
+$082F: 9D 00 82  STA SCREEN+$200,X
+$0832: 9D 00 83  STA SCREEN+$300,X
+$0835: 9D 00 84  STA SCREEN+$400,X
+$0838: 9D 00 85  STA SCREEN+$500,X
+$083B: 9D 00 86  STA SCREEN+$600,X
+$083E: 9D 00 87  STA SCREEN+$700,X
 $0841: E8        INX
 $0842: D0 E5     BNE L_0829
 $0844: 60        RTS
