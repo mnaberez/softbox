@@ -25,12 +25,12 @@ SCNCODE_TMP = $07     ;Temporary storage for the last screen code
 KEYCOUNT    = $08     ;Number of keys in the buffer at KEYBUF
 X_WIDTH     = $09     ;Width of X in characters (40 or 80)
 REVERSE     = $0A     ;Reverse video flag (reverse on = 1)
-MOVETO_CNT  = $0B     ;Counts down bytes to consume in a move-to (CMD_1B) seq
+MOVETO_CNT  = $0B     ;Counts down bytes to consume in a move-to (CTRL_1B) seq
 CURSOR_TMP  = $0C     ;Pending cursor state used with CURSOR_OFF
-TARGET_LO   = $0D     ;Target address for mem xfers, ind jump, & CMD_11 - LO
-TARGET_HI   = $0E     ;Target address for mem xfers, ind jump, & CMD_11 - HI
-INSERT_LO   = $0F     ;Insert line (CMD_11) destination screen address - LO
-INSERT_HI   = $10     ;Insert line (CMD_11) destination screen address - HI
+TARGET_LO   = $0D     ;Target address for mem xfers, ind jump, & CTRL_11 - LO
+TARGET_HI   = $0E     ;Target address for mem xfers, ind jump, & CTRL_11 - HI
+INSERT_LO   = $0F     ;Insert line (CTRL_11) destination screen address - LO
+INSERT_HI   = $10     ;Insert line (CTRL_11) destination screen address - HI
 XFER_LO     = $11     ;Memory transfer byte counter - LO
 XFER_HI     = $12     ;Memory transfer byte counter - HI
 ; ?????     = $13     ;????????
@@ -85,7 +85,7 @@ $0485: 8D 3D 0B  STA UNKNOWN_7      ;Store #$0A in UNKNOWN_7 (?)
 $0488: 58        CLI                ;Enable interrupts again
 $0489: A9 0E     LDA #$0E
 $048B: 8D 4C E8  STA VIA_PCR        ;CA2 = High Output (IEEE-488 /NDAC = 1)
-$048E: 20 84 07  JSR CMD_02         ;Command 02 stores #$7F in $13
+$048E: 20 84 07  JSR CTRL_02        ;CTRL_02 stores #$7F in $13
 $0491: A9 14     LDA #$14
 $0493: 85 01     STA BLINK_CNT      ;Initialize cursor blink countdown
 $0495: A9 00     LDA #$00
@@ -121,9 +121,9 @@ $04B1: D0 02     BNE INIT_TERM      ;  No:  we're done, X_WIDTH = 40.
 $04B3: 06 09     ASL X_WIDTH        ;  Yes: X_WIDTH = 80 characters
 
 :INIT_TERM
-$04B5: A9 1A     LDA #$1A           ;Load #$1A = CMD_1A Clear Screen
+$04B5: A9 1A     LDA #$1A           ;Load #$1A = CTRL_1A Clear Screen
 $04B7: 20 E8 06  JSR PROCESS_BYTE   ;Call into terminal to execute clear screen
-$04BA: 20 D4 08  JSR CMD_06         ;Clear all tab stops
+$04BA: 20 D4 08  JSR CTRL_06        ;Clear all tab stops
 
 :INIT_IEEE
 $04BD: AD 22 E8  LDA PIA2IOUT       ;PIA#2 IEEE Output
@@ -207,9 +207,9 @@ $0543: 4C E7 04  JMP MAIN_LOOP
 :DO_JUMP
 ;Jump to an address
 $0546: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
-$0549: 85 0D     STA TARGET_LO       ; -> Command vector lo
+$0549: 85 0D     STA TARGET_LO      ; -> Command vector lo
 $054B: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
-$054E: 85 0E     STA TARGET_HI       ; -> Command vector hi
+$054E: 85 0E     STA TARGET_HI      ; -> Command vector hi
 $0550: A2 3C     LDX #$3C
 $0552: 8E 21 E8  STX PIA2NDAC       ;PIA#2 IEEE NDAC control
 $0555: 20 1B 07  JSR JUMP_CMD       ;Jump to the command through CMDVECL
@@ -470,9 +470,9 @@ $06FF: C9 20     CMP #$20          ;Is this byte a control code?
 $0701: B0 15     BCS L_0718        ;  No: branch to put char on screen
 $0703: 0A        ASL A
 $0704: AA        TAX
-$0705: BD 1E 07  LDA CMDTABLE,X    ;Load vector from control code table
+$0705: BD 1E 07  LDA CTRL_CODES,X  ;Load vector from control code table
 $0708: 85 0D     STA TARGET_LO
-$070A: BD 1F 07  LDA CMDTABLE+1,X
+$070A: BD 1F 07  LDA CTRL_CODES+1,X
 $070D: 85 0E     STA TARGET_HI
 $070F: 20 1B 07  JSR JUMP_CMD      ;Jump to vector to handle control code
 $0712: 4C 8D 07  JMP PROCESS_DONE
@@ -484,49 +484,49 @@ $0718: 4C 99 07  JMP PUT_CHAR      ;Jump to put character on the screen
 $071B: 6C 0D 00  JMP (TARGET_LO)   ;Jump to handle the control ocde
 
 ;Terminal control code dispatch table
-:CMDTABLE
-$071E:           .WORD CMD_00  ;Do nothing
-$0720:           .WORD CMD_01  ;Store #$FF in $13
-$0722:           .WORD CMD_02  ;Store #$7F in $13
-$0724:           .WORD CMD_03  ;Do nothing
-$0726:           .WORD CMD_04  ;Set TAB STOP at current position
-$0728:           .WORD CMD_05  ;Clear TAB STOP at current position
-$072A:           .WORD CMD_06  ;Clear all TAB STOPS
-$072C:           .WORD CMD_07  ;Ring bell
-$072E:           .WORD CMD_08  ;Cursor left
-$0730:           .WORD CMD_09  ;Perform TAB
-$0732:           .WORD CMD_0A  ;Line feed
-$0734:           .WORD CMD_0B  ;Cursor up
-$0736:           .WORD CMD_0C  ;Cursor right
-$0738:           .WORD CMD_0D  ;Carriage return
-$073A:           .WORD CMD_0E  ;Reverse video on
-$073C:           .WORD CMD_0F  ;Reverse video off
-$073E:           .WORD CMD_10  ;Cursor off
-$0740:           .WORD CMD_11  ;Insert a blank line
-$0742:           .WORD CMD_12  ;Scroll up one line
-$0744:           .WORD CMD_13  ;Clear to end of line
-$0746:           .WORD CMD_14  ;Clear to end of screen
-$0748:           .WORD CMD_15  ;Set IEEE-488 /NDAC = 0
-$074A:           .WORD CMD_16  ;Set IEEE-488 /NDAC = 1
-$074C:           .WORD CMD_17  ;Go to uppercase mode
-$074E:           .WORD CMD_18  ;Go to lowercase mode
-$0750:           .WORD CMD_19  ;Cursor on
-$0752:           .WORD CMD_1A  ;Clear screen
-$0754:           .WORD CMD_1B  ;Move cursor to X,Y position
-$0756:           .WORD CMD_1C  ;Insert a space on current line
-$0758:           .WORD CMD_1D  ;Delete character at cursor
-$075A:           .WORD CMD_1E  ;Home cursor
-$075C:           .WORD CMD_1F  ;Do nothing
+:CTRL_CODES
+$071E:           .WORD CTRL_00  ;Do nothing
+$0720:           .WORD CTRL_01  ;Store #$FF in $13
+$0722:           .WORD CTRL_02  ;Store #$7F in $13
+$0724:           .WORD CTRL_03  ;Do nothing
+$0726:           .WORD CTRL_04  ;Set TAB STOP at current position
+$0728:           .WORD CTRL_05  ;Clear TAB STOP at current position
+$072A:           .WORD CTRL_06  ;Clear all TAB STOPS
+$072C:           .WORD CTRL_07  ;Ring bell
+$072E:           .WORD CTRL_08  ;Cursor left
+$0730:           .WORD CTRL_09  ;Perform TAB
+$0732:           .WORD CTRL_0A  ;Line feed
+$0734:           .WORD CTRL_0B  ;Cursor up
+$0736:           .WORD CTRL_0C  ;Cursor right
+$0738:           .WORD CTRL_0D  ;Carriage return
+$073A:           .WORD CTRL_0E  ;Reverse video on
+$073C:           .WORD CTRL_0F  ;Reverse video off
+$073E:           .WORD CTRL_10  ;Cursor off
+$0740:           .WORD CTRL_11  ;Insert a blank line
+$0742:           .WORD CTRL_12  ;Scroll up one line
+$0744:           .WORD CTRL_13  ;Clear to end of line
+$0746:           .WORD CTRL_14  ;Clear to end of screen
+$0748:           .WORD CTRL_15  ;Set IEEE-488 /NDAC = 0
+$074A:           .WORD CTRL_16  ;Set IEEE-488 /NDAC = 1
+$074C:           .WORD CTRL_17  ;Go to uppercase mode
+$074E:           .WORD CTRL_18  ;Go to lowercase mode
+$0750:           .WORD CTRL_19  ;Cursor on
+$0752:           .WORD CTRL_1A  ;Clear screen
+$0754:           .WORD CTRL_1B  ;Move cursor to X,Y position
+$0756:           .WORD CTRL_1C  ;Insert a space on current line
+$0758:           .WORD CTRL_1D  ;Delete character at cursor
+$075A:           .WORD CTRL_1E  ;Home cursor
+$075C:           .WORD CTRL_1F  ;Do nothing
 
-;START OF COMMAND 07
+;START OF CONTROL CODE 07
 ;Ring bell
-:CMD_07
+:CTRL_07
 $075E: A9 07     LDA #$07   ;CHR$(7) = Bell
 $0760: 4C D2 FF  JMP CHROUT ;Kernal Print a byte
 
-;START OF COMMAND 18
+;START OF CONTROL CODE 18
 ;Go to lowercase mode
-:CMD_18
+:CTRL_18
 $0763: AD 4C E8  LDA VIA_PCR
 $0766: 48        PHA
 $0767: A9 0E     LDA #$0E     ;CHR$(14) = Switch to lowercase mode
@@ -535,9 +535,9 @@ $076C: 68        PLA
 $076D: 8D 4C E8  STA VIA_PCR
 $0770: 60        RTS
 
-;START OF COMMAND 17
+;START OF CONTROL CODE 17
 ;Go to uppercase mode
-:CMD_17
+:CTRL_17
 $0771: AD 4C E8  LDA VIA_PCR
 $0774: 48        PHA
 $0775: A9 8E     LDA #$8E     ;CHR$(142) = Switch to uppercase mode
@@ -546,23 +546,23 @@ $077A: 68        PLA
 $077B: 8D 4C E8  STA VIA_PCR
 $077E: 60        RTS
 
-;START OF COMMAND 01
-:CMD_01
+;START OF CONTROL CODE 01
+:CTRL_01
 $077F: A9 FF     LDA #$FF
 $0781: 85 13     STA $13
 $0783: 60        RTS
 
-;START OF COMMAND 02
-:CMD_02
+;START OF CONTROL CODE 02
+:CTRL_02
 $0784: A9 7F     LDA #$7F
 $0786: 85 13     STA $13
 $0788: 60        RTS
 
-;START OF COMMANDS 00, 03, 1F
+;START OF CONTROL CODES 00, 03, 1F
 ;Do nothing
-:CMD_00
-:CMD_03
-:CMD_1F
+:CTRL_00
+:CTRL_03
+:CTRL_1F
 $0789: 60        RTS
 
 :PUTSCN_THEN_DONE
@@ -621,23 +621,23 @@ $07CA: 29 7F     AND #$7F
 $07CC: 09 40     ORA #$40
 $07CE: 4C 8A 07  JMP PUTSCN_THEN_DONE
 
-;START OF COMMAND 15
+;START OF CONTROL CODE 15
 ;Set IEEE-488 /NDAC = 0
-:CMD_15
+:CTRL_15
 $07D1: A9 0C     LDA #$0C
 $07D3: 8D 4C E8  STA VIA_PCR  ;CA2 = Low Output (IEEE-488 /NDAC = 0)
 $07D6: 60        RTS
 
-;START OF COMMAND 16
+;START OF CONTROL CODE 16
 ;Set IEEE-488 /NDAC = 1
-:CMD_16
+:CTRL_16
 $07D7: A9 0E     LDA #$0E
 $07D9: 8D 4C E8  STA VIA_PCR  ;CA2 = High Output (IEEE-488 /NDAC = 1)
 $07DC: 60        RTS
 
-;START OF COMMAND 08
+;START OF CONTROL CODE 08
 ;Cursor left
-:CMD_08
+:CTRL_08
 $07DD: A6 04     LDX CURSOR_X
 $07DF: D0 08     BNE L_07E9     ; X > 0? Y will not change.
 $07E1: A6 09     LDX X_WIDTH    ; X = max X + 1
@@ -650,9 +650,9 @@ $07EA: 86 04     STX CURSOR_X   ; X=X-1
 :L_07EC
 $07EC: 60        RTS
 
-;START OF COMMAND 0B
+;START OF CONTROL CODE 0B
 ;Cursor up
-:CMD_0B
+:CTRL_0B
 $07ED: A4 05     LDY CURSOR_Y
 $07EF: F0 FB     BEQ L_07EC     ; Y=0? Can't move up.
 $07F1: C6 05     DEC CURSOR_Y   ; Y=Y-1
@@ -666,21 +666,21 @@ $07F8: 49 80     EOR #$80         ;  Yes: Flip bit 7 to reverse the character
 :L_07FA
 $07FA: 20 88 09  JSR CALC_SCNPOS  ;Calculate screen RAM pointer
 $07FD: 91 02     STA (SCNPOSL),Y  ;Write the character to the screen
-                                  ;Fall through into CMD_0C to advance cursor
+                                  ;Fall through into CTRL_0C to advance cursor
 
-;START OF COMMAND 0C
+;START OF CONTROL CODE 0C
 ;Cursor right
-:CMD_0C
+:CTRL_0C
 $07FF: E6 04     INC CURSOR_X   ;X=X+1
 $0801: A6 04     LDX CURSOR_X
 $0803: E4 09     CPX X_WIDTH    ;X > max X?
 $0805: D0 10     BNE L_0817     ;  No:  Done, no need to scroll up.
 $0807: A9 00     LDA #$00       ;  Yes: Set X=0 and then
-$0809: 85 04     STA CURSOR_X   ;       fall through into CMD_0A to scroll.
+$0809: 85 04     STA CURSOR_X   ;       fall through into CTRL_0A to scroll.
 
-;START OF COMMAND 0A
+;START OF CONTROL CODE 0A
 ;Line feed
-:CMD_0A
+:CTRL_0A
 $080B: A4 05     LDY CURSOR_Y
 $080D: C0 18     CPY #$18       ;Are we on line 24?
 $080F: D0 03     BNE L_0814     ;  No:  Done, scroll is not needed
@@ -691,17 +691,17 @@ $0816: 60        RTS
 :L_0817
 $0817: 60        RTS
 
-;START OF COMMAND 1E
+;START OF CONTROL CODE 1E
 ;Home cursor
-:CMD_1E
+:CTRL_1E
 $0818: A9 00     LDA #$00       ;Home cursor
 $081A: 85 05     STA CURSOR_Y
 $081C: 85 04     STA CURSOR_X
 $081E: 60        RTS
 
-;START OF COMMAND 1A
+;START OF CONTROL CODE 1A
 ;Clear screen
-:CMD_1A
+:CTRL_1A
 $081F: A2 00     LDX #$00      ; Home cursor
 $0821: 86 04     STX CURSOR_X
 $0823: 86 05     STX CURSOR_Y
@@ -720,44 +720,44 @@ $0841: E8        INX
 $0842: D0 E5     BNE L_0829
 $0844: 60        RTS
 
-;START OF COMMAND 0D
+;START OF CONTROL CODE 0D
 ;Carriage return
-:CMD_0D
+:CTRL_0D
 $0845: A9 00     LDA #$00       ;Move to X=0 on this line
 $0847: 85 04     STA CURSOR_X
 $0849: 60        RTS
 
-;START OF COMMAND 10
+;START OF CONTROL CODE 10
 ;Cursor on
-:CMD_10
+:CTRL_10
 $084A: A9 00     LDA #$00
 $084C: 85 0C     STA CURSOR_TMP
 $084E: 60        RTS
 
-;START OF COMMAND 19
+;START OF CONTROL CODE 19
 ;Cursor off
-:CMD_19
+:CTRL_19
 $084F: A9 FF     LDA #$FF
 $0851: 85 0C     STA CURSOR_TMP
 $0853: 60        RTS
 
-;START OF COMMAND 0E
+;START OF CONTROL CODE 0E
 ;Reverse video on
-:CMD_0E
+:CTRL_0E
 $0854: A9 01     LDA #$01
 $0856: 85 0A     STA REVERSE
 $0858: 60        RTS
 
-;START OF COMMAND 0F
+;START OF CONTROL CODE 0F
 ;Reverse video off
-:CMD_0F
+:CTRL_0F
 $0859: A9 00     LDA #$00
 $085B: 85 0A     STA REVERSE
 $085D: 60        RTS
 
-;START OF COMMAND 13
+;START OF CONTROL CODE 13
 ;Clear to end of line
-:CMD_13
+:CTRL_13
 :L_085E
 $085E: 20 88 09  JSR CALC_SCNPOS    ;Leaves CURSOR_X in Y register
 $0861: A9 20     LDA #$20           ;Space character
@@ -768,8 +768,8 @@ $0866: C4 09     CPY X_WIDTH
 $0868: D0 F9     BNE L_0863         ;Loop until end of line
 $086A: 60        RTS
 
-;START OF COMMAND 14
-:CMD_14
+;START OF CONTROL CODE 14
+:CTRL_14
 ;Clear from Current line to end of screen
 ;
 $086B: 20 5E 08  JSR L_085E
@@ -834,23 +834,23 @@ $08C4: C4 09     CPY X_WIDTH
 $08C6: D0 F9     BNE L_08C1
 $08C8: 60        RTS
 
-;START OF COMMAND 04
+;START OF CONTROL CODE 04
 ; Set TAB STOP at current Position
-:CMD_04
+:CTRL_04
 $08C9: A9 01     LDA #$01         ;1=TAB STOP yes
 $08CB:           .BYT 2C          ;Falls through to become BIT $00A9
 
-;START OF COMMAND 05
+;START OF CONTROL CODE 05
 ; Clear TAB STOP at current position
-:CMD_05
+:CTRL_05
 $08CC: A9 00     LDA #$00         ;0=No TAB STOP
 $08CE: A6 04     LDX CURSOR_X     ;Get cursor position
 $08D0: 9D 3F 0B  STA TAB_STOPS,X  ;Clear the TAB at that position
 $08D3: 60        RTS
 
-;START OF COMMAND 06
+;START OF CONTROL CODE 06
 ; Clear ALL TAB STOPS
-:CMD_06
+:CTRL_06
 $08D4: A2 4F     LDX #$4F  ; 80 characters-1
 $08D6: A9 00     LDA #$00  ; zero
 :L_08D8
@@ -859,9 +859,9 @@ $08DB: CA        DEX
 $08DC: 10 FA     BPL L_08D8
 $08DE: 60        RTS
 
-;START OF COMMAND 09
+;START OF CONTROL CODE 09
 ; perform TAB - Move to next TAB STOP as indicated in the TAB_STOP table
-:CMD_09
+:CTRL_09
 $08DF: A6 04     LDX CURSOR_X
 :L_08E1
 $08E1: E8        INX               ; next position
@@ -873,9 +873,9 @@ $08EB: 86 04     STX CURSOR_X      ; no, we hit a STOP, so store the position
 :L_08ED
 $08ED: 60        RTS
 
-;START OF COMMAND 1C
+;START OF CONTROL CODE 1C
 ;Insert space at current cursor position
-:CMD_1C
+:CTRL_1C
 $08EE: 20 88 09  JSR CALC_SCNPOS
 $08F1: A4 09     LDY X_WIDTH       ;number of characters on line
 $08F3: 88        DEY
@@ -893,9 +893,9 @@ $0901: A9 20     LDA #$20           ; SPACE
 $0903: 91 02     STA (SCNPOSL),Y    ; Write it to current character position
 $0905: 60        RTS
 
-;START OF COMMAND 1D
+;START OF CONTROL CODE 1D
 ;Delete a character
-:CMD_1D
+:CTRL_1D
 $0906: 20 88 09  JSR CALC_SCNPOS
 $0909: A4 04     LDY CURSOR_X
 :L_090B
@@ -913,8 +913,8 @@ $0919: A9 20     LDA #$20           ;SPACE
 $091B: 91 02     STA (SCNPOSL),Y    ;write it to the current character position
 $091D: 60        RTS
 
-;START OF COMMAND 12
-:CMD_12
+;START OF CONTROL CODE 12
+:CTRL_12
 ;Scroll up one line
 ;
 ;The screen is shifted upward so that each line Y+1 is copied into Y.  Screen
@@ -937,14 +937,14 @@ $0935: E5 05     SBC CURSOR_Y
 $0937: AA        TAX
 $0938: 4C 9E 08  JMP L_089E        ;Jump into SCROLL_UP, bypassing some init
 
-;START OF COMMAND 11
+;START OF CONTROL CODE 11
 ;Insert a blank line
 ;
 ;The screen is shifted downward so that each line Y is copied into Y+1.
 ;The line at the current position will be erased (filled with spaces).
 ;The current cursor position will not be changed.
 ;
-:CMD_11
+:CTRL_11
 $093B: A9 C0     LDA #$C0
 $093D: A0 83     LDY #$83
 $093F: A6 09     LDX X_WIDTH
@@ -1023,29 +1023,28 @@ $09AF: 85 03     STA SCNPOSH
 $09B1: 68        PLA
 $09B2: 60        RTS
 
-;START OF COMMAND 1B
+;START OF CONTROL CODE 1B
 ;Move cursor to X,Y position
 ;
-;This command is unlike the others because it requires an additional
-;two bytes to follow: first X-position, then Y-position.
+;This control code is unlike the others because it requires an
+;additional two bytes to follow: first X-position, then Y-position.
 ;
 ;The MOVETO_CNT byte counts down the remaining bytes to consume.  On
 ;successive passes through PROCESS_BYTE, the X and Y bytes are handled
 ;by MOVE_TO.
 ;
-;Note: The X and Y values accepted by this command use the same layout
-;as CURSOR_X and CURSOR_Y but they require an offset.  You must add
-;decimal 32 to each value to get the equivalent CURSOR_X and CURSOR_Y.
-;The offset is because the command emulates the behavior of the
-;Lear Siegler ADM-3A terminal.
+;Note: The X and Y values use the same layout as CURSOR_X and CURSOR_Y
+;but they require an offset.  You must add decimal 32 to each value to
+;get the equivalent CURSOR_X and CURSOR_Y.  The offset is because this
+;emulates the behavior of the Lear Siegler ADM-3A terminal.
 ;
-:CMD_1B
+:CTRL_1B
 $09B3: A9 02     LDA #$02          ;Two more bytes to consume (X-pos, Y-pos)
 $09B5: 85 0B     STA MOVETO_CNT    ;Store count for next pass of PROCESS_BYTE
 $09B7: 60        RTS
 
 :MOVE_TO
-;Implements CMD_1B by handling the X-position byte on the first call
+;Implements CTRL_1B by handling the X-position byte on the first call
 ;and the Y-position byte on the second call.  After the Y-position byte
 ;has been consumed, MOVETO_CNT = 0, exiting the move-to sequence.
 ;
@@ -1230,7 +1229,7 @@ $0B3D:           .BYT AA
 :UNKNOWN_8
 $0B3E:           .BYT AA
 
-;Start of buffer used by commands 05, 06, and 09
+;Start of buffer used by control codes 05, 06, and 09
 :TAB_STOPS
 $0B3F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B47:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
