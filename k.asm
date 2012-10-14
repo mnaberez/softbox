@@ -760,7 +760,6 @@ $085D: 60        RTS
 ;START OF CONTROL CODE 13
 ;Clear to end of line
 :CTRL_13
-:L_085E
 $085E: 20 88 09  JSR CALC_SCNPOS    ;Leaves CURSOR_X in Y register
 $0861: A9 20     LDA #$20           ;Space character
 :L_0863
@@ -774,7 +773,7 @@ $086A: 60        RTS
 :CTRL_14
 ;Clear from Current line to end of screen
 ;
-$086B: 20 5E 08  JSR L_085E
+$086B: 20 5E 08  JSR CTRL_13     ;Clear to the end of the current line
 $086E: A6 05     LDX CURSOR_Y    ;Get the Current line#
 :L_0870
 $0870: E8        INX             ;Next Row
