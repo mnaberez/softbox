@@ -593,29 +593,29 @@ $0798: 60        RTS
 ;converts the character to its equivalent CBM screen code and then
 ;jumps out to print it to the screen.
 ;
-$0799: C9 40     CMP #$40
-$079B: 90 ED     BCC PUTSCN_THEN_DONE
-$079D: C9 60     CMP #$60
-$079F: B0 05     BCS L_07A6
-$07A1: 29 3F     AND #$3F
-$07A3: 4C AC 07  JMP L_07AC
+$0799: C9 40     CMP #$40              ;Is it < 64?
+$079B: 90 ED     BCC PUTSCN_THEN_DONE  ;  Yes: done, put it on the screen
+$079D: C9 60     CMP #$60              ;Is it >= 96?
+$079F: B0 05     BCS L_07A6            ;  Yes: branch to L_07A6
+$07A1: 29 3F     AND #$3F              ;Turn off bits 6 and 7
+$07A3: 4C AC 07  JMP L_07AC            ;Jump to L_07CA
 :L_07A6
-$07A6: C9 80     CMP #$80
-$07A8: B0 20     BCS L_07CA
+$07A6: C9 80     CMP #$80              ;Is bit 7 set?
+$07A8: B0 20     BCS L_07CA            ;  Yes: branch to L_07CA
 $07AA: 29 5F     AND #$5F
 :L_07AC
 $07AC: AA        TAX
-$07AD: 29 3F     AND #$3F
+$07AD: 29 3F     AND #$3F              ;Turn off bit 7 and bit 6
 $07AF: F0 15     BEQ L_07C6
 $07B1: C9 1B     CMP #$1B
 $07B3: B0 11     BCS L_07C6
 $07B5: 8A        TXA
-$07B6: 49 40     EOR #$40
+$07B6: 49 40     EOR #$40              ;Flip bit 6
 $07B8: AA        TAX
-$07B9: AD 4C E8  LDA VIA_PCR    ;Bit 1 off = uppercase, on = lowercase
+$07B9: AD 4C E8  LDA VIA_PCR           ;Bit 1 off = uppercase, on = lowercase
 $07BC: 4A        LSR A
 $07BD: 4A        LSR A
-$07BE: B0 06     BCS L_07C6     ;Branch if lowercase mode
+$07BE: B0 06     BCS L_07C6            ;Branch if lowercase mode
 $07C0: 8A        TXA
 $07C1: 29 1F     AND #$1F
 $07C3: 4C 8A 07  JMP PUTSCN_THEN_DONE
@@ -623,9 +623,9 @@ $07C3: 4C 8A 07  JMP PUTSCN_THEN_DONE
 $07C6: 8A        TXA
 $07C7: 4C 8A 07  JMP PUTSCN_THEN_DONE
 :L_07CA
-$07CA: 29 7F     AND #$7F
-$07CC: 09 40     ORA #$40
-$07CE: 4C 8A 07  JMP PUTSCN_THEN_DONE
+$07CA: 29 7F     AND #$7F              ;Turn off bit 7
+$07CC: 09 40     ORA #$40              ;Turn on bit 6
+$07CE: 4C 8A 07  JMP PUTSCN_THEN_DONE  ;Put it on the screen
 
 :CTRL_15
 ;Go to uppercase mode
