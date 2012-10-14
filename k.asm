@@ -508,8 +508,8 @@ $0744:           .WORD CTRL_13  ;Clear to end of line
 $0746:           .WORD CTRL_14  ;Clear to end of screen
 $0748:           .WORD CTRL_15  ;Set IEEE-488 /NDAC = 0
 $074A:           .WORD CTRL_16  ;Set IEEE-488 /NDAC = 1
-$074C:           .WORD CTRL_17  ;Go to uppercase mode
-$074E:           .WORD CTRL_18  ;Go to lowercase mode
+$074C:           .WORD CTRL_17  ;Go to uppercase mode (???)
+$074E:           .WORD CTRL_18  ;Go to lowercase mode (???)
 $0750:           .WORD CTRL_19  ;Cursor on
 $0752:           .WORD CTRL_1A  ;Clear screen
 $0754:           .WORD CTRL_1B  ;Move cursor to X,Y position
@@ -525,26 +525,26 @@ $075E: A9 07     LDA #$07   ;CHR$(7) = Bell
 $0760: 4C D2 FF  JMP CHROUT ;Kernal Print a byte
 
 ;START OF CONTROL CODE 18
-;Go to lowercase mode
+;Go to lowercase mode (???)
 :CTRL_18
 $0763: AD 4C E8  LDA VIA_PCR
 $0766: 48        PHA
 $0767: A9 0E     LDA #$0E     ;CHR$(14) = Switch to lowercase mode
 $0769: 20 D2 FF  JSR CHROUT   ;Kernal Print a byte
 $076C: 68        PLA
-$076D: 8D 4C E8  STA VIA_PCR
-$0770: 60        RTS
+$076D: 8D 4C E8  STA VIA_PCR  ;Restore previous state seems to undo CHROUT,
+$0770: 60        RTS          ;  does this have some other function?
 
 ;START OF CONTROL CODE 17
-;Go to uppercase mode
+;Go to uppercase mode (???)
 :CTRL_17
 $0771: AD 4C E8  LDA VIA_PCR
 $0774: 48        PHA
 $0775: A9 8E     LDA #$8E     ;CHR$(142) = Switch to uppercase mode
 $0777: 20 D2 FF  JSR CHROUT   ;Kernal Print a byte
 $077A: 68        PLA
-$077B: 8D 4C E8  STA VIA_PCR
-$077E: 60        RTS
+$077B: 8D 4C E8  STA VIA_PCR  ;Restore previous state seems to undo CHROUT,
+$077E: 60        RTS          ;  does this have some other function?
 
 ;START OF CONTROL CODE 01
 :CTRL_01
