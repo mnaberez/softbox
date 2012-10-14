@@ -19,6 +19,13 @@ File.readlines(filename).each do |line|
     next
   end
 
+  # Add hexadecimal prefix to program counter directive
+  #   *=0400
+  if line.start_with?("*")
+    asterisk, address = line.split("=", 2)
+    line = "*=$" + address.sub(/^[\s$]+/, "")
+  end
+
   # Strip disassembly address and bytes
   #   $049D: 85 09     STA X_WIDTH   ;X_WIDTH = 40 characters
   #   $0720:           .WORD CMD_01  ;Store #$FF in $13
