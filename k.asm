@@ -508,8 +508,8 @@ $0744:           .WORD CTRL_13  ;Clear to end of line
 $0746:           .WORD CTRL_14  ;Clear to end of screen
 $0748:           .WORD CTRL_15  ;Go to uppercase mode
 $074A:           .WORD CTRL_16  ;Go to lowercase mode
-$074C:           .WORD CTRL_17  ;Go to uppercase mode (???)
-$074E:           .WORD CTRL_18  ;Go to lowercase mode (???)
+$074C:           .WORD CTRL_17  ;Set line spacing to tall
+$074E:           .WORD CTRL_18  ;Set line spacing to short
 $0750:           .WORD CTRL_19  ;Cursor on
 $0752:           .WORD CTRL_1A  ;Clear screen
 $0754:           .WORD CTRL_1B  ;Move cursor to X,Y position
@@ -525,26 +525,28 @@ $075E: A9 07     LDA #$07   ;CHR$(7) = Bell
 $0760: 4C D2 FF  JMP CHROUT ;Kernal Print a byte
 
 ;START OF CONTROL CODE 18
-;Go to lowercase mode (???)
+;Set line spacing to tall (the default spacing for lowercase graphic mode).
+;The current graphic mode will not be changed.
 :CTRL_18
-$0763: AD 4C E8  LDA VIA_PCR
+$0763: AD 4C E8  LDA VIA_PCR  ;Remember current upper/lower graphic mode
 $0766: 48        PHA
 $0767: A9 0E     LDA #$0E     ;CHR$(14) = Switch to lowercase mode
-$0769: 20 D2 FF  JSR CHROUT   ;Kernal Print a byte
+$0769: 20 D2 FF  JSR CHROUT   ;  and set more vertical space between chars
 $076C: 68        PLA
-$076D: 8D 4C E8  STA VIA_PCR  ;Restore previous state seems to undo CHROUT,
-$0770: 60        RTS          ;  does this have some other function?
+$076D: 8D 4C E8  STA VIA_PCR
+$0770: 60        RTS          ;Restore graphic mode
 
 ;START OF CONTROL CODE 17
-;Go to uppercase mode (???)
+;Set line spacing to short (the default spacing for uppercase graphic mode).
+;The current graphic mode will not be changed.
 :CTRL_17
-$0771: AD 4C E8  LDA VIA_PCR
+$0771: AD 4C E8  LDA VIA_PCR  ;Remember current upper/lower graphic mode
 $0774: 48        PHA
 $0775: A9 8E     LDA #$8E     ;CHR$(142) = Switch to uppercase mode
-$0777: 20 D2 FF  JSR CHROUT   ;Kernal Print a byte
+$0777: 20 D2 FF  JSR CHROUT   ;  and set less vertical space between chars
 $077A: 68        PLA
-$077B: 8D 4C E8  STA VIA_PCR  ;Restore previous state seems to undo CHROUT,
-$077E: 60        RTS          ;  does this have some other function?
+$077B: 8D 4C E8  STA VIA_PCR
+$077E: 60        RTS          ;Restore graphic mode
 
 ;START OF CONTROL CODE 01
 :CTRL_01
