@@ -6,6 +6,7 @@ INTVECH     = $91     ;hardware interrupt vector HI
 KEYBUF      = $026F   ;Keyboard Input Buffer
 SCREEN      = $8000   ;Start of screen ram
 PIA1ROW     = $E810   ;PIA#1 Keyboard Row Select
+PIA1EOI     = $E811   ;PIA#1 Control
 PIA1COL     = $E812   ;PIA#1 Keyboard Columns Read
 PIA2IEEE    = $E820   ;PIA#2 IEEE Input
 PIA2NDAC    = $E821   ;PIA#2 IEEE NDAC control
@@ -138,7 +139,7 @@ $04D5: D0 FD     BNE L_04D4         ;delay loop
 $04D7: A9 FF     LDA #$FF
 $04D9: 8D 22 E8  STA PIA2IOUT       ;PIA#2 IEEE Output
 $04DC: A9 3C     LDA #$3C
-$04DE: 8D 11 E8  STA $E811
+$04DE: 8D 11 E8  STA PIA1EIO        ;PIA#1 Keyboard Control
 $04E1: 8D 21 E8  STA PIA2NDAC       ;PIA#2 IEEE NDAC control
 $04E4: 8D 23 E8  STA PIA2DAV        ;PIA#2 IEEE DAV control
 
