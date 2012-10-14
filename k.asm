@@ -104,20 +104,17 @@ $0499: 85 0B     STA MOVETO_CNT     ;Move-to counter = not in a move-to seq
 ;business keyboard (80 columns) or graphics keyboard (40 columns).  This
 ;means the 2001B machines (40-column, business keyboard) are not supported.
 ;
-;Question: assuming good screen RAM, under what circumstances
-;          would the check at $04AE fail?
-;
 $049B: A9 28     LDA #$28
 $049D: 85 09     STA X_WIDTH        ;X_WIDTH = 40 characters
 $049F: A9 55     LDA #$55
-$04A1: 8D 00 80  STA SCREEN         ;Start of screen RAM for both 40 and 80 cols
+$04A1: 8D 00 80  STA SCREEN         ;Store #$55 in first byte of screen RAM.
 $04A4: 0A        ASL A
-$04A5: 8D 00 84  STA SCREEN+$400    ;Store test byte in first page of 80 col RAM
-$04A8: CD 00 84  CMP SCREEN+$400    ;Test byte for 80 column RAM successful?
+$04A5: 8D 00 84  STA SCREEN+$400    ;Store #$AA in first byte of 80 col page.
+$04A8: CD 00 84  CMP SCREEN+$400    ;Does it read back correctly?
 $04AB: D0 08     BNE INIT_TERM      ;  No: we're done, X_WIDTH = 40.
 $04AD: 4A        LSR A
-$04AE: CD 00 80  CMP SCREEN         ;Test byte for common screen RAM successful?
-$04B1: D0 02     BNE INIT_TERM      ;  No:  we're done, X_WIDTH = 40.
+$04AE: CD 00 80  CMP SCREEN         ;Is the #$55 still intact?
+$04B1: D0 02     BNE INIT_TERM      ;  No: incomplete decoding, X_WIDTH = 40
 $04B3: 06 09     ASL X_WIDTH        ;  Yes: X_WIDTH = 80 characters
 
 :INIT_TERM
