@@ -84,7 +84,7 @@ $0483: A9 0A     LDA #$0A
 $0485: 8D 3D 0B  STA UNKNOWN_7      ;Store #$0A in UNKNOWN_7 (?)
 $0488: 58        CLI                ;Enable interrupts again
 $0489: A9 0E     LDA #$0E
-$048B: 8D 4C E8  STA VIA_PCR        ;CA2 = High Output (IEEE-488 /NDAC = 1)
+$048B: 8D 4C E8  STA VIA_PCR        ;Graphic mode = lowercase
 $048E: 20 84 07  JSR CTRL_02        ;CTRL_02 stores #$7F in $13
 $0491: A9 14     LDA #$14
 $0493: 85 01     STA BLINK_CNT      ;Initialize cursor blink countdown
@@ -506,8 +506,8 @@ $0740:           .WORD CTRL_11  ;Insert a blank line
 $0742:           .WORD CTRL_12  ;Scroll up one line
 $0744:           .WORD CTRL_13  ;Clear to end of line
 $0746:           .WORD CTRL_14  ;Clear to end of screen
-$0748:           .WORD CTRL_15  ;Set IEEE-488 /NDAC = 0
-$074A:           .WORD CTRL_16  ;Set IEEE-488 /NDAC = 1
+$0748:           .WORD CTRL_15  ;Go to uppercase mode
+$074A:           .WORD CTRL_16  ;Go to lowercase mode
 $074C:           .WORD CTRL_17  ;Go to uppercase mode (???)
 $074E:           .WORD CTRL_18  ;Go to lowercase mode (???)
 $0750:           .WORD CTRL_19  ;Cursor on
@@ -606,10 +606,10 @@ $07B3: B0 11     BCS L_07C6
 $07B5: 8A        TXA
 $07B6: 49 40     EOR #$40
 $07B8: AA        TAX
-$07B9: AD 4C E8  LDA VIA_PCR
+$07B9: AD 4C E8  LDA VIA_PCR    ;Bit 1 off = uppercase, on = lowercase
 $07BC: 4A        LSR A
 $07BD: 4A        LSR A
-$07BE: B0 06     BCS L_07C6
+$07BE: B0 06     BCS L_07C6     ;Branch if lowercase mode
 $07C0: 8A        TXA
 $07C1: 29 1F     AND #$1F
 $07C3: 4C 8A 07  JMP PUTSCN_THEN_DONE
@@ -622,17 +622,17 @@ $07CC: 09 40     ORA #$40
 $07CE: 4C 8A 07  JMP PUTSCN_THEN_DONE
 
 ;START OF CONTROL CODE 15
-;Set IEEE-488 /NDAC = 0
+;Go to uppercase mode
 :CTRL_15
 $07D1: A9 0C     LDA #$0C
-$07D3: 8D 4C E8  STA VIA_PCR  ;CA2 = Low Output (IEEE-488 /NDAC = 0)
+$07D3: 8D 4C E8  STA VIA_PCR  ;Graphic mode = uppercase
 $07D6: 60        RTS
 
 ;START OF CONTROL CODE 16
-;Set IEEE-488 /NDAC = 1
+;Go to lowercase mode
 :CTRL_16
 $07D7: A9 0E     LDA #$0E
-$07D9: 8D 4C E8  STA VIA_PCR  ;CA2 = High Output (IEEE-488 /NDAC = 1)
+$07D9: 8D 4C E8  STA VIA_PCR  ;Graphic mode = lowercase
 $07DC: 60        RTS
 
 ;START OF CONTROL CODE 08
@@ -1151,11 +1151,11 @@ $0A5C: B0 11     BCS L_0A6F
 $0A5E: AC 3A 0B  LDY UNKNOWN_4
 $0A61: D0 0C     BNE L_0A6F
 $0A63: 48        PHA
-$0A64: AD 4C E8  LDA VIA_PCR
+$0A64: AD 4C E8  LDA VIA_PCR    ;Bit 1 off = uppercase, on = lowercase
 $0A67: 4A        LSR A
 $0A68: 4A        LSR A
 $0A69: 68        PLA
-$0A6A: 90 03     BCC L_0A6F
+$0A6A: 90 03     BCC L_0A6F     ;Branch if uppercase mode
 $0A6C: 09 20     ORA #$20
 $0A6E: 60        RTS
 :L_0A6F
@@ -1171,11 +1171,11 @@ $0A80: A2 1A     LDX #$1A
 $0A82: C9 1E     CMP #$1E
 $0A84: F0 0C     BEQ L_0A92
 $0A86: 48        PHA
-$0A87: AD 4C E8  LDA VIA_PCR
+$0A87: AD 4C E8  LDA VIA_PCR    ;Bit 1 off = uppercase, on = lowercase
 $0A8A: 4A        LSR A
 $0A8B: 4A        LSR A
 $0A8C: 68        PLA
-$0A8D: B0 05     BCS L_0A94
+$0A8D: B0 05     BCS L_0A94     ;Branch if lowercase mode
 $0A8F: 09 80     ORA #$80
 $0A91: 60        RTS
 :L_0A92
