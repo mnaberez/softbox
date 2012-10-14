@@ -45,7 +45,12 @@ JIFFY1      = $1A     ;Jiffy counter
 ;
 *=$0400
 
+:BAS_HEADER
 ;"50 sys(1039)"
+;  Note: The line number is used in a clever way.  It can be manually set
+;  to either 50 or 60 to tell the program whether the IRQ interrupt fires
+;  at 50 Hz (European PETs) or 60 Hz (North American PETs).
+;
 $0400:           .BYT 00,0D,04,32,00,9E,28,31 ;tokenized basic
 $0408:           .BYT 30,33,39,29,00,00,00    ;tokenized basic
 ;
@@ -368,12 +373,12 @@ $064E: 60        RTS             ;  Got key: done.  Key is now in A.
 $064F: E6 1A     INC JIFFY1      ;Counts number of Interrupts
 $0651: D0 06     BNE L_0659
 $0653: E6 19     INC JIFFY2      ;counter
-$0655: D0 02     BNE L_0659  
+$0655: D0 02     BNE L_0659
 $0657: E6 18     INC JIFFY3      ;counter
 :L_0659
 $0659: E6 14     INC HERTZ           ;Interrupts fire either at 50 or 60 hertz depending on country sold in
 $065B: A5 14     LDA HERTZ
-$065D: CD 03 04  CMP $0403           ; This is in the BASIC header area. Normally $32 = 50
+$065D: CD 03 04  CMP BAS_HEADER+3    ; This is in the BASIC header area. Normally $32 = 50
                                      ; This byte is manually set depending on 50/60 hertz clocks
 $0660: D0 28     BNE BLINK_CURSOR
 $0662: A9 00     LDA #$00            ;Reset HERTZ counter
