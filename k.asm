@@ -34,13 +34,13 @@ INSERT_HI   = $10     ;Insert line (CTRL_11) destination screen address - HI
 XFER_LO     = $11     ;Memory transfer byte counter - LO
 XFER_HI     = $12     ;Memory transfer byte counter - HI
 ; ?????     = $13     ;????????
-; ?????     = $14     ;????????
-; ?????     = $15     ;????????
-; ?????     = $16     ;????????
-; ?????     = $17     ;????????
-; ?????     = $18     ;????????
-; ?????     = $19     ;????????
-; ?????     = $1A     ;????????
+HERTZ       = $14     ;Count Jiffies for 50/60 Hertz machines to update time correctly
+SECS        = $15     ;Elapsed Timer-Seconds
+MINS        = $16     ;              Minutes
+HOURS       = $17     ;              Hours
+JIFFY3      = $18     ;Jiffy counter
+JIFFY2      = $19     ;Jiffy counter
+JIFFY1      = $1A     ;Jiffy counter
 ;
 *=$0400
 
@@ -73,13 +73,13 @@ $046D: 85 91     STA INTVECH        ;Install interrupt handler
 $046F: A9 00     LDA #$00
 $0471: 85 08     STA KEYCOUNT       ;Initialize key counter (no keys hit)
 $0473: A9 00     LDA #$00           ;Initialize other zero page locations
-$0475: 85 14     STA $14
-$0477: 85 15     STA $15
-$0479: 85 16     STA $16
-$047B: 85 17     STA $17
-$047D: 85 18     STA $18
-$047F: 85 19     STA $19
-$0481: 85 1A     STA $1A
+$0475: 85 14     STA HERTZ          ;50/60 Hertz interrupt counter
+$0477: 85 15     STA SECS           ;Elapsed Seconds
+$0479: 85 16     STA MINS           ;Elapsed Minutes
+$047B: 85 17     STA HOURS          ;Elapsed Hours
+$047D: 85 18     STA JIFFY3         ;Interrupt Counter
+$047F: 85 19     STA JIFFY2         ;Interrupt Counter
+$0481: 85 1A     STA JIFFY1         ;Interrupt Counter
 $0483: A9 0A     LDA #$0A
 $0485: 8D 3D 0B  STA UNKNOWN_7      ;Store #$0A in UNKNOWN_7 (?)
 $0488: 58        CLI                ;Enable interrupts again
@@ -364,47 +364,48 @@ $064E: 60        RTS             ;  Got key: done.  Key is now in A.
 
 ;START OF INTERRUPT HANDLER
 :INT_HANDLER
-$064F: E6 1A     INC $1A       ;counter
+$064F: E6 1A     INC JIFFY1      ;Counts number of Interrupts
 $0651: D0 06     BNE L_0659
-$0653: E6 19     INC $19       ;counter
-$0655: D0 02     BNE L_0659
-$0657: E6 18     INC $18       ;counter
+$0653: E6 19     INC JIFFY2      ;counter
+$0655: D0 02     BNE L_0659  
+$0657: E6 18     INC JIFFY3      ;counter
 :L_0659
-$0659: E6 14     INC $14
-$065B: A5 14     LDA $14
-$065D: CD 03 04  CMP $0403     ;?? this is in the BASIC header area
+$0659: E6 14     INC HERTZ           ;Interrupts fire either at 50 or 60 hertz depending on country sold in
+$065B: A5 14     LDA HERTZ
+$065D: CD 03 04  CMP $0403           ; This is in the BASIC header area. Normally $32 = 50
+                                     ; This byte is manually set depending on 50/60 hertz clocks
 $0660: D0 28     BNE BLINK_CURSOR
-$0662: A9 00     LDA #$00
-$0664: 85 14     STA $14
-$0666: E6 15     INC $15
-$0668: A5 15     LDA $15
-$066A: C9 3C     CMP #$3C      ;60
-$066C: D0 1C     BNE BLINK_CURSOR
-$066E: A9 00     LDA #$00
-$0670: 85 15     STA $15
-$0672: E6 16     INC $16
-$0674: A5 16     LDA $16
-$0676: C9 3C     CMP #$3C      ;60
-$0678: D0 10     BNE BLINK_CURSOR
-$067A: A9 00     LDA #$00
-$067C: 85 16     STA $16
-$067E: E6 17     INC $17
-$0680: A5 17     LDA $17
-$0682: C9 18     CMP #$18      ;24
-$0684: D0 04     BNE BLINK_CURSOR
-$0686: A9 00     LDA #$00
-$0688: 85 17     STA $17
+$0662: A9 00     LDA #$00            ;Reset HERTZ counter
+$0664: 85 14     STA HERTZ
+$0666: E6 15     INC SECS            ;Increment seconds
+$0668: A5 15     LDA SECS
+$066A: C9 3C     CMP #$3C            ;Have we reached 60 seconds?
+$066C: D0 1C     BNE BLINK_CURSOR    ; No, skip
+$066E: A9 00     LDA #$00            ; Yes, reset seconds
+$0670: 85 15     STA SECS
+$0672: E6 16     INC MINS            ;Increment Minutes
+$0674: A5 16     LDA MINS
+$0676: C9 3C     CMP #$3C            ;Have we reached 60 minutes?
+$0678: D0 10     BNE BLINK_CURSOR    ; No, skip
+$067A: A9 00     LDA #$00            ; Yes, reset minutes
+$067C: 85 16     STA MINS
+$067E: E6 17     INC HOURS           ;Increment hours
+$0680: A5 17     LDA HOURS
+$0682: C9 18     CMP #$18            ;Have we reached 24 hours
+$0684: D0 04     BNE BLINK_CURSOR    ; No, skip
+$0686: A9 00     LDA #$00            ; Yes, reset hours
+$0688: 85 17     STA HOURS
 :BLINK_CURSOR
-$068A: A5 06     LDA CURSOR_OFF    ;Is the cursor off?
-$068C: D0 11     BNE L_069F        ;  Yes: skip cursor blink
-$068E: C6 01     DEC BLINK_CNT     ;Decrement cursor blink countdown
-$0690: D0 0D     BNE L_069F        ;Not time to blink? Done.
+$068A: A5 06     LDA CURSOR_OFF      ;Is the cursor off?
+$068C: D0 11     BNE L_069F          ;  Yes: skip cursor blink
+$068E: C6 01     DEC BLINK_CNT       ;Decrement cursor blink countdown
+$0690: D0 0D     BNE L_069F          ;Not time to blink? Done.
 $0692: A9 14     LDA #$14
-$0694: 85 01     STA BLINK_CNT     ;Reset cursor blink countdown
+$0694: 85 01     STA BLINK_CNT       ;Reset cursor blink countdown
 $0696: 20 88 09  JSR CALC_SCNPOS
-$0699: B1 02     LDA (SCNPOSL),Y   ;Read character at cursor
-$069B: 49 80     EOR #$80          ;Flip the REVERSE bit
-$069D: 91 02     STA (SCNPOSL),Y   ;Write it back
+$0699: B1 02     LDA (SCNPOSL),Y     ;Read character at cursor
+$069B: 49 80     EOR #$80            ;Flip the REVERSE bit
+$069D: 91 02     STA (SCNPOSL),Y     ;Write it back
 :L_069F
 $069F: AD 37 0B  LDA UNKNOWN_1
 $06A2: CD 3E 0B  CMP UNKNOWN_8
