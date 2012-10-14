@@ -18,3 +18,16 @@ Commodore PET computers as an IEEE-488 peripheral.
    into [ACME](http://www.esw-heim.tu-clausthal.de/~marco/smorbrod/acme/)
    assembler format.  The converted `k.asm` source will assemble a binary
    that is identical to the original `k.prg`.
+
+## Assembling the Original
+
+Convert `k.disasm` into ACME assembler source code:
+
+    $ ruby disasm2acme.rb k.disasm > k2.asm
+
+Assemble the source:
+
+    $ acme -v1 --cpu 6502 --format cbm --outfile k2.prg k2.asm
+
+The binary will be written to ``k2.prg``.  It should be identical to the
+original ``k.prg``.
