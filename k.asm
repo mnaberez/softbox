@@ -518,16 +518,16 @@ $0758:           .WORD CTRL_1D  ;Delete character at cursor
 $075A:           .WORD CTRL_1E  ;Home cursor
 $075C:           .WORD CTRL_1F  ;Do nothing
 
-;START OF CONTROL CODE 07
-;Ring bell
 :CTRL_07
+;Ring bell
+;
 $075E: A9 07     LDA #$07   ;CHR$(7) = Bell
 $0760: 4C D2 FF  JMP CHROUT ;Kernal Print a byte
 
-;START OF CONTROL CODE 18
+:CTRL_18
 ;Set line spacing to tall (the default spacing for lowercase graphic mode).
 ;The current graphic mode will not be changed.
-:CTRL_18
+;
 $0763: AD 4C E8  LDA VIA_PCR  ;Remember current upper/lower graphic mode
 $0766: 48        PHA
 $0767: A9 0E     LDA #$0E     ;CHR$(14) = Switch to lowercase mode
@@ -536,10 +536,10 @@ $076C: 68        PLA
 $076D: 8D 4C E8  STA VIA_PCR
 $0770: 60        RTS          ;Restore graphic mode
 
-;START OF CONTROL CODE 17
+:CTRL_17
 ;Set line spacing to short (the default spacing for uppercase graphic mode).
 ;The current graphic mode will not be changed.
-:CTRL_17
+;
 $0771: AD 4C E8  LDA VIA_PCR  ;Remember current upper/lower graphic mode
 $0774: 48        PHA
 $0775: A9 8E     LDA #$8E     ;CHR$(142) = Switch to uppercase mode
@@ -548,23 +548,20 @@ $077A: 68        PLA
 $077B: 8D 4C E8  STA VIA_PCR
 $077E: 60        RTS          ;Restore graphic mode
 
-;START OF CONTROL CODE 01
 :CTRL_01
 $077F: A9 FF     LDA #$FF
 $0781: 85 13     STA $13
 $0783: 60        RTS
 
-;START OF CONTROL CODE 02
 :CTRL_02
 $0784: A9 7F     LDA #$7F
 $0786: 85 13     STA $13
 $0788: 60        RTS
 
-;START OF CONTROL CODES 00, 03, 1F
-;Do nothing
 :CTRL_00
 :CTRL_03
 :CTRL_1F
+;Do nothing
 $0789: 60        RTS
 
 :PUTSCN_THEN_DONE
@@ -623,23 +620,23 @@ $07CA: 29 7F     AND #$7F
 $07CC: 09 40     ORA #$40
 $07CE: 4C 8A 07  JMP PUTSCN_THEN_DONE
 
-;START OF CONTROL CODE 15
-;Go to uppercase mode
 :CTRL_15
+;Go to uppercase mode
+;
 $07D1: A9 0C     LDA #$0C
 $07D3: 8D 4C E8  STA VIA_PCR  ;Graphic mode = uppercase
 $07D6: 60        RTS
 
-;START OF CONTROL CODE 16
-;Go to lowercase mode
 :CTRL_16
+;Go to lowercase mode
+;
 $07D7: A9 0E     LDA #$0E
 $07D9: 8D 4C E8  STA VIA_PCR  ;Graphic mode = lowercase
 $07DC: 60        RTS
 
-;START OF CONTROL CODE 08
-;Cursor left
 :CTRL_08
+;Cursor left
+;
 $07DD: A6 04     LDX CURSOR_X
 $07DF: D0 08     BNE L_07E9     ; X > 0? Y will not change.
 $07E1: A6 09     LDX X_WIDTH    ; X = max X + 1
@@ -652,9 +649,9 @@ $07EA: 86 04     STX CURSOR_X   ; X=X-1
 :L_07EC
 $07EC: 60        RTS
 
-;START OF CONTROL CODE 0B
-;Cursor up
 :CTRL_0B
+;Cursor up
+;
 $07ED: A4 05     LDY CURSOR_Y
 $07EF: F0 FB     BEQ L_07EC     ; Y=0? Can't move up.
 $07F1: C6 05     DEC CURSOR_Y   ; Y=Y-1
@@ -662,6 +659,7 @@ $07F3: 60        RTS
 
 :PUT_SCNCODE
 ;Put the screen code in A on the screen at the current cursor position
+;
 $07F4: A6 0A     LDX REVERSE      ;Is reverse video mode on?
 $07F6: F0 02     BEQ L_07FA       ;  No:  leave character alone
 $07F8: 49 80     EOR #$80         ;  Yes: Flip bit 7 to reverse the character
@@ -670,9 +668,9 @@ $07FA: 20 88 09  JSR CALC_SCNPOS  ;Calculate screen RAM pointer
 $07FD: 91 02     STA (SCNPOSL),Y  ;Write the character to the screen
                                   ;Fall through into CTRL_0C to advance cursor
 
-;START OF CONTROL CODE 0C
-;Cursor right
 :CTRL_0C
+;Cursor right
+;
 $07FF: E6 04     INC CURSOR_X   ;X=X+1
 $0801: A6 04     LDX CURSOR_X
 $0803: E4 09     CPX X_WIDTH    ;X > max X?
@@ -680,9 +678,9 @@ $0805: D0 10     BNE L_0817     ;  No:  Done, no need to scroll up.
 $0807: A9 00     LDA #$00       ;  Yes: Set X=0 and then
 $0809: 85 04     STA CURSOR_X   ;       fall through into CTRL_0A to scroll.
 
-;START OF CONTROL CODE 0A
-;Line feed
 :CTRL_0A
+;Line feed
+;
 $080B: A4 05     LDY CURSOR_Y
 $080D: C0 18     CPY #$18       ;Are we on line 24?
 $080F: D0 03     BNE L_0814     ;  No:  Done, scroll is not needed
@@ -693,17 +691,17 @@ $0816: 60        RTS
 :L_0817
 $0817: 60        RTS
 
-;START OF CONTROL CODE 1E
-;Home cursor
 :CTRL_1E
+;Home cursor
+;
 $0818: A9 00     LDA #$00       ;Home cursor
 $081A: 85 05     STA CURSOR_Y
 $081C: 85 04     STA CURSOR_X
 $081E: 60        RTS
 
-;START OF CONTROL CODE 1A
-;Clear screen
 :CTRL_1A
+;Clear screen
+;
 $081F: A2 00     LDX #$00      ; Home cursor
 $0821: 86 04     STX CURSOR_X
 $0823: 86 05     STX CURSOR_Y
@@ -722,44 +720,44 @@ $0841: E8        INX
 $0842: D0 E5     BNE L_0829
 $0844: 60        RTS
 
-;START OF CONTROL CODE 0D
-;Carriage return
 :CTRL_0D
+;Carriage return
+;
 $0845: A9 00     LDA #$00       ;Move to X=0 on this line
 $0847: 85 04     STA CURSOR_X
 $0849: 60        RTS
 
-;START OF CONTROL CODE 10
-;Cursor on
 :CTRL_10
+;Cursor on
+;
 $084A: A9 00     LDA #$00
 $084C: 85 0C     STA CURSOR_TMP
 $084E: 60        RTS
 
-;START OF CONTROL CODE 19
-;Cursor off
 :CTRL_19
+;Cursor off
+;
 $084F: A9 FF     LDA #$FF
 $0851: 85 0C     STA CURSOR_TMP
 $0853: 60        RTS
 
-;START OF CONTROL CODE 0E
-;Reverse video on
 :CTRL_0E
+;Reverse video on
+;
 $0854: A9 01     LDA #$01
 $0856: 85 0A     STA REVERSE
 $0858: 60        RTS
 
-;START OF CONTROL CODE 0F
-;Reverse video off
 :CTRL_0F
+;Reverse video off
+;
 $0859: A9 00     LDA #$00
 $085B: 85 0A     STA REVERSE
 $085D: 60        RTS
 
-;START OF CONTROL CODE 13
-;Clear to end of line
 :CTRL_13
+;Clear to end of line
+;
 $085E: 20 88 09  JSR CALC_SCNPOS    ;Leaves CURSOR_X in Y register
 $0861: A9 20     LDA #$20           ;Space character
 :L_0863
@@ -769,7 +767,6 @@ $0866: C4 09     CPY X_WIDTH
 $0868: D0 F9     BNE L_0863         ;Loop until end of line
 $086A: 60        RTS
 
-;START OF CONTROL CODE 14
 :CTRL_14
 ;Clear from Current line to end of screen
 ;
@@ -797,8 +794,9 @@ $088B: F0 E3     BEQ L_0870      ;Yes, loop back for next line
 :L_088D
 $088D: 60        RTS
 
-;Scroll the screen up one line
 :SCROLL_UP
+;Scroll the screen up one line
+;
 $088E: A9 00     LDA #$00
 $0890: 85 02     STA SCNPOSL
 $0892: A5 09     LDA X_WIDTH
@@ -835,23 +833,23 @@ $08C4: C4 09     CPY X_WIDTH
 $08C6: D0 F9     BNE L_08C1
 $08C8: 60        RTS
 
-;START OF CONTROL CODE 04
-; Set TAB STOP at current Position
 :CTRL_04
+;Set TAB stop at current position
+;
 $08C9: A9 01     LDA #$01         ;1=TAB STOP yes
 $08CB:           .BYT 2C          ;Falls through to become BIT $00A9
 
-;START OF CONTROL CODE 05
-; Clear TAB STOP at current position
 :CTRL_05
+;Clear TAB stop at current position
+;
 $08CC: A9 00     LDA #$00         ;0=No TAB STOP
 $08CE: A6 04     LDX CURSOR_X     ;Get cursor position
 $08D0: 9D 3F 0B  STA TAB_STOPS,X  ;Clear the TAB at that position
 $08D3: 60        RTS
 
-;START OF CONTROL CODE 06
-; Clear ALL TAB STOPS
 :CTRL_06
+;Clear ALL TAB STOPS
+;
 $08D4: A2 4F     LDX #$4F  ; 80 characters-1
 $08D6: A9 00     LDA #$00  ; zero
 :L_08D8
@@ -860,9 +858,9 @@ $08DB: CA        DEX
 $08DC: 10 FA     BPL L_08D8
 $08DE: 60        RTS
 
-;START OF CONTROL CODE 09
-; perform TAB - Move to next TAB STOP as indicated in the TAB_STOP table
 :CTRL_09
+;Perform TAB.  Move to next TAB STOP as indicated in the TAB_STOPS table.
+;
 $08DF: A6 04     LDX CURSOR_X
 :L_08E1
 $08E1: E8        INX               ; next position
@@ -874,9 +872,9 @@ $08EB: 86 04     STX CURSOR_X      ; no, we hit a STOP, so store the position
 :L_08ED
 $08ED: 60        RTS
 
-;START OF CONTROL CODE 1C
-;Insert space at current cursor position
 :CTRL_1C
+;Insert space at current cursor position
+;
 $08EE: 20 88 09  JSR CALC_SCNPOS
 $08F1: A4 09     LDY X_WIDTH       ;number of characters on line
 $08F3: 88        DEY
@@ -894,9 +892,9 @@ $0901: A9 20     LDA #$20           ; SPACE
 $0903: 91 02     STA (SCNPOSL),Y    ; Write it to current character position
 $0905: 60        RTS
 
-;START OF CONTROL CODE 1D
-;Delete a character
 :CTRL_1D
+;Delete a character
+;
 $0906: 20 88 09  JSR CALC_SCNPOS
 $0909: A4 04     LDY CURSOR_X
 :L_090B
@@ -914,7 +912,6 @@ $0919: A9 20     LDA #$20           ;SPACE
 $091B: 91 02     STA (SCNPOSL),Y    ;write it to the current character position
 $091D: 60        RTS
 
-;START OF CONTROL CODE 12
 :CTRL_12
 ;Scroll up one line
 ;
@@ -938,14 +935,13 @@ $0935: E5 05     SBC CURSOR_Y
 $0937: AA        TAX
 $0938: 4C 9E 08  JMP L_089E        ;Jump into SCROLL_UP, bypassing some init
 
-;START OF CONTROL CODE 11
+:CTRL_11
 ;Insert a blank line
 ;
 ;The screen is shifted downward so that each line Y is copied into Y+1.
 ;The line at the current position will be erased (filled with spaces).
 ;The current cursor position will not be changed.
 ;
-:CTRL_11
 $093B: A9 C0     LDA #$C0
 $093D: A0 83     LDY #$83
 $093F: A6 09     LDX X_WIDTH
@@ -996,6 +992,7 @@ $0987: 60        RTS
 :CALC_SCNPOS
 ;Calculate a new pointer to screen memory (SCNPOSL/SCNPOSH)
 ;from cursor position at CURSOR_X and CURSOR_Y
+;
 $0988: 48        PHA
 $0989: A9 00     LDA #$00
 $098B: 85 03     STA SCNPOSH
@@ -1024,7 +1021,7 @@ $09AF: 85 03     STA SCNPOSH
 $09B1: 68        PLA
 $09B2: 60        RTS
 
-;START OF CONTROL CODE 1B
+:CTRL_1B
 ;Move cursor to X,Y position
 ;
 ;This control code is unlike the others because it requires an
@@ -1039,7 +1036,6 @@ $09B2: 60        RTS
 ;get the equivalent CURSOR_X and CURSOR_Y.  The offset is because this
 ;emulates the behavior of the Lear Siegler ADM-3A terminal.
 ;
-:CTRL_1B
 $09B3: A9 02     LDA #$02          ;Two more bytes to consume (X-pos, Y-pos)
 $09B5: 85 0B     STA MOVETO_CNT    ;Store count for next pass of PROCESS_BYTE
 $09B7: 60        RTS
