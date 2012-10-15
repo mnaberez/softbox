@@ -34,7 +34,7 @@ INSERT_LO   = $0F     ;Insert line (CTRL_11) destination screen address - LO
 INSERT_HI   = $10     ;Insert line (CTRL_11) destination screen address - HI
 XFER_LO     = $11     ;Memory transfer byte counter - LO
 XFER_HI     = $12     ;Memory transfer byte counter - HI
-; ?????     = $13     ;????????
+CHAR_MASK   = $13     ;Masks incoming bytes for 7- or 8-bit character mode
 HERTZ       = $14     ;Count Jiffies for 50/60 Hertz machines to update time correctly
 SECS        = $15     ;Elapsed Timer-Seconds
 MINS        = $16     ;              Minutes
@@ -91,7 +91,7 @@ $0485: 8D 3D 0B  STA UNKNOWN_7      ;Store #$0A in UNKNOWN_7 (?)
 $0488: 58        CLI                ;Enable interrupts again
 $0489: A9 0E     LDA #$0E
 $048B: 8D 4C E8  STA VIA_PCR        ;Graphic mode = lowercase
-$048E: 20 84 07  JSR CTRL_02        ;CTRL_02 stores #$7F in $13
+$048E: 20 84 07  JSR CTRL_02        ;Go to 7-bit character mode
 $0491: A9 14     LDA #$14
 $0493: 85 01     STA BLINK_CNT      ;Initialize cursor blink countdown
 $0495: A9 00     LDA #$00
@@ -471,7 +471,7 @@ $06F1: 20 88 09  JSR CALC_SCNPOS   ;Calculate screen RAM pointer
 $06F4: A5 07     LDA SCNCODE_TMP   ;Get the screen code previously saved
 $06F6: 91 02     STA (SCNPOSL),Y   ;  Put it on the screen
 $06F8: 68        PLA
-$06F9: 25 13     AND $13
+$06F9: 25 13     AND CHAR_MASK     ;Mask off bits depending on char mode
 $06FB: A6 0B     LDX MOVETO_CNT    ;More bytes to consume for a move-to seq?
 $06FD: D0 16     BNE L_0715        ;  Yes: branch to jump to move-to handler
 $06FF: C9 20     CMP #$20          ;Is this byte a control code?
@@ -497,8 +497,8 @@ CTRL_CODES:
 ;that terminal are used for other purposes here.
 ;
 $071E:           .WORD CTRL_00  ;Do nothing
-$0720:           .WORD CTRL_01  ;Store #$FF in $13
-$0722:           .WORD CTRL_02  ;Store #$7F in $13
+$0720:           .WORD CTRL_01  ;Go to 8-bit character mode
+$0722:           .WORD CTRL_02  ;Go to 7-bit character mode
 $0724:           .WORD CTRL_03  ;Do nothing
 $0726:           .WORD CTRL_04  ;Set TAB STOP at current position
 $0728:           .WORD CTRL_05  ;Clear TAB STOP at current position
@@ -560,13 +560,18 @@ $077B: 8D 4C E8  STA VIA_PCR
 $077E: 60        RTS          ;Restore graphic mode
 
 CTRL_01:
+;Go to 8-bit character mode
+;See PUT_CHAR for how this mode is used to display CBM graphics.
+;
 $077F: A9 FF     LDA #$FF
-$0781: 85 13     STA $13
+$0781: 85 13     STA CHAR_MASK
 $0783: 60        RTS
 
 CTRL_02:
+;Go to 7-bit character mode
+;
 $0784: A9 7F     LDA #$7F
-$0786: 85 13     STA $13
+$0786: 85 13     STA CHAR_MASK
 $0788: 60        RTS
 
 CTRL_00:
@@ -596,6 +601,16 @@ PUT_CHAR:
 ;at the current CURSOR_X and CURSOR_Y position.  This routine first
 ;converts the character to its equivalent CBM screen code and then
 ;jumps out to print it to the screen.
+;
+;Bytes $00-7F (bit 7 off) always correspond to the 7-bit standard
+;ASCII character set and are converted to the equivalent CBM screen code.
+;
+;Bytes $80-FF (bit 7 on) are a special extended mode that display
+;the CBM graphics characters if the terminal is in 8-bit mode (CTRL_01):
+;
+;  Byte      Screen Code
+;  $80-BF -> $40-7F
+;  $C0-FF -> $40-7F
 ;
 $0799: C9 40     CMP #$40              ;Is it < 64?
 $079B: 90 ED     BCC PUTSCN_THEN_DONE  ;  Yes: done, put it on the screen
