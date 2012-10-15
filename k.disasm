@@ -39,9 +39,9 @@ HERTZ       = $14     ;Count Jiffies for 50/60 Hertz machines to update time cor
 SECS        = $15     ;Elapsed Timer-Seconds
 MINS        = $16     ;              Minutes
 HOURS       = $17     ;              Hours
-JIFFY3      = $18     ;Jiffy counter
-JIFFY2      = $19     ;Jiffy counter
-JIFFY1      = $1A     ;Jiffy counter
+JIFFY2      = $18     ;Jiffy counter (MSB)
+JIFFY1      = $19     ;Jiffy counter
+JIFFY0      = $1A     ;Jiffy counter (LSB)
 ;
 *=$0400
 
@@ -83,9 +83,9 @@ $0475: 85 14     STA HERTZ          ;Reset 50/60 Hertz interrupt counter
 $0477: 85 15     STA SECS           ;Reset elapsed time clock
 $0479: 85 16     STA MINS
 $047B: 85 17     STA HOURS
-$047D: 85 18     STA JIFFY3         ;Reset jiffy counter
-$047F: 85 19     STA JIFFY2
-$0481: 85 1A     STA JIFFY1
+$047D: 85 18     STA JIFFY2         ;Reset jiffy counter
+$047F: 85 19     STA JIFFY1
+$0481: 85 1A     STA JIFFY0
 $0483: A9 0A     LDA #$0A
 $0485: 8D 3D 0B  STA UNKNOWN_7      ;Store #$0A in UNKNOWN_7 (?)
 $0488: 58        CLI                ;Enable interrupts again
@@ -374,11 +374,11 @@ $064E: 60        RTS             ;  Got key: done.  Key is now in A.
 ;which pushes A, X, and Y onto the stack and then executes JMP (INTVECL).
 ;We install this routine, INT_HANDLER, into INTVECL during init.
 ;
-$064F: E6 1A     INC JIFFY1          ;Counts number of Interrupts
+$064F: E6 1A     INC JIFFY0          ;Counts number of Interrupts
 $0651: D0 06     BNE L_0659
-$0653: E6 19     INC JIFFY2          ;counter
+$0653: E6 19     INC JIFFY1          ;counter
 $0655: D0 02     BNE L_0659
-$0657: E6 18     INC JIFFY3          ;counter
+$0657: E6 18     INC JIFFY2          ;counter
 :L_0659
 $0659: E6 14     INC HERTZ           ;Interrupts fire either at 50 or 60 hertz depending on country sold in
 $065B: A5 14     LDA HERTZ
