@@ -77,15 +77,15 @@ $0469: 85 90     STA INTVECL
 $046B: A9 06     LDA #>INT_HANDLER
 $046D: 85 91     STA INTVECH        ;Install our interrupt handler
 $046F: A9 00     LDA #$00
-$0471: 85 08     STA KEYCOUNT       ;Initialize key counter (no keys hit)
-$0473: A9 00     LDA #$00           ;Initialize other zero page locations
-$0475: 85 14     STA HERTZ          ;50/60 Hertz interrupt counter
-$0477: 85 15     STA SECS           ;Elapsed Seconds
-$0479: 85 16     STA MINS           ;Elapsed Minutes
-$047B: 85 17     STA HOURS          ;Elapsed Hours
-$047D: 85 18     STA JIFFY3         ;Interrupt Counter
-$047F: 85 19     STA JIFFY2         ;Interrupt Counter
-$0481: 85 1A     STA JIFFY1         ;Interrupt Counter
+$0471: 85 08     STA KEYCOUNT       ;Reset key counter (no keys hit)
+$0473: A9 00     LDA #$00
+$0475: 85 14     STA HERTZ          ;Reset 50/60 Hertz interrupt counter
+$0477: 85 15     STA SECS           ;Reset elapsed time clock
+$0479: 85 16     STA MINS
+$047B: 85 17     STA HOURS
+$047D: 85 18     STA JIFFY3         ;Reset jiffy counter
+$047F: 85 19     STA JIFFY2
+$0481: 85 1A     STA JIFFY1
 $0483: A9 0A     LDA #$0A
 $0485: 8D 3D 0B  STA UNKNOWN_7      ;Store #$0A in UNKNOWN_7 (?)
 $0488: 58        CLI                ;Enable interrupts again
@@ -369,7 +369,7 @@ $064C: F0 E0     BEQ GET_KEY     ;  No key:  loop until we get one.
 $064E: 60        RTS             ;  Got key: done.  Key is now in A.
 
 :INT_HANDLER
-;On the PET, an IRQ occurs every 50 or 60 Hz depending on the power line
+;On the PET, an IRQ occurs at 50 or 60 Hz depending on the power line
 ;frequency.  The 6502 calls the main IRQ entry point ($E442 on BASIC 4.0)
 ;which pushes A, X, and Y onto the stack and then executes JMP (INTVECL).
 ;We install this routine, INT_HANDLER, into INTVECL during init.
