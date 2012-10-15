@@ -1075,123 +1075,162 @@ $09D1: 4C 8D 07  JMP PROCESS_DONE  ;Done.
 
 :SCAN_KEYB
 ;Scan the keyboard.
-; USES: UNKNOWN_1 - Shift Flag?
-;       UNKNOWN_2 -
-;       UNKNOWN_3 - Row counter?
-;       UNKNOWN_4 -
-;       UNKNOWN_5 -
-$09D4: AD 37 0B  LDA UNKNOWN_1
-$09D7: 8D 38 0B  STA UNKNOWN_2
-$09DA: A2 00     LDX #$00               ;Start at ROW 0
-$09DC: 8E 3A 0B  STX UNKNOWN_4          ;save it
-$09DF: 8E 3B 0B  STX UNKNOWN_5          ;save it
+; The PET uses a 10x8 keyboard matrix. There are 10 rows, and 8 columns.
+; To scan you select a ROW by writing the ROW NUMBER to the PIA1ROW register. The lower 4 bits are sent to
+; a 4 to 10 decoder. Then the PAI1COL register is read and each of the 8 bits represent one key in that row.
+; IMPORTANT!!!! If a key is PRESSED the BIT will be ZERO.
+; There are two keyboard tables consists of 80 bytes each. One for "Graphic" (40 column) and one for "Business"
+; (80 column).
+;
+; USES: UNKNOWN_1 - SCANCODE - Code of Pressed KEY. $FF=NONE?
+;       UNKNOWN_2 - LASTCODE - Code of Previous KEY?
+;       UNKNOWN_3 - ROWCOUNT - Keyboard ROW counter
+;       UNKNOWN_4 - REPEAT1  - Repeat Counter
+;       UNKNOWN_5 - REPEAT2  - Repeat Counter
+;
+$09D4: AD 37 0B  LDA SCANCODE           ;Old SCANCODE
+$09D7: 8D 38 0B  STA LASTCODE           ;Save It
+$09DA: A2 00     LDX #$00               ;X=0 Index into Keyboard Scan Table
+$09DC: 8E 3A 0B  STX REPEAT1            ;Reset Repeat Counter
+$09DF: 8E 3B 0B  STX REPEAT2            ;Reset Repeat Counter
+
 $09E2: 8E 10 E8  STX PIA1ROW            ;Select a keyboard ROW
-$09E5: A9 FF     LDA #$FF
-$09E7: 8D 37 0B  STA UNKNOWN_1
-$09EA: A9 0A     LDA #$0A               ;10 rows in table????
-$09EC: 8D 39 0B  STA UNKNOWN_3
-:L_09EF
+$09E5: A9 FF     LDA #$FF               ;$FF = no key
+$09E7: 8D 37 0B  STA SCANCODE           ;Shift Flag
+$09EA: A9 0A     LDA #$0A               ;Keyboard has 10 ROWS
+$09EC: 8D 39 0B  STA ROWCOUNT           ;Keyboard ROW counter
+
 ;---- top of loop for keyboard ROWS
-$09EF: A0 08     LDY #$08               ;8 bits???
-:L_09F1
+;
+:SCAN_ROW
+:L_09EF
+$09EF: A0 08     LDY #$08               ;Y=8 -- 8 Columns in Table
+
+:DEBOUNCE
 $09F1: AD 12 E8  LDA PIA1COL            ;PIA#1 Keyboard Columns Read
 $09F4: CD 12 E8  CMP PIA1COL            ;PIA#1 Keyboard Columns Read
-$09F7: D0 F8     BNE L_09F1             ;wait for stable value on keyboard switches (debounce)
+$09F7: D0 F8     BNE DEBOUNCE           ;wait for stable value on keyboard switches (debounce)
+                                        ;Result of Row scan is now in A (call is SCANCODE)
+
+;---- top of loop to go through each bit returned from scan. Each "0" bit represents a key pressed down
+;
 :L_09F9
-;---- top of loop to go through each bit returned from scan.
-;     each "1" bit represents a key pressed down
+:SCAN_COL
 $09F9: 4A        LSR A                  ;Shift byte RIGHT leaving CARRY flag set if it is a "1"
 $09FA: 48        PHA                    ;Push it to the stack
-$09FB: B0 22     BCS L_0A1F             ;was the BIT a "1"? Yes, skip
-$09FD: A5 09     LDA X_WIDTH
+$09FB: B0 22     BCS NEXTCOL            ;Is the BIT a "1"? Yes. Means key was NOT pressed. Bypass testing
+$09FD: A5 09     LDA X_WIDTH            ; No, Need to check it.Check the terminal width
 $09FF: C9 50     CMP #$50               ;Is this an 80 column screen?
-$0A01: D0 06     BNE L_0A09             ;
-$0A03: BD E7 0A  LDA BUSINESS_KEYS,X    ;  Yes: read from Business keyboard table
-$0A06: 4C 0C 0A  JMP L_0A0C
-:L_0A09
-$0A09: BD 97 0A  LDA GRAPHICS_KEYS,X    ;  No:  read from Graphics keyboard table
-:L_0A0C
-$0A0C: C9 01     CMP #$01               ;SHIFT KEY?
-$0A0E: F0 07     BEQ L_0A17
-$0A10: 90 0A     BCC L_0A1C
-$0A12: 8D 37 0B  STA UNKNOWN_1          ;SHIFT FLAG?
-$0A15: B0 08     BCS L_0A1F
+$0A01: D0 06     BNE SKIP40               
+$0A03: BD E7 0A  LDA BUSINESS_KEYS,X    ;  Yes, read from Business keyboard table
+$0A06: 4C 0C 0A  JMP GOT_ROW
+:SKIP40
+$0A09: BD 97 0A  LDA GRAPHICS_KEYS,X    ;  No,  read from Graphics keyboard table
+
+:GOT_ROW
+$0A0C: C9 01     CMP #$01               ;IS it the SHIFT key?
+$0A0E: F0 07     BEQ L_0A17             ; Yes, skip
+$0A10: 90 0A     BCC L_0A1C             ; 
+$0A12: 8D 37 0B  STA SCANCODE           ;Store the SCANCODE as-is
+$0A15: B0 08     BCS NEXTCOL
+
 :L_0A17
-$0A17: EE 3A 0B  INC UNKNOWN_4
-$0A1A: D0 03     BNE L_0A1F
+$0A17: EE 3A 0B  INC REPEAT1            ;Increment Repeat counter
+$0A1A: D0 03     BNE NEXTCOL
+
 :L_0A1C
-$0A1C: EE 3B 0B  INC UNKNOWN_5
+$0A1C: EE 3B 0B  INC REPEAT2            ;Increment Repeat counter
+
+:NEXTCOL
 :L_0A1F
 $0A1F: 68        PLA                    ;pull the original scan value from stack
-$0A20: E8        INX                    ;next entry in table
-$0A21: 88        DEY                    ;next BIT?
-$0A22: D0 D5     BNE L_09F9             ;Is it ZERO? No, go back for more table entries
-$0A24: EE 10 E8  INC PIA1ROW            ;PIA#1 Keyboard Row Select
-$0A27: CE 39 0B  DEC UNKNOWN_3          ;previous row?
-$0A2A: D0 C3     BNE L_09EF             ; Is it Zero? No, loop back up
-$0A2C: AD 37 0B  LDA UNKNOWN_1
-$0A2F: C9 FF     CMP #$FF
-$0A31: F0 22     BEQ L_0A55
-$0A33: CD 38 0B  CMP UNKNOWN_2
-$0A36: F0 1D     BEQ L_0A55
-$0A38: C9 00     CMP #$00
-$0A3A: 10 0A     BPL L_0A46
-$0A3C: 29 7F     AND #$7F               ;remove the TOP bit (shift flag for character?)
-$0A3E: AC 3A 0B  LDY UNKNOWN_4
-$0A41: F0 03     BEQ L_0A46
-$0A43: 49 10     EOR #$10               ;convert to ASCII?
+$0A20: E8        INX                    ;X=X+1 - next entry in table
+$0A21: 88        DEY                    ;Y=Y-1 - next BIT in scan value
+$0A22: D0 D5     BNE SCAN_COL           ;Is it ZERO? No, go back for next COL
+
+:NEXTROW
+$0A24: EE 10 E8  INC PIA1ROW            ;Increment Keyboard scanning ROW register - PIA#1 Keyboard Row Select
+$0A27: CE 39 0B  DEC ROWCOUNT           ;ROW=ROW-1
+$0A2A: D0 C3     BNE SCAN_ROW           ; Is it Zero? No, loop back up for next ROW
+
+$0A2C: AD 37 0B  LDA SCANCODE           ;get the current SCANCODE
+$0A2F: C9 FF     CMP #$FF               ;Is it NO KEY?
+$0A31: F0 22     BEQ KEYDONE            ; Yes, skip
+
+$0A33: CD 38 0B  CMP LASTCODE           ;Is it the same as last shift status
+$0A36: F0 1D     BEQ KEYDONE            ;Yes, exit
+
+$0A38: C9 00     CMP #$00               ;Is it zero?
+$0A3A: 10 0A     BPL L_0A46             ;Yes, >0 leave the top bit as-is
+$0A3C: 29 7F     AND #$7F               ;No, Remove the TOP bit (shift flag for character?)
+$0A3E: AC 3A 0B  LDY REPEAT1
+$0A41: F0 03     BEQ L_0A46             ;
+$0A43: 49 10     EOR #$10               ;flip BIT 4 - convert to ASCII?
 $0A45: 60        RTS
+
 :L_0A46
 $0A46: C9 40     CMP #$40               ;"@"?
 $0A48: 90 25     BCC L_0A6F
 $0A4A: C9 60     CMP #$60               ;upper ascii limit?
 $0A4C: B0 21     BCS L_0A6F
-$0A4E: AC 3B 0B  LDY UNKNOWN_5
-$0A51: F0 03     BEQ L_0A56
-$0A53: 29 1F     AND #$1F               ;CTRL key?
+$0A4E: AC 3B 0B  LDY REPEAT2            ;repeat delay
+$0A51: F0 03     BEQ L_0A56             ;Is it zero?
+$0A53: 29 1F     AND #$1F               ;Use only the lower 5 BITS (0 to 63)
+
+:KEYDONE
 :L_0A55
 $0A55: 60        RTS
+
+:TIMEOUT
 :L_0A56
-$0A56: C9 40     CMP #$40               ;"@"?
-$0A58: F0 15     BEQ L_0A6F
-$0A5A: C9 5B     CMP #$5B               ;"["?
+$0A56: C9 40     CMP #$40               ;Compare to "@" symbol
+$0A58: F0 15     BEQ L_0A6F             ;
+$0A5A: C9 5B     CMP #$5B               ;Compare to "[" symbol?
 $0A5C: B0 11     BCS L_0A6F
-$0A5E: AC 3A 0B  LDY UNKNOWN_4
-$0A61: D0 0C     BNE L_0A6F
-$0A63: 48        PHA
-$0A64: AD 4C E8  LDA VIA_PCR    ;Bit 1 off = uppercase, on = lowercase
-$0A67: 4A        LSR A
-$0A68: 4A        LSR A
-$0A69: 68        PLA
-$0A6A: 90 03     BCC L_0A6F     ;Branch if uppercase mode
-$0A6C: 09 20     ORA #$20
-$0A6E: 60        RTS
+
+$0A5E: AC 3A 0B  LDY REPEAT1            ;Is repeat delay zero?
+$0A61: D0 0C     BNE L_0A6F             ; No,skip to next test
+$0A63: 48        PHA                    ;Yes, push the character code to stack
+$0A64: AD 4C E8  LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
+$0A67: 4A        LSR A                  ;shift
+$0A68: 4A        LSR A                  ;shift to get BIT 2
+$0A69: 68        PLA                    ;pull the character code from stack
+$0A6A: 90 03     BCC L_0A6F             ;Branch if uppercase mode
+$0A6C: 09 20     ORA #$20               ;0010 0000
+$0A6E: 60        RTS                    ;Return with character code in A
+
 :L_0A6F
-$0A6F: AC 3A 0B  LDY UNKNOWN_4
+$0A6F: AC 3A 0B  LDY REPEAT1
 $0A72: F0 20     BEQ L_0A94
-$0A74: A2 0B     LDX #$0B
-$0A76: C9 0A     CMP #$0A
-$0A78: F0 18     BEQ L_0A92
-$0A7A: A2 08     LDX #$08
-$0A7C: C9 0C     CMP #$0C
-$0A7E: F0 12     BEQ L_0A92
+
+$0A74: A2 0B     LDX #$0B               ;0000 1011
+$0A76: C9 0A     CMP #$0A               ;0000 1010
+$0A78: F0 18     BEQ KEYOUT  
+$0A7A: A2 08     LDX #$08               ;0000 0100
+$0A7C: C9 0C     CMP #$0C               ;0000 1100
+$0A7E: F0 12     BEQ KEYOUT
 $0A80: A2 1A     LDX #$1A
 $0A82: C9 1E     CMP #$1E
-$0A84: F0 0C     BEQ L_0A92
-$0A86: 48        PHA
-$0A87: AD 4C E8  LDA VIA_PCR    ;Bit 1 off = uppercase, on = lowercase
-$0A8A: 4A        LSR A
-$0A8B: 4A        LSR A
-$0A8C: 68        PLA
-$0A8D: B0 05     BCS L_0A94     ;Branch if lowercase mode
+$0A84: F0 0C     BEQ KEYOUT
+$0A86: 48        PHA                    ;Push key to stack 
+$0A87: AD 4C E8  LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
+$0A8A: 4A        LSR A                  ;shift 
+$0A8B: 4A        LSR A                  ;shift - check bit 1
+$0A8C: 68        PLA                    ;Pull original key from stack
+$0A8D: B0 05     BCS L_0A94             ;Branch if lowercase mode
 $0A8F: 09 80     ORA #$80
 $0A91: 60        RTS
+
+:KEYOUT
 :L_0A92
 $0A92: 8A        TXA
 $0A93: 60        RTS
+
 :L_0A94
 $0A94: C9 00     CMP #$00
 $0A96: 60        RTS
+
+
 
 ;40-column graphics keyboard table               ----- ----- ----- ----- ----- ----- ----- -----    Notes
 :GRAPHICS_KEYS
