@@ -1,8 +1,8 @@
 ; Auto Disassembly of: k
 ;----- Equates
 ;
-INTVECL     = $90     ;hardware interrupt vector LO
-INTVECH     = $91     ;hardware interrupt vector HI
+INTVECL     = $90     ;Hardware interrupt vector LO
+INTVECH     = $91     ;Hardware interrupt vector HI
 KEYBUF      = $026F   ;Keyboard Input Buffer
 SCREEN      = $8000   ;Start of screen ram
 PIA1ROW     = $E810   ;PIA#1 Keyboard Row Select
@@ -72,10 +72,10 @@ $0462:           .BYT 20,20,20,20             ;copyright text
 
 :INIT
 $0466: 78        SEI                ;Disable interrupts
-$0467: A9 4F     LDA #<INT_HANDLER  ;Interrupt handler address LO (#$4F)
+$0467: A9 4F     LDA #<INT_HANDLER
 $0469: 85 90     STA INTVECL
-$046B: A9 06     LDA #>INT_HANDLER  ;Interrupt handler address HI (#$06)
-$046D: 85 91     STA INTVECH        ;Install interrupt handler
+$046B: A9 06     LDA #>INT_HANDLER
+$046D: 85 91     STA INTVECH        ;Install our interrupt handler
 $046F: A9 00     LDA #$00
 $0471: 85 08     STA KEYCOUNT       ;Initialize key counter (no keys hit)
 $0473: A9 00     LDA #$00           ;Initialize other zero page locations
@@ -368,13 +368,17 @@ $064A: C9 FF     CMP #$FF        ;No key or key is "NONE" in the tables?
 $064C: F0 E0     BEQ GET_KEY     ;  No key:  loop until we get one.
 $064E: 60        RTS             ;  Got key: done.  Key is now in A.
 
-;START OF INTERRUPT HANDLER
 :INT_HANDLER
-$064F: E6 1A     INC JIFFY1      ;Counts number of Interrupts
+;On the PET, an IRQ occurs every 50 or 60 Hz depending on the power line
+;frequency.  The 6502 calls the main IRQ entry point ($E442 on BASIC 4.0)
+;which pushes A, X, and Y onto the stack and then executes JMP (INTVECL).
+;We install this routine, INT_HANDLER, into INTVECL during init.
+;
+$064F: E6 1A     INC JIFFY1          ;Counts number of Interrupts
 $0651: D0 06     BNE L_0659
-$0653: E6 19     INC JIFFY2      ;counter
+$0653: E6 19     INC JIFFY2          ;counter
 $0655: D0 02     BNE L_0659
-$0657: E6 18     INC JIFFY3      ;counter
+$0657: E6 18     INC JIFFY3          ;counter
 :L_0659
 $0659: E6 14     INC HERTZ           ;Interrupts fire either at 50 or 60 hertz depending on country sold in
 $065B: A5 14     LDA HERTZ
