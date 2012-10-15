@@ -4,7 +4,7 @@
 # written to reassemble the Softbox code and only converts what
 # was necessary for that program.
 #
-# ruby disasm2acme.rb inputfile.asm > outputfile.asm
+# ruby disasm2acme.rb file.disasm > file.asm
 #
 filename = ARGV[0]
 abort "Usage: disasm2acme <filename>" unless filename && File.exist?(filename)
@@ -12,7 +12,8 @@ abort "Usage: disasm2acme <filename>" unless filename && File.exist?(filename)
 File.readlines(filename).each do |line|
   line.strip!
 
-  # Equate
+  # Label or equate
+  #   INIT_4080:
   #   BLINK_CNT = $01  ;Counter used for cursor blink timing
   if line =~ /^[a-z]/i
     puts line
@@ -51,14 +52,9 @@ File.readlines(filename).each do |line|
     line += " ; #{comment}" if comment
   end
 
-  # Label
-  #   :INIT_4080
-  if line.start_with?(":")
-    line = line.slice(1, line.length) + ":"
-
   # Whole line comment
   #   ;Detect 40/80 column screen and store in X_WIDTH
-  elsif line.start_with?(";")
+  if line.start_with?(";")
     # pass
 
   # Empty line
