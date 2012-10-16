@@ -453,7 +453,7 @@ $0699: B1 02     LDA (SCNPOSL),Y     ;Read character at cursor
 $069B: 49 80     EOR #$80            ;Flip the REVERSE bit
 $069D: 91 02     STA (SCNPOSL),Y     ;Write it back
 L_069F:
-$069F: AD 37 0B  LDA UNKNOWN_1
+$069F: AD 37 0B  LDA SCANCODE
 $06A2: CD 3E 0B  CMP UNKNOWN_8
 $06A5: F0 0A     BEQ L_06B1
 $06A7: 8D 3E 0B  STA UNKNOWN_8
@@ -473,7 +473,7 @@ $06C2: D0 0E     BNE L_06D2
 $06C4: A9 04     LDA #$04
 $06C6: 8D 3D 0B  STA UNKNOWN_7
 $06C9: A9 00     LDA #$00
-$06CB: 8D 37 0B  STA UNKNOWN_1
+$06CB: 8D 37 0B  STA SCANCODE
 $06CE: A9 02     LDA #$02
 $06D0: 85 01     STA BLINK_CNT ;Fast cursor blink(?)
 L_06D2:
@@ -1241,7 +1241,7 @@ $0A55: 60        RTS
 ;---- Check A to Z or CTRL key
 KEY_ATOZ:
 $0A56: C9 40     CMP #$40               ;Compare to "@" symbol
-$0A58: F0 15     BEQ KEY_CHECK2        
+$0A58: F0 15     BEQ KEY_CHECK2
 $0A5A: C9 5B     CMP #$5B               ;Compare to "[" symbol?
 $0A5C: B0 11     BCS KEY_CHECK2
 
@@ -1275,7 +1275,7 @@ $0A80: A2 1A     LDX #$1A               ;CLEAR SCREEN CMD_1A
 $0A82: C9 1E     CMP #$1E               ;SCAN=HOME
 $0A84: F0 0C     BEQ KEY_CMD
 
-;---- these must be normal shifted keys or Graphics? 
+;---- these must be normal shifted keys or Graphics?
 $0A86: 48        PHA                    ;Push key to stack
 $0A87: AD 4C E8  LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
 $0A8A: 4A        LSR A                  ;shift
