@@ -1096,21 +1096,21 @@ SCAN_KEYB:
 ; There are two keyboard tables consists of 80 bytes each. One for "Graphic" (40 column) and one for "Business"
 ; (80 column).
 ;
-; USES: UNKNOWN_1 - SCANCODE - Code of Pressed KEY. $FF=NONE?
-;       UNKNOWN_2 - LASTCODE - Code of Previous KEY?
-;       UNKNOWN_3 - ROWCOUNT - Keyboard ROW counter
-;       UNKNOWN_4 - REPEAT1  - Repeat Counter
-;       UNKNOWN_5 - REPEAT2  - Repeat Counter
+; USES: UNKNOWN_1 - SCANCODE  - Code of Pressed KEY. $FF=NONE?
+;       UNKNOWN_2 - LASTCODE  - Code of Previous KEY?
+;       UNKNOWN_3 - ROWCOUNT  - Keyboard ROW counter
+;       UNKNOWN_4 - SHIFTFLAG - Shift Flag
+;       UNKNOWN_5 - REPEAT    - Repeat Counter
 ;
 $09D4: AD 37 0B  LDA SCANCODE           ;Old SCANCODE
 $09D7: 8D 38 0B  STA LASTCODE           ;Save It
 $09DA: A2 00     LDX #$00               ;X=0 Index into Keyboard Scan Table
-$09DC: 8E 3A 0B  STX REPEAT1            ;Reset Repeat Counter
-$09DF: 8E 3B 0B  STX REPEAT2            ;Reset Repeat Counter
+$09DC: 8E 3A 0B  STX SHIFTFLAG          ;Reset Shift Flag
+$09DF: 8E 3B 0B  STX REPEAT             ;Reset Repeat Counter
 
 $09E2: 8E 10 E8  STX PIA1ROW            ;Select a keyboard ROW
 $09E5: A9 FF     LDA #$FF               ;$FF = no key
-$09E7: 8D 37 0B  STA SCANCODE           ;Shift Flag
+$09E7: 8D 37 0B  STA SCANCODE           ;Set it
 $09EA: A9 0A     LDA #$0A               ;Keyboard has 10 ROWS
 $09EC: 8D 39 0B  STA ROWCOUNT           ;Keyboard ROW counter
 
@@ -1143,17 +1143,18 @@ $0A09: BD 97 0A  LDA GRAPHICS_KEYS,X    ;  No,  read from Graphics keyboard tabl
 
 GOT_ROW:
 $0A0C: C9 01     CMP #$01               ;IS it the SHIFT key?
-$0A0E: F0 07     BEQ L_0A17             ; Yes, skip
+$0A0E: F0 07     BEQ KEY_SHIFT          ; Yes, skip
 $0A10: 90 0A     BCC L_0A1C             ;
 $0A12: 8D 37 0B  STA SCANCODE           ;Store the SCANCODE as-is
 $0A15: B0 08     BCS NEXTCOL
 
+KEY_SHIFT:
 L_0A17:
-$0A17: EE 3A 0B  INC REPEAT1            ;Increment Repeat counter
-$0A1A: D0 03     BNE NEXTCOL
+$0A17: EE 3A 0B  INC SHIFTFLAG          ;Increment SHIFT Flag
+$0A1A: D0 03     BNE NEXTCOL            ; Is it >0? Yes, loop back for another key
 
 L_0A1C:
-$0A1C: EE 3B 0B  INC REPEAT2            ;Increment Repeat counter
+$0A1C: EE 3B 0B  INC REPEAT             ;Increment Repeat counter
 
 NEXTCOL:
 L_0A1F:
@@ -1170,22 +1171,22 @@ $0A2A: D0 C3     BNE SCAN_ROW           ; Is it Zero? No, loop back up for next 
 ;-------------------------------------- end of loops
 
 $0A2C: AD 37 0B  LDA SCANCODE           ;get the current SCANCODE
-$0A2F: C9 FF     CMP #$FF               ;Is it NO KEY?
+$0A2F: C9 FF     CMP #$FF               ;Is it NONE?
 $0A31: F0 22     BEQ KEYDONE            ; Yes, skip
 
 $0A33: CD 38 0B  CMP LASTCODE           ;Is it the same as last?
-$0A36: F0 1D     BEQ KEYDONE            ;Yes, exit
+$0A36: F0 1D     BEQ KEYDONE            ; Yes, exit
 
 ;---- Check the Top bit
 KEY_CHECK1:
-$0A38: C9 00     CMP #$00               ;Compare lower range
-$0A3A: 10 0A     BPL KEY_LOW            ;Is it 0 to 127 (positive)? Yes, skip
+$0A38: C9 00     CMP #$00               ;Compare to CTRL key
+$0A3A: 10 0A     BPL KEY_LOW            ;No, skip
 
 ;---- Top bit is set
 KEY_HI:
 $0A3C: 29 7F     AND #$7F               ;No, Remove the TOP bit (shift flag for character?)
-$0A3E: AC 3A 0B  LDY REPEAT1            ;Check REPEAT delay
-$0A41: F0 03     BEQ KEY_LOW            ;Is it up? Yes, skip
+$0A3E: AC 3A 0B  LDY SHIFTFLAG          ;Check SHIFT Flag
+$0A41: F0 03     BEQ KEY_LOW            ;SHIFT=0? Yes, skip
 $0A43: 49 10     EOR #$10               ;No, flip BIT 4 (what does bit 4 do?)
 $0A45: 60        RTS
 
@@ -1197,7 +1198,7 @@ $0A48: 90 25     BCC KEY_CTRL           ;It is below? Yes, must be CTRL characte
 $0A4A: C9 60     CMP #$60               ;Compare to upper ascii limit?
 $0A4C: B0 21     BCS KEY_CTRL           ;Is it above the A-Z range? Yes, skip
 
-$0A4E: AC 3B 0B  LDY REPEAT2            ;repeat delay
+$0A4E: AC 3B 0B  LDY REPEAT             ;repeat delay
 $0A51: F0 03     BEQ TIMEOUT            ;Is it zero?
 $0A53: 29 1F     AND #$1F               ;Use only the lower 5 BITS (0 to 31)
 
@@ -1212,24 +1213,25 @@ $0A58: F0 15     BEQ KEY_CTRL           ;
 $0A5A: C9 5B     CMP #$5B               ;Compare to "[" symbol?
 $0A5C: B0 11     BCS KEY_CTRL
 
-$0A5E: AC 3A 0B  LDY REPEAT1            ;Is repeat delay zero?
+$0A5E: AC 3A 0B  LDY SHIFTFLAG          ;Is SHIFT Flag set?
 $0A61: D0 0C     BNE KEY_CTRL           ; No,skip to next test
+;---- Handle regular A-Z
 $0A63: 48        PHA                    ;Yes, push the character code to stack
 $0A64: AD 4C E8  LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
 $0A67: 4A        LSR A                  ;shift
 $0A68: 4A        LSR A                  ;shift to get BIT 2
 $0A69: 68        PLA                    ;pull the character code from stack
 $0A6A: 90 03     BCC KEY_CTRL           ;Branch if uppercase mode
-$0A6C: 09 20     ORA #$20               ;SET BIT 5  (0010 0000)
+$0A6C: 09 20     ORA #$20               ;Convert character to UPPERCASE HERE
 $0A6E: 60        RTS                    ;Return with character code in A
 
 KEY_CTRL:
 L_0A6F:
-$0A6F: AC 3A 0B  LDY REPEAT1            ;Check REPEAT
+$0A6F: AC 3A 0B  LDY SHIFTFLAG          ;Check SHIFT flag
 $0A72: F0 20     BEQ KEY_SET            ;Is it zero? Yes, skip out
 
 ;---- Translate SHIFTED keys to Commands
-KEY_SHIFT:
+KEY_SHCMDS:
 $0A74: A2 0B     LDX #$0B               ;CURSOR UP CMD
 $0A76: C9 0A     CMP #$0A               ;SCAN=CRSR DOWN
 $0A78: F0 18     BEQ KEY_CMD
