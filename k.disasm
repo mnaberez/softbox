@@ -130,17 +130,19 @@ $04BA: 20 D4 08  JSR CTRL_06        ;Clear all tab stops
 
 INIT_IEEE:
 ;
-;VIA
+;6522 VIA
 ;  PB0: !NDAC_IN
 ;  PB1: !NRFD_OUT
 ;  PB2: !ATN_OUT
 ;  PB6: !NFRD_IN
 ;  PB7: !DAV_IN
 ;
-;PIA #1
+;6520 PIA #1
+;  PA0-7: Data In
+;  PB0-7: Data Out
 ;  CA2: !EOI_OUT
 ;
-;PIA #2
+;6520 PIA #2
 ;  CA1: !ATN_IN
 ;  CA2: !NDAC_OUT
 ;  CB1: !SRQ_IN
@@ -155,11 +157,14 @@ $04CA: 8D 23 E8  STA PIA2DAV        ;Set !DAV_OUT = 0 to tell SoftBox our data i
 $04CD: A9 C6     LDA #$C6
 $04CF: 8D 22 E8  STA PIA2IOUT       ;Put #$39 on IEEE data lines
 $04D2: A0 00     LDY #$00
+
 L_04D4:
 $04D4: 88        DEY
-$04D5: D0 FD     BNE L_04D4         ;Delay loop to let #$39 sit on the lines
+$04D5: D0 FD     BNE L_04D4         ;Let #$39 sit on the lines so the SoftBox sees it
+
 $04D7: A9 FF     LDA #$FF
 $04D9: 8D 22 E8  STA PIA2IOUT       ;Release IEEE data lines
+
 $04DC: A9 3C     LDA #%00111100
 $04DE: 8D 11 E8  STA PIA1EOI        ;Set !EOI_OUT = 1 and disable IRQ from CA1 (Cassette Read)
 $04E1: 8D 21 E8  STA PIA2NDAC       ;Set !NDAC_OUT = 1 and disable IRQ from CA1 (!ATN_IN)
@@ -170,49 +175,61 @@ $04E7: A9 3C     LDA #$3C
 $04E9: 8D 21 E8  STA PIA2NDAC       ;Set !NDAC_OUT = 1
 $04EC: AD 40 E8  LDA VIAPB
 $04EF: 09 06     ORA #$06
-$04F1: 8D 40 E8  STA VIAPB          ;VIA PortB
+$04F1: 8D 40 E8  STA VIAPB          ;Set !NRFD_OUT = 1, !ATN_OUT = 1
 
 WAIT_FOR_SRQ:
 $04F4: AD 23 E8  LDA PIA2DAV        ;Read PIA #2 CRB
-$04F7: 0A        ASL A              ;bit 7 = IRQA1 flag for CA1 (!SRQ_IN detect)
+$04F7: 0A        ASL A              ;  bit 7 = IRQA1 flag for CA1 (!SRQ_IN detect)
 $04F8: 90 FA     BCC WAIT_FOR_SRQ   ;Wait until !SRQ_IN is detected
 
 $04FA: AD 22 E8  LDA PIA2IOUT       ;Clears IRQA1 flag (!SRQ_IN detect)
 $04FD: A9 34     LDA #$34
 $04FF: 8D 21 E8  STA PIA2NDAC       ;Set !NDAC_OUT = 0 to indicate we do not accept the data yet
-$0502: AE 20 E8  LDX PIA2IEEE       ;PIA#2 IEEE Input
-$0505: 8A        TXA
+
+$0502: AE 20 E8  LDX PIA2IEEE       ;Read IEEE data byte with command from SoftBox
+                                    ;
+                                    ; Bit 7: PET to SoftBox: Key not available
+                                    ; Bit 6: PET to SoftBox: Key available
+                                    ; Bit 5: SoftBox to PET: Transfer from PET memory to the SoftBox
+                                    ; Bit 4: SoftBox to PET: Transfer from the SoftBox to PET memory
+                                    ; Bit 3: SoftBox to PET: Jump to an address
+                                    ; Bit 2: SoftBox to PET: Write to the terminal screen
+                                    ; Bit 1: SoftBox to PET: Wait for a key and send it
+                                    ; Bit 0: SoftBox to PET: Key available?
+
+$0505: 8A        TXA                ;Remember the original command byte in X
 $0506: 6A        ROR A
-$0507: A9 7F     LDA #$7F           ;Next byte we'll put on IEEE will be #$80
-$0509: B0 06     BCS L_0511
+$0507: A9 7F     LDA #$7F           ;Next byte we'll put on IEEE will be #$80 (no key available)
+$0509: B0 06     BCS SEND_KEY_AVAIL ;Bypass the key buffer check if SoftBox doesn't want key status
+
 $050B: A4 08     LDY KEYCOUNT       ;Is there a key in the buffer?
-$050D: D0 02     BNE L_0511
-$050F: A9 BF     LDA #$BF           ;  Yes: Next byte will instead be #$40
-L_0511:
-$0511: 8D 22 E8  STA PIA2IOUT       ;Put either $80 or $40 on the IEEE data bus
-L_0514:
-$0514: AD 20 E8  LDA PIA2IEEE       ;Read byte
-$0517: 29 3F     AND #$3F           ;Mask off bits 7 and 6
-$0519: C9 3F     CMP #$3F           ;Data = #$C0?
-$051B: D0 F7     BNE L_0514         ;  No: loop
+$050D: D0 02     BNE SEND_KEY_AVAIL ;  No:  Response will be #$80 (no key available)
+$050F: A9 BF     LDA #$BF           ;  Yes: Response will be #$40 (key available)
+
+SEND_KEY_AVAIL:
+$0511: 8D 22 E8  STA PIA2IOUT       ;Drive only bit 7 (no key) or bit 6 (key) on the bus
+
+HANDSHAKE:
+$0514: AD 20 E8  LDA PIA2IEEE       ;Read IEEE data byte
+$0517: 29 3F     AND #$3F           ;We are driving only bits 7 and 6 with the keyboard status
+$0519: C9 3F     CMP #$3F
+$051B: D0 F7     BNE HANDSHAKE      ;Wait for the SoftBox to drive the other lines to zero
 $051D: A9 FF     LDA #$FF
-$051F: 8D 22 E8  STA PIA2IOUT       ;Release data lines
-$0522: 8A        TXA
-;
-; It looks like a control byte is received first where
-; each bit indicates a different function to perform:
-;
-$0523: 6A        ROR A
-$0524: 90 C1     BCC MAIN_LOOP      ;Do nothing
+$051F: 8D 22 E8  STA PIA2IOUT       ;Release all data lines
+
+DISPATCH_COMMAND:
+$0522: 8A        TXA                ;Recall the original command byte from X
+$0523: 6A        ROR A              ;Bit 0: Key availability was already answered above
+$0524: 90 C1     BCC MAIN_LOOP      ;       so we're done
 $0526: 6A        ROR A
-$0527: 90 0C     BCC JMP_DO_GET_KEY ;Wait for a key and send it to the SoftBox
+$0527: 90 0C     BCC JMP_DO_GET_KEY ;Bit 1: Wait for a key and send it
 $0529: 6A        ROR A
-$052A: 90 0C     BCC DO_TERMINAL    ;Write to the terminal screen
+$052A: 90 0C     BCC DO_TERMINAL    ;Bit 2: Write to the terminal screen
 $052C: 6A        ROR A
-$052D: 90 17     BCC DO_JUMP        ;Jump to an address
+$052D: 90 17     BCC DO_JUMP        ;Bit 3: Jump to an address
 $052F: 6A        ROR A
-$0530: 90 5D     BCC DO_WRITE_MEM   ;Transfer from the SoftBox to PET memory
-$0532: 4C 5B 05  JMP DO_READ_MEM    ;Transfer from PET memory to the SoftBox
+$0530: 90 5D     BCC DO_WRITE_MEM   ;Bit 4: Transfer from the SoftBox to PET memory
+$0532: 4C 5B 05  JMP DO_READ_MEM    ;Bit 5: Transfer from PET memory to the SoftBox
 
 JMP_DO_GET_KEY:
 $0535: 4C C6 05  JMP DO_GET_KEY
