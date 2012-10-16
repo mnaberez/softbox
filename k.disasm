@@ -171,12 +171,6 @@ $04E9: 8D 21 E8  STA PIA2NDAC       ;Set !NDAC_OUT = 1
 $04EC: AD 40 E8  LDA VIAPB
 $04EF: 09 06     ORA #$06
 $04F1: 8D 40 E8  STA VIAPB          ;VIA PortB
-L_04F4:
-$04F4: AD 23 E8  LDA PIA2DAV        ;PIA#2 IEEE DAV control
-$04F7: 0A        ASL A
-$04F8: 90 FA     BCC L_04F4
-$04FA: AD 22 E8  LDA PIA2IOUT       ;PIA#2 IEEE Output
-$04F1: 8D 40 E8  STA VIAPB          ;Set !NRFD_OUT = 1, !ATN_OUT = 1
 
 WAIT_FOR_SRQ:
 $04F4: AD 23 E8  LDA PIA2DAV        ;Read PIA #2 CRB
@@ -184,7 +178,6 @@ $04F7: 0A        ASL A              ;bit 7 = IRQA1 flag for CA1 (!SRQ_IN detect)
 $04F8: 90 FA     BCC WAIT_FOR_SRQ   ;Wait until !SRQ_IN is detected
 
 $04FA: AD 22 E8  LDA PIA2IOUT       ;Clears IRQA1 flag (!SRQ_IN detect)
-
 $04FD: A9 34     LDA #$34
 $04FF: 8D 21 E8  STA PIA2NDAC       ;Set !NDAC_OUT = 0 to indicate we do not accept the data yet
 $0502: AE 20 E8  LDX PIA2IEEE       ;PIA#2 IEEE Input
