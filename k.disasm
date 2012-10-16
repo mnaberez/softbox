@@ -129,29 +129,46 @@ $04B7: 20 E8 06  JSR PROCESS_BYTE   ;Call into terminal to execute clear screen
 $04BA: 20 D4 08  JSR CTRL_06        ;Clear all tab stops
 
 INIT_IEEE:
-$04BD: AD 22 E8  LDA PIA2IOUT       ;PIA#2 IEEE Output
-$04C0: AD 40 E8  LDA VIAPB          ;VIA PortB
+;
+;VIA
+;  PB0: !NDAC_IN
+;  PB1: !NRFD_OUT
+;  PB2: !ATN_OUT
+;  PB6: !NFRD_IN
+;  PB7: !DAV_IN
+;
+;PIA #1
+;  CA2: !EOI_OUT
+;
+;PIA #2
+;  CA1: !ATN_IN
+;  CA2: !NDAC_OUT
+;  CB1: !SRQ_IN
+;  CB2: !DAV_OUT
+;
+$04BD: AD 22 E8  LDA PIA2IOUT       ;Clears IRQA1 flag (!ATN_IN detect)
+$04C0: AD 40 E8  LDA VIAPB
 $04C3: 29 FB     AND #$FB
-$04C5: 8D 40 E8  STA VIAPB          ;VIA PortB
+$04C5: 8D 40 E8  STA VIAPB          ;Set !ATN_OUT = 0 to get SoftBox's attention
 $04C8: A9 34     LDA #$34
-$04CA: 8D 23 E8  STA PIA2DAV        ;PIA#2 IEEE DAV control
+$04CA: 8D 23 E8  STA PIA2DAV        ;Set !DAV_OUT = 0 to tell SoftBox our data is valid
 $04CD: A9 C6     LDA #$C6
-$04CF: 8D 22 E8  STA PIA2IOUT       ;PIA#2 IEEE Output
+$04CF: 8D 22 E8  STA PIA2IOUT       ;Put #$39 on IEEE data lines
 $04D2: A0 00     LDY #$00
 L_04D4:
 $04D4: 88        DEY
-$04D5: D0 FD     BNE L_04D4         ;delay loop
+$04D5: D0 FD     BNE L_04D4         ;Delay loop to let #$39 sit on the lines
 $04D7: A9 FF     LDA #$FF
-$04D9: 8D 22 E8  STA PIA2IOUT       ;PIA#2 IEEE Output
-$04DC: A9 3C     LDA #$3C
-$04DE: 8D 11 E8  STA PIA1EOI        ;PIA#1 Keyboard Control
-$04E1: 8D 21 E8  STA PIA2NDAC       ;PIA#2 IEEE NDAC control
-$04E4: 8D 23 E8  STA PIA2DAV        ;PIA#2 IEEE DAV control
+$04D9: 8D 22 E8  STA PIA2IOUT       ;Release IEEE data lines
+$04DC: A9 3C     LDA #%00111100
+$04DE: 8D 11 E8  STA PIA1EOI        ;Set !EOI_OUT = 1 and disable IRQ from CA1 (Cassette Read)
+$04E1: 8D 21 E8  STA PIA2NDAC       ;Set !NDAC_OUT = 1 and disable IRQ from CA1 (!ATN_IN)
+$04E4: 8D 23 E8  STA PIA2DAV        ;Set !DAV = 1
 
 MAIN_LOOP:
 $04E7: A9 3C     LDA #$3C
-$04E9: 8D 21 E8  STA PIA2NDAC       ;PIA#2 IEEE NDAC control
-$04EC: AD 40 E8  LDA VIAPB          ;VIA PortB
+$04E9: 8D 21 E8  STA PIA2NDAC       ;Set !NDAC_OUT = 1
+$04EC: AD 40 E8  LDA VIAPB
 $04EF: 09 06     ORA #$06
 $04F1: 8D 40 E8  STA VIAPB          ;VIA PortB
 L_04F4:
@@ -159,25 +176,34 @@ $04F4: AD 23 E8  LDA PIA2DAV        ;PIA#2 IEEE DAV control
 $04F7: 0A        ASL A
 $04F8: 90 FA     BCC L_04F4
 $04FA: AD 22 E8  LDA PIA2IOUT       ;PIA#2 IEEE Output
+$04F1: 8D 40 E8  STA VIAPB          ;Set !NRFD_OUT = 1, !ATN_OUT = 1
+
+WAIT_FOR_SRQ:
+$04F4: AD 23 E8  LDA PIA2DAV        ;Read PIA #2 CRB
+$04F7: 0A        ASL A              ;bit 7 = IRQA1 flag for CA1 (!SRQ_IN detect)
+$04F8: 90 FA     BCC WAIT_FOR_SRQ   ;Wait until !SRQ_IN is detected
+
+$04FA: AD 22 E8  LDA PIA2IOUT       ;Clears IRQA1 flag (!SRQ_IN detect)
+
 $04FD: A9 34     LDA #$34
-$04FF: 8D 21 E8  STA PIA2NDAC       ;PIA#2 IEEE NDAC control
+$04FF: 8D 21 E8  STA PIA2NDAC       ;Set !NDAC_OUT = 0 to indicate we do not accept the data yet
 $0502: AE 20 E8  LDX PIA2IEEE       ;PIA#2 IEEE Input
 $0505: 8A        TXA
 $0506: 6A        ROR A
-$0507: A9 7F     LDA #$7F
+$0507: A9 7F     LDA #$7F           ;Next byte we'll put on IEEE will be #$80
 $0509: B0 06     BCS L_0511
-$050B: A4 08     LDY KEYCOUNT
+$050B: A4 08     LDY KEYCOUNT       ;Is there a key in the buffer?
 $050D: D0 02     BNE L_0511
-$050F: A9 BF     LDA #$BF
+$050F: A9 BF     LDA #$BF           ;  Yes: Next byte will instead be #$40
 L_0511:
-$0511: 8D 22 E8  STA PIA2IOUT       ;PIA#2 IEEE Output
+$0511: 8D 22 E8  STA PIA2IOUT       ;Put either $80 or $40 on the IEEE data bus
 L_0514:
-$0514: AD 20 E8  LDA PIA2IEEE       ;PIA#2 IEEE Input
-$0517: 29 3F     AND #$3F
-$0519: C9 3F     CMP #$3F
-$051B: D0 F7     BNE L_0514
+$0514: AD 20 E8  LDA PIA2IEEE       ;Read byte
+$0517: 29 3F     AND #$3F           ;Mask off bits 7 and 6
+$0519: C9 3F     CMP #$3F           ;Data = #$C0?
+$051B: D0 F7     BNE L_0514         ;  No: loop
 $051D: A9 FF     LDA #$FF
-$051F: 8D 22 E8  STA PIA2IOUT       ;PIA#2 IEEE Output
+$051F: 8D 22 E8  STA PIA2IOUT       ;Release data lines
 $0522: 8A        TXA
 ;
 ; It looks like a control byte is received first where
@@ -202,7 +228,7 @@ DO_TERMINAL:
 ;Write to the terminal screen
 $0538: 20 CF 05  JSR IEEE_GET_BYTE
 $053B: A2 3C     LDX #$3C
-$053D: 8E 21 E8  STX PIA2NDAC       ;PIA#2 IEEE NDAC control
+$053D: 8E 21 E8  STX PIA2NDAC       ;Set !NDAC_OUT = 1 to indicate we accept the data
 $0540: 20 E8 06  JSR PROCESS_BYTE
 $0543: 4C E7 04  JMP MAIN_LOOP
 
@@ -213,7 +239,7 @@ $0549: 85 0D     STA TARGET_LO      ; -> Command vector lo
 $054B: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
 $054E: 85 0E     STA TARGET_HI      ; -> Command vector hi
 $0550: A2 3C     LDX #$3C
-$0552: 8E 21 E8  STX PIA2NDAC       ;PIA#2 IEEE NDAC control
+$0552: 8E 21 E8  STX PIA2NDAC       ;Set !NDAC_OUT = 1 to indicate we accept the data
 $0555: 20 1B 07  JSR JUMP_CMD       ;Jump to the command through CMDVECL
 $0558: 4C E7 04  JMP MAIN_LOOP
 
@@ -288,25 +314,26 @@ IEEE_GET_BYTE:
 ;
 ;TODO: It looks like this routine reads a byte from IEEE.  Needs disassembly.
 ;
-$05CF: AD 40 E8  LDA VIAPB ;VIA PortB
+$05CF: AD 40 E8  LDA VIAPB
 $05D2: 09 02     ORA #$02
-$05D4: 8D 40 E8  STA VIAPB ;VIA PortB
+$05D4: 8D 40 E8  STA VIAPB          ;Set !NRFD OUT = 1
 L_05D7:
-$05D7: 2C 40 E8  BIT VIAPB ;VIA PortB
-$05DA: 30 FB     BMI L_05D7
-$05DC: AD 20 E8  LDA PIA2IEEE ;PIA#2 IEEE Input
-$05DF: 49 FF     EOR #$FF
-$05E1: 48        PHA
-$05E2: AD 40 E8  LDA VIAPB ;VIA PortB
+$05D7: 2C 40 E8  BIT VIAPB          ;Wait for !NRFD_IN = 1 (SoftBox is ready for data)
+$05DA: 30 FB     BMI L_05D7         ;Wait for !DAV_IN = 0 (Softbox says data is valid)
+
+$05DC: AD 20 E8  LDA PIA2IEEE       ;Read data byte
+$05DF: 49 FF     EOR #$FF           ;Invert the byte (IEEE true = low)
+$05E1: 48        PHA                ;Push data byte
+$05E2: AD 40 E8  LDA VIAPB
 $05E5: 29 FD     AND #$FD
-$05E7: 8D 40 E8  STA VIAPB ;VIA PortB
+$05E7: 8D 40 E8  STA VIAPB          ;Set !NRFD_OUT = 0 (we are not ready for data)
 $05EA: A9 3C     LDA #$3C
-$05EC: 8D 21 E8  STA PIA2NDAC ;PIA#2 IEEE NDAC control
+$05EC: 8D 21 E8  STA PIA2NDAC       ;Set !NDAC_OUT = 1 (we accept the last data byte)
 L_05EF:
-$05EF: 2C 40 E8  BIT VIAPB ;VIA PortB
-$05F2: 10 FB     BPL L_05EF
+$05EF: 2C 40 E8  BIT VIAPB
+$05F2: 10 FB     BPL L_05EF         ;Wait for !DAV_IN = 0 (SoftBox says data is valid)
 $05F4: A9 34     LDA #$34
-$05F6: 8D 21 E8  STA PIA2NDAC ;PIA#2 IEEE NDAC control
+$05F6: 8D 21 E8  STA PIA2NDAC       ;Set NDAC_OUT = 0 (we do not accept data)
 $05F9: 68        PLA
 $05FA: 60        RTS
 
@@ -314,30 +341,30 @@ IEEE_SEND_BYTE:
 ;
 ;TODO: It looks like this routine writes a byte to IEEE.  Needs disassembly.
 ;
-$05FB: 49 FF     EOR #$FF
-$05FD: 8D 22 E8  STA PIA2IOUT ;PIA#2 IEEE Output
-$0600: AD 40 E8  LDA VIAPB ;VIA PortB
+$05FB: 49 FF     EOR #$FF           ;Invert the byte (IEEE true = low)
+$05FD: 8D 22 E8  STA PIA2IOUT       ;Put byte on IEEE data output lines
+$0600: AD 40 E8  LDA VIAPB
 $0603: 09 02     ORA #$02
-$0605: 8D 40 E8  STA VIAPB ;VIA PortB
+$0605: 8D 40 E8  STA VIAPB          ;Set !NRFD_OUT = 1
 $0608: A9 3C     LDA #$3C
-$060A: 8D 21 E8  STA PIA2NDAC ;PIA#2 IEEE NDAC control
+$060A: 8D 21 E8  STA PIA2NDAC       ;Set !NDAC_OUT = 1
 L_060D:
-$060D: 2C 40 E8  BIT VIAPB ;VIA PortB
-$0610: 50 FB     BVC L_060D
+$060D: 2C 40 E8  BIT VIAPB
+$0610: 50 FB     BVC L_060D         ;Wait for !NRFD_IN = 1 (SoftBox is ready for data)
 $0612: A9 34     LDA #$34
-$0614: 8D 23 E8  STA PIA2DAV ;PIA#2 IEEE DAV control
+$0614: 8D 23 E8  STA PIA2DAV        ;Set !DAV_OUT = 0 to indicate our data is valid
 L_0617:
-$0617: AD 40 E8  LDA VIAPB ;VIA PortB
+$0617: AD 40 E8  LDA VIAPB
 $061A: 4A        LSR A
-$061B: 90 FA     BCC L_0617
+$061B: 90 FA     BCC L_0617         ;Wait for SoftBox to set NDAC_IN = 0 (not accepted)
 $061D: A9 3C     LDA #$3C
-$061F: 8D 23 E8  STA PIA2DAV ;PIA#2 IEEE DAV control
+$061F: 8D 23 E8  STA PIA2DAV        ;Set !DAV_OUT = 1
 $0622: A9 FF     LDA #$FF
-$0624: 8D 22 E8  STA PIA2IOUT ;PIA#2 IEEE Output
+$0624: 8D 22 E8  STA PIA2IOUT       ;Release data lines
 L_0627:
-$0627: AD 40 E8  LDA VIAPB ;VIA PortB
+$0627: AD 40 E8  LDA VIAPB
 $062A: 4A        LSR A
-$062B: B0 FA     BCS L_0627
+$062B: B0 FA     BCS L_0627         ;Wait for SoftBox to set !NDAC_IN = 1 (data accepted)
 $062D: 60        RTS
 
 GET_KEY:
