@@ -186,7 +186,7 @@ $0522: 8A        TXA
 $0523: 6A        ROR A
 $0524: 90 C1     BCC MAIN_LOOP      ;Do nothing
 $0526: 6A        ROR A
-$0527: 90 0C     BCC DO_GET_KEY     ;Wait for a key and send it to the SoftBox
+$0527: 90 0C     BCC JMP_DO_GET_KEY ;Wait for a key and send it to the SoftBox
 $0529: 6A        ROR A
 $052A: 90 0C     BCC DO_TERMINAL    ;Write to the terminal screen
 $052C: 6A        ROR A
@@ -195,9 +195,8 @@ $052F: 6A        ROR A
 $0530: 90 5D     BCC DO_WRITE_MEM   ;Transfer from the SoftBox to PET memory
 $0532: 4C 5B 05  JMP DO_READ_MEM    ;Transfer from PET memory to the SoftBox
 
-DO_GET_KEY:
-;Wait for a key and send it to the SoftBox.
-$0535: 4C C6 05  JMP L_05C6
+JMP_DO_GET_KEY:
+$0535: 4C C6 05  JMP DO_GET_KEY
 
 DO_TERMINAL:
 ;Write to the terminal screen
@@ -279,7 +278,7 @@ $05BF: 05 11     ORA XFER_LO
 $05C1: D0 E5     BNE L_05A8
 $05C3: 4C E7 04  JMP MAIN_LOOP
 
-L_05C6:
+DO_GET_KEY:
 ;Wait for a key and send it to the SoftBox.
 $05C6: 20 2E 06  JSR GET_KEY         ;Block until we get a key.  Key will be in A.
 $05C9: 20 FB 05  JSR IEEE_SEND_BYTE  ;Send the key to the Softbox.
