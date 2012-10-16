@@ -1167,29 +1167,39 @@ $0A24: EE 10 E8  INC PIA1ROW            ;Increment Keyboard scanning ROW registe
 $0A27: CE 39 0B  DEC ROWCOUNT           ;ROW=ROW-1
 $0A2A: D0 C3     BNE SCAN_ROW           ; Is it Zero? No, loop back up for next ROW
 
+;-------------------------------------- end of loops
+
 $0A2C: AD 37 0B  LDA SCANCODE           ;get the current SCANCODE
 $0A2F: C9 FF     CMP #$FF               ;Is it NO KEY?
 $0A31: F0 22     BEQ KEYDONE            ; Yes, skip
 
-$0A33: CD 38 0B  CMP LASTCODE           ;Is it the same as last shift status
+$0A33: CD 38 0B  CMP LASTCODE           ;Is it the same as last?
 $0A36: F0 1D     BEQ KEYDONE            ;Yes, exit
 
-$0A38: C9 00     CMP #$00               ;Is it zero?
-$0A3A: 10 0A     BPL L_0A46             ;Yes, >0 leave the top bit as-is
+;---- Check the Top bit
+KEY_CHECK1:
+$0A38: C9 00     CMP #$00               ;Compare lower range
+$0A3A: 10 0A     BPL KEY_LOW            ;Is it 0 to 127 (positive)? Yes, skip
+
+;---- Top bit is set
+KEY_HI:
 $0A3C: 29 7F     AND #$7F               ;No, Remove the TOP bit (shift flag for character?)
-$0A3E: AC 3A 0B  LDY REPEAT1
-$0A41: F0 03     BEQ L_0A46             ;
-$0A43: 49 10     EOR #$10               ;flip BIT 4 - convert to ASCII?
+$0A3E: AC 3A 0B  LDY REPEAT1            ;Check REPEAT delay
+$0A41: F0 03     BEQ KEY_LOW            ;Is it up? Yes, skip
+$0A43: 49 10     EOR #$10               ;No, flip BIT 4 (what does bit 4 do?)
 $0A45: 60        RTS
 
+;---- Top bit is clear, now we need to check which range it is in
+KEY_LOW:
 L_0A46:
-$0A46: C9 40     CMP #$40               ;"@"?
-$0A48: 90 25     BCC L_0A6F
-$0A4A: C9 60     CMP #$60               ;upper ascii limit?
-$0A4C: B0 21     BCS L_0A6F
+$0A46: C9 40     CMP #$40               ;Start of compare to A-Z Range. "@" is lower limit?
+$0A48: 90 25     BCC KEY_CTRL           ;It is below? Yes, must be CTRL character
+$0A4A: C9 60     CMP #$60               ;Compare to upper ascii limit?
+$0A4C: B0 21     BCS KEY_CTRL           ;Is it above the A-Z range? Yes, skip
+
 $0A4E: AC 3B 0B  LDY REPEAT2            ;repeat delay
-$0A51: F0 03     BEQ L_0A56             ;Is it zero?
-$0A53: 29 1F     AND #$1F               ;Use only the lower 5 BITS (0 to 63)
+$0A51: F0 03     BEQ TIMEOUT            ;Is it zero?
+$0A53: 29 1F     AND #$1F               ;Use only the lower 5 BITS (0 to 31)
 
 KEYDONE:
 L_0A55:
@@ -1198,48 +1208,56 @@ $0A55: 60        RTS
 TIMEOUT:
 L_0A56:
 $0A56: C9 40     CMP #$40               ;Compare to "@" symbol
-$0A58: F0 15     BEQ L_0A6F             ;
+$0A58: F0 15     BEQ KEY_CTRL           ;
 $0A5A: C9 5B     CMP #$5B               ;Compare to "[" symbol?
-$0A5C: B0 11     BCS L_0A6F
+$0A5C: B0 11     BCS KEY_CTRL
 
 $0A5E: AC 3A 0B  LDY REPEAT1            ;Is repeat delay zero?
-$0A61: D0 0C     BNE L_0A6F             ; No,skip to next test
+$0A61: D0 0C     BNE KEY_CTRL           ; No,skip to next test
 $0A63: 48        PHA                    ;Yes, push the character code to stack
 $0A64: AD 4C E8  LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
 $0A67: 4A        LSR A                  ;shift
 $0A68: 4A        LSR A                  ;shift to get BIT 2
 $0A69: 68        PLA                    ;pull the character code from stack
-$0A6A: 90 03     BCC L_0A6F             ;Branch if uppercase mode
-$0A6C: 09 20     ORA #$20               ;0010 0000
+$0A6A: 90 03     BCC KEY_CTRL           ;Branch if uppercase mode
+$0A6C: 09 20     ORA #$20               ;SET BIT 5  (0010 0000)
 $0A6E: 60        RTS                    ;Return with character code in A
 
+KEY_CTRL:
 L_0A6F:
-$0A6F: AC 3A 0B  LDY REPEAT1
-$0A72: F0 20     BEQ L_0A94
+$0A6F: AC 3A 0B  LDY REPEAT1            ;Check REPEAT
+$0A72: F0 20     BEQ KEY_SET            ;Is it zero? Yes, skip out
 
-$0A74: A2 0B     LDX #$0B               ;0000 1011
-$0A76: C9 0A     CMP #$0A               ;0000 1010
-$0A78: F0 18     BEQ KEYOUT
-$0A7A: A2 08     LDX #$08               ;0000 0100
-$0A7C: C9 0C     CMP #$0C               ;0000 1100
-$0A7E: F0 12     BEQ KEYOUT
-$0A80: A2 1A     LDX #$1A
-$0A82: C9 1E     CMP #$1E
-$0A84: F0 0C     BEQ KEYOUT
+;---- Translate SHIFTED keys to Commands
+KEY_SHIFT:
+$0A74: A2 0B     LDX #$0B               ;CURSOR UP CMD
+$0A76: C9 0A     CMP #$0A               ;SCAN=CRSR DOWN
+$0A78: F0 18     BEQ KEY_CMD
+$0A7A: A2 08     LDX #$08               ;CURSOR LEFT CMD
+$0A7C: C9 0C     CMP #$0C               ;SCAN=CRSR RIGHT
+$0A7E: F0 12     BEQ KEY_CMD
+$0A80: A2 1A     LDX #$1A               ;CLEAR SCREEN CMD
+$0A82: C9 1E     CMP #$1E               ;SCAN=HOME
+$0A84: F0 0C     BEQ KEY_CMD
+
+;----
 $0A86: 48        PHA                    ;Push key to stack
 $0A87: AD 4C E8  LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
 $0A8A: 4A        LSR A                  ;shift
 $0A8B: 4A        LSR A                  ;shift - check bit 1
 $0A8C: 68        PLA                    ;Pull original key from stack
-$0A8D: B0 05     BCS L_0A94             ;Branch if lowercase mode
-$0A8F: 09 80     ORA #$80
-$0A91: 60        RTS
+$0A8D: B0 05     BCS KEY_SET            ;Branch if lowercase mode
 
-KEYOUT:
+$0A8F: 09 80     ORA #$80               ;Set the HIGH BIT
+$0A91: 60        RTS                    ;Return with character code in A?
+
+;---- Return a COMMAND
+KEY_CMD:
 L_0A92:
-$0A92: 8A        TXA
-$0A93: 60        RTS
+$0A92: 8A        TXA                    ;Substitute the CMD Code
+$0A93: 60        RTS                    ;Return with COMMAND CODE in A
 
+KEY_SET:
 L_0A94:
 $0A94: C9 00     CMP #$00
 $0A96: 60        RTS
