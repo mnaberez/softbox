@@ -1190,27 +1190,27 @@ $0A2A: D0 C3     BNE SCAN_ROW           ; Is it Zero? No, loop back up for next 
 
 ;-------------------------------------- end of loops
 
-$0A2C: AD 37 0B  LDA SCANCODE           ;get the current SCANCODE
-$0A2F: C9 FF     CMP #$FF               ;Is it NONE?
+$0A2C: AD 37 0B  LDA SCANCODE           ;Get the current SCANCODE
+$0A2F: C9 FF     CMP #$FF               ;Is it NO KEY?
 $0A31: F0 22     BEQ KEYDONE            ; Yes, skip
 
 $0A33: CD 38 0B  CMP LASTCODE           ;Is it the same as last?
 $0A36: F0 1D     BEQ KEYDONE            ; Yes, exit
 
-;---- Check the Top bit
+;---- Check for CTRL key
 KEY_CHECK1:
 $0A38: C9 00     CMP #$00               ;Compare to CTRL key
 $0A3A: 10 0A     BPL KEY_LOW            ;No, skip
 
-;---- Top bit is set
+;---- CTRL KEY pressed
 KEY_HI:
-$0A3C: 29 7F     AND #$7F               ;No, Remove the TOP bit (shift flag for character?)
+$0A3C: 29 7F     AND #$7F               ;Remove the TOP bit (shift flag for character?)
 $0A3E: AC 3A 0B  LDY SHIFTFLAG          ;Check SHIFT Flag
 $0A41: F0 03     BEQ KEY_LOW            ;SHIFT=0? Yes, skip
 $0A43: 49 10     EOR #$10               ;No, flip BIT 4 (what does bit 4 do?)
 $0A45: 60        RTS
 
-;---- Top bit is clear, now we need to check which range it is in
+;---- CheckCTRL KeyTop bit is clear, now we need to check which range it is in
 KEY_LOW:
 L_0A46:
 $0A46: C9 40     CMP #$40               ;Start of compare to A-Z Range. "@" is lower limit?
@@ -1220,7 +1220,7 @@ $0A4C: B0 21     BCS KEY_CTRL           ;Is it above the A-Z range? Yes, skip
 
 $0A4E: AC 3B 0B  LDY REPEAT             ;repeat delay
 $0A51: F0 03     BEQ TIMEOUT            ;Is it zero?
-$0A53: 29 1F     AND #$1F               ;Use only the lower 5 BITS (0 to 31)
+$0A53: 29 1F     AND #$1F               ;RETURN CTRL-A to Z - Use only the lower 5 BITS (0 to 31)
 
 KEYDONE:
 L_0A55:
@@ -1235,6 +1235,7 @@ $0A5C: B0 11     BCS KEY_CTRL
 
 $0A5E: AC 3A 0B  LDY SHIFTFLAG          ;Is SHIFT Flag set?
 $0A61: D0 0C     BNE KEY_CTRL           ; No,skip to next test
+
 ;---- Handle regular A-Z
 $0A63: 48        PHA                    ;Yes, push the character code to stack
 $0A64: AD 4C E8  LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
@@ -1250,7 +1251,7 @@ L_0A6F:
 $0A6F: AC 3A 0B  LDY SHIFTFLAG          ;Check SHIFT flag
 $0A72: F0 20     BEQ KEY_SET            ;Is it zero? Yes, skip out
 
-;---- Translate SHIFTED keys to Commands
+;---- Translate SHIFTED CONTROL keys to Commands
 KEY_SHCMDS:
 $0A74: A2 0B     LDX #$0B               ;CURSOR UP CMD
 $0A76: C9 0A     CMP #$0A               ;SCAN=CRSR DOWN
