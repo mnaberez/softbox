@@ -190,8 +190,8 @@ $0502: AE 20 E8  LDX PIA2IEEE       ;Read IEEE data byte with command from SoftB
                                     ;
                                     ; Bit 7: PET to SoftBox: Key not available
                                     ; Bit 6: PET to SoftBox: Key available
-                                    ; Bit 5: SoftBox to PET: Transfer from PET memory to the SoftBox
-                                    ; Bit 4: SoftBox to PET: Transfer from the SoftBox to PET memory
+                                    ; Bit 5: SoftBox to PET: Transfer from the SoftBox to PET memory
+                                    ; Bit 4: SoftBox to PET: Transfer from PET memory to the SoftBox
                                     ; Bit 3: SoftBox to PET: Jump to an address
                                     ; Bit 2: SoftBox to PET: Write to the terminal screen
                                     ; Bit 1: SoftBox to PET: Wait for a key and send it
@@ -228,8 +228,8 @@ $052A: 90 0C     BCC DO_TERMINAL    ;Bit 2: Write to the terminal screen
 $052C: 6A        ROR A
 $052D: 90 17     BCC DO_JUMP        ;Bit 3: Jump to an address
 $052F: 6A        ROR A
-$0530: 90 5D     BCC DO_WRITE_MEM   ;Bit 4: Transfer from the SoftBox to PET memory
-$0532: 4C 5B 05  JMP DO_READ_MEM    ;Bit 5: Transfer from PET memory to the SoftBox
+$0530: 90 5D     BCC DO_READ_MEM    ;Bit 4: Transfer from PET memory to the SoftBox
+$0532: 4C 5B 05  JMP DO_WRITE_MEM   ;Bit 5: Transfer from the SoftBox to PET memory
 
 JMP_DO_GET_KEY:
 $0535: 4C C6 05  JMP DO_GET_KEY
@@ -253,8 +253,8 @@ $0552: 8E 21 E8  STX PIA2NDAC       ;Set !NDAC_OUT = 1 to indicate we accept the
 $0555: 20 1B 07  JSR JUMP_CMD       ;Jump to the command through CMDVECL
 $0558: 4C E7 04  JMP MAIN_LOOP
 
-DO_READ_MEM:
-;Transfer bytes from PET memory to the SoftBox
+DO_WRITE_MEM:
+;Transfer from the SoftBox to PET memory
 $055B: 20 CF 05  JSR IEEE_GET_BYTE
 $055E: 85 11     STA XFER_LO
 $0560: 20 CF 05  JSR IEEE_GET_BYTE
@@ -282,8 +282,8 @@ $0588: 05 11     ORA XFER_LO
 $058A: D0 E5     BNE L_0571
 $058C: 4C E7 04  JMP MAIN_LOOP
 
-DO_WRITE_MEM:
-;Transfer from the SoftBox to PET memory
+DO_READ_MEM:
+;Transfer bytes from PET memory to the SoftBox
 $058F: 20 CF 05  JSR IEEE_GET_BYTE
 $0592: 85 11     STA XFER_LO
 $0594: 20 CF 05  JSR IEEE_GET_BYTE
