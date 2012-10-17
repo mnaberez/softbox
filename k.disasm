@@ -1132,14 +1132,14 @@ SCAN_KEYB:
 ; To scan you select a ROW by writing the ROW NUMBER to the PIA1ROW register. The lower 4 bits are sent to
 ; a 4 to 10 decoder. Then the PAI1COL register is read and each of the 8 bits represent one key in that row.
 ; IMPORTANT!!!! If a key is PRESSED the BIT will be ZERO.
-; There are two keyboard tables consists of 80 bytes each. One for "Graphic" (40 column) and one for "Business"
-; (80 column).
+; There are two keyboard tables which consists of 80 bytes each.
+; One for "Graphic" (40 column) and one for "Business" (80 column).
 ;
-; USES: UNKNOWN_1 - SCANCODE  - Code of Pressed KEY ($FF=NONE)
-;       UNKNOWN_2 - LASTCODE  - Code of Previous KEY
-;       UNKNOWN_3 - ROWCOUNT  - Keyboard ROW counter
-;       UNKNOWN_4 - SHIFTFLAG - Shift Flag
-;       UNKNOWN_5 - KEYFLAG   - Regular Key Flag
+; USES: SCANCODE  - Code of Pressed KEY ($FF=NONE)
+;       LASTCODE  - Code of Previous KEY
+;       ROWCOUNT  - Keyboard ROW counter
+;       SHIFTFLAG - Shift Flag
+;       KEYFLAG   - Regular Key Flag
 ;
 $09D4: AD 37 0B  LDA SCANCODE           ;Old SCANCODE
 $09D7: 8D 38 0B  STA LASTCODE           ;Save It
@@ -1203,11 +1203,13 @@ $0A24: EE 10 E8  INC PIA1ROW            ;Increment Keyboard scanning ROW registe
 $0A27: CE 39 0B  DEC ROWCOUNT           ;ROW=ROW-1
 $0A2A: D0 C3     BNE SCAN_ROW           ;Is ROW > 0 ? Yes, loop back up for next ROW
 
-;-------------------------------------- end of keytable loops
+;-------------------------------------- end of scanning loops
+; Check if there is anything to do. SCANCODE will be $FF if no key.
+; If the SCANCODE = LASTCODE then key is being held down. Don't do anything until it is released.
 
 $0A2C: AD 37 0B  LDA SCANCODE           ;Get the current SCANCODE
 $0A2F: C9 FF     CMP #$FF               ;Is it NO KEY?
-$0A31: F0 22     BEQ KEYDONE            ; Yes, skip
+$0A31: F0 22     BEQ KEYDONE            ; Yes, exit
 
 $0A33: CD 38 0B  CMP LASTCODE           ;Is it the same as last? (Key is registered on key UP?)
 $0A36: F0 1D     BEQ KEYDONE            ; Yes, exit
