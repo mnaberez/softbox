@@ -316,6 +316,10 @@ $05C3: 4C E7 04  JMP MAIN_LOOP
 
 DO_GET_KEY:
 ;Wait for a key and send it to the SoftBox.
+;
+;At the CP/M "A>" prompt, the SoftBox sends this command and then
+;waits for the PET to answer.
+;
 $05C6: 20 2E 06  JSR GET_KEY         ;Block until we get a key.  Key will be in A.
 $05C9: 20 FB 05  JSR IEEE_SEND_BYTE  ;Send the key to the Softbox.
 $05CC: 4C E7 04  JMP MAIN_LOOP
