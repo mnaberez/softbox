@@ -321,8 +321,7 @@ $05C9: 20 FB 05  JSR IEEE_SEND_BYTE  ;Send the key to the Softbox.
 $05CC: 4C E7 04  JMP MAIN_LOOP
 
 IEEE_GET_BYTE:
-;
-;TODO: It looks like this routine reads a byte from IEEE.  Needs disassembly.
+;Receive a byte from the SoftBox over the IEEE-488 bus.
 ;
 $05CF: AD 40 E8  LDA VIAPB
 $05D2: 09 02     ORA #$02
@@ -348,8 +347,7 @@ $05F9: 68        PLA
 $05FA: 60        RTS
 
 IEEE_SEND_BYTE:
-;
-;TODO: It looks like this routine writes a byte to IEEE.  Needs disassembly.
+;Send a byte to the SoftBox over the IEEE-488 bus.
 ;
 $05FB: 49 FF     EOR #$FF           ;Invert the byte (IEEE true = low)
 $05FD: 8D 22 E8  STA PIA2IOUT       ;Put byte on IEEE data output lines
