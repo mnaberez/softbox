@@ -1207,6 +1207,7 @@ $0A2A: D0 C3     BNE SCAN_ROW           ;Is ROW > 0 ? Yes, loop back up for next
 ;-------------------------------------- end of scanning loops
 ; Check if there is anything to do. SCANCODE will be $FF if no key.
 ; If the SCANCODE = LASTCODE then key is being held down. Don't do anything until it is released.
+; The IRQ handler implements key repeat by clearing the SCANCODE after a short interval.
 
 $0A2C: AD 37 0B  LDA SCANCODE           ;Get the current SCANCODE
 $0A2F: C9 FF     CMP #$FF               ;Is it NO KEY?
