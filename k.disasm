@@ -35,10 +35,10 @@ INSERT_HI   = $10     ;Insert line (CTRL_11) destination screen address - HI
 XFER_LO     = $11     ;Memory transfer byte counter - LO
 XFER_HI     = $12     ;Memory transfer byte counter - HI
 CHAR_MASK   = $13     ;Masks incoming bytes for 7- or 8-bit character mode
-HERTZ       = $14     ;Count Jiffies for 50/60 Hertz machines to update time correctly
-SECS        = $15     ;Elapsed Timer-Seconds
-MINS        = $16     ;              Minutes
-HOURS       = $17     ;              Hours
+RTC_JIFFIES = $14     ;Software Real Time Clock
+RTC_SECS    = $15     ;  The RTC locations can't be changed because they
+RTC_MINS    = $16     ;  are accessed directly by the SoftBox CP/M program
+RTC_HOURS   = $17     ;  TIME.COM using DO_READ_MEM and DO_WRITE_MEM.
 JIFFY2      = $18     ;Jiffy counter (MSB)
 JIFFY1      = $19     ;Jiffy counter
 JIFFY0      = $1A     ;Jiffy counter (LSB)
@@ -79,10 +79,10 @@ $046D: 85 91     STA INTVECH        ;Install our interrupt handler
 $046F: A9 00     LDA #$00
 $0471: 85 08     STA KEYCOUNT       ;Reset key counter (no keys hit)
 $0473: A9 00     LDA #$00
-$0475: 85 14     STA HERTZ          ;Reset 50/60 Hertz interrupt counter
-$0477: 85 15     STA SECS           ;Reset elapsed time clock
-$0479: 85 16     STA MINS
-$047B: 85 17     STA HOURS
+$0475: 85 14     STA RTC_JIFFIES    ;Reset software real time clock
+$0477: 85 15     STA RTC_SECS
+$0479: 85 16     STA RTC_MINS
+$047B: 85 17     STA RTC_HOURS
 $047D: 85 18     STA JIFFY2         ;Reset jiffy counter
 $047F: 85 19     STA JIFFY1
 $0481: 85 1A     STA JIFFY0
@@ -418,31 +418,30 @@ $0653: E6 19     INC JIFFY1          ;counter
 $0655: D0 02     BNE L_0659
 $0657: E6 18     INC JIFFY2          ;counter
 L_0659:
-$0659: E6 14     INC HERTZ           ;Interrupts fire either at 50 or 60 hertz depending on country sold in
-$065B: A5 14     LDA HERTZ
-$065D: CD 03 04  CMP BAS_HEADER+3    ; This is in the BASIC header area. Normally $32 = 50
-                                     ; This byte is manually set depending on 50/60 hertz clocks
+$0659: E6 14     INC RTC_JIFFIES     ;Increment Jiffies
+$065B: A5 14     LDA RTC_JIFFIES
+$065D: CD 03 04  CMP BAS_HEADER+3    ;50 or 60 (Hz).  See note in BAS_HEADER.
 $0660: D0 28     BNE BLINK_CURSOR
-$0662: A9 00     LDA #$00            ;Reset HERTZ counter
-$0664: 85 14     STA HERTZ
-$0666: E6 15     INC SECS            ;Increment seconds
-$0668: A5 15     LDA SECS
+$0662: A9 00     LDA #$00            ;Reset RTC_JIFFIES counter
+$0664: 85 14     STA RTC_JIFFIES
+$0666: E6 15     INC RTC_SECS        ;Increment Seconds
+$0668: A5 15     LDA RTC_SECS
 $066A: C9 3C     CMP #$3C            ;Have we reached 60 seconds?
 $066C: D0 1C     BNE BLINK_CURSOR    ; No, skip
 $066E: A9 00     LDA #$00            ; Yes, reset seconds
-$0670: 85 15     STA SECS
-$0672: E6 16     INC MINS            ;Increment Minutes
-$0674: A5 16     LDA MINS
+$0670: 85 15     STA RTC_SECS
+$0672: E6 16     INC RTC_MINS        ;Increment Minutes
+$0674: A5 16     LDA RTC_MINS
 $0676: C9 3C     CMP #$3C            ;Have we reached 60 minutes?
 $0678: D0 10     BNE BLINK_CURSOR    ; No, skip
 $067A: A9 00     LDA #$00            ; Yes, reset minutes
-$067C: 85 16     STA MINS
-$067E: E6 17     INC HOURS           ;Increment hours
-$0680: A5 17     LDA HOURS
+$067C: 85 16     STA RTC_MINS
+$067E: E6 17     INC RTC_HOURS       ;Increment hours
+$0680: A5 17     LDA RTC_HOURS
 $0682: C9 18     CMP #$18            ;Have we reached 24 hours
 $0684: D0 04     BNE BLINK_CURSOR    ; No, skip
 $0686: A9 00     LDA #$00            ; Yes, reset hours
-$0688: 85 17     STA HOURS
+$0688: 85 17     STA RTC_HOURS
 BLINK_CURSOR:
 $068A: A5 06     LDA CURSOR_OFF      ;Is the cursor off?
 $068C: D0 11     BNE L_069F          ;  Yes: skip cursor blink
