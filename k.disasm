@@ -476,7 +476,7 @@ $06C4: A9 04     LDA #$04            ; Yes, Reset it to 4
 $06C6: 8D 3D 0B  STA REPEATCOUNT2    ; Store it
 $06C9: A9 00     LDA #$00            ;Clear the SCANCODE and allow the key to be processed
 $06CB: 8D 37 0B  STA SCANCODE        ;Store it
-$06CE: A9 02     LDA #$02            
+$06CE: A9 02     LDA #$02
 $06D0: 85 01     STA BLINK_CNT       ;Fast cursor blink(?)
 IRQ_KEY:
 L_06D2:
@@ -1344,15 +1344,12 @@ KEYFLAG:
 $0B3B:           .BYT AA
 
 REPEATCOUNT1:
-UNKNOWN_6:
 $0B3C:           .BYT AA
 
 REPEATCOUNT2:
-UNKNOWN_7:
 $0B3D:           .BYT AA
 
 REPEATCODE:
-UNKNOWN_8:
 $0B3E:           .BYT AA
 
 ;Start of buffer used by control codes 05, 06, and 09
