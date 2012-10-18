@@ -87,7 +87,7 @@ $047D: 85 18     STA JIFFY2         ;Reset jiffy counter
 $047F: 85 19     STA JIFFY1
 $0481: 85 1A     STA JIFFY0
 $0483: A9 0A     LDA #$0A
-$0485: 8D 3D 0B  STA UNKNOWN_7      ;Store #$0A in UNKNOWN_7 (?)
+$0485: 8D 3D 0B  STA REPEATCOUNT2   ;Store #$0A in REPEATCOUNT2
 $0488: 58        CLI                ;Enable interrupts again
 $0489: A9 0E     LDA #$0E
 $048B: 8D 4C E8  STA VIA_PCR        ;Graphic mode = lowercase
@@ -455,37 +455,38 @@ $0699: B1 02     LDA (SCNPOSL),Y     ;Read character at cursor
 $069B: 49 80     EOR #$80            ;Flip the REVERSE bit
 $069D: 91 02     STA (SCNPOSL),Y     ;Write it back
 L_069F:
-$069F: AD 37 0B  LDA SCANCODE
-$06A2: CD 3E 0B  CMP UNKNOWN_8
-$06A5: F0 0A     BEQ L_06B1
-$06A7: 8D 3E 0B  STA UNKNOWN_8
-$06AA: A9 10     LDA #$10
-$06AC: 8D 3C 0B  STA UNKNOWN_6
-$06AF: D0 21     BNE L_06D2
+$069F: AD 37 0B  LDA SCANCODE        ;Get the SCANCODE
+$06A2: CD 3E 0B  CMP REPEATCODE      ;Compare to SAVED scancode
+$06A5: F0 0A     BEQ L_06B1          ;They are the same, so continue
+$06A7: 8D 3E 0B  STA REPEATCODE      ;if not, save it
+$06AA: A9 10     LDA #$10            ;reset counter
+$06AC: 8D 3C 0B  STA REPEATCOUNT1    ;save to counter
+$06AF: D0 21     BNE IRQ_KEY
 L_06B1:
-$06B1: C9 FF     CMP #$FF
-$06B3: F0 1D     BEQ L_06D2
-$06B5: AD 3C 0B  LDA UNKNOWN_6
-$06B8: F0 05     BEQ L_06BF
-$06BA: CE 3C 0B  DEC UNKNOWN_6
-$06BD: D0 13     BNE L_06D2
+$06B1: C9 FF     CMP #$FF            ; NO KEY?
+$06B3: F0 1D     BEQ IRQ_KEY         ; Yes, jump to scan for another
+$06B5: AD 3C 0B  LDA REPEATCOUNT1    ; No, there was a key, so get the counter
+$06B8: F0 05     BEQ L_06BF          ; Is it zero?
+$06BA: CE 3C 0B  DEC REPEATCOUNT1    ; Count Down
+$06BD: D0 13     BNE IRQ_KEY         ; Is it Zero
 L_06BF:
-$06BF: CE 3D 0B  DEC UNKNOWN_7
-$06C2: D0 0E     BNE L_06D2
-$06C4: A9 04     LDA #$04
-$06C6: 8D 3D 0B  STA UNKNOWN_7
-$06C9: A9 00     LDA #$00
-$06CB: 8D 37 0B  STA SCANCODE
-$06CE: A9 02     LDA #$02
-$06D0: 85 01     STA BLINK_CNT ;Fast cursor blink(?)
+$06BF: CE 3D 0B  DEC REPEATCOUNT2    ; Count Down
+$06C2: D0 0E     BNE IRQ_KEY         ; Is it zero? No, scan for another
+$06C4: A9 04     LDA #$04            ; Yes, Reset it to 4
+$06C6: 8D 3D 0B  STA REPEATCOUNT2    ; Store it
+$06C9: A9 00     LDA #$00            ;Clear the SCANCODE and allow the key to be processed
+$06CB: 8D 37 0B  STA SCANCODE        ;Store it
+$06CE: A9 02     LDA #$02            
+$06D0: 85 01     STA BLINK_CNT       ;Fast cursor blink(?)
+IRQ_KEY:
 L_06D2:
-$06D2: 20 D4 09  JSR SCAN_KEYB ;Scan the keyboard
-$06D5: F0 0B     BEQ L_06E2    ;Nothing to do if no key was pressed.
+$06D2: 20 D4 09  JSR SCAN_KEYB       ;Scan the keyboard
+$06D5: F0 0B     BEQ L_06E2          ;Nothing to do if no key was pressed.
 $06D7: A6 08     LDX KEYCOUNT
-$06D9: E0 50     CPX #$50      ;Is the keyboard buffer full?
-$06DB: F0 05     BEQ L_06E2    ;  Yes:  Nothing we can do.  Forget the key.
-$06DD: 9D 6F 02  STA KEYBUF,X  ;  No:   Store the key in the buffer
-$06E0: E6 08     INC KEYCOUNT  ;        and increment the keycount.
+$06D9: E0 50     CPX #$50            ;Is the keyboard buffer full?
+$06DB: F0 05     BEQ L_06E2          ;  Yes:  Nothing we can do.  Forget the key.
+$06DD: 9D 6F 02  STA KEYBUF,X        ;  No:   Store the key in the buffer
+$06E0: E6 08     INC KEYCOUNT        ;        and increment the keycount.
 L_06E2:
 $06E2: 68        PLA
 $06E3: A8        TAY
@@ -1342,12 +1343,15 @@ $0B3A:           .BYT AA
 KEYFLAG:
 $0B3B:           .BYT AA
 
+REPEATCOUNT1:
 UNKNOWN_6:
 $0B3C:           .BYT AA
 
+REPEATCOUNT2:
 UNKNOWN_7:
 $0B3D:           .BYT AA
 
+REPEATCODE:
 UNKNOWN_8:
 $0B3E:           .BYT AA
 
