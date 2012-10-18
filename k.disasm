@@ -87,7 +87,7 @@ $047D: 85 18     STA JIFFY2         ;Reset jiffy counter
 $047F: 85 19     STA JIFFY1
 $0481: 85 1A     STA JIFFY0
 $0483: A9 0A     LDA #$0A
-$0485: 8D 3D 0B  STA REPEATCOUNT2   ;Store #$0A in REPEATCOUNT2
+$0485: 8D 3D 0B  STA REPEATCOUNT1   ;Store #$0A in REPEATCOUNT1
 $0488: 58        CLI                ;Enable interrupts again
 $0489: A9 0E     LDA #$0E
 $048B: 8D 4C E8  STA VIA_PCR        ;Graphic mode = lowercase
@@ -460,20 +460,20 @@ $06A2: CD 3E 0B  CMP REPEATCODE      ;Compare to SAVED scancode
 $06A5: F0 0A     BEQ L_06B1          ;They are the same, so continue
 $06A7: 8D 3E 0B  STA REPEATCODE      ;if not, save it
 $06AA: A9 10     LDA #$10            ;reset counter
-$06AC: 8D 3C 0B  STA REPEATCOUNT1    ;save to counter
+$06AC: 8D 3C 0B  STA REPEATCOUNT0    ;save to counter
 $06AF: D0 21     BNE IRQ_KEY
 L_06B1:
 $06B1: C9 FF     CMP #$FF            ; NO KEY?
 $06B3: F0 1D     BEQ IRQ_KEY         ; Yes, jump to scan for another
-$06B5: AD 3C 0B  LDA REPEATCOUNT1    ; No, there was a key, so get the counter
+$06B5: AD 3C 0B  LDA REPEATCOUNT0    ; No, there was a key, so get the counter
 $06B8: F0 05     BEQ L_06BF          ; Is it zero?
-$06BA: CE 3C 0B  DEC REPEATCOUNT1    ; Count Down
+$06BA: CE 3C 0B  DEC REPEATCOUNT0    ; Count Down
 $06BD: D0 13     BNE IRQ_KEY         ; Is it Zero
 L_06BF:
-$06BF: CE 3D 0B  DEC REPEATCOUNT2    ; Count Down
+$06BF: CE 3D 0B  DEC REPEATCOUNT1    ; Count Down
 $06C2: D0 0E     BNE IRQ_KEY         ; Is it zero? No, scan for another
 $06C4: A9 04     LDA #$04            ; Yes, Reset it to 4
-$06C6: 8D 3D 0B  STA REPEATCOUNT2    ; Store it
+$06C6: 8D 3D 0B  STA REPEATCOUNT1    ; Store it
 $06C9: A9 00     LDA #$00            ;Clear the SCANCODE and allow the key to be processed
 $06CB: 8D 37 0B  STA SCANCODE        ;Store it
 $06CE: A9 02     LDA #$02
@@ -1344,10 +1344,10 @@ $0B3A:           .BYT AA
 KEYFLAG:
 $0B3B:           .BYT AA
 
-REPEATCOUNT1:
+REPEATCOUNT0:
 $0B3C:           .BYT AA
 
-REPEATCOUNT2:
+REPEATCOUNT1:
 $0B3D:           .BYT AA
 
 REPEATCODE:
