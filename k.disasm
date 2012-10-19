@@ -1,3 +1,9 @@
+;K.DIASM
+;
+;This is a disassembly of K.PRG, the SSE SoftBox terminal program that
+;runs on Commodore PET/CBM computers.  This disassembly has no changes
+;from the original and reassembles to an identical binary.
+;
 INTVECL     = $90     ;Hardware interrupt vector LO
 INTVECH     = $91     ;Hardware interrupt vector HI
 KEYBUF      = $026F   ;Keyboard Input Buffer
