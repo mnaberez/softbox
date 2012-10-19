@@ -1,7 +1,7 @@
 INTVECL     = $90     ;Hardware interrupt vector LO
 INTVECH     = $91     ;Hardware interrupt vector HI
 KEYBUF      = $026F   ;Keyboard Input Buffer
-SCREEN      = $8000   ;Start of screen ram
+SCREEN      = $D000   ;Start of screen ram
 CHROUT      = $FFD2   ;Kernal Print a byte
 ;
 BLINK_CNT   = $01     ;Counter used for cursor blink timing
