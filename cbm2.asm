@@ -1,6 +1,6 @@
-INTVECL     = $90     ;Hardware interrupt vector LO
-INTVECH     = $91     ;Hardware interrupt vector HI
-KEYBUF      = $026F   ;Keyboard Input Buffer
+INTVECL     = $0300   ;Hardware interrupt vector LO
+INTVECH     = $0301   ;Hardware interrupt vector HI
+KEYBUF      = $03AB   ;Keyboard Input Buffer
 SCREEN      = $D000   ;Start of screen ram
 CHROUT      = $FFD2   ;Kernal Print a byte
 ;
