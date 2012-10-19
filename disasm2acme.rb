@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 #
 # Convert a CBMXfer disassembly to ACME assembler syntax.  This was
-# written to reassemble the Softbox code and only converts what
+# written to reassemble the SoftBox code and only converts what
 # was necessary for that program.
 #
 # ruby disasm2acme.rb file.disasm > file.asm
@@ -64,9 +64,10 @@ File.readlines(filename).each do |line|
   # Instruction
   #   STA X_WIDTH  ;X_WIDTH = 40 characters
   else
-    line.gsub! "ASL A", "ASL ;A"
-    line.gsub! "LSR A", "LSR ;A"
-    line.gsub! "ROR A", "ROR ;A"
+    line.gsub! /ASL A ?/, "ASL ;A"
+    line.gsub! /LSR A ?/, "LSR ;A"
+    line.gsub! /ROL A ?/, "ROR ;A"
+    line.gsub! /ROR A ?/, "ROR ;A"
 
     line = "    " + line
   end
