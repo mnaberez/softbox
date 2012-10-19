@@ -90,32 +90,16 @@ INIT:
 INIT_4080:
 ;Detect 40/80 column screen and store in X_WIDTH
 ;
-;This routine checks for an 80 column screen by writing to screen RAM
-;that should not be present on a 40 column machine.  If the computer
-;has been modified so that it has a 40 column screen but the extra
-;screen RAM is present, this routine will think the machine has 80 columns.
+;TODO: Detect P500 and set to 40 columns.
 ;
-;X_WIDTH is also used in the keyboard scanning routine to select between
-;business keyboard (80 columns) or graphics keyboard (40 columns).  This
-;means the 2001B machines (40-column, business keyboard) are not supported.
-;
-    LDA #$28
-    STA X_WIDTH        ;X_WIDTH = 40 characters
-    LDA #$55
-    STA SCREEN         ;Store #$55 in first byte of screen RAM.
-    ASL ;A
-    STA SCREEN+$400    ;Store #$AA in first byte of 80 col page.
-    CMP SCREEN+$400    ;Does it read back correctly?
-    BNE INIT_TERM      ;  No: we're done, X_WIDTH = 40.
-    LSR ;A
-    CMP SCREEN         ;Is the #$55 still intact?
-    BNE INIT_TERM      ;  No: incomplete decoding, X_WIDTH = 40
-    ASL X_WIDTH        ;  Yes: X_WIDTH = 80 characters
+    LDA #$50           ;80 column screen
+    STA X_WIDTH
 
 INIT_TERM:
     LDA #$1A           ;Load #$1A = CTRL_1A Clear Screen
     JSR PROCESS_BYTE   ;Call into terminal to execute clear screen
     JSR CTRL_06        ;Clear all tab stops
+
 
 INIT_IEEE:
 ;
