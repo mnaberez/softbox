@@ -128,23 +128,21 @@ INIT_TERM:
 
 INIT_IEEE:
 ;
-;6522 VIA
-;  PB0: !NDAC_IN
-;  PB1: !NRFD_OUT
-;  PB2: !ATN_OUT
-;  PB6: !NFRD_IN
-;  PB7: !DAV_IN
+;6525 TPI #1 ($DE00)
+;    PA0 75161A pin 11 DC
+;    PA1 75161A pin  1 TE
+;    PA2 REN
+;    PA3 ATN
+;    PA4 DAV
+;    PA5 EOI
+;    PA6 NDAC
+;    PA7 NRFD
 ;
-;6520 PIA #1
-;  PA0-7: Data In
-;  PB0-7: Data Out
-;  CA2: !EOI_OUT
+;    PB0 IFC
+;    PB1 SRQ
 ;
-;6520 PIA #2
-;  CA1: !ATN_IN
-;  CA2: !NDAC_OUT
-;  CB1: !SRQ_IN
-;  CB2: !DAV_OUT
+;6526 CIA #2 ($DC00)
+;    PA0-7 Data
 ;
     LDA PIA2IOUT       ;Clears IRQA1 flag (!ATN_IN detect)
     LDA VIAPB
