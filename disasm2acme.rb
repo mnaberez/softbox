@@ -10,6 +10,12 @@ filename = ARGV[0]
 abort "Usage: disasm2acme <filename>" unless filename && File.exist?(filename)
 
 File.readlines(filename).each do |line|
+  # Indented comment line
+  if line =~ /^ {12,};/
+    puts line.slice(13, line.length)
+    next
+  end
+
   line.strip!
 
   # Label or equate
@@ -52,7 +58,7 @@ File.readlines(filename).each do |line|
     line += " ; #{comment}" if comment
   end
 
-  # Whole line comment
+  # Whole line comment without indent
   #   ;Detect 40/80 column screen and store in X_WIDTH
   if line.start_with?(";")
     # pass
