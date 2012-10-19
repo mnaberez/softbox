@@ -2,15 +2,6 @@ INTVECL     = $90     ;Hardware interrupt vector LO
 INTVECH     = $91     ;Hardware interrupt vector HI
 KEYBUF      = $026F   ;Keyboard Input Buffer
 SCREEN      = $8000   ;Start of screen ram
-PIA1ROW     = $E810   ;PIA#1 Keyboard Row Select
-PIA1EOI     = $E811   ;PIA#1 Control
-PIA1COL     = $E812   ;PIA#1 Keyboard Columns Read
-PIA2IEEE    = $E820   ;PIA#2 IEEE Input
-PIA2NDAC    = $E821   ;PIA#2 IEEE NDAC control
-PIA2IOUT    = $E822   ;PIA#2 IEEE Output
-PIA2DAV     = $E823   ;PIA#2 IEEE DAV control
-VIAPB       = $E840   ;VIA PortB
-VIA_PCR     = $E84C   ;VIA Peripheral Control Register (PCR)
 CHROUT      = $FFD2   ;Kernal Print a byte
 ;
 BLINK_CNT   = $01     ;Counter used for cursor blink timing
@@ -88,7 +79,7 @@ INIT:
     STA REPEATCOUNT1   ;Store #$0A in REPEATCOUNT1
     CLI                ;Enable interrupts again
     LDA #$0E
-    STA VIA_PCR        ;Graphic mode = lowercase
+    STA $E84C          ;Graphic mode = lowercase
     JSR CTRL_02        ;Go to 7-bit character mode
     LDA #$14
     STA BLINK_CNT      ;Initialize cursor blink countdown
@@ -144,14 +135,14 @@ INIT_IEEE:
 ;6526 CIA #2 ($DC00)
 ;    PA0-7 Data
 ;
-    LDA PIA2IOUT       ;Clears IRQA1 flag (!ATN_IN detect)
-    LDA VIAPB
+    LDA $E822          ;Clears IRQA1 flag (!ATN_IN detect)
+    LDA $E840
     AND #$FB
-    STA VIAPB          ;Set !ATN_OUT = 0 to get SoftBox's attention
+    STA $E840          ;Set !ATN_OUT = 0 to get SoftBox's attention
     LDA #$34
-    STA PIA2DAV        ;Set !DAV_OUT = 0 to tell SoftBox our data is valid
+    STA $E823          ;Set !DAV_OUT = 0 to tell SoftBox our data is valid
     LDA #$C6
-    STA PIA2IOUT       ;Put #$39 on IEEE data lines
+    STA $E822          ;Put #$39 on IEEE data lines
     LDY #$00
 
 L_04D4:
@@ -159,30 +150,30 @@ L_04D4:
     BNE L_04D4         ;Let #$39 sit on the lines so the SoftBox sees it
 
     LDA #$FF
-    STA PIA2IOUT       ;Release IEEE data lines
+    STA $E822          ;Release IEEE data lines
 
     LDA #%00111100
-    STA PIA1EOI        ;Set !EOI_OUT = 1 and disable IRQ from CA1 (Cassette Read)
-    STA PIA2NDAC       ;Set !NDAC_OUT = 1 and disable IRQ from CA1 (!ATN_IN)
-    STA PIA2DAV        ;Set !DAV = 1
+    STA $E811          ;Set !EOI_OUT = 1 and disable IRQ from CA1 (Cassette Read)
+    STA $E821          ;Set !NDAC_OUT = 1 and disable IRQ from CA1 (!ATN_IN)
+    STA $E823          ;Set !DAV = 1
 
 MAIN_LOOP:
     LDA #$3C
-    STA PIA2NDAC       ;Set !NDAC_OUT = 1
-    LDA VIAPB
+    STA $E821          ;Set !NDAC_OUT = 1
+    LDA $E840
     ORA #$06
-    STA VIAPB          ;Set !NRFD_OUT = 1, !ATN_OUT = 1
+    STA $E840          ;Set !NRFD_OUT = 1, !ATN_OUT = 1
 
 WAIT_FOR_SRQ:
-    LDA PIA2DAV        ;Read PIA #2 CRB
+    LDA $E823          ;Read PIA #2 CRB
     ASL ;A             ;  bit 7 = IRQA1 flag for CA1 (!SRQ_IN detect)
     BCC WAIT_FOR_SRQ   ;Wait until !SRQ_IN is detected
 
-    LDA PIA2IOUT       ;Clears IRQA1 flag (!SRQ_IN detect)
+    LDA $E822          ;Clears IRQA1 flag (!SRQ_IN detect)
     LDA #$34
-    STA PIA2NDAC       ;Set !NDAC_OUT = 0 to indicate we do not accept the data yet
+    STA $E821          ;Set !NDAC_OUT = 0 to indicate we do not accept the data yet
 
-    LDX PIA2IEEE       ;Read IEEE data byte with command from SoftBox
+    LDX $E820          ;Read IEEE data byte with command from SoftBox
                        ;
                        ; Bit 7: PET to SoftBox: Key not available
                        ; Bit 6: PET to SoftBox: Key available
@@ -203,15 +194,15 @@ WAIT_FOR_SRQ:
     LDA #$BF           ;  Yes: Response will be #$40 (key available)
 
 SEND_KEY_AVAIL:
-    STA PIA2IOUT       ;Drive only bit 7 (no key) or bit 6 (key) on the bus
+    STA $E822          ;Drive only bit 7 (no key) or bit 6 (key) on the bus
 
 HANDSHAKE:
-    LDA PIA2IEEE       ;Read IEEE data byte
+    LDA $E820          ;Read IEEE data byte
     AND #$3F           ;We are driving only bits 7 and 6 with the keyboard status
     CMP #$3F
     BNE HANDSHAKE      ;Wait for the SoftBox to drive the other lines to zero
     LDA #$FF
-    STA PIA2IOUT       ;Release all data lines
+    STA $E822          ;Release all data lines
 
 DISPATCH_COMMAND:
     TXA                ;Recall the original command byte from X
@@ -234,7 +225,7 @@ DO_TERMINAL:
 ;Write to the terminal screen
     JSR IEEE_GET_BYTE
     LDX #$3C
-    STX PIA2NDAC       ;Set !NDAC_OUT = 1 to indicate we accept the data
+    STX $E821          ;Set !NDAC_OUT = 1 to indicate we accept the data
     JSR PROCESS_BYTE
     JMP MAIN_LOOP
 
@@ -245,7 +236,7 @@ DO_JUMP:
     JSR IEEE_GET_BYTE  ;Get byte
     STA TARGET_HI      ; -> Command vector hi
     LDX #$3C
-    STX PIA2NDAC       ;Set !NDAC_OUT = 1 to indicate we accept the data
+    STX $E821          ;Set !NDAC_OUT = 1 to indicate we accept the data
     JSR JUMP_CMD       ;Jump to the command through CMDVECL
     JMP MAIN_LOOP
 
@@ -323,26 +314,26 @@ DO_GET_KEY:
 IEEE_GET_BYTE:
 ;Receive a byte from the SoftBox over the IEEE-488 bus.
 ;
-    LDA VIAPB
+    LDA $E840
     ORA #$02
-    STA VIAPB          ;Set !NRFD OUT = 1
+    STA $E840          ;Set !NRFD OUT = 1
 L_05D7:
-    BIT VIAPB          ;Wait for !NRFD_IN = 1 (SoftBox is ready for data)
+    BIT $E840          ;Wait for !NRFD_IN = 1 (SoftBox is ready for data)
     BMI L_05D7         ;Wait for !DAV_IN = 0 (Softbox says data is valid)
 
-    LDA PIA2IEEE       ;Read data byte
+    LDA $E820          ;Read data byte
     EOR #$FF           ;Invert the byte (IEEE true = low)
     PHA                ;Push data byte
-    LDA VIAPB
+    LDA $E840
     AND #$FD
-    STA VIAPB          ;Set !NRFD_OUT = 0 (we are not ready for data)
+    STA $E840          ;Set !NRFD_OUT = 0 (we are not ready for data)
     LDA #$3C
-    STA PIA2NDAC       ;Set !NDAC_OUT = 1 (we accept the last data byte)
+    STA $E821          ;Set !NDAC_OUT = 1 (we accept the last data byte)
 L_05EF:
-    BIT VIAPB
+    BIT $E840
     BPL L_05EF         ;Wait for !DAV_IN = 0 (SoftBox says data is valid)
     LDA #$34
-    STA PIA2NDAC       ;Set NDAC_OUT = 0 (we do not accept data)
+    STA $E821          ;Set NDAC_OUT = 0 (we do not accept data)
     PLA
     RTS
 
@@ -350,27 +341,27 @@ IEEE_SEND_BYTE:
 ;Send a byte to the SoftBox over the IEEE-488 bus.
 ;
     EOR #$FF           ;Invert the byte (IEEE true = low)
-    STA PIA2IOUT       ;Put byte on IEEE data output lines
-    LDA VIAPB
+    STA $E822          ;Put byte on IEEE data output lines
+    LDA $E840
     ORA #$02
-    STA VIAPB          ;Set !NRFD_OUT = 1
+    STA $E840          ;Set !NRFD_OUT = 1
     LDA #$3C
-    STA PIA2NDAC       ;Set !NDAC_OUT = 1
+    STA $E821          ;Set !NDAC_OUT = 1
 L_060D:
-    BIT VIAPB
+    BIT $E840
     BVC L_060D         ;Wait for !NRFD_IN = 1 (SoftBox is ready for data)
     LDA #$34
-    STA PIA2DAV        ;Set !DAV_OUT = 0 to indicate our data is valid
+    STA $E823          ;Set !DAV_OUT = 0 to indicate our data is valid
 L_0617:
-    LDA VIAPB
+    LDA $E840
     LSR ;A
     BCC L_0617         ;Wait for SoftBox to set NDAC_IN = 0 (not accepted)
     LDA #$3C
-    STA PIA2DAV        ;Set !DAV_OUT = 1
+    STA $E823          ;Set !DAV_OUT = 1
     LDA #$FF
-    STA PIA2IOUT       ;Release data lines
+    STA $E822          ;Release data lines
 L_0627:
-    LDA VIAPB
+    LDA $E840
     LSR ;A
     BCS L_0627         ;Wait for SoftBox to set !NDAC_IN = 1 (data accepted)
     RTS
@@ -573,24 +564,24 @@ CTRL_18:
 ;Set line spacing to tall (the default spacing for lowercase graphic mode).
 ;The current graphic mode will not be changed.
 ;
-    LDA VIA_PCR  ;Remember current upper/lower graphic mode
+    LDA $E84C    ;Remember current upper/lower graphic mode
     PHA
     LDA #$0E     ;CHR$(14) = Switch to lowercase mode
     JSR CHROUT   ;  and set more vertical space between chars
     PLA
-    STA VIA_PCR
+    STA $E84C
     RTS          ;Restore graphic mode
 
 CTRL_17:
 ;Set line spacing to short (the default spacing for uppercase graphic mode).
 ;The current graphic mode will not be changed.
 ;
-    LDA VIA_PCR  ;Remember current upper/lower graphic mode
+    LDA $E84C    ;Remember current upper/lower graphic mode
     PHA
     LDA #$8E     ;CHR$(142) = Switch to uppercase mode
     JSR CHROUT   ;  and set less vertical space between chars
     PLA
-    STA VIA_PCR
+    STA $E84C
     RTS          ;Restore graphic mode
 
 CTRL_01:
@@ -665,7 +656,7 @@ L_07AC:
     TXA
     EOR #$40              ;Flip bit 6
     TAX
-    LDA VIA_PCR           ;Bit 1 off = uppercase, on = lowercase
+    LDA $E84C             ;Bit 1 off = uppercase, on = lowercase
     LSR ;A
     LSR ;A
     BCS L_07C6            ;Branch if lowercase mode
@@ -684,14 +675,14 @@ CTRL_15:
 ;Go to uppercase mode
 ;
     LDA #$0C
-    STA VIA_PCR  ;Graphic mode = uppercase
+    STA $E84C    ;Graphic mode = uppercase
     RTS
 
 CTRL_16:
 ;Go to lowercase mode
 ;
     LDA #$0E
-    STA VIA_PCR  ;Graphic mode = lowercase
+    STA $E84C    ;Graphic mode = lowercase
     RTS
 
 CTRL_08:
