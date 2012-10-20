@@ -586,8 +586,8 @@ $0766: 48        PHA
 $0767: A9 0E     LDA #$0E     ;CHR$(14) = Switch to lowercase mode
 $0769: 20 D2 FF  JSR CHROUT   ;  and set more vertical space between chars
 $076C: 68        PLA
-$076D: 8D 4C E8  STA VIA_PCR
-$0770: 60        RTS          ;Restore graphic mode
+$076D: 8D 4C E8  STA VIA_PCR  ;Restore graphic mode
+$0770: 60        RTS
 
 CTRL_17:
 ;Set line spacing to short (the default spacing for uppercase graphic mode).
@@ -598,8 +598,8 @@ $0774: 48        PHA
 $0775: A9 8E     LDA #$8E     ;CHR$(142) = Switch to uppercase mode
 $0777: 20 D2 FF  JSR CHROUT   ;  and set less vertical space between chars
 $077A: 68        PLA
-$077B: 8D 4C E8  STA VIA_PCR
-$077E: 60        RTS          ;Restore graphic mode
+$077B: 8D 4C E8  STA VIA_PCR  ;Restore graphic mode
+$077E: 60        RTS
 
 CTRL_01:
 ;Go to 8-bit character mode

@@ -580,8 +580,8 @@ CTRL_18:
     LDA #$0E     ;CHR$(14) = Switch to lowercase mode
     JSR CHROUT   ;  and set more vertical space between chars
     PLA
-    STA VIA_PCR
-    RTS          ;Restore graphic mode
+    STA VIA_PCR  ;Restore graphic mode
+    RTS
 
 CTRL_17:
 ;Set line spacing to short (the default spacing for uppercase graphic mode).
@@ -592,8 +592,8 @@ CTRL_17:
     LDA #$8E     ;CHR$(142) = Switch to uppercase mode
     JSR CHROUT   ;  and set less vertical space between chars
     PLA
-    STA VIA_PCR
-    RTS          ;Restore graphic mode
+    STA VIA_PCR  ;Restore graphic mode
+    RTS
 
 CTRL_01:
 ;Go to 8-bit character mode
