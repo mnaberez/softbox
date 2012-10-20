@@ -64,8 +64,8 @@ INIT:
     LDA #$0A
     STA REPEATCOUNT1   ;Store #$0A in REPEATCOUNT1
     CLI                ;Enable interrupts again
-    LDA #$0E
-    STA $E84C          ;Graphic mode = lowercase
+;--    LDA #$0E
+;--    STA $E84C          ;Graphic mode = lowercase
     JSR CTRL_02        ;Go to 7-bit character mode
     LDA #$14
     STA BLINK_CNT      ;Initialize cursor blink countdown
@@ -85,6 +85,10 @@ INIT_TERM:
     LDA #$1A           ;Load #$1A = CTRL_1A Clear Screen
     JSR PROCESS_BYTE   ;Call into terminal to execute clear screen
     JSR CTRL_06        ;Clear all tab stops
+
+;TODO: Temporary hack until the code below is ported
+FOREVER:
+    JMP FOREVER
 
 
 INIT_IEEE:
@@ -377,7 +381,10 @@ INT_HANDLER:
 L_0659:
     INC RTC_JIFFIES     ;Increment Jiffies
     LDA RTC_JIFFIES
-    CMP BAS_HEADER+3    ;50 or 60 (Hz).  See note in BAS_HEADER.
+
+;--    CMP BAS_HEADER+3    ;50 or 60 (Hz).  See note in BAS_HEADER.
+    CMP #$32            ;Force 50 Hz for now
+
     BNE BLINK_CURSOR
     LDA #$00            ;Reset RTC_JIFFIES counter
     STA RTC_JIFFIES
