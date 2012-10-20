@@ -30,34 +30,15 @@ RTC_HOURS   = $17     ;  TIME.COM using DO_READ_MEM and DO_WRITE_MEM.
 JIFFY2      = $18     ;Jiffy counter (MSB)
 JIFFY1      = $19     ;Jiffy counter
 JIFFY0      = $1A     ;Jiffy counter (LSB)
-;
-    *=$0400
 
-BAS_HEADER:
-;"50 sys(1039)"
-;  Note: The line number is used in a clever way.  It can be manually set
-;  to either 50 or 60 to tell the program whether the power line frequency
-;  is 50 Hz (Europe) or 60 Hz (North America).
+;Configure VICE
+;  Settings > CBM2 Settings > Memory > Enable Bank 15 $C000-CFFF RAM
 ;
-    !byte $00,$0D,$04,$32,$00,$9E,$28,$31
-    !byte $30,$33,$39,$29,$00,$00,$00
-;
-    JMP INIT
+;Load and Run
+;  BLOAD"CBM2.PRG",B15
+;  BANK 15 : SYS 49152
 
-COPYRIGHT:
-;"  SOFTBOX LOADER (C) COPYRIGHT 1981 KEITH FREWIN   "
-;"----  REVISON :  5 JULY 1981     "
-    !byte $20,$20,$53,$4F,$46,$54,$42,$4F
-    !byte $58,$20,$4C,$4F,$41,$44,$45,$52
-    !byte $20,$28,$43,$29,$20,$43,$4F,$50
-    !byte $59,$52,$49,$47,$48,$54,$20,$31
-    !byte $39,$38,$31,$20,$4B,$45,$49,$54
-    !byte $48,$20,$46,$52,$45,$57,$49,$4E
-    !byte $20,$20,$20,$2D,$2D,$2D,$2D,$20
-    !byte $20,$52,$45,$56,$49,$53,$4F,$4E
-    !byte $20,$3A,$20,$20,$35,$20,$4A,$55
-    !byte $4C,$59,$20,$31,$39,$38,$31,$20
-    !byte $20,$20,$20,$20
+    *=$C000
 
 INIT:
     SEI                ;Disable interrupts
