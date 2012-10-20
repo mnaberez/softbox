@@ -1,6 +1,8 @@
 INTVECL     = $0300   ;Hardware interrupt vector LO
 INTVECH     = $0301   ;Hardware interrupt vector HI
 KEYBUF      = $03AB   ;Keyboard Input Buffer
+TPI1_PB     = $DE01   ;6525 TPI Port B
+TPI1_AIR    = $DE07   ;6525 TPI Active Interrupt Register
 SCREEN      = $D000   ;Start of screen ram
 CHROUT      = $FFD2   ;Kernal Print a byte
 ;
@@ -373,6 +375,29 @@ INT_HANDLER:
 ;which pushes A, X, and Y onto the stack and then executes JMP (INTVECL).
 ;We install this routine, INT_HANDLER, into INTVECL during init.
 ;
+    LDA TPI1_AIR
+    BNE CHECK_ACIA
+    JMP IRQ_DONE
+CHECK_ACIA:
+    CMP #$10            ;IRQ from ACIA?
+    BNE CHECK_PROC
+    JMP IRQ_DONE
+CHECK_PROC:
+    CMP #$08            ;IRQ from Coprocessor?
+    BNE CHECK_CIA
+    JMP IRQ_DONE
+CHECK_CIA:
+    CMP #$04            ;IRQ from CIA?
+    BNE CHECK_IEEE
+    JMP IRQ_DONE
+CHECK_IEEE:
+    CMP #$02            ;IRQ from IEEE-488?
+    BNE IRQ_50HZ
+    JMP IRQ_DONE
+
+;IRQ must have been caused by 50/60 Hz
+;
+IRQ_50HZ:
     INC JIFFY0          ;Counts number of Interrupts
     BNE L_0659
     INC JIFFY1          ;counter
@@ -450,7 +475,27 @@ L_06D2:
     BEQ L_06E2          ;  Yes:  Nothing we can do.  Forget the key.
     STA KEYBUF,X        ;  No:   Store the key in the buffer
     INC KEYCOUNT        ;        and increment the keycount.
+
 L_06E2:
+;http://www.von-bassewitz.de/uz/oldcomputers/p500/rom500.s.html
+;TODO: Comment and simplify if possible.  These routines were
+;borrowed from the bottom of the P500 interrupt handler.
+P500_FC95:
+    LDA TPI1_PB
+    BPL P500_LFCA3
+    ORA #$40
+    BNE P500_LFCAA
+P500_LFCA3:
+    AND #$BF
+P500_LFCAA:
+    STA TPI1_PB
+P500_LFCAD:
+    STA TPI1_AIR
+    LDA #$FF
+    STA TPI1_PB
+    STA TPI1_AIR
+
+IRQ_DONE:
     PLA
     TAY
     PLA
