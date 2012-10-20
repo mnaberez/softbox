@@ -4,6 +4,9 @@ KEYBUF      = $03AB   ;Keyboard Input Buffer
 TPI1_PB     = $DE01   ;6525 TPI #1 Port B
 TPI1_CR     = $DE06   ;6525 TPI #1 Control Register
 TPI1_AIR    = $DE07   ;6525 TPI #1 Active Interrupt Register
+TPI2_PA     = $DF00   ;6525 TPI #1 Port A - Keyboard Row select LO
+TPI2_PB     = $DF01   ;6525 TPI #1 Port B - Keyboard Row select HI
+TPI2_PC     = $DF02   ;6525 TPI #1 Port C - Keyboard Col read
 SCREEN      = $D000   ;Start of screen ram
 CHROUT      = $FFD2   ;Kernal Print a byte
 ;
@@ -1140,10 +1143,41 @@ SCAN_KEYB:
 ;Scan the keyboard.
 ;TODO: Implementation for CBM-II keyboard
 ;
+; TPI2_PA     = $DF00   ;6525 TPI #1 Port A - Keyboard Row select LO
+; TPI2_PB     = $DF01   ;6525 TPI #1 Port B - Keyboard Row select HI
+; TPI2_PC     = $DF02   ;6525 TPI #1 Port C - Keyboard Col read
+
     LDA #$FF          ;No key hit
     STA SCANCODE
     STA LASTCODE
     RTS
+
+SK_TOP:
+    LDA #$00
+    RTS
+
+;---------- Keyboard Table
+KEY_TABLE:
+;                                   ----- ----- ----- ----- ----- -----
+;                                   COL0  COL1  COl2  COL3  COL4  COL5
+;                                   ----- ----- ----- ----- ----- -----
+    !byte $FF,$FF,$FF,$FF,$01,$00 ; F1    ESC   TAB   NONE  SHIFT CTRL
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F2    1     Q     A     Z     NONE
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F3    2     W     S     X     C
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F4    3     E     D     F     V
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F5    4     R     T     G     B
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F6    5     6     Y     H     N
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F7    7     U     J     M     SPACE
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F8    8     I     K     ,     .
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F9    9     NONE  L     ;     /
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F10   0     -     P     [     '
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; DOWN  =     BARRW ]     RETRN PI
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; UP    LEFT  RIGHT DEL   CBM   NONE
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; HOME  ?     7     4     1     0
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; RVS   CE    8     5     2     .
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; GRAPH *     9     6     3     00
+    !byte $FF,$FF,$FF,$FF,$FF,$FF ; STOP  /     -     +     ENTER NONE
+
 
 ;Storage locations used in keyboard scanning routine SCAN_KEYB
 SCANCODE:
