@@ -24,7 +24,7 @@ SCNPOSL     = $02     ;Pointer to current screen -LO
 SCNPOSH     = $03     ;Pointer to current screen -HI
 CURSOR_X    = $04     ;Current X position: 0-79
 CURSOR_Y    = $05     ;Current Y position: 0-24
-CURSOR_OFF  = $06     ;Cursor state: hide cursor if 0, else show cursor
+CURSOR_OFF  = $06     ;Cursor state: zero = show, nonzero = hide
 SCNCODE_TMP = $07     ;Temporary storage for the last screen code
 KEYCOUNT    = $08     ;Number of keys in the buffer at KEYBUF
 X_WIDTH     = $09     ;Width of X in characters (40 or 80)
