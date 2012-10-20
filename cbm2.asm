@@ -99,6 +99,8 @@ INIT_TERM:
     JSR PROCESS_BYTE
 
 FOREVER:
+    JSR GET_KEY        ;Wait for a key
+    JSR PROCESS_BYTE   ;Send it to the terminal screen
     JMP FOREVER
 
 
