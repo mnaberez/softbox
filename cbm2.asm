@@ -4,7 +4,8 @@ KEYBUF      = $03AB   ;Keyboard Input Buffer
 SCREEN      = $D000   ;Start of screen ram
 CHROUT      = $FFD2   ;Kernal Print a byte
 ;
-BLINK_CNT   = $01     ;Counter used for cursor blink timing
+EXE_REG     = $00     ;6509 Execute Register
+IND_REG     = $01     ;6509 Indirect Register
 SCNPOSL     = $02     ;Pointer to current screen -LO
 SCNPOSH     = $03     ;Pointer to current screen -HI
 CURSOR_X    = $04     ;Current X position: 0-79
@@ -30,6 +31,7 @@ RTC_HOURS   = $17     ;  TIME.COM using DO_READ_MEM and DO_WRITE_MEM.
 JIFFY2      = $18     ;Jiffy counter (MSB)
 JIFFY1      = $19     ;Jiffy counter
 JIFFY0      = $1A     ;Jiffy counter (LSB)
+BLINK_CNT   = $1B     ;Counter used for cursor blink timing
 
 ;Configure VICE
 ;  Settings > CBM2 Settings > Memory > Enable Bank 15 $C000-CFFF RAM
@@ -42,6 +44,9 @@ JIFFY0      = $1A     ;Jiffy counter (LSB)
 
 INIT:
     SEI                ;Disable interrupts
+    LDA #$0F
+    STA EXE_REG
+    STA IND_REG        ;Bank 15 (System Bank)
     LDA #<INT_HANDLER
     STA INTVECL
     LDA #>INT_HANDLER
