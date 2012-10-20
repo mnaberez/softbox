@@ -67,9 +67,7 @@ INIT:
     LDA #$0A
     STA REPEATCOUNT1   ;Store #$0A in REPEATCOUNT1
     CLI                ;Enable interrupts again
-    LDA TPI1_CR
-    AND #%11101111
-    STA TPI1_CR        ;Graphic mode = lowercase
+    JSR CTRL_16        ;Go to lowercase mode
     JSR CTRL_02        ;Go to 7-bit character mode
     LDA #$14
     STA BLINK_CNT      ;Initialize cursor blink countdown
