@@ -45,8 +45,8 @@ JIFFY0      = $1A     ;Jiffy counter (LSB)
 BAS_HEADER:
 ;"50 sys(1039)"
 ;  Note: The line number is used in a clever way.  It can be manually set
-;  to either 50 or 60 to tell the program whether the IRQ interrupt fires
-;  at 50 Hz (European PETs) or 60 Hz (North American PETs).
+;  to either 50 or 60 to tell the program whether the power line frequency
+;  is 50 Hz (Europe) or 60 Hz (North America).
 ;
     !byte $00,$0D,$04,$32,$00,$9E,$28,$31
     !byte $30,$33,$39,$29,$00,$00,$00
