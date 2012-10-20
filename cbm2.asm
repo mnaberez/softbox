@@ -1,8 +1,9 @@
 INTVECL     = $0300   ;Hardware interrupt vector LO
 INTVECH     = $0301   ;Hardware interrupt vector HI
 KEYBUF      = $03AB   ;Keyboard Input Buffer
-TPI1_PB     = $DE01   ;6525 TPI Port B
-TPI1_AIR    = $DE07   ;6525 TPI Active Interrupt Register
+TPI1_PB     = $DE01   ;6525 TPI #1 Port B
+TPI1_CR     = $DE06   ;6525 TPI #1 Control Register
+TPI1_AIR    = $DE07   ;6525 TPI #1 Active Interrupt Register
 SCREEN      = $D000   ;Start of screen ram
 CHROUT      = $FFD2   ;Kernal Print a byte
 ;
@@ -66,8 +67,9 @@ INIT:
     LDA #$0A
     STA REPEATCOUNT1   ;Store #$0A in REPEATCOUNT1
     CLI                ;Enable interrupts again
-;--    LDA #$0E
-;--    STA $E84C          ;Graphic mode = lowercase
+    LDA TPI1_CR
+    AND #%11101111
+    STA TPI1_CR        ;Graphic mode = lowercase
     JSR CTRL_02        ;Go to 7-bit character mode
     LDA #$14
     STA BLINK_CNT      ;Initialize cursor blink countdown
@@ -89,6 +91,15 @@ INIT_TERM:
     JSR CTRL_06        ;Clear all tab stops
 
 ;TODO: Temporary hack until the code below is ported
+    LDA #$48           ;"H"
+    JSR PROCESS_BYTE
+    LDA #$69           ;"i"
+    JSR PROCESS_BYTE
+    LDA #$0D           ;Carriage return
+    JSR PROCESS_BYTE
+    LDA #$0A           ;Line feed
+    JSR PROCESS_BYTE
+
 FOREVER:
     JMP FOREVER
 
@@ -586,25 +597,14 @@ CTRL_18:
 ;Set line spacing to tall (the default spacing for lowercase graphic mode).
 ;The current graphic mode will not be changed.
 ;
-    LDA $E84C    ;Remember current upper/lower graphic mode
-    PHA
-    LDA #$0E     ;CHR$(14) = Switch to lowercase mode
-    JSR CHROUT   ;  and set more vertical space between chars
-    PLA
-    STA $E84C    ;Restore graphic mode
-    RTS
+    RTS          ;No effect on CBM-II.
+
 
 CTRL_17:
 ;Set line spacing to short (the default spacing for uppercase graphic mode).
 ;The current graphic mode will not be changed.
 ;
-    LDA $E84C    ;Remember current upper/lower graphic mode
-    PHA
-    LDA #$8E     ;CHR$(142) = Switch to uppercase mode
-    JSR CHROUT   ;  and set less vertical space between chars
-    PLA
-    STA $E84C    ;Restore graphic mode
-    RTS
+    RTS          ;No effect on CBM-II.
 
 CTRL_01:
 ;Go to 8-bit character mode
@@ -678,10 +678,9 @@ L_07AC:
     TXA
     EOR #$40              ;Flip bit 6
     TAX
-    LDA $E84C             ;Bit 1 off = uppercase, on = lowercase
-    LSR ;A
-    LSR ;A
-    BCS L_07C6            ;Branch if lowercase mode
+    LDA TPI1_CR           ;Bit 4 on = uppercase, off = lowercase
+    AND #%00010000
+    BEQ L_07C6            ;Branch if lowercase mode
     TXA
     AND #$1F
     JMP PUTSCN_THEN_DONE
@@ -696,15 +695,17 @@ L_07CA:
 CTRL_15:
 ;Go to uppercase mode
 ;
-    LDA #$0C
-    STA $E84C    ;Graphic mode = uppercase
+    LDA TPI1_CR
+    ORA #%00010000
+    STA TPI1_CR             ;Graphic mode = uppercase
     RTS
 
 CTRL_16:
 ;Go to lowercase mode
 ;
-    LDA #$0E
-    STA $E84C    ;Graphic mode = lowercase
+    LDA TPI1_CR
+    AND #%11101111
+    STA TPI1_CR            ;Graphic mode = lowercase
     RTS
 
 CTRL_08:
