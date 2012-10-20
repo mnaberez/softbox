@@ -1161,22 +1161,22 @@ KEY_TABLE:
 ;                                   ----- ----- ----- ----- ----- -----
 ;                                   COL0  COL1  COl2  COL3  COL4  COL5
 ;                                   ----- ----- ----- ----- ----- -----
-    !byte $FF,$FF,$FF,$FF,$01,$00 ; F1    ESC   TAB   NONE  SHIFT CTRL
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F2    1     Q     A     Z     NONE
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F3    2     W     S     X     C
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F4    3     E     D     F     V
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F5    4     R     T     G     B
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F6    5     6     Y     H     N
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F7    7     U     J     M     SPACE
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F8    8     I     K     ,     .
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F9    9     NONE  L     ;     /
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; F10   0     -     P     [     '
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; DOWN  =     BARRW ]     RETRN PI
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; UP    LEFT  RIGHT DEL   CBM   NONE
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; HOME  ?     7     4     1     0
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; RVS   CE    8     5     2     .
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; GRAPH *     9     6     3     00
-    !byte $FF,$FF,$FF,$FF,$FF,$FF ; STOP  /     -     +     ENTER NONE
+    !byte $FF,$1B,$09,$FF,$01,$00 ; F1    ESC   TAB   NONE  SHIFT CTRL
+    !byte $FF,$31,$51,$41,$5A,$FF ; F2    1     Q     A     Z     NONE
+    !byte $FF,$32,$57,$53,$58,$43 ; F3    2     W     S     X     C
+    !byte $FF,$33,$45,$44,$46,$56 ; F4    3     E     D     F     V
+    !byte $FF,$34,$52,$54,$47,$42 ; F5    4     R     T     G     B
+    !byte $FF,$35,$36,$59,$48,$4E ; F6    5     6     Y     H     N
+    !byte $FF,$37,$55,$4A,$4D,$20 ; F7    7     U     J     M     SPACE
+    !byte $FF,$38,$49,$4B,$2C,$2E ; F8    8     I     K     ,     .
+    !byte $FF,$39,$4F,$4C,$3B,$2F ; F9    9     NONE  L     ;     /
+    !byte $FF,$30,$2D,$50,$5B,$27 ; F10   0     -     P     [     '
+    !byte $11,$3D,$5F,$5D,$0D,$DE ; DOWN  =     BARRW ]     RETRN PI
+    !byte $91,$9D,$1D,$14,$02,$FF ; UP    LEFT  RIGHT DEL   CBM   NONE
+    !byte $13,$3F,$37,$34,$31,$30 ; HOME  ?     7     4     1     0
+    !byte $12,$04,$38,$35,$32,$2E ; RVS   CE    8     5     2     .
+    !byte $8E,$2A,$39,$36,$33,$30 ; GRAPH *     9     6     3     00
+    !byte $03,$2F,$2D,$2B,$0D,$FF ; STOP  /     -     +     ENTER NONE
 
 
 ;Storage locations used in keyboard scanning routine SCAN_KEYB
