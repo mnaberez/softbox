@@ -994,7 +994,7 @@ CTRL_12:
     SEC
     SBC CURSOR_Y
     TAX
-    JMP L_089E        ;Jump into SCROLL_UP, bypassing some init
+    JMP L_089E         ;Jump into SCROLL_UP, bypassing some init
 
 CTRL_11:
 ;Insert a blank line
@@ -1003,13 +1003,13 @@ CTRL_11:
 ;The line at the current position will be erased (filled with spaces).
 ;The current cursor position will not be changed.
 ;
-    LDA #$C0
-    LDY #$83
+    LDA #<SCREEN+$03C0 ;A->TARGET_LO, Y->TARGET_HI
+    LDY #>SCREEN+$03C0 ;Start address of last 40 col line
     LDX X_WIDTH
-    CPX #$50
-    BNE L_0949
-    LDA #$80
-    LDY #$87
+    CPX #$50           ;Is this an 80 column screen?
+    BNE L_0949         ;  No: keep address for 40 col
+    LDA #<SCREEN+$0780
+    LDY #>SCREEN+$0780 ;Start address of last 80 col line
 L_0949:
     STA TARGET_LO
     STY TARGET_HI

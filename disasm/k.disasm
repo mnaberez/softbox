@@ -1001,7 +1001,7 @@ $0932: A9 18     LDA #$18
 $0934: 38        SEC
 $0935: E5 05     SBC CURSOR_Y
 $0937: AA        TAX
-$0938: 4C 9E 08  JMP L_089E        ;Jump into SCROLL_UP, bypassing some init
+$0938: 4C 9E 08  JMP L_089E         ;Jump into SCROLL_UP, bypassing some init
 
 CTRL_11:
 ;Insert a blank line
@@ -1010,13 +1010,13 @@ CTRL_11:
 ;The line at the current position will be erased (filled with spaces).
 ;The current cursor position will not be changed.
 ;
-$093B: A9 C0     LDA #$C0
-$093D: A0 83     LDY #$83
+$093B: A9 C0     LDA #<SCREEN+$03C0 ;A->TARGET_LO, Y->TARGET_HI
+$093D: A0 83     LDY #>SCREEN+$03C0 ;Start address of last 40 col line
 $093F: A6 09     LDX X_WIDTH
-$0941: E0 50     CPX #$50
-$0943: D0 04     BNE L_0949
-$0945: A9 80     LDA #$80
-$0947: A0 87     LDY #$87
+$0941: E0 50     CPX #$50           ;Is this an 80 column screen?
+$0943: D0 04     BNE L_0949         ;  No: keep address for 40 col
+$0945: A9 80     LDA #<SCREEN+$0780
+$0947: A0 87     LDY #>SCREEN+$0780 ;Start address of last 80 col line
 L_0949:
 $0949: 85 0D     STA TARGET_LO
 $094B: 84 0E     STY TARGET_HI
