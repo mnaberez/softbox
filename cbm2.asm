@@ -230,35 +230,6 @@ DO_JUMP:
     JSR JUMP_CMD       ;Jump to the command through CMDVECL
     JMP MAIN_LOOP
 
-DO_WRITE_MEM:
-;Transfer from the SoftBox to PET memory
-    JSR IEEE_GET_BYTE
-    STA XFER_LO
-    JSR IEEE_GET_BYTE
-    STA XFER_HI
-    JSR IEEE_GET_BYTE
-    STA TARGET_LO
-    JSR IEEE_GET_BYTE
-    STA TARGET_HI
-    LDY #$00
-L_0571:
-    JSR IEEE_GET_BYTE
-    STA (TARGET_LO),Y
-    INY
-    BNE L_057B
-    INC TARGET_HI
-L_057B:
-    LDA XFER_LO
-    SEC
-    SBC #$01
-    STA XFER_LO
-    LDA XFER_HI
-    SBC #$00
-    STA XFER_HI
-    ORA XFER_LO
-    BNE L_0571
-    JMP MAIN_LOOP
-
 DO_READ_MEM:
 ;Transfer bytes from PET memory to the SoftBox
     JSR IEEE_GET_BYTE
@@ -289,6 +260,35 @@ L_05B2:
     STA XFER_HI
     ORA XFER_LO
     BNE L_05A8
+    JMP MAIN_LOOP
+
+DO_WRITE_MEM:
+;Transfer from the SoftBox to PET memory
+    JSR IEEE_GET_BYTE
+    STA XFER_LO
+    JSR IEEE_GET_BYTE
+    STA XFER_HI
+    JSR IEEE_GET_BYTE
+    STA TARGET_LO
+    JSR IEEE_GET_BYTE
+    STA TARGET_HI
+    LDY #$00
+L_0571:
+    JSR IEEE_GET_BYTE
+    STA (TARGET_LO),Y
+    INY
+    BNE L_057B
+    INC TARGET_HI
+L_057B:
+    LDA XFER_LO
+    SEC
+    SBC #$01
+    STA XFER_LO
+    LDA XFER_HI
+    SBC #$00
+    STA XFER_HI
+    ORA XFER_LO
+    BNE L_0571
     JMP MAIN_LOOP
 
 DO_GET_KEY:
