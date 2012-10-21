@@ -1,7 +1,7 @@
 INTVECL     = $90     ;Hardware interrupt vector LO
 INTVECH     = $91     ;Hardware interrupt vector HI
 KEYBUF      = $026F   ;Keyboard Input Buffer
-SCREEN      = $8000   ;Start of screen ram
+SCREEN      = $8000   ;Start of screen RAM
 PIA1ROW     = $E810   ;PIA#1 Keyboard Row Select
 PIA1EOI     = $E811   ;PIA#1 Control
 PIA1COL     = $E812   ;PIA#1 Keyboard Columns Read
@@ -524,7 +524,7 @@ L_0715:
 L_0718:
     JMP PUT_CHAR      ;Jump to put character on the screen
 JUMP_CMD:
-    JMP (TARGET_LO)   ;Jump to handle the control ocde
+    JMP (TARGET_LO)   ;Jump to handle the control code
 
 CTRL_CODES:
 ;Terminal control code dispatch table.  These control codes are based

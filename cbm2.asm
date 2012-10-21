@@ -7,7 +7,7 @@ TPI1_AIR    = $DE07   ;6525 TPI #1 Active Interrupt Register
 TPI2_PA     = $DF00   ;6525 TPI #1 Port A - Keyboard Row select LO
 TPI2_PB     = $DF01   ;6525 TPI #1 Port B - Keyboard Row select HI
 TPI2_PC     = $DF02   ;6525 TPI #1 Port C - Keyboard Col read
-SCREEN      = $D000   ;Start of screen ram
+SCREEN      = $D000   ;Start of screen RAM
 CHROUT      = $FFD2   ;Kernal Print a byte
 ;
 EXE_REG     = $00     ;6509 Execute Register
@@ -550,7 +550,7 @@ L_0715:
 L_0718:
     JMP PUT_CHAR      ;Jump to put character on the screen
 JUMP_CMD:
-    JMP (TARGET_LO)   ;Jump to handle the control ocde
+    JMP (TARGET_LO)   ;Jump to handle the control code
 
 CTRL_CODES:
 ;Terminal control code dispatch table.  These control codes are based
