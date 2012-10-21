@@ -389,6 +389,10 @@ INT_HANDLER:
 ;which pushes A, X, and Y onto the stack and then executes JMP (INTVECL).
 ;We install this routine, INT_HANDLER, into INTVECL during init.
 ;
+    LDA IND_REG
+    PHA                 ;Preserve 6509 Indirect Register
+
+CHECK_TPI1:             ;IRQ from TPI #1?
     LDA TPI1_AIR
     BNE CHECK_ACIA
     JMP IRQ_DONE
@@ -511,10 +515,12 @@ P500_LFCAD:
 
 IRQ_DONE:
     PLA
-    TAY
+    STA IND_REG        ;Restore 6502 indirect register
     PLA
-    TAX
+    TAY                ;Restore Y
     PLA
+    TAX                ;Restore X
+    PLA                ;Restore A
     RTI
 
 PROCESS_BYTE:
