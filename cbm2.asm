@@ -199,7 +199,7 @@ DISPATCH_COMMAND:
     ROR ;A             ;Bit 0: Key availability was already answered above
     BCC MAIN_LOOP      ;       so we're done
     ROR ;A
-    BCC JMP_DO_GET_KEY ;Bit 1: Wait for a key and send it
+    BCC DO_GET_KEY     ;Bit 1: Wait for a key and send it
     ROR ;A
     BCC DO_TERMINAL    ;Bit 2: Write to the terminal screen
     ROR ;A
@@ -208,8 +208,15 @@ DISPATCH_COMMAND:
     BCC DO_READ_MEM    ;Bit 4: Transfer from PET memory to the SoftBox
     JMP DO_WRITE_MEM   ;Bit 5: Transfer from the SoftBox to PET memory
 
-JMP_DO_GET_KEY:
-    JMP DO_GET_KEY
+DO_GET_KEY:
+;Wait for a key and send it to the SoftBox.
+;
+;At the CP/M "A>" prompt, the SoftBox sends this command and then
+;waits for the PET to answer.
+;
+    JSR GET_KEY         ;Block until we get a key.  Key will be in A.
+    JSR IEEE_SEND_BYTE  ;Send the key to the Softbox.
+    JMP MAIN_LOOP
 
 DO_TERMINAL:
 ;Write to the terminal screen
@@ -289,16 +296,6 @@ L_057B:
     STA XFER_HI
     ORA XFER_LO
     BNE L_0571
-    JMP MAIN_LOOP
-
-DO_GET_KEY:
-;Wait for a key and send it to the SoftBox.
-;
-;At the CP/M "A>" prompt, the SoftBox sends this command and then
-;waits for the PET to answer.
-;
-    JSR GET_KEY         ;Block until we get a key.  Key will be in A.
-    JSR IEEE_SEND_BYTE  ;Send the key to the Softbox.
     JMP MAIN_LOOP
 
 IEEE_GET_BYTE:
