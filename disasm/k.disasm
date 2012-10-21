@@ -484,6 +484,11 @@ $06D0: 85 01     STA BLINK_CNT       ;Fast cursor blink(?)
 IRQ_KEY:
 L_06D2:
 $06D2: 20 D4 09  JSR SCAN_KEYB       ;Scan the keyboard
+                                     ;  An important side effect of SCAN_KEYB is
+                                     ;  that it reads PIA1COL.  The read clears
+                                     ;  PIA #1's IRQB1 flag (50/60 Hz interrupt).
+                                     ;  If this read is not performed, IRQ will
+                                     ;  continuously retrigger.
 $06D5: F0 0B     BEQ L_06E2          ;Nothing to do if no key was pressed.
 $06D7: A6 08     LDX KEYCOUNT
 $06D9: E0 50     CPX #$50            ;Is the keyboard buffer full?

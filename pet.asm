@@ -474,6 +474,11 @@ L_06BF:
 IRQ_KEY:
 L_06D2:
     JSR SCAN_KEYB       ;Scan the keyboard
+                        ;  An important side effect of SCAN_KEYB is
+                        ;  that it reads PIA1COL.  The read clears
+                        ;  PIA #1's IRQB1 flag (50/60 Hz interrupt).
+                        ;  If this read is not performed, IRQ will
+                        ;  continuously retrigger.
     BEQ L_06E2          ;Nothing to do if no key was pressed.
     LDX KEYCOUNT
     CPX #$50            ;Is the keyboard buffer full?
