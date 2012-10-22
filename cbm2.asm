@@ -10,6 +10,7 @@ TPI2_PC     = $DF02   ;6525 TPI #1 Port C - Keyboard Col read
 SCREEN      = $D000   ;Start of screen RAM
 CHROUT      = $FFD2   ;Kernal Print a byte
 SCNKEY      = $FF9F   ;Kernal Scan Keyboard.. result in A
+PET2ASCII   = $F3C7   ;Convert PETSCII to ASCII
 ;
 EXE_REG     = $00     ;6509 Execute Register
 IND_REG     = $01     ;6509 Indirect Register
@@ -1155,11 +1156,14 @@ SCAN_KEYB:
     
     JSR SCNKEY		;Kernal routine to scan keyboard - Result in A
     CMP #$00		;Does SCANKEY return $00 or $FF? If $00 change to $FF
-    BNE GOODKEY
-    LDA #$FF		;No key
-GOODKEY:
+    BEQ NOKEY
+    JSR PET2ASCII    ;Convert to ASCII character
     STA SCANCODE
-    STA LASTCODE
+    RTS
+
+NOKEY:
+    LDA #$FF
+    STA SCANCODE
     RTS
 
 ;---------- Keyboard Table
