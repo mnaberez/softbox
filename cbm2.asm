@@ -9,6 +9,7 @@ TPI2_PB     = $DF01   ;6525 TPI #1 Port B - Keyboard Row select HI
 TPI2_PC     = $DF02   ;6525 TPI #1 Port C - Keyboard Col read
 SCREEN      = $D000   ;Start of screen RAM
 CHROUT      = $FFD2   ;Kernal Print a byte
+SCNKEY      = $FF9F   ;Kernal Scan Keyboard.. result in A
 ;
 EXE_REG     = $00     ;6509 Execute Register
 IND_REG     = $01     ;6509 Indirect Register
@@ -1150,13 +1151,15 @@ SCAN_KEYB:
 ; TPI2_PB     = $DF01   ;6525 TPI #1 Port B - Keyboard Row select HI
 ; TPI2_PC     = $DF02   ;6525 TPI #1 Port C - Keyboard Col read
 
-    LDA #$FF          ;No key hit
+; Let's try the standard Kernal scanning routine!
+    
+    JSR SCNKEY		;Kernal routine to scan keyboard - Result in A
+    CMP #$00		;Does SCANKEY return $00 or $FF? If $00 change to $FF
+    BNE GOODKEY
+    LDA #$FF		;No key
+GOODKEY:
     STA SCANCODE
     STA LASTCODE
-    RTS
-
-SK_TOP:
-    LDA #$00
     RTS
 
 ;---------- Keyboard Table
