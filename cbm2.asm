@@ -514,7 +514,7 @@ P500_LFCAD:
 
 IRQ_DONE:
     PLA
-    STA IND_REG        ;Restore 6502 indirect register
+    STA IND_REG        ;Restore 6509 Indirect Register
     PLA
     TAY                ;Restore Y
     PLA
@@ -713,7 +713,7 @@ CTRL_16:
 ;
     LDA TPI1_CR
     AND #%11101111
-    STA TPI1_CR            ;Graphic mode = lowercase
+    STA TPI1_CR             ;Graphic mode = lowercase
     RTS
 
 CTRL_08:
@@ -1153,7 +1153,7 @@ SCAN_KEYB:
 ; TPI2_PC     = $DF02   ;6525 TPI #1 Port C - Keyboard Col read
 
 ; Let's try the standard Kernal scanning routine!
-    
+
     JSR SCNKEY		;Kernal routine to scan keyboard - Result in A
     CMP #$00		;Does SCANKEY return $00 or $FF? If $00 change to $FF
     BEQ NOKEY
