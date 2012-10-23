@@ -76,7 +76,6 @@ INIT:
     STA INTVECH        ;Install our interrupt handler
     LDA #$00
     STA KEYCOUNT       ;Reset key counter (no keys hit)
-    LDA #$00
     STA RTC_JIFFIES    ;Reset software real time clock
     STA RTC_SECS
     STA RTC_MINS
