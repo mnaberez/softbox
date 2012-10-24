@@ -1,6 +1,3 @@
-; CBM-II B-Series port of Softbox Loader
-; --------------------------------------
-
 INTVECL     = $0300   ;Hardware interrupt vector LO
 INTVECH     = $0301   ;Hardware interrupt vector HI
 KEYBUF      = $03AB   ;Keyboard Input Buffer
