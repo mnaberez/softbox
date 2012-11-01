@@ -387,8 +387,10 @@ INT_HANDLER:
     LDA IND_REG
     PHA                 ;Preserve 6509 Indirect Register
 
+    LDA TPI1_AIR        ;Read the AIR to find the active interrupt and
+                        ;tell the TPI that interrupt service has begun.
+
 CHECK_TPI1:             ;IRQ from TPI #1?
-    LDA TPI1_AIR
     BNE CHECK_ACIA
     JMP IRQ_DONE
 CHECK_ACIA:
@@ -491,32 +493,30 @@ L_06D2:
 
 L_06E2:
 ;http://www.von-bassewitz.de/uz/oldcomputers/p500/rom500.s.html
-;TODO: Comment and simplify if possible.  These routines were
-;borrowed from the bottom of the P500 interrupt handler.
+;
 P500_FC95:
     LDA TPI1_PB
-    BPL P500_LFCA3
-    ORA #$40
+    BPL P500_LFCA3     ;Cassette switch off?
+    ORA #$40           ;Set bit 6 for cassette motor
     BNE P500_LFCAA
 P500_LFCA3:
-    AND #$BF
+    AND #$BF           ;Clear bit 6 for cassette motor
 P500_LFCAA:
-    STA TPI1_PB
-P500_LFCAD:
-    STA TPI1_AIR
-    LDA #$FF
-    STA TPI1_PB
-    STA TPI1_AIR
+    STA TPI1_PB        ;Turn cassette motor on or off
 
 IRQ_DONE:
+    STA TPI1_AIR       ;Write to the AIR to tell the TPI that the
+                       ;interrupt service has concluded.
+
     PLA
-    STA IND_REG        ;Restore 6509 Indirect Register
+    STA IND_REG        ;Restore 6509 indirect register
     PLA
     TAY                ;Restore Y
     PLA
     TAX                ;Restore X
     PLA                ;Restore A
     RTI
+
 
 PROCESS_BYTE:
 ;This is the core of the terminal emulator.  It accepts a byte in
