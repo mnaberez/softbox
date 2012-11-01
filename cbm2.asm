@@ -9,8 +9,6 @@ TPI2_PB     = $DF01   ;6525 TPI #1 Port B - Keyboard Row select HI
 TPI2_PC     = $DF02   ;6525 TPI #1 Port C - Keyboard Col read
 SCREEN      = $D000   ;Start of screen RAM
 CHROUT      = $FFD2   ;Kernal Print a byte
-SCNKEY      = $FF9F   ;Kernal Scan Keyboard.. result in A
-PET2ASCII   = $F3C7   ;Convert PETSCII to ASCII
 ;
 EXE_REG     = $00     ;6509 Execute Register
 IND_REG     = $01     ;6509 Indirect Register
@@ -1166,7 +1164,7 @@ SCAN_KEYB:
     LDX #$00               ;X=0 Index into Keyboard Scan Table
     STX KEYOFFSET          ;Reset index into table
     STX SHIFTFLAG          ;Reset Shift Flag
-    STX KEYFLAG            ;Reset Key Flag    
+    STX KEYFLAG            ;Reset Key Flag
     LDA #$FF               ;$FF = no key
     STA SCANCODE           ;Set it
     LDA #$0                ;Keyboard has 16 ROWS
@@ -1198,12 +1196,12 @@ DEBOUNCE:
 
 ;---- top of loop to go through each bit returned from scan. Each "0" bit represents a key pressed down
 
-SCAN_COL:    
+SCAN_COL:
     LSR ;A                 ;Shift byte RIGHT leaving CARRY flag set if it is a "1"
     PHA                    ;Push it to the stack
     BCS NEXTCOL            ;Is the BIT a "1"? Yes. Means key was NOT pressed. Bypass testing
     LDX KEYOFFSET
-    LDA KEY_TABLE,X        ;  Yes, read from keyboard table    
+    LDA KEY_TABLE,X        ;  Yes, read from keyboard table
     CMP #$01               ;IS it the SHIFT key?
     BEQ KEY_SHIFT          ; Yes, skip
     BCC KEY_REG            ; No, It's a regular key
@@ -1234,7 +1232,7 @@ NEXTROW:
 ; If the SCANCODE = LASTCODE then key is being held down. Don't do anything until it is released.
 ; The IRQ handler implements key repeat by clearing the SCANCODE after a short interval.
 
-    LDA SCANCODE           ;Get the current SCANCODE    
+    LDA SCANCODE           ;Get the current SCANCODE
     CMP #$FF               ;Is it NO KEY?
     BEQ KEYDONE            ; Yes, exit
     CMP LASTCODE           ;Is it the same as last? (Key is registered on key UP?)
