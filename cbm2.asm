@@ -90,15 +90,6 @@ INIT_TERM:
     JSR CTRL_06        ;Clear all tab stops
 
 ;TODO: Temporary hack until the code below is ported
-    LDA #$48           ;"H"
-    JSR PROCESS_BYTE
-    LDA #$69           ;"i"
-    JSR PROCESS_BYTE
-    LDA #$0D           ;Carriage return
-    JSR PROCESS_BYTE
-    LDA #$0A           ;Line feed
-    JSR PROCESS_BYTE
-
 FOREVER:
     JSR GET_KEY        ;Wait for a key
     JSR PROCESS_BYTE   ;Send it to the terminal screen
