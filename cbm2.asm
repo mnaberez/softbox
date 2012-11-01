@@ -1145,25 +1145,189 @@ L_09C8:
 
 SCAN_KEYB:
 ;Scan the keyboard.
-;TODO: Implementation for CBM-II keyboard
+;The CBM-II uses a 16x6 Keyboard Matrix. There are 16 ROWS and 6 COLS.
+;The keyboard uses 3 ports on TPI#2. Two ports control the ROW. Setting the line LOW selects the ROW.
+;Reading the COL tells which key(s) are down. If a key is down the bit will be 0.
 ;
 ; TPI2_PA     = $DF00   ;6525 TPI #1 Port A - Keyboard Row select LO
 ; TPI2_PB     = $DF01   ;6525 TPI #1 Port B - Keyboard Row select HI
 ; TPI2_PC     = $DF02   ;6525 TPI #1 Port C - Keyboard Col read
 
-; Let's try the standard Kernal scanning routine!
+;
+; USES: SCANCODE  - Code of Pressed KEY ($FF=NONE)
+;       LASTCODE  - Code of Previous KEY
+;       ROWCOUNT  - Keyboard ROW counter
+;       SHIFTFLAG - Shift Flag
+;       KEYFLAG   - Regular Key Flag
+;
+    LDA SCANCODE           ;Old SCANCODE
+    STA LASTCODE           ;Save It
+    LDX #$00               ;X=0 Index into Keyboard Scan Table
+    STX SHIFTFLAG          ;Reset Shift Flag
+    STX KEYFLAG            ;Reset Key Flag
 
-    JSR SCNKEY		;Kernal routine to scan keyboard - Result in A
-    CMP #$00		;Does SCANKEY return $00 or $FF? If $00 change to $FF
-    BEQ NOKEY
-    JSR PET2ASCII    ;Convert to ASCII character
-    STA SCANCODE
+    STX PIA1ROW            ;Select a keyboard ROW
+    LDA #$FF               ;$FF = no key
+    STA SCANCODE           ;Set it
+    LDA #$10               ;Keyboard has 16 ROWS
+    STA ROWCOUNT           ;ROW=16 - Keyboard ROW counter
+
+;---- top of loop for keyboard ROWS
+;
+SCAN_ROW:
+;                           We need to set ALL bits on PORTA and PORTB to ONE, except the line we need to check
+;                           The KEY_SEL table holds the values to place in the port. We use the ROW as an offset into the tables.
+;                           There are THREE sets of 8 bytes so that the middle is common, we use an offset of 0 for PORTB so
+;                           that it starts at $FF (no row selected) and an offset of 8 for PORTA to that it starts at $FE.
+;                           As the ROW increases the ZERO bit 'walks' from one port to the other without doing any
+;                           complicated bit shifting and comparing
+;
+    LDX ROWCOUNT           ;Get Keyboard ROW counter
+    LDA KEY_SEL1,X         ;Get value to place in PORTB
+    STA TPI2_PB            ;set it
+    LDA KEY_SEL2,X         ;Get value to place in PORTA
+    STA TPI2_PA            ;set it
+
+DEBOUNCE:
+    LDA TPI2_PC            ;TPI2 Port C- Keyboard Columns Read
+    CMP TPI2_PC            ;TPI2 Port C- Keyboard Columns Read
+    BNE DEBOUNCE           ;wait for stable value on keyboard switches (debounce)
+                           ;Result of Row scan is now in A (call is SCANCODE)
+
+    LDY #$06               ;Y=6 -- 6 Columns in Table
+
+;---- top of loop to go through each bit returned from scan. Each "0" bit represents a key pressed down
+
+SCAN_COL:
+    LSR ;A                 ;Shift byte RIGHT leaving CARRY flag set if it is a "1"
+    PHA                    ;Push it to the stack
+    BCS NEXTCOL            ;Is the BIT a "1"? Yes. Means key was NOT pressed. Bypass testing
+    LDA KEY_TABLE,X        ;  Yes, read from Business keyboard table
+    CMP #$01               ;IS it the SHIFT key?
+    BEQ KEY_SHIFT          ; Yes, skip
+    BCC KEY_REG            ; No, It's a regular key
+    STA SCANCODE           ;Store the SCANCODE as-is
+    BCS NEXTCOL
+
+KEY_SHIFT:
+    INC SHIFTFLAG          ;Increment SHIFT Flag
+    BNE NEXTCOL            ; Is it >0? Yes, loop back for another key
+
+KEY_REG:
+    INC KEYFLAG            ;Increment KEY flag
+
+NEXTCOL:
+    PLA                    ;pull the original scan value from stack
+    INX                    ;X=X+1 - next entry in table
+    DEY                    ;Y=Y-1 - next BIT in scan value
+    BNE SCAN_COL           ;Is it ZERO? No, go back for next COL
+
+NEXTROW:
+    DEC ROWCOUNT           ;ROW=ROW-1
+    BNE SCAN_ROW           ;Is ROW > 0 ? Yes, loop back up for next ROW
+
+;-------------------------------------- end of scanning loops
+; Check if there is anything to do. SCANCODE will be $FF if no key.
+; If the SCANCODE = LASTCODE then key is being held down. Don't do anything until it is released.
+; The IRQ handler implements key repeat by clearing the SCANCODE after a short interval.
+
+    LDA SCANCODE           ;Get the current SCANCODE
+    CMP #$FF               ;Is it NO KEY?
+    BEQ KEYDONE            ; Yes, exit
+
+    CMP LASTCODE           ;Is it the same as last? (Key is registered on key UP?)
+    BEQ KEYDONE            ; Yes, exit
+
+;---- Check for CTRL key
+KEY_CHECK1:
+    CMP #$00               ;Compare to CTRL key
+    BPL KEY_LOW            ;No, skip
+
+;---- CTRL KEY not pressed
+KEY_HI:
+    AND #$7F               ;Remove the TOP bit (shift flag for character?)
+    LDY SHIFTFLAG          ;Check SHIFT Flag
+    BEQ KEY_LOW            ;SHIFT=0? Yes, skip
+    EOR #$10               ;No, flip BIT 4 (what does bit 4 do?)
     RTS
 
-NOKEY:
-    LDA #$FF
-    STA SCANCODE
+;---- Check if in A-Z range
+KEY_LOW:
+    CMP #$40               ;Start of compare to A-Z Range. "@" is lower limit?
+    BCC KEY_CHECK2         ;It is below? Yes, must be COMMAND character
+    CMP #$60               ;Compare to upper ascii limit?
+    BCS KEY_CHECK2         ;Is it above the A-Z range? Yes, skip
+
+;----  Check KEY Flag
+    LDY KEYFLAG            ;Check KEY Flag
+    BEQ KEY_ATOZ           ;Is it zero? Yes, skip
+    AND #$1F               ;RETURN CTRL-A to Z - Use only the lower 5 BITS (0 to 31)
+
+KEYDONE:
     RTS
+
+;---- Check A to Z or CTRL key
+KEY_ATOZ:
+    CMP #$40               ;Compare to "@" symbol
+    BEQ KEY_CHECK2
+    CMP #$5B               ;Compare to "[" symbol?
+    BCS KEY_CHECK2
+
+    LDY SHIFTFLAG          ;Is SHIFT Flag set?
+    BNE KEY_CHECK2         ; No,skip to next test
+
+;---- Handle regular A-Z
+    PHA                    ;Yes, push the character code to stack
+    LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
+    LSR ;A                 ;shift
+    LSR ;A                 ;shift to get BIT 2
+    PLA                    ;pull the character code from stack
+    BCC KEY_CHECK2         ;Branch if uppercase mode
+    ORA #$20               ;Convert character to UPPERCASE HERE
+    RTS                    ;Return with character code in A
+
+;---- Check SHIFT flag
+KEY_CHECK2:
+    LDY SHIFTFLAG          ;Check SHIFT flag for zero
+    BEQ KEY_SET            ;  Yes, skip out
+
+;---- Translate SHIFTED 0-31 codes to terminal control codes
+KEY_SH_CODES:
+    LDX #$0B               ;CTRL_0B Cursor up
+    CMP #$0A               ;SCAN=CRSR DOWN
+    BEQ KEY_CTRL_CODE
+    LDX #$08               ;CTRL_08 Cursor left
+    CMP #$0C               ;SCAN=CRSR RIGHT
+    BEQ KEY_CTRL_CODE
+    LDX #$1A               ;CTRL_1A Clear screen
+    CMP #$1E               ;SCAN=HOME
+    BEQ KEY_CTRL_CODE
+
+;---- these must be normal shifted keys or Graphics?
+    PHA                    ;Push key to stack
+    LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
+    LSR ;A                 ;shift
+    LSR ;A                 ;shift - check bit 1
+    PLA                    ;Pull original key from stack
+    BCS KEY_SET            ;Branch if lowercase mode
+
+    ORA #$80               ;Set the HIGH BIT
+    RTS                    ;Return with character code in A?
+
+;---- Return a terminal control code (CTRL_CODES table)
+KEY_CTRL_CODE:
+    TXA                    ;Substitute the terminal control code
+    RTS                    ;Return with control code in A
+
+KEY_SET:
+    CMP #$00               ;Set CARRY if non-zero character?
+    RTS
+
+KEY_SEL1:
+    !byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+KEY_SEL2:
+    !byte $FE,$FD,$FB,$F7,$EF,$DF,$BF,$7F
+    !byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 
 ;---------- Keyboard Table
 KEY_TABLE:
