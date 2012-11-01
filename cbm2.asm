@@ -1159,18 +1159,18 @@ SCAN_KEYB:
 ;       ROWCOUNT  - Keyboard ROW counter
 ;       SHIFTFLAG - Shift Flag
 ;       KEYFLAG   - Regular Key Flag
-;
+;       KEYOFFSET - Pointer into keyboard table
+
     LDA SCANCODE           ;Old SCANCODE
     STA LASTCODE           ;Save It
     LDX #$00               ;X=0 Index into Keyboard Scan Table
+    STX KEYOFFSET          ;Reset index into table
     STX SHIFTFLAG          ;Reset Shift Flag
-    STX KEYFLAG            ;Reset Key Flag
-
-    STX PIA1ROW            ;Select a keyboard ROW
+    STX KEYFLAG            ;Reset Key Flag    
     LDA #$FF               ;$FF = no key
     STA SCANCODE           ;Set it
-    LDA #$10               ;Keyboard has 16 ROWS
-    STA ROWCOUNT           ;ROW=16 - Keyboard ROW counter
+    LDA #$0                ;Keyboard has 16 ROWS
+    STA ROWCOUNT           ;ROW=0 - Keyboard ROW counter
 
 ;---- top of loop for keyboard ROWS
 ;
@@ -1182,11 +1182,11 @@ SCAN_ROW:
 ;                           As the ROW increases the ZERO bit 'walks' from one port to the other without doing any
 ;                           complicated bit shifting and comparing
 ;
-    LDX ROWCOUNT           ;Get Keyboard ROW counter
-    LDA KEY_SEL1,X         ;Get value to place in PORTB
-    STA TPI2_PB            ;set it
-    LDA KEY_SEL2,X         ;Get value to place in PORTA
+    LDX ROWCOUNT           ;Get Keyboard ROW counter. Use as offset to table
+    LDA KEY_SEL1,X         ;Get value to place in PORTA
     STA TPI2_PA            ;set it
+    LDA KEY_SEL2,X         ;Get value to place in PORTB
+    STA TPI2_PB            ;set it
 
 DEBOUNCE:
     LDA TPI2_PC            ;TPI2 Port C- Keyboard Columns Read
@@ -1198,11 +1198,12 @@ DEBOUNCE:
 
 ;---- top of loop to go through each bit returned from scan. Each "0" bit represents a key pressed down
 
-SCAN_COL:
+SCAN_COL:    
     LSR ;A                 ;Shift byte RIGHT leaving CARRY flag set if it is a "1"
     PHA                    ;Push it to the stack
     BCS NEXTCOL            ;Is the BIT a "1"? Yes. Means key was NOT pressed. Bypass testing
-    LDA KEY_TABLE,X        ;  Yes, read from Business keyboard table
+    LDX KEYOFFSET
+    LDA KEY_TABLE,X        ;  Yes, read from keyboard table    
     CMP #$01               ;IS it the SHIFT key?
     BEQ KEY_SHIFT          ; Yes, skip
     BCC KEY_REG            ; No, It's a regular key
@@ -1218,23 +1219,24 @@ KEY_REG:
 
 NEXTCOL:
     PLA                    ;pull the original scan value from stack
-    INX                    ;X=X+1 - next entry in table
+    INC KEYOFFSET          ;X=X+1 - next entry in table
     DEY                    ;Y=Y-1 - next BIT in scan value
     BNE SCAN_COL           ;Is it ZERO? No, go back for next COL
 
 NEXTROW:
-    DEC ROWCOUNT           ;ROW=ROW-1
-    BNE SCAN_ROW           ;Is ROW > 0 ? Yes, loop back up for next ROW
+    INC ROWCOUNT           ;ROW=ROW+1
+    LDA ROWCOUNT
+    CMP #$10               ;Is it ROW 16?
+    BNE SCAN_ROW           ;  NO, loop back up for next ROW
 
 ;-------------------------------------- end of scanning loops
 ; Check if there is anything to do. SCANCODE will be $FF if no key.
 ; If the SCANCODE = LASTCODE then key is being held down. Don't do anything until it is released.
 ; The IRQ handler implements key repeat by clearing the SCANCODE after a short interval.
 
-    LDA SCANCODE           ;Get the current SCANCODE
+    LDA SCANCODE           ;Get the current SCANCODE    
     CMP #$FF               ;Is it NO KEY?
     BEQ KEYDONE            ; Yes, exit
-
     CMP LASTCODE           ;Is it the same as last? (Key is registered on key UP?)
     BEQ KEYDONE            ; Yes, exit
 
@@ -1277,13 +1279,14 @@ KEY_ATOZ:
     BNE KEY_CHECK2         ; No,skip to next test
 
 ;---- Handle regular A-Z
-    PHA                    ;Yes, push the character code to stack
-    LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
-    LSR ;A                 ;shift
-    LSR ;A                 ;shift to get BIT 2
-    PLA                    ;pull the character code from stack
-    BCC KEY_CHECK2         ;Branch if uppercase mode
+    ;PHA                    ;Yes, push the character code to stack
+    ;LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
+    ;LSR ;A                 ;shift
+    ;LSR ;A                 ;shift to get BIT 2
+    ;PLA                    ;pull the character code from stack
+    ;BCC KEY_CHECK2         ;Branch if uppercase mode
     ORA #$20               ;Convert character to UPPERCASE HERE
+
     RTS                    ;Return with character code in A
 
 ;---- Check SHIFT flag
@@ -1304,12 +1307,12 @@ KEY_SH_CODES:
     BEQ KEY_CTRL_CODE
 
 ;---- these must be normal shifted keys or Graphics?
-    PHA                    ;Push key to stack
-    LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
-    LSR ;A                 ;shift
-    LSR ;A                 ;shift - check bit 1
-    PLA                    ;Pull original key from stack
-    BCS KEY_SET            ;Branch if lowercase mode
+    ;PHA                    ;Push key to stack
+    ;LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
+    ;LSR ;A                 ;shift
+    ;LSR ;A                 ;shift - check bit 1
+    ;PLA                    ;Pull original key from stack
+    ;BCS KEY_SET            ;Branch if lowercase mode
 
     ORA #$80               ;Set the HIGH BIT
     RTS                    ;Return with character code in A?
@@ -1323,6 +1326,7 @@ KEY_SET:
     CMP #$00               ;Set CARRY if non-zero character?
     RTS
 
+;---- This is a table of values to write to keyboard ROW select ports
 KEY_SEL1:
     !byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 KEY_SEL2:
@@ -1375,6 +1379,8 @@ REPEATCOUNT1:
     !byte $AA
 
 REPEATCODE:
+    !byte $AA
+KEYOFFSET:
     !byte $AA
 
 ;Start of buffer used by control codes 05, 06, and 09
