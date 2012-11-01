@@ -51,7 +51,6 @@ BLINK_CNT   = $1B     ;Counter used for cursor blink timing
 INIT:
     SEI                ;Disable interrupts
     LDA #$0F
-    STA EXE_REG
     STA IND_REG        ;Bank 15 (System Bank)
     LDA #<INT_HANDLER
     STA INTVECL
