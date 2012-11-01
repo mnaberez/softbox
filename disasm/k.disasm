@@ -203,12 +203,12 @@ $0502: AE 20 E8  LDX PIA2IEEE       ;Read IEEE data byte with command from SoftB
 
 $0505: 8A        TXA                ;Remember the original command byte in X
 $0506: 6A        ROR A
-$0507: A9 7F     LDA #$7F           ;Next byte we'll put on IEEE will be #$80 (no key available)
-$0509: B0 06     BCS SEND_KEY_AVAIL ;Bypass the key buffer check if SoftBox doesn't want key status
+$0507: A9 7F     LDA #$7F           ;Next byte we'll put on IEEE will be #$80 (key available)
+$0509: B0 06     BCS SEND_KEY_AVAIL ;Bypass the key buffer check
 
 $050B: A4 08     LDY KEYCOUNT       ;Is there a key in the buffer?
-$050D: D0 02     BNE SEND_KEY_AVAIL ;  No:  Response will be #$80 (no key available)
-$050F: A9 BF     LDA #$BF           ;  Yes: Response will be #$40 (key available)
+$050D: D0 02     BNE SEND_KEY_AVAIL ;  No:  Response will be #$80 (key available)
+$050F: A9 BF     LDA #$BF           ;  Yes: Response will be #$40 (no key available)
 
 SEND_KEY_AVAIL:
 $0511: 8D 22 E8  STA PIA2IOUT       ;Drive only bit 7 (no key) or bit 6 (key) on the bus

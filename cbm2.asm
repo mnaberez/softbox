@@ -174,15 +174,15 @@ WAIT_FOR_SRQ:
 
     TXA                ;Remember the original command byte in X
     ROR ;A
-    LDA #$7F           ;Next byte we'll put on IEEE will be #$80 (no key available)
-    BCS SEND_KEY_AVAIL ;Bypass the key buffer check if SoftBox doesn't want key status
+    LDA #$7F           ;Next byte we'll put on IEEE will be #$80 (key available)
+    BCS SEND_KEY_AVAIL ;Bypass the key buffer check
 
     LDY KEYCOUNT       ;Is there a key in the buffer?
-    BNE SEND_KEY_AVAIL ;  No:  Response will be #$80 (no key available)
-    LDA #$BF           ;  Yes: Response will be #$40 (key available)
+    BNE SEND_KEY_AVAIL ;  No:  Response will be #$80 (key available)
+    LDA #$BF           ;  Yes: Response will be #$40 (no key available)
 
 SEND_KEY_AVAIL:
-    STA $E822          ;Drive only bit 7 (no key) or bit 6 (key) on the bus
+    STA $E822          ;Put keyboard status on the data lines
 
 HANDSHAKE:
     LDA $E820          ;Read IEEE data byte
