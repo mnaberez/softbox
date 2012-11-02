@@ -1,5 +1,5 @@
-INTVECL     = $90     ;Hardware interrupt vector LO
-INTVECH     = $91     ;Hardware interrupt vector HI
+IRQVECL     = $90     ;KERNAL IRQ vector LO
+IRQVECH     = $91     ;KERNAL IRQ vector HI
 KEYBUF      = $026F   ;Keyboard Input Buffer
 SCREEN      = $8000   ;Start of screen RAM
 PIA1ROW     = $E810   ;PIA#1 Keyboard Row Select
@@ -11,7 +11,7 @@ PIA2IOUT    = $E822   ;PIA#2 IEEE Output
 PIA2DAV     = $E823   ;PIA#2 IEEE DAV control
 VIAPB       = $E840   ;VIA PortB
 VIA_PCR     = $E84C   ;VIA Peripheral Control Register (PCR)
-CHROUT      = $FFD2   ;Kernal Print a byte
+CHROUT      = $FFD2   ;KERNAL Send a char to the current output device
 ;
 BLINK_CNT   = $01     ;Counter used for cursor blink timing
 SCNPOSL     = $02     ;Pointer to current screen -LO
@@ -70,10 +70,10 @@ COPYRIGHT:
 
 INIT:
     SEI                ;Disable interrupts
-    LDA #<INT_HANDLER
-    STA INTVECL
-    LDA #>INT_HANDLER
-    STA INTVECH        ;Install our interrupt handler
+    LDA #<IRQ_HANDLER
+    STA IRQVECL
+    LDA #>IRQ_HANDLER
+    STA IRQVECH        ;Install our interrupt handler
     LDA #$00
     STA KEYCOUNT       ;Reset key counter (no keys hit)
     STA RTC_JIFFIES    ;Reset software real time clock
@@ -399,11 +399,11 @@ L_0649:
     BEQ GET_KEY     ;  No key:  loop until we get one.
     RTS             ;  Got key: done.  Key is now in A.
 
-INT_HANDLER:
+IRQ_HANDLER:
 ;On the PET, an IRQ occurs at 50 or 60 Hz depending on the power line
 ;frequency.  The 6502 calls the main IRQ entry point ($E442 on BASIC 4.0)
-;which pushes A, X, and Y onto the stack and then executes JMP (INTVECL).
-;We install this routine, INT_HANDLER, into INTVECL during init.
+;which pushes A, X, and Y onto the stack and then executes JMP (IRQVECL).
+;We install this routine, IRQ_HANDLER, into IRQVECL during init.
 ;
     INC JIFFY0          ;Counts number of Interrupts
     BNE L_0659

@@ -4,8 +4,8 @@
 ;runs on Commodore PET/CBM computers.  This disassembly has no changes
 ;from the original and reassembles to an identical binary.
 ;
-INTVECL     = $90     ;Hardware interrupt vector LO
-INTVECH     = $91     ;Hardware interrupt vector HI
+IRQVECL     = $90     ;KERNAL IRQ vector LO
+IRQVECH     = $91     ;KERNAL IRQ vector HI
 KEYBUF      = $026F   ;Keyboard Input Buffer
 SCREEN      = $8000   ;Start of screen RAM
 PIA1ROW     = $E810   ;PIA#1 Keyboard Row Select
@@ -17,7 +17,7 @@ PIA2IOUT    = $E822   ;PIA#2 IEEE Output
 PIA2DAV     = $E823   ;PIA#2 IEEE DAV control
 VIAPB       = $E840   ;VIA PortB
 VIA_PCR     = $E84C   ;VIA Peripheral Control Register (PCR)
-CHROUT      = $FFD2   ;Kernal Print a byte
+CHROUT      = $FFD2   ;KERNAL Send a char to the current output device
 ;
 BLINK_CNT   = $01     ;Counter used for cursor blink timing
 SCNPOSL     = $02     ;Pointer to current screen -LO
@@ -76,10 +76,10 @@ $0462:           .BYT 20,20,20,20
 
 INIT:
 $0466: 78        SEI                ;Disable interrupts
-$0467: A9 4F     LDA #<INT_HANDLER
-$0469: 85 90     STA INTVECL
-$046B: A9 06     LDA #>INT_HANDLER
-$046D: 85 91     STA INTVECH        ;Install our interrupt handler
+$0467: A9 4F     LDA #<IRQ_HANDLER
+$0469: 85 90     STA IRQVECL
+$046B: A9 06     LDA #>IRQ_HANDLER
+$046D: 85 91     STA IRQVECH        ;Install our interrupt handler
 $046F: A9 00     LDA #$00
 $0471: 85 08     STA KEYCOUNT       ;Reset key counter (no keys hit)
 $0473: A9 00     LDA #$00
@@ -410,11 +410,11 @@ $064A: C9 FF     CMP #$FF        ;No key or key is "NONE" in the tables?
 $064C: F0 E0     BEQ GET_KEY     ;  No key:  loop until we get one.
 $064E: 60        RTS             ;  Got key: done.  Key is now in A.
 
-INT_HANDLER:
+IRQ_HANDLER:
 ;On the PET, an IRQ occurs at 50 or 60 Hz depending on the power line
 ;frequency.  The 6502 calls the main IRQ entry point ($E442 on BASIC 4.0)
-;which pushes A, X, and Y onto the stack and then executes JMP (INTVECL).
-;We install this routine, INT_HANDLER, into INTVECL during init.
+;which pushes A, X, and Y onto the stack and then executes JMP (IRQVECL).
+;We install this routine, IRQ_HANDLER, into IRQVECL during init.
 ;
 $064F: E6 1A     INC JIFFY0          ;Counts number of Interrupts
 $0651: D0 06     BNE L_0659

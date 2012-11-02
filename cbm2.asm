@@ -1,8 +1,8 @@
 ; CBM-II Port of Softbox CP/M Loader
 ; ==================================
 ;
-INTVECL     = $0300   ;Hardware interrupt vector LO
-INTVECH     = $0301   ;Hardware interrupt vector HI
+IRQVECL     = $0300   ;KERNAL IRQ vector LO
+IRQVECH     = $0301   ;KERNAL IRQ vector HI
 KEYBUF      = $03AB   ;Keyboard Input Buffer
 SCREEN      = $D000   ;Start of screen RAM
 CIA2_PA     = $DC00   ;6526 CIA #2 Port A
@@ -17,7 +17,7 @@ TPI1_AIR    = $DE07   ;6525 TPI #1 Active Interrupt Register
 TPI2_PA     = $DF00   ;6525 TPI #1 Port A - Keyboard Row select LO
 TPI2_PB     = $DF01   ;6525 TPI #1 Port B - Keyboard Row select HI
 TPI2_PC     = $DF02   ;6525 TPI #1 Port C - Keyboard Col read
-CHROUT      = $FFD2   ;Kernal Print a byte
+CHROUT      = $FFD2   ;KERNAL Send a char to the current output device
 ;
 EXE_REG     = $00     ;6509 Execute Register
 IND_REG     = $01     ;6509 Indirect Register
@@ -62,10 +62,10 @@ INIT:
     SEI                ;Disable interrupts
     LDA #$0F
     STA IND_REG        ;Bank 15 (System Bank)
-    LDA #<INT_HANDLER
-    STA INTVECL
-    LDA #>INT_HANDLER
-    STA INTVECH        ;Install our interrupt handler
+    LDA #<IRQ_HANDLER
+    STA IRQVECL
+    LDA #>IRQ_HANDLER
+    STA IRQVECH        ;Install our interrupt handler
     LDA #$00
     STA KEYCOUNT       ;Reset key counter (no keys hit)
     STA RTC_JIFFIES    ;Reset software real time clock
@@ -447,11 +447,11 @@ L_0649:
     BEQ GET_KEY     ;  No key:  loop until we get one.
     RTS             ;  Got key: done.  Key is now in A.
 
-INT_HANDLER:
+IRQ_HANDLER:
 ;On the PET, an IRQ occurs at 50 or 60 Hz depending on the power line
 ;frequency.  The 6502 calls the main IRQ entry point ($E442 on BASIC 4.0)
-;which pushes A, X, and Y onto the stack and then executes JMP (INTVECL).
-;We install this routine, INT_HANDLER, into INTVECL during init.
+;which pushes A, X, and Y onto the stack and then executes JMP (IRQVECL).
+;We install this routine, IRQ_HANDLER, into IRQVECL during init.
 ;
     LDA IND_REG
     PHA                 ;Preserve 6509 Indirect Register
