@@ -1,3 +1,6 @@
+; CBM-II Port of Softbox CP/M Loader
+; ==================================
+;
 INTVECL     = $0300   ;Hardware interrupt vector LO
 INTVECH     = $0301   ;Hardware interrupt vector HI
 KEYBUF      = $03AB   ;Keyboard Input Buffer
@@ -1327,15 +1330,15 @@ KEY_TABLE:
 ;                                   COL0  COL1  COl2  COL3  COL4  COL5
 ;                                   ----- ----- ----- ----- ----- -----
     !byte $FF,$1B,$09,$FF,$01,$00 ; F1    ESC   TAB   NONE  SHIFT CTRL
-    !byte $FF,$31,$51,$41,$5A,$FF ; F2    1     Q     A     Z     NONE
-    !byte $FF,$32,$57,$53,$58,$43 ; F3    2     W     S     X     C
-    !byte $FF,$33,$45,$44,$46,$56 ; F4    3     E     D     F     V
-    !byte $FF,$34,$52,$54,$47,$42 ; F5    4     R     T     G     B
-    !byte $FF,$35,$36,$59,$48,$4E ; F6    5     6     Y     H     N
-    !byte $FF,$37,$55,$4A,$4D,$20 ; F7    7     U     J     M     SPACE
-    !byte $FF,$38,$49,$4B,$2C,$2E ; F8    8     I     K     ,     .
-    !byte $FF,$39,$4F,$4C,$3B,$2F ; F9    9     NONE  L     ;     /
-    !byte $FF,$30,$2D,$50,$5B,$27 ; F10   0     -     P     [     '
+    !byte $FF,$B1,$51,$41,$5A,$FF ; F2    1     Q     A     Z     NONE
+    !byte $FF,$B2,$57,$53,$58,$43 ; F3    2     W     S     X     C
+    !byte $FF,$B3,$45,$44,$46,$56 ; F4    3     E     D     F     V
+    !byte $FF,$B4,$52,$54,$47,$42 ; F5    4     R     T     G     B
+    !byte $FF,$B5,$B6,$59,$48,$4E ; F6    5     6     Y     H     N
+    !byte $FF,$B7,$55,$4A,$4D,$20 ; F7    7     U     J     M     SPACE
+    !byte $FF,$B8,$49,$4B,$2C,$2E ; F8    8     I     K     ,     .
+    !byte $FF,$B9,$4F,$4C,$3B,$2F ; F9    9     NONE  L     ;     /
+    !byte $FF,$B0,$2D,$50,$5B,$27 ; F10   0     -     P     [     '
     !byte $11,$3D,$5F,$5D,$0D,$DE ; DOWN  =     BARRW ]     RETRN PI
     !byte $91,$9D,$1D,$7F,$02,$FF ; UP    LEFT  RIGHT DEL   CBM   NONE
     !byte $13,$3F,$37,$34,$31,$30 ; HOME  ?     7     4     1     0
