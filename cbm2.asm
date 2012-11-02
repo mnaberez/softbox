@@ -4,13 +4,19 @@
 INTVECL     = $0300   ;Hardware interrupt vector LO
 INTVECH     = $0301   ;Hardware interrupt vector HI
 KEYBUF      = $03AB   ;Keyboard Input Buffer
+SCREEN      = $D000   ;Start of screen RAM
+CIA2_PA     = $DC00   ;6526 CIA #2 Port A
+CIA2_DDRA   = $DC02   ;6526 CIA #2 Data Direction Register A
+TPI1_PA     = $DE00   ;6525 TPI #1 Port A
 TPI1_PB     = $DE01   ;6525 TPI #1 Port B
+TPI1_PC     = $DE02   ;6525 TPI #1 Port C
+TPI1_DDRA   = $DE03   ;6525 TPI #1 Data Direction Register A
+TPI1_DDRC   = $DE05   ;6525 TPI #1 Data Direction Register C
 TPI1_CR     = $DE06   ;6525 TPI #1 Control Register
 TPI1_AIR    = $DE07   ;6525 TPI #1 Active Interrupt Register
 TPI2_PA     = $DF00   ;6525 TPI #1 Port A - Keyboard Row select LO
 TPI2_PB     = $DF01   ;6525 TPI #1 Port B - Keyboard Row select HI
 TPI2_PC     = $DF02   ;6525 TPI #1 Port C - Keyboard Col read
-SCREEN      = $D000   ;Start of screen RAM
 CHROUT      = $FFD2   ;Kernal Print a byte
 ;
 EXE_REG     = $00     ;6509 Execute Register
@@ -41,6 +47,7 @@ JIFFY2      = $18     ;Jiffy counter (MSB)
 JIFFY1      = $19     ;Jiffy counter
 JIFFY0      = $1A     ;Jiffy counter (LSB)
 BLINK_CNT   = $1B     ;Counter used for cursor blink timing
+GOT_SRQ     = $1C
 
 ;Configure VICE
 ;  Settings > CBM2 Settings > Memory > Enable Bank 15 $C000-CFFF RAM
@@ -70,7 +77,7 @@ INIT:
     STA JIFFY0
     LDA #$0A
     STA REPEATCOUNT1   ;Store #$0A in REPEATCOUNT1
-    CLI                ;Enable interrupts again
+;--    CLI                ;Enable interrupts again
     JSR CTRL_16        ;Go to lowercase mode
     JSR CTRL_02        ;Go to 7-bit character mode
     LDA #$14
@@ -92,7 +99,9 @@ INIT_TERM:
     JSR PROCESS_BYTE   ;Call into terminal to execute clear screen
     JSR CTRL_06        ;Clear all tab stops
 
-;TODO: Temporary hack until the code below is ported
+
+;TODO: Temporary hack keyboard debugging
+;Remove this loop for actual IEEE-488 operation
 FOREVER:
     JSR GET_KEY        ;Wait for a key
     JSR PROCESS_BYTE   ;Send it to the terminal screen
@@ -117,45 +126,83 @@ INIT_IEEE:
 ;6526 CIA #2 ($DC00)
 ;    PA0-7 Data
 ;
-    LDA $E822          ;Clears IRQA1 flag (!ATN_IN detect)
-    LDA $E840
-    AND #$FB
-    STA $E840          ;Set !ATN_OUT = 0 to get SoftBox's attention
-    LDA #$34
-    STA $E823          ;Set !DAV_OUT = 0 to tell SoftBox our data is valid
-    LDA #$C6
-    STA $E822          ;Put #$39 on IEEE data lines
-    LDY #$00
+;    LDA TPI1_DDRC
+;    AND #%11111101
+;    STA TPI1_DDRC      ;Disable IRQs from IEEE SRQ
+;
+;    LDA TPI1_PC
+;    AND #%11111101
+;    STA TPI1_PC        ;Clear any previous IRQ from IEEE SRQ
+;    STA TPI1_AIR
 
-L_04D4:
-    DEY
-    BNE L_04D4         ;Let #$39 sit on the lines so the SoftBox sees it
+    LDA #$00
+    STA GOT_SRQ
 
+    ;Data byte must be inverted
     LDA #$FF
-    STA $E822          ;Release IEEE data lines
+    STA CIA2_DDRA      ;Data lines all outputs
+    LDA #$C6
+    STA CIA2_PA        ;Put #$39 on IEEE data lines
 
-    LDA #%00111100
-    STA $E811          ;Set !EOI_OUT = 1 and disable IRQ from CA1 (Cassette Read)
-    STA $E821          ;Set !NDAC_OUT = 1 and disable IRQ from CA1 (!ATN_IN)
-    STA $E823          ;Set !DAV = 1
+    LDA #%00111111     ;PA7 NRFD  Input
+                       ;PA6 NDAC  Input
+                       ;PA5 EOI   Output
+                       ;PA4 DAV   Output
+                       ;PA3 ATN   Output
+                       ;PA2 REN   Output
+                       ;PA1 TE    Output
+                       ;PA0 DC    Output
+    STA TPI1_DDRA
+
+    LDA #%00100010     ;EOI=hi, DAV=lo, ATN=lo, REN=lo
+    STA TPI1_PA
+
+    LDX #$02
+ATN_WAIT:
+    LDY #$00
+ATN_WAIT_1:
+    DEY
+    BNE ATN_WAIT_1     ;Let #$39 sit on the lines so the SoftBox sees it
+    DEX
+    BNE ATN_WAIT
+
+    LDA #%00111010     ;EOI=hi, DAV=hi, ATN=hi, REN=lo, TE=1, DC=0
+    STA TPI1_PA
 
 MAIN_LOOP:
-    LDA #$3C
-    STA $E821          ;Set !NDAC_OUT = 1
-    LDA $E840
-    ORA #$06
-    STA $E840          ;Set !NRFD_OUT = 1, !ATN_OUT = 1
+    LDA #$00
+    STA GOT_SRQ
+
+    CLI
+
+    LDA #$00
+    STA CIA2_DDRA     ;Data lines all inputs
+
+    LDA #%11001000    ;NRFD=hi, NDAC=hi, ATN=hi, REN=lo, TE=lo, DC=lo
+    STA TPI1_PA
+
+    LDA #%11001111    ;PA7 NRFD  Output
+                      ;PA6 NDAC  Output
+                      ;PA5 EOI   Input
+                      ;PA4 DAV   Input
+                      ;PA3 ATN   Output
+                      ;PA2 REN   Output
+                      ;PA1 TE    Output
+                      ;PA0 DC    Output
+    STA TPI1_DDRA
+
 
 WAIT_FOR_SRQ:
-    LDA $E823          ;Read PIA #2 CRB
-    ASL ;A             ;  bit 7 = IRQA1 flag for CA1 (!SRQ_IN detect)
-    BCC WAIT_FOR_SRQ   ;Wait until !SRQ_IN is detected
+    LDA GOT_SRQ
+    BEQ WAIT_FOR_SRQ
 
-    LDA $E822          ;Clears IRQA1 flag (!SRQ_IN detect)
-    LDA #$34
-    STA $E821          ;Set !NDAC_OUT = 0 to indicate we do not accept the data yet
+    SEI
 
-    LDX $E820          ;Read IEEE data byte with command from SoftBox
+    LDA TPI1_PA
+    AND #%10111111
+    STA TPI1_PA        ;NDAC=lo
+
+    LDX CIA2_PA        ;Read IEEE data byte with command from SoftBox
                        ;
                        ; Bit 7: PET to SoftBox: Key not available
                        ; Bit 6: PET to SoftBox: Key available
@@ -168,6 +215,7 @@ WAIT_FOR_SRQ:
 
     TXA                ;Remember the original command byte in X
     ROR ;A
+
     LDA #$7F           ;Next byte we'll put on IEEE will be #$80 (key available)
     BCS SEND_KEY_AVAIL ;Bypass the key buffer check
 
@@ -176,20 +224,55 @@ WAIT_FOR_SRQ:
     LDA #$BF           ;  Yes: Response will be #$40 (no key available)
 
 SEND_KEY_AVAIL:
-    STA $E822          ;Put keyboard status on the data lines
+    STA CIA2_PA        ;Put keyboard status on the bus
+
+    LDA #$FF
+    STA CIA2_DDRA      ;Data lines all outputs
+
+    LDA #%00111111     ;PA7 NRFD  Input
+                       ;PA6 NDAC  Input
+                       ;PA5 EOI   Output
+                       ;PA4 DAV   Output
+                       ;PA3 ATN   Output
+                       ;PA2 REN   Output
+                       ;PA1 TE    Output
+                       ;PA0 DC    Output
+    STA TPI1_DDRA
+
+    LDA #%00111010     ;EOI=hi, DAV=hi, ATN=hi, REN=lo, TE=1, DC=0
+    STA TPI1_PA
+
+    LDY #$10
+SEND_K_A_WAIT:
+    DEY
+    BNE SEND_K_A_WAIT  ;Let keyboard status sit on the lines a while
+
+    LDA #$00
+    STA CIA2_DDRA      ;Data lines all inputs
+
+    LDA #%11001111     ;PA7 NRFD  Output
+                       ;PA6 NDAC  Output
+                       ;PA5 EOI   Input
+                       ;PA4 DAV   Input
+                       ;PA3 ATN   Output
+                       ;PA2 REN   Output
+                       ;PA1 TE    Output
+                       ;PA0 DC    Output
+    STA TPI1_DDRA
+
+    LDA #%11001000    ;NRFD=hi, NDAC=hi, ATN=hi, REN=lo, TE=lo, DC=lo
+    STA TPI1_PA
 
 HANDSHAKE:
-    LDA $E820          ;Read IEEE data byte
-    AND #$3F           ;We are driving only bits 7 and 6 with the keyboard status
+    LDA CIA2_PA
+    AND #$3F
     CMP #$3F
-    BNE HANDSHAKE      ;Wait for the SoftBox to drive the other lines to zero
-    LDA #$FF
-    STA $E822          ;Release all data lines
+    BNE HANDSHAKE
 
 DISPATCH_COMMAND:
     TXA                ;Recall the original command byte from X
-    ROR ;A             ;Bit 0: Key availability was already answered above
-    BCC MAIN_LOOP      ;       so we're done
+    ROR ;A
+    BCC DO_KEY_AVAIL   ;Bit 0: Key availability
     ROR ;A
     BCC DO_GET_KEY     ;Bit 1: Wait for a key and send it
     ROR ;A
@@ -199,6 +282,10 @@ DISPATCH_COMMAND:
     ROR ;A
     BCC DO_READ_MEM    ;Bit 4: Transfer from PET memory to the SoftBox
     JMP DO_WRITE_MEM   ;Bit 5: Transfer from the SoftBox to PET memory
+
+DO_KEY_AVAIL:
+;    INC SCREEN         ;XXX Debug
+    JMP MAIN_LOOP
 
 DO_GET_KEY:
 ;Wait for a key and send it to the SoftBox.
@@ -210,109 +297,59 @@ DO_GET_KEY:
     JSR IEEE_SEND_BYTE  ;Send the key to the Softbox.
     JMP MAIN_LOOP
 
+DO_JUMP:
+;    INC SCREEN+$0002   ;XXX Debug
+    JMP DO_JUMP
+
+DO_READ_MEM:
+;    INC SCREEN+$0003   ;XXX Debug
+    JMP DO_READ_MEM
+
+DO_WRITE_MEM:
+;    INC SCREEN+$0004   ;XXX Debug
+    JMP DO_WRITE_MEM
+
 DO_TERMINAL:
 ;Write to the terminal screen
     JSR IEEE_GET_BYTE
-    LDX #$3C
-    STX $E821          ;Set !NDAC_OUT = 1 to indicate we accept the data
+    PHA
+    LDA TPI1_PA
+    ORA #%01000000
+    STA TPI1_PA        ;NDAC=hi
+    PLA
     JSR PROCESS_BYTE
     JMP MAIN_LOOP
 
-DO_JUMP:
-;Jump to an address
-    JSR IEEE_GET_BYTE  ;Get byte
-    STA TARGET_LO      ; -> Command vector lo
-    JSR IEEE_GET_BYTE  ;Get byte
-    STA TARGET_HI      ; -> Command vector hi
-    LDX #$3C
-    STX $E821          ;Set !NDAC_OUT = 1 to indicate we accept the data
-    JSR JUMP_CMD       ;Jump to the command through CMDVECL
-    JMP MAIN_LOOP
-
-DO_READ_MEM:
-;Transfer bytes from PET memory to the SoftBox
-    JSR IEEE_GET_BYTE
-    STA XFER_LO
-    JSR IEEE_GET_BYTE
-    STA XFER_HI
-    JSR IEEE_GET_BYTE
-    STA TARGET_LO
-    JSR IEEE_GET_BYTE
-    STA TARGET_HI
-    LDY #$00
-L_05A5:
-    DEY
-    BNE L_05A5   ; delay
-L_05A8:
-    LDA (TARGET_LO),Y
-    JSR IEEE_SEND_BYTE
-    INY
-    BNE L_05B2
-    INC TARGET_HI
-L_05B2:
-    LDA XFER_LO
-    SEC
-    SBC #$01
-    STA XFER_LO
-    LDA XFER_HI
-    SBC #$00
-    STA XFER_HI
-    ORA XFER_LO
-    BNE L_05A8
-    JMP MAIN_LOOP
-
-DO_WRITE_MEM:
-;Transfer from the SoftBox to PET memory
-    JSR IEEE_GET_BYTE
-    STA XFER_LO
-    JSR IEEE_GET_BYTE
-    STA XFER_HI
-    JSR IEEE_GET_BYTE
-    STA TARGET_LO
-    JSR IEEE_GET_BYTE
-    STA TARGET_HI
-    LDY #$00
-L_0571:
-    JSR IEEE_GET_BYTE
-    STA (TARGET_LO),Y
-    INY
-    BNE L_057B
-    INC TARGET_HI
-L_057B:
-    LDA XFER_LO
-    SEC
-    SBC #$01
-    STA XFER_LO
-    LDA XFER_HI
-    SBC #$00
-    STA XFER_HI
-    ORA XFER_LO
-    BNE L_0571
-    JMP MAIN_LOOP
 
 IEEE_GET_BYTE:
 ;Receive a byte from the SoftBox over the IEEE-488 bus.
 ;
-    LDA $E840
-    ORA #$02
-    STA $E840          ;Set !NRFD OUT = 1
-L_05D7:
-    BIT $E840          ;Wait for !NRFD_IN = 1 (SoftBox is ready for data)
-    BMI L_05D7         ;Wait for !DAV_IN = 0 (Softbox says data is valid)
+    LDA TPI1_PA
+    ORA #%10000000
+    STA TPI1_PA       ;NRFD=hi
 
-    LDA $E820          ;Read data byte
-    EOR #$FF           ;Invert the byte (IEEE true = low)
-    PHA                ;Push data byte
-    LDA $E840
-    AND #$FD
-    STA $E840          ;Set !NRFD_OUT = 0 (we are not ready for data)
-    LDA #$3C
-    STA $E821          ;Set !NDAC_OUT = 1 (we accept the last data byte)
+L_05D7:
+    LDA TPI1_PA
+    AND #%00010000
+    BNE L_05D7        ;Wait for DAV = lo (Softbox says data is valid)
+
+    LDA CIA2_PA
+    EOR #$FF          ;Invert the byte (IEEE true = low)
+    PHA               ;Push data byte
+
+    LDA TPI1_PA
+    AND #%01111111    ;NRFD=lo
+    ORA #%01000000    ;NDAC=hi
+    STA TPI1_PA
+
 L_05EF:
-    BIT $E840
-    BPL L_05EF         ;Wait for !DAV_IN = 0 (SoftBox says data is valid)
-    LDA #$34
-    STA $E821          ;Set NDAC_OUT = 0 (we do not accept data)
+    LDA TPI1_PA
+    AND #%00010000
+    BEQ L_05EF         ;Wait until DAV=hi
+
+    LDA TPI1_PA
+    AND #%10111111     ;NDAC=lo
+    STA TPI1_PA
     PLA
     RTS
 
@@ -320,29 +357,67 @@ IEEE_SEND_BYTE:
 ;Send a byte to the SoftBox over the IEEE-488 bus.
 ;
     EOR #$FF           ;Invert the byte (IEEE true = low)
-    STA $E822          ;Put byte on IEEE data output lines
-    LDA $E840
-    ORA #$02
-    STA $E840          ;Set !NRFD_OUT = 1
-    LDA #$3C
-    STA $E821          ;Set !NDAC_OUT = 1
-L_060D:
-    BIT $E840
-    BVC L_060D         ;Wait for !NRFD_IN = 1 (SoftBox is ready for data)
-    LDA #$34
-    STA $E823          ;Set !DAV_OUT = 0 to indicate our data is valid
-L_0617:
-    LDA $E840
-    LSR ;A
-    BCC L_0617         ;Wait for SoftBox to set NDAC_IN = 0 (not accepted)
-    LDA #$3C
-    STA $E823          ;Set !DAV_OUT = 1
+    STA CIA2_PA        ;Put byte on IEEE data output lines
+
+    ;Switch IEEE to Output
     LDA #$FF
-    STA $E822          ;Release data lines
+    STA CIA2_DDRA      ;Data lines all outputs
+
+    LDA #%00111111     ;PA7 NRFD  Input
+                       ;PA6 NDAC  Input
+                       ;PA5 EOI   Output
+                       ;PA4 DAV   Output
+                       ;PA3 ATN   Output
+                       ;PA2 REN   Output
+                       ;PA1 TE    Output
+                       ;PA0 DC    Output
+    STA TPI1_DDRA
+
+    LDA #%00111010     ;EOI=hi, DAV=hi, ATN=hi, REN=lo, TE=1, DC=0
+    STA TPI1_PA
+
+L_060D:
+    ;INC SCREEN+$0010   ;XXX Debug
+
+    BIT TPI1_PA
+    BPL L_060D         ;Wait for NRFD=hi
+
+    LDA TPI1_PA
+    AND #%11101111     ;DAV=lo
+    STA TPI1_PA
+
+L_0617:
+    BIT TPI1_PA
+    BVS L_0617         ;Wait for NDAC=lo
+
+    LDA TPI1_PA
+    ORA #%00010000     ;DAV=hi
+    STA TPI1_PA
+
+
 L_0627:
-    LDA $E840
-    LSR ;A
-    BCS L_0627         ;Wait for SoftBox to set !NDAC_IN = 1 (data accepted)
+;    INC SCREEN+$0012   ;XXX Debug
+
+    BIT TPI1_PA
+    BPL L_0627         ;Wait for NDAC=hi
+
+    ;Switch IEEE to Input
+    LDA #$00
+    STA CIA2_DDRA     ;Data lines all inputs
+
+    LDA #%11001111    ;PA7 NRFD  Output
+                      ;PA6 NDAC  Output
+                      ;PA5 EOI   Input
+                      ;PA4 DAV   Input
+                      ;PA3 ATN   Output
+                      ;PA2 REN   Output
+                      ;PA1 TE    Output
+                      ;PA0 DC    Output
+    STA TPI1_DDRA
+
+    LDA #%11001000    ;NRFD=hi, NDAC=hi, ATN=hi, REN=lo, TE=lo, DC=lo
+    STA TPI1_PA
+
     RTS
 
 GET_KEY:
@@ -402,6 +477,7 @@ CHECK_CIA:
 CHECK_IEEE:
     CMP #$02            ;IRQ from IEEE-488?
     BNE IRQ_50HZ
+    STA GOT_SRQ
     JMP IRQ_DONE
 
 ;IRQ must have been caused by 50/60 Hz
@@ -487,16 +563,16 @@ L_06D2:
 
 L_06E2:
 ;http://www.von-bassewitz.de/uz/oldcomputers/p500/rom500.s.html
-;
-P500_FC95:
-    LDA TPI1_PB
-    BPL P500_LFCA3     ;Cassette switch off?
-    ORA #$40           ;Set bit 6 for cassette motor
-    BNE P500_LFCAA
-P500_LFCA3:
-    AND #$BF           ;Clear bit 6 for cassette motor
-P500_LFCAA:
-    STA TPI1_PB        ;Turn cassette motor on or off
+;--
+;--P500_FC95:
+;--    LDA TPI1_PB
+;--    BPL P500_LFCA3     ;Cassette switch off?
+;--    ORA #$40           ;Set bit 6 for cassette motor
+;--    BNE P500_LFCAA
+;--P500_LFCA3:
+;--    AND #$BF           ;Clear bit 6 for cassette motor
+;--P500_LFCAA:
+;--    STA TPI1_PB        ;Turn cassette motor on or off
 
 IRQ_DONE:
     STA TPI1_AIR       ;Write to the AIR to tell the TPI that the
