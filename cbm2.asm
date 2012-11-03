@@ -18,6 +18,7 @@ TPI2_PA     = $DF00   ;6525 TPI #1 Port A - Keyboard Row select LO
 TPI2_PB     = $DF01   ;6525 TPI #1 Port B - Keyboard Row select HI
 TPI2_PC     = $DF02   ;6525 TPI #1 Port C - Keyboard Col read
 CHROUT      = $FFD2   ;KERNAL Send a char to the current output device
+SCRORG      = $FFED   ;KERNAL Get screen dimensions
 ;
 EXE_REG     = $00     ;6509 Execute Register
 IND_REG     = $01     ;6509 Indirect Register
@@ -89,10 +90,8 @@ INIT:
 INIT_4080:
 ;Detect 40/80 column screen and store in X_WIDTH
 ;
-;TODO: Detect P500 and set to 40 columns.
-;
-    LDA #$50           ;80 column screen
-    STA X_WIDTH
+    JSR SCRORG         ;Returns X=width, Y=height
+    STX X_WIDTH
 
 INIT_TERM:
     LDA #$1A           ;Load #$1A = CTRL_1A Clear Screen
