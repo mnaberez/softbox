@@ -5,7 +5,8 @@ IRQVECL     = $0300   ;KERNAL IRQ vector LO
 IRQVECH     = $0301   ;KERNAL IRQ vector HI
 KEYBUF      = $03AB   ;Keyboard Input Buffer
 SCREEN      = $D000   ;Start of screen RAM
-VIC         = $D800   ;6567/6569 VIC-II (P500 only)
+VIC         = $D800   ;6567/6569 VIC-II (P-series)
+CRTC        = $D800   ;6545 CRTC (B-series)
 CIA2_PA     = $DC00   ;6526 CIA #2 Port A
 CIA2_DDRA   = $DC02   ;6526 CIA #2 Data Direction Register A
 TPI1_PA     = $DE00   ;6525 TPI #1 Port A
@@ -89,28 +90,16 @@ INIT:
     STA MOVETO_CNT     ;Move-to counter = not in a move-to seq
 
 INIT_4080:
-;Detect 40/80 column screen and store in X_WIDTH
+;Detect 40/80 column screen and store in X_WIDTH.
+;Initialize VIC-II registers for P500.
 ;
     JSR SCRORG         ;Returns X=width, Y=height
     STX X_WIDTH
     CPX #$28           ;40 column screen?
-    BNE INIT_TERM      ;  Skip P500 init
-
-INIT_P500:
-;VIC-II initialization for P500 only
-;
-    LDA #$00           ;Black
-    STA VIC+$20        ;Border color
-    STA VIC+$21        ;Background color
-    LDX #$00
-    LDA #$0F           ;Light Grey
-INIT_P500_1:
-    STA SCREEN+$400,X  ;Color RAM
-    STA SCREEN+$500,X
-    STA SCREEN+$600,X
-    STA SCREEN+$700,X
-    INX
-    BNE INIT_P500_1
+    BNE INIT_TERM      ;  No: Skip P500 init
+    LDA #$00
+    STA VIC+$20        ;VIC-II Border color = Black
+    STA VIC+$21        ;VIC-II Background color = Black
 
 INIT_TERM:
     LDA #$1A           ;Load #$1A = CTRL_1A Clear Screen
@@ -879,20 +868,22 @@ CTRL_1A:
     STX REVERSE        ;Reverse video off
     LDA #$20           ;Space character
     LDY X_WIDTH
-CTRL_1A_LOOP:
-    STA SCREEN,X
-    STA SCREEN+$100,X
-    STA SCREEN+$200,X
+CTRL_1A_1:
+    LDA #$20           ;Space character
+    STA SCREEN,X       ;Fill first 1K
+    STA SCREEN+$100,X  ;  This is always screen RAM on both B-series
+    STA SCREEN+$200,X  ;  and P-series machines.
     STA SCREEN+$300,X
-    CPY #$50           ;80 columns?
-    BNE CTRL_1A_NEXT   ;  No: Do not write over P500 color RAM
-    STA SCREEN+$400,X
-    STA SCREEN+$500,X
-    STA SCREEN+$600,X
+    CPY #$28           ;40 columns?
+    BNE CTRL_1A_2      ;  No:  B-series, continue to fill with space char.
+    LDA #$0F           ;  Yes: P-series, fill second 1K with Light Grey.
+CTRL_1A_2:
+    STA SCREEN+$400,X  ;Fill second 1K
+    STA SCREEN+$500,X  ;  On B-series, this is more screen RAM.
+    STA SCREEN+$600,X  ;  On P-series, this is the VIC-II color RAM.
     STA SCREEN+$700,X
-CTRL_1A_NEXT:
     INX
-    BNE CTRL_1A_LOOP
+    BNE CTRL_1A_1
     RTS
 
 CTRL_0D:
