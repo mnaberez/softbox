@@ -5,6 +5,7 @@ IRQVECL     = $0300   ;KERNAL IRQ vector LO
 IRQVECH     = $0301   ;KERNAL IRQ vector HI
 KEYBUF      = $03AB   ;Keyboard Input Buffer
 SCREEN      = $D000   ;Start of screen RAM
+VIC         = $D800   ;6567/6569 VIC-II (P500 only)
 CIA2_PA     = $DC00   ;6526 CIA #2 Port A
 CIA2_DDRA   = $DC02   ;6526 CIA #2 Data Direction Register A
 TPI1_PA     = $DE00   ;6525 TPI #1 Port A
@@ -92,6 +93,24 @@ INIT_4080:
 ;
     JSR SCRORG         ;Returns X=width, Y=height
     STX X_WIDTH
+    CPX #$28           ;40 column screen?
+    BNE INIT_TERM      ;  Skip P500 init
+
+INIT_P500:
+;VIC-II initialization for P500 only
+;
+    LDA #$00           ;Black
+    STA VIC+$20        ;Border color
+    STA VIC+$21        ;Background color
+    LDX #$00
+    LDA #$0F           ;Light Grey
+INIT_P500_1:
+    STA SCREEN+$400,X  ;Color RAM
+    STA SCREEN+$500,X
+    STA SCREEN+$600,X
+    STA SCREEN+$700,X
+    INX
+    BNE INIT_P500_1
 
 INIT_TERM:
     LDA #$1A           ;Load #$1A = CTRL_1A Clear Screen
@@ -99,7 +118,7 @@ INIT_TERM:
     JSR CTRL_06        ;Clear all tab stops
 
 
-;TODO: Temporary hack keyboard debugging
+;TODO: Temporary hack for keyboard debugging
 ;Remove this loop for actual IEEE-488 operation
 FOREVER:
     JSR GET_KEY        ;Wait for a key
@@ -776,6 +795,11 @@ CTRL_15:
 CTRL_16:
 ;Go to lowercase mode
 ;
+    LDA X_WIDTH             ;XXX Fix CTRL_16 for P500
+    CMP #$50
+    BEQ CTRL_16_1
+    RTS
+CTRL_16_1:
     LDA TPI1_CR
     AND #%11101111
     STA TPI1_CR             ;Graphic mode = lowercase
@@ -849,22 +873,26 @@ CTRL_1E:
 CTRL_1A:
 ;Clear screen
 ;
-    LDX #$00      ; Home cursor
+    LDX #$00           ; Home cursor
     STX CURSOR_X
     STX CURSOR_Y
-    STX REVERSE   ;Reverse video off
-    LDA #$20      ;Space character
-L_0829:
+    STX REVERSE        ;Reverse video off
+    LDA #$20           ;Space character
+    LDY X_WIDTH
+CTRL_1A_LOOP:
     STA SCREEN,X
     STA SCREEN+$100,X
     STA SCREEN+$200,X
     STA SCREEN+$300,X
+    CPY #$50           ;80 columns?
+    BNE CTRL_1A_NEXT   ;  No: Do not write over P500 color RAM
     STA SCREEN+$400,X
     STA SCREEN+$500,X
     STA SCREEN+$600,X
     STA SCREEN+$700,X
+CTRL_1A_NEXT:
     INX
-    BNE L_0829
+    BNE CTRL_1A_LOOP
     RTS
 
 CTRL_0D:
