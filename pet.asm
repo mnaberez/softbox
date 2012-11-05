@@ -86,13 +86,10 @@ INIT:
     LDA #$0A
     STA REPEATCOUNT1   ;Store #$0A in REPEATCOUNT1
     CLI                ;Enable interrupts again
-    JSR CTRL_16        ;Go to lowercase mode
-    JSR CTRL_02        ;Go to 7-bit character mode
     LDA #$14
     STA BLINK_CNT      ;Initialize cursor blink countdown
     LDA #$00
     STA CURSOR_OFF     ;Cursor state = show the cursor
-    STA MOVETO_CNT     ;Move-to counter = not in a move-to seq
 
 INIT_4080:
 ;Detect 40/80 column screen and store in X_WIDTH
@@ -120,9 +117,13 @@ INIT_4080:
     ASL X_WIDTH        ;  Yes: X_WIDTH = 80 characters
 
 INIT_TERM:
+    JSR CTRL_16        ;Go to lowercase mode
+    JSR CTRL_02        ;Go to 7-bit character mode
+    JSR CTRL_06        ;Clear all tab stops
+    LDA #$00
+    STA MOVETO_CNT     ;Move-to counter = not in a move-to seq
     LDA #$1A           ;Load #$1A = CTRL_1A Clear Screen
     JSR PROCESS_BYTE   ;Call into terminal to execute clear screen
-    JSR CTRL_06        ;Clear all tab stops
 
 INIT_IEEE:
 ;
