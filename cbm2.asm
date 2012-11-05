@@ -50,7 +50,8 @@ JIFFY2      = $18     ;Jiffy counter (MSB)
 JIFFY1      = $19     ;Jiffy counter
 JIFFY0      = $1A     ;Jiffy counter (LSB)
 BLINK_CNT   = $1B     ;Counter used for cursor blink timing
-GOT_SRQ     = $1C
+GOT_SRQ     = $1C     ;IEEE-488 SRQ detect: zero=no SRQ, nonzero=SRQ pending
+UPPERCASE   = $1D     ;Uppercase graphics flag (uppercase on = 1)
 
 ;Configure VICE
 ;  Settings > CBM2 Settings > Memory > Enable Bank 15 $4000-5FFF RAM
@@ -766,8 +767,7 @@ L_07AC:
     TXA
     EOR #$40              ;Flip bit 6
     TAX
-    LDA TPI1_CR           ;Bit 4 on = uppercase, off = lowercase
-    AND #%00010000
+    LDA UPPERCASE
     BEQ L_07C6            ;Branch if lowercase mode
     TXA
     AND #$1F
@@ -783,22 +783,35 @@ L_07CA:
 CTRL_15:
 ;Go to uppercase mode
 ;
+    LDA #$01
+    STA UPPERCASE         ;Set flag to indicate uppercase = on
+    LDA X_WIDTH
+    CMP #$28              ;40 columns?
+    BEQ CTRL_15_1         ;  Yes: branch to P-series routine
     LDA TPI1_CR
     ORA #%00010000
-    STA TPI1_CR             ;Graphic mode = uppercase
+    STA TPI1_CR           ;B-series graphic mode = uppercase
+    RTS
+CTRL_15_1:
+    LDA #$41
+    STA VIC+$18           ;P-series graphic mode = uppercase
     RTS
 
 CTRL_16:
 ;Go to lowercase mode
 ;
-    LDA X_WIDTH             ;XXX Fix CTRL_16 for P500
-    CMP #$50
-    BEQ CTRL_16_1
-    RTS
-CTRL_16_1:
+    LDA #$00
+    STA UPPERCASE         ;Set flag to indicate uppercase = off
+    LDA X_WIDTH
+    CMP #$28              ;40 columns?
+    BEQ CTRL_16_1         ;  Yes: branch to P-series routine
     LDA TPI1_CR
     AND #%11101111
-    STA TPI1_CR             ;Graphic mode = lowercase
+    STA TPI1_CR           ;B-series graphic mode = lowercase
+    RTS
+CTRL_16_1:
+    LDA #$43
+    STA VIC+$18           ;P-series graphic mode = lowercase
     RTS
 
 CTRL_08:
@@ -1399,11 +1412,10 @@ KEY_SH_CODES:
 
 ;---- these must be normal shifted keys or Graphics?
     ;PHA                    ;Push key to stack
-    ;LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
-    ;LSR ;A                 ;shift
-    ;LSR ;A                 ;shift - check bit 1
+    ;LDA UPPERCASE          ;Bit 0 off = lowercase, on = uppercase
+    ;ROR ;A                 ;Rotate uppercase flag bit into carry
     ;PLA                    ;Pull original key from stack
-    ;BCS KEY_SET            ;Branch if lowercase mode
+    ;BCC KEY_SET            ;Branch if lowercase mode
 
     ORA #$80               ;Set the HIGH BIT
     RTS                    ;Return with character code in A?
