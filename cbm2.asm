@@ -872,7 +872,6 @@ CTRL_1A:
     STX CURSOR_X
     STX CURSOR_Y
     STX REVERSE        ;Reverse video off
-    LDA #$20           ;Space character
     LDY X_WIDTH
 CTRL_1A_1:
     LDA #$20           ;Space character
