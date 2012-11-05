@@ -53,13 +53,19 @@ BLINK_CNT   = $1B     ;Counter used for cursor blink timing
 GOT_SRQ     = $1C
 
 ;Configure VICE
-;  Settings > CBM2 Settings > Memory > Enable Bank 15 $C000-CFFF RAM
+;  Settings > CBM2 Settings > Memory > Enable Bank 15 $4000-5FFF RAM
 ;
-;Load and Run
-;  BLOAD"CBM2.PRG",B15
-;  BANK 15 : SYS 49152
+;B-series
+;  BLOAD"CBM2.PRG",B15  ;BLOAD into Bank 15
+;  SYS 16384            ;Start terminal
+;
+;P-series
+;  SYS 4                ;Start monitor
+;  L"CBM2.PRG",08       ;"08" is the device number in hex
+;  X                    ;Exit monitor
+;  SYS 16384            ;Start terminal
 
-    *=$C000
+    *=$4000
 
 INIT:
     SEI                ;Disable interrupts
