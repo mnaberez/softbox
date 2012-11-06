@@ -290,7 +290,7 @@ HANDSHAKE:
 DISPATCH_COMMAND:
     TXA                ;Recall the original command byte from X
     ROR ;A
-    BCC DO_KEY_AVAIL   ;Bit 0: Key availability
+    BCC MAIN_LOOP      ;Bit 0: Key availability
     ROR ;A
     BCC DO_GET_KEY     ;Bit 1: Wait for a key and send it
     ROR ;A
@@ -301,10 +301,6 @@ DISPATCH_COMMAND:
     BCC DO_READ_MEM    ;Bit 4: Transfer from PET memory to the SoftBox
     JMP DO_WRITE_MEM   ;Bit 5: Transfer from the SoftBox to PET memory
 
-DO_KEY_AVAIL:
-;    INC SCREEN         ;XXX Debug
-    JMP MAIN_LOOP
-
 DO_GET_KEY:
 ;Wait for a key and send it to the SoftBox.
 ;
@@ -314,18 +310,6 @@ DO_GET_KEY:
     JSR GET_KEY         ;Block until we get a key.  Key will be in A.
     JSR IEEE_SEND_BYTE  ;Send the key to the Softbox.
     JMP MAIN_LOOP
-
-DO_JUMP:
-;    INC SCREEN+$0002   ;XXX Debug
-    JMP DO_JUMP
-
-DO_READ_MEM:
-;    INC SCREEN+$0003   ;XXX Debug
-    JMP DO_READ_MEM
-
-DO_WRITE_MEM:
-;    INC SCREEN+$0004   ;XXX Debug
-    JMP DO_WRITE_MEM
 
 DO_TERMINAL:
 ;Write to the terminal screen
@@ -338,6 +322,78 @@ DO_TERMINAL:
     JSR PROCESS_BYTE
     JMP MAIN_LOOP
 
+DO_JUMP:
+;Jump to an address
+    JSR IEEE_GET_BYTE  ;Get byte
+    STA TARGET_LO      ; -> Command vector lo
+    JSR IEEE_GET_BYTE  ;Get byte
+    STA TARGET_HI      ; -> Command vector hi
+    LDA TPI1_PA
+    ORA #%01000000
+    STA TPI1_PA        ;NDAC=hi
+    JSR JUMP_CMD       ;Jump to the command through TARGET_LO
+    JMP MAIN_LOOP
+
+DO_READ_MEM:
+;Transfer bytes from PET memory to the SoftBox
+    JSR IEEE_GET_BYTE
+    STA XFER_LO
+    JSR IEEE_GET_BYTE
+    STA XFER_HI
+    JSR IEEE_GET_BYTE
+    STA TARGET_LO
+    JSR IEEE_GET_BYTE
+    STA TARGET_HI
+    LDY #$00
+L_05A5:
+    DEY
+    BNE L_05A5   ; delay
+L_05A8:
+    LDA (TARGET_LO),Y
+    JSR IEEE_SEND_BYTE
+    INY
+    BNE L_05B2
+    INC TARGET_HI
+L_05B2:
+    LDA XFER_LO
+    SEC
+    SBC #$01
+    STA XFER_LO
+    LDA XFER_HI
+    SBC #$00
+    STA XFER_HI
+    ORA XFER_LO
+    BNE L_05A8
+    JMP MAIN_LOOP
+
+DO_WRITE_MEM:
+;Transfer bytes from the SoftBox to PET memory
+    JSR IEEE_GET_BYTE
+    STA XFER_LO
+    JSR IEEE_GET_BYTE
+    STA XFER_HI
+    JSR IEEE_GET_BYTE
+    STA TARGET_LO
+    JSR IEEE_GET_BYTE
+    STA TARGET_HI
+    LDY #$00
+L_0571:
+    JSR IEEE_GET_BYTE
+    STA (TARGET_LO),Y
+    INY
+    BNE L_057B
+    INC TARGET_HI
+L_057B:
+    LDA XFER_LO
+    SEC
+    SBC #$01
+    STA XFER_LO
+    LDA XFER_HI
+    SBC #$00
+    STA XFER_HI
+    ORA XFER_LO
+    BNE L_0571
+    JMP MAIN_LOOP
 
 IEEE_GET_BYTE:
 ;Receive a byte from the SoftBox over the IEEE-488 bus.
