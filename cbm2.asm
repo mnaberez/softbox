@@ -76,6 +76,9 @@ INIT:
     STA IRQVECL
     LDA #>IRQ_HANDLER
     STA IRQVECH        ;Install our interrupt handler
+    LDA TPI1_PB
+    AND #%10111111
+    STA TPI1_PB        ;Turn cassette motor off
     LDA #$00
     STA KEYCOUNT       ;Reset key counter (no keys hit)
     STA RTC_JIFFIES    ;Reset software real time clock
@@ -569,30 +572,16 @@ L_06BF:
 IRQ_KEY:
 L_06D2:
     JSR SCAN_KEYB       ;Scan the keyboard
-    BEQ L_06E2          ;Nothing to do if no key was pressed.
+    BEQ IRQ_DONE        ;Nothing to do if no key was pressed.
     LDX KEYCOUNT
     CPX #$50            ;Is the keyboard buffer full?
-    BEQ L_06E2          ;  Yes:  Nothing we can do.  Forget the key.
+    BEQ IRQ_DONE        ;  Yes:  Nothing we can do.  Forget the key.
     STA KEYBUF,X        ;  No:   Store the key in the buffer
     INC KEYCOUNT        ;        and increment the keycount.
-
-L_06E2:
-;http://www.von-bassewitz.de/uz/oldcomputers/p500/rom500.s.html
-;--
-;--P500_FC95:
-;--    LDA TPI1_PB
-;--    BPL P500_LFCA3     ;Cassette switch off?
-;--    ORA #$40           ;Set bit 6 for cassette motor
-;--    BNE P500_LFCAA
-;--P500_LFCA3:
-;--    AND #$BF           ;Clear bit 6 for cassette motor
-;--P500_LFCAA:
-;--    STA TPI1_PB        ;Turn cassette motor on or off
 
 IRQ_DONE:
     STA TPI1_AIR       ;Write to the AIR to tell the TPI that the
                        ;interrupt service has concluded.
-
     PLA
     STA IND_REG        ;Restore 6509 indirect register
     PLA
