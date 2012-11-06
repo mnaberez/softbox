@@ -254,7 +254,7 @@ DO_JUMP:
     STA TARGET_HI      ; -> Command vector hi
     LDX #$3C
     STX PIA2NDAC       ;Set !NDAC_OUT = 1 to indicate we accept the data
-    JSR JUMP_CMD       ;Jump to the command through CMDVECL
+    JSR JUMP_CMD       ;Jump to the command through TARGET_LO
     JMP MAIN_LOOP
 
 DO_READ_MEM:
