@@ -767,6 +767,7 @@ ctrl_1a:
     jsr ctrl_0f        ;Reverse video off
     jsr ctrl_1e        ;Home cursor
     lda #$20           ;Space character
+    ldx #$00
 l_0829:
     sta screen,x
     sta screen+$100,x

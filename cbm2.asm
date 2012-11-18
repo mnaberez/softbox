@@ -927,6 +927,7 @@ ctrl_1a:
 ;
     jsr ctrl_0f        ;Reverse video off
     jsr ctrl_1e        ;Home cursor
+    ldx #$00
     ldy x_width
 ctrl_1a_1:
     lda #$20           ;Space character
