@@ -21,8 +21,8 @@ tpi2_pc     = $df02   ;6525 TPI #1 Port C - Keyboard Col read
 chrout      = $ffd2   ;KERNAL Send a char to the current output device
 scrorg      = $ffed   ;KERNAL Get screen dimensions
 ;
-exe_reg     = $00     ;6509 Execute Register
-ind_reg     = $01     ;6509 Indirect Register
+e6509       = $00     ;6509 Execute Register
+i6509       = $01     ;6509 Indirect Register
 scrpos_lo   = $02     ;Pointer to current screen RAM position - LO
 scrpos_hi   = $03     ;Pointer to current screen RAM position - HI
 cursor_x    = $04     ;Current X position: 0-79
@@ -70,7 +70,7 @@ uppercase   = $1d     ;Uppercase graphics flag (uppercase on = 1)
 init:
     sei                ;Disable interrupts
     lda #$0f
-    sta ind_reg        ;Bank 15 (System Bank)
+    sta i6509          ;Bank 15 (System Bank)
     lda #<irq_handler
     sta cinv_lo
     lda #>irq_handler
@@ -526,7 +526,7 @@ irq_handler:
 ;which pushes A, X, and Y onto the stack and then executes JMP (cinv_lo).
 ;We install this routine, IRQ_HANDLER, into cinv_lo during init.
 ;
-    lda ind_reg
+    lda i6509
     pha                 ;Preserve 6509 Indirect Register
 
     lda tpi1_air        ;Read the AIR to find the active interrupt and
@@ -634,15 +634,15 @@ irq_key:
     inc keycount        ;        and increment the keycount.
 
 irq_done:
-    sta tpi1_air       ;Write to the AIR to tell the TPI that the
-                       ;interrupt service has concluded.
+    sta tpi1_air        ;Write to the AIR to tell the TPI that the
+                        ;interrupt service has concluded.
     pla
-    sta ind_reg        ;Restore 6509 indirect register
+    sta i6509           ;Restore 6509 indirect register
     pla
-    tay                ;Restore Y
+    tay                 ;Restore Y
     pla
-    tax                ;Restore X
-    pla                ;Restore A
+    tax                 ;Restore X
+    pla                 ;Restore A
     rti
 
 
