@@ -925,10 +925,8 @@ ctrl_1e:
 ctrl_1a:
 ;Clear screen
 ;
-    ldx #$00           ; Home cursor
-    stx cursor_x
-    stx cursor_y
-    stx reverse        ;Reverse video off
+    jsr ctrl_0f        ;Reverse video off
+    jsr ctrl_1e        ;Home cursor
     ldy x_width
 ctrl_1a_1:
     lda #$20           ;Space character
