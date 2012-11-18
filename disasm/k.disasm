@@ -192,14 +192,14 @@ $04FF: 8D 21 E8  STA PIA2NDAC       ;Set !NDAC_OUT = 0 to indicate we do not acc
 
 $0502: AE 20 E8  LDX PIA2IEEE       ;Read IEEE data byte with command from SoftBox
                                     ;
-                                    ; Bit 7: PET to SoftBox: Key not available
-                                    ; Bit 6: PET to SoftBox: Key available
-                                    ; Bit 5: SoftBox to PET: Transfer from the SoftBox to PET memory
-                                    ; Bit 4: SoftBox to PET: Transfer from PET memory to the SoftBox
-                                    ; Bit 3: SoftBox to PET: Jump to an address
-                                    ; Bit 2: SoftBox to PET: Write to the terminal screen
-                                    ; Bit 1: SoftBox to PET: Wait for a key and send it
-                                    ; Bit 0: SoftBox to PET: Key available?
+                                    ; Bit 7: CBM to SoftBox: Key not available
+                                    ; Bit 6: CBM to SoftBox: Key available
+                                    ; Bit 5: SoftBox to CBM: Transfer from the SoftBox to CBM memory
+                                    ; Bit 4: SoftBox to CBM: Transfer from CBM memory to the SoftBox
+                                    ; Bit 3: SoftBox to CBM: Jump to an address
+                                    ; Bit 2: SoftBox to CBM: Write to the terminal screen
+                                    ; Bit 1: SoftBox to CBM: Wait for a key and send it
+                                    ; Bit 0: SoftBox to CBM: Key available?
 
 $0505: 8A        TXA                ;Remember the original command byte in X
 $0506: 6A        ROR A
@@ -232,8 +232,8 @@ $052A: 90 0C     BCC DO_TERMINAL    ;Bit 2: Write to the terminal screen
 $052C: 6A        ROR A
 $052D: 90 17     BCC DO_JUMP        ;Bit 3: Jump to an address
 $052F: 6A        ROR A
-$0530: 90 5D     BCC DO_READ_MEM    ;Bit 4: Transfer from PET memory to the SoftBox
-$0532: 4C 5B 05  JMP DO_WRITE_MEM   ;Bit 5: Transfer from the SoftBox to PET memory
+$0530: 90 5D     BCC DO_READ_MEM    ;Bit 4: Transfer from CBM memory to the SoftBox
+$0532: 4C 5B 05  JMP DO_WRITE_MEM   ;Bit 5: Transfer from the SoftBox to CBM memory
 
 JMP_DO_GET_KEY:
 $0535: 4C C6 05  JMP DO_GET_KEY
@@ -258,7 +258,7 @@ $0555: 20 1B 07  JSR JUMP_CMD       ;Jump to the command through TARGET_LO
 $0558: 4C E7 04  JMP MAIN_LOOP
 
 DO_WRITE_MEM:
-;Transfer from the SoftBox to PET memory
+;Transfer bytes from the SoftBox to CBM memory
 $055B: 20 CF 05  JSR IEEE_GET_BYTE
 $055E: 85 11     STA XFER_LO
 $0560: 20 CF 05  JSR IEEE_GET_BYTE
@@ -287,7 +287,7 @@ $058A: D0 E5     BNE L_0571
 $058C: 4C E7 04  JMP MAIN_LOOP
 
 DO_READ_MEM:
-;Transfer bytes from PET memory to the SoftBox
+;Transfer bytes from CBM memory to the SoftBox
 $058F: 20 CF 05  JSR IEEE_GET_BYTE
 $0592: 85 11     STA XFER_LO
 $0594: 20 CF 05  JSR IEEE_GET_BYTE
@@ -322,7 +322,7 @@ DO_GET_KEY:
 ;Wait for a key and send it to the SoftBox.
 ;
 ;At the CP/M "A>" prompt, the SoftBox sends this command and then
-;waits for the PET to answer.
+;waits for the CBM to answer.
 ;
 $05C6: 20 2E 06  JSR GET_KEY         ;Block until we get a key.  Key will be in A.
 $05C9: 20 FB 05  JSR IEEE_SEND_BYTE  ;Send the key to the Softbox.
@@ -411,7 +411,7 @@ $064C: F0 E0     BEQ GET_KEY     ;  No key:  loop until we get one.
 $064E: 60        RTS             ;  Got key: done.  Key is now in A.
 
 IRQ_HANDLER:
-;On the PET, an IRQ occurs at 50 or 60 Hz depending on the power line
+;On the PET/CBM, an IRQ occurs at 50 or 60 Hz depending on the power line
 ;frequency.  The 6502 calls the main IRQ entry point ($E442 on BASIC 4.0)
 ;which pushes A, X, and Y onto the stack and then executes JMP (IRQVECL).
 ;We install this routine, IRQ_HANDLER, into IRQVECL during init.
@@ -1137,7 +1137,7 @@ $09D1: 4C 8D 07  JMP PROCESS_DONE  ;Done.
 
 SCAN_KEYB:
 ;Scan the keyboard.
-; The PET uses a 10x8 keyboard matrix. There are 10 rows, and 8 columns.
+; The PET/CBM uses a 10x8 keyboard matrix. There are 10 rows, and 8 columns.
 ; To scan you select a ROW by writing the ROW NUMBER to the PIA1ROW register. The lower 4 bits are sent to
 ; a 4 to 10 decoder. Then the PAI1COL register is read and each of the 8 bits represent one key in that row.
 ; IMPORTANT!!!! If a key is PRESSED the BIT will be ZERO.

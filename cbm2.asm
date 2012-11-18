@@ -221,14 +221,14 @@ wait_for_srq:
 
     ldx cia2_pa        ;Read IEEE data byte with command from SoftBox
                        ;
-                       ; Bit 7: PET to SoftBox: Key not available
-                       ; Bit 6: PET to SoftBox: Key available
-                       ; Bit 5: SoftBox to PET: Transfer from the SoftBox to PET memory
-                       ; Bit 4: SoftBox to PET: Transfer from PET memory to the SoftBox
-                       ; Bit 3: SoftBox to PET: Jump to an address
-                       ; Bit 2: SoftBox to PET: Write to the terminal screen
-                       ; Bit 1: SoftBox to PET: Wait for a key and send it
-                       ; Bit 0: SoftBox to PET: Key available?
+                       ; Bit 7: CBM to SoftBox: Key not available
+                       ; Bit 6: CBM to SoftBox: Key available
+                       ; Bit 5: SoftBox to CBM: Transfer from the SoftBox to CBM memory
+                       ; Bit 4: SoftBox to CBM: Transfer from CBM memory to the SoftBox
+                       ; Bit 3: SoftBox to CBM: Jump to an address
+                       ; Bit 2: SoftBox to CBM: Write to the terminal screen
+                       ; Bit 1: SoftBox to CBM: Wait for a key and send it
+                       ; Bit 0: SoftBox to CBM: Key available?
 
     txa                ;Remember the original command byte in X
     ror ;A
@@ -297,14 +297,14 @@ dispatch_command:
     ror ;A
     bcc do_jump        ;Bit 3: Jump to an address
     ror ;A
-    bcc do_read_mem    ;Bit 4: Transfer from PET memory to the SoftBox
-    jmp do_write_mem   ;Bit 5: Transfer from the SoftBox to PET memory
+    bcc do_read_mem    ;Bit 4: Transfer from CBM memory to the SoftBox
+    jmp do_write_mem   ;Bit 5: Transfer from the SoftBox to CBM memory
 
 do_get_key:
 ;Wait for a key and send it to the SoftBox.
 ;
 ;At the CP/M "A>" prompt, the SoftBox sends this command and then
-;waits for the PET to answer.
+;waits for the CBM to answer.
 ;
     jsr get_key         ;Block until we get a key.  Key will be in A.
     jsr ieee_send_byte  ;Send the key to the Softbox.
@@ -334,7 +334,7 @@ do_jump:
     jmp main_loop
 
 do_read_mem:
-;Transfer bytes from PET memory to the SoftBox
+;Transfer bytes from CBM memory to the SoftBox
     jsr ieee_get_byte
     sta xfer_lo
     jsr ieee_get_byte
@@ -366,7 +366,7 @@ l_05b2:
     jmp main_loop
 
 do_write_mem:
-;Transfer bytes from the SoftBox to PET memory
+;Transfer bytes from the SoftBox to CBM memory
     jsr ieee_get_byte
     sta xfer_lo
     jsr ieee_get_byte
@@ -521,7 +521,7 @@ l_0649:
     rts             ;  Got key: done.  Key is now in A.
 
 irq_handler:
-;On the PET, an IRQ occurs at 50 or 60 Hz depending on the power line
+;On the PET/CBM, an IRQ occurs at 50 or 60 Hz depending on the power line
 ;frequency.  The 6502 calls the main IRQ entry point ($E442 on BASIC 4.0)
 ;which pushes A, X, and Y onto the stack and then executes JMP (IRQVECL).
 ;We install this routine, IRQ_HANDLER, into IRQVECL during init.
