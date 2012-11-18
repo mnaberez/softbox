@@ -482,7 +482,6 @@ $06CB: 8D 37 0B  STA SCANCODE        ;Store it
 $06CE: A9 02     LDA #$02
 $06D0: 85 01     STA BLINK_CNT       ;Fast cursor blink(?)
 IRQ_KEY:
-L_06D2:
 $06D2: 20 D4 09  JSR SCAN_KEYB       ;Scan the keyboard
                                      ;  An important side effect of SCAN_KEYB is
                                      ;  that it reads PIA1COL.  The read clears

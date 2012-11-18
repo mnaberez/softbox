@@ -625,7 +625,6 @@ l_06bf:
     lda #$02
     sta blink_cnt       ;Fast cursor blink(?)
 irq_key:
-l_06d2:
     jsr scan_keyb       ;Scan the keyboard
     beq irq_done        ;Nothing to do if no key was pressed.
     ldx keycount

@@ -472,7 +472,6 @@ l_06bf:
     lda #$02
     sta blink_cnt       ;Fast cursor blink(?)
 irq_key:
-l_06d2:
     jsr scan_keyb       ;Scan the keyboard
                         ;  An important side effect of SCAN_KEYB is
                         ;  that it reads PIA1COL.  The read clears
