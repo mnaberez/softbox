@@ -840,7 +840,7 @@ l_0870:
     clc             ;  No, continue
     lda scrpos_lo   ;Current screen position
     adc x_width     ;Add the line width
-    sta scrpos_lo     ;Save it
+    sta scrpos_lo   ;Save it
     bcc l_0880      ;Need to update HI?
     inc scrpos_hi   ;  Yes, increment HI pointer
 l_0880:
@@ -1068,9 +1068,8 @@ calc_scrpos:
     asl ;a
     rol scrpos_hi
     sta scrpos_lo
-    lda x_width
-    cmp #$50
-    bne l_09a8
+    bit x_width
+    bvc l_09a8
     asl scrpos_lo
     rol scrpos_hi
 l_09a8:
@@ -1166,10 +1165,10 @@ debounce:
 scan_col:
     lsr ;a                 ;Shift byte RIGHT leaving CARRY flag set if it is a "1"
     pha                    ;Push it to the stack
-    bcs nextcol            ;Is the BIT a "1"? Yes. Means key was NOT pressed. Bypass testing
-    lda x_width            ; No, Need to check it.Check the terminal width
-    cmp #$50               ;Is this an 80 column screen?
-    bne skip40
+    bcs nextcol            ;Continue to next col if no key was detected
+
+    bit x_width            ;80 columns?
+    bvc skip40
     lda business_keys,x    ;  Yes, read from Business keyboard table
     jmp got_row
 skip40:

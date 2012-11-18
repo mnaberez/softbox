@@ -828,9 +828,8 @@ ctrl_15:
 ;
     lda #$01
     sta uppercase         ;Set flag to indicate uppercase = on
-    lda x_width
-    cmp #$28              ;40 columns?
-    beq ctrl_15_1         ;  Yes: branch to P-series routine
+    bit x_width           ;40 columns?
+    bvc ctrl_15_1         ;  Yes: branch to P-series routine
     lda tpi1_cr
     ora #%00010000
     sta tpi1_cr           ;B-series graphic mode = uppercase
@@ -845,9 +844,8 @@ ctrl_16:
 ;
     lda #$00
     sta uppercase         ;Set flag to indicate uppercase = off
-    lda x_width
-    cmp #$28              ;40 columns?
-    beq ctrl_16_1         ;  Yes: branch to P-series routine
+    bit x_width           ;40 columns?
+    bvc ctrl_16_1         ;  Yes: branch to P-series routine
     lda tpi1_cr
     and #%11101111
     sta tpi1_cr           ;B-series graphic mode = lowercase
@@ -928,16 +926,15 @@ ctrl_1a:
     jsr ctrl_0f        ;Reverse video off
     jsr ctrl_1e        ;Home cursor
     ldx #$00
-    ldy x_width
 ctrl_1a_1:
     lda #$20           ;Space character
     sta screen,x       ;Fill first 1K
     sta screen+$100,x  ;  This is always screen RAM on both B-series
     sta screen+$200,x  ;  and P-series machines.
     sta screen+$300,x
-    cpy #$28           ;40 columns?
-    bne ctrl_1a_2      ;  No:  B-series, continue to fill with space char.
-    lda #$0f           ;  Yes: P-series, fill second 1K with Light Grey.
+    bit x_width        ;80 columns?
+    bvs ctrl_1a_2      ;  Yes: B-series, continue to fill with space char.
+    lda #$0f           ;  No:  P-series, fill second 1K with Light Grey.
 ctrl_1a_2:
     sta screen+$400,x  ;Fill second 1K
     sta screen+$500,x  ;  On B-series, this is more screen RAM.
@@ -1234,9 +1231,8 @@ calc_scrpos:
     asl ;a
     rol scrpos_hi
     sta scrpos_lo
-    lda x_width
-    cmp #$50
-    bne l_09a8
+    bit x_width
+    bvc l_09a8
     asl scrpos_lo
     rol scrpos_hi
 l_09a8:
