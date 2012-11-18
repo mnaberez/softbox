@@ -22,6 +22,9 @@ File.readlines(filename).each do |line|
   #   INIT_4080:
   #   BLINK_CNT = $01  ;Counter used for cursor blink timing
   if line =~ /^[a-z]/i
+    label, comment = line.split(";", 2)
+    line = label.downcase
+    line += ";#{comment}" if comment
     puts line
     next
   end
@@ -44,7 +47,7 @@ File.readlines(filename).each do |line|
   # Byte directive
   #   .BYT AA,AA,AA,AA,AA,AA,AA,AA  ;Filler
   if line.start_with?(".BYT")
-    bytelist, comment = line.split(";",2)
+    bytelist, comment = line.split(";", 2)
     line = "!byte " +
       bytelist.scan(/([\dA-F]{2})/).flatten.map{|b| "$" + b}.join(",")
     line += " ; #{comment}" if comment
@@ -70,12 +73,14 @@ File.readlines(filename).each do |line|
   # Instruction
   #   STA X_WIDTH  ;X_WIDTH = 40 characters
   else
-    line.gsub! /ASL A ?/, "ASL ;A"
-    line.gsub! /LSR A ?/, "LSR ;A"
-    line.gsub! /ROL A ?/, "ROL ;A"
-    line.gsub! /ROR A ?/, "ROR ;A"
+    line.gsub! /ASL A ?/, "asl ;a"
+    line.gsub! /LSR A ?/, "lsr ;a"
+    line.gsub! /ROL A ?/, "rol ;a"
+    line.gsub! /ROR A ?/, "ror ;a"
 
-    line = "    " + line
+    instruct, comment = line.split(";", 2)
+    line = "    " + instruct.downcase
+    line += ";#{comment}" if comment
   end
 
   puts line
