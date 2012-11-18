@@ -72,7 +72,7 @@ File.readlines(filename).each do |line|
   else
     line.gsub! /ASL A ?/, "ASL ;A"
     line.gsub! /LSR A ?/, "LSR ;A"
-    line.gsub! /ROL A ?/, "ROR ;A"
+    line.gsub! /ROL A ?/, "ROL ;A"
     line.gsub! /ROR A ?/, "ROR ;A"
 
     line = "    " + line
