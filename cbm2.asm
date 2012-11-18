@@ -23,12 +23,12 @@ scrorg      = $ffed   ;KERNAL Get screen dimensions
 ;
 exe_reg     = $00     ;6509 Execute Register
 ind_reg     = $01     ;6509 Indirect Register
-scnposl     = $02     ;Pointer to current screen -LO
-scnposh     = $03     ;Pointer to current screen -HI
+scrpos_lo   = $02     ;Pointer to current screen RAM position - LO
+scrpos_hi   = $03     ;Pointer to current screen RAM position - HI
 cursor_x    = $04     ;Current X position: 0-79
 cursor_y    = $05     ;Current Y position: 0-24
 cursor_off  = $06     ;Cursor state: zero = show, nonzero = hide
-scncode_tmp = $07     ;Temporary storage for the last screen code
+scrcode_tmp = $07     ;Temporary storage for the last screen code
 keycount    = $08     ;Number of keys in the buffer at keyd
 x_width     = $09     ;Width of X in characters (40 or 80)
 reverse     = $0a     ;Reverse video flag (reverse on = 1)
@@ -596,10 +596,10 @@ blink_cursor:
     bne l_069f          ;Not time to blink? Done.
     lda #$14
     sta blink_cnt       ;Reset cursor blink countdown
-    jsr calc_scnpos
-    lda (scnposl),y     ;Read character at cursor
+    jsr calc_scrpos
+    lda (scrpos_lo),y   ;Read character at cursor
     eor #$80            ;Flip the REVERSE bit
-    sta (scnposl),y     ;Write it back
+    sta (scrpos_lo),y   ;Write it back
 l_069f:
     lda scancode        ;Get the SCANCODE
     cmp repeatcode      ;Compare to SAVED scancode
@@ -657,9 +657,9 @@ process_byte:
     sta cursor_tmp    ;  Remember it
     lda #$ff
     sta cursor_off    ;Hide the cursor
-    jsr calc_scnpos   ;Calculate screen RAM pointer
-    lda scncode_tmp   ;Get the screen code previously saved
-    sta (scnposl),y   ;  Put it on the screen
+    jsr calc_scrpos   ;Calculate screen RAM pointer
+    lda scrcode_tmp   ;Get the screen code previously saved
+    sta (scrpos_lo),y ;  Put it on the screen
     pla
     and char_mask     ;Mask off bits depending on char mode
     ldx moveto_cnt    ;More bytes to consume for a move-to seq?
@@ -759,18 +759,18 @@ ctrl_1f:
 ;Do nothing
     rts
 
-putscn_then_done:
+putscr_then_done:
 ;Put the screen code in the accumulator on the screen
 ;and then fall through to PROCESS_DONE.
 ;
-    jsr put_scncode
+    jsr put_scrcode
 
 process_done:
 ;This routine always returns to DO_TERMINAL except during init.
 ;
-    jsr calc_scnpos   ;Calculate screen RAM pointer
-    lda (scnposl),y   ;Get the current character on the screen
-    sta scncode_tmp   ;  Remember it
+    jsr calc_scrpos   ;Calculate screen RAM pointer
+    lda (scrpos_lo),y ;Get the current character on the screen
+    sta scrcode_tmp   ;  Remember it
     lda cursor_tmp    ;Get the previous state of the cursor
     sta cursor_off    ;  Restore it
     rts
@@ -792,7 +792,7 @@ put_char:
 ;  $C0-FF -> $40-7F
 ;
     cmp #$40              ;Is it < 64?
-    bcc putscn_then_done  ;  Yes: done, put it on the screen
+    bcc putscr_then_done  ;  Yes: done, put it on the screen
     cmp #$60              ;Is it >= 96?
     bcs l_07a6            ;  Yes: branch to L_07A6
     and #$3f              ;Turn off bits 6 and 7
@@ -814,14 +814,14 @@ l_07ac:
     beq l_07c6            ;Branch if lowercase mode
     txa
     and #$1f
-    jmp putscn_then_done
+    jmp putscr_then_done
 l_07c6:
     txa
-    jmp putscn_then_done
+    jmp putscr_then_done
 l_07ca:
     and #$7f              ;Turn off bit 7
     ora #$40              ;Turn on bit 6
-    jmp putscn_then_done  ;Put it on the screen
+    jmp putscr_then_done  ;Put it on the screen
 
 ctrl_15:
 ;Go to uppercase mode
@@ -880,16 +880,16 @@ ctrl_0b:
     dec cursor_y   ; Y=Y-1
     rts
 
-put_scncode:
+put_scrcode:
 ;Put the screen code in A on the screen at the current cursor position
 ;
     ldx reverse      ;Is reverse video mode on?
     beq l_07fa       ;  No:  leave character alone
     eor #$80         ;  Yes: Flip bit 7 to reverse the character
 l_07fa:
-    jsr calc_scnpos  ;Calculate screen RAM pointer
-    sta (scnposl),y  ;Write the character to the screen
-                     ;Fall through into CTRL_0C to advance cursor
+    jsr calc_scrpos    ;Calculate screen RAM pointer
+    sta (scrpos_lo),y  ;Write the character to the screen
+                       ;Fall through into CTRL_0C to advance cursor
 
 ctrl_0c:
 ;Cursor right
@@ -986,10 +986,10 @@ ctrl_0f:
 ctrl_13:
 ;Clear to end of line
 ;
-    jsr calc_scnpos    ;Leaves CURSOR_X in Y register
+    jsr calc_scrpos    ;Leaves CURSOR_X in Y register
     lda #$20           ;Space character
 l_0863:
-    sta (scnposl),y    ;Write space to screen RAM
+    sta (scrpos_lo),y  ;Write space to screen RAM
     iny                ;X=X+1
     cpy x_width
     bne l_0863         ;Loop until end of line
@@ -1005,20 +1005,20 @@ l_0870:
     cpx #$19        ;Is it 25 (last line of screen?
     beq l_088d      ;  Yes, we're done
     clc             ;  No, continue
-    lda scnposl     ;Current screen position
+    lda scrpos_lo   ;Current screen position
     adc x_width     ;Add the line width
-    sta scnposl     ;Save it
+    sta scrpos_lo   ;Save it
     bcc l_0880      ;Need to update HI?
-    inc scnposh     ;  Yes, increment HI pointer
+    inc scrpos_hi   ;  Yes, increment HI pointer
 l_0880:
     lda #$20        ;SPACE
     ldy #$00        ;Position 0
 l_0884:
-    sta (scnposl),y ;Write a space
-    iny             ;Next character
-    cpy x_width     ;Is it end of line?
-    bne l_0884      ;No, loop back for more on this line
-    beq l_0870      ;Yes, loop back for next line
+    sta (scrpos_lo),y ;Write a space
+    iny               ;Next character
+    cpy x_width       ;Is it end of line?
+    bne l_0884        ;No, loop back for more on this line
+    beq l_0870        ;Yes, loop back for next line
 l_088d:
     rts
 
@@ -1026,28 +1026,28 @@ scroll_up:
 ;Scroll the screen up one line
 ;
     lda #$00
-    sta scnposl
+    sta scrpos_lo
     lda x_width
     sta target_lo
     lda #>screen
-    sta scnposh
+    sta scrpos_hi
     sta target_hi
     ldx #$18
 l_089e:
     ldy #$00
 l_08a0:
     lda (target_lo),y
-    sta (scnposl),y
+    sta (scrpos_lo),y
     iny
     cpy x_width
     bne l_08a0
     lda target_lo
-    sta scnposl
+    sta scrpos_lo
     clc
     adc x_width
     sta target_lo
     lda target_hi
-    sta scnposh
+    sta scrpos_hi
     adc #$00
     sta target_hi
     dex
@@ -1055,7 +1055,7 @@ l_08a0:
     ldy #$00
     lda #$20          ;SPACE
 l_08c1:
-    sta (scnposl),y
+    sta (scrpos_lo),y
     iny
     cpy x_width
     bne l_08c1
@@ -1103,41 +1103,41 @@ l_08ed:
 ctrl_1c:
 ;Insert space at current cursor position
 ;
-    jsr calc_scnpos
+    jsr calc_scrpos
     ldy x_width       ;number of characters on line
     dey
 l_08f4:
     cpy cursor_x
     beq l_0901
     dey
-    lda (scnposl),y    ;read a character from line
+    lda (scrpos_lo),y  ;read a character from line
     iny                ;position to the right
-    sta (scnposl),y    ;write it back
+    sta (scrpos_lo),y  ;write it back
     dey                ;we are counting down to zero
     bne l_08f4         ;loop for another character
 l_0901:
     lda #$20           ; SPACE
-    sta (scnposl),y    ; Write it to current character position
+    sta (scrpos_lo),y  ; Write it to current character position
     rts
 
 ctrl_1d:
 ;Delete a character
 ;
-    jsr calc_scnpos
+    jsr calc_scrpos
     ldy cursor_x
 l_090b:
     iny
     cpy x_width
     beq l_0918
-    lda (scnposl),y    ;read a character from the line
+    lda (scrpos_lo),y  ;read a character from the line
     dey                ;position to the left
-    sta (scnposl),y    ;write it back
+    sta (scrpos_lo),y  ;write it back
     iny                ;we are counting UP
     bne l_090b         ;loop for another character
 l_0918:
     dey
     lda #$20           ;SPACE
-    sta (scnposl),y    ;write it to the current character position
+    sta (scrpos_lo),y  ;write it to the current character position
     rts
 
 ctrl_12:
@@ -1149,12 +1149,12 @@ ctrl_12:
 ;
     lda #$00
     sta cursor_x
-    jsr calc_scnpos
+    jsr calc_scrpos
     lda $02
     clc
     adc x_width
     sta target_lo
-    lda scnposh
+    lda scrpos_hi
     adc #$00
     sta target_hi
     lda #$18
@@ -1184,10 +1184,10 @@ l_0949:
     sta cursor_x
 l_0951:
     lda target_lo
-    cmp scnposl
+    cmp scrpos_lo
     bne l_095d
     lda target_hi
-    cmp scnposh
+    cmp scrpos_hi
     beq l_097c
 l_095d:
     lda target_lo
@@ -1211,41 +1211,41 @@ l_097c:
     ldy #$00
     lda #$20          ;SPACE
 l_0980:
-    sta (scnposl),y
+    sta (scrpos_lo),y
     iny
     cpy x_width
     bne l_0980
     rts
 
-calc_scnpos:
-;Calculate a new pointer to screen memory (SCNPOSL/SCNPOSH)
-;from cursor position at CURSOR_X and CURSOR_Y
+calc_scrpos:
+;Calculate a new pointer to screen memory (scrpos_lo/scrpos_hi)
+;from cursor position at cursor_x and cursor_y.
 ;
     pha
     lda #$00
-    sta scnposh
+    sta scrpos_hi
     lda cursor_y
-    sta scnposl
+    sta scrpos_lo
     asl ;a
     asl ;a
-    adc scnposl
+    adc scrpos_lo
     asl ;a
     asl ;a
-    rol scnposh
+    rol scrpos_hi
     asl ;a
-    rol scnposh
-    sta scnposl
+    rol scrpos_hi
+    sta scrpos_lo
     lda x_width
     cmp #$50
     bne l_09a8
-    asl scnposl
-    rol scnposh
+    asl scrpos_lo
+    rol scrpos_hi
 l_09a8:
     clc
     ldy cursor_x
-    lda scnposh
+    lda scrpos_hi
     adc #>screen
-    sta scnposh
+    sta scrpos_hi
     pla
     rts
 
