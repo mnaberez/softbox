@@ -143,14 +143,14 @@ init_ieee:
 ;6526 CIA #2 ($DC00)
 ;    PA0-7 Data
 ;
-;    LDA TPI1_DDRC
-;    AND #%11111101
-;    STA TPI1_DDRC      ;Disable IRQs from IEEE SRQ
+;    lda tpi1_ddrc
+;    and #%11111101
+;    sta tpi1_ddrc      ;Disable IRQs from IEEE SRQ
 ;
-;    LDA TPI1_PC
-;    AND #%11111101
-;    STA TPI1_PC        ;Clear any previous IRQ from IEEE SRQ
-;    STA TPI1_AIR
+;    lda tpi1_pc
+;    and #%11111101
+;    sta tpi1_pc        ;Clear any previous IRQ from IEEE SRQ
+;    sta tpi1_air
 
     lda #$00
     sta got_srq
@@ -231,7 +231,7 @@ wait_for_srq:
                        ; Bit 0: SoftBox to CBM: Key available?
 
     txa                ;Remember the original command byte in X
-    ror ;A
+    ror ;a
 
     lda #$7f           ;Next byte we'll put on IEEE will be #$80 (key available)
     bcs send_key_avail ;Bypass the key buffer check
@@ -288,15 +288,15 @@ handshake:
 
 dispatch_command:
     txa                ;Recall the original command byte from X
-    ror ;A
+    ror ;a
     bcc main_loop      ;Bit 0: Key availability
-    ror ;A
+    ror ;a
     bcc do_get_key     ;Bit 1: Wait for a key and send it
-    ror ;A
+    ror ;a
     bcc do_terminal    ;Bit 2: Write to the terminal screen
-    ror ;A
+    ror ;a
     bcc do_jump        ;Bit 3: Jump to an address
-    ror ;A
+    ror ;a
     bcc do_read_mem    ;Bit 4: Transfer from CBM memory to the SoftBox
     jmp do_write_mem   ;Bit 5: Transfer from the SoftBox to CBM memory
 
@@ -666,7 +666,7 @@ process_byte:
     bne l_0715        ;  Yes: branch to jump to move-to handler
     cmp #$20          ;Is this byte a control code?
     bcs l_0718        ;  No: branch to put char on screen
-    asl ;A
+    asl ;a
     tax
     lda ctrl_codes,x  ;Load vector from control code table
     sta target_lo
@@ -1226,13 +1226,13 @@ calc_scnpos:
     sta scnposh
     lda cursor_y
     sta scnposl
-    asl ;A
-    asl ;A
+    asl ;a
+    asl ;a
     adc scnposl
-    asl ;A
-    asl ;A
+    asl ;a
+    asl ;a
     rol scnposh
-    asl ;A
+    asl ;a
     rol scnposh
     sta scnposl
     lda x_width
@@ -1347,7 +1347,7 @@ debounce:
 ;---- top of loop to go through each bit returned from scan. Each "0" bit represents a key pressed down
 
 scan_col:
-    lsr ;A                 ;Shift byte RIGHT leaving CARRY flag set if it is a "1"
+    lsr ;a                 ;Shift byte RIGHT leaving CARRY flag set if it is a "1"
     pha                    ;Push it to the stack
     bcs nextcol            ;Is the BIT a "1"? Yes. Means key was NOT pressed. Bypass testing
     ldx keyoffset
@@ -1427,12 +1427,12 @@ key_atoz:
     bne key_check2         ; No,skip to next test
 
 ;---- Handle regular A-Z
-    ;PHA                    ;Yes, push the character code to stack
-    ;LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
-    ;LSR ;A                 ;shift
-    ;LSR ;A                 ;shift to get BIT 2
-    ;PLA                    ;pull the character code from stack
-    ;BCC KEY_CHECK2         ;Branch if uppercase mode
+    ;pha                    ;Yes, push the character code to stack
+    ;lda via_pcr            ;Bit 1 off = uppercase, on = lowercase
+    ;lsr ;a                 ;shift
+    ;lsr ;a                 ;shift to get BIT 2
+    ;pla                    ;pull the character code from stack
+    ;bcc key_check2         ;Branch if uppercase mode
     ora #$20               ;Convert character to UPPERCASE HERE
 
     rts                    ;Return with character code in A
@@ -1455,11 +1455,11 @@ key_sh_codes:
     beq key_ctrl_code
 
 ;---- these must be normal shifted keys or Graphics?
-    ;PHA                    ;Push key to stack
-    ;LDA UPPERCASE          ;Bit 0 off = lowercase, on = uppercase
-    ;ROR ;A                 ;Rotate uppercase flag bit into carry
-    ;PLA                    ;Pull original key from stack
-    ;BCC KEY_SET            ;Branch if lowercase mode
+    ;pha                    ;Push key to stack
+    ;lda uppercase          ;Bit 0 off = lowercase, on = uppercase
+    ;ror ;a                 ;Rotate uppercase flag bit into carry
+    ;pla                    ;Pull original key from stack
+    ;bcc key_set            ;Branch if lowercase mode
 
     ora #$80               ;Set the HIGH BIT
     rts                    ;Return with character code in A?

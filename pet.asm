@@ -107,11 +107,11 @@ init_4080:
     sta x_width        ;X_WIDTH = 40 characters
     lda #$55
     sta screen         ;Store #$55 in first byte of screen RAM.
-    asl ;A
+    asl ;a
     sta screen+$400    ;Store #$AA in first byte of 80 col page.
     cmp screen+$400    ;Does it read back correctly?
     bne init_term      ;  No: we're done, X_WIDTH = 40.
-    lsr ;A
+    lsr ;a
     cmp screen         ;Is the #$55 still intact?
     bne init_term      ;  No: incomplete decoding, X_WIDTH = 40
     asl x_width        ;  Yes: X_WIDTH = 80 characters
@@ -176,7 +176,7 @@ main_loop:
 
 wait_for_srq:
     lda pia2dav        ;Read PIA #2 CRB
-    asl ;A             ;  bit 7 = IRQA1 flag for CA1 (!SRQ_IN detect)
+    asl ;a             ;  bit 7 = IRQA1 flag for CA1 (!SRQ_IN detect)
     bcc wait_for_srq   ;Wait until !SRQ_IN is detected
 
     lda pia2iout       ;Clears IRQA1 flag (!SRQ_IN detect)
@@ -216,15 +216,15 @@ handshake:
 
 dispatch_command:
     txa                ;Recall the original command byte from X
-    ror ;A             ;Bit 0: Key availability was already answered above
+    ror ;a             ;Bit 0: Key availability was already answered above
     bcc main_loop      ;       so we're done
-    ror ;A
+    ror ;a
     bcc do_get_key     ;Bit 1: Wait for a key and send it
-    ror ;A
+    ror ;a
     bcc do_terminal    ;Bit 2: Write to the terminal screen
-    ror ;A
+    ror ;a
     bcc do_jump        ;Bit 3: Jump to an address
-    ror ;A
+    ror ;a
     bcc do_read_mem    ;Bit 4: Transfer from CBM memory to the SoftBox
     jmp do_write_mem   ;Bit 5: Transfer from the SoftBox to CBM memory
 
@@ -361,7 +361,7 @@ l_060d:
     sta pia2dav        ;Set !DAV_OUT = 0 to indicate our data is valid
 l_0617:
     lda viapb
-    lsr ;A
+    lsr ;a
     bcc l_0617         ;Wait for SoftBox to set NDAC_IN = 0 (not accepted)
     lda #$3c
     sta pia2dav        ;Set !DAV_OUT = 1
@@ -369,7 +369,7 @@ l_0617:
     sta pia2iout       ;Release data lines
 l_0627:
     lda viapb
-    lsr ;A
+    lsr ;a
     bcs l_0627         ;Wait for SoftBox to set !NDAC_IN = 1 (data accepted)
     rts
 
@@ -512,7 +512,7 @@ process_byte:
     bne l_0715        ;  Yes: branch to jump to move-to handler
     cmp #$20          ;Is this byte a control code?
     bcs l_0718        ;  No: branch to put char on screen
-    asl ;A
+    asl ;a
     tax
     lda ctrl_codes,x  ;Load vector from control code table
     sta target_lo
@@ -668,8 +668,8 @@ l_07ac:
     eor #$40              ;Flip bit 6
     tax
     lda via_pcr           ;Bit 1 off = uppercase, on = lowercase
-    lsr ;A
-    lsr ;A
+    lsr ;a
+    lsr ;a
     bcs l_07c6            ;Branch if lowercase mode
     txa
     and #$1f
@@ -1060,13 +1060,13 @@ calc_scnpos:
     sta scnposh
     lda cursor_y
     sta scnposl
-    asl ;A
-    asl ;A
+    asl ;a
+    asl ;a
     adc scnposl
-    asl ;A
-    asl ;A
+    asl ;a
+    asl ;a
     rol scnposh
-    asl ;A
+    asl ;a
     rol scnposh
     sta scnposl
     lda x_width
@@ -1165,7 +1165,7 @@ debounce:
 ;---- top of loop to go through each bit returned from scan. Each "0" bit represents a key pressed down
 
 scan_col:
-    lsr ;A                 ;Shift byte RIGHT leaving CARRY flag set if it is a "1"
+    lsr ;a                 ;Shift byte RIGHT leaving CARRY flag set if it is a "1"
     pha                    ;Push it to the stack
     bcs nextcol            ;Is the BIT a "1"? Yes. Means key was NOT pressed. Bypass testing
     lda x_width            ; No, Need to check it.Check the terminal width
@@ -1254,8 +1254,8 @@ key_atoz:
 ;---- Handle regular A-Z
     pha                    ;Yes, push the character code to stack
     lda via_pcr            ;Bit 1 off = uppercase, on = lowercase
-    lsr ;A                 ;shift
-    lsr ;A                 ;shift to get BIT 2
+    lsr ;a                 ;shift
+    lsr ;a                 ;shift to get BIT 2
     pla                    ;pull the character code from stack
     bcc key_check2         ;Branch if uppercase mode
     ora #$20               ;Convert character to UPPERCASE HERE
@@ -1281,8 +1281,8 @@ key_sh_codes:
 ;---- these must be normal shifted keys or Graphics?
     pha                    ;Push key to stack
     lda via_pcr            ;Bit 1 off = uppercase, on = lowercase
-    lsr ;A                 ;shift
-    lsr ;A                 ;shift - check bit 1
+    lsr ;a                 ;shift
+    lsr ;a                 ;shift - check bit 1
     pla                    ;Pull original key from stack
     bcs key_set            ;Branch if lowercase mode
 
