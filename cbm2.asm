@@ -1339,7 +1339,7 @@ debounce:
     lda tpi2_pc            ;TPI2 Port C- Keyboard Columns Read
     cmp tpi2_pc            ;TPI2 Port C- Keyboard Columns Read
     bne debounce           ;wait for stable value on keyboard switches (debounce)
-    and #$3f               ;Mask off top two bits (used for machine configuration)
+    and #%00111111         ;Mask off top two bits (used for machine configuration)
                            ;Result of Row scan is now in A (call is SCANCODE)
 
     ldy #$06               ;Y=6 -- 6 Columns in Table
