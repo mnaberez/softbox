@@ -2,14 +2,14 @@ cinv_lo     = $90     ;KERNAL IRQ vector LO
 cinv_hi     = $91     ;KERNAL IRQ vector HI
 keyd        = $026f   ;Keyboard Buffer
 screen      = $8000   ;Start of screen RAM
-pia1row     = $e810   ;PIA#1 Keyboard Row Select
-pia1eoi     = $e811   ;PIA#1 Control
-pia1col     = $e812   ;PIA#1 Keyboard Columns Read
-pia2ieee    = $e820   ;PIA#2 IEEE Input
-pia2ndac    = $e821   ;PIA#2 IEEE NDAC control
-pia2iout    = $e822   ;PIA#2 IEEE Output
-pia2dav     = $e823   ;PIA#2 IEEE DAV control
-viapb       = $e840   ;VIA PortB
+pia1_row    = $e810   ;PIA#1 Keyboard Row Select
+pia1_eoi    = $e811   ;PIA#1 Control
+pia1_col    = $e812   ;PIA#1 Keyboard Columns Read
+pia2_ieee   = $e820   ;PIA#2 IEEE Input
+pia2_ndac   = $e821   ;PIA#2 IEEE NDAC control
+pia2_iout   = $e822   ;PIA#2 IEEE Output
+pia2_dav    = $e823   ;PIA#2 IEEE DAV control
+via_pb      = $e840   ;VIA Port B
 via_pcr     = $e84c   ;VIA Peripheral Control Register (PCR)
 chrout      = $ffd2   ;KERNAL Send a char to the current output device
 ;
@@ -145,14 +145,14 @@ init_ieee:
 ;  CB1: !SRQ_IN
 ;  CB2: !DAV_OUT
 ;
-    lda pia2iout       ;Clears IRQA1 flag (!ATN_IN detect)
-    lda viapb
+    lda pia2_iout      ;Clears IRQA1 flag (!ATN_IN detect)
+    lda via_pb
     and #$fb
-    sta viapb          ;Set !ATN_OUT = 0 to get SoftBox's attention
+    sta via_pb         ;Set !ATN_OUT = 0 to get SoftBox's attention
     lda #$34
-    sta pia2dav        ;Set !DAV_OUT = 0 to tell SoftBox our data is valid
+    sta pia2_dav       ;Set !DAV_OUT = 0 to tell SoftBox our data is valid
     lda #$c6
-    sta pia2iout       ;Put #$39 on IEEE data lines
+    sta pia2_iout      ;Put #$39 on IEEE data lines
     ldy #$00
 
 l_04d4:
@@ -160,30 +160,30 @@ l_04d4:
     bne l_04d4         ;Let #$39 sit on the lines so the SoftBox sees it
 
     lda #$ff
-    sta pia2iout       ;Release IEEE data lines
+    sta pia2_iout      ;Release IEEE data lines
 
     lda #%00111100
-    sta pia1eoi        ;Set !EOI_OUT = 1 and disable IRQ from CA1 (Cassette Read)
-    sta pia2ndac       ;Set !NDAC_OUT = 1 and disable IRQ from CA1 (!ATN_IN)
-    sta pia2dav        ;Set !DAV = 1
+    sta pia1_eoi       ;Set !EOI_OUT = 1 and disable IRQ from CA1 (Cassette Read)
+    sta pia2_ndac      ;Set !NDAC_OUT = 1 and disable IRQ from CA1 (!ATN_IN)
+    sta pia2_dav       ;Set !DAV = 1
 
 main_loop:
     lda #$3c
-    sta pia2ndac       ;Set !NDAC_OUT = 1
-    lda viapb
+    sta pia2_ndac      ;Set !NDAC_OUT = 1
+    lda via_pb
     ora #$06
-    sta viapb          ;Set !NRFD_OUT = 1, !ATN_OUT = 1
+    sta via_pb         ;Set !NRFD_OUT = 1, !ATN_OUT = 1
 
 wait_for_srq:
-    lda pia2dav        ;Read PIA #2 CRB
+    lda pia2_dav       ;Read PIA #2 CRB
     asl ;a             ;  bit 7 = IRQA1 flag for CA1 (!SRQ_IN detect)
     bcc wait_for_srq   ;Wait until !SRQ_IN is detected
 
-    lda pia2iout       ;Clears IRQA1 flag (!SRQ_IN detect)
+    lda pia2_iout      ;Clears IRQA1 flag (!SRQ_IN detect)
     lda #$34
-    sta pia2ndac       ;Set !NDAC_OUT = 0 to indicate we do not accept the data yet
+    sta pia2_ndac      ;Set !NDAC_OUT = 0 to indicate we do not accept the data yet
 
-    ldx pia2ieee       ;Read IEEE data byte with command from SoftBox
+    ldx pia2_ieee      ;Read IEEE data byte with command from SoftBox
                        ;
                        ; Bit 7: CBM to SoftBox: Key not available
                        ; Bit 6: CBM to SoftBox: Key available
@@ -204,15 +204,15 @@ wait_for_srq:
     lda #$bf           ;  Yes: Response will be #$40 (no key available)
 
 send_key_avail:
-    sta pia2iout       ;Put keyboard status on the data lines
+    sta pia2_iout      ;Put keyboard status on the data lines
 
 handshake:
-    lda pia2ieee       ;Read IEEE data byte
+    lda pia2_ieee      ;Read IEEE data byte
     and #$3f           ;We are driving only bits 7 and 6 with the keyboard status
     cmp #$3f
     bne handshake      ;Wait for the SoftBox to drive the other lines to zero
     lda #$ff
-    sta pia2iout       ;Release all data lines
+    sta pia2_iout      ;Release all data lines
 
 dispatch_command:
     txa                ;Recall the original command byte from X
@@ -242,7 +242,7 @@ do_terminal:
 ;Write to the terminal screen
     jsr ieee_get_byte
     ldx #$3c
-    stx pia2ndac       ;Set !NDAC_OUT = 1 to indicate we accept the data
+    stx pia2_ndac      ;Set !NDAC_OUT = 1 to indicate we accept the data
     jsr process_byte
     jmp main_loop
 
@@ -253,7 +253,7 @@ do_jump:
     jsr ieee_get_byte  ;Get byte
     sta target_hi      ; -> Command vector hi
     ldx #$3c
-    stx pia2ndac       ;Set !NDAC_OUT = 1 to indicate we accept the data
+    stx pia2_ndac      ;Set !NDAC_OUT = 1 to indicate we accept the data
     jsr jump_cmd       ;Jump to the command through TARGET_LO
     jmp main_loop
 
@@ -321,26 +321,26 @@ l_057b:
 ieee_get_byte:
 ;Receive a byte from the SoftBox over the IEEE-488 bus.
 ;
-    lda viapb
+    lda via_pb
     ora #$02
-    sta viapb          ;Set !NRFD OUT = 1
+    sta via_pb         ;Set !NRFD OUT = 1
 l_05d7:
-    bit viapb          ;Wait for !NRFD_IN = 1 (SoftBox is ready for data)
+    bit via_pb         ;Wait for !NRFD_IN = 1 (SoftBox is ready for data)
     bmi l_05d7         ;Wait for !DAV_IN = 0 (Softbox says data is valid)
 
-    lda pia2ieee       ;Read data byte
+    lda pia2_ieee      ;Read data byte
     eor #$ff           ;Invert the byte (IEEE true = low)
     pha                ;Push data byte
-    lda viapb
+    lda via_pb
     and #$fd
-    sta viapb          ;Set !NRFD_OUT = 0 (we are not ready for data)
+    sta via_pb         ;Set !NRFD_OUT = 0 (we are not ready for data)
     lda #$3c
-    sta pia2ndac       ;Set !NDAC_OUT = 1 (we accept the last data byte)
+    sta pia2_ndac      ;Set !NDAC_OUT = 1 (we accept the last data byte)
 l_05ef:
-    bit viapb
+    bit via_pb
     bpl l_05ef         ;Wait for !DAV_IN = 0 (SoftBox says data is valid)
     lda #$34
-    sta pia2ndac       ;Set NDAC_OUT = 0 (we do not accept data)
+    sta pia2_ndac      ;Set NDAC_OUT = 0 (we do not accept data)
     pla
     rts
 
@@ -348,27 +348,27 @@ ieee_send_byte:
 ;Send a byte to the SoftBox over the IEEE-488 bus.
 ;
     eor #$ff           ;Invert the byte (IEEE true = low)
-    sta pia2iout       ;Put byte on IEEE data output lines
-    lda viapb
+    sta pia2_iout      ;Put byte on IEEE data output lines
+    lda via_pb
     ora #$02
-    sta viapb          ;Set !NRFD_OUT = 1
+    sta via_pb         ;Set !NRFD_OUT = 1
     lda #$3c
-    sta pia2ndac       ;Set !NDAC_OUT = 1
+    sta pia2_ndac      ;Set !NDAC_OUT = 1
 l_060d:
-    bit viapb
+    bit via_pb
     bvc l_060d         ;Wait for !NRFD_IN = 1 (SoftBox is ready for data)
     lda #$34
-    sta pia2dav        ;Set !DAV_OUT = 0 to indicate our data is valid
+    sta pia2_dav       ;Set !DAV_OUT = 0 to indicate our data is valid
 l_0617:
-    lda viapb
+    lda via_pb
     lsr ;a
     bcc l_0617         ;Wait for SoftBox to set NDAC_IN = 0 (not accepted)
     lda #$3c
-    sta pia2dav        ;Set !DAV_OUT = 1
+    sta pia2_dav       ;Set !DAV_OUT = 1
     lda #$ff
-    sta pia2iout       ;Release data lines
+    sta pia2_iout      ;Release data lines
 l_0627:
-    lda viapb
+    lda via_pb
     lsr ;a
     bcs l_0627         ;Wait for SoftBox to set !NDAC_IN = 1 (data accepted)
     rts
@@ -473,8 +473,8 @@ l_06bf:
     sta blink_cnt       ;Fast cursor blink(?)
 irq_key:
     jsr scan_keyb       ;Scan the keyboard
-                        ;  An important side effect of SCAN_KEYB is
-                        ;  that it reads PIA1COL.  The read clears
+                        ;  An important side effect of scan_keyb is
+                        ;  that it reads pia1_col.  The read clears
                         ;  PIA #1's IRQB1 flag (50/60 Hz interrupt).
                         ;  If this read is not performed, IRQ will
                         ;  continuously retrigger.
@@ -1127,7 +1127,7 @@ l_09c8:
 scan_keyb:
 ;Scan the keyboard.
 ; The PET/CBM uses a 10x8 keyboard matrix. There are 10 rows, and 8 columns.
-; To scan you select a ROW by writing the ROW NUMBER to the PIA1ROW register. The lower 4 bits are sent to
+; To scan you select a ROW by writing the ROW NUMBER to the pia1_row register. The lower 4 bits are sent to
 ; a 4 to 10 decoder. Then the PAI1COL register is read and each of the 8 bits represent one key in that row.
 ; IMPORTANT!!!! If a key is PRESSED the BIT will be ZERO.
 ; There are two keyboard tables which consists of 80 bytes each.
@@ -1145,7 +1145,7 @@ scan_keyb:
     stx shiftflag          ;Reset Shift Flag
     stx keyflag            ;Reset Key Flag
 
-    stx pia1row            ;Select a keyboard ROW
+    stx pia1_row           ;Select a keyboard ROW
     lda #$ff               ;$FF = no key
     sta scancode           ;Set it
     lda #$0a               ;Keyboard has 10 ROWS
@@ -1157,8 +1157,8 @@ scan_row:
     ldy #$08               ;Y=8 -- 8 Columns in Table
 
 debounce:
-    lda pia1col            ;PIA#1 Keyboard Columns Read
-    cmp pia1col            ;PIA#1 Keyboard Columns Read
+    lda pia1_col           ;PIA#1 Keyboard Columns Read
+    cmp pia1_col           ;PIA#1 Keyboard Columns Read
     bne debounce           ;wait for stable value on keyboard switches (debounce)
                            ;Result of Row scan is now in A (call is SCANCODE)
 
@@ -1197,7 +1197,7 @@ nextcol:
     bne scan_col           ;Is it ZERO? No, go back for next COL
 
 nextrow:
-    inc pia1row            ;Increment Keyboard scanning ROW register - PIA#1 Keyboard Row Select
+    inc pia1_row           ;Increment Keyboard scanning ROW register - PIA#1 Keyboard Row Select
     dec rowcount           ;ROW=ROW-1
     bne scan_row           ;Is ROW > 0 ? Yes, loop back up for next ROW
 
