@@ -1,6 +1,6 @@
-irqvecl     = $90     ;KERNAL IRQ vector LO
-irqvech     = $91     ;KERNAL IRQ vector HI
-keybuf      = $026f   ;Keyboard Input Buffer
+cinv_lo     = $90     ;KERNAL IRQ vector LO
+cinv_hi     = $91     ;KERNAL IRQ vector HI
+keyd        = $026f   ;Keyboard Buffer
 screen      = $8000   ;Start of screen RAM
 pia1row     = $e810   ;PIA#1 Keyboard Row Select
 pia1eoi     = $e811   ;PIA#1 Control
@@ -20,7 +20,7 @@ cursor_x    = $04     ;Current X position: 0-79
 cursor_y    = $05     ;Current Y position: 0-24
 cursor_off  = $06     ;Cursor state: zero = show, nonzero = hide
 scncode_tmp = $07     ;Temporary storage for the last screen code
-keycount    = $08     ;Number of keys in the buffer at KEYBUF
+keycount    = $08     ;Number of keys in the buffer at keyd
 x_width     = $09     ;Width of X in characters (40 or 80)
 reverse     = $0a     ;Reverse video flag (reverse on = 1)
 moveto_cnt  = $0b     ;Counts down bytes to consume in a move-to (CTRL_1B) seq
@@ -71,9 +71,9 @@ copyright:
 init:
     sei                ;Disable interrupts
     lda #<irq_handler
-    sta irqvecl
+    sta cinv_lo
     lda #>irq_handler
-    sta irqvech        ;Install our interrupt handler
+    sta cinv_hi        ;Install our interrupt handler
     lda #$00
     sta keycount       ;Reset key counter (no keys hit)
     sta rtc_jiffies    ;Reset software real time clock
@@ -383,13 +383,13 @@ get_key:
     sei             ;Disable interrupts
     ldx keycount    ;Is there a key waiting in the buffer?
     beq l_0649      ;  No: nothing to do with the buffer.
-    lda keybuf      ;Read the next key in the buffer (FIFO)
+    lda keyd        ;Read the next key in the buffer (FIFO)
     pha             ;Push the key onto the stack
     ldx #$00
     dec keycount    ;Keycount = Keycount - 1
 l_063d:
-    lda keybuf+1,x  ;Remove the key from the buffer by rotating
-    sta keybuf,x    ;  bytes in the buffer to the left
+    lda keyd+1,x    ;Remove the key from the buffer by rotating
+    sta keyd,x      ;  bytes in the buffer to the left
     inx
     cpx keycount    ;Finished updating the buffer?
     bne l_063d      ;  No: loop until we're done.
@@ -403,8 +403,8 @@ l_0649:
 irq_handler:
 ;On the PET/CBM, an IRQ occurs at 50 or 60 Hz depending on the power line
 ;frequency.  The 6502 calls the main IRQ entry point ($E442 on BASIC 4.0)
-;which pushes A, X, and Y onto the stack and then executes JMP (IRQVECL).
-;We install this routine, IRQ_HANDLER, into IRQVECL during init.
+;which pushes A, X, and Y onto the stack and then executes JMP (cinv_lo).
+;We install this routine, IRQ_HANDLER, into cinv_lo during init.
 ;
     inc jiffy0          ;Counts number of Interrupts
     bne l_0659
@@ -482,7 +482,7 @@ irq_key:
     ldx keycount
     cpx #$50            ;Is the keyboard buffer full?
     beq l_06e2          ;  Yes:  Nothing we can do.  Forget the key.
-    sta keybuf,x        ;  No:   Store the key in the buffer
+    sta keyd,x          ;  No:   Store the key in the buffer
     inc keycount        ;        and increment the keycount.
 l_06e2:
     pla

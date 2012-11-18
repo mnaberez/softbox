@@ -4,9 +4,9 @@
 ;runs on Commodore PET/CBM computers.  This disassembly has no changes
 ;from the original and reassembles to an identical binary.
 ;
-IRQVECL     = $90     ;KERNAL IRQ vector LO
-IRQVECH     = $91     ;KERNAL IRQ vector HI
-KEYBUF      = $026F   ;Keyboard Input Buffer
+CINV_LO     = $90     ;KERNAL IRQ vector LO
+CINV_HI     = $91     ;KERNAL IRQ vector HI
+KEYD        = $026F   ;Keyboard Buffer
 SCREEN      = $8000   ;Start of screen RAM
 PIA1ROW     = $E810   ;PIA#1 Keyboard Row Select
 PIA1EOI     = $E811   ;PIA#1 Control
@@ -26,7 +26,7 @@ CURSOR_X    = $04     ;Current X position: 0-79
 CURSOR_Y    = $05     ;Current Y position: 0-24
 CURSOR_OFF  = $06     ;Cursor state: zero = show, nonzero = hide
 SCNCODE_TMP = $07     ;Temporary storage for the last screen code
-KEYCOUNT    = $08     ;Number of keys in the buffer at KEYBUF
+KEYCOUNT    = $08     ;Number of keys in the buffer at KEYD
 X_WIDTH     = $09     ;Width of X in characters (40 or 80)
 REVERSE     = $0A     ;Reverse video flag (reverse on = 1)
 MOVETO_CNT  = $0B     ;Counts down bytes to consume in a move-to (CTRL_1B) seq
@@ -77,9 +77,9 @@ $0462:           .BYT 20,20,20,20
 INIT:
 $0466: 78        SEI                ;Disable interrupts
 $0467: A9 4F     LDA #<IRQ_HANDLER
-$0469: 85 90     STA IRQVECL
+$0469: 85 90     STA CINV_LO
 $046B: A9 06     LDA #>IRQ_HANDLER
-$046D: 85 91     STA IRQVECH        ;Install our interrupt handler
+$046D: 85 91     STA CINV_HI        ;Install our interrupt handler
 $046F: A9 00     LDA #$00
 $0471: 85 08     STA KEYCOUNT       ;Reset key counter (no keys hit)
 $0473: A9 00     LDA #$00
@@ -393,13 +393,13 @@ $062E: A9 FF     LDA #$FF        ;FF = no key
 $0630: 78        SEI             ;Disable interrupts
 $0631: A6 08     LDX KEYCOUNT    ;Is there a key waiting in the buffer?
 $0633: F0 14     BEQ L_0649      ;  No: nothing to do with the buffer.
-$0635: AD 6F 02  LDA KEYBUF      ;Read the next key in the buffer (FIFO)
+$0635: AD 6F 02  LDA KEYD        ;Read the next key in the buffer (FIFO)
 $0638: 48        PHA             ;Push the key onto the stack
 $0639: A2 00     LDX #$00
 $063B: C6 08     DEC KEYCOUNT    ;Keycount = Keycount - 1
 L_063D:
-$063D: BD 70 02  LDA KEYBUF+1,X  ;Remove the key from the buffer by rotating
-$0640: 9D 6F 02  STA KEYBUF,X    ;  bytes in the buffer to the left
+$063D: BD 70 02  LDA KEYD+1,X    ;Remove the key from the buffer by rotating
+$0640: 9D 6F 02  STA KEYD,X      ;  bytes in the buffer to the left
 $0643: E8        INX
 $0644: E4 08     CPX KEYCOUNT    ;Finished updating the buffer?
 $0646: D0 F5     BNE L_063D      ;  No: loop until we're done.
@@ -413,8 +413,8 @@ $064E: 60        RTS             ;  Got key: done.  Key is now in A.
 IRQ_HANDLER:
 ;On the PET/CBM, an IRQ occurs at 50 or 60 Hz depending on the power line
 ;frequency.  The 6502 calls the main IRQ entry point ($E442 on BASIC 4.0)
-;which pushes A, X, and Y onto the stack and then executes JMP (IRQVECL).
-;We install this routine, IRQ_HANDLER, into IRQVECL during init.
+;which pushes A, X, and Y onto the stack and then executes JMP (CINV_LO).
+;We install this routine, IRQ_HANDLER, into CINV_LO during init.
 ;
 $064F: E6 1A     INC JIFFY0          ;Counts number of Interrupts
 $0651: D0 06     BNE L_0659
@@ -492,7 +492,7 @@ $06D5: F0 0B     BEQ L_06E2          ;Nothing to do if no key was pressed.
 $06D7: A6 08     LDX KEYCOUNT
 $06D9: E0 50     CPX #$50            ;Is the keyboard buffer full?
 $06DB: F0 05     BEQ L_06E2          ;  Yes:  Nothing we can do.  Forget the key.
-$06DD: 9D 6F 02  STA KEYBUF,X        ;  No:   Store the key in the buffer
+$06DD: 9D 6F 02  STA KEYD,X          ;  No:   Store the key in the buffer
 $06E0: E6 08     INC KEYCOUNT        ;        and increment the keycount.
 L_06E2:
 $06E2: 68        PLA
