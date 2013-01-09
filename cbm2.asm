@@ -51,6 +51,7 @@ jiffy0      = $1a     ;Jiffy counter (LSB)
 blink_cnt   = $1b     ;Counter used for cursor blink timing
 got_srq     = $1c     ;IEEE-488 SRQ detect: zero=no SRQ, nonzero=SRQ pending
 uppercase   = $1d     ;Uppercase graphics flag (uppercase on = 1)
+hertz       = $1e     ;Constant for powerline frequency: 50 or 60 Hz
 
 ;Configure VICE
 ;  Settings > CBM2 Settings > Memory > Enable Bank 15 $4000-5FFF RAM
@@ -102,10 +103,22 @@ init_4080:
     jsr scrorg         ;Returns X=width, Y=height
     stx x_width
     cpx #$28           ;40 column screen?
-    bne init_term      ;  No: Skip P500 init
+    bne init_hertz     ;  No: Skip P500 init
     lda #$00
     sta vic+$20        ;VIC-II Border color = Black
     sta vic+$21        ;VIC-II Background color = Black
+
+init_hertz:
+;Initialize powerline frequency constant used by the software clock.
+;TODO: Implemention for P500
+    lda #$32           ;50 Hz
+    sta hertz
+    bit x_width        ;40 column screen?
+    bvc init_term      ;  Yes: We're done, assume 50 Hz
+    bit tpi2_pc        ;Machine jumpered for 50 Hz?
+    bvc init_term      ;  Yes: hertz = 50 Hz
+    lda #$3c
+    sta hertz          ;  No: hertz = 60 Hz
 
 init_term:
     jsr ctrl_16        ;Go to lowercase mode
@@ -564,10 +577,7 @@ irq_50hz:
 l_0659:
     inc rtc_jiffies     ;Increment Jiffies
     lda rtc_jiffies
-
-;--    CMP BAS_HEADER+3    ;50 or 60 (Hz).  See note in BAS_HEADER.
-    cmp #$32            ;Force 50 Hz for now
-
+    cmp hertz           ;50 or 60 Hz
     bne blink_cursor
     lda #$00            ;Reset RTC_JIFFIES counter
     sta rtc_jiffies
