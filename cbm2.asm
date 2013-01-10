@@ -8,6 +8,7 @@ vic         = $d800   ;6567/6569 VIC-II (P-series)
 crtc        = $d800   ;6545 CRTC (B-series)
 cia2_pa     = $dc00   ;6526 CIA #2 Port A
 cia2_ddra   = $dc02   ;6526 CIA #2 Data Direction Register A
+cia2_cra    = $dc0e   ;6526 CIA #2 Control Register A
 tpi1_pa     = $de00   ;6525 TPI #1 Port A
 tpi1_pb     = $de01   ;6525 TPI #1 Port B
 tpi1_pc     = $de02   ;6525 TPI #1 Port C
@@ -109,16 +110,16 @@ init_4080:
     sta vic+$21        ;VIC-II Background color = Black
 
 init_hertz:
-;Initialize powerline frequency constant used by the software clock.
-;TODO: Implemention for P500
-    lda #$32           ;50 Hz
-    sta hertz
-    bit x_width        ;40 column screen?
-    bvc init_term      ;  Yes: We're done, assume 50 Hz
-    bit tpi2_pc        ;Machine jumpered for 50 Hz?
-    bvc init_term      ;  Yes: hertz = 50 Hz
-    lda #$3c
-    sta hertz          ;  No: hertz = 60 Hz
+;Initialize the powerline frequency constant used by our software clock.
+;On power up, the KERNAL routine IOINIT on both B-series and P-series will
+;detect 50 or 60 Hz and set the TODIN bit in CIA 2's Control Register A.
+;
+    lda #$32
+    bit cia2_cra       ;CRA Bit 7 (TODIN): off = 60 Hz, on = 50 Hz
+    bmi store_hertz    ;Did the KERNAL set TODIN for 50 Hz?
+    lda #$3c           ;  No: hertz = 60
+store_hertz:
+    sta hertz          ;  Yes: hertz = 50
 
 init_term:
     jsr ctrl_16        ;Go to lowercase mode
