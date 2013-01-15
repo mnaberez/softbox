@@ -54,19 +54,7 @@ bas_header:
     jmp init
 
 copyright:
-;"  SOFTBOX LOADER (C) COPYRIGHT 1981 KEITH FREWIN   "
-;"----  REVISON :  5 JULY 1981     "
-    !byte $20,$20,$53,$4f,$46,$54,$42,$4f
-    !byte $58,$20,$4c,$4f,$41,$44,$45,$52
-    !byte $20,$28,$43,$29,$20,$43,$4f,$50
-    !byte $59,$52,$49,$47,$48,$54,$20,$31
-    !byte $39,$38,$31,$20,$4b,$45,$49,$54
-    !byte $48,$20,$46,$52,$45,$57,$49,$4e
-    !byte $20,$20,$20,$2d,$2d,$2d,$2d,$20
-    !byte $20,$52,$45,$56,$49,$53,$4f,$4e
-    !byte $20,$3a,$20,$20,$35,$20,$4a,$55
-    !byte $4c,$59,$20,$31,$39,$38,$31,$20
-    !byte $20,$20,$20,$20
+    !text "  SOFTBOX LOADER (C) COPYRIGHT 1981 KEITH FREWIN  "
 
 init:
     sei                ;Disable interrupts
