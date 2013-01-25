@@ -1526,29 +1526,6 @@ repeatcode:
 keyoffset:
     !byte $aa
 
-;Start of buffer used by control codes 05, 06, and 09
+;Buffer for TAB stop positions (80 bytes: one for each screen column)
 tab_stops:
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa
+    !fill $aa, $50
