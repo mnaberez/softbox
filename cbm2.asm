@@ -81,7 +81,6 @@ init:
     and #%10111111
     sta tpi1_pb        ;Turn cassette motor off
     lda #$00
-    sta keycount       ;Reset key counter (no keys hit)
     sta rtc_jiffies    ;Reset software real time clock
     sta rtc_secs
     sta rtc_mins
@@ -89,6 +88,7 @@ init:
     sta jiffy2         ;Reset jiffy counter
     sta jiffy1
     sta jiffy0
+    sta keycount       ;Reset key counter (no keys hit)
     lda #$0a
     sta repeatcount1   ;Store #$0A in REPEATCOUNT1
 ;--    CLI                ;Enable interrupts again
