@@ -943,6 +943,25 @@ l_08e1:
 l_08ed:
     rts
 
+ctrl_1b:
+;Move cursor to X,Y position
+;
+;This control code is unlike the others because it requires an
+;additional two bytes to follow: first X-position, then Y-position.
+;
+;The MOVETO_CNT byte counts down the remaining bytes to consume.  On
+;successive passes through PROCESS_BYTE, the X and Y bytes are handled
+;by PROCESS_MOVE.
+;
+;Note: The X and Y values use the same layout as CURSOR_X and CURSOR_Y
+;but they require an offset.  You must add decimal 32 to each value to
+;get the equivalent CURSOR_X and CURSOR_Y.  The offset is because this
+;emulates the behavior of the Lear Siegler ADM-3A terminal.
+;
+    lda #$02          ;Two more bytes to consume (X-pos, Y-pos)
+    sta moveto_cnt    ;Store count for next pass of PROCESS_BYTE
+    rts
+
 ctrl_1c:
 ;Insert space at current cursor position
 ;
@@ -1089,25 +1108,6 @@ l_09a8:
     adc #>screen
     sta scrpos_hi
     pla
-    rts
-
-ctrl_1b:
-;Move cursor to X,Y position
-;
-;This control code is unlike the others because it requires an
-;additional two bytes to follow: first X-position, then Y-position.
-;
-;The MOVETO_CNT byte counts down the remaining bytes to consume.  On
-;successive passes through PROCESS_BYTE, the X and Y bytes are handled
-;by PROCESS_MOVE.
-;
-;Note: The X and Y values use the same layout as CURSOR_X and CURSOR_Y
-;but they require an offset.  You must add decimal 32 to each value to
-;get the equivalent CURSOR_X and CURSOR_Y.  The offset is because this
-;emulates the behavior of the Lear Siegler ADM-3A terminal.
-;
-    lda #$02          ;Two more bytes to consume (X-pos, Y-pos)
-    sta moveto_cnt    ;Store count for next pass of PROCESS_BYTE
     rts
 
 
