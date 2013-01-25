@@ -673,10 +673,16 @@ ctrl_0c:
     ldx cursor_x
     cpx x_width       ;X > max X?
     bne ctrl_0c_done  ;  No:  Done, don't move to the next line
-    lda #$00
-    sta cursor_x      ;  Yes: Set X=0 and then call ctrl_0a to
-    jsr ctrl_0a       ;       move to the next line.
+    jsr ctrl_0d       ;  Yes: Carriage return, then
+    jmp ctrl_0a       ;       jump out to line feed
 ctrl_0c_done:
+    rts
+
+ctrl_0d:
+;Carriage return
+;
+    lda #$00       ;Move to X=0 on this line
+    sta cursor_x
     rts
 
 ctrl_0a:
@@ -718,13 +724,6 @@ l_0829:
     sta screen+$700,x
     inx
     bne l_0829
-    rts
-
-ctrl_0d:
-;Carriage return
-;
-    lda #$00       ;Move to X=0 on this line
-    sta cursor_x
     rts
 
 ctrl_10:
