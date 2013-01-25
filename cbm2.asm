@@ -130,15 +130,6 @@ init_term:
     lda #$1a           ;Load #$1A = CTRL_1A Clear Screen
     jsr process_byte   ;Call into terminal to execute clear screen
 
-
-;TODO: Temporary hack for keyboard debugging
-;Remove this loop for actual IEEE-488 operation
-forever:
-    jsr get_key        ;Wait for a key
-    jsr process_byte   ;Send it to the terminal screen
-    jmp forever
-
-
 init_ieee:
 ;
 ;6525 TPI #1 ($DE00)
@@ -464,8 +455,6 @@ ieee_send_byte:
     sta tpi1_pa
 
 l_060d:
-    ;INC SCREEN+$0010   ;XXX Debug
-
     bit tpi1_pa
     bpl l_060d         ;Wait for NRFD=hi
 
@@ -483,8 +472,6 @@ l_0617:
 
 
 l_0627:
-;    INC SCREEN+$0012   ;XXX Debug
-
     bit tpi1_pa
     bpl l_0627         ;Wait for NDAC=hi
 
