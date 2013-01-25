@@ -794,26 +794,28 @@ l_088d:
 ctrl_04:
 ;Set TAB stop at current position
 ;
-    lda #$01         ;1=TAB STOP yes
-    !byte $2c ; Falls through to become BIT $00A9
+    ldx cursor_x     ;Get cursor position
+    lda #$01
+    sta tab_stops,x  ;Set a TAB stop at that position
+    rts
 
 ctrl_05:
 ;Clear TAB stop at current position
 ;
-    lda #$00         ;0=No TAB STOP
     ldx cursor_x     ;Get cursor position
-    sta tab_stops,x  ;Clear the TAB at that position
+    lda #$00
+    sta tab_stops,x  ;Clear a TAB stop at that position
     rts
 
 ctrl_06:
-;Clear ALL TAB STOPS
+;Clear all TAB stops
 ;
-    ldx #$4f  ; 80 characters-1
-    lda #$00  ; zero
+    ldx #$4f         ;80 characters - 1
+    lda #$00
 l_08d8:
-    sta tab_stops,x  ;store in the buffer
+    sta tab_stops,x  ;Clear a TAB stop at this position
     dex
-    bpl l_08d8
+    bpl l_08d8       ;Loop until all stops are cleared
     rts
 
 ctrl_09:
