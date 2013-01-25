@@ -783,7 +783,13 @@ putscr_then_done:
 ;Put the screen code in the accumulator on the screen
 ;and then fall through to PROCESS_DONE.
 ;
-    jsr put_scrcode
+    ldx reverse        ;Is reverse video mode on?
+    beq l_07fa         ;  No:  leave character alone
+    eor #$80           ;  Yes: Flip bit 7 to reverse the character
+l_07fa:
+    jsr calc_scrpos    ;Calculate screen RAM pointer
+    sta (scrpos_lo),y  ;Write the character to the screen
+    jsr ctrl_0c        ;Advance the cursor
 
 process_done:
 ;This routine always returns to DO_TERMINAL except during init.
@@ -897,17 +903,6 @@ ctrl_0b:
     beq l_07ec     ; Y=0? Can't move up.
     dec cursor_y   ; Y=Y-1
     rts
-
-put_scrcode:
-;Put the screen code in A on the screen at the current cursor position
-;
-    ldx reverse      ;Is reverse video mode on?
-    beq l_07fa       ;  No:  leave character alone
-    eor #$80         ;  Yes: Flip bit 7 to reverse the character
-l_07fa:
-    jsr calc_scrpos    ;Calculate screen RAM pointer
-    sta (scrpos_lo),y  ;Write the character to the screen
-                       ;Fall through into CTRL_0C to advance cursor
 
 ctrl_0c:
 ;Cursor right
