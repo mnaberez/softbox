@@ -818,23 +818,24 @@ ctrl_08:
 ;Cursor left
 ;
     ldx cursor_x
-    bne l_07e9     ; X > 0? Y will not change.
-    ldx x_width    ; X = max X + 1
+    bne ctrl_08_decx      ;X > 0? Y will not change.
+    ldx x_width           ;X = max X + 1
     lda cursor_y
-    beq l_07ec     ; Y=0? Can't move up.
-    dec cursor_y   ; Y=Y-1
-l_07e9:
+    beq ctrl_08_done      ;Y=0? Can't move up.
+    dec cursor_y          ;Y=Y-1
+ctrl_08_decx:
     dex
-    stx cursor_x   ; X=X-1
-l_07ec:
+    stx cursor_x          ;X=X-1
+ctrl_08_done:
     rts
 
 ctrl_0b:
 ;Cursor up
 ;
     ldy cursor_y
-    beq l_07ec     ; Y=0? Can't move up.
-    dec cursor_y   ; Y=Y-1
+    beq ctrl_0b_done      ;Y=0? Can't move up.
+    dec cursor_y          ;Y=Y-1
+ctrl_0b_done:
     rts
 
 ctrl_0c:
