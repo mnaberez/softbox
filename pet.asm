@@ -74,18 +74,15 @@ init:
     lda #$0a
     sta repeatcount1   ;Store #$0A in REPEATCOUNT1
     cli                ;Enable interrupts again
-    lda #$14
-    sta blink_cnt      ;Initialize cursor blink countdown
-    lda #$00
-    sta cursor_off     ;Cursor state = show the cursor
 
-init_4080:
-;Detect 40/80 column screen and store in X_WIDTH
+init_scrn:
+;Initialize the screen
 ;
 ;This routine checks for an 80 column screen by writing to screen RAM
 ;that should not be present on a 40 column machine.  If the computer
 ;has been modified so that it has a 40 column screen but the extra
 ;screen RAM is present, this routine will think the machine has 80 columns.
+;The number of columns detected is stored in X_WIDTH
 ;
 ;X_WIDTH is also used in the keyboard scanning routine to select between
 ;business keyboard (80 columns) or graphics keyboard (40 columns).  This
@@ -98,11 +95,17 @@ init_4080:
     asl ;a
     sta screen+$400    ;Store #$AA in first byte of 80 col page.
     cmp screen+$400    ;Does it read back correctly?
-    bne init_term      ;  No: we're done, X_WIDTH = 40.
+    bne init_scrn_done ;  No: we're done, X_WIDTH = 40.
     lsr ;a
     cmp screen         ;Is the #$55 still intact?
-    bne init_term      ;  No: incomplete decoding, X_WIDTH = 40
+    bne init_scrn_done ;  No: incomplete decoding, X_WIDTH = 40
     asl x_width        ;  Yes: X_WIDTH = 80 characters
+init_scrn_done:
+    lda #$14
+    sta blink_cnt      ;Initialize cursor blink countdown
+    lda #$00
+    sta cursor_off     ;Cursor state = show the cursor
+                       ;Fall through into init_term
 
 init_term:
     jsr ctrl_16        ;Go to lowercase mode

@@ -92,22 +92,25 @@ init:
     lda #$0a
     sta repeatcount1   ;Store #$0A in REPEATCOUNT1
 ;--    CLI                ;Enable interrupts again
-    lda #$14
-    sta blink_cnt      ;Initialize cursor blink countdown
-    lda #$00
-    sta cursor_off     ;Cursor state = show the cursor
 
-init_4080:
+init_scrn:
 ;Detect 40/80 column screen and store in X_WIDTH.
 ;Initialize VIC-II registers for P500.
+;Initialize cursor state.
 ;
     jsr scrorg         ;Returns X=width, Y=height
     stx x_width
     cpx #$28           ;40 column screen?
-    bne init_hertz     ;  No: Skip P500 init
+    bne init_scrn_done ;  No: Skip P500 init
     lda #$00
     sta vic+$20        ;VIC-II Border color = Black
     sta vic+$21        ;VIC-II Background color = Black
+init_scrn_done:
+    lda #$14
+    sta blink_cnt      ;Initialize cursor blink countdown
+    lda #$00
+    sta cursor_off     ;Cursor state = show the cursor
+                       ;Fall through to init_hertz
 
 init_hertz:
 ;Initialize the powerline frequency constant used by our software clock.
