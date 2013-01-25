@@ -626,33 +626,11 @@ ctrl_1f:
 ;Do nothing
     rts
 
-putscr_then_done:
-;Put the screen code in the accumulator on the screen
-;and then fall through to PROCESS_DONE.
-;
-    ldx reverse        ;Is reverse video mode on?
-    beq l_07fa         ;  No:  leave character alone
-    eor #$80           ;  Yes: Flip bit 7 to reverse the character
-l_07fa:
-    jsr calc_scrpos    ;Calculate screen RAM pointer
-    sta (scrpos_lo),y  ;Write the character to the screen
-    jsr ctrl_0c        ;Advance the cursor
-
-process_done:
-;This routine always returns to DO_TERMINAL except during init.
-;
-    jsr calc_scrpos   ;Calculate screen RAM pointer
-    lda (scrpos_lo),y ;Get the current character on the screen
-    sta scrcode_tmp   ;  Remember it
-    lda cursor_tmp    ;Get the previous state of the cursor
-    sta cursor_off    ;  Restore it
-    rts
-
 put_char:
 ;Puts an ASCII (not PETSCII) character in the accumulator on the screen
 ;at the current CURSOR_X and CURSOR_Y position.  This routine first
 ;converts the character to its equivalent CBM screen code and then
-;jumps out to print it to the screen.
+;falls through to PUTSCR_THEN_DONE.
 ;
 ;Bytes $00-7F (bit 7 off) always correspond to the 7-bit standard
 ;ASCII character set and are converted to the equivalent CBM screen code.
@@ -696,7 +674,29 @@ l_07c6:
 l_07ca:
     and #$7f              ;Turn off bit 7
     ora #$40              ;Turn on bit 6
-    jmp putscr_then_done  ;Put it on the screen
+                          ;Fall through into PUTSCR_THEN_DONE
+
+putscr_then_done:
+;Put the screen code in the accumulator on the screen
+;and then fall through to PROCESS_DONE.
+;
+    ldx reverse        ;Is reverse video mode on?
+    beq l_07fa         ;  No:  leave character alone
+    eor #$80           ;  Yes: Flip bit 7 to reverse the character
+l_07fa:
+    jsr calc_scrpos    ;Calculate screen RAM pointer
+    sta (scrpos_lo),y  ;Write the character to the screen
+    jsr ctrl_0c        ;Advance the cursor
+
+process_done:
+;This routine always returns to DO_TERMINAL except during init.
+;
+    jsr calc_scrpos   ;Calculate screen RAM pointer
+    lda (scrpos_lo),y ;Get the current character on the screen
+    sta scrcode_tmp   ;  Remember it
+    lda cursor_tmp    ;Get the previous state of the cursor
+    sta cursor_off    ;  Restore it
+    rts
 
 ctrl_15:
 ;Go to uppercase mode
