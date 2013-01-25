@@ -626,78 +626,6 @@ ctrl_1f:
 ;Do nothing
     rts
 
-put_char:
-;Puts an ASCII (not PETSCII) character in the accumulator on the screen
-;at the current CURSOR_X and CURSOR_Y position.  This routine first
-;converts the character to its equivalent CBM screen code and then
-;falls through to PUT_SCRCODE.
-;
-;Bytes $00-7F (bit 7 off) always correspond to the 7-bit standard
-;ASCII character set and are converted to the equivalent CBM screen code.
-;
-;Bytes $80-FF (bit 7 on) are a special extended mode that display
-;the CBM graphics characters if the terminal is in 8-bit mode (CTRL_01):
-;
-;  Byte      Screen Code
-;  $80-BF -> $40-7F
-;  $C0-FF -> $40-7F
-;
-    cmp #$40              ;Is it < 64?
-    bcc put_scrcode       ;  Yes: done, put it on the screen
-    cmp #$60              ;Is it >= 96?
-    bcs l_07a6            ;  Yes: branch to L_07A6
-    and #$3f              ;Turn off bits 6 and 7
-    jmp l_07ac            ;Jump to L_07CA
-l_07a6:
-    cmp #$80              ;Is bit 7 set?
-    bcs l_07ca            ;  Yes: branch to L_07CA
-    and #$5f
-l_07ac:
-    tax
-    and #$3f              ;Turn off bit 7 and bit 6
-    beq l_07c6
-    cmp #$1b
-    bcs l_07c6
-    txa
-    eor #$40              ;Flip bit 6
-    tax
-    lda via_pcr           ;Bit 1 off = uppercase, on = lowercase
-    lsr ;a
-    lsr ;a
-    bcs l_07c6            ;Branch if lowercase mode
-    txa
-    and #$1f
-    jmp put_scrcode
-l_07c6:
-    txa
-    jmp put_scrcode
-l_07ca:
-    and #$7f              ;Turn off bit 7
-    ora #$40              ;Turn on bit 6
-                          ;Fall through into PUT_SCRCODE
-
-put_scrcode:
-;Put the screen code in the accumulator on the screen
-;and then fall through to PROCESS_DONE.
-;
-    ldx reverse        ;Is reverse video mode on?
-    beq l_07fa         ;  No:  leave character alone
-    eor #$80           ;  Yes: Flip bit 7 to reverse the character
-l_07fa:
-    jsr calc_scrpos    ;Calculate screen RAM pointer
-    sta (scrpos_lo),y  ;Write the character to the screen
-    jsr ctrl_0c        ;Advance the cursor
-
-process_done:
-;This routine always returns to DO_TERMINAL except during init.
-;
-    jsr calc_scrpos   ;Calculate screen RAM pointer
-    lda (scrpos_lo),y ;Get the current character on the screen
-    sta scrcode_tmp   ;  Remember it
-    lda cursor_tmp    ;Get the previous state of the cursor
-    sta cursor_off    ;  Restore it
-    rts
-
 ctrl_15:
 ;Go to uppercase mode
 ;
@@ -858,45 +786,6 @@ l_0884:
     bne l_0884        ;No, loop back for more on this line
     beq l_0870        ;Yes, loop back for next line
 l_088d:
-    rts
-
-scroll_up:
-;Scroll the screen up one line
-;
-    lda #$00
-    sta scrpos_lo
-    lda x_width
-    sta target_lo
-    lda #>screen
-    sta scrpos_hi
-    sta target_hi
-    ldx #$18
-l_089e:
-    ldy #$00
-l_08a0:
-    lda (target_lo),y
-    sta (scrpos_lo),y
-    iny
-    cpy x_width
-    bne l_08a0
-    lda target_lo
-    sta scrpos_lo
-    clc
-    adc x_width
-    sta target_lo
-    lda target_hi
-    sta scrpos_hi
-    adc #$00
-    sta target_hi
-    dex
-    bne l_089e
-    ldy #$00
-    lda #$20          ;SPACE
-l_08c1:
-    sta (scrpos_lo),y
-    iny
-    cpy x_width
-    bne l_08c1
     rts
 
 ctrl_04:
@@ -1103,6 +992,117 @@ l_09a8:
     adc #>screen
     sta scrpos_hi
     pla
+    rts
+
+scroll_up:
+;Scroll the screen up one line
+;
+    lda #$00
+    sta scrpos_lo
+    lda x_width
+    sta target_lo
+    lda #>screen
+    sta scrpos_hi
+    sta target_hi
+    ldx #$18
+l_089e:
+    ldy #$00
+l_08a0:
+    lda (target_lo),y
+    sta (scrpos_lo),y
+    iny
+    cpy x_width
+    bne l_08a0
+    lda target_lo
+    sta scrpos_lo
+    clc
+    adc x_width
+    sta target_lo
+    lda target_hi
+    sta scrpos_hi
+    adc #$00
+    sta target_hi
+    dex
+    bne l_089e
+    ldy #$00
+    lda #$20          ;SPACE
+l_08c1:
+    sta (scrpos_lo),y
+    iny
+    cpy x_width
+    bne l_08c1
+    rts
+
+put_char:
+;Puts an ASCII (not PETSCII) character in the accumulator on the screen
+;at the current CURSOR_X and CURSOR_Y position.  This routine first
+;converts the character to its equivalent CBM screen code and then
+;falls through to PUT_SCRCODE.
+;
+;Bytes $00-7F (bit 7 off) always correspond to the 7-bit standard
+;ASCII character set and are converted to the equivalent CBM screen code.
+;
+;Bytes $80-FF (bit 7 on) are a special extended mode that display
+;the CBM graphics characters if the terminal is in 8-bit mode (CTRL_01):
+;
+;  Byte      Screen Code
+;  $80-BF -> $40-7F
+;  $C0-FF -> $40-7F
+;
+    cmp #$40              ;Is it < 64?
+    bcc put_scrcode       ;  Yes: done, put it on the screen
+    cmp #$60              ;Is it >= 96?
+    bcs l_07a6            ;  Yes: branch to L_07A6
+    and #$3f              ;Turn off bits 6 and 7
+    jmp l_07ac            ;Jump to L_07CA
+l_07a6:
+    cmp #$80              ;Is bit 7 set?
+    bcs l_07ca            ;  Yes: branch to L_07CA
+    and #$5f
+l_07ac:
+    tax
+    and #$3f              ;Turn off bit 7 and bit 6
+    beq l_07c6
+    cmp #$1b
+    bcs l_07c6
+    txa
+    eor #$40              ;Flip bit 6
+    tax
+    lda via_pcr           ;Bit 1 off = uppercase, on = lowercase
+    lsr ;a
+    lsr ;a
+    bcs l_07c6            ;Branch if lowercase mode
+    txa
+    and #$1f
+    jmp put_scrcode
+l_07c6:
+    txa
+    jmp put_scrcode
+l_07ca:
+    and #$7f              ;Turn off bit 7
+    ora #$40              ;Turn on bit 6
+                          ;Fall through into PUT_SCRCODE
+
+put_scrcode:
+;Put the screen code in the accumulator on the screen
+;and then fall through to PROCESS_DONE.
+;
+    ldx reverse        ;Is reverse video mode on?
+    beq l_07fa         ;  No:  leave character alone
+    eor #$80           ;  Yes: Flip bit 7 to reverse the character
+l_07fa:
+    jsr calc_scrpos    ;Calculate screen RAM pointer
+    sta (scrpos_lo),y  ;Write the character to the screen
+    jsr ctrl_0c        ;Advance the cursor
+
+process_done:
+;This routine always returns to DO_TERMINAL except during init.
+;
+    jsr calc_scrpos   ;Calculate screen RAM pointer
+    lda (scrpos_lo),y ;Get the current character on the screen
+    sta scrcode_tmp   ;  Remember it
+    lda cursor_tmp    ;Get the previous state of the cursor
+    sta cursor_off    ;  Restore it
     rts
 
 
