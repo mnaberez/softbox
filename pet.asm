@@ -630,7 +630,7 @@ put_char:
 ;Puts an ASCII (not PETSCII) character in the accumulator on the screen
 ;at the current CURSOR_X and CURSOR_Y position.  This routine first
 ;converts the character to its equivalent CBM screen code and then
-;falls through to PUTSCR_THEN_DONE.
+;falls through to PUT_SCRCODE.
 ;
 ;Bytes $00-7F (bit 7 off) always correspond to the 7-bit standard
 ;ASCII character set and are converted to the equivalent CBM screen code.
@@ -643,7 +643,7 @@ put_char:
 ;  $C0-FF -> $40-7F
 ;
     cmp #$40              ;Is it < 64?
-    bcc putscr_then_done  ;  Yes: done, put it on the screen
+    bcc put_scrcode       ;  Yes: done, put it on the screen
     cmp #$60              ;Is it >= 96?
     bcs l_07a6            ;  Yes: branch to L_07A6
     and #$3f              ;Turn off bits 6 and 7
@@ -667,16 +667,16 @@ l_07ac:
     bcs l_07c6            ;Branch if lowercase mode
     txa
     and #$1f
-    jmp putscr_then_done
+    jmp put_scrcode
 l_07c6:
     txa
-    jmp putscr_then_done
+    jmp put_scrcode
 l_07ca:
     and #$7f              ;Turn off bit 7
     ora #$40              ;Turn on bit 6
-                          ;Fall through into PUTSCR_THEN_DONE
+                          ;Fall through into PUT_SCRCODE
 
-putscr_then_done:
+put_scrcode:
 ;Put the screen code in the accumulator on the screen
 ;and then fall through to PROCESS_DONE.
 ;
