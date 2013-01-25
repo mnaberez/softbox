@@ -840,12 +840,15 @@ ctrl_0b:
 ctrl_0c:
 ;Cursor right
 ;
-    inc cursor_x   ;X=X+1
+    inc cursor_x      ;X=X+1
     ldx cursor_x
-    cpx x_width    ;X > max X?
-    bne l_0817     ;  No:  Done, no need to scroll up.
-    lda #$00       ;  Yes: Set X=0 and then
-    sta cursor_x   ;       fall through into CTRL_0A to scroll.
+    cpx x_width       ;X > max X?
+    bne ctrl_0c_done  ;  No:  Done, don't move to the next line
+    lda #$00
+    sta cursor_x      ;  Yes: Set X=0 and then call ctrl_0a to
+    jsr ctrl_0a       ;       move to the next line.
+ctrl_0c_done:
+    rts
 
 ctrl_0a:
 ;Line feed
