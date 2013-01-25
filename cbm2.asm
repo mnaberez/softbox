@@ -660,7 +660,7 @@ process_byte:
     sta (scrpos_lo),y ;  Put it on the screen
     pla
     and char_mask     ;Mask off bits depending on char mode
-    ldx moveto_cnt    ;More bytes to consume for a move-to seq?
+    ldx moveto_cnt    ;More bytes to consume for a move-to sequence?
     bne l_0715        ;  Yes: branch to jump to move-to handler
     cmp #$20          ;Is this byte a control code?
     bcs l_0718        ;  No: branch to put char on screen
@@ -673,11 +673,33 @@ process_byte:
     jsr jump_cmd      ;Jump to vector to handle control code
     jmp process_done
 l_0715:
-    jmp move_to       ;Jump to handle move-to sequence
+    jmp process_move  ;Jump to handle move-to sequence
 l_0718:
     jmp put_char      ;Jump to put character on the screen
 jump_cmd:
     jmp (target_lo)   ;Jump to handle the control code
+
+process_move:
+;Implements CTRL_1B by handling the X-position byte on the first call
+;and the Y-position byte on the second call.  After the Y-position byte
+;has been consumed, MOVETO_CNT = 0, exiting the move-to sequence.
+;
+    dec moveto_cnt    ;Decrement bytes remaining to consume
+    beq l_09c8        ;Already got X pos?  Handle this byte as Y.
+    sec
+    sbc #$20          ;X-pos = X-pos - #$20
+    cmp x_width       ;Requested X position out of range?
+    bcs l_09c5        ;  Yes: Do nothing.
+    sta cursor_x      ;  No:  Move cursor to requested X.
+l_09c5:
+    jmp process_done  ;Done.
+l_09c8:
+    sec
+    sbc #$20          ;Y-pos = Y-pos - #$20
+    cmp #$19          ;Requested Y position out of range?
+    bcs l_09c5        ;  Yes: Do nothing.
+    sta cursor_y      ;  No:  Move cursor to requested Y.
+    jmp process_done  ;Done.
 
 ctrl_codes:
 ;Terminal control code dispatch table.  These control codes are based
@@ -1250,7 +1272,7 @@ ctrl_1b:
 ;
 ;The MOVETO_CNT byte counts down the remaining bytes to consume.  On
 ;successive passes through PROCESS_BYTE, the X and Y bytes are handled
-;by MOVE_TO.
+;by PROCESS_MOVE.
 ;
 ;Note: The X and Y values use the same layout as CURSOR_X and CURSOR_Y
 ;but they require an offset.  You must add decimal 32 to each value to
@@ -1260,28 +1282,6 @@ ctrl_1b:
     lda #$02          ;Two more bytes to consume (X-pos, Y-pos)
     sta moveto_cnt    ;Store count for next pass of PROCESS_BYTE
     rts
-
-move_to:
-;Implements CTRL_1B by handling the X-position byte on the first call
-;and the Y-position byte on the second call.  After the Y-position byte
-;has been consumed, MOVETO_CNT = 0, exiting the move-to sequence.
-;
-    dec moveto_cnt    ;Decrement bytes remaining to consume
-    beq l_09c8        ;Already got X pos?  Handle this byte as Y.
-    sec
-    sbc #$20          ;X-pos = X-pos - #$20
-    cmp x_width       ;Requested X position out of range?
-    bcs l_09c5        ;  Yes: Do nothing.
-    sta cursor_x      ;  No:  Move cursor to requested X.
-l_09c5:
-    jmp process_done  ;Done.
-l_09c8:
-    sec
-    sbc #$20          ;Y-pos = Y-pos - #$20
-    cmp #$19          ;Requested Y position out of range?
-    bcs l_09c5        ;  Yes: Do nothing.
-    sta cursor_y      ;  No:  Move cursor to requested Y.
-    jmp process_done  ;Done.
 
 scan_keyb:
 ;Scan the keyboard.
