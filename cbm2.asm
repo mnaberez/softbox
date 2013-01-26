@@ -676,32 +676,31 @@ process_byte:
     jsr jump_cmd      ;Jump to vector to handle control code
     jmp process_done
 l_0715:
-    jmp process_move  ;Jump to handle move-to sequence
+    jmp move_to       ;Jump to handle move-to sequence
 l_0718:
     jmp put_char      ;Jump to put character on the screen
 jump_cmd:
     jmp (target_lo)   ;Jump to handle the control code
 
-process_move:
+move_to:
 ;Implements CTRL_1B by handling the X-position byte on the first call
 ;and the Y-position byte on the second call.  After the Y-position byte
 ;has been consumed, MOVETO_CNT = 0, exiting the move-to sequence.
 ;
     dec moveto_cnt    ;Decrement bytes remaining to consume
-    beq l_09c8        ;Already got X pos?  Handle this byte as Y.
+    beq move_to_ypos  ;Already got X pos?  Handle this byte as Y.
     sec
     sbc #$20          ;X-pos = X-pos - #$20
     cmp x_width       ;Requested X position out of range?
-    bcs l_09c5        ;  Yes: Do nothing.
+    bcs move_to_done  ;  Yes: Do nothing.
     sta cursor_x      ;  No:  Move cursor to requested X.
-l_09c5:
-    jmp process_done  ;Done.
-l_09c8:
+move_to_ypos:
     sec
     sbc #$20          ;Y-pos = Y-pos - #$20
     cmp #$19          ;Requested Y position out of range?
-    bcs l_09c5        ;  Yes: Do nothing.
+    bcs move_to_done  ;  Yes: Do nothing.
     sta cursor_y      ;  No:  Move cursor to requested Y.
+move_to_done:
     jmp process_done  ;Done.
 
 ctrl_codes:
@@ -1018,7 +1017,7 @@ ctrl_1b:
 ;
 ;The MOVETO_CNT byte counts down the remaining bytes to consume.  On
 ;successive passes through PROCESS_BYTE, the X and Y bytes are handled
-;by PROCESS_MOVE.
+;by MOVE_TO.
 ;
 ;Note: The X and Y values use the same layout as CURSOR_X and CURSOR_Y
 ;but they require an offset.  You must add decimal 32 to each value to
