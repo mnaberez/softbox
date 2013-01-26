@@ -41,7 +41,7 @@ CHAR_MASK   = $13     ;Masks incoming bytes for 7- or 8-bit character mode
 RTC_JIFFIES = $14     ;Software Real Time Clock
 RTC_SECS    = $15     ;  The RTC locations can't be changed because they
 RTC_MINS    = $16     ;  are accessed directly by the SoftBox CP/M program
-RTC_HOURS   = $17     ;  TIME.COM using DO_READ_MEM and DO_WRITE_MEM.
+RTC_HOURS   = $17     ;  TIME.COM using DO_MEM_READ and DO_MEM_WRITE.
 JIFFY2      = $18     ;Jiffy counter (MSB)
 JIFFY1      = $19     ;Jiffy counter
 JIFFY0      = $1A     ;Jiffy counter (LSB)
@@ -230,10 +230,10 @@ $0527: 90 0C     BCC JMP_DO_GET_KEY ;Bit 1: Wait for a key and send it
 $0529: 6A        ROR A
 $052A: 90 0C     BCC DO_TERMINAL    ;Bit 2: Write to the terminal screen
 $052C: 6A        ROR A
-$052D: 90 17     BCC DO_JUMP        ;Bit 3: Jump to an address
+$052D: 90 17     BCC DO_MEM_JSR     ;Bit 3: Jump to a subroutine in CBM memory
 $052F: 6A        ROR A
-$0530: 90 5D     BCC DO_READ_MEM    ;Bit 4: Transfer from CBM memory to the SoftBox
-$0532: 4C 5B 05  JMP DO_WRITE_MEM   ;Bit 5: Transfer from the SoftBox to CBM memory
+$0530: 90 5D     BCC DO_MEM_READ    ;Bit 4: Transfer from CBM memory to the SoftBox
+$0532: 4C 5B 05  JMP DO_MEM_WRITE   ;Bit 5: Transfer from the SoftBox to CBM memory
 
 JMP_DO_GET_KEY:
 $0535: 4C C6 05  JMP DO_GET_KEY
@@ -246,18 +246,18 @@ $053D: 8E 21 E8  STX PIA2_NDAC      ;Set !NDAC_OUT = 1 to indicate we accept the
 $0540: 20 E8 06  JSR PROCESS_BYTE
 $0543: 4C E7 04  JMP MAIN_LOOP
 
-DO_JUMP:
-;Jump to an address
+DO_MEM_JSR:
+;Jump to a subroutine in CBM memory
 $0546: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
-$0549: 85 0D     STA TARGET_LO      ; -> Command vector lo
+$0549: 85 0D     STA TARGET_LO      ; -> Target vector lo
 $054B: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
-$054E: 85 0E     STA TARGET_HI      ; -> Command vector hi
+$054E: 85 0E     STA TARGET_HI      ; -> Target vector hi
 $0550: A2 3C     LDX #$3C
 $0552: 8E 21 E8  STX PIA2_NDAC      ;Set !NDAC_OUT = 1 to indicate we accept the data
-$0555: 20 1B 07  JSR JUMP_CMD       ;Jump to the command through TARGET_LO
+$0555: 20 1B 07  JSR JUMP_CMD       ;Jump to the subroutine through TARGET_LO
 $0558: 4C E7 04  JMP MAIN_LOOP
 
-DO_WRITE_MEM:
+DO_MEM_READ:
 ;Transfer bytes from the SoftBox to CBM memory
 $055B: 20 CF 05  JSR IEEE_GET_BYTE
 $055E: 85 11     STA XFER_LO
@@ -286,7 +286,7 @@ $0588: 05 11     ORA XFER_LO
 $058A: D0 E5     BNE L_0571
 $058C: 4C E7 04  JMP MAIN_LOOP
 
-DO_READ_MEM:
+DO_MEM_WRITE:
 ;Transfer bytes from CBM memory to the SoftBox
 $058F: 20 CF 05  JSR IEEE_GET_BYTE
 $0592: 85 11     STA XFER_LO

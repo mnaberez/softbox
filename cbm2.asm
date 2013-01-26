@@ -45,7 +45,7 @@ char_mask   = $13     ;Masks incoming bytes for 7- or 8-bit character mode
 rtc_jiffies = $14     ;Software Real Time Clock
 rtc_secs    = $15     ;  The RTC locations can't be changed because they
 rtc_mins    = $16     ;  are accessed directly by the SoftBox CP/M program
-rtc_hours   = $17     ;  TIME.COM using DO_READ_MEM and DO_WRITE_MEM.
+rtc_hours   = $17     ;  TIME.COM using DO_MEM_READ and DO_MEM_WRITE.
 jiffy2      = $18     ;Jiffy counter (MSB)
 jiffy1      = $19     ;Jiffy counter
 jiffy0      = $1a     ;Jiffy counter (LSB)
@@ -303,10 +303,10 @@ dispatch_command:
     ror ;a
     bcc do_terminal    ;Bit 2: Write to the terminal screen
     ror ;a
-    bcc do_jump        ;Bit 3: Jump to an address
+    bcc do_mem_jsr     ;Bit 3: Jump to a subroutine in CBM memory
     ror ;a
-    bcc do_read_mem    ;Bit 4: Transfer from CBM memory to the SoftBox
-    jmp do_write_mem   ;Bit 5: Transfer from the SoftBox to CBM memory
+    bcc do_mem_read    ;Bit 4: Transfer from CBM memory to the SoftBox
+    jmp do_mem_write   ;Bit 5: Transfer from the SoftBox to CBM memory
 
 do_get_key:
 ;Wait for a key and send it to the SoftBox.
@@ -329,19 +329,19 @@ do_terminal:
     jsr process_byte
     jmp main_loop
 
-do_jump:
-;Jump to an address
+do_mem_jsr:
+;Jump to a subroutine in CBM memory
     jsr ieee_get_byte  ;Get byte
-    sta target_lo      ; -> Command vector lo
+    sta target_lo      ; -> Target vector lo
     jsr ieee_get_byte  ;Get byte
-    sta target_hi      ; -> Command vector hi
+    sta target_hi      ; -> Target vector hi
     lda tpi1_pa
     ora #%01000000
     sta tpi1_pa        ;NDAC=hi
-    jsr jump_cmd       ;Jump to the command through TARGET_LO
+    jsr jump_cmd       ;Jump to the subroutine through TARGET_LO
     jmp main_loop
 
-do_read_mem:
+do_mem_read:
 ;Transfer bytes from CBM memory to the SoftBox
     jsr ieee_get_byte
     sta xfer_lo
@@ -373,7 +373,7 @@ l_05b2:
     bne l_05a8
     jmp main_loop
 
-do_write_mem:
+do_mem_write:
 ;Transfer bytes from the SoftBox to CBM memory
     jsr ieee_get_byte
     sta xfer_lo
