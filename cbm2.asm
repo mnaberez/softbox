@@ -931,8 +931,6 @@ ctrl_0a:
 l_0814:
     inc cursor_y   ;Increment Y position
     rts
-l_0817:
-    rts
 
 ctrl_1e:
 ;Home cursor
