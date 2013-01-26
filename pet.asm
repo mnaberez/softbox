@@ -488,58 +488,124 @@ l_06e2:
 process_byte:
 ;This is the core of the terminal emulator.  It accepts a byte in
 ;the accumulator, determines if it is a control code or character
-;to display, and then jumps accordingly.  After the jump, all
-;code paths will end up at PROCESS_DONE.
+;to display, and handles it accordingly.
 ;
     pha
-    lda cursor_off    ;Get the current cursor state
-    sta cursor_tmp    ;  Remember it
+    lda cursor_off        ;Get the current cursor state
+    sta cursor_tmp        ;  Remember it
     lda #$ff
-    sta cursor_off    ;Hide the cursor
-    jsr calc_scrpos   ;Calculate screen RAM pointer
-    lda scrcode_tmp   ;Get the screen code previously saved
-    sta (scrpos_lo),y ;  Put it on the screen
+    sta cursor_off        ;Hide the cursor
+    jsr calc_scrpos       ;Calculate screen RAM pointer
+    lda scrcode_tmp       ;Get the screen code previously saved
+    sta (scrpos_lo),y     ;  Put it on the screen
     pla
-    and char_mask     ;Mask off bits depending on char mode
-    ldx moveto_cnt    ;More bytes to consume for a move-to sequence?
-    bne l_0715        ;  Yes: branch to jump to move-to handler
-    cmp #$20          ;Is this byte a control code?
-    bcs l_0718        ;  No: branch to put char on screen
+    and char_mask         ;Mask off bits depending on char mode
+    ldx moveto_cnt        ;More bytes to consume for a move-to sequence?
+    bne process_move      ;  Yes: branch to jump to move-to handler
+    cmp #$20              ;Is this byte a control code?
+    bcs process_char      ;  No: branch to put char on screen
     asl ;a
     tax
-    lda ctrl_codes,x  ;Load vector from control code table
+process_ctrl:
+    lda ctrl_codes,x      ;Load vector from control code table
     sta target_lo
     lda ctrl_codes+1,x
     sta target_hi
-    jsr jump_cmd      ;Jump to vector to handle control code
+    jsr process_ctrl_ind  ;JSR to control code handler through vector
     jmp process_done
-l_0715:
-    jmp move_to       ;Jump to handle move-to sequence
-l_0718:
-    jmp put_char      ;Jump to put character on the screen
-jump_cmd:
-    jmp (target_lo)   ;Jump to handle the control code
+process_ctrl_ind:
+    jmp (target_lo)
+process_move:
+    jsr move_to           ;JSR to move-to sequence handler
+    jmp process_done
+process_char:
+    jsr put_char          ;JSR to put a character on the screen
+process_done:
+    jsr calc_scrpos       ;Calculate screen RAM pointer
+    lda (scrpos_lo),y     ;Get the current character on the screen
+    sta scrcode_tmp       ;  Remember it
+    lda cursor_tmp        ;Get the previous state of the cursor
+    sta cursor_off        ;  Restore it
+    rts
 
 move_to:
 ;Implements CTRL_1B by handling the X-position byte on the first call
 ;and the Y-position byte on the second call.  After the Y-position byte
 ;has been consumed, MOVETO_CNT = 0, exiting the move-to sequence.
 ;
-    dec moveto_cnt    ;Decrement bytes remaining to consume
-    beq move_to_ypos  ;Already got X pos?  Handle this byte as Y.
+    dec moveto_cnt        ;Decrement bytes remaining to consume
+    beq move_to_ypos      ;Already got X pos?  Handle this byte as Y.
     sec
-    sbc #$20          ;X-pos = X-pos - #$20
-    cmp x_width       ;Requested X position out of range?
-    bcs move_to_done  ;  Yes: Do nothing.
-    sta cursor_x      ;  No:  Move cursor to requested X.
+    sbc #$20              ;X-pos = X-pos - #$20
+    cmp x_width           ;Requested X position out of range?
+    bcs move_to_done      ;  Yes: Do nothing.
+    sta cursor_x          ;  No:  Move cursor to requested X.
 move_to_ypos:
     sec
-    sbc #$20          ;Y-pos = Y-pos - #$20
-    cmp #$19          ;Requested Y position out of range?
-    bcs move_to_done  ;  Yes: Do nothing.
-    sta cursor_y      ;  No:  Move cursor to requested Y.
+    sbc #$20              ;Y-pos = Y-pos - #$20
+    cmp #$19              ;Requested Y position out of range?
+    bcs move_to_done      ;  Yes: Do nothing.
+    sta cursor_y          ;  No:  Move cursor to requested Y.
 move_to_done:
-    jmp process_done  ;Done.
+    rts
+
+put_char:
+;Puts an ASCII (not PETSCII) character in the accumulator on the screen
+;at the current CURSOR_X and CURSOR_Y position.  This routine first
+;converts the character to its equivalent CBM screen code and then
+;falls through to PUT_SCRCODE.
+;
+;Bytes $00-7F (bit 7 off) always correspond to the 7-bit standard
+;ASCII character set and are converted to the equivalent CBM screen code.
+;
+;Bytes $80-FF (bit 7 on) are a special extended mode that display
+;the CBM graphics characters if the terminal is in 8-bit mode (CTRL_01):
+;
+;  Byte      Screen Code
+;  $80-BF -> $40-7F
+;  $C0-FF -> $40-7F
+;
+    cmp #$40              ;Is it < 64?
+    bcc put_scrcode       ;  Yes: done, put it on the screen
+    cmp #$60              ;Is it >= 96?
+    bcs l_07a6            ;  Yes: branch to L_07A6
+    and #$3f              ;Turn off bits 6 and 7
+    jmp l_07ac            ;Jump to L_07CA
+l_07a6:
+    cmp #$80              ;Is bit 7 set?
+    bcs l_07ca            ;  Yes: branch to L_07CA
+    and #$5f
+l_07ac:
+    tax
+    and #$3f              ;Turn off bit 7 and bit 6
+    beq l_07c6
+    cmp #$1b
+    bcs l_07c6
+    txa
+    eor #$40              ;Flip bit 6
+    tax
+    lda via_pcr           ;Bit 1 off = uppercase, on = lowercase
+    lsr ;a
+    lsr ;a
+    bcs l_07c6            ;Branch if lowercase mode
+    txa
+    and #$1f
+    jmp put_scrcode
+l_07c6:
+    txa
+    jmp put_scrcode
+l_07ca:
+    and #$7f              ;Turn off bit 7
+    ora #$40              ;Turn on bit 6
+put_scrcode:
+    ldx reverse           ;Is reverse video mode on?
+    beq l_07fa            ;  No:  leave screen code alone
+    eor #$80              ;  Yes: Flip bit 7 to reverse the character
+l_07fa:
+    jsr calc_scrpos       ;Calculate screen RAM pointer
+    sta (scrpos_lo),y     ;Write the screen code to screen RAM
+    jsr ctrl_0c           ;Advance the cursor
+    rts
 
 ctrl_codes:
 ;Terminal control code dispatch table.  These control codes are based
@@ -1041,79 +1107,6 @@ l_08c1:
     cpy x_width
     bne l_08c1
     rts
-
-put_char:
-;Puts an ASCII (not PETSCII) character in the accumulator on the screen
-;at the current CURSOR_X and CURSOR_Y position.  This routine first
-;converts the character to its equivalent CBM screen code and then
-;falls through to PUT_SCRCODE.
-;
-;Bytes $00-7F (bit 7 off) always correspond to the 7-bit standard
-;ASCII character set and are converted to the equivalent CBM screen code.
-;
-;Bytes $80-FF (bit 7 on) are a special extended mode that display
-;the CBM graphics characters if the terminal is in 8-bit mode (CTRL_01):
-;
-;  Byte      Screen Code
-;  $80-BF -> $40-7F
-;  $C0-FF -> $40-7F
-;
-    cmp #$40              ;Is it < 64?
-    bcc put_scrcode       ;  Yes: done, put it on the screen
-    cmp #$60              ;Is it >= 96?
-    bcs l_07a6            ;  Yes: branch to L_07A6
-    and #$3f              ;Turn off bits 6 and 7
-    jmp l_07ac            ;Jump to L_07CA
-l_07a6:
-    cmp #$80              ;Is bit 7 set?
-    bcs l_07ca            ;  Yes: branch to L_07CA
-    and #$5f
-l_07ac:
-    tax
-    and #$3f              ;Turn off bit 7 and bit 6
-    beq l_07c6
-    cmp #$1b
-    bcs l_07c6
-    txa
-    eor #$40              ;Flip bit 6
-    tax
-    lda via_pcr           ;Bit 1 off = uppercase, on = lowercase
-    lsr ;a
-    lsr ;a
-    bcs l_07c6            ;Branch if lowercase mode
-    txa
-    and #$1f
-    jmp put_scrcode
-l_07c6:
-    txa
-    jmp put_scrcode
-l_07ca:
-    and #$7f              ;Turn off bit 7
-    ora #$40              ;Turn on bit 6
-                          ;Fall through into PUT_SCRCODE
-
-put_scrcode:
-;Put the screen code in the accumulator on the screen
-;and then fall through to PROCESS_DONE.
-;
-    ldx reverse        ;Is reverse video mode on?
-    beq l_07fa         ;  No:  leave character alone
-    eor #$80           ;  Yes: Flip bit 7 to reverse the character
-l_07fa:
-    jsr calc_scrpos    ;Calculate screen RAM pointer
-    sta (scrpos_lo),y  ;Write the character to the screen
-    jsr ctrl_0c        ;Advance the cursor
-
-process_done:
-;This routine always returns to DO_TERMINAL except during init.
-;
-    jsr calc_scrpos   ;Calculate screen RAM pointer
-    lda (scrpos_lo),y ;Get the current character on the screen
-    sta scrcode_tmp   ;  Remember it
-    lda cursor_tmp    ;Get the previous state of the cursor
-    sta cursor_off    ;  Restore it
-    rts
-
 
 scan_keyb:
 ;Scan the keyboard.
