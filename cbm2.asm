@@ -925,11 +925,11 @@ ctrl_0a:
 ;Line feed
 ;
     ldy cursor_y
-    cpy #$18       ;Are we on line 24?
-    bne l_0814     ;  No:  Done, scroll is not needed
-    jmp scroll_up  ;  Yes: Scroll the screen up first
-l_0814:
-    inc cursor_y   ;Increment Y position
+    cpy #$18          ;Are we on the bottom line?
+    bne ctrl_0a_incy  ;  No:  Increment Y, do not scroll up
+    jmp scroll_up     ;  Yes: Y remains unchanged, jump out to scroll
+ctrl_0a_incy:
+    inc cursor_y      ;Increment Y position
     rts
 
 ctrl_1e:

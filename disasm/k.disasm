@@ -552,7 +552,7 @@ $072A:           .WORD CTRL_06  ;Clear all TAB STOPS
 $072C:           .WORD CTRL_07  ;Ring bell
 $072E:           .WORD CTRL_08  ;Cursor left
 $0730:           .WORD CTRL_09  ;Perform TAB
-$0732:           .WORD CTRL_0A  ;Line feed
+$0732:           .WORD CTRL_0A  ;Cursor down (Line feed)
 $0734:           .WORD CTRL_0B  ;Cursor up
 $0736:           .WORD CTRL_0C  ;Cursor right
 $0738:           .WORD CTRL_0D  ;Carriage return
@@ -751,12 +751,12 @@ $0807: A9 00     LDA #$00       ;  Yes: Set X=0 and then
 $0809: 85 04     STA CURSOR_X   ;       fall through into CTRL_0A to scroll.
 
 CTRL_0A:
-;Line feed
+;Cursor down (Line feed)
 ;
 $080B: A4 05     LDY CURSOR_Y
-$080D: C0 18     CPY #$18       ;Are we on line 24?
-$080F: D0 03     BNE L_0814     ;  No:  Done, scroll is not needed
-$0811: 4C 8E 08  JMP SCROLL_UP  ;  Yes: Scroll the screen up first
+$080D: C0 18     CPY #$18       ;Are we on the bottom line?
+$080F: D0 03     BNE L_0814     ;  No:  Increment Y, do not scroll up
+$0811: 4C 8E 08  JMP SCROLL_UP  ;  Yes: Y remains unchanged, jump out to scroll
 L_0814:
 $0814: E6 05     INC CURSOR_Y   ;Increment Y position
 $0816: 60        RTS
