@@ -245,8 +245,10 @@ do_mem_jsr:
     sta target_hi      ; -> Target vector hi
     ldx #$3c
     stx pia2_ndac      ;Set !NDAC_OUT = 1 to indicate we accept the data
-    jsr jump_cmd       ;Jump to the subroutine through TARGET_LO
+    jsr do_mem_jsr_ind ;Jump to the subroutine through TARGET_LO
     jmp main_loop
+do_mem_jsr_ind:
+    jmp (target_lo)
 
 do_mem_read:
 ;Transfer bytes from CBM memory to the SoftBox

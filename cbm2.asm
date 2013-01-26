@@ -338,8 +338,10 @@ do_mem_jsr:
     lda tpi1_pa
     ora #%01000000
     sta tpi1_pa        ;NDAC=hi
-    jsr jump_cmd       ;Jump to the subroutine through TARGET_LO
+    jsr do_mem_jsr_ind ;Jump to the subroutine through TARGET_LO
     jmp main_loop
+do_mem_jsr_ind:
+    jmp (target_lo)
 
 do_mem_read:
 ;Transfer bytes from CBM memory to the SoftBox
