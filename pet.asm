@@ -736,14 +736,14 @@ ctrl_0b_done:
 ctrl_0c:
 ;Cursor right
 ;
-    inc cursor_x      ;X=X+1
+    inc cursor_x          ;X=X+1
     ldx cursor_x
-    cpx x_width       ;X > max X?
-    bne ctrl_0c_done  ;  No:  Done, don't move to the next line
-    jsr ctrl_0d       ;  Yes: Carriage return, then
-    jmp ctrl_0a       ;       jump out to line feed
-ctrl_0c_done:
-    rts
+    cpx x_width           ;X > max X?
+    beq ctrl_0c_crlf
+    rts                   ;  No:  Done, stay on the current line
+ctrl_0c_crlf:
+    jsr ctrl_0d           ;  Yes: Carriage return, then
+    jmp ctrl_0a           ;       jump out to line feed
 
 ctrl_0d:
 ;Carriage return
