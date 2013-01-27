@@ -663,7 +663,7 @@ $079B: 90 ED     BCC PUTSCR_THEN_DONE  ;  Yes: done, put it on the screen
 $079D: C9 60     CMP #$60              ;Is it >= 96?
 $079F: B0 05     BCS L_07A6            ;  Yes: branch to L_07A6
 $07A1: 29 3F     AND #$3F              ;Turn off bits 6 and 7
-$07A3: 4C AC 07  JMP L_07AC            ;Jump to L_07CA
+$07A3: 4C AC 07  JMP L_07AC            ;Jump to L_07AC
 L_07A6:
 $07A6: C9 80     CMP #$80              ;Is bit 7 set?
 $07A8: B0 20     BCS L_07CA            ;  Yes: branch to L_07CA

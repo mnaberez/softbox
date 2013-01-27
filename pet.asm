@@ -570,7 +570,7 @@ put_char:
     cmp #$60              ;Is it >= 96?
     bcs l_07a6            ;  Yes: branch to L_07A6
     and #$3f              ;Turn off bits 6 and 7
-    jmp l_07ac            ;Jump to L_07CA
+    jmp l_07ac            ;Jump to L_07AC
 l_07a6:
     cmp #$80              ;Is bit 7 set?
     bcs l_07ca            ;  Yes: branch to L_07CA
