@@ -118,23 +118,12 @@ init_term:
 
 init_ieee:
 ;
-;6522 VIA
-;  PB0: !NDAC_IN
-;  PB1: !NRFD_OUT
-;  PB2: !ATN_OUT
-;  PB6: !NFRD_IN
+;6522 VIA            6520 PIA #1            6520 PIA #2
+;  PB0: !NDAC_IN       PA0-7: Data In         CA1: !ATN_IN
+;  PB1: !NRFD_OUT      PB0-7: Data Out        CA2: !NDAC_OUT
+;  PB2: !ATN_OUT       CA2: !EOI_OUT          CB1: !SRQ_IN
+;  PB6: !NFRD_IN                              CB2: !DAV_OUT
 ;  PB7: !DAV_IN
-;
-;6520 PIA #1
-;  PA0-7: Data In
-;  PB0-7: Data Out
-;  CA2: !EOI_OUT
-;
-;6520 PIA #2
-;  CA1: !ATN_IN
-;  CA2: !NDAC_OUT
-;  CB1: !SRQ_IN
-;  CB2: !DAV_OUT
 ;
     lda pia2_iout      ;Clears IRQA1 flag (!ATN_IN detect)
     lda via_pb
