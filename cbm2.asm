@@ -6,6 +6,7 @@ keyd        = $03ab   ;Keyboard Buffer
 screen      = $d000   ;Start of screen RAM
 vic         = $d800   ;6567/6569 VIC-II (P-series)
 crtc        = $d800   ;6545 CRTC (B-series)
+sid         = $da00   ;6581 SID
 cia2_pa     = $dc00   ;6526 CIA #2 Port A
 cia2_ddra   = $dc02   ;6526 CIA #2 Data Direction Register A
 cia2_cra    = $dc0e   ;6526 CIA #2 Control Register A
@@ -19,7 +20,6 @@ tpi1_air    = $de07   ;6525 TPI #1 Active Interrupt Register
 tpi2_pa     = $df00   ;6525 TPI #1 Port A - Keyboard Row select LO
 tpi2_pb     = $df01   ;6525 TPI #1 Port B - Keyboard Row select HI
 tpi2_pc     = $df02   ;6525 TPI #1 Port C - Keyboard Col read
-chrout      = $ffd2   ;KERNAL Send a char to the current output device
 scrorg      = $ffed   ;KERNAL Get screen dimensions
 ;
 e6509       = $00     ;6509 Execute Register
@@ -808,8 +808,27 @@ ctrl_codes:
 ctrl_07:
 ;Ring bell
 ;
-    lda #$07   ;CHR$(7) = Bell
-    jmp chrout ;Kernal Print a byte
+   lda #$15
+   sta sid+$18            ;Mode/Vol
+   bit x_width            ;80 columns?
+   bvs ctrl_07_b          ;  Yes: branch to B-series settings
+ctrl_07_p:
+   lda #$30               ;P-series settings
+   ldx #$09
+   jmp ctrl_07_bell
+ctrl_07_b:
+   lda #$18               ;B-series settings
+   ldx #$0a
+ctrl_07_bell:
+   sta sid+$01            ;Voice 1 Freq Hi
+   stx sid+$05            ;Voice 1 Attack/Decay
+   lda #$00
+   sta sid+$06            ;Voice 1 Sustain/Release
+   ldx #$20
+   stx sid+$04            ;Voice 1 = Sawtooth, Gate off
+   inx
+   stx sid+$04            ;Voice 1 = Sawtooth, Gate on
+   rts
 
 ctrl_18:
 ;Set line spacing to tall (the default spacing for lowercase graphic mode).
