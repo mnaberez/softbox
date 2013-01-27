@@ -667,9 +667,9 @@ process_byte:
     bne process_move      ;  Yes: branch to jump to move-to handler
     cmp #$20              ;Is this byte a control code?
     bcs process_char      ;  No: branch to put char on screen
+process_ctrl:
     asl ;a
     tax
-process_ctrl:
     lda ctrl_codes,x      ;Load vector from control code table
     sta target_lo
     lda ctrl_codes+1,x
