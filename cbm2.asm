@@ -714,9 +714,9 @@ move_to_done:
 
 put_char:
 ;Puts an ASCII (not PETSCII) character in the accumulator on the screen
-;at the current CURSOR_X and CURSOR_Y position.  This routine first
-;converts the character to its equivalent CBM screen code and then
-;falls through to PUT_SCRCODE.
+;at the current CURSOR_X and CURSOR_Y position.  This routine converts the
+;character to its equivalent CBM screen code, puts it on the screen, then
+;advances the cursor and returns to the caller.
 ;
 ;Bytes $00-7F (bit 7 off) always correspond to the 7-bit standard
 ;ASCII character set and are converted to the equivalent CBM screen code.
@@ -765,8 +765,7 @@ put_scrcode:
 l_07fa:
     jsr calc_scrpos       ;Calculate screen RAM pointer
     sta (scrpos_lo),y     ;Write the screen code to screen RAM
-    jsr ctrl_0c           ;Advance the cursor
-    rts
+    jmp ctrl_0c           ;Jump out to advance the cursor and return
 
 ctrl_codes:
 ;Terminal control code dispatch table.  These control codes are based
