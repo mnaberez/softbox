@@ -782,7 +782,7 @@ ctrl_codes:
     !word ctrl_07   ; Ring bell
     !word ctrl_08   ; Cursor left
     !word ctrl_09   ; Perform TAB
-    !word ctrl_0a   ; Line feed
+    !word ctrl_0a   ; Cursor down (Line feed)
     !word ctrl_0b   ; Cursor up
     !word ctrl_0c   ; Cursor right
     !word ctrl_0d   ; Carriage return
@@ -921,7 +921,7 @@ ctrl_0d:
     rts
 
 ctrl_0a:
-;Line feed
+;Cursor down (Line feed)
 ;
     ldy cursor_y
     cpy #$18          ;Are we on the bottom line?
