@@ -39,6 +39,7 @@ rtc_hours   = $17     ;  TIME.COM using DO_MEM_READ and DO_MEM_WRITE.
 jiffy2      = $18     ;Jiffy counter (MSB)
 jiffy1      = $19     ;Jiffy counter
 jiffy0      = $1a     ;Jiffy counter (LSB)
+uppercase   = $1b     ;Uppercase graphics flag (lower = $00, upper = $80)
 ;
     *=$0400
 
@@ -572,12 +573,8 @@ l_07ac:
     bcs l_07c6
     txa
     eor #$40              ;Flip bit 6
-    tax
-    lda via_pcr           ;Bit 1 off = uppercase, on = lowercase
-    lsr ;a
-    lsr ;a
-    bcs l_07c6            ;Branch if lowercase mode
-    txa
+    bit uppercase
+    bpl put_scrcode       ;Branch if lowercase mode
     and #$1f
     jmp put_scrcode
 l_07c6:
@@ -684,15 +681,19 @@ ctrl_1f:
 ctrl_15:
 ;Go to uppercase mode
 ;
+    lda #$80
+    sta uppercase
     lda #$0c
-    sta via_pcr  ;Graphic mode = uppercase
+    sta via_pcr           ;Graphic mode = uppercase
     rts
 
 ctrl_16:
 ;Go to lowercase mode
 ;
+    lda #$00
+    sta uppercase
     lda #$0e
-    sta via_pcr  ;Graphic mode = lowercase
+    sta via_pcr           ;Graphic mode = lowercase
     rts
 
 ctrl_08:
@@ -1219,12 +1220,8 @@ key_atoz:
     bne key_check2         ; No,skip to next test
 
 ;---- Handle regular A-Z
-    pha                    ;Yes, push the character code to stack
-    lda via_pcr            ;Bit 1 off = uppercase, on = lowercase
-    lsr ;a                 ;shift
-    lsr ;a                 ;shift to get BIT 2
-    pla                    ;pull the character code from stack
-    bcc key_check2         ;Branch if uppercase mode
+    bit uppercase
+    bmi key_check2         ;Branch if uppercase mode
     ora #$20               ;Convert character to UPPERCASE HERE
     rts                    ;Return with character code in A
 
@@ -1246,13 +1243,8 @@ key_sh_codes:
     beq key_ctrl_code
 
 ;---- these must be normal shifted keys or Graphics?
-    pha                    ;Push key to stack
-    lda via_pcr            ;Bit 1 off = uppercase, on = lowercase
-    lsr ;a                 ;shift
-    lsr ;a                 ;shift - check bit 1
-    pla                    ;Pull original key from stack
-    bcs key_set            ;Branch if lowercase mode
-
+    bit uppercase
+    bpl key_set            ;Branch if lowercase mode
     ora #$80               ;Set the HIGH BIT
     rts                    ;Return with character code in A?
 
