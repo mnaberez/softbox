@@ -51,7 +51,7 @@ jiffy1      = $19     ;Jiffy counter
 jiffy0      = $1a     ;Jiffy counter (LSB)
 blink_cnt   = $1b     ;Counter used for cursor blink timing
 got_srq     = $1c     ;IEEE-488 SRQ detect: zero=no SRQ, nonzero=SRQ pending
-uppercase   = $1d     ;Uppercase graphics flag (uppercase on = 1)
+uppercase   = $1d     ;Uppercase graphics flag (lower = $00, upper = $80)
 hertz       = $1e     ;Constant for powerline frequency: 50 or 60 Hz
 
 ;Configure VICE
@@ -748,10 +748,8 @@ l_07ac:
     bcs l_07c6
     txa
     eor #$40              ;Flip bit 6
-    tax
-    lda uppercase
-    beq l_07c6            ;Branch if lowercase mode
-    txa
+    bit uppercase
+    bpl put_scrcode       ;Branch if lowercase mode
     and #$1f
     jmp put_scrcode
 l_07c6:
@@ -863,7 +861,7 @@ ctrl_1f:
 ctrl_15:
 ;Go to uppercase mode
 ;
-    lda #$01
+    lda #$80
     sta uppercase         ;Set flag to indicate uppercase = on
     bit x_width           ;40 columns?
     bvc ctrl_15_1         ;  Yes: branch to P-series routine
@@ -1431,14 +1429,9 @@ key_atoz:
     bne key_check2         ; No,skip to next test
 
 ;---- Handle regular A-Z
-    ;pha                    ;Yes, push the character code to stack
-    ;lda via_pcr            ;Bit 1 off = uppercase, on = lowercase
-    ;lsr ;a                 ;shift
-    ;lsr ;a                 ;shift to get BIT 2
-    ;pla                    ;pull the character code from stack
-    ;bcc key_check2         ;Branch if uppercase mode
+    bit uppercase
+    bmi key_check2         ;Branch if uppercase mode
     ora #$20               ;Convert character to UPPERCASE HERE
-
     rts                    ;Return with character code in A
 
 ;---- Check SHIFT flag
@@ -1453,12 +1446,8 @@ key_sh_codes:
     beq key_ctrl_code
 
 ;---- these must be normal shifted keys or Graphics?
-    ;pha                    ;Push key to stack
-    ;lda uppercase          ;Bit 0 off = lowercase, on = uppercase
-    ;ror ;a                 ;Rotate uppercase flag bit into carry
-    ;pla                    ;Pull original key from stack
-    ;bcc key_set            ;Branch if lowercase mode
-
+    bit uppercase
+    bpl key_set            ;Branch if lowercase mode
     ora #$80               ;Set the HIGH BIT
     rts                    ;Return with character code in A?
 
