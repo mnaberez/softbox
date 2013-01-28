@@ -80,6 +80,8 @@ init:
     lda tpi1_pb
     and #%10111111
     sta tpi1_pb        ;Turn cassette motor off
+    lda #$15
+    sta sid+$18        ;SID mode/vol (used by bell)
     lda #$00
     sta rtc_jiffies    ;Reset software real time clock
     sta rtc_secs
@@ -808,26 +810,23 @@ ctrl_codes:
 ctrl_07:
 ;Ring bell
 ;
-   lda #$15
-   sta sid+$18            ;Mode/Vol
    bit x_width            ;80 columns?
    bvs ctrl_07_b          ;  Yes: branch to B-series settings
 ctrl_07_p:
-   lda #$30               ;P-series settings
+   lda #$40               ;P-series settings
    ldx #$09
    jmp ctrl_07_bell
 ctrl_07_b:
-   lda #$18               ;B-series settings
+   lda #$20               ;B-series settings
    ldx #$0a
 ctrl_07_bell:
    sta sid+$01            ;Voice 1 Freq Hi
    stx sid+$05            ;Voice 1 Attack/Decay
    lda #$00
    sta sid+$06            ;Voice 1 Sustain/Release
-   ldx #$20
-   stx sid+$04            ;Voice 1 = Sawtooth, Gate off
-   inx
-   stx sid+$04            ;Voice 1 = Sawtooth, Gate on
+   sta sid+$04            ;Voice 1 = No waveform, Gate off
+   lda #$11
+   sta sid+$04            ;Voice 1 = Triangle waveform, Gate on
    rts
 
 ctrl_18:
