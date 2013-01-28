@@ -22,7 +22,7 @@ cursor_off  = $06     ;Cursor state: zero = show, nonzero = hide
 scrcode_tmp = $07     ;Temporary storage for the last screen code
 keycount    = $08     ;Number of keys in the buffer at keyd
 x_width     = $09     ;Width of X in characters (40 or 80)
-reverse     = $0a     ;Reverse video flag (reverse on = 1)
+rvs_mask    = $0a     ;Reverse video mask (normal = $00, reverse = $80)
 moveto_cnt  = $0b     ;Counts down bytes to consume in a move-to (CTRL_1B) seq
 cursor_tmp  = $0c     ;Pending cursor state used with CURSOR_OFF
 target_lo   = $0d     ;Target address for mem xfers, ind jump, & CTRL_11 - LO
@@ -587,10 +587,7 @@ l_07ca:
     and #$7f              ;Turn off bit 7
     ora #$40              ;Turn on bit 6
 put_scrcode:
-    ldx reverse           ;Is reverse video mode on?
-    beq l_07fa            ;  No:  leave screen code alone
-    eor #$80              ;  Yes: Flip bit 7 to reverse the character
-l_07fa:
+    eor rvs_mask          ;Reverse the screen code if needed
     jsr calc_scrpos       ;Calculate screen RAM pointer
     sta (scrpos_lo),y     ;Write the screen code to screen RAM
     jmp ctrl_0c           ;Jump out to advance the cursor and return
@@ -797,15 +794,15 @@ ctrl_19:
 ctrl_0e:
 ;Reverse video on
 ;
-    lda #$01
-    sta reverse
+    lda #$80
+    sta rvs_mask
     rts
 
 ctrl_0f:
 ;Reverse video off
 ;
     lda #$00
-    sta reverse
+    sta rvs_mask
     rts
 
 ctrl_13:
