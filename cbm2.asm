@@ -923,14 +923,15 @@ ctrl_0c:
     beq ctrl_0c_crlf
     rts                   ;  No:  Done, stay on the current line
 ctrl_0c_crlf:
-    jsr ctrl_0d           ;  Yes: Carriage return, then
+    ldx #$00
+    stx cursor_x          ;  Yes: Carriage return, then
     jmp ctrl_0a           ;       jump out to line feed
 
 ctrl_0d:
 ;Carriage return
 ;
-    lda #$00       ;Move to X=0 on this line
-    sta cursor_x
+    ldx #$00              ;Move to X=0 on this line
+    stx cursor_x
     rts
 
 ctrl_0a:
