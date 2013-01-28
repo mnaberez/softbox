@@ -1448,12 +1448,6 @@ key_check2:
 
 ;---- Translate SHIFTED 0-31 codes to terminal control codes
 key_sh_codes:
-    ldx #$0b               ;CTRL_0B Cursor up
-    cmp #$0a               ;SCAN=CRSR DOWN
-    beq key_ctrl_code
-    ldx #$08               ;CTRL_08 Cursor left
-    cmp #$0c               ;SCAN=CRSR RIGHT
-    beq key_ctrl_code
     ldx #$1a               ;CTRL_1A Clear screen
     cmp #$1e               ;SCAN=HOME
     beq key_ctrl_code
@@ -1499,9 +1493,9 @@ key_table:
     !byte $ff,$b8,$49,$4b,$2c,$2e ; F8    8     I     K     ,     .
     !byte $ff,$b9,$4f,$4c,$3b,$2f ; F9    9     NONE  L     ;     /
     !byte $ff,$b0,$2d,$50,$5b,$27 ; F10   0     -     P     [     '
-    !byte $11,$3d,$5f,$5d,$0d,$de ; DOWN  =     BARRW ]     RETRN PI
-    !byte $91,$9d,$1d,$7f,$02,$ff ; UP    LEFT  RIGHT DEL   CBM   NONE
-    !byte $13,$3f,$37,$34,$31,$30 ; HOME  ?     7     4     1     0
+    !byte $0a,$3d,$5f,$5d,$0d,$de ; DOWN  =     BARRW ]     RETRN PI
+    !byte $0b,$08,$0c,$7f,$02,$ff ; UP    LEFT  RIGHT DEL   CBM   NONE
+    !byte $1e,$3f,$37,$34,$31,$30 ; HOME  ?     7     4     1     0
     !byte $12,$04,$38,$35,$32,$2e ; RVS   CE    8     5     2     .
     !byte $8e,$2a,$39,$36,$33,$30 ; GRAPH *     9     6     3     00
     !byte $03,$2f,$2d,$2b,$0d,$ff ; STOP  /     -     +     ENTER NONE
