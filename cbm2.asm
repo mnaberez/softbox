@@ -1212,12 +1212,11 @@ l_0970:
     bne l_0970
     jmp l_0951
 l_097c:
-    ldy #$00
     lda #$20          ;SPACE
+    ldy x_width
 l_0980:
+    dey
     sta (scrpos_lo),y
-    iny
-    cpy x_width
     bne l_0980
     rts
 
@@ -1282,12 +1281,11 @@ l_08a0:
     sta target_hi
     dex
     bne l_089e
-    ldy #$00
     lda #$20          ;SPACE
+    ldy x_width
 l_08c1:
+    dey
     sta (scrpos_lo),y
-    iny
-    cpy x_width
     bne l_08c1
     rts
 
