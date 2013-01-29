@@ -246,7 +246,7 @@ $0552: 8E 21 E8  STX PIA2_NDAC      ;Set !NDAC_OUT = 1 to indicate we accept the
 $0555: 20 1B 07  JSR JUMP_CMD       ;Jump to the subroutine through TARGET_LO
 $0558: 4C E7 04  JMP MAIN_LOOP
 
-DO_MEM_READ:
+DO_MEM_WRITE:
 ;Transfer bytes from the SoftBox to CBM memory
 $055B: 20 CF 05  JSR IEEE_GET_BYTE
 $055E: 85 11     STA XFER_LO
@@ -275,7 +275,7 @@ $0588: 05 11     ORA XFER_LO
 $058A: D0 E5     BNE L_0571
 $058C: 4C E7 04  JMP MAIN_LOOP
 
-DO_MEM_WRITE:
+DO_MEM_READ:
 ;Transfer bytes from CBM memory to the SoftBox
 $058F: 20 CF 05  JSR IEEE_GET_BYTE
 $0592: 85 11     STA XFER_LO
