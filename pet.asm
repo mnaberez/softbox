@@ -956,7 +956,7 @@ ctrl_12:
     lda #$00
     sta cursor_x
     jsr calc_scrline
-    lda $02
+    lda scrline_lo
     clc
     adc x_width
     sta target_lo
