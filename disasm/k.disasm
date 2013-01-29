@@ -20,8 +20,8 @@ VIA_PCR     = $E84C   ;6522 VIA Peripheral Control Register (PCR)
 CHROUT      = $FFD2   ;KERNAL Send a char to the current output device
 ;
 BLINK_CNT   = $01     ;Counter used for cursor blink timing
-SCRPOS_LO   = $02     ;Pointer to current screen RAM position - LO
-SCRPOS_HI   = $03     ;Pointer to current screen RAM position - HI
+SCRLINE_LO  = $02     ;Pointer to start of current line in screen RAM - LO
+SCRLINE_HI  = $03     ;Pointer to start of current line in screen RAM - HI
 CURSOR_X    = $04     ;Current X position: 0-79
 CURSOR_Y    = $05     ;Current Y position: 0-24
 CURSOR_OFF  = $06     ;Cursor state: zero = show, nonzero = hide
@@ -442,10 +442,10 @@ $068E: C6 01     DEC BLINK_CNT       ;Decrement cursor blink countdown
 $0690: D0 0D     BNE L_069F          ;Not time to blink? Done.
 $0692: A9 14     LDA #$14
 $0694: 85 01     STA BLINK_CNT       ;Reset cursor blink countdown
-$0696: 20 88 09  JSR CALC_SCRPOS
-$0699: B1 02     LDA (SCRPOS_LO),Y   ;Read character at cursor
+$0696: 20 88 09  JSR CALC_SCRLINE
+$0699: B1 02     LDA (SCRLINE_LO),Y  ;Read character at cursor
 $069B: 49 80     EOR #$80            ;Flip the REVERSE bit
-$069D: 91 02     STA (SCRPOS_LO),Y   ;Write it back
+$069D: 91 02     STA (SCRLINE_LO),Y  ;Write it back
 L_069F:
 $069F: AD 37 0B  LDA SCANCODE        ;Get the SCANCODE
 $06A2: CD 3E 0B  CMP REPEATCODE      ;Compare to SAVED scancode
@@ -502,9 +502,9 @@ $06E9: A5 06     LDA CURSOR_OFF    ;Get the current cursor state
 $06EB: 85 0C     STA CURSOR_TMP    ;  Remember it
 $06ED: A9 FF     LDA #$FF
 $06EF: 85 06     STA CURSOR_OFF    ;Hide the cursor
-$06F1: 20 88 09  JSR CALC_SCRPOS   ;Calculate screen RAM pointer
+$06F1: 20 88 09  JSR CALC_SCRLINE  ;Calculate screen RAM pointer
 $06F4: A5 07     LDA SCRCODE_TMP   ;Get the screen code previously saved
-$06F6: 91 02     STA (SCRPOS_LO),Y ;  Put it on the screen
+$06F6: 91 02     STA (SCRLINE_LO),Y ;  Put it on the screen
 $06F8: 68        PLA
 $06F9: 25 13     AND CHAR_MASK     ;Mask off bits depending on char mode
 $06FB: A6 0B     LDX MOVETO_CNT    ;More bytes to consume for a move-to seq?
@@ -624,11 +624,11 @@ $078A: 20 F4 07  JSR PUT_SCRCODE
 PROCESS_DONE:
 ;This routine always returns to DO_TERMINAL except during init.
 ;
-$078D: 20 88 09  JSR CALC_SCRPOS   ;Calculate screen RAM pointer
-$0790: B1 02     LDA (SCRPOS_LO),Y ;Get the current character on the screen
-$0792: 85 07     STA SCRCODE_TMP   ;  Remember it
-$0794: A5 0C     LDA CURSOR_TMP    ;Get the previous state of the cursor
-$0796: 85 06     STA CURSOR_OFF    ;  Restore it
+$078D: 20 88 09  JSR CALC_SCRLINE   ;Calculate screen RAM pointer
+$0790: B1 02     LDA (SCRLINE_LO),Y ;Get the current character on the screen
+$0792: 85 07     STA SCRCODE_TMP    ;  Remember it
+$0794: A5 0C     LDA CURSOR_TMP     ;Get the previous state of the cursor
+$0796: 85 06     STA CURSOR_OFF     ;  Restore it
 $0798: 60        RTS
 
 PUT_CHAR:
@@ -721,13 +721,13 @@ $07F3: 60        RTS
 PUT_SCRCODE:
 ;Put the screen code in A on the screen at the current cursor position
 ;
-$07F4: A6 0A     LDX REVERSE       ;Is reverse video mode on?
-$07F6: F0 02     BEQ L_07FA        ;  No:  leave character alone
-$07F8: 49 80     EOR #$80          ;  Yes: Flip bit 7 to reverse the character
+$07F4: A6 0A     LDX REVERSE        ;Is reverse video mode on?
+$07F6: F0 02     BEQ L_07FA         ;  No:  leave character alone
+$07F8: 49 80     EOR #$80           ;  Yes: Flip bit 7 to reverse the character
 L_07FA:
-$07FA: 20 88 09  JSR CALC_SCRPOS   ;Calculate screen RAM pointer
-$07FD: 91 02     STA (SCRPOS_LO),Y ;Write the character to the screen
-                                   ;Fall through into CTRL_0C to advance cursor
+$07FA: 20 88 09  JSR CALC_SCRLINE   ;Calculate screen RAM pointer
+$07FD: 91 02     STA (SCRLINE_LO),Y ;Write the character to the screen
+                                    ;Fall through into CTRL_0C to advance cursor
 
 CTRL_0C:
 ;Cursor right
@@ -819,10 +819,10 @@ $085D: 60        RTS
 CTRL_13:
 ;Clear to end of line
 ;
-$085E: 20 88 09  JSR CALC_SCRPOS    ;Leaves CURSOR_X in Y register
+$085E: 20 88 09  JSR CALC_SCRLINE   ;Leaves CURSOR_X in Y register
 $0861: A9 20     LDA #$20           ;Space character
 L_0863:
-$0863: 91 02     STA (SCRPOS_LO),Y  ;Write space to screen RAM
+$0863: 91 02     STA (SCRLINE_LO),Y ;Write space to screen RAM
 $0865: C8        INY                ;X=X+1
 $0866: C4 09     CPY X_WIDTH
 $0868: D0 F9     BNE L_0863         ;Loop until end of line
@@ -838,20 +838,20 @@ $0870: E8        INX             ;Next Row
 $0871: E0 19     CPX #$19        ;Is it 25 (last line of screen?
 $0873: F0 18     BEQ L_088D      ;  Yes, we're done
 $0875: 18        CLC             ;  No, continue
-$0876: A5 02     LDA SCRPOS_LO   ;Current screen position
+$0876: A5 02     LDA SCRLINE_LO  ;Current screen position
 $0878: 65 09     ADC X_WIDTH     ;Add the line width
-$087A: 85 02     STA SCRPOS_LO   ;Save it
+$087A: 85 02     STA SCRLINE_LO  ;Save it
 $087C: 90 02     BCC L_0880      ;Need to update HI?
-$087E: E6 03     INC SCRPOS_HI   ;  Yes, increment HI pointer
+$087E: E6 03     INC SCRLINE_HI  ;  Yes, increment HI pointer
 L_0880:
 $0880: A9 20     LDA #$20        ;SPACE
 $0882: A0 00     LDY #$00        ;Position 0
 L_0884:
-$0884: 91 02     STA (SCRPOS_LO),Y ;Write a space
-$0886: C8        INY               ;Next character
-$0887: C4 09     CPY X_WIDTH       ;Is it end of line?
-$0889: D0 F9     BNE L_0884        ;No, loop back for more on this line
-$088B: F0 E3     BEQ L_0870        ;Yes, loop back for next line
+$0884: 91 02     STA (SCRLINE_LO),Y ;Write a space
+$0886: C8        INY                ;Next character
+$0887: C4 09     CPY X_WIDTH        ;Is it end of line?
+$0889: D0 F9     BNE L_0884         ;No, loop back for more on this line
+$088B: F0 E3     BEQ L_0870         ;Yes, loop back for next line
 L_088D:
 $088D: 60        RTS
 
@@ -859,28 +859,28 @@ SCROLL_UP:
 ;Scroll the screen up one line
 ;
 $088E: A9 00     LDA #$00
-$0890: 85 02     STA SCRPOS_LO
+$0890: 85 02     STA SCRLINE_LO
 $0892: A5 09     LDA X_WIDTH
 $0894: 85 0D     STA TARGET_LO
 $0896: A9 80     LDA #>SCREEN
-$0898: 85 03     STA SCRPOS_HI
+$0898: 85 03     STA SCRLINE_HI
 $089A: 85 0E     STA TARGET_HI
 $089C: A2 18     LDX #$18
 L_089E:
 $089E: A0 00     LDY #$00
 L_08A0:
 $08A0: B1 0D     LDA (TARGET_LO),Y
-$08A2: 91 02     STA (SCRPOS_LO),Y
+$08A2: 91 02     STA (SCRLINE_LO),Y
 $08A4: C8        INY
 $08A5: C4 09     CPY X_WIDTH
 $08A7: D0 F7     BNE L_08A0
 $08A9: A5 0D     LDA TARGET_LO
-$08AB: 85 02     STA SCRPOS_LO
+$08AB: 85 02     STA SCRLINE_LO
 $08AD: 18        CLC
 $08AE: 65 09     ADC X_WIDTH
 $08B0: 85 0D     STA TARGET_LO
 $08B2: A5 0E     LDA TARGET_HI
-$08B4: 85 03     STA SCRPOS_HI
+$08B4: 85 03     STA SCRLINE_HI
 $08B6: 69 00     ADC #$00
 $08B8: 85 0E     STA TARGET_HI
 $08BA: CA        DEX
@@ -888,7 +888,7 @@ $08BB: D0 E1     BNE L_089E
 $08BD: A0 00     LDY #$00
 $08BF: A9 20     LDA #$20          ;SPACE
 L_08C1:
-$08C1: 91 02     STA (SCRPOS_LO),Y
+$08C1: 91 02     STA (SCRLINE_LO),Y
 $08C3: C8        INY
 $08C4: C4 09     CPY X_WIDTH
 $08C6: D0 F9     BNE L_08C1
@@ -936,41 +936,41 @@ $08ED: 60        RTS
 CTRL_1C:
 ;Insert space at current cursor position
 ;
-$08EE: 20 88 09  JSR CALC_SCRPOS
-$08F1: A4 09     LDY X_WIDTH       ;number of characters on line
+$08EE: 20 88 09  JSR CALC_SCRLINE
+$08F1: A4 09     LDY X_WIDTH         ;number of characters on line
 $08F3: 88        DEY
 L_08F4:
 $08F4: C4 04     CPY CURSOR_X
 $08F6: F0 09     BEQ L_0901
 $08F8: 88        DEY
-$08F9: B1 02     LDA (SCRPOS_LO),Y  ;read a character from line
-$08FB: C8        INY                ;position to the right
-$08FC: 91 02     STA (SCRPOS_LO),Y  ;write it back
-$08FE: 88        DEY                ;we are counting down to zero
-$08FF: D0 F3     BNE L_08F4         ;loop for another character
+$08F9: B1 02     LDA (SCRLINE_LO),Y  ;read a character from line
+$08FB: C8        INY                 ;position to the right
+$08FC: 91 02     STA (SCRLINE_LO),Y  ;write it back
+$08FE: 88        DEY                 ;we are counting down to zero
+$08FF: D0 F3     BNE L_08F4          ;loop for another character
 L_0901:
-$0901: A9 20     LDA #$20           ; SPACE
-$0903: 91 02     STA (SCRPOS_LO),Y  ; Write it to current character position
+$0901: A9 20     LDA #$20            ; SPACE
+$0903: 91 02     STA (SCRLINE_LO),Y  ; Write it to current character position
 $0905: 60        RTS
 
 CTRL_1D:
 ;Delete a character
 ;
-$0906: 20 88 09  JSR CALC_SCRPOS
+$0906: 20 88 09  JSR CALC_SCRLINE
 $0909: A4 04     LDY CURSOR_X
 L_090B:
 $090B: C8        INY
 $090C: C4 09     CPY X_WIDTH
 $090E: F0 08     BEQ L_0918
-$0910: B1 02     LDA (SCRPOS_LO),Y  ;read a character from the line
-$0912: 88        DEY                ;position to the left
-$0913: 91 02     STA (SCRPOS_LO),Y  ;write it back
-$0915: C8        INY                ;we are counting UP
-$0916: D0 F3     BNE L_090B         ;loop for another character
+$0910: B1 02     LDA (SCRLINE_LO),Y  ;read a character from the line
+$0912: 88        DEY                 ;position to the left
+$0913: 91 02     STA (SCRLINE_LO),Y  ;write it back
+$0915: C8        INY                 ;we are counting UP
+$0916: D0 F3     BNE L_090B          ;loop for another character
 L_0918:
 $0918: 88        DEY
-$0919: A9 20     LDA #$20           ;SPACE
-$091B: 91 02     STA (SCRPOS_LO),Y  ;write it to the current character position
+$0919: A9 20     LDA #$20            ;SPACE
+$091B: 91 02     STA (SCRLINE_LO),Y  ;write it to the current character position
 $091D: 60        RTS
 
 CTRL_12:
@@ -982,12 +982,12 @@ CTRL_12:
 ;
 $091E: A9 00     LDA #$00
 $0920: 85 04     STA CURSOR_X
-$0922: 20 88 09  JSR CALC_SCRPOS
+$0922: 20 88 09  JSR CALC_SCRLINE
 $0925: A5 02     LDA $02
 $0927: 18        CLC
 $0928: 65 09     ADC X_WIDTH
 $092A: 85 0D     STA TARGET_LO
-$092C: A5 03     LDA SCRPOS_HI
+$092C: A5 03     LDA SCRLINE_HI
 $092E: 69 00     ADC #$00
 $0930: 85 0E     STA TARGET_HI
 $0932: A9 18     LDA #$18
@@ -1017,10 +1017,10 @@ $094D: A9 00     LDA #$00
 $094F: 85 04     STA CURSOR_X
 L_0951:
 $0951: A5 0D     LDA TARGET_LO
-$0953: C5 02     CMP SCRPOS_LO
+$0953: C5 02     CMP SCRLINE_LO
 $0955: D0 06     BNE L_095D
 $0957: A5 0E     LDA TARGET_HI
-$0959: C5 03     CMP SCRPOS_HI
+$0959: C5 03     CMP SCRLINE_HI
 $095B: F0 1F     BEQ L_097C
 L_095D:
 $095D: A5 0D     LDA TARGET_LO
@@ -1044,41 +1044,45 @@ L_097C:
 $097C: A0 00     LDY #$00
 $097E: A9 20     LDA #$20          ;SPACE
 L_0980:
-$0980: 91 02     STA (SCRPOS_LO),Y
+$0980: 91 02     STA (SCRLINE_LO),Y
 $0982: C8        INY
 $0983: C4 09     CPY X_WIDTH
 $0985: D0 F9     BNE L_0980
 $0987: 60        RTS
 
-CALC_SCRPOS:
-;Calculate a new pointer to screen memory (SCRPOS_LO/SCRPOS_HI)
-;from cursor position at CURSOR_X and CURSOR_Y.
+CALC_SCRLINE:
+;Calculate a new pointer (SCRLINE) to the first byte of the current line
+;in screen RAM from the cursor position in CURSOR_X and CURSOR_Y.  The
+;address of the current character is SCRLINE + CURSOR_X.
+;
+;Preserves A and X.
+;Returns CURSOR_X in Y.
 ;
 $0988: 48        PHA
 $0989: A9 00     LDA #$00
-$098B: 85 03     STA SCRPOS_HI
+$098B: 85 03     STA SCRLINE_HI
 $098D: A5 05     LDA CURSOR_Y
-$098F: 85 02     STA SCRPOS_LO
+$098F: 85 02     STA SCRLINE_LO
 $0991: 0A        ASL A
 $0992: 0A        ASL A
-$0993: 65 02     ADC SCRPOS_LO
+$0993: 65 02     ADC SCRLINE_LO
 $0995: 0A        ASL A
 $0996: 0A        ASL A
-$0997: 26 03     ROL SCRPOS_HI
+$0997: 26 03     ROL SCRLINE_HI
 $0999: 0A        ASL A
-$099A: 26 03     ROL SCRPOS_HI
-$099C: 85 02     STA SCRPOS_LO
+$099A: 26 03     ROL SCRLINE_HI
+$099C: 85 02     STA SCRLINE_LO
 $099E: A5 09     LDA X_WIDTH
 $09A0: C9 50     CMP #$50
 $09A2: D0 04     BNE L_09A8
-$09A4: 06 02     ASL SCRPOS_LO
-$09A6: 26 03     ROL SCRPOS_HI
+$09A4: 06 02     ASL SCRLINE_LO
+$09A6: 26 03     ROL SCRLINE_HI
 L_09A8:
 $09A8: 18        CLC
 $09A9: A4 04     LDY CURSOR_X
-$09AB: A5 03     LDA SCRPOS_HI
+$09AB: A5 03     LDA SCRLINE_HI
 $09AD: 69 80     ADC #>SCREEN
-$09AF: 85 03     STA SCRPOS_HI
+$09AF: 85 03     STA SCRLINE_HI
 $09B1: 68        PLA
 $09B2: 60        RTS
 
