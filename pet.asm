@@ -1030,7 +1030,7 @@ calc_scrline:
 ;Preserves A and X.
 ;Returns cursor_x in Y.
 ;
-    pha
+    tay
     lda #$00
     sta scrline_hi
     lda cursor_y
@@ -1049,12 +1049,12 @@ calc_scrline:
     asl scrline_lo
     rol scrline_hi
 l_09a8:
-    clc
-    ldy cursor_x
     lda scrline_hi
+    clc
     adc #>screen
     sta scrline_hi
-    pla
+    tya
+    ldy cursor_x
     rts
 
 scroll_up:
