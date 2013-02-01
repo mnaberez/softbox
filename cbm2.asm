@@ -1127,8 +1127,7 @@ l_0901:
 ctrl_1d:
 ;Delete a character
 ;
-    jsr calc_scrline
-    ldy cursor_x
+    jsr calc_scrline   ;Leaves cursor_x in Y register
 l_090b:
     iny
     cpy x_width
