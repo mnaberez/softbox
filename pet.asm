@@ -984,31 +984,31 @@ ctrl_11:
     lda #<screen+$03c0  ;Start address of last 40 col line
     ldy #>screen+$03c0
 l_0949:
-    sta target_lo
-    sty target_hi
+    sta source_lo
+    sty source_hi
     lda #$00
     sta cursor_x
 l_0951:
-    lda target_lo
+    lda source_lo
     cmp scrline_lo
     bne l_095d
-    lda target_hi
+    lda source_hi
     cmp scrline_hi
     beq l_097c
 l_095d:
-    lda target_lo
-    sta insert_lo
+    lda source_lo
+    sta target_lo
     sec
     sbc x_width
-    sta target_lo
-    lda target_hi
-    sta insert_hi
-    sbc #$00
+    sta source_lo
+    lda source_hi
     sta target_hi
+    sbc #$00
+    sta source_hi
     ldy #$00
 l_0970:
-    lda (target_lo),y
-    sta (insert_lo),y
+    lda (source_lo),y
+    sta (target_lo),y
     iny
     cpy x_width
     bne l_0970
