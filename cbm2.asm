@@ -1219,13 +1219,12 @@ ctrl_11:
 ;The line at the current position will be erased (filled with spaces).
 ;The current cursor position will not be changed.
 ;
-    lda #<screen+$03c0 ;A->TARGET_LO, Y->TARGET_HI
-    ldy #>screen+$03c0 ;Start address of last 40 col line
-    ldx x_width
-    cpx #$50           ;Is this an 80 column screen?
-    bne l_0949         ;  No: keep address for 40 col
-    lda #<screen+$0780
-    ldy #>screen+$0780 ;Start address of last 80 col line
+    lda #<screen+$0780  ;Start address of last 80 col line
+    ldy #>screen+$0780
+    bit x_width         ;80 columns?
+    bvs l_0949          ;  Yes: branch to keep address for 80 col
+    lda #<screen+$03c0  ;Start address of last 40 col line
+    ldy #>screen+$03c0
 l_0949:
     sta target_lo
     sty target_hi
