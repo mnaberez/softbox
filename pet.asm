@@ -24,10 +24,10 @@ x_width     = $09     ;Width of X in characters (40 or 80)
 rvs_mask    = $0a     ;Reverse video mask (normal = $00, reverse = $80)
 moveto_cnt  = $0b     ;Counts down bytes to consume in a move-to (CTRL_1B) seq
 cursor_tmp  = $0c     ;Pending cursor state used with CURSOR_OFF
-target_lo   = $0d     ;Target address for mem xfers, ind jump, & CTRL_11 - LO
-target_hi   = $0e     ;Target address for mem xfers, ind jump, & CTRL_11 - HI
-insert_lo   = $0f     ;Insert line (CTRL_11) destination screen address - LO
-insert_hi   = $10     ;Insert line (CTRL_11) destination screen address - HI
+source_lo   = $0d     ;Pointer to source address for memory operations - LO
+source_hi   = $0e     ;Pointer to source address for memory operations - HI
+target_lo   = $0f     ;Pointer to target address for memory operations - LO
+target_hi   = $10     ;Pointer to target address for memory operations - HI
 xfer_lo     = $11     ;Memory transfer byte counter - LO
 xfer_hi     = $12     ;Memory transfer byte counter - HI
 char_mask   = $13     ;Masks incoming bytes for 7- or 8-bit character mode
