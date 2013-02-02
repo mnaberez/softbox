@@ -59,6 +59,8 @@ copyright:
 
 init:
     sei                ;Disable interrupts
+    ldx #$ff
+    tsx                ;Initialize stack pointer
     lda #<irq_handler
     sta cinv_lo
     lda #>irq_handler

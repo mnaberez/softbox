@@ -71,6 +71,8 @@ hertz       = $1e     ;Constant for powerline frequency: 50 or 60 Hz
 
 init:
     sei                ;Disable interrupts
+    ldx #$ff
+    tsx                ;Initialize stack pointer
     lda #$0f
     sta i6509          ;Bank 15 (System Bank)
     lda #<irq_handler
