@@ -50,8 +50,8 @@ jiffy2      = $18     ;Jiffy counter (MSB)
 jiffy1      = $19     ;Jiffy counter
 jiffy0      = $1a     ;Jiffy counter (LSB)
 blink_cnt   = $1b     ;Counter used for cursor blink timing
-got_srq     = $1c     ;IEEE-488 SRQ detect: zero=no SRQ, nonzero=SRQ pending
-uppercase   = $1d     ;Uppercase graphics flag (lower = $00, upper = $80)
+uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
+got_srq     = $1d     ;IEEE-488 SRQ detect: zero=no SRQ, nonzero=SRQ pending
 hertz       = $1e     ;Constant for powerline frequency: 50 or 60 Hz
 
 ;Configure VICE

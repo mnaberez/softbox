@@ -13,7 +13,6 @@ via_pb      = $e840   ;6522 VIA Port B
 via_pcr     = $e84c   ;6522 VIA Peripheral Control Register (PCR)
 chrout      = $ffd2   ;KERNAL Send a char to the current output device
 ;
-blink_cnt   = $01     ;Counter used for cursor blink timing
 scrline_lo  = $02     ;Pointer to start of current line in screen RAM - LO
 scrline_hi  = $03     ;Pointer to start of current line in screen RAM - HI
 cursor_x    = $04     ;Current X position: 0-79
@@ -39,7 +38,8 @@ rtc_hours   = $17     ;  TIME.COM using DO_MEM_READ and DO_MEM_WRITE.
 jiffy2      = $18     ;Jiffy counter (MSB)
 jiffy1      = $19     ;Jiffy counter
 jiffy0      = $1a     ;Jiffy counter (LSB)
-uppercase   = $1b     ;Uppercase graphics flag (lower = $00, upper = $80)
+blink_cnt   = $1b     ;Counter used for cursor blink timing
+uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
 ;
     *=$0400
 
