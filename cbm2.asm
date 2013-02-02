@@ -354,19 +354,19 @@ do_mem_read:
     jsr ieee_get_byte
     sta xfer_hi
     jsr ieee_get_byte
-    sta target_lo
+    sta source_lo
     jsr ieee_get_byte
-    sta target_hi
+    sta source_hi
     ldy #$00
 l_05a5:
     dey
     bne l_05a5   ; delay
 l_05a8:
-    lda (target_lo),y
+    lda (source_lo),y
     jsr ieee_send_byte
     iny
     bne l_05b2
-    inc target_hi
+    inc source_hi
 l_05b2:
     lda xfer_lo
     sec
