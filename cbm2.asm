@@ -1202,10 +1202,10 @@ ctrl_12:
     lda scrline_lo
     clc
     adc x_width
-    sta target_lo
+    sta source_lo
     lda scrline_hi
     adc #$00
-    sta target_hi
+    sta source_hi
     lda #$18
     sec
     sbc cursor_y
@@ -1305,28 +1305,28 @@ scroll_up:
     lda #$00
     sta scrline_lo
     lda x_width
-    sta target_lo
+    sta source_lo
     lda #>screen
     sta scrline_hi
-    sta target_hi
+    sta source_hi
     ldx #$18
 l_089e:
     ldy #$00
 l_08a0:
-    lda (target_lo),y
+    lda (source_lo),y
     sta (scrline_lo),y
     iny
     cpy x_width
     bne l_08a0
-    lda target_lo
+    lda source_lo
     sta scrline_lo
     clc
     adc x_width
-    sta target_lo
-    lda target_hi
+    sta source_lo
+    lda source_hi
     sta scrline_hi
     adc #$00
-    sta target_hi
+    sta source_hi
     dex
     bne l_089e
     lda #$20          ;SPACE
@@ -1336,7 +1336,6 @@ l_08c1:
     sta (scrline_lo),y
     bne l_08c1
     rts
-
 
 
 scan_keyb:
