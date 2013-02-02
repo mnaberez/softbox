@@ -634,6 +634,8 @@ l_06bf:
 irq_key:
     jsr scan_keyb       ;Scan the keyboard
     beq irq_done        ;Nothing to do if no key was pressed.
+    cmp #$05            ;F10 pressed for Softbox reset?
+    beq irq_reset       ;  Yes: rti will start the reset routine
     ldx keycount
     cpx #$50            ;Is the keyboard buffer full?
     beq irq_done        ;  Yes:  Nothing we can do.  Forget the key.
@@ -651,6 +653,48 @@ irq_done:
     tax                 ;Restore X
     pla                 ;Restore A
     rti
+
+irq_reset:
+    sta tpi1_air        ;Write to the AIR to tell the TPI that the
+                        ;interrupt service has concluded.
+    ldx #$ff            ;Reset the stack pointer
+    tsx
+    lda #>reset_softbox ;Push reset routine as return address
+    pha
+    lda #<reset_softbox
+    pha
+    lda #$00            ;Push new status register
+    pha
+    rti
+
+reset_softbox:
+;Pulse IFC to reset the IEEE-488 bus, wait enough time for the
+;SoftBox to start up, then start again from the beginning.
+;
+    jsr ctrl_1a         ;Clear screen
+    lda #%00000010
+    sta tpi1_pa         ;75161A TE=1
+    lda tpi1_pb
+    and #$fe
+    sta tpi1_pb         ;IFC = lo
+
+    ldx #$00
+    stx rtc_jiffies     ;Reset jiffy counter
+    ldx #$0d
+reset_ifc:
+    cpx rtc_jiffies
+    bcs reset_ifc       ;Wait while IFC is asserted
+    ora #$01
+    sta tpi1_pb         ;IFC = hi
+
+    ldx #$00
+    stx rtc_secs        ;Reset seconds counter
+    ldx #$05
+reset_wait:
+    cpx rtc_secs
+    bcs reset_wait      ;Wait for SoftBox to start
+
+    jmp init            ;Start again from the beginning
 
 process_byte:
 ;This is the core of the terminal emulator.  It accepts a byte in
@@ -1485,7 +1529,7 @@ key_table:
     !byte $ff,$b7,$55,$4a,$4d,$20 ; F7    7     U     J     M     SPACE
     !byte $ff,$b8,$49,$4b,$2c,$2e ; F8    8     I     K     ,     .
     !byte $ff,$b9,$4f,$4c,$3b,$2f ; F9    9     NONE  L     ;     /
-    !byte $ff,$b0,$2d,$50,$5b,$27 ; F10   0     -     P     [     '
+    !byte $05,$b0,$2d,$50,$5b,$27 ; F10   0     -     P     [     '
     !byte $0a,$3d,$5f,$5d,$0d,$de ; DOWN  =     BARRW ]     RETRN PI
     !byte $0b,$08,$0c,$7f,$02,$ff ; UP    LEFT  RIGHT DEL   CBM   NONE
     !byte $1e,$3f,$37,$34,$31,$30 ; HOME  ?     7     4     1     0
