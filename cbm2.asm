@@ -1247,14 +1247,14 @@ l_095d:
     sta target_hi
     sbc #$00
     sta source_hi
-    ldy #$00
+    ldy x_width
+    dey
 l_0970:
     lda (source_lo),y
     sta (target_lo),y
-    iny
-    cpy x_width
-    bne l_0970
-    jmp l_0951
+    dey
+    bpl l_0970
+    bmi l_0951
 l_097c:
     lda #$20          ;SPACE
     ldy x_width
@@ -1311,13 +1311,13 @@ scroll_up:
     sta source_hi
     ldx #$18
 l_089e:
-    ldy #$00
+    ldy x_width
+    dey
 l_08a0:
     lda (source_lo),y
     sta (scrline_lo),y
-    iny
-    cpy x_width
-    bne l_08a0
+    dey
+    bpl l_08a0
     lda source_lo
     sta scrline_lo
     clc
