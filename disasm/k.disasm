@@ -322,9 +322,9 @@ IEEE_GET_BYTE:
 ;
 $05CF: AD 40 E8  LDA VIA_PB
 $05D2: 09 02     ORA #%00000010
-$05D4: 8D 40 E8  STA VIA_PB         ;Set NRFD OUT = 1
+$05D4: 8D 40 E8  STA VIA_PB         ;Set NRFD_OUT = 1
 L_05D7:
-$05D7: 2C 40 E8  BIT VIA_PB         ;Wait for NRFD_IN = 1
+$05D7: 2C 40 E8  BIT VIA_PB
 $05DA: 30 FB     BMI L_05D7         ;Wait for DAV_IN = 0
 
 $05DC: AD 20 E8  LDA PIA2_IEEE      ;Read data byte

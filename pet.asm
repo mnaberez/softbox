@@ -308,9 +308,9 @@ ieee_get_byte:
 ;
     lda via_pb
     ora #%00000010
-    sta via_pb         ;Set NRFD OUT = 1
+    sta via_pb         ;Set NRFD_OUT = 1
 l_05d7:
-    bit via_pb         ;Wait for NRFD_IN = 1
+    bit via_pb
     bmi l_05d7         ;Wait for DAV_IN = 0
 
     lda pia2_ieee      ;Read data byte
