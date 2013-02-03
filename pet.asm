@@ -128,16 +128,19 @@ init_ieee:
 ;  PB6: NFRD_IN                              CB2: DAV_OUT
 ;  PB7: DAV_IN
 ;
-    lda pia2_iout      ;Clears IRQA1 flag (ATN_IN detect)
+    lda pia2_iout      ;Read clears IRQA1 flag (ATN_IN detect)
+
     lda via_pb
     and #%11111011
-    sta via_pb         ;Set ATN_OUT = 0
+    sta via_pb         ;ATN_OUT=low
+
     lda #%00110100
-    sta pia2_dav       ;Set DAV_OUT = 0
+    sta pia2_dav       ;DAV_OUT=low
+
     lda #$c6
     sta pia2_iout      ;Put #$39 on IEEE data lines
-    ldy #$00
 
+    ldy #$00
 l_04d4:
     dey
     bne l_04d4         ;Let #$39 sit on the lines so the SoftBox sees it
@@ -146,25 +149,27 @@ l_04d4:
     sta pia2_iout      ;Release IEEE data lines
 
     lda #%00111100
-    sta pia1_eoi       ;Set EOI_OUT = 1 and disable IRQ from CA1 (Cassette Read)
-    sta pia2_ndac      ;Set NDAC_OUT = 1 and disable IRQ from CA1 (ATN_IN)
-    sta pia2_dav       ;Set DAV = 1
+    sta pia1_eoi       ;EOI_OUT=high, also disable IRQ from CA1 (Cassette Read)
+    sta pia2_ndac      ;NDAC_OUT=high, also disable IRQ from CA1 (ATN_IN)
+    sta pia2_dav       ;DAV_OUT=high
 
 main_loop:
     lda #%00111100
-    sta pia2_ndac      ;Set NDAC_OUT = 1
+    sta pia2_ndac      ;NDAC_OUT=high
+
     lda via_pb
     ora #%00000110
-    sta via_pb         ;Set NRFD_OUT = 1, ATN_OUT = 1
+    sta via_pb         ;NRFD_OUT=high, ATN_OUT=high
 
 wait_for_srq:
     lda pia2_dav       ;Read PIA #2 CRB
     asl ;a             ;  bit 7 = IRQA1 flag for CA1 (SRQ_IN detect)
     bcc wait_for_srq   ;Wait until SRQ_IN is detected
 
-    lda pia2_iout      ;Clears IRQA1 flag (SRQ_IN detect)
+    lda pia2_iout      ;Read clears IRQA1 flag (SRQ_IN detect)
+
     lda #%00110100
-    sta pia2_ndac      ;Set NDAC_OUT = 0
+    sta pia2_ndac      ;NDAC_OUT=low
 
     ldx pia2_ieee      ;Read IEEE data byte with command from SoftBox
                        ;
@@ -194,6 +199,7 @@ handshake:
     and #%00111111     ;We are driving only bits 7 and 6 with the keyboard status
     cmp #%00111111
     bne handshake      ;Wait for the SoftBox to drive the other lines to zero
+
     lda #$ff
     sta pia2_iout      ;Release all data lines
 
@@ -225,7 +231,7 @@ do_terminal:
 ;Write to the terminal screen
     jsr ieee_get_byte
     ldx #%00111100
-    stx pia2_ndac      ;Set NDAC_OUT = 1
+    stx pia2_ndac      ;NDAC_OUT=high
     jsr process_byte
     jmp main_loop
 
@@ -236,7 +242,7 @@ do_mem_jsr:
     jsr ieee_get_byte  ;Get byte
     sta target_hi      ; -> Target vector hi
     ldx #%00111100
-    stx pia2_ndac      ;Set NDAC_OUT = 1
+    stx pia2_ndac      ;NDAC_OUT=high
     jsr do_mem_jsr_ind ;Jump to the subroutine through TARGET_LO
     jmp main_loop
 do_mem_jsr_ind:
@@ -252,10 +258,12 @@ do_mem_read:
     sta source_lo
     jsr ieee_get_byte
     sta source_hi
+
     ldy #$00
 l_05a5:
     dey
     bne l_05a5   ; delay
+
 l_05a8:
     lda (source_lo),y
     jsr ieee_send_byte
@@ -308,24 +316,30 @@ ieee_get_byte:
 ;
     lda via_pb
     ora #%00000010
-    sta via_pb         ;Set NRFD_OUT = 1
+    sta via_pb         ;NRFD_OUT=high
+
 l_05d7:
     bit via_pb
-    bmi l_05d7         ;Wait for DAV_IN = 0
+    bmi l_05d7         ;Wait until DAV_IN=low
 
     lda pia2_ieee      ;Read data byte
     eor #$ff           ;Invert it
     pha                ;Push data byte
+
     lda via_pb
     and #%11111101
-    sta via_pb         ;Set NRFD_OUT = 0
+    sta via_pb         ;NRFD_OUT=low
+
     lda #%00111100
-    sta pia2_ndac      ;Set NDAC_OUT = 1
+    sta pia2_ndac      ;NDAC_OUT=high
+
 l_05ef:
     bit via_pb
-    bpl l_05ef         ;Wait for DAV_IN = 0
+    bpl l_05ef         ;Wait until DAV_IN=high
+
     lda #%00110100
-    sta pia2_ndac      ;Set NDAC_OUT = 0
+    sta pia2_ndac      ;NDAC_OUT=low
+
     pla
     rts
 
@@ -334,28 +348,36 @@ ieee_send_byte:
 ;
     eor #$ff           ;Invert the byte
     sta pia2_iout      ;Put byte on IEEE data output lines
+
     lda via_pb
     ora #%00000010
-    sta via_pb         ;Set NRFD_OUT = 1
+    sta via_pb         ;NRFD_OUT=high
+
     lda #%00111100
-    sta pia2_ndac      ;Set NDAC_OUT = 1
+    sta pia2_ndac      ;NDAC_OUT=high
+
 l_060d:
     bit via_pb
-    bvc l_060d         ;Wait for NRFD_IN = 1
+    bvc l_060d         ;Wait until NRFD_IN=high
+
     lda #%00110100
-    sta pia2_dav       ;Set DAV_OUT = 0
+    sta pia2_dav       ;DAV_OUT=low
+
 l_0617:
     lda via_pb
     lsr ;a
-    bcc l_0617         ;Wait for SoftBox to set NDAC_IN = 0
+    bcc l_0617         ;Wait until NDAC_IN=high
+
     lda #%00111100
-    sta pia2_dav       ;Set DAV_OUT = 1
+    sta pia2_dav       ;DAV_OUT=high
+
     lda #$ff
     sta pia2_iout      ;Release data lines
+
 l_0627:
     lda via_pb
     lsr ;a
-    bcs l_0627         ;Wait for SoftBox to set NDAC_IN = 1
+    bcs l_0627         ;Wait until NDAC_IN=low
     rts
 
 get_key:
