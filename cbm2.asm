@@ -183,7 +183,7 @@ init_ieee:
                        ;PA0 DC    Output
     sta tpi1_ddra
 
-    lda #%00100010     ;EOI=hi, DAV=lo, ATN=lo, REN=lo
+    lda #%00100010     ;EOI=high, DAV=low, ATN=low, REN=low
     sta tpi1_pa
 
     ldx #$02
@@ -195,7 +195,7 @@ atn_wait_1:
     dex
     bne atn_wait
 
-    lda #%00111010     ;EOI=hi, DAV=hi, ATN=hi, REN=lo, TE=1, DC=0
+    lda #%00111010     ;EOI=high, DAV=high, ATN=high, REN=low, TE=high, DC=low
     sta tpi1_pa
 
 main_loop:
@@ -207,7 +207,7 @@ main_loop:
     lda #$00
     sta cia2_ddra     ;Data lines all inputs
 
-    lda #%11001000    ;NRFD=hi, NDAC=hi, ATN=hi, REN=lo, TE=lo, DC=lo
+    lda #%11001000    ;NRFD=high, NDAC=high, ATN=high, REN=low, TE=low, DC=low
     sta tpi1_pa
 
     lda #%11001111    ;PA7 NRFD  Output
@@ -229,7 +229,7 @@ wait_for_srq:
 
     lda tpi1_pa
     and #%10111111
-    sta tpi1_pa        ;NDAC=lo
+    sta tpi1_pa        ;NDAC=low
 
     ldx cia2_pa        ;Read IEEE data byte with command from SoftBox
                        ;
@@ -268,7 +268,7 @@ send_key_avail:
                        ;PA0 DC    Output
     sta tpi1_ddra
 
-    lda #%00111010     ;EOI=hi, DAV=hi, ATN=hi, REN=lo, TE=1, DC=0
+    lda #%00111010     ;EOI=high, DAV=high, ATN=high, REN=low, TE=high, DC=low
     sta tpi1_pa
 
     ldy #$10
@@ -289,7 +289,7 @@ send_k_a_wait:
                        ;PA0 DC    Output
     sta tpi1_ddra
 
-    lda #%11001000    ;NRFD=hi, NDAC=hi, ATN=hi, REN=lo, TE=lo, DC=lo
+    lda #%11001000    ;NRFD=high, NDAC=high, ATN=high, REN=low, TE=low, DC=low
     sta tpi1_pa
 
 handshake:
@@ -328,7 +328,7 @@ do_terminal:
     pha
     lda tpi1_pa
     ora #%01000000
-    sta tpi1_pa        ;NDAC=hi
+    sta tpi1_pa        ;NDAC=high
     pla
     jsr process_byte
     jmp main_loop
@@ -341,7 +341,7 @@ do_mem_jsr:
     sta target_hi      ; -> Target vector hi
     lda tpi1_pa
     ora #%01000000
-    sta tpi1_pa        ;NDAC=hi
+    sta tpi1_pa        ;NDAC=high
     jsr do_mem_jsr_ind ;Jump to the subroutine through TARGET_LO
     jmp main_loop
 do_mem_jsr_ind:
@@ -413,29 +413,29 @@ ieee_get_byte:
 ;
     lda tpi1_pa
     ora #%10000000
-    sta tpi1_pa       ;NRFD=hi
+    sta tpi1_pa       ;NRFD=high
 
 l_05d7:
     lda tpi1_pa
     and #%00010000
-    bne l_05d7        ;Wait for DAV = lo (Softbox says data is valid)
+    bne l_05d7        ;Wait until DAV=low
 
-    lda cia2_pa
-    eor #$ff          ;Invert the byte (IEEE true = low)
+    lda cia2_pa       ;Read the data byte
+    eor #$ff          ;Invert it
     pha               ;Push data byte
 
     lda tpi1_pa
-    and #%01111111    ;NRFD=lo
-    ora #%01000000    ;NDAC=hi
+    and #%01111111    ;NRFD=low
+    ora #%01000000    ;NDAC=high
     sta tpi1_pa
 
 l_05ef:
     lda tpi1_pa
     and #%00010000
-    beq l_05ef         ;Wait until DAV=hi
+    beq l_05ef         ;Wait until DAV=high
 
     lda tpi1_pa
-    and #%10111111     ;NDAC=lo
+    and #%10111111     ;NDAC=low
     sta tpi1_pa
     pla
     rts
@@ -443,7 +443,7 @@ l_05ef:
 ieee_send_byte:
 ;Send a byte to the SoftBox over the IEEE-488 bus.
 ;
-    eor #$ff           ;Invert the byte (IEEE true = low)
+    eor #$ff           ;Invert the byte
     sta cia2_pa        ;Put byte on IEEE data output lines
 
     ;Switch IEEE to Output
@@ -460,29 +460,28 @@ ieee_send_byte:
                        ;PA0 DC    Output
     sta tpi1_ddra
 
-    lda #%00111010     ;EOI=hi, DAV=hi, ATN=hi, REN=lo, TE=1, DC=0
+    lda #%00111010     ;EOI=high, DAV=high, ATN=high, REN=low, TE=high, DC=low
     sta tpi1_pa
 
 l_060d:
     bit tpi1_pa
-    bpl l_060d         ;Wait for NRFD=hi
+    bpl l_060d         ;Wait until NRFD=high
 
     lda tpi1_pa
-    and #%11101111     ;DAV=lo
+    and #%11101111     ;DAV=low
     sta tpi1_pa
 
 l_0617:
     bit tpi1_pa
-    bvs l_0617         ;Wait for NDAC=lo
+    bvs l_0617         ;Wait until NDAC=low
 
     lda tpi1_pa
-    ora #%00010000     ;DAV=hi
+    ora #%00010000     ;DAV=high
     sta tpi1_pa
-
 
 l_0627:
     bit tpi1_pa
-    bpl l_0627         ;Wait for NDAC=hi
+    bpl l_0627         ;Wait until NDAC=high
 
     ;Switch IEEE to Input
     lda #$00
@@ -498,7 +497,7 @@ l_0627:
                       ;PA0 DC    Output
     sta tpi1_ddra
 
-    lda #%11001000    ;NRFD=hi, NDAC=hi, ATN=hi, REN=lo, TE=lo, DC=lo
+    lda #%11001000    ;NRFD=high, NDAC=high, ATN=high, REN=low, TE=low, DC=low
     sta tpi1_pa
 
     rts
@@ -673,10 +672,10 @@ reset_softbox:
 ;
     jsr ctrl_1a         ;Clear screen
     lda #%00000010
-    sta tpi1_pa         ;75161A TE=1
+    sta tpi1_pa         ;75161A TE=high
     lda tpi1_pb
     and #$fe
-    sta tpi1_pb         ;IFC = lo
+    sta tpi1_pb         ;IFC=low
 
     ldx #$00
     stx rtc_jiffies     ;Reset jiffy counter
@@ -685,7 +684,7 @@ reset_ifc:
     cpx rtc_jiffies
     bcs reset_ifc       ;Wait while IFC is asserted
     ora #$01
-    sta tpi1_pb         ;IFC = hi
+    sta tpi1_pb         ;IFC=high
 
     ldx #$00
     stx rtc_secs        ;Reset seconds counter
