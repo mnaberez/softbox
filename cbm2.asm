@@ -473,7 +473,7 @@ l_060d:
 
 l_0617:
     bit tpi1_pa
-    bvs l_0617         ;Wait until NDAC=low
+    bvc l_0617         ;Wait until NDAC=high
 
     lda tpi1_pa
     ora #%00010000     ;DAV=high
@@ -481,7 +481,7 @@ l_0617:
 
 l_0627:
     bit tpi1_pa
-    bpl l_0627         ;Wait until NDAC=high
+    bvs l_0627         ;Wait until NDAC=low
 
     ;Switch IEEE to Input
     lda #$00
