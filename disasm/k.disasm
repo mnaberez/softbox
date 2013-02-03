@@ -143,9 +143,9 @@ INIT_IEEE:
 ;
 $04BD: AD 22 E8  LDA PIA2_IOUT      ;Clears IRQA1 flag (ATN_IN detect)
 $04C0: AD 40 E8  LDA VIA_PB
-$04C3: 29 FB     AND #$FB
+$04C3: 29 FB     AND #%11111011
 $04C5: 8D 40 E8  STA VIA_PB         ;Set ATN_OUT = 0
-$04C8: A9 34     LDA #$34
+$04C8: A9 34     LDA #%00110100
 $04CA: 8D 23 E8  STA PIA2_DAV       ;Set DAV_OUT = 0
 $04CD: A9 C6     LDA #$C6
 $04CF: 8D 22 E8  STA PIA2_IOUT      ;Put #$39 on IEEE data lines
@@ -164,10 +164,10 @@ $04E1: 8D 21 E8  STA PIA2_NDAC      ;Set NDAC_OUT = 1 and disable IRQ from CA1 (
 $04E4: 8D 23 E8  STA PIA2_DAV       ;Set DAV = 1
 
 MAIN_LOOP:
-$04E7: A9 3C     LDA #$3C
+$04E7: A9 3C     LDA #%00111100
 $04E9: 8D 21 E8  STA PIA2_NDAC      ;Set NDAC_OUT = 1
 $04EC: AD 40 E8  LDA VIA_PB
-$04EF: 09 06     ORA #$06
+$04EF: 09 06     ORA #%00000110
 $04F1: 8D 40 E8  STA VIA_PB         ;Set NRFD_OUT = 1, ATN_OUT = 1
 
 WAIT_FOR_SRQ:
@@ -176,7 +176,7 @@ $04F7: 0A        ASL A              ;  bit 7 = IRQA1 flag for CA1 (SRQ_IN detect
 $04F8: 90 FA     BCC WAIT_FOR_SRQ   ;Wait until SRQ_IN is detected
 
 $04FA: AD 22 E8  LDA PIA2_IOUT      ;Clears IRQA1 flag (SRQ_IN detect)
-$04FD: A9 34     LDA #$34
+$04FD: A9 34     LDA #%00110100
 $04FF: 8D 21 E8  STA PIA2_NDAC      ;Set NDAC_OUT = 0
 
 $0502: AE 20 E8  LDX PIA2_IEEE      ;Read IEEE data byte with command from SoftBox
@@ -204,8 +204,8 @@ $0511: 8D 22 E8  STA PIA2_IOUT      ;Drive only bit 7 (no key) or bit 6 (key) on
 
 HANDSHAKE:
 $0514: AD 20 E8  LDA PIA2_IEEE      ;Read IEEE data byte
-$0517: 29 3F     AND #$3F           ;We are driving only bits 7 and 6 with the keyboard status
-$0519: C9 3F     CMP #$3F
+$0517: 29 3F     AND #%00111111     ;We are driving only bits 7 and 6 with the keyboard status
+$0519: C9 3F     CMP #%00111111
 $051B: D0 F7     BNE HANDSHAKE      ;Wait for the SoftBox to drive the other lines to zero
 $051D: A9 FF     LDA #$FF
 $051F: 8D 22 E8  STA PIA2_IOUT      ;Release all data lines
@@ -230,7 +230,7 @@ $0535: 4C C6 05  JMP DO_GET_KEY
 DO_TERMINAL:
 ;Write to the terminal screen
 $0538: 20 CF 05  JSR IEEE_GET_BYTE
-$053B: A2 3C     LDX #$3C
+$053B: A2 3C     LDX #%00111100
 $053D: 8E 21 E8  STX PIA2_NDAC      ;Set NDAC_OUT = 1
 $0540: 20 E8 06  JSR PROCESS_BYTE
 $0543: 4C E7 04  JMP MAIN_LOOP
@@ -241,7 +241,7 @@ $0546: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
 $0549: 85 0D     STA TARGET_LO      ; -> Target vector lo
 $054B: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
 $054E: 85 0E     STA TARGET_HI      ; -> Target vector hi
-$0550: A2 3C     LDX #$3C
+$0550: A2 3C     LDX #%00111100
 $0552: 8E 21 E8  STX PIA2_NDAC      ;Set NDAC_OUT = 1
 $0555: 20 1B 07  JSR JUMP_CMD       ;Jump to the subroutine through TARGET_LO
 $0558: 4C E7 04  JMP MAIN_LOOP
@@ -321,7 +321,7 @@ IEEE_GET_BYTE:
 ;Receive a byte from the SoftBox over the IEEE-488 bus.
 ;
 $05CF: AD 40 E8  LDA VIA_PB
-$05D2: 09 02     ORA #$02
+$05D2: 09 02     ORA #%00000010
 $05D4: 8D 40 E8  STA VIA_PB         ;Set NRFD OUT = 1
 L_05D7:
 $05D7: 2C 40 E8  BIT VIA_PB         ;Wait for NRFD_IN = 1
@@ -331,14 +331,14 @@ $05DC: AD 20 E8  LDA PIA2_IEEE      ;Read data byte
 $05DF: 49 FF     EOR #$FF           ;Invert it
 $05E1: 48        PHA                ;Push data byte
 $05E2: AD 40 E8  LDA VIA_PB
-$05E5: 29 FD     AND #$FD
+$05E5: 29 FD     AND #%11111101
 $05E7: 8D 40 E8  STA VIA_PB         ;Set NRFD_OUT = 0
-$05EA: A9 3C     LDA #$3C
+$05EA: A9 3C     LDA #%00111100
 $05EC: 8D 21 E8  STA PIA2_NDAC      ;Set NDAC_OUT = 1
 L_05EF:
 $05EF: 2C 40 E8  BIT VIA_PB
 $05F2: 10 FB     BPL L_05EF         ;Wait for DAV_IN = 0
-$05F4: A9 34     LDA #$34
+$05F4: A9 34     LDA #%00110100
 $05F6: 8D 21 E8  STA PIA2_NDAC      ;Set NDAC_OUT = 0
 $05F9: 68        PLA
 $05FA: 60        RTS
@@ -349,20 +349,20 @@ IEEE_SEND_BYTE:
 $05FB: 49 FF     EOR #$FF           ;Invert the byte
 $05FD: 8D 22 E8  STA PIA2_IOUT      ;Put byte on IEEE data output lines
 $0600: AD 40 E8  LDA VIA_PB
-$0603: 09 02     ORA #$02
+$0603: 09 02     ORA #%00000010
 $0605: 8D 40 E8  STA VIA_PB         ;Set NRFD_OUT = 1
-$0608: A9 3C     LDA #$3C
+$0608: A9 3C     LDA #%00111100
 $060A: 8D 21 E8  STA PIA2_NDAC      ;Set NDAC_OUT = 1
 L_060D:
 $060D: 2C 40 E8  BIT VIA_PB
 $0610: 50 FB     BVC L_060D         ;Wait for NRFD_IN = 1
-$0612: A9 34     LDA #$34
+$0612: A9 34     LDA #%00110100
 $0614: 8D 23 E8  STA PIA2_DAV       ;Set DAV_OUT = 0
 L_0617:
 $0617: AD 40 E8  LDA VIA_PB
 $061A: 4A        LSR A
 $061B: 90 FA     BCC L_0617         ;Wait for SoftBox to set NDAC_IN = 0
-$061D: A9 3C     LDA #$3C
+$061D: A9 3C     LDA #%00111100
 $061F: 8D 23 E8  STA PIA2_DAV       ;Set DAV_OUT = 1
 $0622: A9 FF     LDA #$FF
 $0624: 8D 22 E8  STA PIA2_IOUT      ;Release data lines

@@ -130,9 +130,9 @@ init_ieee:
 ;
     lda pia2_iout      ;Clears IRQA1 flag (ATN_IN detect)
     lda via_pb
-    and #$fb
+    and #%11111011
     sta via_pb         ;Set ATN_OUT = 0
-    lda #$34
+    lda #%00110100
     sta pia2_dav       ;Set DAV_OUT = 0
     lda #$c6
     sta pia2_iout      ;Put #$39 on IEEE data lines
@@ -151,10 +151,10 @@ l_04d4:
     sta pia2_dav       ;Set DAV = 1
 
 main_loop:
-    lda #$3c
+    lda #%00111100
     sta pia2_ndac      ;Set NDAC_OUT = 1
     lda via_pb
-    ora #$06
+    ora #%00000110
     sta via_pb         ;Set NRFD_OUT = 1, ATN_OUT = 1
 
 wait_for_srq:
@@ -163,7 +163,7 @@ wait_for_srq:
     bcc wait_for_srq   ;Wait until SRQ_IN is detected
 
     lda pia2_iout      ;Clears IRQA1 flag (SRQ_IN detect)
-    lda #$34
+    lda #%00110100
     sta pia2_ndac      ;Set NDAC_OUT = 0
 
     ldx pia2_ieee      ;Read IEEE data byte with command from SoftBox
@@ -178,7 +178,7 @@ wait_for_srq:
                        ; Bit 0: SoftBox to CBM: Key available?
 
     txa                ;Remember the original command byte in X
-    ror ;A
+    ror ;a
     lda #$7f           ;Next byte we'll put on IEEE will be #$80 (key available)
     bcs send_key_avail ;Bypass the key buffer check
 
@@ -191,8 +191,8 @@ send_key_avail:
 
 handshake:
     lda pia2_ieee      ;Read IEEE data byte
-    and #$3f           ;We are driving only bits 7 and 6 with the keyboard status
-    cmp #$3f
+    and #%00111111     ;We are driving only bits 7 and 6 with the keyboard status
+    cmp #%00111111
     bne handshake      ;Wait for the SoftBox to drive the other lines to zero
     lda #$ff
     sta pia2_iout      ;Release all data lines
@@ -224,7 +224,7 @@ do_get_key:
 do_terminal:
 ;Write to the terminal screen
     jsr ieee_get_byte
-    ldx #$3c
+    ldx #%00111100
     stx pia2_ndac      ;Set NDAC_OUT = 1
     jsr process_byte
     jmp main_loop
@@ -235,7 +235,7 @@ do_mem_jsr:
     sta target_lo      ; -> Target vector lo
     jsr ieee_get_byte  ;Get byte
     sta target_hi      ; -> Target vector hi
-    ldx #$3c
+    ldx #%00111100
     stx pia2_ndac      ;Set NDAC_OUT = 1
     jsr do_mem_jsr_ind ;Jump to the subroutine through TARGET_LO
     jmp main_loop
@@ -307,7 +307,7 @@ ieee_get_byte:
 ;Receive a byte from the SoftBox over the IEEE-488 bus.
 ;
     lda via_pb
-    ora #$02
+    ora #%00000010
     sta via_pb         ;Set NRFD OUT = 1
 l_05d7:
     bit via_pb         ;Wait for NRFD_IN = 1
@@ -317,14 +317,14 @@ l_05d7:
     eor #$ff           ;Invert it
     pha                ;Push data byte
     lda via_pb
-    and #$fd
+    and #%11111101
     sta via_pb         ;Set NRFD_OUT = 0
-    lda #$3c
+    lda #%00111100
     sta pia2_ndac      ;Set NDAC_OUT = 1
 l_05ef:
     bit via_pb
     bpl l_05ef         ;Wait for DAV_IN = 0
-    lda #$34
+    lda #%00110100
     sta pia2_ndac      ;Set NDAC_OUT = 0
     pla
     rts
@@ -335,20 +335,20 @@ ieee_send_byte:
     eor #$ff           ;Invert the byte
     sta pia2_iout      ;Put byte on IEEE data output lines
     lda via_pb
-    ora #$02
+    ora #%00000010
     sta via_pb         ;Set NRFD_OUT = 1
-    lda #$3c
+    lda #%00111100
     sta pia2_ndac      ;Set NDAC_OUT = 1
 l_060d:
     bit via_pb
     bvc l_060d         ;Wait for NRFD_IN = 1
-    lda #$34
+    lda #%00110100
     sta pia2_dav       ;Set DAV_OUT = 0
 l_0617:
     lda via_pb
     lsr ;a
     bcc l_0617         ;Wait for SoftBox to set NDAC_IN = 0
-    lda #$3c
+    lda #%00111100
     sta pia2_dav       ;Set DAV_OUT = 1
     lda #$ff
     sta pia2_iout      ;Release data lines
