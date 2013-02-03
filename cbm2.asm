@@ -1064,30 +1064,29 @@ l_0863:
     rts
 
 ctrl_14:
-;Clear from Current line to end of screen
+;Clear from current line to end of screen
 ;
-    jsr ctrl_13     ;Clear to the end of the current line
-    ldx cursor_y    ;Get the Current line#
-l_0870:
-    inx             ;Next Row
-    cpx #$19        ;Is it 25 (last line of screen?
-    beq l_088d      ;  Yes, we're done
-    clc             ;  No, continue
-    lda scrline_lo  ;Current screen position
-    adc x_width     ;Add the line width
-    sta scrline_lo  ;Save it
-    bcc l_0880      ;Need to update HI?
-    inc scrline_hi  ;  Yes, increment HI pointer
-l_0880:
-    lda #$20        ;SPACE
-    ldy #$00        ;Position 0
-l_0884:
-    sta (scrline_lo),y ;Write a space
-    iny               ;Next character
-    cpy x_width       ;Is it end of line?
-    bne l_0884        ;No, loop back for more on this line
-    beq l_0870        ;Yes, loop back for next line
-l_088d:
+    jsr ctrl_13         ;Clear to the end of the current line
+    ldx cursor_y        ;Get current Y position
+ctrl_14_next:
+    inx                 ;Y=Y+1
+    cpx #$19            ;Incremented past last line?
+    beq ctrl_14_done    ;  Yes: done
+    clc                 ;Advance scrline pointer
+    lda scrline_lo
+    adc x_width
+    sta scrline_lo
+    bcc ctrl_14_eraline
+    inc scrline_hi
+ctrl_14_eraline:
+    lda #$20            ;Space character
+    ldy x_width
+ctrl_14_erachar:
+    dey
+    sta (scrline_lo),y
+    bne ctrl_14_erachar ;Loop until entire line is erased
+    beq ctrl_14_next    ;Continue to the next line
+ctrl_14_done:
     rts
 
 ctrl_04:
