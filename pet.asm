@@ -131,9 +131,9 @@ init_ieee:
     lda pia2_iout      ;Clears IRQA1 flag (ATN_IN detect)
     lda via_pb
     and #$fb
-    sta via_pb         ;Set ATN_OUT = 0 to get SoftBox's attention
+    sta via_pb         ;Set ATN_OUT = 0
     lda #$34
-    sta pia2_dav       ;Set DAV_OUT = 0 to tell SoftBox our data is valid
+    sta pia2_dav       ;Set DAV_OUT = 0
     lda #$c6
     sta pia2_iout      ;Put #$39 on IEEE data lines
     ldy #$00
@@ -164,7 +164,7 @@ wait_for_srq:
 
     lda pia2_iout      ;Clears IRQA1 flag (SRQ_IN detect)
     lda #$34
-    sta pia2_ndac      ;Set NDAC_OUT = 0 to indicate we do not accept the data yet
+    sta pia2_ndac      ;Set NDAC_OUT = 0
 
     ldx pia2_ieee      ;Read IEEE data byte with command from SoftBox
                        ;
@@ -225,7 +225,7 @@ do_terminal:
 ;Write to the terminal screen
     jsr ieee_get_byte
     ldx #$3c
-    stx pia2_ndac      ;Set NDAC_OUT = 1 to indicate we accept the data
+    stx pia2_ndac      ;Set NDAC_OUT = 1
     jsr process_byte
     jmp main_loop
 
@@ -236,7 +236,7 @@ do_mem_jsr:
     jsr ieee_get_byte  ;Get byte
     sta target_hi      ; -> Target vector hi
     ldx #$3c
-    stx pia2_ndac      ;Set NDAC_OUT = 1 to indicate we accept the data
+    stx pia2_ndac      ;Set NDAC_OUT = 1
     jsr do_mem_jsr_ind ;Jump to the subroutine through TARGET_LO
     jmp main_loop
 do_mem_jsr_ind:
@@ -310,29 +310,29 @@ ieee_get_byte:
     ora #$02
     sta via_pb         ;Set NRFD OUT = 1
 l_05d7:
-    bit via_pb         ;Wait for NRFD_IN = 1 (SoftBox is ready for data)
-    bmi l_05d7         ;Wait for DAV_IN = 0 (Softbox says data is valid)
+    bit via_pb         ;Wait for NRFD_IN = 1
+    bmi l_05d7         ;Wait for DAV_IN = 0
 
     lda pia2_ieee      ;Read data byte
-    eor #$ff           ;Invert the byte (IEEE true = low)
+    eor #$ff           ;Invert it
     pha                ;Push data byte
     lda via_pb
     and #$fd
-    sta via_pb         ;Set NRFD_OUT = 0 (we are not ready for data)
+    sta via_pb         ;Set NRFD_OUT = 0
     lda #$3c
-    sta pia2_ndac      ;Set NDAC_OUT = 1 (we accept the last data byte)
+    sta pia2_ndac      ;Set NDAC_OUT = 1
 l_05ef:
     bit via_pb
-    bpl l_05ef         ;Wait for DAV_IN = 0 (SoftBox says data is valid)
+    bpl l_05ef         ;Wait for DAV_IN = 0
     lda #$34
-    sta pia2_ndac      ;Set NDAC_OUT = 0 (we do not accept data)
+    sta pia2_ndac      ;Set NDAC_OUT = 0
     pla
     rts
 
 ieee_send_byte:
 ;Send a byte to the SoftBox over the IEEE-488 bus.
 ;
-    eor #$ff           ;Invert the byte (IEEE true = low)
+    eor #$ff           ;Invert the byte
     sta pia2_iout      ;Put byte on IEEE data output lines
     lda via_pb
     ora #$02
@@ -341,13 +341,13 @@ ieee_send_byte:
     sta pia2_ndac      ;Set NDAC_OUT = 1
 l_060d:
     bit via_pb
-    bvc l_060d         ;Wait for NRFD_IN = 1 (SoftBox is ready for data)
+    bvc l_060d         ;Wait for NRFD_IN = 1
     lda #$34
-    sta pia2_dav       ;Set DAV_OUT = 0 to indicate our data is valid
+    sta pia2_dav       ;Set DAV_OUT = 0
 l_0617:
     lda via_pb
     lsr ;a
-    bcc l_0617         ;Wait for SoftBox to set NDAC_IN = 0 (not accepted)
+    bcc l_0617         ;Wait for SoftBox to set NDAC_IN = 0
     lda #$3c
     sta pia2_dav       ;Set DAV_OUT = 1
     lda #$ff
@@ -355,7 +355,7 @@ l_0617:
 l_0627:
     lda via_pb
     lsr ;a
-    bcs l_0627         ;Wait for SoftBox to set NDAC_IN = 1 (data accepted)
+    bcs l_0627         ;Wait for SoftBox to set NDAC_IN = 1
     rts
 
 get_key:
