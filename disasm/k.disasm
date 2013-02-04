@@ -162,10 +162,10 @@ $04D7: A9 FF     LDA #$FF
 $04D9: 8D 22 E8  STA PIA2_IOUT      ;Release IEEE data lines
 
 $04DC: A9 3C     LDA #%00111100
-$04DE: 8D 11 E8  STA PIA1_EOI       ;EOI_OUT=high, also disable IRQ from CA1 (Cassette Read)
-$04E1: 8D 21 E8  STA PIA2_NDAC      ;NDAC_OUT=high, also disable IRQ from CA1 (ATN_IN)
-$04E4: 8D 23 E8  STA PIA2_DAV       ;DAV_OUT=high
-
+$04DE: 8D 11 E8  STA PIA1_EOI       ;EOI_OUT=high, disable IRQ from CA1 (Cassette Read)
+$04E1: 8D 21 E8  STA PIA2_NDAC      ;NDAC_OUT=high, disable IRQ from CA1 (ATN_IN)
+$04E4: 8D 23 E8  STA PIA2_DAV       ;DAV_OUT=high, disable IRQ from CB1 (SRQ_IN),
+                                    ;  CB1 transition mode = positive (low-to-high)
 MAIN_LOOP:
 $04E7: A9 3C     LDA #%00111100
 $04E9: 8D 21 E8  STA PIA2_NDAC      ;NDAC_OUT=high
@@ -176,10 +176,10 @@ $04F1: 8D 40 E8  STA VIA_PB         ;NRFD_OUT=high, ATN_OUT=high
 
 WAIT_FOR_SRQ:
 $04F4: AD 23 E8  LDA PIA2_DAV       ;Read PIA #2 CRB
-$04F7: 0A        ASL A              ;  bit 7 = IRQA1 flag for CA1 (SRQ_IN detect)
+$04F7: 0A        ASL A              ;  bit 7 = IRQB1 flag for CB1 (SRQ_IN detect)
 $04F8: 90 FA     BCC WAIT_FOR_SRQ   ;Wait until SRQ_IN is detected
 
-$04FA: AD 22 E8  LDA PIA2_IOUT      ;Read clears IRQA1 flag (SRQ_IN detect)
+$04FA: AD 22 E8  LDA PIA2_IOUT      ;Read clears IRQB1 flag (SRQ_IN detect)
 
 $04FD: A9 34     LDA #%00110100
 $04FF: 8D 21 E8  STA PIA2_NDAC      ;NDAC_OUT=low

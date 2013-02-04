@@ -149,9 +149,10 @@ l_04d4:
     sta pia2_iout      ;Release IEEE data lines
 
     lda #%00111100
-    sta pia1_eoi       ;EOI_OUT=high, also disable IRQ from CA1 (Cassette Read)
-    sta pia2_ndac      ;NDAC_OUT=high, also disable IRQ from CA1 (ATN_IN)
-    sta pia2_dav       ;DAV_OUT=high
+    sta pia1_eoi       ;EOI_OUT=high, disable IRQ from CA1 (Cassette Read)
+    sta pia2_ndac      ;NDAC_OUT=high, disable IRQ from CA1 (ATN_IN)
+    sta pia2_dav       ;DAV_OUT=high, disable IRQ from CB1 (SRQ_IN),
+                       ;  CB1 transition mode = positive (low-to-high)
 
 main_loop:
     lda #%00111100
@@ -163,10 +164,10 @@ main_loop:
 
 wait_for_srq:
     lda pia2_dav       ;Read PIA #2 CRB
-    asl ;a             ;  bit 7 = IRQA1 flag for CA1 (SRQ_IN detect)
+    asl ;a             ;  bit 7 = IRQB1 flag for CB1 (SRQ_IN detect)
     bcc wait_for_srq   ;Wait until SRQ_IN is detected
 
-    lda pia2_iout      ;Read clears IRQA1 flag (SRQ_IN detect)
+    lda pia2_iout      ;Read clears IRQB1 flag (SRQ_IN detect)
 
     lda #%00110100
     sta pia2_ndac      ;NDAC_OUT=low
