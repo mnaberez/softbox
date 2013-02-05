@@ -79,6 +79,9 @@ init:
     sta cinv_lo
     lda #>irq_handler
     sta cinv_hi        ;Install our interrupt handler
+    lda #%0000011      ;Bit 1: IEEE-488 SRQ
+                       ;Bit 0: 50/60 Hz
+    sta tpi1_ddrc      ;TPI Interrupt Mask Register
     lda tpi1_pb
     and #%10111111
     sta tpi1_pb        ;Turn cassette motor off
@@ -155,15 +158,6 @@ init_ieee:
 ;6526 CIA #2 ($DC00)
 ;    PA0-7 Data
 ;
-;    lda tpi1_ddrc
-;    and #%11111101
-;    sta tpi1_ddrc      ;Disable IRQs from IEEE SRQ
-;
-;    lda tpi1_pc
-;    and #%11111101
-;    sta tpi1_pc        ;Clear any previous IRQ from IEEE SRQ
-;    sta tpi1_air
-
     lda #$00
     sta got_srq
 
@@ -219,7 +213,6 @@ main_loop:
                       ;PA1 TE    Output
                       ;PA0 DC    Output
     sta tpi1_ddra
-
 
 wait_for_srq:
     lda got_srq
@@ -535,29 +528,10 @@ irq_handler:
 ;which pushes A, X, and Y onto the stack and then executes JMP (cinv_lo).
 ;We install this routine, IRQ_HANDLER, into cinv_lo during init.
 ;
-    lda i6509
-    pha                 ;Preserve 6509 Indirect Register
+    lda tpi1_air        ;Read the active interrupt
 
-    lda tpi1_air        ;Read the AIR to find the active interrupt and
-                        ;tell the TPI that interrupt service has begun.
-
-check_tpi1:             ;IRQ from TPI #1?
-    bne check_acia
-    jmp irq_done
-check_acia:
-    cmp #$10            ;IRQ from ACIA?
-    bne check_proc
-    jmp irq_done
-check_proc:
-    cmp #$08            ;IRQ from Coprocessor?
-    bne check_cia
-    jmp irq_done
-check_cia:
-    cmp #$04            ;IRQ from CIA?
-    bne check_ieee
-    jmp irq_done
 check_ieee:
-    cmp #$02            ;IRQ from IEEE-488?
+    cmp #$02            ;IRQ from IEEE-488 SRQ?
     bne irq_50hz
     sta got_srq
     jmp irq_done
@@ -642,10 +616,7 @@ irq_key:
     inc keycount        ;        and increment the keycount.
 
 irq_done:
-    sta tpi1_air        ;Write to the AIR to tell the TPI that the
-                        ;interrupt service has concluded.
-    pla
-    sta i6509           ;Restore 6509 indirect register
+    sta tpi1_air        ;Pop interrupt off TPI interrupt stack
     pla
     tay                 ;Restore Y
     pla
@@ -654,8 +625,7 @@ irq_done:
     rti
 
 irq_reset:
-    sta tpi1_air        ;Write to the AIR to tell the TPI that the
-                        ;interrupt service has concluded.
+    sta tpi1_air        ;Pop interrupt off TPI interrupt stack
     ldx #$ff            ;Reset the stack pointer
     tsx
     lda #>reset_softbox ;Push reset routine as return address
