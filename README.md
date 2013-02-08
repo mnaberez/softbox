@@ -7,6 +7,8 @@ Commodore PET/CBM computers as an IEEE-488 peripheral.
 
 ## Files
 
+ - `bios/` contains the BIOS (SoftBox EPROMs) and a disassembly of it.
+
  - `disasm/` contains the original PET/CBM terminal and a disassembly of it.
 
  - `pet.asm` is an updated version of the PET/CBM terminal.
