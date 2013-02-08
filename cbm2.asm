@@ -713,12 +713,13 @@ move_to:
 ;and the Y-position byte on the second call.  After the Y-position byte
 ;has been consumed, MOVETO_CNT = 0, exiting the move-to sequence.
 ;
+    sec
+    sbc #$20              ;Pos = Pos - #$20 (ADM-3A compatibility)
+
     dec moveto_cnt        ;Decrement bytes remaining to consume
     beq move_to_y         ;Already got X pos?  Handle this byte as Y.
                           ;Fall through into move_to_x
 move_to_x:
-    sec
-    sbc #$20              ;X-pos = X-pos - #$20 (ADM-3A compatibility)
     cmp x_width           ;Requested X position out of range?
     bcs move_to_x_done    ;  Yes: Do nothing.
     sta cursor_x          ;  No:  Move cursor to requested X.
@@ -726,8 +727,6 @@ move_to_x_done:
     rts
 
 move_to_y:
-    sec
-    sbc #$20              ;Y-pos = Y-pos - #$20 (ADM-3A compatibility)
     cmp #$19              ;Requested Y position out of range?
     bcs move_to_y_done    ;  Yes: Do nothing.
     sta cursor_y          ;  No:  Move cursor to requested Y.
