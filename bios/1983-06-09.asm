@@ -901,22 +901,7 @@ lf62bh:
     ld hl,0d400h
     jp lf134h
 lf63eh:
-    dec c
-    ld a,(bc)
-    ld c,h
-    ld l,a
-    ld h,c
-    ld h,h
-    ld l,c
-    ld l,(hl)
-    ld h,a
-    jr nz,lf68ch
-    ld d,b
-    cpl
-    ld c,l
-    jr nz,$+48
-    ld l,02eh
-    nop
+    db 0dh,0ah,"Loading CP/M ...",00h
 sub_f651h:
     push bc
     push de
