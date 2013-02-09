@@ -4,57 +4,58 @@
     org 0f000h
 
 lf000h:
-    jp lf419h
-    jp lf0d2h
-    jp lfbb6h
-    jp lfb98h
-    jp lfbc8h
-    jp lfca8h
-    jp lfd7bh
-    jp lfd93h
-    jp lf16ah
-    jp lf17ch
-    jp lf16dh
-    jp lf172h
-    jp lf177h
-    jp lf252h
-    jp lf26fh
-    jp lfd33h
-    jp lf221h
-    jp lfb31h
-    jp lfb47h
-    jp lfaf9h
-    jp lfb21h
-    jp lfed8h
-    jp lfe62h
-    jp lff0bh
-    jp lff09h
-    jp lff1fh
-    jp lf9a3h
-    jp lf224h
-    jp lfaadh
-    jp lfabch
-    jp lf9bch
-    jp lfb56h
-    jp lfb72h
-    jp lfdb9h
-    jp lfdc3h
-    jp lfdfch
-    jp lfdd0h
-    jp lfe1ch
-    jp lfe47h
-    jp lf578h
-    jp lfac4h
-    jp lfb49h
-    jp lfec1h
-    jp lfe31h
-    jp lfb86h
+    jp boot      ;f000  COLD START
+    jp wboot     ;f003  WARM START
+    jp const     ;f006  CHECK FOR CONSOLE CHAR READY
+    jp conin     ;f009  READ CONSOLE CHARACTER IN
+    jp conout    ;f00c  WRITE CONSOLE CHARACTER OUT
+    jp list      ;f00f  WRITE LISTING CHARACTER OUT
+    jp punch     ;f012  WRITE CHARACTER TO PUNCH DEVICE
+    jp reader    ;f015  READ READER DEVICE
+    jp home      ;f018  MOVE TO TRACK 00 ON SELECTED DISK
+    jp settrk    ;f01b  SET TRACK NUMBER
+    jp setsec    ;f01e  SET SECTOR NUMBER
+    jp setdma    ;f021  SET DMA ADDRESS
+    jp read      ;f024  READ SELECTED SECTOR
+    jp write     ;f027  WRITE SELECTED SECTOR
+    jp listst    ;f02a  RETURN LIST STATUS
+    jp sectran   ;f02d  SECTOR TRANSLATE SUBROUTINE
+    jp lf221h    ;f030
+    jp lfb31h    ;f033
+    jp lfb47h    ;f036
+    jp lfaf9h    ;f039
+    jp lfb21h    ;f03c
+    jp lfed8h    ;f03f
+    jp lfe62h    ;f042
+    jp lff0bh    ;f045
+    jp lff09h    ;f048
+    jp lff1fh    ;f04b
+    jp lf9a3h    ;f04e
+    jp lf224h    ;f051
+    jp lfaadh    ;f054
+    jp lfabch    ;f057
+    jp lf9bch    ;f05a
+    jp lfb56h    ;f05d
+    jp lfb72h    ;f060
+    jp lfdb9h    ;f063
+    jp lfdc3h    ;f066
+    jp lfdfch    ;f069
+    jp lfdd0h    ;f06c
+    jp lfe1ch    ;f06f
+    jp lfe47h    ;f072
+    jp lf578h    ;f075
+    jp lfac4h    ;f078
+    jp lfb49h    ;f07b
+    jp lfec1h    ;f07e
+    jp lfe31h    ;f081
+    jp lfb86h    ;f084
+
 lf087h:
     db 0dh,0ah,"60K SoftBox CP/M vers. 2.2"
     db 0dh,0ah,"(c) 1982 Keith Frewin"
     db 0dh,0ah,"Revision 09-June-1983"
     db 00h
-lf0d2h:
+wboot:
     ld sp,00100h
     xor a
     call sub_f245h
@@ -80,7 +81,7 @@ lf0f6h:
     xor a
     call lfac4h
 lf0fah:
-    jr lf0d2h
+    jr wboot
 sub_f0fch:
     ld hl,0d400h
     ld c,000h
@@ -93,7 +94,7 @@ lf10ah:
     ld (00043h),a
     ld (00048h),a
     ld (00051h),a
-    call lf17ch
+    call settrk
     ld a,0ffh
     ld (00044h),a
     pop bc
@@ -102,7 +103,7 @@ lf11dh:
     ld (00052h),hl
     push hl
     push bc
-    call lf252h
+    call write
     ld hl,00043h
     inc (hl)
     pop bc
@@ -116,7 +117,7 @@ lf11dh:
 lf134h:
     push hl
     ld bc,00080h
-    call lf177h
+    call read
     ld a,0c3h
     ld (00000h),a
     ld hl,0ea03h
@@ -139,19 +140,19 @@ lf15ch:
     ld (00044h),a
     pop hl
     jp (hl)
-lf16ah:
+home:
     ld bc,00000h
-lf16dh:
+setsec:
     ld (00041h),bc
     ret
-lf172h:
+setdma:
     ld a,c
     ld (00043h),a
     ret
-lf177h:
+read:
     ld (00052h),bc
     ret
-lf17ch:
+settrk:
     ld a,c
     call lf224h
     ld hl,00000h
@@ -328,7 +329,7 @@ sub_f245h:
     cp 002h
     ccf
     ret
-lf252h:
+write:
     ld a,(00040h)
     call sub_f245h
     jp c,lf315h
@@ -341,7 +342,7 @@ lf252h:
     xor a
     ld (00048h),a
     ret
-lf26fh:
+listst:
     push bc
     ld a,(00040h)
     call sub_f245h
@@ -579,8 +580,8 @@ sub_f40bh:
 lf413h:
     add a,030h
     ld c,a
-    jp lfbc8h
-lf419h:
+    jp conout
+boot:
     ld sp,00100h
     ld a,099h
     out (013h),a
@@ -872,13 +873,13 @@ lf5d5h:
     rla
     jr nc,lf62bh
     ld c,015h
-    call lfbc8h
+    call conout
 lf62bh:
     ld hl,lf087h
     call sub_fdadh
-    call lfbb6h
+    call const
     inc a
-    call z,lfb98h
+    call z,conin
     ld hl,0d400h
     jp lf134h
 lf63eh:
@@ -1026,13 +1027,13 @@ lf752h:
     ld a,(00044h)
     add a,041h
     ld c,a
-    call lfbc8h
+    call conout
     ld hl,lf8bbh
     call sub_fdadh
     ld hl,lf7bah
     call sub_f7a6h
 lf76dh:
-    call lfb98h
+    call conin
     cp 003h
     jp z,00000h
     cp 03fh
@@ -1046,7 +1047,7 @@ lf782h:
     jr z,lf76dh
     ld c,a
     push hl
-    call lfbc8h
+    call conout
     pop hl
     inc hl
     jr lf782h
@@ -1532,7 +1533,7 @@ lfb92h:
     djnz lfb92h
     pop bc
     ret
-lfb98h:
+conin:
     ld a,(00003h)
     rra
     jp nc,lfc77h
@@ -1548,7 +1549,7 @@ lfb98h:
     out (015h),a
     pop af
     ret
-lfbb6h:
+const:
     ld a,(00003h)
     rra
     jp nc,lfc64h
@@ -1558,7 +1559,7 @@ lfbb6h:
     ret nc
     ld a,0ffh
     ret
-lfbc8h:
+conout:
     ld a,(00003h)
     rra
     jp nc,lfc6ch
@@ -1702,7 +1703,7 @@ lfca1h:
     jr nz,lfca1h
     pop af
     ret
-lfca8h:
+list:
     ld a,(00003h)
     and 0c0h
     jp z,lfc6ch
@@ -1774,7 +1775,7 @@ lfd29h:
     call sub_fd6bh
     call lfe62h
     jp lfb47h
-lfd33h:
+sectran:
     ld a,(00003h)
     and 0c0h
     jr z,lfd61h
@@ -1820,7 +1821,7 @@ sub_fd6bh:
 lfd78h:
     xor 080h
     ret
-lfd7bh:
+punch:
     ld a,(00003h)
     and 030h
     jp z,lfc6ch
@@ -1832,7 +1833,7 @@ lfd8ch:
     ld a,c
     call lfe62h
     jp lfb47h
-lfd93h:
+reader:
     ld a,(00003h)
     and 00ch
     jp z,lfc77h
@@ -1851,7 +1852,7 @@ sub_fdadh:
     ret z
     push hl
     ld c,a
-    call lfbc8h
+    call conout
     pop hl
     inc hl
     jr sub_fdadh
