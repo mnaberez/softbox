@@ -4,51 +4,51 @@
     org 0f000h
 
 lf000h:
-    jp boot      ;f000  COLD START
-    jp wboot     ;f003  WARM START
-    jp const     ;f006  CHECK FOR CONSOLE CHAR READY
-    jp conin     ;f009  READ CONSOLE CHARACTER IN
-    jp conout    ;f00c  WRITE CONSOLE CHARACTER OUT
-    jp list      ;f00f  WRITE LISTING CHARACTER OUT
-    jp punch     ;f012  WRITE CHARACTER TO PUNCH DEVICE
-    jp reader    ;f015  READ READER DEVICE
-    jp home      ;f018  MOVE TO TRACK 00 ON SELECTED DISK
-    jp settrk    ;f01b  SET TRACK NUMBER
-    jp setsec    ;f01e  SET SECTOR NUMBER
-    jp setdma    ;f021  SET DMA ADDRESS
-    jp read      ;f024  READ SELECTED SECTOR
-    jp write     ;f027  WRITE SELECTED SECTOR
-    jp listst    ;f02a  RETURN LIST STATUS
-    jp sectran   ;f02d  SECTOR TRANSLATE SUBROUTINE
-    jp lf221h    ;f030
-    jp lfb31h    ;f033
-    jp lfb47h    ;f036
-    jp lfaf9h    ;f039
-    jp lfb21h    ;f03c
-    jp lfed8h    ;f03f
-    jp lfe62h    ;f042
-    jp lff0bh    ;f045
-    jp lff09h    ;f048
-    jp lff1fh    ;f04b
-    jp lf9a3h    ;f04e
-    jp lf224h    ;f051
-    jp lfaadh    ;f054
-    jp lfabch    ;f057
-    jp lf9bch    ;f05a
-    jp lfb56h    ;f05d
-    jp lfb72h    ;f060
-    jp lfdb9h    ;f063
-    jp cbm_jsr   ;f066  Jump to a subroutine in CBM memory
-    jp cbm_poke  ;f069  Transfer bytes from the SoftBox to CBM memory
-    jp cbm_peek  ;f06c  Transfer bytes from CBM memory to the SoftBox
-    jp lfe1ch    ;f06f
-    jp lfe47h    ;f072
-    jp lf578h    ;f075
-    jp lfac4h    ;f078
-    jp lfb49h    ;f07b
-    jp lfec1h    ;f07e
-    jp lfe31h    ;f081
-    jp lfb86h    ;f084
+    jp boot          ;f000  COLD START
+    jp wboot         ;f003  WARM START
+    jp const         ;f006  CHECK FOR CONSOLE CHAR READY
+    jp conin         ;f009  READ CONSOLE CHARACTER IN
+    jp conout        ;f00c  WRITE CONSOLE CHARACTER OUT
+    jp list          ;f00f  WRITE LISTING CHARACTER OUT
+    jp punch         ;f012  WRITE CHARACTER TO PUNCH DEVICE
+    jp reader        ;f015  READ READER DEVICE
+    jp home          ;f018  MOVE TO TRACK 00 ON SELECTED DISK
+    jp settrk        ;f01b  SET TRACK NUMBER
+    jp setsec        ;f01e  SET SECTOR NUMBER
+    jp setdma        ;f021  SET DMA ADDRESS
+    jp read          ;f024  READ SELECTED SECTOR
+    jp write         ;f027  WRITE SELECTED SECTOR
+    jp listst        ;f02a  RETURN LIST STATUS
+    jp sectran       ;f02d  SECTOR TRANSLATE SUBROUTINE
+    jp lf221h        ;f030
+    jp lfb31h        ;f033
+    jp lfb47h        ;f036
+    jp lfaf9h        ;f039
+    jp lfb21h        ;f03c
+    jp cbm_get_byte  ;f03f  Read a single byte from the CBM
+    jp lfe62h        ;f042
+    jp lff0bh        ;f045
+    jp lff09h        ;f048
+    jp lff1fh        ;f04b
+    jp lf9a3h        ;f04e
+    jp lf224h        ;f051
+    jp lfaadh        ;f054
+    jp lfabch        ;f057
+    jp lf9bch        ;f05a
+    jp lfb56h        ;f05d
+    jp lfb72h        ;f060
+    jp lfdb9h        ;f063
+    jp cbm_jsr       ;f066  Jump to a subroutine in CBM memory
+    jp cbm_poke      ;f069  Transfer bytes from the SoftBox to CBM memory
+    jp cbm_peek      ;f06c  Transfer bytes from CBM memory to the SoftBox
+    jp lfe1ch        ;f06f
+    jp lfe47h        ;f072
+    jp lf578h        ;f075
+    jp lfac4h        ;f078
+    jp lfb49h        ;f07b
+    jp lfec1h        ;f07e
+    jp lfe31h        ;f081
+    jp lfb86h        ;f084
 
 lf087h:
     db 0dh,0ah,"60K SoftBox CP/M vers. 2.2"
@@ -904,7 +904,7 @@ sub_f651h:
     ld hl,0d400h
     ld b,000h
 lf671h:
-    call lfed8h
+    call cbm_get_byte
     ld (hl),a
     inc hl
     djnz lf671h
@@ -1273,7 +1273,7 @@ sub_f9bfh:
     call lfaf9h
     ld hl,0eac0h
 lf9c7h:
-    call lfed8h
+    call cbm_get_byte
     ld (hl),a
     sub 030h
     jr c,lf9c7h
@@ -1286,7 +1286,7 @@ lf9c7h:
     add a,b
     add a,a
     ld b,a
-    call lfed8h
+    call cbm_get_byte
     ld (hl),a
     inc hl
     sub 030h
@@ -1294,7 +1294,7 @@ lf9c7h:
     push af
     ld c,03ch
 lf9e5h:
-    call lfed8h
+    call cbm_get_byte
     dec c
     jp m,lf9eeh
     ld (hl),a
@@ -1350,7 +1350,7 @@ lfa3eh:
     call lfaadh
     ld e,00fh
     call lfaf9h
-    call lfed8h
+    call cbm_get_byte
     pop hl
     ld (hl),a
     push hl
@@ -1374,7 +1374,7 @@ lfa3eh:
     inc de
     ld b,0ffh
 lfa9ah:
-    call lfed8h
+    call cbm_get_byte
     ld (de),a
     inc de
     djnz lfa9ah
@@ -1541,8 +1541,8 @@ conin:
     or 004h
     out (015h),a
     ld a,002h
-    call sub_fc80h
-    call lfed8h
+    call cbm_srq
+    call cbm_get_byte
     push af
     in a,(015h)
     and 0f3h
@@ -1554,7 +1554,7 @@ const:
     rra
     jp nc,lfc64h
     ld a,001h
-    call sub_fc80h
+    call cbm_srq
     ld a,000h
     ret nc
     ld a,0ffh
@@ -1604,9 +1604,9 @@ lfbffh:
     ld c,a
 lfc0eh:
     ld a,004h
-    call sub_fc80h
+    call cbm_srq
     ld a,c
-    jp lfea1h
+    jp cbm_send_byte
 lfc17h:
     ld a,002h
     ld (0005ah),a
@@ -1675,7 +1675,8 @@ lfc77h:
     jr z,lfc77h
     in a,(008h)
     ret
-sub_fc80h:
+
+cbm_srq:
     push af
 lfc81h:
     in a,(010h)
@@ -1841,7 +1842,7 @@ reader:
     ld d,a
     ld e,0ffh
     call lfaf9h
-    call lfed8h
+    call cbm_get_byte
     push af
     call lfb21h
     pop af
@@ -1866,29 +1867,29 @@ lfdb9h:
 cbm_jsr:
 ;Jump to a subroutine in CBM memory
     ld a,008h
-    call sub_fc80h
+    call cbm_srq
     ld a,l
-    call lfea1h
+    call cbm_send_byte
     ld a,h
-    jp lfea1h
+    jp cbm_send_byte
 
 cbm_peek:
 ;Transfer bytes from CBM memory to the SoftBox
     ld a,010h
-    call sub_fc80h
+    call cbm_srq
     ld a,c
-    call lfea1h
+    call cbm_send_byte
     ld a,b
-    call lfea1h
+    call cbm_send_byte
     ld a,e
-    call lfea1h
+    call cbm_send_byte
     ld a,d
-    call lfea1h
+    call cbm_send_byte
     in a,(015h)
     or 004h
     out (015h),a
 lfdebh:
-    call lfed8h
+    call cbm_get_byte
     ld (hl),a
     inc hl
     dec bc
@@ -1903,18 +1904,18 @@ lfdebh:
 cbm_poke:
 ;Transfer bytes from the SoftBox to CBM memory
     ld a,020h
-    call sub_fc80h
+    call cbm_srq
     ld a,c
-    call lfea1h
+    call cbm_send_byte
     ld a,b
-    call lfea1h
+    call cbm_send_byte
     ld a,e
-    call lfea1h
+    call cbm_send_byte
     ld a,d
-    call lfea1h
+    call cbm_send_byte
 lfe11h:
     ld a,(hl)
-    call lfea1h
+    call cbm_send_byte
     inc hl
     dec bc
     ld a,b
@@ -1993,7 +1994,9 @@ lfe9eh:
     pop af
     scf
     ret
-lfea1h:
+
+cbm_send_byte:
+;Send a single byte to the CBM
     out (011h),a
 lfea3h:
     in a,(014h)
@@ -2014,6 +2017,7 @@ lfeb0h:
     xor a
     out (011h),a
     ret
+
 lfec1h:
     in a,(015h)
     and 0f7h
@@ -2030,7 +2034,9 @@ lfec7h:
     jr nz,lfec7h
     scf
     ret
-lfed8h:
+
+cbm_get_byte:
+;Read a single byte from the CBM
     in a,(015h)
     and 0f7h
     out (015h),a
@@ -2061,6 +2067,7 @@ lfef9h:
     pop af
     or a
     ret
+
 lff09h:
     ld a,00dh
 lff0bh:
