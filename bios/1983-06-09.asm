@@ -41,8 +41,8 @@ lf000h:
     jp cbm_jsr       ;f066  Jump to a subroutine in CBM memory
     jp cbm_poke      ;f069  Transfer bytes from the SoftBox to CBM memory
     jp cbm_peek      ;f06c  Transfer bytes from CBM memory to the SoftBox
-    jp lfe1ch        ;f06f
-    jp lfe47h        ;f072
+    jp lfe1ch        ;f06f    ? Variation of cbm_poke ?
+    jp lfe47h        ;f072    ? Variation of cbm_peek ?
     jp lf578h        ;f075
     jp lfac4h        ;f078
     jp lfb49h        ;f07b
@@ -50,11 +50,12 @@ lf000h:
     jp lfe31h        ;f081
     jp lfb86h        ;f084
 
-lf087h:
+banner:
     db 0dh,0ah,"60K SoftBox CP/M vers. 2.2"
     db 0dh,0ah,"(c) 1982 Keith Frewin"
     db 0dh,0ah,"Revision 09-June-1983"
     db 00h
+
 wboot:
     ld sp,00100h
     xor a
@@ -489,7 +490,7 @@ lf35ch:
 lf36dh:
     ld hl,lf3e5h
     push af
-    call sub_fdadh
+    call puts
     pop af
     call sub_f402h
     and 0ffh
@@ -754,8 +755,8 @@ lf524h:
     and 002h
     jr z,lf524h
 lf52bh:
-    ld hl,lf63eh
-    call sub_fdadh
+    ld hl,loading
+    call puts           ;Write "Loading CP/M ..."
     ld de,0080fh
     call lfb31h
     ld bc,00007h
@@ -875,15 +876,17 @@ lf5d5h:
     ld c,015h
     call conout
 lf62bh:
-    ld hl,lf087h
-    call sub_fdadh
+    ld hl,banner
+    call puts
     call const
     inc a
     call z,conin
     ld hl,0d400h
     jp lf134h
-lf63eh:
+
+loading:
     db 0dh,0ah,"Loading CP/M ...",00h
+
 sub_f651h:
     push bc
     push de
@@ -1023,13 +1026,13 @@ lf73fh:
     jr lf707h
 lf752h:
     ld hl,lf8beh
-    call sub_fdadh
+    call puts
     ld a,(00044h)
     add a,041h
     ld c,a
     call conout
     ld hl,lf8bbh
-    call sub_fdadh
+    call puts
     ld hl,lf7bah
     call sub_f7a6h
 lf76dh:
@@ -1039,7 +1042,7 @@ lf76dh:
     cp 03fh
     jr nz,lf790h
     ld hl,lf8d6h+1
-    call sub_fdadh
+    call puts
     ld hl,0eac0h
 lf782h:
     ld a,(hl)
@@ -1066,9 +1069,9 @@ sub_f7a6h:
     cp (hl)
     ld a,(hl)
     inc hl
-    jp z,sub_fdadh
+    jp z,puts
     inc a
-    jp z,sub_fdadh
+    jp z,puts
 lf7b3h:
     ld a,(hl)
     inc hl
@@ -1847,16 +1850,20 @@ reader:
     call lfb21h
     pop af
     ret
-sub_fdadh:
-    ld a,(hl)
+
+puts:
+;Write a null-terminated string to console out
+;
+    ld a,(hl)           ;Get the byte at pointer HL
     or a
-    ret z
-    push hl
+    ret z               ;Return if byte is 0
+    push hl             ;Save HL pointer
     ld c,a
-    call conout
-    pop hl
-    inc hl
-    jr sub_fdadh
+    call conout         ;Send byte to console out
+    pop hl              ;Recall HL pointer
+    inc hl              ;Increment HL pointer
+    jr puts             ;Loop to handle the next byte
+
 lfdb9h:
     ld a,(00003h)
     rra
