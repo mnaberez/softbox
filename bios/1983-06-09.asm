@@ -562,26 +562,7 @@ lf3d1h:
     add a,d
     ret
 lf3e5h:
-    dec c
-    ld a,(bc)
-    rlca
-    ld hl,(02a2ah)
-    jr nz,$+74
-    ld b,c
-    ld d,d
-    ld b,h
-    jr nz,lf436h
-    ld c,c
-    ld d,e
-    ld c,e
-    jr nz,$+71
-    ld d,d
-    ld d,d
-    ld c,a
-    ld d,d
-    jr nz,lf427h
-    ld hl,(0202ah)
-    jr nz,sub_f402h
+    db 0dh,0ah,07h,"*** HARD DISK ERROR ***  ",00h
 sub_f402h:
     push af
     rra
@@ -1094,266 +1075,23 @@ lf7b3h:
     jr nz,lf7b3h
     jr sub_f7a6h
 lf7bah:
-    ld a,(de)
-    ld b,h
-    ld l,c
-    ld (hl),e
-    ld l,e
-    jr nz,lf838h
-    ld (hl),d
-    ld l,c
-    ld (hl),h
-    ld h,l
-    jr nz,lf837h
-    ld (hl),d
-    ld l,a
-    ld (hl),h
-    ld h,l
-    ld h,e
-    ld (hl),h
-    ld h,l
-    ld h,h
-    nop
-    add hl,de
-    ld d,a
-    ld (hl),d
-    ld l,c
-    ld (hl),h
-    ld h,l
-    jr nz,lf84eh
-    ld h,l
-    ld (hl),d
-    ld l,c
-    ld h,(hl)
-    ld a,c
-    jr nz,lf844h
-    ld (hl),d
-    ld (hl),d
-    ld l,a
-    ld (hl),d
-    nop
-    inc e
-    ld c,h
-    ld l,a
-    ld l,(hl)
-    ld h,a
-    jr nz,lf84fh
-    ld h,c
-    ld (hl),h
-    ld h,c
-    jr nz,lf852h
-    ld l,h
-    ld l,a
-    ld h,e
-    ld l,e
-    nop
-    inc d
-    ld c,l
-    ld l,c
-    ld (hl),e
-    ld (hl),e
-    ld l,c
-    ld l,(hl)
-    ld h,a
-    jr nz,lf867h
-    ld h,l
-    ld h,c
-    ld h,h
-    ld h,l
-    ld (hl),d
-    nop
-    dec d
-    ld b,h
-    ld l,c
-    ld (hl),e
-    ld l,e
-    jr nz,$+112
-    ld l,a
-    ld (hl),h
-    jr nz,lf882h
-    ld h,l
-    ld h,c
-    ld h,h
-    ld a,c
-    nop
-    ld c,d
-    ld b,h
-    ld l,c
-    ld (hl),e
-    ld l,e
-    jr nz,lf88ah
-    ld l,a
-    ld (hl),h
-    jr nz,lf892h
-    ld h,l
-    ld h,c
-    ld h,h
-    ld a,c
-    nop
-    ld d,04dh
-    ld l,c
-    ld (hl),e
-    ld (hl),e
-    ld l,c
-    ld l,(hl)
-    ld h,a
-    jr nz,$+102
-    ld h,c
-    ld (hl),h
-    ld h,c
-    jr nz,lf896h
-    ld l,h
-    ld l,a
-    ld h,e
-lf837h:
-    ld l,e
-lf838h:
-    nop
-    rla
-    ld b,e
-    ld l,b
-    ld h,l
-    ld h,e
-    ld l,e
-    ld (hl),e
-    ld (hl),l
-    ld l,l
-    jr nz,lf8a9h
-lf844h:
-    ld (hl),d
-    ld (hl),d
-    ld l,a
-    ld (hl),d
-    jr nz,lf8b3h
-    ld l,(hl)
-    jr nz,lf8b1h
-    ld h,c
-lf84eh:
-    ld (hl),h
-lf84fh:
-    ld h,c
-    nop
-    dec de
-lf852h:
-    ld b,e
-    ld l,b
-    ld h,l
-    ld h,e
-    ld l,e
-    ld (hl),e
-    ld (hl),l
-    ld l,l
-    jr nz,lf8c1h
-    ld (hl),d
-    ld (hl),d
-    ld l,a
-    ld (hl),d
-    jr nz,lf8cbh
-    ld l,(hl)
-    jr nz,lf8cdh
-    ld h,l
-    ld h,c
-lf867h:
-    ld h,h
-    ld h,l
-    ld (hl),d
-    nop
-    jr lf8afh
-    ld a,c
-    ld (hl),h
-    ld h,l
-    jr nz,lf8d6h
-    ld h,l
-    ld h,e
-    ld l,a
-    ld h,h
-    ld l,c
-    ld l,(hl)
-    ld h,a
-    jr nz,lf8e0h
-    ld (hl),d
-    ld (hl),d
-    ld l,a
-    ld (hl),d
-    nop
-    ld b,(hl)
-    ld b,e
-lf882h:
-    ld l,a
-    ld l,l
-    ld l,l
-    ld l,a
-    ld h,h
-    ld l,a
-    ld (hl),d
-    ld h,l
-lf88ah:
-    jr nz,$+70
-    ld c,a
-    ld d,e
-    jr nz,lf8f2h
-    ld (hl),l
-    ld h,a
-lf892h:
-    jr nz,lf8b5h
-    nop
-    ld c,c
-lf896h:
-    ld d,a
-    ld (hl),d
-    ld l,a
-    ld l,(hl)
-    ld h,a
-    jr nz,lf8e1h
-    ld c,a
-    ld d,e
-    jr nz,lf907h
-    ld l,a
-    ld (hl),d
-    ld l,l
-    ld h,c
-    ld (hl),h
-    nop
-    rst 38h
-    ld d,l
-lf8a9h:
-    ld l,(hl)
-    ld l,e
-    ld l,(hl)
-    ld l,a
-    ld (hl),a
-    ld l,(hl)
-lf8afh:
-    jr nz,lf916h
-lf8b1h:
-    ld (hl),d
-    ld (hl),d
-lf8b3h:
-    ld l,a
-    ld (hl),d
-lf8b5h:
-    jr nz,lf91ah
-    ld l,a
-    ld h,h
-    ld h,l
-    nop
+    db 1ah,"Disk write protected",00h
+    db 19h,"Write verify error",00h
+    db 1ch,"Long data block",00h
+    db 14h,"Missing header",00h
+    db 15h,"Disk not ready",00h
+    db 4ah,"Disk not ready",00h
+    db 16h,"Missing data block",00h
+    db 17h,"Checksum error in data",00h
+    db 1bh,"Checksum error in header",00h
+    db 18h,"Byte decoding error",00h
+    db 46h,"Commodore DOS bug !",00h
+    db 49h,"Wrong DOS format",00h
+    db 0ffh,"Unknown error code",00h
 lf8bbh:
-    ld a,(00020h)
+    db ": ",00h
 lf8beh:
-    dec c
-    ld a,(bc)
-    ld b,d
-lf8c1h:
-    ld b,h
-    ld c,a
-    ld d,e
-    jr nz,lf92bh
-    ld (hl),d
-    ld (hl),d
-    jr nz,lf939h
-    ld l,(hl)
-lf8cbh:
-    jr nz,lf8cdh
+    db 0dh,0ah,"BDOS err on ",00h
 lf8cdh:
     ld d,l
     ld sp,03220h
