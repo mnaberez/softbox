@@ -41,13 +41,13 @@ lf000h:
     jp cbm_jsr       ;f066  Jump to a subroutine in CBM memory
     jp cbm_poke      ;f069  Transfer bytes from the SoftBox to CBM memory
     jp cbm_peek      ;f06c  Transfer bytes from CBM memory to the SoftBox
-    jp lfe1ch        ;f06f    ? Variation of cbm_poke ?
-    jp lfe47h        ;f072    ? Variation of cbm_peek ?
+    jp cbm_set_time  ;f06f  Set the time on the CBM real time clock
+    jp cbm_get_time  ;f072  Read the CBM clocks (both RTC and jiffy counter)
     jp lf578h        ;f075
     jp lfac4h        ;f078
     jp lfb49h        ;f07b
     jp lfec1h        ;f07e
-    jp lfe31h        ;f081
+    jp cbm_clr_jiff  ;f081  Clear the CBM jiffy counter
     jp lfb86h        ;f084
 
 banner:
@@ -1882,54 +1882,68 @@ cbm_jsr:
 
 cbm_peek:
 ;Transfer bytes from CBM memory to the SoftBox
+;
+;DE = Start address on CBM
+;HL = Start address on SoftBox
+;BC = Number of bytes to transfer
+;
     ld a,010h
-    call cbm_srq
+    call cbm_srq        ;Command 010h = Peek
     ld a,c
-    call cbm_send_byte
+    call cbm_send_byte  ;Send low byte of byte counter
     ld a,b
-    call cbm_send_byte
+    call cbm_send_byte  ;Send high byte of byte counter
     ld a,e
-    call cbm_send_byte
+    call cbm_send_byte  ;Send low byte of CBM start address
     ld a,d
-    call cbm_send_byte
-    in a,(015h)
+    call cbm_send_byte  ;Send high byte of CBM start address
+
+    in a,(015h)         ;TODO what is this?
     or 004h
     out (015h),a
-lfdebh:
-    call cbm_get_byte
-    ld (hl),a
-    inc hl
-    dec bc
+cbm_peek_loop:
+    call cbm_get_byte   ;Read a byte from the CBM
+    ld (hl),a           ;Store it at the pointer
+    inc hl              ;Increment pointer
+    dec bc              ;Decrement bytes remaining to transfer
     ld a,b
     or c
-    jr nz,lfdebh
-    in a,(015h)
+    jr nz,cbm_peek_loop ;Loop until no bytes are remaining
+
+    in a,(015h)         ;TODO what is this?
     and 0f3h
     out (015h),a
     ret
 
 cbm_poke:
 ;Transfer bytes from the SoftBox to CBM memory
+;
+;DE = Start address on CBM
+;HL = Start address on SoftBox
+;BC = Number of bytes to transfer
+;
     ld a,020h
-    call cbm_srq
+    call cbm_srq        ;Command 020h = Poke
     ld a,c
-    call cbm_send_byte
+    call cbm_send_byte  ;Send low byte of byte counter
     ld a,b
-    call cbm_send_byte
+    call cbm_send_byte  ;Send high byte of byte counter
     ld a,e
-    call cbm_send_byte
+    call cbm_send_byte  ;Send low byte of CBM start address
     ld a,d
-    call cbm_send_byte
-lfe11h:
-    ld a,(hl)
-    call cbm_send_byte
-    inc hl
-    dec bc
+    call cbm_send_byte  ;Send high byte of CBM start address
+cbm_poke_loop:
+    ld a,(hl)           ;Read byte at pointer
+    call cbm_send_byte  ;Send it to the CBM
+    inc hl              ;Increment pointer
+    dec bc              ;Decrement bytes remaining to transfer
     ld a,b
     or c
-    jr nz,lfe11h
+    jr nz,cbm_poke_loop ;Loop until no bytes are remaining
     ret
-lfe1ch:
+
+cbm_set_time:
+;Set the time on the CBM real time clock
     ld e,000h
     ld (0ea41h),de
     ld (0ea43h),hl
@@ -1937,8 +1951,11 @@ lfe1ch:
     ld hl,0ea41h
     ld bc,00004h
     jp cbm_poke
-lfe31h:
-    xor a
+
+cbm_clr_jiff:
+;Clear the CBM jiffy counter
+;
+    xor a               ;A = 0
     ld (0ea45h),a
     ld (0ea46h),a
     ld (0ea47h),a
@@ -1946,7 +1963,9 @@ lfe31h:
     ld de,00018h
     ld bc,00003h
     jp cbm_poke
-lfe47h:
+
+cbm_get_time:
+;Read the CBM clocks (both RTC and jiffy counter)
     ld bc,00007h
     ld hl,0ea41h
     ld de,00014h
@@ -1956,6 +1975,7 @@ lfe47h:
     ld a,(0ea45h)
     ld bc,(0ea46h)
     ret
+
 lfe62h:
     push af
 lfe63h:
@@ -2090,6 +2110,7 @@ lff0bh:
     out (015h),a
     pop af
     ret
+
 lff1fh:
     ld a,(hl)
     inc hl
