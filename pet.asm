@@ -178,7 +178,7 @@ wait_for_srq:
                        ; Bit 6: CBM to SoftBox: Key available
                        ; Bit 5: SoftBox to CBM: Transfer from the SoftBox to CBM memory
                        ; Bit 4: SoftBox to CBM: Transfer from CBM memory to the SoftBox
-                       ; Bit 3: SoftBox to CBM: Jump to an address
+                       ; Bit 3: SoftBox to CBM: Jump to a subroutine in CBM memory
                        ; Bit 2: SoftBox to CBM: Write to the terminal screen
                        ; Bit 1: SoftBox to CBM: Wait for a key and send it
                        ; Bit 0: SoftBox to CBM: Key available?
