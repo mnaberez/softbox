@@ -4,23 +4,23 @@
     org 0f000h
 
 lf000h:
-    jp boot          ;f000  COLD START
-    jp wboot         ;f003  WARM START
-    jp const         ;f006  CHECK FOR CONSOLE CHAR READY
-    jp conin         ;f009  READ CONSOLE CHARACTER IN
-    jp conout        ;f00c  WRITE CONSOLE CHARACTER OUT
-    jp list          ;f00f  WRITE LISTING CHARACTER OUT
-    jp punch         ;f012  WRITE CHARACTER TO PUNCH DEVICE
-    jp reader        ;f015  READ READER DEVICE
-    jp home          ;f018  MOVE TO TRACK 00 ON SELECTED DISK
-    jp settrk        ;f01b  SET TRACK NUMBER
-    jp setsec        ;f01e  SET SECTOR NUMBER
-    jp setdma        ;f021  SET DMA ADDRESS
-    jp read          ;f024  READ SELECTED SECTOR
-    jp write         ;f027  WRITE SELECTED SECTOR
-    jp listst        ;f02a  RETURN LIST STATUS
-    jp sectran       ;f02d  SECTOR TRANSLATE SUBROUTINE
-    jp lf221h        ;f030
+    jp boot          ;f000  Cold start
+    jp wboot         ;f003  Warm start
+    jp const         ;f006  Console status
+    jp conin         ;f009  Console input
+    jp conout        ;f00c  Console output
+    jp list          ;f00f  Printer (List) output
+    jp punch         ;f012  Paper tape punch output
+    jp reader        ;f015  Paper tape reader input
+    jp home          ;f018  Move to track 0 on selected disk
+    jp seldsk        ;f01b  Select disk drive
+    jp settrk        ;f01e  Set track number
+    jp setsec        ;f021  Set sector number
+    jp setdma        ;f024  Set DMA address
+    jp read          ;f027  Read selected sector
+    jp write         ;f02a  Write selected sector
+    jp listst        ;f02d  Printer (List) status
+    jp sectran       ;f030  Sector translation for skewing
     jp lfb31h        ;f033
     jp lfb47h        ;f036
     jp lfaf9h        ;f039
@@ -95,7 +95,7 @@ lf10ah:
     ld (00043h),a
     ld (00048h),a
     ld (00051h),a
-    call settrk
+    call seldsk
     ld a,0ffh
     ld (00044h),a
     pop bc
@@ -104,7 +104,7 @@ lf11dh:
     ld (00052h),hl
     push hl
     push bc
-    call write
+    call read
     ld hl,00043h
     inc (hl)
     pop bc
@@ -118,7 +118,7 @@ lf11dh:
 lf134h:
     push hl
     ld bc,00080h
-    call read
+    call setdma
     ld a,0c3h
     ld (00000h),a
     ld hl,0ea03h
@@ -143,17 +143,17 @@ lf15ch:
     jp (hl)
 home:
     ld bc,00000h
-setsec:
+settrk:
     ld (00041h),bc
     ret
-setdma:
+setsec:
     ld a,c
     ld (00043h),a
     ret
-read:
+setdma:
     ld (00052h),bc
     ret
-settrk:
+seldsk:
     ld a,c
     call lf224h
     ld hl,00000h
@@ -289,7 +289,7 @@ lf21eh:
     nop
     nop
     nop
-lf221h:
+sectran:
     ld l,c
     ld h,b
     ret
@@ -330,7 +330,7 @@ sub_f245h:
     cp 002h
     ccf
     ret
-write:
+read:
     ld a,(00040h)
     call sub_f245h
     jp c,lf315h
@@ -343,7 +343,7 @@ write:
     xor a
     ld (00048h),a
     ret
-listst:
+write:
     push bc
     ld a,(00040h)
     call sub_f245h
@@ -1555,20 +1555,26 @@ conin:
     ret
 
 const:
-    ld a,(00003h)
-    rra
+;Console status
+;
+;Returns A=0 if no character is ready, A=0FFh if one is.
+;
+    ld a,(00003h)       ;TODO: Is this for RS232 standalone mode
+    rra                 ;      or console redirection?
     jp nc,lfc64h
+
     ld a,001h           ;Command 001h = Key available?
     call cbm_srq
     ld a,000h
-    ret nc
+    ret nc              ;Return with A=0 if no key
     ld a,0ffh
-    ret
+    ret                 ;Return with A=0ffh if a key is available
 
 conout:
     ld a,(00003h)
     rra
     jp nc,lfc6ch
+
     ld a,(0005ah)
     or a
     jp nz,lfc1dh
@@ -1803,7 +1809,7 @@ lfd29h:
     call sub_fd6bh
     call lfe62h
     jp lfb47h
-sectran:
+listst:
     ld a,(00003h)
     and 0c0h
     jr z,lfd61h
