@@ -1536,6 +1536,7 @@ lfb92h:
     djnz lfb92h
     pop bc
     ret
+
 conin:
     ld a,(00003h)
     rra
@@ -1543,7 +1544,7 @@ conin:
     in a,(015h)
     or 004h
     out (015h),a
-    ld a,002h
+    ld a,002h           ;Command 002h = Wait for a key and send it
     call cbm_srq
     call cbm_get_byte
     push af
@@ -1552,16 +1553,18 @@ conin:
     out (015h),a
     pop af
     ret
+
 const:
     ld a,(00003h)
     rra
     jp nc,lfc64h
-    ld a,001h
+    ld a,001h           ;Command 001h = Key available?
     call cbm_srq
     ld a,000h
     ret nc
     ld a,0ffh
     ret
+
 conout:
     ld a,(00003h)
     rra
@@ -1606,7 +1609,7 @@ lfbffh:
     jr z,lfc17h
     ld c,a
 lfc0eh:
-    ld a,004h
+    ld a,004h           ;Command 004h = Write to the terminal screen
     call cbm_srq
     ld a,c
     jp cbm_send_byte
@@ -1680,33 +1683,54 @@ lfc77h:
     ret
 
 cbm_srq:
+;Send a Service Request (SRQ) to the CBM computer.
+;
+;A = command to send, one of:
+;  020h = Transfer bytes from the SoftBox to CBM memory
+;  010h = Transfer bytes from CBM memory to the SoftBox
+;  008h = Jump to a subroutine in CBM memory
+;  004h = Write to the terminal screen
+;  002h = Wait for a key and send it
+;  001h = Key available?
+;
+;This routine queries the CBM keyboard status each time it is called.
+;The Carry flag will be set if a key is available, clear if not.
+;
     push af
 lfc81h:
-    in a,(010h)
-    or a
-    jr nz,lfc81h
+    in a,(010h)     ;A = Read IC17 8255 Port A (IEEE data in)
+    or a            ;Set flags
+    jr nz,lfc81h    ;Wait for IEEE data bus to go to zero
+
     pop af
-    out (011h),a
+    out (011h),a    ;Write data byte to IC17 8255 Port B (IEEE data out)
+
     in a,(015h)
     or 020h
-    out (015h),a
+    out (015h),a    ;Set SRQ high (?)
+
     in a,(015h)
     and 0dfh
-    out (015h),a
+    out (015h),a    ;Set SRQ low (?)
+
 lfc95h:
-    in a,(010h)
-    and 0c0h
-    jr z,lfc95h
-    rla
-    push af
+    in a,(010h)     ;A = Read IEEE data byte
+    and 0c0h        ;Mask off all but bits 6 and 7
+    jr z,lfc95h     ;Wait until CBM changes one of those bits
+
+    rla             ;Rotate bit 7 (key available status) into Carry flag
+    push af         ;Push data IEEE data byte read from CBM
+
     ld a,000h
-    out (011h),a
+    out (011h),a    ;Release IEEE data lines
+
 lfca1h:
-    in a,(010h)
-    or a
-    jr nz,lfca1h
+    in a,(010h)     ;A = Read IEEE data byte
+    or a            ;Set flags
+    jr nz,lfca1h    ;Wait for IEEE data bus to go to zero
     pop af
     ret
+
 list:
     ld a,(00003h)
     and 0c0h
@@ -1854,6 +1878,8 @@ reader:
 puts:
 ;Write a null-terminated string to console out
 ;
+;HL = Pointer to the string
+;
     ld a,(hl)           ;Get the byte at pointer HL
     or a
     ret z               ;Return if byte is 0
@@ -1873,12 +1899,15 @@ lfdb9h:
 
 cbm_jsr:
 ;Jump to a subroutine in CBM memory
-    ld a,008h
+;
+;HL = Subroutine address on CBM
+;
+    ld a,008h           ;Command 008h = Jump to a subroutine in CBM memory
     call cbm_srq
     ld a,l
-    call cbm_send_byte
+    call cbm_send_byte  ;Send low byte of address
     ld a,h
-    jp cbm_send_byte
+    jp cbm_send_byte    ;Send high byte
 
 cbm_peek:
 ;Transfer bytes from CBM memory to the SoftBox
@@ -1887,16 +1916,16 @@ cbm_peek:
 ;HL = Start address on SoftBox
 ;BC = Number of bytes to transfer
 ;
-    ld a,010h
-    call cbm_srq        ;Command 010h = Peek
+    ld a,010h           ;Command 010h = Transfer from CBM to SoftBox
+    call cbm_srq
     ld a,c
     call cbm_send_byte  ;Send low byte of byte counter
     ld a,b
-    call cbm_send_byte  ;Send high byte of byte counter
+    call cbm_send_byte  ;Send high byte
     ld a,e
     call cbm_send_byte  ;Send low byte of CBM start address
     ld a,d
-    call cbm_send_byte  ;Send high byte of CBM start address
+    call cbm_send_byte  ;Send high byte
 
     in a,(015h)         ;TODO what is this?
     or 004h
@@ -1922,16 +1951,16 @@ cbm_poke:
 ;HL = Start address on SoftBox
 ;BC = Number of bytes to transfer
 ;
-    ld a,020h
-    call cbm_srq        ;Command 020h = Poke
+    ld a,020h           ;Command 020h = Transfer from SoftBox to CBM
+    call cbm_srq
     ld a,c
     call cbm_send_byte  ;Send low byte of byte counter
     ld a,b
-    call cbm_send_byte  ;Send high byte of byte counter
+    call cbm_send_byte  ;Send high byte
     ld a,e
     call cbm_send_byte  ;Send low byte of CBM start address
     ld a,d
-    call cbm_send_byte  ;Send high byte of CBM start address
+    call cbm_send_byte  ;Send high byte
 cbm_poke_loop:
     ld a,(hl)           ;Read byte at pointer
     call cbm_send_byte  ;Send it to the CBM
