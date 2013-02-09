@@ -2338,219 +2338,30 @@ lff1fh:
     dec c
     jr nz,lff1fh
     ret
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
+
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 00h,00h,00h
+
 lfffdh:
     sub c
     rst 38h
