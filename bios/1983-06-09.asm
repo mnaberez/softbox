@@ -38,9 +38,9 @@ lf000h:
     jp lfb56h    ;f05d
     jp lfb72h    ;f060
     jp lfdb9h    ;f063
-    jp lfdc3h    ;f066
-    jp lfdfch    ;f069
-    jp lfdd0h    ;f06c
+    jp cbm_jsr   ;f066  Jump to a subroutine in CBM memory
+    jp cbm_poke  ;f069  Transfer bytes from the SoftBox to CBM memory
+    jp cbm_peek  ;f06c  Transfer bytes from CBM memory to the SoftBox
     jp lfe1ch    ;f06f
     jp lfe47h    ;f072
     jp lf578h    ;f075
@@ -1862,14 +1862,18 @@ lfdb9h:
     ret nc
     ld c,01ah
     jp lfc0eh
-lfdc3h:
+
+cbm_jsr:
+;Jump to a subroutine in CBM memory
     ld a,008h
     call sub_fc80h
     ld a,l
     call lfea1h
     ld a,h
     jp lfea1h
-lfdd0h:
+
+cbm_peek:
+;Transfer bytes from CBM memory to the SoftBox
     ld a,010h
     call sub_fc80h
     ld a,c
@@ -1895,7 +1899,9 @@ lfdebh:
     and 0f3h
     out (015h),a
     ret
-lfdfch:
+
+cbm_poke:
+;Transfer bytes from the SoftBox to CBM memory
     ld a,020h
     call sub_fc80h
     ld a,c
@@ -1922,7 +1928,7 @@ lfe1ch:
     ld de,00014h
     ld hl,0ea41h
     ld bc,00004h
-    jp lfdfch
+    jp cbm_poke
 lfe31h:
     xor a
     ld (0ea45h),a
@@ -1931,12 +1937,12 @@ lfe31h:
     ld hl,0ea45h
     ld de,00018h
     ld bc,00003h
-    jp lfdfch
+    jp cbm_poke
 lfe47h:
     ld bc,00007h
     ld hl,0ea41h
     ld de,00014h
-    call lfdd0h
+    call cbm_peek
     ld de,(0ea41h)
     ld hl,(0ea43h)
     ld a,(0ea45h)
