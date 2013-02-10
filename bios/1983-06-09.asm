@@ -1981,9 +1981,10 @@ cbm_peek:
     ld a,d
     call cbm_send_byte  ;Send high byte
 
-    in a,(ppi2_pb)         ;TODO what is this?
+    in a,(ppi2_pb)
     or 004h
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;NDAC=?
+
 cbm_peek_loop:
     call cbm_get_byte   ;Read a byte from the CBM
     ld (hl),a           ;Store it at the pointer
@@ -1993,9 +1994,9 @@ cbm_peek_loop:
     or c
     jr nz,cbm_peek_loop ;Loop until no bytes are remaining
 
-    in a,(ppi2_pb)      ;TODO what is this?
+    in a,(ppi2_pb)
     and 0f3h
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;NDAC=?, NRFD=?
     ret
 
 cbm_poke:
@@ -2113,22 +2114,22 @@ cbm_send_byte:
 lfea3h:
     in a,(ppi2_pa)
     cpl                 ;Invert A
-    and 008h            ;Mask off all bits except bit 3
-    jr z,lfea3h         ;? Wait until NRFD ?
+    and 008h            ;Mask off all except bit 3 (NRFD in)
+    jr z,lfea3h         ;Wait until NRFD=?
 
     in a,(ppi2_pb)
-    or 002h             ;Turn on bit 2
-    out (ppi2_pb),a     ;? DAV ?
+    or 002h             ;Turn on bit 2 (NDAC out)
+    out (ppi2_pb),a     ;NDAC=?
 
 lfeb0h:
     in a,(ppi2_pa)
     cpl                 ;Invert A
-    and 004h            ;Mask off all bits except bit 2
-    jr z,lfeb0h         ;? Wait until NDAC ?
+    and 004h            ;Mask off all except bit 2 (NDAC in)
+    jr z,lfeb0h         ;Wait until NDAC=?
 
     in a,(ppi2_pb)
-    and 0fdh            ;Turn off bit 2
-    out (ppi2_pb),a     ;? DAV ?
+    and 0fdh            ;Turn off bit 2 (NDAC out)
+    out (ppi2_pb),a     ;NDAC=?
 
     xor a               ;A=0
     out (ppi1_pb),a     ;Release IEEE-488 data lines
@@ -2154,39 +2155,39 @@ lfec7h:
 cbm_get_byte:
 ;Read a single byte from the CBM
     in a,(ppi2_pb)
-    and 0f7h            ;Turn off bit 3
-    out (ppi2_pb),a     ;? NRFD=high ?
+    and 0f7h            ;Turn off bit 3 (NRFD out)
+    out (ppi2_pb),a     ;NRFD=?
 
 lfedeh:
     in a,(ppi2_pa)
     cpl                 ;Invert A
-    and 002h            ;Mask off all bits except bit 1
-    jr nz,lfedeh        ;? Wait until DAV ?
+    and 002h            ;Mask off all except bit 1 (DAV in)
+    jr nz,lfedeh        ;Wait until DAV=?
 
 lfee5h:
     in a,(ppi1_pa)      ;Read byte from IEEE data bus
     push af             ;Put it on the stack
 
     in a,(ppi2_pa)
-    ld (0ea6ch),a
+    ld (0ea6ch),a       ;TODO What is 0ea6ch?
 
     in a,(ppi2_pb)
-    or 008h             ;Turn on bit 3
-    out (ppi2_pb),a     ;? NRFD ?
+    or 008h             ;Turn on bit 3 (NRFD out)
+    out (ppi2_pb),a     ;NRFD=?
 
     in a,(ppi2_pb)
-    and 0fbh            ;Turn off bit 2
-    out (ppi2_pb),a     ;? NDAC ?
+    and 0fbh            ;Turn off bit 2 (NDAC out)
+    out (ppi2_pb),a     ;NDAC=?
 
 lfef9h:
     in a,(ppi2_pa)
     cpl                 ;Invert A
-    and 002h            ;Mask off all bits except bit 1
-    jr z,lfef9h         ;? Wait until ... ?
+    and 002h            ;Mask off all except bit 1 (DAV in)
+    jr z,lfef9h         ;Wait until DAV=?
 
     in a,(ppi2_pb)
-    or 004h             ;Turn on bit 2
-    out (ppi2_pb),a     ;? NDAC ?
+    or 004h             ;Turn on bit 2 (NDAC out)
+    out (ppi2_pb),a     ;NDAC=?
 
     pop af              ;Pop the IEEE data byte off the stack
     or a                ;Set flags
