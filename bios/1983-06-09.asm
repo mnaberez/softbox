@@ -2068,25 +2068,31 @@ lfe9eh:
 
 cbm_send_byte:
 ;Send a single byte to the CBM
-    out (011h),a
+;
+    out (011h),a        ;Put byte on IEEE data bus
+
 lfea3h:
     in a,(014h)
-    cpl
-    and 008h
-    jr z,lfea3h
+    cpl                 ;Invert A
+    and 008h            ;Mask off all bits except bit 3
+    jr z,lfea3h         ;? Wait until NRFD ?
+
     in a,(015h)
-    or 002h
-    out (015h),a
+    or 002h             ;Turn on bit 2
+    out (015h),a        ;? DAV ?
+
 lfeb0h:
     in a,(014h)
-    cpl
-    and 004h
-    jr z,lfeb0h
+    cpl                 ;Invert A
+    and 004h            ;Mask off all bits except bit 2
+    jr z,lfeb0h         ;? Wait until NDAC ?
+
     in a,(015h)
-    and 0fdh
-    out (015h),a
-    xor a
-    out (011h),a
+    and 0fdh            ;Turn off bit 2
+    out (015h),a        ;? DAV ?
+
+    xor a               ;A=0
+    out (011h),a        ;Release IEEE-488 data lines
     ret
 
 lfec1h:
@@ -2109,34 +2115,42 @@ lfec7h:
 cbm_get_byte:
 ;Read a single byte from the CBM
     in a,(015h)
-    and 0f7h
-    out (015h),a
+    and 0f7h            ;Turn off bit 3
+    out (015h),a        ;? NRFD=high ?
+
 lfedeh:
     in a,(014h)
-    cpl
-    and 002h
-    jr nz,lfedeh
+    cpl                 ;Invert A
+    and 002h            ;Mask off all bits except bit 1
+    jr nz,lfedeh        ;? Wait until DAV ?
+
 lfee5h:
-    in a,(010h)
-    push af
+    in a,(010h)         ;Read byte from IEEE data bus
+    push af             ;Put it on the stack
+
     in a,(014h)
     ld (0ea6ch),a
+
     in a,(015h)
-    or 008h
-    out (015h),a
+    or 008h             ;Turn on bit 3
+    out (015h),a        ;? NRFD ?
+
     in a,(015h)
-    and 0fbh
-    out (015h),a
+    and 0fbh            ;Turn off bit 2
+    out (015h),a        ;? NDAC ?
+
 lfef9h:
     in a,(014h)
-    cpl
-    and 002h
-    jr z,lfef9h
+    cpl                 ;Invert A
+    and 002h            ;Mask off all bits except bit 1
+    jr z,lfef9h         ;? Wait until ... ?
+
     in a,(015h)
-    or 004h
-    out (015h),a
-    pop af
-    or a
+    or 004h             ;Turn on bit 2
+    out (015h),a        ;? NDAC ?
+
+    pop af              ;Pop the IEEE data byte off the stack
+    or a                ;Set flags
     ret
 
 lff09h:
