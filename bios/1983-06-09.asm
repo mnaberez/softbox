@@ -618,19 +618,21 @@ lf413h:
     add a,030h
     ld c,a
     jp conout
+
 boot:
-    ld sp,00100h
+    ld sp,00100h        ;Initialize stack pointer
     ld a,099h
     out (ppi1_cr),a
     ld a,098h
-    out (017h),a
-    xor a
-    out (ppi1_pb),a
+    out (ppi2_cr),a
+    xor a               ;A=0
+    out (ppi1_pb),a     ;Clear IEEE data out
 lf427h:
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;Clear IEEE control out
+
     ld c,002h
-    ld hl,00000h
-    ld de,lf000h
+    ld hl,00000h        ;RAM start address
+    ld de,lf000h        ;RAM end address + 1
 lf431h:
     ld (hl),l
     inc hl
@@ -643,17 +645,19 @@ lf436h:
     in a,(ppi2_pc)
     xor 004h
     out (ppi2_pc),a     ;Invert "Ready" LED
+
 lf43fh:
     dec de
     ld a,e
     or d
     jr nz,lf431h
-    ld hl,00000h
-    ld de,lf000h
+
+    ld hl,00000h        ;RAM start address
+    ld de,lf000h        ;RAM end address + 1
 lf44ah:
     ld a,(hl)
     cp l
-    jr nz,lf491h
+    jr nz,help_me
     cpl
     ld (hl),a
     inc hl
@@ -670,13 +674,14 @@ lf45dh:
     ld a,e
     or d
     jr nz,lf44ah
-    ld hl,00000h
-    ld de,lf000h
+
+    ld hl,00000h        ;RAM start address
+    ld de,lf000h        ;RAM end address + 1
 lf468h:
     ld a,(hl)
     cpl
     cp l
-    jr nz,lf491h
+    jr nz,help_me
     inc hl
     ld a,h
     and 00fh
@@ -691,55 +696,68 @@ lf47ah:
     ld a,e
     or d
     jr nz,lf468h
-    ld hl,lf000h
-    ld bc,00ffdh
-    call sub_f4b9h
+
+    ld hl,lf000h        ;ROM start address
+    ld bc,00ffdh        ;Number of code bytes in the ROM
+    call calc_checksum  ;Calculate ROM checksum
+
     ld c,003h
-    ld hl,lfffdh
-    cp (hl)
-    jp z,lf4c5h
-lf491h:
+    ld hl,checksum      ;Load checksum in ROM
+    cp (hl)             ;Any difference from the calculated value?
+    jp z,lf4c5h         ;  No: ROM check passed
+
+help_me:
+;Self-test failed.  Blink the LED forever.
+;
     ld b,c
 lf492h:
     xor a
     out (ppi2_pc),a     ;Invert "Ready" LED
+
     ld de,lffffh
 lf498h:
     dec de
     ld a,e
     or d
-    jr nz,lf498h
+    jr nz,lf498h        ;Delay loop
+
     ld a,004h
     out (ppi2_pc),a     ;Turn on "Ready" LED
+
     ld de,lffffh
 lf4a4h:
     dec de
     ld a,e
     or d
-    jr nz,lf4a4h
+    jr nz,lf4a4h        ;Delay loop
+
     djnz lf492h
+
     ld b,003h
     ld de,lffffh
 lf4b0h:
     dec de
     ld a,e
     or d
-    jr nz,lf4b0h
+    jr nz,lf4b0h        ;Delay loop
+
     djnz lf4b0h
-    jr lf491h
-sub_f4b9h:
-    xor a
+    jr help_me
+
+calc_checksum:
+    xor a               ;A=0
 lf4bah:
-    add a,(hl)
+    add a,(hl)          ;Add byte at pointer to A
     rrca
-    ld d,a
-    inc hl
-    dec bc
+    ld d,a              ;Save A in D
+    inc hl              ;Increment pointer
+    dec bc              ;Decrement byte counter
     ld a,b
-    or c
-    ld a,d
-    jr nz,lf4bah
+    or c                ;Test if byte counter is zero
+    ld a,d              ;Recall A from D
+    jr nz,lf4bah        ;Loop if more bytes remaining
     ret
+
 lf4c5h:
     in a,(ppi2_pb)
     or 080h
@@ -2240,8 +2258,8 @@ lff1fh:
     db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
     db 00h,00h,00h
 
-lfffdh:
-    sub c
-    rst 38h
+checksum:
+    db 091h, 0ffh
+
 lffffh:
-    rst 38h
+    db 0ffh
