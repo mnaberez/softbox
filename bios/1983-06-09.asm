@@ -1310,21 +1310,24 @@ lf9eeh:
     ret
 lf9f7h:
     push hl
-    ld hl,lfaeeh
-    ld c,006h
-    ld a,(00044h)
-    call lfabch
+    ld hl,dos_cmds_3    ;"M-W",00h,013h,01h
+    ld c,006h           ;6 bytes in string
+    ld a,(00044h)       ;? device address ?
+    call lfabch         ;? write to device ?
     call lff1fh
     pop hl
+
     ld a,(hl)
     push hl
     call lff0bh
     call lfb47h
-    ld hl,0fae7h
-    ld c,007h
+
+    ld hl,dos_cmds_2    ;"B-P 2 1"
+    ld c,007h           ;7 bytes in string
     ld a,(00044h)
     call lfabch
     call lff1fh
+
     call lff09h
     call lfb47h
     ld a,(00044h)
@@ -1332,6 +1335,7 @@ lf9f7h:
     ld e,002h
     call lfb31h
     pop hl
+
     inc hl
     ld c,0ffh
     call lff1fh
@@ -1342,11 +1346,13 @@ lfa3eh:
     push hl
     ld hl,lf8cdh
     call lf6fch
-    ld hl,0faf4h
-    ld c,005h
+
+    ld hl,dos_cmds_4    ;"M-R",00h,013h
+    ld c,005h           ;5 bytes in string
     ld a,(00044h)
     call lfabch
     call lff1fh
+
     call lff09h
     call lfb47h
     ld a,(00044h)
@@ -1360,9 +1366,11 @@ lfa3eh:
     call lfb21h
     ld a,(00044h)
     call lfabch
-    ld hl,0fae7h
-    ld c,007h
+
+    ld hl,0fae7h        ;"B-P 2 1"
+    ld c,007h           ;7 bytes in string
     call lff1fh
+
     call lff09h
     call lfb47h
     ld a,(00044h)
@@ -1408,11 +1416,13 @@ lfac4h:
     call lfaadh
     ld e,00fh
     push de
-    ld c,002h
-    ld hl,lfae3h
+
+    ld c,002h           ;2 bytes in string
+    ld hl,dos_cmds_0    ;"I0"
     rra
     jr nc,lfad5h
-    ld hl,0fae5h
+    ld hl,dos_cmds_1    ;"I1"
+
 lfad5h:
     call lfb56h
     pop de
@@ -1420,23 +1430,22 @@ lfad5h:
     ld c,002h
     ld hl,lf687h
     jp lfb56h
-lfae3h:
-    ld c,c
-    jr nc,lfb2fh
-    ld sp,02d42h
-    ld d,b
-    jr nz,$+52
-    jr nz,lfb1fh
-lfaeeh:
-    ld c,l
-    dec l
-    ld d,a
-    nop
-    inc de
-    ld bc,02d4dh
-    ld d,d
-    nop
-    inc de
+
+dos_cmds_0:
+    db "I0"
+
+dos_cmds_1:
+    db "I1"
+
+dos_cmds_2:
+    db "B-P 2 1"
+
+dos_cmds_3:
+    db "M-W",00h,013h,01h
+
+dos_cmds_4:
+    db "M-R",00h,013h
+
 lfaf9h:
     in a,(015h)
     or 001h
