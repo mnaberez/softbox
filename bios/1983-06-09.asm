@@ -1,6 +1,42 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --labels --origin=61440 1983-06-09.bin
 
+ppi1:    equ 010h    ;8255 PPI #1 (IC17)
+ppi1_pa: equ ppi1+0  ;  Port A: IEEE-488 Data In
+ppi1_pb: equ ppi1+1  ;  Port B: IEEE-488 Data Out
+ppi1_pc: equ ppi1+2  ;  Port C: DIP Switches
+ppi1_cr: equ ppi1+3  ;  Control Register
+
+ppi2:    equ 014h    ;8255 PPI #2 (IC16)
+ppi2_pa: equ ppi2+0  ;  Port A:
+                     ;    PA7 IEEE-488 IFC in
+                     ;    PA6 IEEE-488 REN in
+                     ;    PA5 IEEE-488 SRQ in
+                     ;    PA4 IEEE-488 EOI in
+                     ;    PA3 IEEE-488 NRFD in
+                     ;    PA2 IEEE-488 NDAC in
+                     ;    PA1 IEEE-488 DAV in
+                     ;    PA0 IEEE-488 ATN in
+ppi2_pb: equ ppi2+1  ;  Port B:
+                     ;    PB7 IEEE-488 IFC out
+                     ;    PB6 IEEE-488 REN out
+                     ;    PB5 IEEE-488 SRQ out
+                     ;    PB4 IEEE-488 EOI out
+                     ;    PB3 IEEE-488 NRFD out
+                     ;    PB2 IEEE-488 NDAC out
+                     ;    PB1 IEEE-488 DAV out
+                     ;    PB0 IEEE-488 ATN out
+ppi2_pc: equ ppi2+2  ;  Port C:
+                     ;    PC7 Unused
+                     ;    PC6 Unused
+                     ;    PC5 Corvus ACTIVE
+                     ;    PC4 Corvus READY
+                     ;    PC3 Unused
+                     ;    PC2 LED "Ready"
+                     ;    PC1 LED "B"
+                     ;    PC0 LED "A"
+ppi2_cr: equ ppi2+3  ;  Control Register
+
     org 0f000h
 
 lf000h:
@@ -431,7 +467,7 @@ sub_f2ffh:
     ld b,0ffh
 lf305h:
     djnz lf305h
-    in a,(016h)
+    in a,(ppi2_pc)
     and 020h
     jr nz,sub_f2ffh
     call sub_f38fh
@@ -454,7 +490,7 @@ lf315h:
     jr nz,lf36dh
     ld b,080h
 lf334h:
-    in a,(016h)
+    in a,(ppi2_pc)
     and 010h
     jr z,lf334h
     in a,(018h)
@@ -478,7 +514,7 @@ lf342h:
     ld b,080h
     ld hl,(00052h)
 lf35ch:
-    in a,(016h)
+    in a,(ppi2_pc)
     and 010h
     jr z,lf35ch
     ld a,(hl)
@@ -496,19 +532,19 @@ lf36dh:
     and 0ffh
     ret
 sub_f37bh:
-    in a,(016h)
+    in a,(ppi2_pc)
     xor 010h
     and 030h
     jr nz,sub_f37bh
     ld b,019h
 lf385h:
     djnz lf385h
-    in a,(016h)
+    in a,(ppi2_pc)
     xor 010h
     and 030h
     jr nz,sub_f37bh
 sub_f38fh:
-    in a,(016h)
+    in a,(ppi2_pc)
     and 010h
     jr z,sub_f38fh
     in a,(018h)
@@ -517,7 +553,7 @@ sub_f38fh:
 sub_f39ah:
     push af
 lf39bh:
-    in a,(016h)
+    in a,(ppi2_pc)
     and 010h
     jr z,lf39bh
     pop af
@@ -585,13 +621,13 @@ lf413h:
 boot:
     ld sp,00100h
     ld a,099h
-    out (013h),a
+    out (ppi1_cr),a
     ld a,098h
     out (017h),a
     xor a
-    out (011h),a
+    out (ppi1_pb),a
 lf427h:
-    out (015h),a
+    out (ppi2_pb),a
     ld c,002h
     ld hl,00000h
     ld de,lf000h
@@ -603,9 +639,10 @@ lf431h:
 lf436h:
     or l
     jr nz,lf43fh
-    in a,(016h)
+
+    in a,(ppi2_pc)
     xor 004h
-    out (016h),a
+    out (ppi2_pc),a     ;Invert "Ready" LED
 lf43fh:
     dec de
     ld a,e
@@ -624,9 +661,10 @@ lf44ah:
     and 00fh
     or l
     jr nz,lf45dh
-    in a,(016h)
+
+    in a,(ppi2_pc)
     xor 004h
-    out (016h),a
+    out (ppi2_pc),a     ;Invert "Ready" LED
 lf45dh:
     dec de
     ld a,e
@@ -644,9 +682,10 @@ lf468h:
     and 00fh
     or l
     jr nz,lf47ah
-    in a,(016h)
+
+    in a,(ppi2_pc)
     xor 004h
-    out (016h),a
+    out (ppi2_pc),a     ;Invert "Ready" LED
 lf47ah:
     dec de
     ld a,e
@@ -663,7 +702,7 @@ lf491h:
     ld b,c
 lf492h:
     xor a
-    out (016h),a
+    out (ppi2_pc),a     ;Invert "Ready" LED
     ld de,lffffh
 lf498h:
     dec de
@@ -671,7 +710,7 @@ lf498h:
     or d
     jr nz,lf498h
     ld a,004h
-    out (016h),a
+    out (ppi2_pc),a     ;Turn on "Ready" LED
     ld de,lffffh
 lf4a4h:
     dec de
@@ -702,9 +741,9 @@ lf4bah:
     jr nz,lf4bah
     ret
 lf4c5h:
-    in a,(015h)
+    in a,(ppi2_pb)
     or 080h
-    out (015h),a
+    out (ppi2_pb),a
     xor a
     ld (00003h),a
     ld (00004h),a
@@ -712,7 +751,7 @@ lf4c5h:
     ld (00059h),a
     ld (0005ah),a
     ld (0ea80h),a
-    out (016h),a
+    out (ppi2_pc),a
     ld bc,003e8h
     call lfb86h
     ld a,01bh
@@ -731,26 +770,26 @@ lf4c5h:
     out (009h),a
     ld a,0eeh
     out (00ch),a
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl
     and 040h
     jr nz,lf52bh
     ld a,001h
     ld (00003h),a
 lf510h:
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl
     and 003h
-    in a,(010h)
+    in a,(ppi1_pa)
     jr nz,lf510h
     cp 039h
     jr nz,lf510h
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl
     and 002h
     jr nz,lf510h
 lf524h:
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl
     and 002h
     jr z,lf524h
@@ -761,7 +800,7 @@ lf52bh:
     call lfb31h
     ld bc,00007h
     call lfb86h
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl
     and 004h
     jr z,lf555h
@@ -1447,9 +1486,9 @@ dos_cmds_4:
     db "M-R",00h,013h
 
 lfaf9h:
-    in a,(015h)
+    in a,(ppi2_pb)
     or 001h
-    out (015h),a
+    out (ppi2_pb),a
     ld a,040h
     or d
     call lfe62h
@@ -1457,14 +1496,14 @@ lfaf9h:
     ld a,e
     or 060h
     call p,lfe62h
-    in a,(015h)
+    in a,(ppi2_pb)
     or 00ch
-    out (015h),a
+    out (ppi2_pb),a
 lfb13h:
     push af
-    in a,(015h)
+    in a,(ppi2_pb)
     and 0feh
-    out (015h),a
+    out (ppi2_pb),a
     ld a,019h
 lfb1ch:
     dec a
@@ -1473,19 +1512,19 @@ lfb1fh:
     pop af
     ret
 lfb21h:
-    in a,(015h)
+    in a,(ppi2_pb)
     or 001h
-    out (015h),a
-    in a,(015h)
+    out (ppi2_pb),a
+    in a,(ppi2_pb)
     and 0f3h
-    out (015h),a
+    out (ppi2_pb),a
     ld a,05fh
 lfb2fh:
     jr lfb49h
 lfb31h:
-    in a,(015h)
+    in a,(ppi2_pb)
     or 001h
-    out (015h),a
+    out (ppi2_pb),a
     ld a,020h
     or d
     call lfe62h
@@ -1498,16 +1537,16 @@ lfb47h:
     ld a,03fh
 lfb49h:
     push af
-    in a,(015h)
+    in a,(ppi2_pb)
     or 001h
-    out (015h),a
+    out (ppi2_pb),a
     pop af
     call lfe62h
     jr lfb13h
 lfb56h:
-    in a,(015h)
+    in a,(ppi2_pb)
     or 001h
-    out (015h),a
+    out (ppi2_pb),a
     ld a,d
     or 020h
     call lfe62h
@@ -1520,9 +1559,9 @@ lfb56h:
     call lff0bh
     jr lfb47h
 lfb72h:
-    in a,(015h)
+    in a,(ppi2_pb)
     or 001h
-    out (015h),a
+    out (ppi2_pb),a
     ld a,d
     or 020h
     call lfe62h
@@ -1550,16 +1589,16 @@ conin:
     ld a,(00003h)
     rra
     jp nc,lfc77h
-    in a,(015h)
+    in a,(ppi2_pb)
     or 004h
-    out (015h),a
+    out (ppi2_pb),a
     ld a,002h           ;Command 002h = Wait for a key and send it
     call cbm_srq
     call cbm_get_byte
     push af
-    in a,(015h)
+    in a,(ppi2_pb)
     and 0f3h
-    out (015h),a
+    out (ppi2_pb),a
     pop af
     ret
 
@@ -1713,23 +1752,23 @@ cbm_srq:
 ;
     push af
 lfc81h:
-    in a,(010h)     ;A = Read IC17 8255 Port A (IEEE data in)
+    in a,(ppi1_pa)  ;A = Read IC17 8255 Port A (IEEE data in)
     or a            ;Set flags
     jr nz,lfc81h    ;Wait for IEEE data bus to go to zero
 
     pop af
-    out (011h),a    ;Write data byte to IC17 8255 Port B (IEEE data out)
+    out (ppi1_pb),a ;Write data byte to IC17 8255 Port B (IEEE data out)
 
-    in a,(015h)
+    in a,(ppi2_pb)
     or 020h
-    out (015h),a    ;Set SRQ high (?)
+    out (ppi2_pb),a ;Set SRQ high (?)
 
-    in a,(015h)
+    in a,(ppi2_pb)
     and 0dfh
-    out (015h),a    ;Set SRQ low (?)
+    out (ppi2_pb),a ;Set SRQ low (?)
 
 lfc95h:
-    in a,(010h)     ;A = Read IEEE data byte
+    in a,(ppi1_pa)  ;A = Read IEEE data byte
     and 0c0h        ;Mask off all but bits 6 and 7
     jr z,lfc95h     ;Wait until CBM changes one of those bits
 
@@ -1737,10 +1776,10 @@ lfc95h:
     push af         ;Push data IEEE data byte read from CBM
 
     ld a,000h
-    out (011h),a    ;Release IEEE data lines
+    out (ppi1_pb),a ;Release IEEE data lines
 
 lfca1h:
-    in a,(010h)     ;A = Read IEEE data byte
+    in a,(ppi1_pa)  ;A = Read IEEE data byte
     or a            ;Set flags
     jr nz,lfca1h    ;Wait for IEEE data bus to go to zero
     pop af
@@ -1761,9 +1800,9 @@ list:
 lfcc3h:
     ld a,(0ea61h)
     ld d,a
-    in a,(015h)
+    in a,(ppi2_pb)
     or 001h
-    out (015h),a
+    out (ppi2_pb),a
     ld a,(0ea6dh)
     ld b,a
     or a
@@ -1809,9 +1848,9 @@ lfd15h:
     call z,sub_fb8fh
     call lfe62h
 lfd20h:
-    in a,(015h)
+    in a,(ppi2_pb)
     or 001h
-    out (015h),a
+    out (ppi2_pb),a
     jp lfb47h
 lfd29h:
     ld a,c
@@ -1835,7 +1874,7 @@ lfd4bh:
     ld e,0ffh
     call lfb31h
     call sub_fb8fh
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl
     and 008h
     push af
@@ -1942,9 +1981,9 @@ cbm_peek:
     ld a,d
     call cbm_send_byte  ;Send high byte
 
-    in a,(015h)         ;TODO what is this?
+    in a,(ppi2_pb)         ;TODO what is this?
     or 004h
-    out (015h),a
+    out (ppi2_pb),a
 cbm_peek_loop:
     call cbm_get_byte   ;Read a byte from the CBM
     ld (hl),a           ;Store it at the pointer
@@ -1954,9 +1993,9 @@ cbm_peek_loop:
     or c
     jr nz,cbm_peek_loop ;Loop until no bytes are remaining
 
-    in a,(015h)         ;TODO what is this?
+    in a,(ppi2_pb)      ;TODO what is this?
     and 0f3h
-    out (015h),a
+    out (ppi2_pb),a
     ret
 
 cbm_poke:
@@ -2023,31 +2062,31 @@ cbm_get_time:
 lfe62h:
     push af
 lfe63h:
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl
     and 008h
     jr z,lfe63h
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl
     and 004h
     jr nz,lfe9eh
     pop af
-    out (011h),a
-    in a,(015h)
+    out (ppi1_pb),a
+    in a,(ppi2_pb)
     or 002h
-    out (015h),a
+    out (ppi2_pb),a
 lfe7ah:
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl
     and 004h
     jr z,lfe7ah
-    in a,(015h)
+    in a,(ppi2_pb)
     and 0fdh
-    out (015h),a
+    out (ppi2_pb),a
     xor a
-    out (011h),a
+    out (ppi1_pb),a
 lfe8ah:
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl
     and 004h
     jr nz,lfe8ah
@@ -2055,7 +2094,7 @@ lfe8ah:
     ex (sp),hl
     ex (sp),hl
     ex (sp),hl
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl
     and 004h
     jr nz,lfe8ah
@@ -2069,38 +2108,38 @@ lfe9eh:
 cbm_send_byte:
 ;Send a single byte to the CBM
 ;
-    out (011h),a        ;Put byte on IEEE data bus
+    out (ppi1_pb),a     ;Put byte on IEEE data bus
 
 lfea3h:
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl                 ;Invert A
     and 008h            ;Mask off all bits except bit 3
     jr z,lfea3h         ;? Wait until NRFD ?
 
-    in a,(015h)
+    in a,(ppi2_pb)
     or 002h             ;Turn on bit 2
-    out (015h),a        ;? DAV ?
+    out (ppi2_pb),a     ;? DAV ?
 
 lfeb0h:
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl                 ;Invert A
     and 004h            ;Mask off all bits except bit 2
     jr z,lfeb0h         ;? Wait until NDAC ?
 
-    in a,(015h)
+    in a,(ppi2_pb)
     and 0fdh            ;Turn off bit 2
-    out (015h),a        ;? DAV ?
+    out (ppi2_pb),a     ;? DAV ?
 
     xor a               ;A=0
-    out (011h),a        ;Release IEEE-488 data lines
+    out (ppi1_pb),a     ;Release IEEE-488 data lines
     ret
 
 lfec1h:
-    in a,(015h)
+    in a,(ppi2_pb)
     and 0f7h
-    out (015h),a
+    out (ppi2_pb),a
 lfec7h:
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl
     and 002h
     jr z,lfee5h
@@ -2114,40 +2153,40 @@ lfec7h:
 
 cbm_get_byte:
 ;Read a single byte from the CBM
-    in a,(015h)
+    in a,(ppi2_pb)
     and 0f7h            ;Turn off bit 3
-    out (015h),a        ;? NRFD=high ?
+    out (ppi2_pb),a     ;? NRFD=high ?
 
 lfedeh:
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl                 ;Invert A
     and 002h            ;Mask off all bits except bit 1
     jr nz,lfedeh        ;? Wait until DAV ?
 
 lfee5h:
-    in a,(010h)         ;Read byte from IEEE data bus
+    in a,(ppi1_pa)      ;Read byte from IEEE data bus
     push af             ;Put it on the stack
 
-    in a,(014h)
+    in a,(ppi2_pa)
     ld (0ea6ch),a
 
-    in a,(015h)
+    in a,(ppi2_pb)
     or 008h             ;Turn on bit 3
-    out (015h),a        ;? NRFD ?
+    out (ppi2_pb),a     ;? NRFD ?
 
-    in a,(015h)
+    in a,(ppi2_pb)
     and 0fbh            ;Turn off bit 2
-    out (015h),a        ;? NDAC ?
+    out (ppi2_pb),a     ;? NDAC ?
 
 lfef9h:
-    in a,(014h)
+    in a,(ppi2_pa)
     cpl                 ;Invert A
     and 002h            ;Mask off all bits except bit 1
     jr z,lfef9h         ;? Wait until ... ?
 
-    in a,(015h)
+    in a,(ppi2_pb)
     or 004h             ;Turn on bit 2
-    out (015h),a        ;? NDAC ?
+    out (ppi2_pb),a     ;? NDAC ?
 
     pop af              ;Pop the IEEE data byte off the stack
     or a                ;Set flags
@@ -2157,15 +2196,15 @@ lff09h:
     ld a,00dh
 lff0bh:
     push af
-    in a,(015h)
+    in a,(ppi2_pb)
     or 010h
-    out (015h),a
+    out (ppi2_pb),a
     pop af
     call lfe62h
     push af
-    in a,(015h)
+    in a,(ppi2_pb)
     and 0efh
-    out (015h),a
+    out (ppi2_pb),a
     pop af
     ret
 
