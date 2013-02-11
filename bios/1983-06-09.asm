@@ -37,6 +37,8 @@ ppi2_pc: equ ppi2+2  ;  Port C:
                      ;    PC0 LED "A"
 ppi2_cr: equ ppi2+3  ;  Control Register
 
+corvus:  equ 018h    ;Corvus data bus
+
     org 0f000h
 
 lf000h:
@@ -463,7 +465,7 @@ lf2fch:
     ret
 sub_f2ffh:
     ld a,0ffh
-    out (018h),a
+    out (corvus),a
     ld b,0ffh
 lf305h:
     djnz lf305h
@@ -491,9 +493,10 @@ lf315h:
     ld b,080h
 lf334h:
     in a,(ppi2_pc)
-    and 010h
-    jr z,lf334h
-    in a,(018h)
+    and 010h            ;Mask off all but bit 4 (Corvus READY)
+    jr z,lf334h         ;Wait until Corvus READY=high
+
+    in a,(corvus)
     ld (hl),a
     inc hl
     djnz lf334h
@@ -515,10 +518,11 @@ lf342h:
     ld hl,(00052h)
 lf35ch:
     in a,(ppi2_pc)
-    and 010h
-    jr z,lf35ch
+    and 010h            ;Mask off all but bit 4 (Corvus READY)
+    jr z,lf35ch         ;Wait until Corvus READY=high
+
     ld a,(hl)
-    out (018h),a
+    out (corvus),a
     inc hl
     djnz lf35ch
     call sub_f37bh
@@ -545,9 +549,9 @@ lf385h:
     jr nz,sub_f37bh
 sub_f38fh:
     in a,(ppi2_pc)
-    and 010h
-    jr z,sub_f38fh
-    in a,(018h)
+    and 010h            ;Mask off all but bit 4 (Corvus READY)
+    jr z,sub_f38fh      ;Wait until Corvus READY=high
+    in a,(corvus)
     bit 7,a
     ret
 sub_f39ah:
@@ -557,7 +561,7 @@ lf39bh:
     and 010h
     jr z,lf39bh
     pop af
-    out (018h),a
+    out (corvus),a
     ret
 sub_f3a5h:
     ld hl,(00041h)
@@ -760,18 +764,21 @@ lf4bah:
 
 lf4c5h:
     in a,(ppi2_pb)
-    or 080h
-    out (ppi2_pb),a
-    xor a
-    ld (00003h),a
+    or 080h             ;Turn on bit 7 (IFC out)
+    out (ppi2_pb),a     ;IFC=?
+
+    xor a               ;A=0
+    ld (00003h),a       ;Initialize variables
     ld (00004h),a
     ld (00054h),a
     ld (00059h),a
     ld (0005ah),a
     ld (0ea80h),a
-    out (ppi2_pc),a
+    out (ppi2_pc),a     ;Turn off LEDs
+
     ld bc,003e8h
     call lfb86h
+
     ld a,01bh
     ld (0ea68h),a
     xor a
@@ -788,29 +795,37 @@ lf4c5h:
     out (009h),a
     ld a,0eeh
     out (00ch),a
-    in a,(ppi2_pa)
-    cpl
-    and 040h
+
+    in a,(ppi2_pa)      ;IEEE-488 control lines in
+    cpl                 ;Invert byte
+    and 040h            ;Mask off all but bit 6 (REN in)
     jr nz,lf52bh
+
     ld a,001h
-    ld (00003h),a
+    ld (00003h),a       ;TODO RS232/IEEE mode flag?
+
 lf510h:
     in a,(ppi2_pa)
     cpl
     and 003h
+
     in a,(ppi1_pa)
     jr nz,lf510h
+
     cp 039h
     jr nz,lf510h
-    in a,(ppi2_pa)
-    cpl
-    and 002h
-    jr nz,lf510h
+
+    in a,(ppi2_pa)      ;IEEE-488 control lines in
+    cpl                 ;Invert byte
+    and 002h            ;Mask off all but bit 1 (DAV in)
+    jr nz,lf510h        ;Loop until DAV=?
+
 lf524h:
-    in a,(ppi2_pa)
-    cpl
-    and 002h
-    jr z,lf524h
+    in a,(ppi2_pa)      ;IEEE-488 control lines in
+    cpl                 ;Invert byte
+    and 002h            ;Mask off all but bit 1 (DAV in)
+    jr z,lf524h         ;Wait until DAV=?
+
 lf52bh:
     ld hl,loading
     call puts           ;Write "Loading CP/M ..."
