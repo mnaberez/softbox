@@ -2101,44 +2101,54 @@ cbm_get_time:
 lfe62h:
     push af
 lfe63h:
-    in a,(ppi2_pa)
-    cpl
-    and 008h
-    jr z,lfe63h
-    in a,(ppi2_pa)
-    cpl
-    and 004h
-    jr nz,lfe9eh
+    in a,(ppi2_pa)      ;Read IEEE-488 control lines in
+    cpl                 ;Invert byte
+    and 008h            ;Mask off all except bit 3 (NRFD in)
+    jr z,lfe63h         ;Wait until NRFD=?
+
+    in a,(ppi2_pa)      ;Read IEEE-488 control lines in
+    cpl                 ;Invert byte
+    and 004h            ;Mask off all except bit 2 (NDAC in)
+    jr nz,lfe9eh        ;Jump if NDAC=?
+
     pop af
-    out (ppi1_pb),a
-    in a,(ppi2_pb)
-    or 002h
-    out (ppi2_pb),a
+    out (ppi1_pb),a     ;Write byte to IEEE-488 data lines
+    in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
+    or 002h             ;Turn on bit 1 (DAV)
+    out (ppi2_pb),a     ;DAV=?
+
 lfe7ah:
-    in a,(ppi2_pa)
-    cpl
-    and 004h
-    jr z,lfe7ah
-    in a,(ppi2_pb)
-    and 0fdh
-    out (ppi2_pb),a
-    xor a
-    out (ppi1_pb),a
+    in a,(ppi2_pa)      ;Read IEEE-488 control lines in
+    cpl                 ;Invert byte
+    and 004h            ;Mask off all except bit 2 (NDAC in)
+    jr z,lfe7ah         ;Wait until NDAC=?
+
+    in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
+    and 0fdh            ;Turn off bit 1 (DAV)
+    out (ppi2_pb),a     ;DAV=?
+
+    xor a               ;A=0
+    out (ppi1_pb),a     ;Release IEEE-488 data lines
+
 lfe8ah:
-    in a,(ppi2_pa)
-    cpl
-    and 004h
-    jr nz,lfe8ah
+    in a,(ppi2_pa)      ;Read IEEE-488 control lines in
+    cpl                 ;Invert byte
+    and 004h            ;Mask off all except bit 2 (NDAC in)
+    jr nz,lfe8ah        ;Wait until NDAC=?
+
+    ex (sp),hl          ;Waste time
     ex (sp),hl
     ex (sp),hl
     ex (sp),hl
-    ex (sp),hl
-    in a,(ppi2_pa)
-    cpl
-    and 004h
-    jr nz,lfe8ah
-    or a
+
+    in a,(ppi2_pa)     ;Read IEEE-488 control lines in
+    cpl                ;Mask off all except bit 2 (NDAC in)
+    and 004h           ;Mask off all except bit 2 (NDAC in)
+    jr nz,lfe8ah       ;Wait until NDAC=?
+
+    or a               ;Set flags
     ret
+
 lfe9eh:
     pop af
     scf
