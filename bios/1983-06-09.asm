@@ -804,24 +804,27 @@ lf4c5h:
     ld a,001h
     ld (00003h),a       ;TODO RS232/IEEE mode flag?
 
-lf510h:
-    in a,(ppi2_pa)
-    cpl
-    and 003h
-
-    in a,(ppi1_pa)
-    jr nz,lf510h
-
+wait_for_atn:
+;Wait until the CBM computer addresses the SoftBox.  The SoftBox
+;must stay off the bus until a program on the CBM side wakes it up
+;by sending attention to its address (57).  At that point, the CBM
+;must start waiting for SRQs and the SoftBox can take over the bus.
+;
+    in a,(ppi2_pa)      ;Read IEEE-488 control lines
+    cpl                 ;Invert byte
+    and 003h            ;Mask off all but bit 1 (ATN), bit 2 (DAV)
+    in a,(ppi1_pa)      ;Read IEEE-488 data byte
+    jr nz,wait_for_atn  ;Wait until ATN=? and DAV=?
     cp 039h
-    jr nz,lf510h
+    jr nz,wait_for_atn  ;Wait until data byte = 57 (SoftBox address)
 
-    in a,(ppi2_pa)      ;IEEE-488 control lines in
+    in a,(ppi2_pa)      ;Read IEEE-488 control lines
     cpl                 ;Invert byte
     and 002h            ;Mask off all but bit 1 (DAV in)
-    jr nz,lf510h        ;Loop until DAV=?
+    jr nz,wait_for_atn  ;Loop until DAV=?
 
 lf524h:
-    in a,(ppi2_pa)      ;IEEE-488 control lines in
+    in a,(ppi2_pa)      ;Read IEEE-488 control lines
     cpl                 ;Invert byte
     and 002h            ;Mask off all but bit 1 (DAV in)
     jr z,lf524h         ;Wait until DAV=?
@@ -833,10 +836,12 @@ lf52bh:
     call lfb31h
     ld bc,00007h
     call lfb86h
-    in a,(ppi2_pa)
-    cpl
-    and 004h
-    jr z,lf555h
+
+    in a,(ppi2_pa)      ;Read IEEE-488 control lines
+    cpl                 ;Invert byte
+    and 004h            ;Mask off all but bit 3 (NDAC)
+    jr z,lf555h         ;Wait for NDAC=?
+
     ld a,002h
     ld (0ea70h),a
     ld a,001h
