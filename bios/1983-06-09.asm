@@ -79,7 +79,7 @@ lf000h:
     jp lf9bch        ;f05a
     jp lfb56h        ;f05d
     jp lfb72h        ;f060
-    jp lfdb9h        ;f063
+    jp cbm_clear     ;f063  Clear the CBM screen
     jp cbm_jsr       ;f066  Jump to a subroutine in CBM memory
     jp cbm_poke      ;f069  Transfer bytes from the SoftBox to CBM memory
     jp cbm_peek      ;f06c  Transfer bytes from CBM memory to the SoftBox
@@ -947,15 +947,18 @@ lf5d5h:
     out (usart_st),a
     ld a,(0ea65h)
     out (00ch),a
-    call lfdb9h
+    call cbm_clear      ;Clear CBM screen (no-op for RS-232 standalone mode)
+
     ld a,(00003h)
     rra
-    jr nc,lf62bh
-    ld a,(0ea67h)
+    jr nc,lf62bh        ;Jump if not in RS-232 standalone mode
+
+    ld a,(0ea67h)       ;TODO: terminal capability?
     rla
     jr nc,lf62bh
     ld c,015h
-    call conout         ;Clear screen
+    call conout         ;Clear screen for RS-232 standalone mode
+
 lf62bh:
     ld hl,banner
     call puts           ;Display "60K SoftBox CP/M" banner
@@ -1679,7 +1682,7 @@ conout:
     jp nz,lfc1dh
     ld a,c
     rla
-    jr c,lfc0eh
+    jr c,cbm_conout
     ld a,(0ea68h)
     cp c
     jr nz,lfbe6h
@@ -1698,14 +1701,14 @@ lfbf3h:
     cp 020h
     jr c,lfbfch
     cp 07bh
-    jr c,lfc0eh
+    jr c,cbm_conout
 lfbfch:
     ld hl,0ea80h
 lfbffh:
     ld a,(hl)
     inc hl
     or a
-    jr z,lfc0eh
+    jr z,cbm_conout
     cp c
     ld a,(hl)
     inc hl
@@ -1713,11 +1716,15 @@ lfbffh:
     cp 01bh
     jr z,lfc17h
     ld c,a
-lfc0eh:
+
+cbm_conout:
+;Put the character in C on the CBM screen
+;
     ld a,004h           ;Command 004h = Write to the terminal screen
     call cbm_srq
-    ld a,c
-    jp cbm_send_byte
+    ld a,c              ;A=C
+    jp cbm_send_byte    ;Jump out to send byte in A
+
 lfc17h:
     ld a,002h
     ld (0005ah),a
@@ -1746,7 +1753,7 @@ lfc36h:
     ret nz
     push de
     ld c,01bh
-    call lfc0eh
+    call cbm_conout
     pop de
     push de
     ld a,e
@@ -1758,14 +1765,14 @@ lfc36h:
 lfc51h:
     add a,020h
     ld c,a
-    call lfc0eh
+    call cbm_conout
     pop af
     ld hl,0ea6ah
     sub (hl)
     and 01fh
     or 020h
     ld c,a
-    jp lfc0eh
+    jp cbm_conout
 
 ser_status:
 ;RS-232 serial port receive status
@@ -1854,7 +1861,7 @@ list:
     ld a,(00003h)
     and 0c0h
     jp z,ser_out
-    jp p,lfc0eh
+    jp p,cbm_conout
     ld e,0ffh
     and 040h
     jr z,lfcc3h
@@ -2009,12 +2016,15 @@ puts:
     inc hl              ;Increment HL pointer
     jr puts             ;Loop to handle the next byte
 
-lfdb9h:
+cbm_clear:
+;Clear the CBM screen
+;
     ld a,(00003h)
     rra
-    ret nc
-    ld c,01ah
-    jp lfc0eh
+    ret nc              ;Do nothing and return if RS-232 standalone mode
+
+    ld c,01ah           ;1A = Lear Siegler ADM-3A clear screen code
+    jp cbm_conout
 
 cbm_jsr:
 ;Jump to a subroutine in CBM memory
@@ -2292,6 +2302,7 @@ lff1fh:
     jr nz,lff1fh
     ret
 
+filler:
     db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
     db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
     db 00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
