@@ -1059,17 +1059,15 @@ lf671h:
     call e_fb72h
     pop de
     jp sub_f9bfh
+
 lf687h:
-    inc hl
-    ld (03a30h),a
-    ld b,e
+    db "#2"
 lf68ch:
-    ld d,b
-    cpl
-    ld c,l
+    db "0:CP/M"
 lf68fh:
-    ld c,c
-    jr nc,$-57
+    db "I0"
+
+    push bc
     call sub_f245h
     pop bc
     or a
