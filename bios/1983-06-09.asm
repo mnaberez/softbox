@@ -49,6 +49,7 @@ track:    equ 00041h    ;Track number
 drive:    equ 00042h    ;Drive number
 sector:   equ 00043h    ;Sector number
 dma:      equ 00052h    ;DMA address
+ccp_base: equ 0d400h    ;Start of CCP area
 
     org 0f000h
 
@@ -125,15 +126,15 @@ lf0e6h:
 lf0ebh:
     ld a,(0ea40h)
     ld (0d8b2h),a
-    ld hl,0d403h
-    jr z,lf134h
+    ld hl,ccp_base+3
+    jr z,init_and_jp_hl
 lf0f6h:
     xor a
     call e_fac4h
 lf0fah:
     jr wboot
 sub_f0fch:
-    ld hl,0d400h
+    ld hl,ccp_base
     ld c,000h
     push hl
     push bc
@@ -164,18 +165,25 @@ lf11dh:
     add hl,de
     djnz lf11dh
     ret
-lf134h:
-    push hl
+
+init_and_jp_hl:
+;Initialize low memory locations as required by CP/M and
+;then jump to the address in HL.
+;
+    push hl             ;Save address
     ld bc,00080h
-    call setdma
-    ld a,0c3h
+    call setdma         ;Initialize DMA pointer
+
+    ld a,0c3h           ;0c3h = JP
     ld (00000h),a
-    ld hl,0ea03h
-    ld (00001h),hl
+    ld hl,0ea03h        ;Install warm boot jump
+    ld (00001h),hl      ;  00000h JP 0ea03h
+
     ld (00005h),a
-    ld hl,0dc06h
-    ld (00006h),hl
-    ld hl,00004h
+    ld hl,0dc06h        ;Install BDOS system call jump
+    ld (00006h),hl      ;  00005h JP 0dc06h
+
+    ld hl,00004h        ;TODO IOBYTE?
     ld a,(hl)
     and 00fh
     call e_f224h
@@ -183,27 +191,36 @@ lf134h:
     ld (hl),000h
 lf15ch:
     ld c,(hl)
-    xor a
+    xor a                ;A=0
     ld (00048h),a
     ld (00051h),a
-    dec a
+    dec a                ;A=0ffh
     ld (00044h),a
-    pop hl
-    jp (hl)
+    pop hl               ;Recall address
+    jp (hl)              ;  and jump to it
 
 home:
-    ld bc,00000h
+;Set the CP/M track to 0.
+;
+    ld bc,00000h        ;Fall through into settrk
 
 settrk:
+;Set the CP/M track to BC.
+;
     ld (track),bc
     ret
 
 setsec:
+;Set the CP/M sector to BC.
+;
     ld a,c
     ld (sector),a
     ret
 
 setdma:
+;The next disk operation will read data from, or write data to,
+;the file buffer address given in BC.
+;
     ld (dma),bc
     ret
 
@@ -802,20 +819,41 @@ lf4c5h:
 
     ld a,01bh
     ld (0ea68h),a
-    xor a
+
+    xor a               ;8251 USART initialization sequence
     out (usart_st),a
     nop
     out (usart_st),a
     nop
     out (usart_st),a
-    ld a,040h
+
+    ld a,040h           ;Reset
     out (usart_st),a
-    ld a,07ah
+
+    ld a,07ah           ;Set mode
+                        ;  Bit 7: S2   0 = 1 stop bit
+                        ;  Bit 6: S1   1
+                        ;  Bit 5: EP   1 = Even parity
+                        ;  Bit 4: PEN  1
+                        ;  Bit 3: L2   1 = 7 bit character
+                        ;  Bit 2: L1   0
+                        ;  Bit 1: B2   1 = 16X baud rate factor
+                        ;  Bit 0: B1   0
     out (usart_st),a
-    ld a,037h
+
+    ld a,037h           ;Set command
+                        ;  Bit 7: EH   0 = Normal (not hunt mode)
+                        ;  Bit 6: IR   0 = Normal (not internal reset)
+                        ;  Bit 5: RTS  1 = RTS output = 0
+                        ;  Bit 4: ER   1 = Reset error flag
+                        ;  Bit 3: SBRK 0 = Normal (not send break)
+                        ;  Bit 2: RxE  1 = Receive enable
+                        ;  Bit 1: DTR  1 = DTR output = 0
+                        ;  Bit 0: TxE  1 = Transmit enable
     out (usart_st),a
+
     ld a,0eeh
-    out (00ch),a
+    out (00ch),a        ;TODO what is 00ch?
 
     in a,(ppi2_pa)      ;IEEE-488 control lines in
     cpl                 ;Invert byte
@@ -973,6 +1011,7 @@ lf5d5h:
     ld a,(0ea67h)       ;TODO: terminal capability?
     rla
     jr nc,lf62bh
+
     ld c,015h
     call conout         ;Clear screen for RS-232 standalone mode
 
@@ -982,8 +1021,8 @@ lf62bh:
     call const          ;Returns 00=key waiting, FF=no key
     inc a
     call z,conin        ;Get a key if one is waiting
-    ld hl,0d400h
-    jp lf134h
+    ld hl,ccp_base
+    jp init_and_jp_hl   ;Jump to start CCP
 
 loading:
     db 0dh,0ah,"Loading CP/M ...",00h
@@ -1005,7 +1044,7 @@ sub_f651h:
     ret nz
     push de
     call e_faf9h
-    ld hl,0d400h
+    ld hl,ccp_base
     ld b,000h
 lf671h:
     call cbm_get_byte
@@ -1700,12 +1739,15 @@ conout:
     ld a,c
     rla
     jr c,cbm_conout
+
     ld a,(0ea68h)
     cp c
     jr nz,lfbe6h
+
     ld a,001h
     ld (00059h),a
     ret
+
 lfbe6h:
     ld a,(00059h)
     or a
@@ -1963,9 +2005,9 @@ lfd4bh:
     ld e,0ffh
     call e_fb31h
     call sub_fb8fh
-    in a,(ppi2_pa)
-    cpl
-    and 008h
+    in a,(ppi2_pa)      ;Read IEEE-488 control lines in
+    cpl                 ;Invert byte
+    and 008h            ;Mask off all except bit 3 (NRFD in)
     push af
     call e_fb47h
     pop af
@@ -1973,9 +2015,9 @@ lfd4bh:
     dec a
     ret
 lfd61h:
-    in a,(usart_st)
-    cpl
-    and 084h
+    in a,(usart_st)     ;Read USART status register
+    cpl                 ;Invert it
+    and 084h            ;Mask off all but bits 7 (DSR) and 2 (TxEMPTY)
     ld a,0ffh
     ret z
     inc a
