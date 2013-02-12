@@ -1,43 +1,47 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --labels --origin=61440 1983-06-09.bin
 
-ppi1:    equ 010h    ;8255 PPI #1 (IC17)
-ppi1_pa: equ ppi1+0  ;  Port A: IEEE-488 Data In
-ppi1_pb: equ ppi1+1  ;  Port B: IEEE-488 Data Out
-ppi1_pc: equ ppi1+2  ;  Port C: DIP Switches
-ppi1_cr: equ ppi1+3  ;  Control Register
+usart:    equ 008h      ;8251 USART (IC15)
+usart_db: equ usart+0   ;  Data Buffer
+usart_st: equ usart+1   ;  Status Register
 
-ppi2:    equ 014h    ;8255 PPI #2 (IC16)
-ppi2_pa: equ ppi2+0  ;  Port A:
-                     ;    PA7 IEEE-488 IFC in
-                     ;    PA6 IEEE-488 REN in
-                     ;    PA5 IEEE-488 SRQ in
-                     ;    PA4 IEEE-488 EOI in
-                     ;    PA3 IEEE-488 NRFD in
-                     ;    PA2 IEEE-488 NDAC in
-                     ;    PA1 IEEE-488 DAV in
-                     ;    PA0 IEEE-488 ATN in
-ppi2_pb: equ ppi2+1  ;  Port B:
-                     ;    PB7 IEEE-488 IFC out
-                     ;    PB6 IEEE-488 REN out
-                     ;    PB5 IEEE-488 SRQ out
-                     ;    PB4 IEEE-488 EOI out
-                     ;    PB3 IEEE-488 NRFD out
-                     ;    PB2 IEEE-488 NDAC out
-                     ;    PB1 IEEE-488 DAV out
-                     ;    PB0 IEEE-488 ATN out
-ppi2_pc: equ ppi2+2  ;  Port C:
-                     ;    PC7 Unused
-                     ;    PC6 Unused
-                     ;    PC5 Corvus ACTIVE
-                     ;    PC4 Corvus READY
-                     ;    PC3 Unused
-                     ;    PC2 LED "Ready"
-                     ;    PC1 LED "B"
-                     ;    PC0 LED "A"
-ppi2_cr: equ ppi2+3  ;  Control Register
+ppi1:     equ 010h      ;8255 PPI #1 (IC17)
+ppi1_pa:  equ ppi1+0    ;  Port A: IEEE-488 Data In
+ppi1_pb:  equ ppi1+1    ;  Port B: IEEE-488 Data Out
+ppi1_pc:  equ ppi1+2    ;  Port C: DIP Switches
+ppi1_cr:  equ ppi1+3    ;  Control Register
 
-corvus:  equ 018h    ;Corvus data bus
+ppi2:     equ 014h      ;8255 PPI #2 (IC16)
+ppi2_pa:  equ ppi2+0    ;  Port A:
+                        ;    PA7 IEEE-488 IFC in
+                        ;    PA6 IEEE-488 REN in
+                        ;    PA5 IEEE-488 SRQ in
+                        ;    PA4 IEEE-488 EOI in
+                        ;    PA3 IEEE-488 NRFD in
+                        ;    PA2 IEEE-488 NDAC in
+                        ;    PA1 IEEE-488 DAV in
+                        ;    PA0 IEEE-488 ATN in
+ppi2_pb:  equ ppi2+1    ;  Port B:
+                        ;    PB7 IEEE-488 IFC out
+                        ;    PB6 IEEE-488 REN out
+                        ;    PB5 IEEE-488 SRQ out
+                        ;    PB4 IEEE-488 EOI out
+                        ;    PB3 IEEE-488 NRFD out
+                        ;    PB2 IEEE-488 NDAC out
+                        ;    PB1 IEEE-488 DAV out
+                        ;    PB0 IEEE-488 ATN out
+ppi2_pc:  equ ppi2+2    ;  Port C:
+                        ;    PC7 Unused
+                        ;    PC6 Unused
+                        ;    PC5 Corvus ACTIVE
+                        ;    PC4 Corvus READY
+                        ;    PC3 Unused
+                        ;    PC2 LED "Ready"
+                        ;    PC1 LED "B"
+                        ;    PC0 LED "A"
+ppi2_cr:  equ ppi2+3    ;  Control Register
+
+corvus:   equ 018h      ;Corvus data bus
 
     org 0f000h
 
@@ -782,17 +786,17 @@ lf4c5h:
     ld a,01bh
     ld (0ea68h),a
     xor a
-    out (009h),a
+    out (usart_st),a
     nop
-    out (009h),a
+    out (usart_st),a
     nop
-    out (009h),a
+    out (usart_st),a
     ld a,040h
-    out (009h),a
+    out (usart_st),a
     ld a,07ah
-    out (009h),a
+    out (usart_st),a
     ld a,037h
-    out (009h),a
+    out (usart_st),a
     ld a,0eeh
     out (00ch),a
 
@@ -802,7 +806,7 @@ lf4c5h:
     jr nz,lf52bh
 
     ld a,001h
-    ld (00003h),a       ;TODO RS232/IEEE mode flag?
+    ld (00003h),a       ;1 = RS-232 standalone mode
 
 wait_for_atn:
 ;Wait until the CBM computer addresses the SoftBox.  The SoftBox
@@ -930,17 +934,17 @@ lf5d5h:
     or b
     ld (00003h),a
     xor a
-    out (009h),a
+    out (usart_st),a
     nop
-    out (009h),a
+    out (usart_st),a
     nop
-    out (009h),a
+    out (usart_st),a
     ld a,040h
-    out (009h),a
+    out (usart_st),a
     ld a,(0ea64h)
-    out (009h),a
+    out (usart_st),a
     ld a,037h
-    out (009h),a
+    out (usart_st),a
     ld a,(0ea65h)
     out (00ch),a
     call lfdb9h
@@ -951,13 +955,13 @@ lf5d5h:
     rla
     jr nc,lf62bh
     ld c,015h
-    call conout
+    call conout         ;Clear screen
 lf62bh:
     ld hl,banner
-    call puts
-    call const
+    call puts           ;Display "60K SoftBox CP/M" banner
+    call const          ;Returns 00=key waiting, FF=no key
     inc a
-    call z,conin
+    call z,conin        ;Get a key if one is waiting
     ld hl,0d400h
     jp lf134h
 
@@ -1624,19 +1628,25 @@ lfb92h:
     ret
 
 conin:
+;Console input
+;Blocks until a key is available, then returns the key in A.
+;
     ld a,(00003h)
     rra
-    jp nc,lfc77h
-    in a,(ppi2_pb)
-    or 004h
-    out (ppi2_pb),a
+    jp nc,ser_in        ;Jump out if RS-232 standalone mode
+
+    in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
+    or 004h             ;Turn on bit 2 (NDAC)
+    out (ppi2_pb),a     ;NDAC=?
+
     ld a,002h           ;Command 002h = Wait for a key and send it
     call cbm_srq
     call cbm_get_byte
+
     push af
-    in a,(ppi2_pb)
-    and 0f3h
-    out (ppi2_pb),a
+    in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
+    and 0f3h            ;Clear bits 2 (NDAC) and 3 (NRFD)
+    out (ppi2_pb),a     ;NDAC=?, NRFD=?
     pop af
     ret
 
@@ -1645,9 +1655,9 @@ const:
 ;
 ;Returns A=0 if no character is ready, A=0FFh if one is.
 ;
-    ld a,(00003h)       ;TODO: Is this for RS232 standalone mode
-    rra                 ;      or console redirection?
-    jp nc,lfc64h
+    ld a,(00003h)
+    rra
+    jp nc,ser_status    ;Jump out if RS-232 standalone mode
 
     ld a,001h           ;Command 001h = Key available?
     call cbm_srq
@@ -1657,9 +1667,12 @@ const:
     ret                 ;Return with A=0ffh if a key is available
 
 conout:
+;Console output.
+;C = character to write to the screen
+;
     ld a,(00003h)
     rra
-    jp nc,lfc6ch
+    jp nc,ser_out      ;Jump out if RS-232 standalone mode
 
     ld a,(0005ah)
     or a
@@ -1753,25 +1766,39 @@ lfc51h:
     or 020h
     ld c,a
     jp lfc0eh
-lfc64h:
-    in a,(009h)
-    and 002h
-    ret z
+
+ser_status:
+;RS-232 serial port receive status
+;Returns A=0 if no byte is ready, A=0FFh if one is.
+;
+    in a,(usart_st)     ;Read USART status register
+    and 002h            ;Mask off all but RxRDY bit
+    ret z               ;Return A=0 if no byte
     or 0ffh
-    ret
-lfc6ch:
-    in a,(009h)
-    cpl
-    and 084h
-    jr nz,lfc6ch
+    ret                 ;Return A=FF if a byte is ready
+
+ser_out:
+;RS-232 serial port output
+;C = byte to write to the port
+;
+    in a,(usart_st)     ;Read USART status register
+    cpl                 ;Invert it
+    and 084h            ;Mask off all but bits 7 (DSR) and 2 (TxEMPTY)
+    jr nz,ser_out       ;Wait until DSR=1 and TxEMPTY=1
+
     ld a,c
-    out (008h),a
+    out (usart_db),a    ;Write data byte
     ret
-lfc77h:
-    in a,(009h)
-    and 002h
-    jr z,lfc77h
-    in a,(008h)
+
+ser_in:
+;RS-232 serial port input
+;Blocks until a byte is available, then returns it in A.
+;
+    in a,(usart_st)     ;Read USART status register
+    and 002h            ;Mask off all but bit 1 (RxRDY)
+    jr z,ser_in         ;Wait until a byte is available
+
+    in a,(usart_db)     ;Read data byte
     ret
 
 cbm_srq:
@@ -1790,43 +1817,43 @@ cbm_srq:
 ;
     push af
 lfc81h:
-    in a,(ppi1_pa)  ;A = Read IC17 8255 Port A (IEEE data in)
-    or a            ;Set flags
-    jr nz,lfc81h    ;Wait for IEEE data bus to go to zero
+    in a,(ppi1_pa)      ;A = Read IC17 8255 Port A (IEEE data in)
+    or a                ;Set flags
+    jr nz,lfc81h        ;Wait for IEEE data bus to go to zero
 
     pop af
-    out (ppi1_pb),a ;Write data byte to IC17 8255 Port B (IEEE data out)
+    out (ppi1_pb),a     ;Write data byte to IC17 8255 Port B (IEEE data out)
 
     in a,(ppi2_pb)
     or 020h
-    out (ppi2_pb),a ;Set SRQ high (?)
+    out (ppi2_pb),a     ;Set SRQ high (?)
 
     in a,(ppi2_pb)
     and 0dfh
-    out (ppi2_pb),a ;Set SRQ low (?)
+    out (ppi2_pb),a     ;Set SRQ low (?)
 
 lfc95h:
-    in a,(ppi1_pa)  ;A = Read IEEE data byte
-    and 0c0h        ;Mask off all but bits 6 and 7
-    jr z,lfc95h     ;Wait until CBM changes one of those bits
+    in a,(ppi1_pa)      ;A = Read IEEE data byte
+    and 0c0h            ;Mask off all but bits 6 and 7
+    jr z,lfc95h         ;Wait until CBM changes one of those bits
 
-    rla             ;Rotate bit 7 (key available status) into Carry flag
-    push af         ;Push data IEEE data byte read from CBM
+    rla                 ;Rotate bit 7 (key available status) into Carry flag
+    push af             ;Push data IEEE data byte read from CBM
 
     ld a,000h
-    out (ppi1_pb),a ;Release IEEE data lines
+    out (ppi1_pb),a     ;Release IEEE data lines
 
 lfca1h:
-    in a,(ppi1_pa)  ;A = Read IEEE data byte
-    or a            ;Set flags
-    jr nz,lfca1h    ;Wait for IEEE data bus to go to zero
+    in a,(ppi1_pa)      ;A = Read IEEE data byte
+    or a                ;Set flags
+    jr nz,lfca1h        ;Wait for IEEE data bus to go to zero
     pop af
     ret
 
 list:
     ld a,(00003h)
     and 0c0h
-    jp z,lfc6ch
+    jp z,ser_out
     jp p,lfc0eh
     ld e,0ffh
     and 040h
@@ -1922,7 +1949,7 @@ lfd4bh:
     dec a
     ret
 lfd61h:
-    in a,(009h)
+    in a,(usart_st)
     cpl
     and 084h
     ld a,0ffh
@@ -1944,7 +1971,7 @@ lfd78h:
 punch:
     ld a,(00003h)
     and 030h
-    jp z,lfc6ch
+    jp z,ser_out
     ld a,(0ea63h)
     ld d,a
     ld e,0ffh
@@ -1956,7 +1983,7 @@ lfd8ch:
 reader:
     ld a,(00003h)
     and 00ch
-    jp z,lfc77h
+    jp z,ser_in
     ld a,(0ea62h)
     ld d,a
     ld e,0ffh
