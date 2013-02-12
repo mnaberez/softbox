@@ -70,34 +70,34 @@ lf000h:
     jp write         ;f02a  Write selected sector
     jp listst        ;f02d  Printer (List) status
     jp sectran       ;f030  Sector translation for skewing
-    jp lfb31h        ;f033
-    jp lfb47h        ;f036
-    jp lfaf9h        ;f039
-    jp lfb21h        ;f03c
+    jp e_fb31h       ;f033
+    jp e_fb47h       ;f036
+    jp e_faf9h       ;f039
+    jp e_fb21h       ;f03c
     jp cbm_get_byte  ;f03f  Read a single byte from the CBM
-    jp lfe62h        ;f042
-    jp lff0bh        ;f045
-    jp lff09h        ;f048
-    jp lff1fh        ;f04b
-    jp lf9a3h        ;f04e
-    jp lf224h        ;f051
-    jp lfaadh        ;f054
-    jp lfabch        ;f057
-    jp lf9bch        ;f05a
-    jp lfb56h        ;f05d
-    jp lfb72h        ;f060
+    jp e_fe62h       ;f042
+    jp e_ff0bh       ;f045
+    jp e_ff09h       ;f048
+    jp e_ff1fh       ;f04b
+    jp e_f9a3h       ;f04e
+    jp e_f224h       ;f051
+    jp e_faadh       ;f054
+    jp e_fabch       ;f057
+    jp e_f9bch       ;f05a
+    jp e_fb56h       ;f05d
+    jp e_fb72h       ;f060
     jp cbm_clear     ;f063  Clear the CBM screen
     jp cbm_jsr       ;f066  Jump to a subroutine in CBM memory
     jp cbm_poke      ;f069  Transfer bytes from the SoftBox to CBM memory
     jp cbm_peek      ;f06c  Transfer bytes from CBM memory to the SoftBox
     jp cbm_set_time  ;f06f  Set the time on the CBM real time clock
     jp cbm_get_time  ;f072  Read the CBM clocks (both RTC and jiffy counter)
-    jp lf578h        ;f075
-    jp lfac4h        ;f078
-    jp lfb49h        ;f07b
-    jp lfec1h        ;f07e
+    jp e_f578h       ;f075
+    jp e_fac4h       ;f078
+    jp e_fb49h       ;f07b
+    jp e_fec1h       ;f07e
     jp cbm_clr_jiff  ;f081  Clear the CBM jiffy counter
-    jp lfb86h        ;f084
+    jp e_fb86h       ;f084
 
 banner:
     db 0dh,0ah,"60K SoftBox CP/M vers. 2.2"
@@ -113,7 +113,7 @@ lf0d9h:
     jr c,lf0e6h
 lf0dbh:
     xor a
-    call lfaadh
+    call e_faadh
 lf0dfh:
     ld c,016h
 lf0e1h:
@@ -129,7 +129,7 @@ lf0ebh:
     jr z,lf134h
 lf0f6h:
     xor a
-    call lfac4h
+    call e_fac4h
 lf0fah:
     jr wboot
 sub_f0fch:
@@ -178,7 +178,7 @@ lf134h:
     ld hl,00004h
     ld a,(hl)
     and 00fh
-    call lf224h
+    call e_f224h
     jr c,lf15ch
     ld (hl),000h
 lf15ch:
@@ -212,7 +212,7 @@ seldsk:
 ;Returns the address of a Disk Parameter Header in HL.
 ;
     ld a,c
-    call lf224h
+    call e_f224h
     ld hl,00000h
     ret nc
     ld (00040h),a
@@ -350,7 +350,7 @@ sectran:
     ld l,c
     ld h,b
     ret
-lf224h:
+e_f224h:
     cp 010h
     ret nc
     push hl
@@ -378,7 +378,7 @@ lf240h:
     or a
     ret
 sub_f245h:
-    call lf224h
+    call e_f224h
     ret nc
     ld a,c
     or a
@@ -598,7 +598,7 @@ lf3ach:
     ld l,a
     ld de,0941ch
     ld a,(00040h)
-    call lf224h
+    call e_f224h
     ld a,c
     cp 005h
     jr nz,lf3c7h
@@ -619,7 +619,7 @@ lf3d1h:
     push hl
     push af
     ld a,(00040h)
-    call lfaadh
+    call e_faadh
     pop af
     pop hl
     add a,d
@@ -798,7 +798,7 @@ lf4c5h:
     out (ppi2_pc),a     ;Turn off LEDs
 
     ld bc,003e8h
-    call lfb86h
+    call e_fb86h
 
     ld a,01bh
     ld (0ea68h),a
@@ -854,9 +854,9 @@ lf52bh:
     ld hl,loading
     call puts           ;Write "Loading CP/M ..."
     ld de,0080fh
-    call lfb31h
+    call e_fb31h
     ld bc,00007h
-    call lfb86h
+    call e_fb86h
 
     in a,(ppi2_pa)      ;Read IEEE-488 control lines
     cpl                 ;Invert byte
@@ -869,13 +869,13 @@ lf52bh:
     ld (0ea78h),a
     ld b,038h
     call sub_f0fch
-    jr lf578h
+    jr e_f578h
 lf555h:
-    call lfb47h
+    call e_fb47h
     ld de,0080fh
     ld c,002h
     ld hl,lf68fh
-    call lfb56h
+    call e_fb56h
     ld d,008h
     ld c,01ch
     call sub_f651h
@@ -883,8 +883,8 @@ lf555h:
     ld de,00802h
     ld c,002h
     ld hl,lf687h
-    call lfb56h
-lf578h:
+    call e_fb56h
+e_f578h:
     ld sp,00100h
     xor a
     push af
@@ -994,7 +994,7 @@ sub_f651h:
     ld hl,0f689h
     ld c,006h
     ld e,000h
-    call lfb56h
+    call e_fb56h
     pop de
     push de
     call sub_f9bfh
@@ -1004,7 +1004,7 @@ sub_f651h:
     or a
     ret nz
     push de
-    call lfaf9h
+    call e_faf9h
     ld hl,0d400h
     ld b,000h
 lf671h:
@@ -1014,10 +1014,10 @@ lf671h:
     djnz lf671h
     dec c
     jr nz,lf671h
-    call lfb21h
+    call e_fb21h
     pop de
     push de
-    call lfb72h
+    call e_fb72h
     pop de
     jp sub_f9bfh
 lf687h:
@@ -1093,22 +1093,22 @@ lf702h:
     ld (00050h),a
 lf707h:
     ld a,(00044h)
-    call lfabch
+    call e_fabch
     ld hl,(00055h)
     ld c,005h
-    call lff1fh
+    call e_ff1fh
     ld a,(00044h)
     and 001h
     add a,030h
-    call lfe62h
+    call e_fe62h
     ld a,(0004dh)
-    call lf9a3h
+    call e_f9a3h
     ld a,(0004eh)
-    call lf9a3h
-    call lff09h
-    call lfb47h
+    call e_f9a3h
+    call e_ff09h
+    call e_fb47h
     ld a,(00044h)
-    call lf9bch
+    call e_f9bch
     cp 016h
     jr nz,lf73fh
     ex af,af'
@@ -1123,7 +1123,7 @@ lf73fh:
     dec (hl)
     jr z,lf752h
     ld a,(00044h)
-    call lfac4h
+    call e_fac4h
     jr lf707h
 lf752h:
     ld hl,lf8beh
@@ -1157,7 +1157,7 @@ lf782h:
     jr lf782h
 lf790h:
     ld a,(00044h)
-    call lfac4h
+    call e_fac4h
     ld a,(0004fh)
     cp 01ah
     jp z,lf702h
@@ -1208,7 +1208,7 @@ lf8d6h:
     nop
 sub_f8dah:
     ld a,(00044h)
-    call lf224h
+    call e_f224h
 lf8e0h:
     ld a,c
 lf8e1h:
@@ -1354,10 +1354,10 @@ lf97fh:
     daa
     nop
     nop
-lf9a3h:
+e_f9a3h:
     push af
     ld a,020h
-    call lfe62h
+    call e_fe62h
     pop af
     ld e,02fh
 lf9ach:
@@ -1367,14 +1367,14 @@ lf9ach:
     add a,03ah
     push af
     ld a,e
-    call lfe62h
+    call e_fe62h
     pop af
-    jp lfe62h
-lf9bch:
-    call lfaadh
+    jp e_fe62h
+e_f9bch:
+    call e_faadh
 sub_f9bfh:
     ld e,00fh
-    call lfaf9h
+    call e_faf9h
     ld hl,0eac0h
 lf9c7h:
     call cbm_get_byte
@@ -1406,7 +1406,7 @@ lf9e5h:
 lf9eeh:
     cp 00dh
     jr nz,lf9e5h
-    call lfb21h
+    call e_fb21h
     pop af
     ret
 lf9f7h:
@@ -1414,33 +1414,33 @@ lf9f7h:
     ld hl,dos_cmds_3    ;"M-W",00h,013h,01h
     ld c,006h           ;6 bytes in string
     ld a,(00044h)       ;? device address ?
-    call lfabch         ;? write to device ?
-    call lff1fh
+    call e_fabch         ;? write to device ?
+    call e_ff1fh
     pop hl
 
     ld a,(hl)
     push hl
-    call lff0bh
-    call lfb47h
+    call e_ff0bh
+    call e_fb47h
 
     ld hl,dos_cmds_2    ;"B-P 2 1"
     ld c,007h           ;7 bytes in string
     ld a,(00044h)
-    call lfabch
-    call lff1fh
+    call e_fabch
+    call e_ff1fh
 
-    call lff09h
-    call lfb47h
+    call e_ff09h
+    call e_fb47h
     ld a,(00044h)
-    call lfaadh
+    call e_faadh
     ld e,002h
-    call lfb31h
+    call e_fb31h
     pop hl
 
     inc hl
     ld c,0ffh
-    call lff1fh
-    call lfb47h
+    call e_ff1fh
+    call e_fb47h
     ld hl,0f8d2h
     jp lf6fch
 lfa3eh:
@@ -1451,37 +1451,37 @@ lfa3eh:
     ld hl,dos_cmds_4    ;"M-R",00h,013h
     ld c,005h           ;5 bytes in string
     ld a,(00044h)
-    call lfabch
-    call lff1fh
+    call e_fabch
+    call e_ff1fh
 
-    call lff09h
-    call lfb47h
+    call e_ff09h
+    call e_fb47h
     ld a,(00044h)
-    call lfaadh
+    call e_faadh
     ld e,00fh
-    call lfaf9h
+    call e_faf9h
     call cbm_get_byte
     pop hl
     ld (hl),a
     push hl
-    call lfb21h
+    call e_fb21h
     ld a,(00044h)
-    call lfabch
+    call e_fabch
 
     ld hl,0fae7h        ;"B-P 2 1"
     ld c,007h           ;7 bytes in string
-    call lff1fh
+    call e_ff1fh
 
-    call lff09h
-    call lfb47h
+    call e_ff09h
+    call e_fb47h
     ld a,(00044h)
-    call lf9bch
+    call e_f9bch
     cp 046h
     jr z,lfaa4h
     ld a,(00044h)
-    call lfaadh
+    call e_faadh
     ld e,002h
-    call lfaf9h
+    call e_faf9h
     pop de
     inc de
     ld b,0ffh
@@ -1490,13 +1490,13 @@ lfa9ah:
     ld (de),a
     inc de
     djnz lfa9ah
-    jp lfb21h
+    jp e_fb21h
 lfaa4h:
     ld a,(00044h)
-    call lfac4h
+    call e_fac4h
     pop hl
     jr lfa3eh
-lfaadh:
+e_faadh:
     push hl
     push af
     or a
@@ -1509,12 +1509,12 @@ lfaadh:
     pop af
     pop hl
     ret
-lfabch:
-    call lfaadh
+e_fabch:
+    call e_faadh
     ld e,00fh
-    jp lfb31h
-lfac4h:
-    call lfaadh
+    jp e_fb31h
+e_fac4h:
+    call e_faadh
     ld e,00fh
     push de
 
@@ -1525,12 +1525,12 @@ lfac4h:
     ld hl,dos_cmds_1    ;"I1"
 
 lfad5h:
-    call lfb56h
+    call e_fb56h
     pop de
     ld e,002h
     ld c,002h
     ld hl,lf687h
-    jp lfb56h
+    jp e_fb56h
 
 dos_cmds_0:
     db "I0"
@@ -1547,17 +1547,17 @@ dos_cmds_3:
 dos_cmds_4:
     db "M-R",00h,013h
 
-lfaf9h:
+e_faf9h:
     in a,(ppi2_pb)
     or 001h
     out (ppi2_pb),a
     ld a,040h
     or d
-    call lfe62h
+    call e_fe62h
     jr c,lfb13h
     ld a,e
     or 060h
-    call p,lfe62h
+    call p,e_fe62h
     in a,(ppi2_pb)
     or 00ch
     out (ppi2_pb),a
@@ -1573,7 +1573,7 @@ lfb1ch:
 lfb1fh:
     pop af
     ret
-lfb21h:
+e_fb21h:
     in a,(ppi2_pb)
     or 001h
     out (ppi2_pb),a
@@ -1582,61 +1582,61 @@ lfb21h:
     out (ppi2_pb),a
     ld a,05fh
 lfb2fh:
-    jr lfb49h
-lfb31h:
+    jr e_fb49h
+e_fb31h:
     in a,(ppi2_pb)
     or 001h
     out (ppi2_pb),a
     ld a,020h
     or d
-    call lfe62h
+    call e_fe62h
     jr c,lfb13h
     ld a,e
     or 060h
-    call p,lfe62h
+    call p,e_fe62h
     jr lfb13h
-lfb47h:
+e_fb47h:
     ld a,03fh
-lfb49h:
+e_fb49h:
     push af
     in a,(ppi2_pb)
     or 001h
     out (ppi2_pb),a
     pop af
-    call lfe62h
+    call e_fe62h
     jr lfb13h
-lfb56h:
+e_fb56h:
     in a,(ppi2_pb)
     or 001h
     out (ppi2_pb),a
     ld a,d
     or 020h
-    call lfe62h
+    call e_fe62h
     ld a,e
     or 0f0h
-    call lfb49h
+    call e_fb49h
     dec c
-    call nz,lff1fh
+    call nz,e_ff1fh
     ld a,(hl)
-    call lff0bh
-    jr lfb47h
-lfb72h:
+    call e_ff0bh
+    jr e_fb47h
+e_fb72h:
     in a,(ppi2_pb)
     or 001h
     out (ppi2_pb),a
     ld a,d
     or 020h
-    call lfe62h
+    call e_fe62h
     ld a,e
     or 0e0h
-    call lfe62h
-    jr lfb47h
-lfb86h:
+    call e_fe62h
+    jr e_fb47h
+e_fb86h:
     call sub_fb8fh
     dec bc
     ld a,b
     or c
-    jr nz,lfb86h
+    jr nz,e_fb86h
     ret
 sub_fb8fh:
     push bc
@@ -1884,7 +1884,7 @@ list:
     jr z,lfcc3h
     ld a,(0ea66h)
     ld d,a
-    call lfb31h
+    call e_fb31h
     jp lfd8ch
 lfcc3h:
     ld a,(0ea61h)
@@ -1896,7 +1896,7 @@ lfcc3h:
     ld b,a
     or a
     call z,sub_fb8fh
-    call lfb31h
+    call e_fb31h
     bit 0,b
     jr nz,lfd29h
     ld hl,0ea6eh
@@ -1913,13 +1913,13 @@ lfcc3h:
     or a
     call z,sub_fb8fh
     ld a,08dh
-    call lfe62h
+    call e_fe62h
 lfcf8h:
     bit 1,b
     jr nz,lfd04h
     call sub_fb8fh
     ld a,011h
-    call lfe62h
+    call e_fe62h
 lfd04h:
     ld a,c
     cp 05fh
@@ -1935,17 +1935,17 @@ lfd15h:
     call sub_fd6bh
     bit 1,b
     call z,sub_fb8fh
-    call lfe62h
+    call e_fe62h
 lfd20h:
     in a,(ppi2_pb)
     or 001h
     out (ppi2_pb),a
-    jp lfb47h
+    jp e_fb47h
 lfd29h:
     ld a,c
     call sub_fd6bh
-    call lfe62h
-    jp lfb47h
+    call e_fe62h
+    jp e_fb47h
 listst:
     ld a,(ser_mode)
     and 0c0h
@@ -1961,13 +1961,13 @@ listst:
 lfd4bh:
     ld d,a
     ld e,0ffh
-    call lfb31h
+    call e_fb31h
     call sub_fb8fh
     in a,(ppi2_pa)
     cpl
     and 008h
     push af
-    call lfb47h
+    call e_fb47h
     pop af
     ret z
     dec a
@@ -1999,11 +1999,11 @@ punch:
     ld a,(0ea63h)
     ld d,a
     ld e,0ffh
-    call lfb31h
+    call e_fb31h
 lfd8ch:
     ld a,c
-    call lfe62h
-    jp lfb47h
+    call e_fe62h
+    jp e_fb47h
 reader:
     ld a,(ser_mode)
     and 00ch
@@ -2011,10 +2011,10 @@ reader:
     ld a,(0ea62h)
     ld d,a
     ld e,0ffh
-    call lfaf9h
+    call e_faf9h
     call cbm_get_byte
     push af
-    call lfb21h
+    call e_fb21h
     pop af
     ret
 
@@ -2152,7 +2152,7 @@ cbm_get_time:
     ld bc,(0ea46h)
     ret
 
-lfe62h:
+e_fe62h:
     push af
 lfe63h:
     in a,(ppi2_pa)      ;Read IEEE-488 control lines in
@@ -2238,7 +2238,7 @@ lfeb0h:
     out (ppi1_pb),a     ;Release IEEE-488 data lines
     ret
 
-lfec1h:
+e_fec1h:
     in a,(ppi2_pb)
     and 0f7h
     out (ppi2_pb),a
@@ -2296,16 +2296,16 @@ lfef9h:
     or a                ;Set flags
     ret
 
-lff09h:
+e_ff09h:
     ld a,00dh
-lff0bh:
+e_ff0bh:
     push af
     in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
     or 010h             ;Turn on bit 4 (EOI)
     out (ppi2_pb),a     ;EOI=?
 
     pop af
-    call lfe62h
+    call e_fe62h
     push af
 
     in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
@@ -2315,12 +2315,12 @@ lff0bh:
     pop af
     ret
 
-lff1fh:
+e_ff1fh:
     ld a,(hl)
     inc hl
-    call lfe62h
+    call e_fe62h
     dec c
-    jr nz,lff1fh
+    jr nz,e_ff1fh
     ret
 
 filler:
