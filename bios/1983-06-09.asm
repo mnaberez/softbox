@@ -43,6 +43,13 @@ ppi2_cr:  equ ppi2+3    ;  Control Register
 
 corvus:   equ 018h      ;Corvus data bus
 
+ser_mode: equ 00003h    ;RS-232 serial port mode
+                        ;  Bit 0: 0=CBM, 1=standalone
+track:    equ 00041h    ;Track number
+drive:    equ 00042h    ;Drive number
+sector:   equ 00043h    ;Sector number
+dma:      equ 00052h    ;DMA address
+
     org 0f000h
 
 lf000h:
@@ -131,10 +138,10 @@ sub_f0fch:
     push hl
     push bc
     ld hl,00000h
-    ld (00041h),hl
+    ld (track),hl
     xor a
 lf10ah:
-    ld (00043h),a
+    ld (sector),a
     ld (00048h),a
     ld (00051h),a
     call seldsk
@@ -143,7 +150,7 @@ lf10ah:
     pop bc
     pop hl
 lf11dh:
-    ld (00052h),hl
+    ld (dma),hl
     push hl
     push bc
     call read
@@ -183,19 +190,27 @@ lf15ch:
     ld (00044h),a
     pop hl
     jp (hl)
+
 home:
     ld bc,00000h
+
 settrk:
-    ld (00041h),bc
+    ld (track),bc
     ret
+
 setsec:
     ld a,c
-    ld (00043h),a
+    ld (sector),a
     ret
+
 setdma:
-    ld (00052h),bc
+    ld (dma),bc
     ret
+
 seldsk:
+;Select the disk drive in C (0=A:, 1=B:, ...).
+;Returns the address of a Disk Parameter Header in HL.
+;
     ld a,c
     call lf224h
     ld hl,00000h
@@ -372,6 +387,7 @@ sub_f245h:
     cp 002h
     ccf
     ret
+
 read:
     ld a,(00040h)
     call sub_f245h
@@ -379,12 +395,13 @@ read:
     call sub_f6b9h
     ld a,001h
     call nz,sub_f2d8h
-    ld a,(00043h)
+    ld a,(sector)
     rrca
     call sub_f2e5h
     xor a
     ld (00048h),a
     ret
+
 write:
     push bc
     ld a,(00040h)
@@ -404,15 +421,15 @@ write:
     ld hl,00049h
     cp (hl)
     jr nz,lf2b1h
-    ld a,(00041h)
+    ld a,(track)
     ld hl,0004ah
     cp (hl)
     jr nz,lf2b1h
-    ld a,(00042h)
+    ld a,(drive)
     inc hl
     cp (hl)
     jr nz,lf2b1h
-    ld a,(00043h)
+    ld a,(sector)
     ld hl,0004ch
     cp (hl)
     jr nz,lf2b1h
@@ -426,7 +443,7 @@ lf2b1h:
     ld a,000h
     call nz,sub_f2d8h
 lf2bdh:
-    ld a,(00043h)
+    ld a,(sector)
     rrca
     call sub_f2e9h
     pop af
@@ -456,7 +473,7 @@ sub_f2e9h:
     ld a,001h
 lf2ebh:
     ld hl,0ef00h
-    ld de,(00052h)
+    ld de,(dma)
     ld bc,00080h
     jr nc,lf2f8h
     add hl,bc
@@ -491,7 +508,7 @@ lf315h:
     call sub_f39ah
     ld a,h
     call sub_f39ah
-    ld hl,(00052h)
+    ld hl,(dma)
     call sub_f37bh
     jr nz,lf36dh
     ld b,080h
@@ -519,7 +536,7 @@ lf342h:
     ld a,h
     call sub_f39ah
     ld b,080h
-    ld hl,(00052h)
+    ld hl,(dma)
 lf35ch:
     in a,(ppi2_pc)
     and 010h            ;Mask off all but bit 4 (Corvus READY)
@@ -568,7 +585,7 @@ lf39bh:
     out (corvus),a
     ret
 sub_f3a5h:
-    ld hl,(00041h)
+    ld hl,(track)
     ld a,000h
     ld b,006h
 lf3ach:
@@ -576,7 +593,7 @@ lf3ach:
     rla
     djnz lf3ach
     push af
-    ld a,(00043h)
+    ld a,(sector)
     or l
     ld l,a
     ld de,0941ch
@@ -772,7 +789,7 @@ lf4c5h:
     out (ppi2_pb),a     ;IFC=?
 
     xor a               ;A=0
-    ld (00003h),a       ;Initialize variables
+    ld (ser_mode),a     ;Initialize variables
     ld (00004h),a
     ld (00054h),a
     ld (00059h),a
@@ -806,7 +823,7 @@ lf4c5h:
     jr nz,lf52bh
 
     ld a,001h
-    ld (00003h),a       ;1 = RS-232 standalone mode
+    ld (ser_mode),a     ;1 = RS-232 standalone mode
 
 wait_for_atn:
 ;Wait until the CBM computer addresses the SoftBox.  The SoftBox
@@ -926,13 +943,13 @@ lf5d5h:
     pop af
     ld a,(0d8b2h)
     ld (0ea40h),a
-    ld a,(00003h)
+    ld a,(ser_mode)
     and 001h
     ld b,a
     ld a,(0ea60h)
     and 0fch
     or b
-    ld (00003h),a
+    ld (ser_mode),a
     xor a
     out (usart_st),a
     nop
@@ -949,7 +966,7 @@ lf5d5h:
     out (00ch),a
     call cbm_clear      ;Clear CBM screen (no-op for RS-232 standalone mode)
 
-    ld a,(00003h)
+    ld a,(ser_mode)
     rra
     jr nc,lf62bh        ;Jump if not in RS-232 standalone mode
 
@@ -1027,9 +1044,9 @@ lf6a3h:
     ld (00048h),a
     ld a,(00040h)
     ld (00049h),a
-    ld hl,(00041h)
+    ld hl,(track)
     ld (0004ah),hl
-    ld a,(00043h)
+    ld a,(sector)
     ld (0004ch),a
     ret
 sub_f6b9h:
@@ -1037,17 +1054,17 @@ sub_f6b9h:
     ld hl,00044h
     xor (hl)
     ld b,a
-    ld a,(00041h)
+    ld a,(track)
     ld hl,00045h
     xor (hl)
     or b
     ld b,a
-    ld a,(00042h)
+    ld a,(drive)
     inc hl
     xor (hl)
     or b
     ld b,a
-    ld a,(00043h)
+    ld a,(sector)
     rra
     ld hl,00047h
     xor (hl)
@@ -1060,9 +1077,9 @@ sub_f6b9h:
     call nz,sub_f2dfh
     ld a,(00040h)
     ld (00044h),a
-    ld hl,(00041h)
+    ld hl,(track)
     ld (00045h),hl
-    ld a,(00043h)
+    ld a,(sector)
     or a
     rra
     ld (00047h),a
@@ -1634,7 +1651,7 @@ conin:
 ;Console input
 ;Blocks until a key is available, then returns the key in A.
 ;
-    ld a,(00003h)
+    ld a,(ser_mode)
     rra
     jp nc,ser_in        ;Jump out if RS-232 standalone mode
 
@@ -1658,7 +1675,7 @@ const:
 ;
 ;Returns A=0 if no character is ready, A=0FFh if one is.
 ;
-    ld a,(00003h)
+    ld a,(ser_mode)
     rra
     jp nc,ser_status    ;Jump out if RS-232 standalone mode
 
@@ -1673,7 +1690,7 @@ conout:
 ;Console output.
 ;C = character to write to the screen
 ;
-    ld a,(00003h)
+    ld a,(ser_mode)
     rra
     jp nc,ser_out      ;Jump out if RS-232 standalone mode
 
@@ -1747,7 +1764,7 @@ lfc28h:
     ld e,d
     ld d,a
 lfc36h:
-    ld a,(00003h)
+    ld a,(ser_mode)
     and 003h
     cp 001h
     ret nz
@@ -1858,7 +1875,7 @@ lfca1h:
     ret
 
 list:
-    ld a,(00003h)
+    ld a,(ser_mode)
     and 0c0h
     jp z,ser_out
     jp p,cbm_conout
@@ -1930,13 +1947,13 @@ lfd29h:
     call lfe62h
     jp lfb47h
 listst:
-    ld a,(00003h)
+    ld a,(ser_mode)
     and 0c0h
     jr z,lfd61h
     rla
     ld a,0ffh
     ret nc
-    ld a,(00003h)
+    ld a,(ser_mode)
     and 040h
     ld a,(0ea61h)
     jr z,lfd4bh
@@ -1976,7 +1993,7 @@ lfd78h:
     xor 080h
     ret
 punch:
-    ld a,(00003h)
+    ld a,(ser_mode)
     and 030h
     jp z,ser_out
     ld a,(0ea63h)
@@ -1988,7 +2005,7 @@ lfd8ch:
     call lfe62h
     jp lfb47h
 reader:
-    ld a,(00003h)
+    ld a,(ser_mode)
     and 00ch
     jp z,ser_in
     ld a,(0ea62h)
@@ -2019,7 +2036,7 @@ puts:
 cbm_clear:
 ;Clear the CBM screen
 ;
-    ld a,(00003h)
+    ld a,(ser_mode)
     rra
     ret nc              ;Do nothing and return if RS-232 standalone mode
 
