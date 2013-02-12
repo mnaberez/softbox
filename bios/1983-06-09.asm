@@ -2167,6 +2167,7 @@ lfe63h:
 
     pop af
     out (ppi1_pb),a     ;Write byte to IEEE-488 data lines
+
     in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
     or 002h             ;Turn on bit 1 (DAV)
     out (ppi2_pb),a     ;DAV=?
@@ -2299,15 +2300,18 @@ lff09h:
     ld a,00dh
 lff0bh:
     push af
-    in a,(ppi2_pb)
-    or 010h
-    out (ppi2_pb),a
+    in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
+    or 010h             ;Turn on bit 4 (EOI)
+    out (ppi2_pb),a     ;EOI=?
+
     pop af
     call lfe62h
     push af
-    in a,(ppi2_pb)
-    and 0efh
-    out (ppi2_pb),a
+
+    in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
+    and 0efh            ;Turn off bit 5 (EOI)
+    out (ppi2_pb),a     ;EOI=?
+
     pop af
     ret
 
