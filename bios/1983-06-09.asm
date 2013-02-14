@@ -5,6 +5,10 @@ usart:    equ 008h      ;8251 USART (IC15)
 usart_db: equ usart+0   ;  Data Buffer
 usart_st: equ usart+1   ;  Status Register
 
+baud_gen: equ 00ch      ;COM8116 Baud Rate Generator (IC14)
+                        ;  D7-D4: TD-TA
+                        ;  D3-D0: RD-RA
+
 ppi1:     equ 010h      ;8255 PPI #1 (IC17)
 ppi1_pa:  equ ppi1+0    ;  Port A: IEEE-488 Data In
 ppi1_pb:  equ ppi1+1    ;  Port B: IEEE-488 Data Out
@@ -43,13 +47,15 @@ ppi2_cr:  equ ppi2+3    ;  Control Register
 
 corvus:   equ 018h      ;Corvus data bus
 
-ser_mode: equ 00003h    ;RS-232 serial port mode
-                        ;  Bit 0: 0=CBM, 1=standalone
+ser_cfg: equ 00003h     ;RS-232 serial configuration
+                        ;  Bit 0: 0=CBM as terminal, 1=RS232 as terminal
 track:    equ 00041h    ;Track number
 drive:    equ 00042h    ;Drive number
 sector:   equ 00043h    ;Sector number
 dma:      equ 00052h    ;DMA address
 ccp_base: equ 0d400h    ;Start of CCP area
+ser_mode: equ 0ea64h    ;Byte that is written to 8251 USART mode register
+ser_baud: equ 0ea65h    ;Byte that is written to COM8116 baud rate generator
 
     org 0f000h
 
@@ -806,7 +812,7 @@ lf4c5h:
     out (ppi2_pb),a     ;IFC=?
 
     xor a               ;A=0
-    ld (ser_mode),a     ;Initialize variables
+    ld (ser_cfg),a      ;Initialize variables
     ld (00004h),a
     ld (00054h),a
     ld (00059h),a
@@ -852,8 +858,13 @@ lf4c5h:
                         ;  Bit 0: TxE  1 = Transmit enable
     out (usart_st),a
 
-    ld a,0eeh
-    out (00ch),a        ;TODO what is 00ch?
+    ld a,0eeh           ;Baud rate:
+                        ;  0eeh = 9600 baud
+                        ;  0cch = 4800 buad
+                        ;  0aah = 2400 baud
+                        ;  077h = 1200 baud
+                        ;  055h =  300 baud
+    out (baud_gen),a    ;Set baud rate to 9600 baud
 
     in a,(ppi2_pa)      ;IEEE-488 control lines in
     cpl                 ;Invert byte
@@ -861,7 +872,7 @@ lf4c5h:
     jr nz,lf52bh
 
     ld a,001h
-    ld (ser_mode),a     ;1 = RS-232 standalone mode
+    ld (ser_cfg),a      ;1 = RS-232 standalone mode
 
 wait_for_atn:
 ;Wait until the CBM computer addresses the SoftBox.  The SoftBox
@@ -981,30 +992,44 @@ lf5d5h:
     pop af
     ld a,(0d8b2h)
     ld (0ea40h),a
-    ld a,(ser_mode)
+    ld a,(ser_cfg)
     and 001h
     ld b,a
     ld a,(0ea60h)
     and 0fch
     or b
-    ld (ser_mode),a
-    xor a
+    ld (ser_cfg),a
+
+    xor a               ;8251 USART initialization sequence
     out (usart_st),a
     nop
     out (usart_st),a
     nop
     out (usart_st),a
-    ld a,040h
+
+    ld a,040h           ;Reset
     out (usart_st),a
-    ld a,(0ea64h)
-    out (usart_st),a
-    ld a,037h
-    out (usart_st),a
-    ld a,(0ea65h)
-    out (00ch),a
-    call cbm_clear      ;Clear CBM screen (no-op for RS-232 standalone mode)
 
     ld a,(ser_mode)
+    out (usart_st),a    ;Set mode
+
+    ld a,037h           ;Set command
+                        ;  Bit 7: EH   0 = Normal (not hunt mode)
+                        ;  Bit 6: IR   0 = Normal (not internal reset)
+                        ;  Bit 5: RTS  1 = RTS output = 0
+                        ;  Bit 4: ER   1 = Reset error flag
+                        ;  Bit 3: SBRK 0 = Normal (not send break)
+                        ;  Bit 2: RxE  1 = Receive enable
+                        ;  Bit 1: DTR  1 = DTR output = 0
+                        ;  Bit 0: TxE  1 = Transmit enable
+    out (usart_st),a
+
+    ld a,(ser_baud)
+    out (baud_gen),a    ;Set baud rate
+
+    call cbm_clear      ;Clear CBM screen (no-op for RS-232 standalone mode)
+
+    ld a,(ser_cfg)
     rra
     jr nc,lf62bh        ;Jump if not in RS-232 standalone mode
 
@@ -1688,7 +1713,7 @@ conin:
 ;Console input
 ;Blocks until a key is available, then returns the key in A.
 ;
-    ld a,(ser_mode)
+    ld a,(ser_cfg)
     rra
     jp nc,ser_in        ;Jump out if RS-232 standalone mode
 
@@ -1712,7 +1737,7 @@ const:
 ;
 ;Returns A=0 if no character is ready, A=0FFh if one is.
 ;
-    ld a,(ser_mode)
+    ld a,(ser_cfg)
     rra
     jp nc,ser_status    ;Jump out if RS-232 standalone mode
 
@@ -1727,7 +1752,7 @@ conout:
 ;Console output.
 ;C = character to write to the screen
 ;
-    ld a,(ser_mode)
+    ld a,(ser_cfg)
     rra
     jp nc,ser_out      ;Jump out if RS-232 standalone mode
 
@@ -1804,7 +1829,7 @@ lfc28h:
     ld e,d
     ld d,a
 lfc36h:
-    ld a,(ser_mode)
+    ld a,(ser_cfg)
     and 003h
     cp 001h
     ret nz
@@ -1915,7 +1940,7 @@ lfca1h:
     ret
 
 list:
-    ld a,(ser_mode)
+    ld a,(ser_cfg)
     and 0c0h
     jp z,ser_out
     jp p,cbm_conout
@@ -1987,13 +2012,13 @@ lfd29h:
     call e_fe62h
     jp e_fb47h
 listst:
-    ld a,(ser_mode)
+    ld a,(ser_cfg)
     and 0c0h
     jr z,lfd61h
     rla
     ld a,0ffh
     ret nc
-    ld a,(ser_mode)
+    ld a,(ser_cfg)
     and 040h
     ld a,(0ea61h)
     jr z,lfd4bh
@@ -2033,7 +2058,7 @@ lfd78h:
     xor 080h
     ret
 punch:
-    ld a,(ser_mode)
+    ld a,(ser_cfg)
     and 030h
     jp z,ser_out
     ld a,(0ea63h)
@@ -2045,7 +2070,7 @@ lfd8ch:
     call e_fe62h
     jp e_fb47h
 reader:
-    ld a,(ser_mode)
+    ld a,(ser_cfg)
     and 00ch
     jp z,ser_in
     ld a,(0ea62h)
@@ -2076,7 +2101,7 @@ puts:
 cbm_clear:
 ;Clear the CBM screen
 ;
-    ld a,(ser_mode)
+    ld a,(ser_cfg)
     rra
     ret nc              ;Do nothing and return if RS-232 standalone mode
 
