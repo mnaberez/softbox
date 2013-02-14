@@ -2163,29 +2163,29 @@ cbm_set_time:
     ld e,000h
     ld (0ea41h),de
     ld (0ea43h),hl
-    ld de,00014h
-    ld hl,0ea41h
-    ld bc,00004h
-    jp cbm_poke
+    ld de,00014h        ;CBM start address
+    ld hl,0ea41h        ;SoftBox start address
+    ld bc,00004h        ;4 bytes to transfer
+    jp cbm_poke         ;Transfer from SoftBox to CBM
 
 cbm_clr_jiff:
 ;Clear the CBM jiffy counter
 ;
-    xor a               ;A = 0
-    ld (0ea45h),a
+    xor a               ;A=0
+    ld (0ea45h),a       ;Clear jiffy counter values
     ld (0ea46h),a
     ld (0ea47h),a
-    ld hl,0ea45h
-    ld de,00018h
-    ld bc,00003h
-    jp cbm_poke
+    ld hl,0ea45h        ;SoftBox start address
+    ld de,00018h        ;CBM start address
+    ld bc,00003h        ;3 bytes to transfer
+    jp cbm_poke         ;Transfer from SoftBox to CBM
 
 cbm_get_time:
 ;Read the CBM clocks (both RTC and jiffy counter)
-    ld bc,00007h
-    ld hl,0ea41h
-    ld de,00014h
-    call cbm_peek
+    ld bc,00007h        ;7 bytes to transfer
+    ld hl,0ea41h        ;SoftBox start address
+    ld de,00014h        ;CBM start address
+    call cbm_peek       ;Transfer from CBM to SoftBox
     ld de,(0ea41h)
     ld hl,(0ea43h)
     ld a,(0ea45h)
