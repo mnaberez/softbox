@@ -50,8 +50,8 @@ corvus:   equ 018h      ;Corvus data bus
 ser_cfg: equ 00003h     ;RS-232 serial configuration
                         ;  Bit 0: 0=CBM as terminal, 1=RS232 as terminal
 track:    equ 00041h    ;Track number
-drive:    equ 00042h    ;Drive number
 sector:   equ 00043h    ;Sector number
+drive:    equ 00044h    ;Drive number (0=A, 1=B, 2=C, etc.)
 dma:      equ 00052h    ;DMA address
 ccp_base: equ 0d400h    ;Start of CCP area
 ser_mode: equ 0ea64h    ;Byte that is written to 8251 USART mode register
@@ -153,7 +153,7 @@ lf10ah:
     ld (00051h),a
     call seldsk
     ld a,0ffh
-    ld (00044h),a
+    ld (drive),a
     pop bc
     pop hl
 lf11dh:
@@ -201,7 +201,7 @@ lf15ch:
     ld (00048h),a
     ld (00051h),a
     dec a                ;A=0ffh
-    ld (00044h),a
+    ld (drive),a
     pop hl               ;Recall address
     jp (hl)              ;  and jump to it
 
@@ -448,7 +448,7 @@ write:
     ld hl,0004ah
     cp (hl)
     jr nz,lf2b1h
-    ld a,(drive)
+    ld a,(00042h)
     inc hl
     cp (hl)
     jr nz,lf2b1h
@@ -1121,7 +1121,7 @@ sub_f6b9h:
     xor (hl)
     or b
     ld b,a
-    ld a,(drive)
+    ld a,(00042h)
     inc hl
     xor (hl)
     or b
@@ -1138,7 +1138,7 @@ sub_f6b9h:
     or a
     call nz,sub_f2dfh
     ld a,(00040h)
-    ld (00044h),a
+    ld (drive),a
     ld hl,(track)
     ld (00045h),hl
     ld a,(sector)
@@ -1154,12 +1154,12 @@ lf702h:
     ld a,003h
     ld (00050h),a
 lf707h:
-    ld a,(00044h)
+    ld a,(drive)
     call e_fabch
     ld hl,(00055h)
     ld c,005h
     call e_ff1fh
-    ld a,(00044h)
+    ld a,(drive)
     and 001h
     add a,030h
     call e_fe62h
@@ -1169,7 +1169,7 @@ lf707h:
     call e_f9a3h
     call e_ff09h
     call e_fb47h
-    ld a,(00044h)
+    ld a,(drive)
     call e_f9bch
     cp 016h
     jr nz,lf73fh
@@ -1184,19 +1184,22 @@ lf73fh:
     ld hl,00050h
     dec (hl)
     jr z,lf752h
-    ld a,(00044h)
+    ld a,(drive)
     call e_fac4h
     jr lf707h
 lf752h:
-    ld hl,lf8beh
-    call puts
-    ld a,(00044h)
-    add a,041h
+    ld hl,bdos_err_on
+    call puts           ;Display "BDOS err on "
+
+    ld a,(drive)        ;Get current drive number
+    add a,041h          ;Convert it to ASCII (0=A, 1=B, 2=C, etc)
     ld c,a
-    call conout
-    ld hl,lf8bbh
-    call puts
-    ld hl,lf7bah
+    call conout         ;Display drive letter
+
+    ld hl,colon_space
+    call puts           ;Display ": "
+
+    ld hl,drive_errors
     call sub_f7a6h
 lf76dh:
     call conin
@@ -1218,7 +1221,7 @@ lf782h:
     inc hl
     jr lf782h
 lf790h:
-    ld a,(00044h)
+    ld a,(drive)
     call e_fac4h
     ld a,(0004fh)
     cp 01ah
@@ -1241,7 +1244,7 @@ lf7b3h:
     or a
     jr nz,lf7b3h
     jr sub_f7a6h
-lf7bah:
+drive_errors:
     db 1ah,"Disk write protected",00h
     db 19h,"Write verify error",00h
     db 1ch,"Long data block",00h
@@ -1255,9 +1258,9 @@ lf7bah:
     db 46h,"Commodore DOS bug !",00h
     db 49h,"Wrong DOS format",00h
     db 0ffh,"Unknown error code",00h
-lf8bbh:
+colon_space:
     db ": ",00h
-lf8beh:
+bdos_err_on:
     db 0dh,0ah,"BDOS err on ",00h
 lf8cdh:
     ld d,l
@@ -1269,7 +1272,7 @@ lf8d6h:
     ld a,(bc)
     nop
 sub_f8dah:
-    ld a,(00044h)
+    ld a,(drive)
     call e_f224h
 lf8e0h:
     ld a,c
@@ -1475,8 +1478,8 @@ lf9f7h:
     push hl
     ld hl,dos_cmds_3    ;"M-W",00h,013h,01h
     ld c,006h           ;6 bytes in string
-    ld a,(00044h)       ;? device address ?
-    call e_fabch         ;? write to device ?
+    ld a,(drive)        ;CP/M drive number
+    call e_fabch        ;? write to device ?
     call e_ff1fh
     pop hl
 
@@ -1487,13 +1490,13 @@ lf9f7h:
 
     ld hl,dos_cmds_2    ;"B-P 2 1"
     ld c,007h           ;7 bytes in string
-    ld a,(00044h)
+    ld a,(drive)
     call e_fabch
     call e_ff1fh
 
     call e_ff09h
     call e_fb47h
-    ld a,(00044h)
+    ld a,(drive)
     call e_faadh
     ld e,002h
     call e_fb31h
@@ -1512,13 +1515,13 @@ lfa3eh:
 
     ld hl,dos_cmds_4    ;"M-R",00h,013h
     ld c,005h           ;5 bytes in string
-    ld a,(00044h)
+    ld a,(drive)
     call e_fabch
     call e_ff1fh
 
     call e_ff09h
     call e_fb47h
-    ld a,(00044h)
+    ld a,(drive)
     call e_faadh
     ld e,00fh
     call e_faf9h
@@ -1527,7 +1530,7 @@ lfa3eh:
     ld (hl),a
     push hl
     call e_fb21h
-    ld a,(00044h)
+    ld a,(drive)
     call e_fabch
 
     ld hl,0fae7h        ;"B-P 2 1"
@@ -1536,11 +1539,11 @@ lfa3eh:
 
     call e_ff09h
     call e_fb47h
-    ld a,(00044h)
+    ld a,(drive)
     call e_f9bch
     cp 046h
     jr z,lfaa4h
-    ld a,(00044h)
+    ld a,(drive)
     call e_faadh
     ld e,002h
     call e_faf9h
@@ -1554,7 +1557,7 @@ lfa9ah:
     djnz lfa9ah
     jp e_fb21h
 lfaa4h:
-    ld a,(00044h)
+    ld a,(drive)
     call e_fac4h
     pop hl
     jr lfa3eh
