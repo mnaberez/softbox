@@ -55,6 +55,15 @@ drive:    equ 00044h    ;Drive number (0=A, 1=B, 2=C, etc.)
 dos_err:  equ 0004fh    ;Last error code returned from CBM DOS
 dma:      equ 00052h    ;DMA address
 ccp_base: equ 0d400h    ;Start of CCP area
+syscall:  equ 0dc06h    ;BDOS system call
+b_warm:   equ 0ea03h    ;BDOS warm boot
+jiffies:  equ 0ea41h    ;CBM clock data: Jiffies (counts up to 50 or 60)
+secs:     equ 0ea42h    ;CBM clock data: Seconds
+mins:     equ 0ea43h    ;CBM clock data: Minutes
+hours:    equ 0ea44h    ;CBM clock data: Hours
+jiffy2:   equ 0ea45h    ;CBM clock data: Jiffy counter (MSB)
+jiffy1:   equ 0ea46h    ;CBM clock data: Jiffy counter
+jiffy0:   equ 0ea47h    ;CBM clock data: Jiffy counter (LSB)
 ser_mode: equ 0ea64h    ;Byte that is written to 8251 USART mode register
 ser_baud: equ 0ea65h    ;Byte that is written to COM8116 baud rate generator
 
@@ -183,11 +192,11 @@ init_and_jp_hl:
 
     ld a,0c3h           ;0c3h = JP
     ld (00000h),a
-    ld hl,0ea03h        ;Install warm boot jump
+    ld hl,b_warm        ;Install BDOS warm boot jump
     ld (00001h),hl      ;  00000h JP 0ea03h
 
     ld (00005h),a
-    ld hl,0dc06h        ;Install BDOS system call jump
+    ld hl,syscall       ;Install BDOS system call jump
     ld (00006h),hl      ;  00005h JP 0dc06h
 
     ld hl,00004h        ;TODO IOBYTE?
@@ -2198,10 +2207,10 @@ cbm_poke_loop:
 cbm_set_time:
 ;Set the time on the CBM real time clock
     ld e,000h
-    ld (0ea41h),de
-    ld (0ea43h),hl
+    ld (jiffies),de
+    ld (mins),hl
     ld de,00014h        ;CBM start address
-    ld hl,0ea41h        ;SoftBox start address
+    ld hl,jiffies       ;SoftBox start address
     ld bc,00004h        ;4 bytes to transfer
     jp cbm_poke         ;Transfer from SoftBox to CBM
 
@@ -2209,10 +2218,10 @@ cbm_clr_jiff:
 ;Clear the CBM jiffy counter
 ;
     xor a               ;A=0
-    ld (0ea45h),a       ;Clear jiffy counter values
-    ld (0ea46h),a
-    ld (0ea47h),a
-    ld hl,0ea45h        ;SoftBox start address
+    ld (jiffy2),a       ;Clear jiffy counter values
+    ld (jiffy1),a
+    ld (jiffy0),a
+    ld hl,jiffy2        ;SoftBox start address
     ld de,00018h        ;CBM start address
     ld bc,00003h        ;3 bytes to transfer
     jp cbm_poke         ;Transfer from SoftBox to CBM
@@ -2220,13 +2229,13 @@ cbm_clr_jiff:
 cbm_get_time:
 ;Read the CBM clocks (both RTC and jiffy counter)
     ld bc,00007h        ;7 bytes to transfer
-    ld hl,0ea41h        ;SoftBox start address
+    ld hl,jiffies       ;SoftBox start address
     ld de,00014h        ;CBM start address
     call cbm_peek       ;Transfer from CBM to SoftBox
-    ld de,(0ea41h)
-    ld hl,(0ea43h)
-    ld a,(0ea45h)
-    ld bc,(0ea46h)
+    ld de,(jiffies)
+    ld hl,(mins)
+    ld a,(jiffy2)
+    ld bc,(jiffy1)
     ret
 
 e_fe62h:
