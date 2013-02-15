@@ -52,6 +52,7 @@ ser_cfg: equ 00003h     ;RS-232 serial configuration
 track:    equ 00041h    ;Track number
 sector:   equ 00043h    ;Sector number
 drive:    equ 00044h    ;Drive number (0=A, 1=B, 2=C, etc.)
+dos_err:  equ 0004fh    ;Last error code returned from CBM DOS
 dma:      equ 00052h    ;DMA address
 ccp_base: equ 0d400h    ;Start of CCP area
 ser_mode: equ 0ea64h    ;Byte that is written to 8251 USART mode register
@@ -472,7 +473,7 @@ lf2bdh:
     pop af
     dec a
     jr nz,lf2d1h
-    ld a,(0004fh)
+    ld a,(dos_err)
     or a
     call z,sub_f2dfh
     xor a
@@ -1178,7 +1179,7 @@ lf707h:
     ret z
     ex af,af'
 lf73fh:
-    ld (0004fh),a
+    ld (dos_err),a
     or a
     ret z
     ld hl,00050h
@@ -1199,10 +1200,10 @@ lf752h:
     ld hl,colon_space
     call puts           ;Display ": "
 
-    ld hl,drive_errors
-    call sub_f7a6h
+    ld hl,cbm_dos_errs  ;HL = pointer to CBM DOS error table
+    call puts_dos_error ;Display an error message
 lf76dh:
-    call conin
+    call conin          ;Wait for a key to be pressed
     cp 003h
     jp z,00000h
     cp 03fh
@@ -1223,15 +1224,19 @@ lf782h:
 lf790h:
     ld a,(drive)
     call e_fac4h
-    ld a,(0004fh)
+    ld a,(dos_err)
     cp 01ah
     jp z,lf702h
     cp 015h
     jp z,lf702h
     ld a,000h
     ret
-sub_f7a6h:
-    ld a,(0004fh)
+
+puts_dos_error:
+;Write a description of a CBM DOS error to console out.
+;HL be loaded with the address of cbm_dos_errs when calling.
+;
+    ld a,(dos_err)       ;A=last error code returned from CBM DOS
     cp (hl)
     ld a,(hl)
     inc hl
@@ -1243,8 +1248,9 @@ lf7b3h:
     inc hl
     or a
     jr nz,lf7b3h
-    jr sub_f7a6h
-drive_errors:
+    jr puts_dos_error
+
+cbm_dos_errs:
     db 1ah,"Disk write protected",00h
     db 19h,"Write verify error",00h
     db 1ch,"Long data block",00h
@@ -1258,10 +1264,13 @@ drive_errors:
     db 46h,"Commodore DOS bug !",00h
     db 49h,"Wrong DOS format",00h
     db 0ffh,"Unknown error code",00h
+
 colon_space:
     db ": ",00h
+
 bdos_err_on:
     db 0dh,0ah,"BDOS err on ",00h
+
 lf8cdh:
     ld d,l
     ld sp,03220h
