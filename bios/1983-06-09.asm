@@ -1193,9 +1193,10 @@ lf707h:
     ret z
     ex af,af'
 lf73fh:
-    ld (dos_err),a
-    or a
-    ret z
+    ld (dos_err),a      ;A=last error code returned from CBM DOS
+    or a                ;Set flags
+    ret z               ;Return if error code = 0 (OK)
+
     ld hl,00050h
     dec (hl)
     jr z,lf752h
@@ -1204,26 +1205,30 @@ lf73fh:
     jr lf707h
 lf752h:
     ld hl,bdos_err_on
-    call puts           ;Display "BDOS err on "
+    call puts           ;Write "BDOS err on " to console out
 
     ld a,(drive)        ;Get current drive number
     add a,041h          ;Convert it to ASCII (0=A, 1=B, 2=C, etc)
     ld c,a
-    call conout         ;Display drive letter
+    call conout         ;Write drive letter to console out
 
     ld hl,colon_space
-    call puts           ;Display ": "
+    call puts           ;Write ": " to console out
 
     ld hl,cbm_dos_errs  ;HL = pointer to CBM DOS error table
     call puts_dos_error ;Display an error message
 lf76dh:
     call conin          ;Wait for a key to be pressed
-    cp 003h
+
+    cp 003h             ;Control-C pressed?
     jp z,00000h
-    cp 03fh
+
+    cp 03fh             ;TODO 03fh?
     jr nz,lf790h
+
     ld hl,newline
-    call puts
+    call puts           ;Write a newline to console out
+
     ld hl,0eac0h
 lf782h:
     ld a,(hl)
@@ -1239,9 +1244,9 @@ lf790h:
     ld a,(drive)
     call e_fac4h
     ld a,(dos_err)
-    cp 01ah
+    cp 01ah             ;Error = Write protect on?
     jp z,lf702h
-    cp 015h
+    cp 015h             ;Error = Drive not ready?
     jp z,lf702h
     ld a,000h
     ret
