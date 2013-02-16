@@ -77,6 +77,7 @@ leadin:   equ 0ea68h    ;Terminal command lead-in: 01bh=escape, 07eh=tilde
 lptype:   equ 0ea6dh    ;List (printer) type: 0=3022, 3032, 4022, 4023
                         ;                     1=8026, 8027 (daisywheel)
                         ;                     2=8024
+scrtab:   equ 0ea80h    ;64 byte buffer for tab stops
 
     org 0f000h
 
@@ -837,7 +838,7 @@ lf4c5h:
     ld (00054h),a
     ld (00059h),a
     ld (0005ah),a
-    ld (0ea80h),a
+    ld (scrtab),a
     out (ppi2_pc),a     ;Turn off LEDs
 
     ld bc,003e8h
@@ -1819,7 +1820,7 @@ lfbf3h:
     cp 07bh
     jr c,cbm_conout
 lfbfch:
-    ld hl,0ea80h
+    ld hl,scrtab
 lfbffh:
     ld a,(hl)
     inc hl
