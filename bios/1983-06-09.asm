@@ -72,6 +72,7 @@ jiffy1:   equ 0ea46h    ;CBM clock data: Jiffy counter
 jiffy0:   equ 0ea47h    ;CBM clock data: Jiffy counter (LSB)
 ser_mode: equ 0ea64h    ;Byte that is written to 8251 USART mode register
 ser_baud: equ 0ea65h    ;Byte that is written to COM8116 baud rate generator
+leadin:   equ 0ea68h    ;Terminal command lead-in (01bh=escape, 07eh=tilde)
 
     org 0f000h
 
@@ -839,7 +840,7 @@ lf4c5h:
     call e_fb86h
 
     ld a,01bh
-    ld (0ea68h),a
+    ld (leadin),a       ;Terminal lead-in = 01bh (escape)
 
     xor a               ;8251 USART initialization sequence
     out (usart_st),a
@@ -1792,7 +1793,7 @@ conout:
     rla
     jr c,cbm_conout
 
-    ld a,(0ea68h)
+    ld a,(leadin)
     cp c
     jr nz,lfbe6h
 
