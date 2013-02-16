@@ -72,6 +72,10 @@ iobyte:   equ 00003h    ;CP/M I/O Mapping
                         ;  UP1:    User-defined Punch device 1
                         ;  UP2:    User-defined Punch device 2
 
+cdisk:    equ 00004h    ;Current drive and user number
+                        ;  Bits 7-4: Current user number
+                        ;  Bits 3-0: Current drive number (0=A,1=B,etc.)
+
 track:    equ 00041h    ;Track number
 sector:   equ 00043h    ;Sector number
 drive:    equ 00044h    ;Drive number (0=A, 1=B, 2=C, etc.)
@@ -851,7 +855,7 @@ lf4c5h:
 
     xor a               ;A=0
     ld (iobyte),a       ;IOBYTE=0 (CON:=TTY:, the RS-232 port)
-    ld (00004h),a
+    ld (cdisk),a        ;CDISK=0 (User=0, Drive=A:)
     ld (00054h),a
     ld (00059h),a
     ld (0005ah),a
