@@ -1216,7 +1216,7 @@ lf76dh:
     jp z,00000h
     cp 03fh
     jr nz,lf790h
-    ld hl,lf8d6h+1
+    ld hl,newline
     call puts
     ld hl,0eac0h
 lf782h:
@@ -1280,14 +1280,12 @@ bdos_err_on:
     db 0dh,0ah,"BDOS err on ",00h
 
 lf8cdh:
-    ld d,l
-    ld sp,03220h
-    jr nz,$+87
-    ld (03220h),a
-lf8d6h:
-    jr nz,$+15
-    ld a,(bc)
-    nop
+    db "U1 2 "
+    db "U2 2 "
+
+newline:
+    db 00dh,00ah,00h
+
 sub_f8dah:
     ld a,(drive)
     call e_f224h
