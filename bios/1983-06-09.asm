@@ -80,7 +80,8 @@ track:    equ 00041h    ;Track number
 sector:   equ 00043h    ;Sector number
 drive:    equ 00044h    ;Drive number (0=A, 1=B, 2=C, etc.)
 dos_err:  equ 0004fh    ;Last error code returned from CBM DOS
-dma:      equ 00052h    ;DMA address
+dma:      equ 00052h    ;DMA buffer area address
+dma_buf:  equ 00080h    ;Default DMA buffer area (128 bytes) for disk I/O
 ccp_base: equ 0d400h    ;Start of CCP area
 syscall:  equ 0dc06h    ;BDOS system call
 b_warm:   equ 0ea03h    ;BDOS warm boot
@@ -233,7 +234,7 @@ lf11dh:
     pop hl
     or a
     ret nz
-    ld de,00080h
+    ld de,dma_buf
     add hl,de
     djnz lf11dh
     ret
@@ -243,7 +244,7 @@ init_and_jp_hl:
 ;then jump to the address in HL.
 ;
     push hl             ;Save address
-    ld bc,00080h
+    ld bc,dma_buf
     call setdma         ;Initialize DMA pointer
 
     ld a,0c3h           ;0c3h = JP
@@ -563,7 +564,7 @@ sub_f2e9h:
 lf2ebh:
     ld hl,0ef00h
     ld de,(dma)
-    ld bc,00080h
+    ld bc,dma_buf
     jr nc,lf2f8h
     add hl,bc
 lf2f8h:
