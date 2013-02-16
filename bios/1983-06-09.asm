@@ -72,6 +72,7 @@ jiffy1:   equ 0ea46h    ;CBM clock data: Jiffy counter
 jiffy0:   equ 0ea47h    ;CBM clock data: Jiffy counter (LSB)
 ser_mode: equ 0ea64h    ;Byte that is written to 8251 USART mode register
 ser_baud: equ 0ea65h    ;Byte that is written to COM8116 baud rate generator
+termtype: equ 0ea67h    ;Terminal type
 leadin:   equ 0ea68h    ;Terminal command lead-in (01bh=escape, 07eh=tilde)
 
     org 0f000h
@@ -1049,7 +1050,7 @@ lf5d5h:
     rra
     jr nc,lf62bh        ;Jump if not in RS-232 standalone mode
 
-    ld a,(0ea67h)       ;TODO: terminal capability?
+    ld a,(termtype)
     rla
     jr nc,lf62bh
 
