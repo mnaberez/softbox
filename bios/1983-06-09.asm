@@ -91,6 +91,7 @@ hours:    equ 0ea44h    ;CBM clock data: Hours
 jiffy2:   equ 0ea45h    ;CBM clock data: Jiffy counter (MSB)
 jiffy1:   equ 0ea46h    ;CBM clock data: Jiffy counter
 jiffy0:   equ 0ea47h    ;CBM clock data: Jiffy counter (LSB)
+iosetup:  equ 0ea60h    ;Byte that is written to IOBYTE
 ser_mode: equ 0ea64h    ;Byte that is written to 8251 USART mode register
 ser_baud: equ 0ea65h    ;Byte that is written to COM8116 baud rate generator
 termtype: equ 0ea67h    ;Terminal type
@@ -1034,13 +1035,15 @@ lf5d5h:
     pop af
     ld a,(0d8b2h)
     ld (0ea40h),a
-    ld a,(iobyte)
-    and 001h
-    ld b,a
-    ld a,(0ea60h)
-    and 0fch
-    or b
-    ld (iobyte),a
+
+    ld a,(iobyte)       ;Get current IOBYTE
+    and 001h            ;Mask off all but bit 0 (low bit of CON:)
+    ld b,a              ;Save current CON: assignment (TTY: or CRT:) in B
+
+    ld a,(iosetup)      ;Get user defaults for IOBYTE
+    and 0fch            ;Clear CON: bits
+    or b                ;Merge current CON: assignment with defaults
+    ld (iobyte),a       ;Update IOBYTE with defaults
 
     xor a               ;8251 USART initialization sequence
     out (usart_st),a
