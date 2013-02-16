@@ -73,7 +73,10 @@ jiffy0:   equ 0ea47h    ;CBM clock data: Jiffy counter (LSB)
 ser_mode: equ 0ea64h    ;Byte that is written to 8251 USART mode register
 ser_baud: equ 0ea65h    ;Byte that is written to COM8116 baud rate generator
 termtype: equ 0ea67h    ;Terminal type
-leadin:   equ 0ea68h    ;Terminal command lead-in (01bh=escape, 07eh=tilde)
+leadin:   equ 0ea68h    ;Terminal command lead-in: 01bh=escape, 07eh=tilde
+lptype:   equ 0ea6dh    ;List (printer) type: 0=3022, 3032, 4022, 4023
+                        ;                     1=8026, 8027 (daisywheel)
+                        ;                     2=8024
 
     org 0f000h
 
@@ -1991,7 +1994,7 @@ lfcc3h:
     in a,(ppi2_pb)
     or 001h
     out (ppi2_pb),a
-    ld a,(0ea6dh)
+    ld a,(lptype)
     ld b,a
     or a
     call z,sub_fb8fh
