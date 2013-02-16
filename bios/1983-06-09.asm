@@ -685,7 +685,6 @@ boot:
     out (ppi2_cr),a
     xor a               ;A=0
     out (ppi1_pb),a     ;Clear IEEE data out
-lf427h:
     out (ppi2_pb),a     ;Clear IEEE control out
 
     ld c,002h
