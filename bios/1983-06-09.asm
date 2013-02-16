@@ -47,14 +47,31 @@ ppi2_cr:  equ ppi2+3    ;  Control Register
 
 corvus:   equ 018h      ;Corvus data bus
 
-ser_cfg:  equ 00003h    ;RS-232 serial configuration
-                        ;  Bit 7: TODO list related
-                        ;  Bit 6: TODO list related
-                        ;  Bit 5: TODO punch related
-                        ;  Bit 4: TODO punch related
-                        ;  Bit 3: TODO reader related
-                        ;  Bit 2: TODO reader related
-                        ;  Bit 0: 0=CBM as terminal, 1=RS232 as terminal
+iobyte:   equ 00003h    ;CP/M I/O Mapping
+                        ;
+                        ;                  List    Punch   Reader  Console
+                        ;  Device          LST:    PUN:    RDR:    CON:
+                        ;  Bit Positions   7,6     5,4     3,2     1,0
+                        ;
+                        ;  Dec   Binary
+                        ;   0      00      TTY:    TTY:    TTY:    TTY:
+                        ;   1      01      CRT:    PTP:    PTR:    CRT:
+                        ;   2      10      LPT:    UP1:    UR1:    BAT:
+                        ;   3      11      UL1:    UP2:    UR2:    UC1:
+                        ;
+                        ;  TTY:    SoftBox RS-232 port
+                        ;  CRT:    CBM computer
+                        ;  BAT:    BATch process (RDR=in, LST=out)
+                        ;  UC1:    User defined Console
+                        ;  LPT:    Line Printer
+                        ;  UL1:    User-defined List device
+                        ;  PTR:    Paper Tape Reader
+                        ;  UR1:    User-defined Reader device 1
+                        ;  UR2:    User-defined Reader device 2
+                        ;  PTP:    Paper Tape Punch
+                        ;  UP1:    User-defined Punch device 1
+                        ;  UP2:    User-defined Punch device 2
+
 track:    equ 00041h    ;Track number
 sector:   equ 00043h    ;Sector number
 drive:    equ 00044h    ;Drive number (0=A, 1=B, 2=C, etc.)
@@ -211,7 +228,7 @@ init_and_jp_hl:
     ld hl,syscall       ;Install BDOS system call jump
     ld (00006h),hl      ;  00005h JP 0dc06h
 
-    ld hl,00004h        ;TODO IOBYTE?
+    ld hl,00004h        ;Login byte
     ld a,(hl)
     and 00fh
     call e_f224h
@@ -833,7 +850,7 @@ lf4c5h:
     out (ppi2_pb),a     ;IFC=?
 
     xor a               ;A=0
-    ld (ser_cfg),a      ;Initialize variables
+    ld (iobyte),a       ;IOBYTE=0 (CON:=TTY:, the RS-232 port)
     ld (00004h),a
     ld (00054h),a
     ld (00059h),a
@@ -893,7 +910,7 @@ lf4c5h:
     jr nz,lf52bh
 
     ld a,001h
-    ld (ser_cfg),a      ;1 = RS-232 standalone mode
+    ld (iobyte),a      ;IOBYTE=1 (CON:=CRT:, the CBM computer)
 
 wait_for_atn:
 ;Wait until the CBM computer addresses the SoftBox.  The SoftBox
@@ -1013,13 +1030,13 @@ lf5d5h:
     pop af
     ld a,(0d8b2h)
     ld (0ea40h),a
-    ld a,(ser_cfg)
+    ld a,(iobyte)
     and 001h
     ld b,a
     ld a,(0ea60h)
     and 0fch
     or b
-    ld (ser_cfg),a
+    ld (iobyte),a
 
     xor a               ;8251 USART initialization sequence
     out (usart_st),a
@@ -1050,7 +1067,7 @@ lf5d5h:
 
     call cbm_clear      ;Clear CBM screen (no-op for RS-232 standalone mode)
 
-    ld a,(ser_cfg)
+    ld a,(iobyte)
     rra
     jr nc,lf62bh        ;Jump if not in RS-232 standalone mode
 
@@ -1748,9 +1765,9 @@ conin:
 ;Console input
 ;Blocks until a key is available, then returns the key in A.
 ;
-    ld a,(ser_cfg)
+    ld a,(iobyte)
     rra
-    jp nc,ser_in        ;Jump out if RS-232 standalone mode
+    jp nc,ser_in        ;Jump out if console is RS-232 port (CON: = TTY:)
 
     in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
     or 004h             ;Turn on bit 2 (NDAC)
@@ -1772,9 +1789,9 @@ const:
 ;
 ;Returns A=0 if no character is ready, A=0FFh if one is.
 ;
-    ld a,(ser_cfg)
+    ld a,(iobyte)
     rra
-    jp nc,ser_rx_status ;Jump out if RS-232 standalone mode
+    jp nc,ser_rx_status ;Jump out if console is RS-232 port (CON: = TTY:)
 
     ld a,001h           ;Command 001h = Key available?
     call cbm_srq
@@ -1787,9 +1804,9 @@ conout:
 ;Console output.
 ;C = character to write to the screen
 ;
-    ld a,(ser_cfg)
+    ld a,(iobyte)
     rra
-    jp nc,ser_out      ;Jump out if RS-232 standalone mode
+    jp nc,ser_out       ;Jump out if console is RS-232 port (CON: = TTY:)
 
     ld a,(0005ah)
     or a
@@ -1864,7 +1881,7 @@ lfc28h:
     ld e,d
     ld d,a
 lfc36h:
-    ld a,(ser_cfg)
+    ld a,(iobyte)
     and 003h
     cp 001h
     ret nz
@@ -1978,10 +1995,12 @@ list:
 ;List (printer) output.
 ;C = character to write to the printer
 ;
-    ld a,(ser_cfg)
+    ld a,(iobyte)
     and 0c0h
-    jp z,ser_out
+    jp z,ser_out       ;Jump out if List is RS-232 port (LST: = TTY:)
+
     jp p,cbm_conout
+
     ld e,0ffh
     and 040h
     jr z,lfcc3h
@@ -2055,14 +2074,14 @@ listst:
 ;
 ;Returns A=0 if no character is ready, A=0FFh if one is.
 ;
-    ld a,(ser_cfg)
+    ld a,(iobyte)
     and 0c0h
-    jr z,ser_tx_status  ;Jump out if list is RS-232 port
+    jr z,ser_tx_status  ;Jump out if List is RS-232 port (LST: = TTY:)
 
     rla
     ld a,0ffh
     ret nc
-    ld a,(ser_cfg)
+    ld a,(iobyte)
     and 040h
     ld a,(0ea61h)
     jr z,lfd4bh
@@ -2111,9 +2130,9 @@ punch:
 ;Punch (paper tape) output
 ;C = character to write to the punch
 ;
-    ld a,(ser_cfg)
+    ld a,(iobyte)
     and 030h
-    jp z,ser_out        ;Jump out if punch is RS-232 port
+    jp z,ser_out        ;Jump out if Punch is RS-232 port (PUN: = TTY:)
 
     ld a,(0ea63h)
     ld d,a
@@ -2128,9 +2147,9 @@ reader:
 ;Reader (paper tape) input
 ;Blocks until a byte is available, then returns it in A.
 ;
-    ld a,(ser_cfg)
+    ld a,(iobyte)
     and 00ch
-    jp z,ser_in         ;Jump out if reader is RS-232 port
+    jp z,ser_in         ;Jump out if Reader is RS-232 port (RDR: = TTY:)
 
     ld a,(0ea62h)
     ld d,a
@@ -2160,7 +2179,7 @@ puts:
 cbm_clear:
 ;Clear the CBM screen
 ;
-    ld a,(ser_cfg)
+    ld a,(iobyte)
     rra
     ret nc              ;Do nothing and return if RS-232 standalone mode
 
