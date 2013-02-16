@@ -47,11 +47,13 @@ ppi2_cr:  equ ppi2+3    ;  Control Register
 
 corvus:   equ 018h      ;Corvus data bus
 
-ser_cfg: equ 00003h     ;RS-232 serial configuration
+ser_cfg:  equ 00003h    ;RS-232 serial configuration
                         ;  Bit 7: TODO list related
                         ;  Bit 6: TODO list related
                         ;  Bit 5: TODO punch related
                         ;  Bit 4: TODO punch related
+                        ;  Bit 3: TODO reader related
+                        ;  Bit 2: TODO reader related
                         ;  Bit 0: 0=CBM as terminal, 1=RS232 as terminal
 track:    equ 00041h    ;Track number
 sector:   equ 00043h    ;Sector number
@@ -1962,6 +1964,9 @@ lfca1h:
     ret
 
 list:
+;List (printer) output.
+;C = character to write to the printer
+;
     ld a,(ser_cfg)
     and 0c0h
     jp z,ser_out
@@ -2092,9 +2097,13 @@ lfd78h:
     ret
 
 punch:
+;Punch (paper tape) output
+;C = character to write to the punch
+;
     ld a,(ser_cfg)
     and 030h
-    jp z,ser_out
+    jp z,ser_out        ;Jump out if punch is RS-232 port
+
     ld a,(0ea63h)
     ld d,a
     ld e,0ffh
@@ -2105,9 +2114,13 @@ lfd8ch:
     jp e_fb47h
 
 reader:
+;Reader (paper tape) input
+;Blocks until a byte is available, then returns it in A.
+;
     ld a,(ser_cfg)
     and 00ch
-    jp z,ser_in
+    jp z,ser_in         ;Jump out if reader is RS-232 port
+
     ld a,(0ea62h)
     ld d,a
     ld e,0ffh
