@@ -99,6 +99,28 @@ leadin:   equ 0ea68h    ;Terminal command lead-in: 01bh=escape, 07eh=tilde
 lptype:   equ 0ea6dh    ;List (printer) type: 0=3022, 3032, 4022, 4023
                         ;                     1=8026, 8027 (daisywheel)
                         ;                     2=8024
+
+dtypes:   equ 0ea70h    ;Disk drive types:
+dtype_ab: equ dtypes+0  ;  A:, B:    000h = CBM 3040/4040
+dtype_cd: equ dtypes+1  ;  C:, D:    001h = CBM 8050
+dtype_ef: equ dtypes+2  ;  E:, F:    002h = Corvus 10MB
+dtype_gh: equ dtypes+3  ;  G:, H:    003h = Corvus 20MB
+dtype_ij: equ dtypes+4  ;  I:, J:    004h = Corvus 5MB
+dtype_kl: equ dtypes+5  ;  L:, K:    005h = Corvus 5MB*
+dtype_mn: equ dtypes+6  ;  M:, N:    006h = CBM 8250
+dtype_op: equ dtypes+7  ;  O:, P:    007h = Undefined
+                        ;            0ffh = No device
+
+ddevs:    equ 0ea78h    ;Disk drive device numbers:
+ddev_ab:  equ ddevs+0   ;  A:, B:
+ddev_cd:  equ ddevs+1   ;  C:, D:    For CBM floppy drives, the device
+ddev_ef:  equ ddevs+1   ;  E:, F:    is a IEEE-488 unit number.
+ddev_gh:  equ ddevs+1   ;  G:, H:
+ddev_ij:  equ ddevs+1   ;  I:, J:    For Corvus hard drives, the device
+ddev_kl:  equ ddevs+1   ;  L:, K:    is an ID number on a Corvus unit.
+ddev_mn:  equ ddevs+1   ;  M:, N:
+ddev_op:  equ ddevs+1   ;  O:, P:
+
 scrtab:   equ 0ea80h    ;64 byte buffer for tab stops
 
     org 0f000h
@@ -426,7 +448,7 @@ e_f224h:
     rra
     ld c,a
     ld b,000h
-    ld hl,0ea70h
+    ld hl,dtypes
     add hl,bc
     ld c,(hl)
     ld a,c
@@ -956,9 +978,9 @@ lf52bh:
     jr z,lf555h         ;Wait for NDAC=?
 
     ld a,002h
-    ld (0ea70h),a
+    ld (dtypes),a
     ld a,001h
-    ld (0ea78h),a
+    ld (ddevs),a
     ld b,038h
     call sub_f0fch
     jr e_f578h
@@ -982,7 +1004,7 @@ e_f578h:
     push af
     ld ix,0eb00h
     ld hl,0ec00h
-    ld de,0ea70h
+    ld de,dtypes
 lf587h:
     ld a,(de)
     or a
@@ -1624,7 +1646,7 @@ e_faadh:
     rra
     ld e,a
     ld d,000h
-    ld hl,0ea78h
+    ld hl,ddevs
     add hl,de
     ld d,(hl)
     pop af
