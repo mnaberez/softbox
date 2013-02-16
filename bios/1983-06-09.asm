@@ -48,6 +48,10 @@ ppi2_cr:  equ ppi2+3    ;  Control Register
 corvus:   equ 018h      ;Corvus data bus
 
 ser_cfg: equ 00003h     ;RS-232 serial configuration
+                        ;  Bit 7: TODO list related
+                        ;  Bit 6: TODO list related
+                        ;  Bit 5: TODO punch related
+                        ;  Bit 4: TODO punch related
                         ;  Bit 0: 0=CBM as terminal, 1=RS232 as terminal
 track:    equ 00041h    ;Track number
 sector:   equ 00043h    ;Sector number
@@ -75,9 +79,9 @@ lf000h:
     jp const         ;f006  Console status
     jp conin         ;f009  Console input
     jp conout        ;f00c  Console output
-    jp list          ;f00f  Printer (List) output
-    jp punch         ;f012  Paper tape punch output
-    jp reader        ;f015  Paper tape reader input
+    jp list          ;f00f  List (printer) output
+    jp punch         ;f012  Punch (paper tape) output
+    jp reader        ;f015  Reader (paper tape) input
     jp home          ;f018  Move to track 0 on selected disk
     jp seldsk        ;f01b  Select disk drive
     jp settrk        ;f01e  Set track number
@@ -85,7 +89,7 @@ lf000h:
     jp setdma        ;f024  Set DMA address
     jp read          ;f027  Read selected sector
     jp write         ;f02a  Write selected sector
-    jp listst        ;f02d  Printer (List) status
+    jp listst        ;f02d  List (printer) status
     jp sectran       ;f030  Sector translation for skewing
     jp e_fb31h       ;f033
     jp e_fb47h       ;f036
@@ -1757,7 +1761,7 @@ const:
 ;
     ld a,(ser_cfg)
     rra
-    jp nc,ser_status    ;Jump out if RS-232 standalone mode
+    jp nc,ser_rx_status ;Jump out if RS-232 standalone mode
 
     ld a,001h           ;Command 001h = Key available?
     call cbm_srq
@@ -1874,7 +1878,7 @@ lfc51h:
     ld c,a
     jp cbm_conout
 
-ser_status:
+ser_rx_status:
 ;RS-232 serial port receive status
 ;Returns A=0 if no byte is ready, A=0FFh if one is.
 ;
@@ -2029,10 +2033,16 @@ lfd29h:
     call sub_fd6bh
     call e_fe62h
     jp e_fb47h
+
 listst:
+;List (printer) status
+;
+;Returns A=0 if no character is ready, A=0FFh if one is.
+;
     ld a,(ser_cfg)
     and 0c0h
-    jr z,lfd61h
+    jr z,ser_tx_status  ;Jump out if list is RS-232 port
+
     rla
     ld a,0ffh
     ret nc
@@ -2055,14 +2065,19 @@ lfd4bh:
     ret z
     dec a
     ret
-lfd61h:
+
+ser_tx_status:
+;RS-232 serial port transmit status
+;Returns A=0 if not ready, A=0FFh if ready
+;
     in a,(usart_st)     ;Read USART status register
     cpl                 ;Invert it
     and 084h            ;Mask off all but bits 7 (DSR) and 2 (TxEMPTY)
     ld a,0ffh
-    ret z
+    ret z               ;Return A=0FFh if ready to transmit
     inc a
-    ret
+    ret                 ;Return A=0 if not ready
+
 sub_fd6bh:
     cp 041h
     ret c
@@ -2075,6 +2090,7 @@ sub_fd6bh:
 lfd78h:
     xor 080h
     ret
+
 punch:
     ld a,(ser_cfg)
     and 030h
@@ -2087,6 +2103,7 @@ lfd8ch:
     ld a,c
     call e_fe62h
     jp e_fb47h
+
 reader:
     ld a,(ser_cfg)
     and 00ch
