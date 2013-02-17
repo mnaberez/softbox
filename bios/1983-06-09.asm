@@ -1103,18 +1103,18 @@ lf5d5h:
     ld a,(ser_baud)
     out (baud_gen),a    ;Set baud rate
 
-    call cbm_clear      ;Clear CBM screen (no-op for RS-232 standalone mode)
+    call cbm_clear      ;Clear CBM screen (no-op if console is RS-232)
 
     ld a,(iobyte)
     rra
-    jr nc,lf62bh        ;Jump if not in RS-232 standalone mode
+    jr nc,lf62bh        ;Jump if console is CBM Computer (CON: = CRT:)
 
     ld a,(termtype)
     rla
     jr nc,lf62bh
 
     ld c,015h
-    call conout         ;Clear screen for RS-232 standalone mode
+    call conout         ;Clear screen if console is RS-232 (CON: = TTY:)
 
 lf62bh:
     ld hl,banner
@@ -1920,9 +1920,10 @@ lfc28h:
     ld d,a
 lfc36h:
     ld a,(iobyte)
-    and 003h
-    cp 001h
-    ret nz
+    and 003h            ;Mask off all but bits 1 and 0
+    cp 001h             ;Compare to 1 (CON: = CRT:)
+    ret nz              ;Return if console is not CBM computer (CRT:)
+
     push de
     ld c,01bh
     call cbm_conout
@@ -2034,14 +2035,15 @@ list:
 ;C = character to write to the printer
 ;
     ld a,(iobyte)
-    and 0c0h
-    jp z,ser_out       ;Jump out if List is RS-232 port (LST: = TTY:)
-
-    jp p,cbm_conout
+    and 0c0h            ;Mask off all but buts 6 and 7
+    jp z,ser_out        ;Jump out if List is RS-232 port (LST: = TTY:)
+    jp p,cbm_conout     ;Jump out if List is CBM computer (LST: = CRT:)
 
     ld e,0ffh
-    and 040h
-    jr z,lfcc3h
+    and 040h            ;Mask off all but bit 6
+    jr z,lfcc3h         ;Jump if List is CBM printer (LST: = LPT:)
+
+                        ;List must be ASCII printer (LST: = UL1:)
     ld a,(ul1_dev)
     ld d,a
     call e_fb31h
@@ -2119,11 +2121,14 @@ listst:
     rla
     ld a,0ffh
     ret nc
+
     ld a,(iobyte)
-    and 040h
+    and 040h            ;Mask off all but bit 6
     ld a,(lpt_dev)
-    jr z,lfd4bh
-    ld a,(0ea66h)
+    jr z,lfd4bh         ;Jump if List is CBM printer (LST: = LPT:)
+
+                        ;List must be ASCII printer (LST: = UL1:)
+    ld a,(ul1_dev)
 lfd4bh:
     ld d,a
     ld e,0ffh
@@ -2172,6 +2177,7 @@ punch:
     and 030h
     jp z,ser_out        ;Jump out if Punch is RS-232 port (PUN: = TTY:)
 
+                        ;Punch must be Other Device (PUN: = PTP:)
     ld a,(ptp_dev)
     ld d,a
     ld e,0ffh
@@ -2189,6 +2195,7 @@ reader:
     and 00ch
     jp z,ser_in         ;Jump out if Reader is RS-232 port (RDR: = TTY:)
 
+                        ;Punch must be Other Device (PUN: = PTR:)
     ld a,(ptr_dev)
     ld d,a
     ld e,0ffh
@@ -2219,9 +2226,9 @@ cbm_clear:
 ;
     ld a,(iobyte)
     rra
-    ret nc              ;Do nothing and return if RS-232 standalone mode
+    ret nc              ;Do nothing if console is RS-232 (CRT: = TTY:)
 
-    ld c,01ah           ;1A = Lear Siegler ADM-3A clear screen code
+    ld c,01ah           ;01ah = Lear Siegler ADM-3A clear screen code
     jp cbm_conout
 
 cbm_jsr:
