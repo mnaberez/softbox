@@ -47,6 +47,7 @@ ppi2_cr:  equ ppi2+3    ;  Control Register
 
 corvus:   equ 018h      ;Corvus data bus
 
+jp_warm:  equ 00000h    ;Jump to BDOS warm start (3 byte instruction)
 iobyte:   equ 00003h    ;CP/M I/O Mapping
                         ;
                         ;                  List    Punch   Reader  Console
@@ -71,11 +72,10 @@ iobyte:   equ 00003h    ;CP/M I/O Mapping
                         ;  PTP:    Paper Tape Punch
                         ;  UP1:    User-defined Punch device 1
                         ;  UP2:    User-defined Punch device 2
-
 cdisk:    equ 00004h    ;Current drive and user number
                         ;  Bits 7-4: Current user number
                         ;  Bits 3-0: Current drive number (0=A,1=B,etc.)
-
+jp_sysc:  equ 00005h    ;Jump to BDOS system call (3 byte instruction)
 track:    equ 00041h    ;Track number
 sector:   equ 00043h    ;Sector number
 drive:    equ 00044h    ;Drive number (0=A, 1=B, 2=C, etc.)
@@ -248,13 +248,13 @@ init_and_jp_hl:
     call setdma         ;Initialize DMA pointer
 
     ld a,0c3h           ;0c3h = JP
-    ld (00000h),a
+    ld (jp_warm),a
     ld hl,b_warm        ;Install BDOS warm boot jump
-    ld (00001h),hl      ;  00000h JP 0ea03h
+    ld (jp_warm+1),hl   ;  00000h JP 0ea03h
 
-    ld (00005h),a
+    ld (jp_sysc),a
     ld hl,syscall       ;Install BDOS system call jump
-    ld (00006h),hl      ;  00005h JP 0dc06h
+    ld (jp_sysc+1),hl   ;  00005h JP 0dc06h
 
     ld hl,00004h        ;Login byte
     ld a,(hl)
@@ -1274,7 +1274,7 @@ lf76dh:
     call conin          ;Wait for a key to be pressed
 
     cp 003h             ;Control-C pressed?
-    jp z,00000h
+    jp z,jp_warm        ;  Yes: Jump to BDOS warm start
 
     cp 03fh             ;TODO 03fh?
     jr nz,lf790h
