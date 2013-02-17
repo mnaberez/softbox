@@ -60,21 +60,23 @@ iobyte:   equ 00003h    ;CP/M I/O Mapping
                         ;   2      10      LPT:    UP1:    UR1:    BAT:
                         ;   3      11      UL1:    UP2:    UR2:    UC1:
                         ;
-                        ;  TTY:    SoftBox RS-232 port
-                        ;  CRT:    CBM computer
-                        ;  BAT:    BATch process (RDR=in, LST=out)
+                        ;  TTY:    TeleTYpe                    (RS-232 port)
+                        ;  CRT:    Cathode Ray Tube           (CBM computer)
+                        ;  BAT:    BATch (RDR=in, LST=out)
                         ;  UC1:    User defined Console
-                        ;  LPT:    Line Printer
-                        ;  UL1:    User-defined List device
-                        ;  PTR:    Paper Tape Reader
-                        ;  UR1:    User-defined Reader device 1
-                        ;  UR2:    User-defined Reader device 2
-                        ;  PTP:    Paper Tape Punch
-                        ;  UP1:    User-defined Punch device 1
-                        ;  UP2:    User-defined Punch device 2
+                        ;  LPT:    Line PrinTer                (CBM printer)
+                        ;  UL1:    User-def. List            (ASCII printer)
+                        ;  PTR:    Paper Tape Reader          (Other device)
+                        ;  UR1:    User-def. Reader 1
+                        ;  UR2:    User-def. Reader 2
+                        ;  PTP:    Paper Tape Punch           (Other device)
+                        ;  UP1:    User-def. Punch 1
+                        ;  UP2:    User-def. Punch 2
+
 cdisk:    equ 00004h    ;Current drive and user number
                         ;  Bits 7-4: Current user number
                         ;  Bits 3-0: Current drive number (0=A,1=B,etc.)
+
 jp_sysc:  equ 00005h    ;Jump to BDOS system call (3 byte instruction)
 track:    equ 00041h    ;Track number
 sector:   equ 00043h    ;Sector number
@@ -93,13 +95,17 @@ jiffy2:   equ 0ea45h    ;CBM clock data: Jiffy counter (MSB)
 jiffy1:   equ 0ea46h    ;CBM clock data: Jiffy counter
 jiffy0:   equ 0ea47h    ;CBM clock data: Jiffy counter (LSB)
 iosetup:  equ 0ea60h    ;Byte that is written to IOBYTE
+lpt_dev:  equ 0ea61h    ;CBM printer (LPT:) IEEE-488 primary address
+ptr_dev:  equ 0ea62h    ;Paper Tape Reader (PTR:) IEEE-488 primary address
+ptp_dev:  equ 0ea63h    ;Paper Tape Punch (PTP:) IEEE-488 primary address
 ser_mode: equ 0ea64h    ;Byte that is written to 8251 USART mode register
 ser_baud: equ 0ea65h    ;Byte that is written to COM8116 baud rate generator
+ul1_dev:  equ 0ea66h    ;ASCII printer (UL1:) IEEE-488 primary address
 termtype: equ 0ea67h    ;Terminal type
 leadin:   equ 0ea68h    ;Terminal command lead-in: 01bh=escape, 07eh=tilde
-lptype:   equ 0ea6dh    ;List (printer) type: 0=3022, 3032, 4022, 4023
-                        ;                     1=8026, 8027 (daisywheel)
-                        ;                     2=8024
+lptype:   equ 0ea6dh    ;CBM printer (LPT:) type: 0=3022, 3032, 4022, 4023
+                        ;                         1=8026, 8027 (daisywheel)
+                        ;                         2=8024
 
 dtypes:   equ 0ea70h    ;Disk drive types:
 dtype_ab: equ dtypes+0  ;  A:, B:    000h = CBM 3040/4040
@@ -112,13 +118,13 @@ dtype_mn: equ dtypes+6  ;  M:, N:    006h = CBM 8250
 dtype_op: equ dtypes+7  ;  O:, P:    007h = Undefined
                         ;            0ffh = No device
 
-ddevs:    equ 0ea78h    ;Disk drive device numbers:
+ddevs:    equ 0ea78h    ;Disk drive device addresses:
 ddev_ab:  equ ddevs+0   ;  A:, B:
-ddev_cd:  equ ddevs+1   ;  C:, D:    For CBM floppy drives, the device
-ddev_ef:  equ ddevs+1   ;  E:, F:    is a IEEE-488 unit number.
+ddev_cd:  equ ddevs+1   ;  C:, D:    For CBM floppy drives, the number
+ddev_ef:  equ ddevs+1   ;  E:, F:    is a IEEE-488 device primary address.
 ddev_gh:  equ ddevs+1   ;  G:, H:
-ddev_ij:  equ ddevs+1   ;  I:, J:    For Corvus hard drives, the device
-ddev_kl:  equ ddevs+1   ;  L:, K:    is an ID number on a Corvus unit.
+ddev_ij:  equ ddevs+1   ;  I:, J:    For Corvus hard drives, the number
+ddev_kl:  equ ddevs+1   ;  L:, K:    is an ID on a Corvus unit.
 ddev_mn:  equ ddevs+1   ;  M:, N:
 ddev_op:  equ ddevs+1   ;  O:, P:
 
@@ -2036,12 +2042,12 @@ list:
     ld e,0ffh
     and 040h
     jr z,lfcc3h
-    ld a,(0ea66h)
+    ld a,(ul1_dev)
     ld d,a
     call e_fb31h
     jp lfd8ch
 lfcc3h:
-    ld a,(0ea61h)
+    ld a,(lpt_dev)
     ld d,a
     in a,(ppi2_pb)
     or 001h
@@ -2115,7 +2121,7 @@ listst:
     ret nc
     ld a,(iobyte)
     and 040h
-    ld a,(0ea61h)
+    ld a,(lpt_dev)
     jr z,lfd4bh
     ld a,(0ea66h)
 lfd4bh:
@@ -2166,7 +2172,7 @@ punch:
     and 030h
     jp z,ser_out        ;Jump out if Punch is RS-232 port (PUN: = TTY:)
 
-    ld a,(0ea63h)
+    ld a,(ptp_dev)
     ld d,a
     ld e,0ffh
     call e_fb31h
@@ -2183,7 +2189,7 @@ reader:
     and 00ch
     jp z,ser_in         ;Jump out if Reader is RS-232 port (RDR: = TTY:)
 
-    ld a,(0ea62h)
+    ld a,(ptr_dev)
     ld d,a
     ld e,0ffh
     call e_faf9h
