@@ -101,7 +101,9 @@ ptp_dev:  equ 0ea63h    ;Paper Tape Punch (PTP:) IEEE-488 primary address
 ser_mode: equ 0ea64h    ;Byte that is written to 8251 USART mode register
 ser_baud: equ 0ea65h    ;Byte that is written to COM8116 baud rate generator
 ul1_dev:  equ 0ea66h    ;ASCII printer (UL1:) IEEE-488 primary address
-termtype: equ 0ea67h    ;Terminal type
+termtype: equ 0ea67h    ;Terminal type:
+                        ;  0=ADM3A, 1=HZ1500, 2=TV912
+                        ;  Bit 7 is set if uppercase graphics mode
 leadin:   equ 0ea68h    ;Terminal command lead-in: 01bh=escape, 07eh=tilde
 lptype:   equ 0ea6dh    ;CBM printer (LPT:) type: 0=3022, 3032, 4022, 4023
                         ;                         1=8026, 8027 (daisywheel)
@@ -1109,12 +1111,12 @@ lf5d5h:
     rra
     jr nc,lf62bh        ;Jump if console is CBM Computer (CON: = CRT:)
 
-    ld a,(termtype)
-    rla
-    jr nc,lf62bh
+    ld a,(termtype)     ;Get terminal type
+    rla                 ;Rotate uppercase graphics flag into carry
+    jr nc,lf62bh        ;Jump if lowercase mode
 
-    ld c,015h
-    call conout         ;Clear screen if console is RS-232 (CON: = TTY:)
+    ld c,015h           ;015h = Go to uppercase mode
+    call conout
 
 lf62bh:
     ld hl,banner
