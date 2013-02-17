@@ -925,11 +925,13 @@ lf4c5h:
     out (usart_st),a
 
     ld a,0eeh           ;Baud rate:
-                        ;  0eeh = 9600 baud
-                        ;  0cch = 4800 buad
-                        ;  0aah = 2400 baud
-                        ;  077h = 1200 baud
-                        ;  055h =  300 baud
+                        ;  0ffh = 19200 baud
+                        ;  0eeh =  9600 baud
+                        ;  0cch =  4800 buad
+                        ;  0aah =  2400 baud
+                        ;  077h =  1200 baud
+                        ;  055h =   300 baud
+                        ;  022h =   110 baud
     out (baud_gen),a    ;Set baud rate to 9600 baud
 
     in a,(ppi2_pa)      ;IEEE-488 control lines in
