@@ -1135,8 +1135,8 @@ loading:
 sub_f651h:
     push bc
     push de
-    ld hl,0f689h
-    ld c,006h
+    ld hl,filename      ;"0:CP/M"
+    ld c,006h           ;6 characters
     ld e,000h
     call e_fb56h
     pop de
@@ -1167,7 +1167,10 @@ lf671h:
 
 lf687h:
     db "#2"
+
+filename:
     db "0:CP/M"
+
 lf68fh:
     db "I0"
 
