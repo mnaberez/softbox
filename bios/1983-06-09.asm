@@ -511,7 +511,7 @@ write:
     ld a,c
     push af
     cp 002h
-    call z,0f691h
+    call z,lf691h
     ld hl,00048h
     ld a,(hl)
     or a
@@ -1174,6 +1174,7 @@ filename:
 lf68fh:
     db "I0"
 
+lf691h:
     push bc
     call sub_f245h
     pop bc
@@ -1359,6 +1360,8 @@ bdos_err_on:
 
 lf8cdh:
     db "U1 2 "
+
+lf8d2h:
     db "U2 2 "
 
 newline:
@@ -1591,7 +1594,7 @@ lf9f7h:
     ld c,0ffh
     call e_ff1fh
     call e_fb47h
-    ld hl,0f8d2h
+    ld hl,lf8d2h
     jp lf6fch
 lfa3eh:
     push hl
@@ -1618,7 +1621,7 @@ lfa3eh:
     ld a,(drive)
     call e_fabch
 
-    ld hl,0fae7h        ;"B-P 2 1"
+    ld hl,dos_cmds_2    ;"B-P 2 1"
     ld c,007h           ;7 bytes in string
     call e_ff1fh
 
