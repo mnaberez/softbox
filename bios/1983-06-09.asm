@@ -264,10 +264,11 @@ init_and_jp_hl:
     ld hl,syscall       ;Install BDOS system call jump
     ld (jp_sysc+1),hl   ;  00005h JP 0dc06h
 
-    ld hl,00004h        ;Login byte
-    ld a,(hl)
-    and 00fh
+    ld hl,cdisk
+    ld a,(hl)           ;A = current user and disk
+    and 00fh            ;Mask off user nybble leaving A = current disk
     call e_f224h
+
     jr c,lf15ch
     ld (hl),000h
 lf15ch:
@@ -448,6 +449,7 @@ sectran:
     ld l,c
     ld h,b
     ret
+
 e_f224h:
     cp 010h
     ret nc
@@ -475,6 +477,7 @@ lf240h:
     ret z
     or a
     ret
+
 sub_f245h:
     call e_f224h
     ret nc
@@ -1851,6 +1854,7 @@ conout:
     ld a,(0005ah)
     or a
     jp nz,lfc1dh
+
     ld a,c
     rla
     jr c,cbm_conout
