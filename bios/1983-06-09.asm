@@ -128,12 +128,12 @@ dtype_op: equ dtypes+7  ;  O:, P:    007h = Undefined
 ddevs:    equ 0ea78h    ;Disk drive device addresses:
 ddev_ab:  equ ddevs+0   ;  A:, B:
 ddev_cd:  equ ddevs+1   ;  C:, D:    For CBM floppy drives, the number
-ddev_ef:  equ ddevs+1   ;  E:, F:    is a IEEE-488 device primary address.
-ddev_gh:  equ ddevs+1   ;  G:, H:
-ddev_ij:  equ ddevs+1   ;  I:, J:    For Corvus hard drives, the number
-ddev_kl:  equ ddevs+1   ;  L:, K:    is an ID on a Corvus unit.
-ddev_mn:  equ ddevs+1   ;  M:, N:
-ddev_op:  equ ddevs+1   ;  O:, P:
+ddev_ef:  equ ddevs+2   ;  E:, F:    is a IEEE-488 device primary address.
+ddev_gh:  equ ddevs+3   ;  G:, H:
+ddev_ij:  equ ddevs+4   ;  I:, J:    For Corvus hard drives, the number
+ddev_kl:  equ ddevs+5   ;  L:, K:    is an ID on a Corvus unit.
+ddev_mn:  equ ddevs+6   ;  M:, N:
+ddev_op:  equ ddevs+7   ;  O:, P:
 
 scrtab:   equ 0ea80h    ;64 byte buffer for tab stops
 
