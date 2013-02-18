@@ -85,8 +85,10 @@ dos_err:  equ 0004fh    ;Last error code returned from CBM DOS
 dma:      equ 00052h    ;DMA buffer area address
 dma_buf:  equ 00080h    ;Default DMA buffer area (128 bytes) for disk I/O
 ccp_base: equ 0d400h    ;Start of CCP area
+dirsize:  equ 0d8b2h    ;CCP directory width: 0=1 col, 1=2 cols, 3=4 cols
 syscall:  equ 0dc06h    ;BDOS system call
 b_warm:   equ 0ea03h    ;BDOS warm boot
+dirsave:  equ 0ea40h    ;Saves the original value of DIRSIZE after boot
 jiffies:  equ 0ea41h    ;CBM clock data: Jiffies (counts up to 50 or 60)
 secs:     equ 0ea42h    ;CBM clock data: Seconds
 mins:     equ 0ea43h    ;CBM clock data: Minutes
@@ -208,8 +210,9 @@ lf0e6h:
     ld b,02ch
     call sub_f0fch
 lf0ebh:
-    ld a,(0ea40h)
-    ld (0d8b2h),a
+    ld a,(dirsave)      ;Get original CCP directory width
+    ld (dirsize),a      ;Restore it
+
     ld hl,ccp_base+3
     jr z,init_and_jp_hl
 lf0f6h:
@@ -1072,8 +1075,9 @@ lf5d5h:
     cp 008h
     jr nz,lf587h
     pop af
-    ld a,(0d8b2h)
-    ld (0ea40h),a
+
+    ld a,(dirsize)      ;Get CCP directory width
+    ld (dirsave),a      ;Save it
 
     ld a,(iobyte)       ;Get current IOBYTE
     and 001h            ;Mask off all but bit 0 (low bit of CON:)
