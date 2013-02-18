@@ -105,6 +105,9 @@ termtype: equ 0ea67h    ;Terminal type:
                         ;  0=ADM3A, 1=HZ1500, 2=TV912
                         ;  Bit 7 is set if uppercase graphics mode
 leadin:   equ 0ea68h    ;Terminal command lead-in: 01bh=escape, 07eh=tilde
+xy_order: equ 0ea69h    ;X,Y order when sending move-to: 0=X first, 1=Y first
+y_offset: equ 0ea6ah    ;Offset added to Y when sending move-to sequence
+x_offset: equ 0ea6bh    ;Offset added to X when sending move-to sequence
 lptype:   equ 0ea6dh    ;CBM printer (LPT:) type: 0=3022, 3032, 4022, 4023
                         ;                         1=8026, 8027 (daisywheel)
                         ;                         2=8024
@@ -1918,7 +1921,7 @@ lfc28h:
     ld a,(0005bh)
     ld d,a
     ld e,c
-    ld a,(0ea69h)
+    ld a,(xy_order)
     or a
     jr z,lfc36h
     ld a,e
@@ -1936,7 +1939,7 @@ lfc36h:
     pop de
     push de
     ld a,e
-    ld hl,0ea6bh
+    ld hl,x_offset
     sub (hl)
     cp 060h
     jr c,lfc51h
@@ -1946,7 +1949,7 @@ lfc51h:
     ld c,a
     call cbm_conout
     pop af
-    ld hl,0ea6ah
+    ld hl,y_offset
     sub (hl)
     and 01fh
     or 020h
