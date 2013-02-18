@@ -196,14 +196,10 @@ wboot:
     ld sp,00100h
     xor a
     call sub_f245h
-lf0d9h:
     jr c,lf0e6h
-lf0dbh:
     xor a
     call e_faadh
-lf0dfh:
     ld c,016h
-lf0e1h:
     call sub_f651h
     jr lf0ebh
 lf0e6h:
@@ -215,10 +211,8 @@ lf0ebh:
 
     ld hl,ccp_base+3
     jr z,init_and_jp_hl
-lf0f6h:
     xor a
     call e_fac4h
-lf0fah:
     jr wboot
 sub_f0fch:
     ld hl,ccp_base
@@ -228,7 +222,6 @@ sub_f0fch:
     ld hl,00000h
     ld (track),hl
     xor a
-lf10ah:
     ld (sector),a
     ld (00048h),a
     ld (00051h),a
@@ -769,7 +762,6 @@ lf431h:
     inc hl
     ld a,h
     and 00fh
-lf436h:
     or l
     jr nz,lf43fh
 
@@ -1175,7 +1167,6 @@ lf671h:
 
 lf687h:
     db "#2"
-lf68ch:
     db "0:CP/M"
 lf68fh:
     db "I0"
@@ -1373,9 +1364,7 @@ newline:
 sub_f8dah:
     ld a,(drive)
     call e_f224h
-lf8e0h:
     ld a,c
-lf8e1h:
     or a
     ld ix,00057h
     ld hl,lf957h
@@ -1383,7 +1372,6 @@ lf8e1h:
     jr z,lf8f9h
     ld e,025h
     ld hl,lf96bh
-lf8f2h:
     cp 001h
     jr z,lf8f9h
     ld hl,lf97fh
@@ -1396,7 +1384,6 @@ lf8f9h:
     add hl,hl
     add hl,hl
     add hl,hl
-lf907h:
     add hl,hl
     ld de,(00047h)
     ld d,000h
@@ -1409,11 +1396,9 @@ lf912h:
     inc hl
     ld d,(hl)
     ex de,hl
-lf916h:
     scf
     sbc hl,bc
     ex de,hl
-lf91ah:
     jp nc,lf923h
     inc hl
     inc hl
@@ -1426,7 +1411,6 @@ lf923h:
     ld (ix+000h),a
     dec hl
     ld a,(hl)
-lf92bh:
     dec hl
     dec hl
     ld e,(hl)
@@ -1440,7 +1424,6 @@ lf92bh:
     ld c,a
 lf938h:
     ld a,l
-lf939h:
     or a
     sbc hl,bc
     jp c,lf945h
@@ -1734,7 +1717,6 @@ lfb13h:
 lfb1ch:
     dec a
     jr nz,lfb1ch
-lfb1fh:
     pop af
     ret
 e_fb21h:
@@ -1745,7 +1727,6 @@ e_fb21h:
     and 0f3h
     out (ppi2_pb),a
     ld a,05fh
-lfb2fh:
     jr e_fb49h
 e_fb31h:
     in a,(ppi2_pb)
