@@ -329,7 +329,7 @@ seldsk:
     add hl,hl
     add hl,hl
     add hl,hl
-    ld bc,lf1b1h
+    ld bc,seldsk_table
     add hl,bc
     ex de,hl
     pop hl
@@ -344,107 +344,23 @@ seldsk:
     call c,sub_f2ffh
     pop hl
     ret
-lf1b1h:
-    jr nz,lf1b3h
-lf1b3h:
-    inc b
-    rrca
-    ld bc,0004ch
-    ccf
-    nop
-    add a,b
-    nop
-    djnz lf1beh
-lf1beh:
-    nop
-    nop
-    nop
-    jr nz,lf1c3h
-lf1c3h:
-    inc b
-    rrca
-    ld bc,000f8h
-    ccf
-    nop
-    add a,b
-    nop
-    djnz lf1ceh
-lf1ceh:
-    nop
-    nop
-    nop
-    ld b,b
-    nop
-    ld b,03fh
-    inc bc
-    ld c,h
-    ld (bc),a
-    rst 38h
-    nop
-    add a,b
-    nop
-    nop
-    nop
-    ld (bc),a
-    nop
-    nop
-    ld b,b
-    nop
-    ld b,03fh
-    inc bc
-    ld c,h
-    ld (bc),a
-    rst 38h
-    nop
-    add a,b
-    nop
-    nop
-    nop
-    ld (bc),a
-    nop
-    nop
-    ld b,b
-    nop
-    ld b,03fh
-    inc bc
-    cp b
-    ld (bc),a
-    rst 38h
-    nop
-    add a,b
-    nop
-    nop
-    nop
-    ld (bc),a
-    nop
-    nop
-    ld b,b
-    nop
-    ld b,03fh
-    inc bc
-    ld e,c
-    ld bc,000ffh
-    add a,b
-    nop
-    nop
-    nop
-    ld (bc),a
-    nop
-    nop
-    jr nz,lf213h
-lf213h:
-    dec b
-    rra
-    inc bc
-    call m,07f00h
-    nop
-    add a,b
-    nop
-    jr nz,lf21eh
-lf21eh:
-    nop
-    nop
-    nop
+
+seldsk_table:
+    db 020h, 000h, 004h, 00fh, 001h, 04ch, 000h, 03fh
+    db 000h, 080h, 000h, 010h, 000h, 000h, 000h, 000h
+    db 020h, 000h, 004h, 00fh, 001h, 0f8h, 000h, 03fh
+    db 000h, 080h, 000h, 010h, 000h, 000h, 000h, 000h
+    db 040h, 000h, 006h, 03fh, 003h, 04ch, 002h, 0ffh
+    db 000h, 080h, 000h, 000h, 000h, 002h, 000h, 000h
+    db 040h, 000h, 006h, 03fh, 003h, 04ch, 002h, 0ffh
+    db 000h, 080h, 000h, 000h, 000h, 002h, 000h, 000h
+    db 040h, 000h, 006h, 03fh, 003h, 0b8h, 002h, 0ffh
+    db 000h, 080h, 000h, 000h, 000h, 002h, 000h, 000h
+    db 040h, 000h, 006h, 03fh, 003h, 059h, 001h, 0ffh
+    db 000h, 080h, 000h, 000h, 000h, 002h, 000h, 000h
+    db 020h, 000h, 005h, 01fh, 003h, 0fch, 000h, 07fh
+    db 000h, 080h, 000h, 020h, 000h, 000h, 000h, 000h
+
 sectran:
     ld l,c
     ld h,b
