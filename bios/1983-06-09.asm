@@ -136,6 +136,7 @@ ddev_mn:  equ ddevs+6   ;  M:, N:
 ddev_op:  equ ddevs+7   ;  O:, P:
 
 scrtab:   equ 0ea80h    ;64 byte buffer for tab stops
+dos_msg:  equ 0eac0h    ;Last error message returned from CBM DOS
 
     org 0f000h
 
@@ -1291,23 +1292,26 @@ lf76dh:
     cp 003h             ;Control-C pressed?
     jp z,jp_warm        ;  Yes: Jump to BDOS warm start
 
-    cp 03fh             ;TODO 03fh?
-    jr nz,lf790h
+    cp 03fh             ;Question mark ("?") pressed?
+    jr nz,lf790h        ;  No: Jump over printing CBM DOS error msg
 
     ld hl,newline
     call puts           ;Write a newline to console out
 
-    ld hl,0eac0h
+    ld hl,dos_msg       ;HL = pointer to CBM DOS error message
+                        ;     like "23,READ ERROR,45,27,0",0d
 lf782h:
-    ld a,(hl)
+    ld a,(hl)           ;Get a char from CBM DOS error message
     cp 00dh
-    jr z,lf76dh
+    jr z,lf76dh         ;Jump if end of CBM DOS error message reached
+
     ld c,a
     push hl
-    call conout
+    call conout         ;Write char from CBM DOS error msg to console out
     pop hl
-    inc hl
-    jr lf782h
+    inc hl              ;Increment to next char
+    jr lf782h           ;Loop to continue printing the error msg
+
 lf790h:
     ld a,(drive)
     call e_fac4h
@@ -1528,7 +1532,7 @@ e_f9bch:
 sub_f9bfh:
     ld e,00fh
     call e_faf9h
-    ld hl,0eac0h
+    ld hl,dos_msg
 lf9c7h:
     call cbm_get_byte
     ld (hl),a
