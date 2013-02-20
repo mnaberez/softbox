@@ -128,7 +128,7 @@ dtype_op: equ dtypes+7  ;  O:, P:    007h = Undefined
 ddevs:    equ 0ea78h    ;Disk drive device addresses:
 ddev_ab:  equ ddevs+0   ;  A:, B:
 ddev_cd:  equ ddevs+1   ;  C:, D:    For CBM floppy drives, the number
-ddev_ef:  equ ddevs+2   ;  E:, F:    is a IEEE-488 device primary address.
+ddev_ef:  equ ddevs+2   ;  E:, F:    is an IEEE-488 device primary address.
 ddev_gh:  equ ddevs+3   ;  G:, H:
 ddev_ij:  equ ddevs+4   ;  I:, J:    For Corvus hard drives, the number
 ddev_kl:  equ ddevs+5   ;  L:, K:    is an ID on a Corvus unit.
@@ -308,12 +308,19 @@ setdma:
 
 seldsk:
 ;Select the disk drive in C (0=A:, 1=B:, ...).
-;Returns the address of a Disk Parameter Header in HL.
+;
+;Called with E=0 or 0FFFFh:
+;  If bit 0 of E is 0, the disk will be logged in as new.
+;  If bit 0 of E is 1, the disk has already been logged in.
+;
+;Returns the address of a Disk Parameter Header in HL.  If the
+;disk could not be selected, HL = 0.
 ;
     ld a,c
     call e_f224h
-    ld hl,00000h
-    ret nc
+    ld hl,00000h        ;HL = error code
+    ret nc              ;Return if drive is invalid
+
     ld (00040h),a
     ld l,a
     add hl,hl
@@ -367,8 +374,8 @@ sectran:
     ret
 
 e_f224h:
-    cp 010h
-    ret nc
+    cp 010h             ;Valid drives are 0 (A:) through 00fh (P:)
+    ret nc              ;Return if drive is greater than P:
     push hl
     push af
     or a
@@ -376,13 +383,14 @@ e_f224h:
     ld c,a
     ld b,000h
     ld hl,dtypes
-    add hl,bc
-    ld c,(hl)
-    ld a,c
+    add hl,bc           ;HL = pointer to drive in dtypes table
+    ld c,(hl)           ;C = drive type
+    ld a,c              ;A = C
     cp 004h
     pop hl
     ld a,h
     jr nz,lf23eh
+
     bit 0,a
     jr lf240h
 lf23eh:
