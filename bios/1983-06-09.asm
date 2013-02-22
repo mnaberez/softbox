@@ -1,21 +1,21 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --labels --origin=61440 1983-06-09.bin
 
-usart:    equ 008h      ;8251 USART (IC15)
+usart:    equ 08h       ;8251 USART (IC15)
 usart_db: equ usart+0   ;  Data Buffer
 usart_st: equ usart+1   ;  Status Register
 
-baud_gen: equ 00ch      ;COM8116 Baud Rate Generator (IC14)
+baud_gen: equ 0ch       ;COM8116 Baud Rate Generator (IC14)
                         ;  D7-D4: TD-TA
                         ;  D3-D0: RD-RA
 
-ppi1:     equ 010h      ;8255 PPI #1 (IC17)
+ppi1:     equ 10h       ;8255 PPI #1 (IC17)
 ppi1_pa:  equ ppi1+0    ;  Port A: IEEE-488 Data In
 ppi1_pb:  equ ppi1+1    ;  Port B: IEEE-488 Data Out
 ppi1_pc:  equ ppi1+2    ;  Port C: DIP Switches
 ppi1_cr:  equ ppi1+3    ;  Control Register
 
-ppi2:     equ 014h      ;8255 PPI #2 (IC16)
+ppi2:     equ 14h       ;8255 PPI #2 (IC16)
 ppi2_pa:  equ ppi2+0    ;  Port A:
                         ;    PA7 IEEE-488 IFC in
                         ;    PA6 IEEE-488 REN in
@@ -45,10 +45,10 @@ ppi2_pc:  equ ppi2+2    ;  Port C:
                         ;    PC0 LED "A"
 ppi2_cr:  equ ppi2+3    ;  Control Register
 
-corvus:   equ 018h      ;Corvus data bus
+corvus:   equ 18h       ;Corvus data bus
 
-jp_warm:  equ 00000h    ;Jump to BDOS warm start (3 byte instruction)
-iobyte:   equ 00003h    ;CP/M I/O Mapping
+jp_warm:  equ 0000h     ;Jump to BDOS warm start (3 byte instruction)
+iobyte:   equ 0003h     ;CP/M I/O Mapping
                         ;
                         ;                  List    Punch   Reader  Console
                         ;  Device          LST:    PUN:    RDR:    CON:
@@ -73,17 +73,17 @@ iobyte:   equ 00003h    ;CP/M I/O Mapping
                         ;  UP1:    User-def. Punch 1
                         ;  UP2:    User-def. Punch 2
 
-cdisk:    equ 00004h    ;Current drive and user number
+cdisk:    equ  0004h    ;Current drive and user number
                         ;  Bits 7-4: Current user number
                         ;  Bits 3-0: Current drive number (0=A,1=B,etc.)
 
-jp_sysc:  equ 00005h    ;Jump to BDOS system call (3 byte instruction)
-track:    equ 00041h    ;Track number
-sector:   equ 00043h    ;Sector number
-drive:    equ 00044h    ;Drive number (0=A, 1=B, 2=C, etc.)
-dos_err:  equ 0004fh    ;Last error code returned from CBM DOS
-dma:      equ 00052h    ;DMA buffer area address
-dma_buf:  equ 00080h    ;Default DMA buffer area (128 bytes) for disk I/O
+jp_sysc:  equ  0005h    ;Jump to BDOS system call (3 byte instruction)
+track:    equ  0041h    ;Track number
+sector:   equ  0043h    ;Sector number
+drive:    equ  0044h    ;Drive number (0=A, 1=B, 2=C, etc.)
+dos_err:  equ  004fh    ;Last error code returned from CBM DOS
+dma:      equ  0052h    ;DMA buffer area address
+dma_buf:  equ  0080h    ;Default DMA buffer area (128 bytes) for disk I/O
 ccp_base: equ 0d400h    ;Start of CCP area
 dirsize:  equ 0d8b2h    ;CCP directory width: 0=1 col, 1=2 cols, 3=4 cols
 syscall:  equ 0dc06h    ;BDOS system call
@@ -106,7 +106,7 @@ ul1_dev:  equ 0ea66h    ;ASCII printer (UL1:) IEEE-488 primary address
 termtype: equ 0ea67h    ;Terminal type:
                         ;  0=ADM3A, 1=HZ1500, 2=TV912
                         ;  Bit 7 is set if uppercase graphics mode
-leadin:   equ 0ea68h    ;Terminal command lead-in: 01bh=escape, 07eh=tilde
+leadin:   equ 0ea68h    ;Terminal command lead-in: 1bh=escape, 7eh=tilde
 xy_order: equ 0ea69h    ;X,Y order when sending move-to: 0=X first, 1=Y first
 y_offset: equ 0ea6ah    ;Offset added to Y when sending move-to sequence
 x_offset: equ 0ea6bh    ;Offset added to X when sending move-to sequence
@@ -115,15 +115,15 @@ lptype:   equ 0ea6dh    ;CBM printer (LPT:) type: 0=3022, 3032, 4022, 4023
                         ;                         2=8024
 
 dtypes:   equ 0ea70h    ;Disk drive types:
-dtype_ab: equ dtypes+0  ;  A:, B:    000h = CBM 3040/4040
-dtype_cd: equ dtypes+1  ;  C:, D:    001h = CBM 8050
-dtype_ef: equ dtypes+2  ;  E:, F:    002h = Corvus 10MB
-dtype_gh: equ dtypes+3  ;  G:, H:    003h = Corvus 20MB
-dtype_ij: equ dtypes+4  ;  I:, J:    004h = Corvus 5MB
-dtype_kl: equ dtypes+5  ;  L:, K:    005h = Corvus 5MB*
-dtype_mn: equ dtypes+6  ;  M:, N:    006h = CBM 8250
-dtype_op: equ dtypes+7  ;  O:, P:    007h = Undefined
-                        ;            0ffh = No device
+dtype_ab: equ dtypes+0  ;  A:, B:    00h = CBM 3040/4040
+dtype_cd: equ dtypes+1  ;  C:, D:    01h = CBM 8050
+dtype_ef: equ dtypes+2  ;  E:, F:    02h = Corvus 10MB
+dtype_gh: equ dtypes+3  ;  G:, H:    03h = Corvus 20MB
+dtype_ij: equ dtypes+4  ;  I:, J:    04h = Corvus 5MB
+dtype_kl: equ dtypes+5  ;  L:, K:    05h = Corvus 5MB*
+dtype_mn: equ dtypes+6  ;  M:, N:    06h = CBM 8250
+dtype_op: equ dtypes+7  ;  O:, P:    07h = Undefined
+                        ;           0ffh = No device
 
 ddevs:    equ 0ea78h    ;Disk drive device addresses:
 ddev_ab:  equ ddevs+0   ;  A:, B:
@@ -194,17 +194,17 @@ banner:
     db 00h
 
 wboot:
-    ld sp,00100h
+    ld sp,0100h
     xor a
     call sub_f245h
     jr c,lf0e6h
     xor a
     call e_faadh
-    ld c,016h
+    ld c,16h
     call sub_f651h
     jr lf0ebh
 lf0e6h:
-    ld b,02ch
+    ld b,2ch
     call sub_f0fch
 lf0ebh:
     ld a,(dirsave)      ;Get original CCP directory width
@@ -217,15 +217,15 @@ lf0ebh:
     jr wboot
 sub_f0fch:
     ld hl,ccp_base
-    ld c,000h
+    ld c,00h
     push hl
     push bc
-    ld hl,00000h
+    ld hl,0000h
     ld (track),hl
     xor a
     ld (sector),a
-    ld (00048h),a
-    ld (00051h),a
+    ld (0048h),a
+    ld (0051h),a
     call seldsk
     ld a,0ffh
     ld (drive),a
@@ -236,7 +236,7 @@ lf11dh:
     push hl
     push bc
     call read
-    ld hl,00043h
+    ld hl,0043h
     inc (hl)
     pop bc
     pop hl
@@ -258,33 +258,33 @@ init_and_jp_hl:
     ld a,0c3h           ;0c3h = JP
     ld (jp_warm),a
     ld hl,b_warm        ;Install BDOS warm boot jump
-    ld (jp_warm+1),hl   ;  00000h JP 0ea03h
+    ld (jp_warm+1),hl   ;  0000h JP 0ea03h
 
     ld (jp_sysc),a
     ld hl,syscall       ;Install BDOS system call jump
-    ld (jp_sysc+1),hl   ;  00005h JP 0dc06h
+    ld (jp_sysc+1),hl   ;  0005h JP 0dc06h
 
     ld hl,cdisk
     ld a,(hl)           ;A = current user and disk
-    and 00fh            ;Mask off user nybble leaving A = current disk
+    and 0fh             ;Mask off user nybble leaving A = current disk
     call e_f224h
 
     jr c,lf15ch
-    ld (hl),000h
+    ld (hl),00h
 lf15ch:
     ld c,(hl)
-    xor a                ;A=0
-    ld (00048h),a
-    ld (00051h),a
-    dec a                ;A=0ffh
+    xor a               ;A=0
+    ld (0048h),a
+    ld (0051h),a
+    dec a               ;A=0ffh
     ld (drive),a
-    pop hl               ;Recall address
-    jp (hl)              ;  and jump to it
+    pop hl              ;Recall address
+    jp (hl)             ;  and jump to it
 
 home:
 ;Set the CP/M track to 0.
 ;
-    ld bc,00000h        ;Fall through into settrk
+    ld bc,0000h         ;Fall through into settrk
 
 settrk:
 ;Set the CP/M track to BC.
@@ -318,10 +318,10 @@ seldsk:
 ;
     ld a,c
     call e_f224h
-    ld hl,00000h        ;HL = error code
+    ld hl,0000h         ;HL = error code
     ret nc              ;Return if drive is invalid
 
-    ld (00040h),a
+    ld (0040h),a
     ld l,a
     add hl,hl
     add hl,hl
@@ -331,7 +331,7 @@ seldsk:
     add hl,de
     push hl
     ld l,c
-    ld h,000h
+    ld h,00h
     add hl,hl
     add hl,hl
     add hl,hl
@@ -341,32 +341,32 @@ seldsk:
     ex de,hl
     pop hl
     push hl
-    ld bc,0000ah
+    ld bc,000ah
     add hl,bc
     ld (hl),e
     inc hl
     ld (hl),d
-    ld a,(00040h)
+    ld a,(0040h)
     call sub_f245h
     call c,sub_f2ffh
     pop hl
     ret
 
 seldsk_table:
-    db 020h, 000h, 004h, 00fh, 001h, 04ch, 000h, 03fh
-    db 000h, 080h, 000h, 010h, 000h, 000h, 000h, 000h
-    db 020h, 000h, 004h, 00fh, 001h, 0f8h, 000h, 03fh
-    db 000h, 080h, 000h, 010h, 000h, 000h, 000h, 000h
-    db 040h, 000h, 006h, 03fh, 003h, 04ch, 002h, 0ffh
-    db 000h, 080h, 000h, 000h, 000h, 002h, 000h, 000h
-    db 040h, 000h, 006h, 03fh, 003h, 04ch, 002h, 0ffh
-    db 000h, 080h, 000h, 000h, 000h, 002h, 000h, 000h
-    db 040h, 000h, 006h, 03fh, 003h, 0b8h, 002h, 0ffh
-    db 000h, 080h, 000h, 000h, 000h, 002h, 000h, 000h
-    db 040h, 000h, 006h, 03fh, 003h, 059h, 001h, 0ffh
-    db 000h, 080h, 000h, 000h, 000h, 002h, 000h, 000h
-    db 020h, 000h, 005h, 01fh, 003h, 0fch, 000h, 07fh
-    db 000h, 080h, 000h, 020h, 000h, 000h, 000h, 000h
+    db 20h, 00h, 04h, 0fh, 01h, 4ch,  00h, 3fh
+    db 00h, 80h, 00h, 10h, 00h, 00h,  00h, 00h
+    db 20h, 00h, 04h, 0fh, 01h, 0f8h, 00h, 3fh
+    db 00h, 80h, 00h, 10h, 00h, 00h,  00h, 00h
+    db 40h, 00h, 06h, 3fh, 03h, 4ch,  02h, 0ffh
+    db 00h, 80h, 00h, 00h, 00h, 02h,  00h, 00h
+    db 40h, 00h, 06h, 3fh, 03h, 4ch,  02h, 0ffh
+    db 00h, 80h, 00h, 00h, 00h, 02h,  00h, 00h
+    db 40h, 00h, 06h, 3fh, 03h, 0b8h, 02h, 0ffh
+    db 00h, 80h, 00h, 00h, 00h, 02h,  00h, 00h
+    db 40h, 00h, 06h, 3fh, 03h, 59h,  01h, 0ffh
+    db 00h, 80h, 00h, 00h, 00h, 02h,  00h, 00h
+    db 20h, 00h, 05h, 1fh, 03h, 0fch, 00h, 07fh
+    db 00h, 80h, 00h, 20h, 00h, 00h,  00h, 00h
 
 sectran:
     ld l,c
@@ -374,19 +374,19 @@ sectran:
     ret
 
 e_f224h:
-    cp 010h             ;Valid drives are 0 (A:) through 00fh (P:)
+    cp 10h              ;Valid drives are 0 (A:) through 00fh (P:)
     ret nc              ;Return if drive is greater than P:
     push hl
     push af
     or a
     rra
     ld c,a
-    ld b,000h
+    ld b,00h
     ld hl,dtypes
     add hl,bc           ;HL = pointer to drive in dtypes table
     ld c,(hl)           ;C = drive type
     ld a,c              ;A = C
-    cp 004h
+    cp 04h
     pop hl
     ld a,h
     jr nz,lf23eh
@@ -407,55 +407,55 @@ sub_f245h:
     ret nc
     ld a,c
     or a
-    cp 006h
+    cp 06h
     ret nc
-    cp 002h
+    cp 02h
     ccf
     ret
 
 read:
-    ld a,(00040h)
+    ld a,(0040h)
     call sub_f245h
     jp c,lf315h
     call sub_f6b9h
-    ld a,001h
+    ld a,01h
     call nz,sub_f2d8h
     ld a,(sector)
     rrca
     call sub_f2e5h
     xor a
-    ld (00048h),a
+    ld (0048h),a
     ret
 
 write:
     push bc
-    ld a,(00040h)
+    ld a,(0040h)
     call sub_f245h
     pop bc
     jp c,lf342h
     ld a,c
     push af
-    cp 002h
+    cp 02h
     call z,lf691h
-    ld hl,00048h
+    ld hl,0048h
     ld a,(hl)
     or a
     jr z,lf2b1h
     dec (hl)
-    ld a,(00040h)
-    ld hl,00049h
+    ld a,(0040h)
+    ld hl,0049h
     cp (hl)
     jr nz,lf2b1h
     ld a,(track)
-    ld hl,0004ah
+    ld hl,004ah
     cp (hl)
     jr nz,lf2b1h
-    ld a,(00042h)
+    ld a,(0042h)
     inc hl
     cp (hl)
     jr nz,lf2b1h
     ld a,(sector)
-    ld hl,0004ch
+    ld hl,004ch
     cp (hl)
     jr nz,lf2b1h
     inc (hl)
@@ -463,9 +463,9 @@ write:
     jr lf2bdh
 lf2b1h:
     xor a
-    ld (00048h),a
+    ld (0048h),a
     call sub_f6b9h
-    ld a,000h
+    ld a,00h
     call nz,sub_f2d8h
 lf2bdh:
     ld a,(sector)
@@ -480,8 +480,8 @@ lf2bdh:
     xor a
     ret
 lf2d1h:
-    ld a,001h
-    ld (00051h),a
+    ld a,01h
+    ld (0051h),a
     xor a
     ret
 sub_f2d8h:
@@ -492,10 +492,10 @@ sub_f2dfh:
     ld hl,0ef00h
     jp lf9f7h
 sub_f2e5h:
-    ld a,000h
+    ld a,00h
     jr lf2ebh
 sub_f2e9h:
-    ld a,001h
+    ld a,01h
 lf2ebh:
     ld hl,0ef00h
     ld de,(dma)
@@ -516,16 +516,16 @@ sub_f2ffh:
 lf305h:
     djnz lf305h
     in a,(ppi2_pc)
-    and 020h
+    and 20h
     jr nz,sub_f2ffh
     call sub_f38fh
-    cp 08fh
+    cp 8fh
     jr nz,sub_f2ffh
     ret
 lf315h:
     call sub_f3a5h
     push af
-    ld a,012h
+    ld a,12h
     call sub_f39ah
     pop af
     call sub_f39ah
@@ -536,10 +536,10 @@ lf315h:
     ld hl,(dma)
     call sub_f37bh
     jr nz,lf36dh
-    ld b,080h
+    ld b,80h
 lf334h:
     in a,(ppi2_pc)
-    and 010h            ;Mask off all but bit 4 (Corvus READY)
+    and 10h             ;Mask off all but bit 4 (Corvus READY)
     jr z,lf334h         ;Wait until Corvus READY=high
 
     in a,(corvus)
@@ -552,7 +552,7 @@ lf340h:
 lf342h:
     call sub_f3a5h
     push af
-    ld a,013h
+    ld a,13h
     call sub_f39ah
     pop af
     call sub_f39ah
@@ -560,11 +560,11 @@ lf342h:
     call sub_f39ah
     ld a,h
     call sub_f39ah
-    ld b,080h
+    ld b,80h
     ld hl,(dma)
 lf35ch:
     in a,(ppi2_pc)
-    and 010h            ;Mask off all but bit 4 (Corvus READY)
+    and 10h             ;Mask off all but bit 4 (Corvus READY)
     jr z,lf35ch         ;Wait until Corvus READY=high
 
     ld a,(hl)
@@ -583,19 +583,19 @@ lf36dh:
     ret
 sub_f37bh:
     in a,(ppi2_pc)
-    xor 010h
-    and 030h
+    xor 10h
+    and 30h
     jr nz,sub_f37bh
-    ld b,019h
+    ld b,19h
 lf385h:
     djnz lf385h
     in a,(ppi2_pc)
-    xor 010h
-    and 030h
+    xor 10h
+    and 30h
     jr nz,sub_f37bh
 sub_f38fh:
     in a,(ppi2_pc)
-    and 010h            ;Mask off all but bit 4 (Corvus READY)
+    and 10h             ;Mask off all but bit 4 (Corvus READY)
     jr z,sub_f38fh      ;Wait until Corvus READY=high
     in a,(corvus)
     bit 7,a
@@ -604,15 +604,15 @@ sub_f39ah:
     push af
 lf39bh:
     in a,(ppi2_pc)
-    and 010h
+    and 10h
     jr z,lf39bh
     pop af
     out (corvus),a
     ret
 sub_f3a5h:
     ld hl,(track)
-    ld a,000h
-    ld b,006h
+    ld a,00h
+    ld b,06h
 lf3ach:
     add hl,hl
     rla
@@ -621,29 +621,29 @@ lf3ach:
     ld a,(sector)
     or l
     ld l,a
-    ld de,0941ch
-    ld a,(00040h)
+    ld de,941ch
+    ld a,(0040h)
     call e_f224h
     ld a,c
-    cp 005h
+    cp 05h
     jr nz,lf3c7h
-    ld de,0577ah
+    ld de,577ah
 lf3c7h:
-    ld a,(00040h)
-    and 001h
+    ld a,(0040h)
+    and 01h
     jr nz,lf3d1h
-    ld de,0005ch
+    ld de,005ch
 lf3d1h:
     pop af
     add hl,de
-    adc a,000h
+    adc a,00h
     add a,a
     add a,a
     add a,a
     add a,a
     push hl
     push af
-    ld a,(00040h)
+    ld a,(0040h)
     call e_faadh
     pop af
     pop hl
@@ -660,38 +660,38 @@ sub_f402h:
     call sub_f40bh
     pop af
 sub_f40bh:
-    and 00fh
-    cp 00ah
+    and 0fh
+    cp 0ah
     jr c,lf413h
-    add a,007h
+    add a,07h
 lf413h:
-    add a,030h
+    add a,30h
     ld c,a
     jp conout
 
 boot:
-    ld sp,00100h        ;Initialize stack pointer
-    ld a,099h
+    ld sp,0100h         ;Initialize stack pointer
+    ld a,99h
     out (ppi1_cr),a
-    ld a,098h
+    ld a,98h
     out (ppi2_cr),a
     xor a               ;A=0
     out (ppi1_pb),a     ;Clear IEEE data out
     out (ppi2_pb),a     ;Clear IEEE control out
 
-    ld c,002h
-    ld hl,00000h        ;RAM start address
+    ld c,02h
+    ld hl,0000h         ;RAM start address
     ld de,lf000h        ;RAM end address + 1
 lf431h:
     ld (hl),l
     inc hl
     ld a,h
-    and 00fh
+    and 0fh
     or l
     jr nz,lf43fh
 
     in a,(ppi2_pc)
-    xor 004h
+    xor 04h
     out (ppi2_pc),a     ;Invert "Ready" LED
 
 lf43fh:
@@ -700,7 +700,7 @@ lf43fh:
     or d
     jr nz,lf431h
 
-    ld hl,00000h        ;RAM start address
+    ld hl,0000h         ;RAM start address
     ld de,lf000h        ;RAM end address + 1
 lf44ah:
     ld a,(hl)
@@ -710,12 +710,12 @@ lf44ah:
     ld (hl),a
     inc hl
     ld a,h
-    and 00fh
+    and 0fh
     or l
     jr nz,lf45dh
 
     in a,(ppi2_pc)
-    xor 004h
+    xor 04h
     out (ppi2_pc),a     ;Invert "Ready" LED
 lf45dh:
     dec de
@@ -723,7 +723,7 @@ lf45dh:
     or d
     jr nz,lf44ah
 
-    ld hl,00000h        ;RAM start address
+    ld hl,0000h         ;RAM start address
     ld de,lf000h        ;RAM end address + 1
 lf468h:
     ld a,(hl)
@@ -732,12 +732,12 @@ lf468h:
     jr nz,help_me
     inc hl
     ld a,h
-    and 00fh
+    and 0fh
     or l
     jr nz,lf47ah
 
     in a,(ppi2_pc)
-    xor 004h
+    xor 04h
     out (ppi2_pc),a     ;Invert "Ready" LED
 lf47ah:
     dec de
@@ -746,10 +746,10 @@ lf47ah:
     jr nz,lf468h
 
     ld hl,lf000h        ;ROM start address
-    ld bc,00ffdh        ;Number of code bytes in the ROM
+    ld bc,0ffdh         ;Number of code bytes in the ROM
     call calc_checksum  ;Calculate ROM checksum
 
-    ld c,003h
+    ld c,03h
     ld hl,checksum      ;Load checksum in ROM
     cp (hl)             ;Any difference from the calculated value?
     jp z,lf4c5h         ;  No: ROM check passed
@@ -769,7 +769,7 @@ lf498h:
     or d
     jr nz,lf498h        ;Delay loop
 
-    ld a,004h
+    ld a,04h
     out (ppi2_pc),a     ;Turn on "Ready" LED
 
     ld de,lffffh
@@ -781,7 +781,7 @@ lf4a4h:
 
     djnz lf492h
 
-    ld b,003h
+    ld b,03h
     ld de,lffffh
 lf4b0h:
     dec de
@@ -808,22 +808,22 @@ lf4bah:
 
 lf4c5h:
     in a,(ppi2_pb)
-    or 080h             ;Turn on bit 7 (IFC out)
+    or 80h              ;Turn on bit 7 (IFC out)
     out (ppi2_pb),a     ;IFC=?
 
     xor a               ;A=0
     ld (iobyte),a       ;IOBYTE=0 (CON:=TTY:, the RS-232 port)
     ld (cdisk),a        ;CDISK=0 (User=0, Drive=A:)
-    ld (00054h),a
-    ld (00059h),a
-    ld (0005ah),a
+    ld (0054h),a
+    ld (0059h),a
+    ld (005ah),a
     ld (scrtab),a
     out (ppi2_pc),a     ;Turn off LEDs
 
-    ld bc,003e8h
+    ld bc,03e8h
     call e_fb86h
 
-    ld a,01bh
+    ld a,1bh
     ld (leadin),a       ;Terminal lead-in = 01bh (escape)
 
     xor a               ;8251 USART initialization sequence
@@ -833,10 +833,10 @@ lf4c5h:
     nop
     out (usart_st),a
 
-    ld a,040h           ;Reset
+    ld a,40h            ;Reset
     out (usart_st),a
 
-    ld a,07ah           ;Set mode
+    ld a,7ah            ;Set mode
                         ;  Bit 7: S2   0 = 1 stop bit
                         ;  Bit 6: S1   1
                         ;  Bit 5: EP   1 = Even parity
@@ -847,7 +847,7 @@ lf4c5h:
                         ;  Bit 0: B1   0
     out (usart_st),a
 
-    ld a,037h           ;Set command
+    ld a,37h            ;Set command
                         ;  Bit 7: EH   0 = Normal (not hunt mode)
                         ;  Bit 6: IR   0 = Normal (not internal reset)
                         ;  Bit 5: RTS  1 = RTS output = 0
@@ -870,10 +870,10 @@ lf4c5h:
 
     in a,(ppi2_pa)      ;IEEE-488 control lines in
     cpl                 ;Invert byte
-    and 040h            ;Mask off all but bit 6 (REN in)
+    and 40h             ;Mask off all but bit 6 (REN in)
     jr nz,lf52bh
 
-    ld a,001h
+    ld a,01h
     ld (iobyte),a      ;IOBYTE=1 (CON:=CRT:, the CBM computer)
 
 wait_for_atn:
@@ -884,59 +884,59 @@ wait_for_atn:
 ;
     in a,(ppi2_pa)      ;Read IEEE-488 control lines
     cpl                 ;Invert byte
-    and 003h            ;Mask off all but bit 1 (ATN), bit 2 (DAV)
+    and 03h             ;Mask off all but bit 1 (ATN), bit 2 (DAV)
     in a,(ppi1_pa)      ;Read IEEE-488 data byte
     jr nz,wait_for_atn  ;Wait until ATN=? and DAV=?
-    cp 039h
+    cp 39h
     jr nz,wait_for_atn  ;Wait until data byte = 57 (SoftBox address)
 
     in a,(ppi2_pa)      ;Read IEEE-488 control lines
     cpl                 ;Invert byte
-    and 002h            ;Mask off all but bit 1 (DAV in)
+    and 02h             ;Mask off all but bit 1 (DAV in)
     jr nz,wait_for_atn  ;Loop until DAV=?
 
 lf524h:
     in a,(ppi2_pa)      ;Read IEEE-488 control lines
     cpl                 ;Invert byte
-    and 002h            ;Mask off all but bit 1 (DAV in)
+    and 02h             ;Mask off all but bit 1 (DAV in)
     jr z,lf524h         ;Wait until DAV=?
 
 lf52bh:
     ld hl,loading
     call puts           ;Write "Loading CP/M ..."
-    ld de,0080fh
+    ld de,080fh
     call e_fb31h
-    ld bc,00007h
+    ld bc,0007h
     call e_fb86h
 
     in a,(ppi2_pa)      ;Read IEEE-488 control lines
     cpl                 ;Invert byte
-    and 004h            ;Mask off all but bit 3 (NDAC)
+    and 04h             ;Mask off all but bit 3 (NDAC)
     jr z,lf555h         ;Wait for NDAC=?
 
-    ld a,002h
+    ld a,02h
     ld (dtypes),a
-    ld a,001h
+    ld a,01h
     ld (ddevs),a
-    ld b,038h
+    ld b,38h
     call sub_f0fch
     jr e_f578h
 lf555h:
     call e_fb47h
-    ld de,0080fh
-    ld c,002h
+    ld de,080fh
+    ld c,02h
     ld hl,lf68fh
     call e_fb56h
-    ld d,008h
-    ld c,01ch
+    ld d,08h
+    ld c,1ch
     call sub_f651h
     jp nz,lf52bh
-    ld de,00802h
-    ld c,002h
+    ld de,0802h
+    ld c,02h
     ld hl,lf687h
     call e_fb56h
 e_f578h:
-    ld sp,00100h
+    ld sp,0100h
     xor a
     push af
     ld ix,0eb00h
@@ -946,27 +946,27 @@ lf587h:
     ld a,(de)
     or a
     jp m,lf5d5h
-    cp 002h
-    ld bc,0004ah
+    cp 02h
+    ld bc,004ah
     jr z,lf5beh
-    cp 003h
+    cp 03h
     jr z,lf5beh
-    cp 004h
-    ld bc,00058h
+    cp 04h
+    ld bc,0058h
     jr z,lf5beh
     push af
-    ld a,010h
-    ld (00058h),a
+    ld a,10h
+    ld (0058h),a
     pop af
-    cp 006h
+    cp 06h
     jp nz,lf5afh
-    ld a,020h
-    ld (00058h),a
+    ld a,20h
+    ld (0058h),a
 lf5afh:
     ld (ix+00ch),l
     ld (ix+00dh),h
-    ld a,(00058h)
-    ld b,000h
+    ld a,(0058h)
+    ld b,00h
     ld c,a
     add hl,bc
     rla
@@ -975,12 +975,12 @@ lf5beh:
     ld (ix+00eh),l
     ld (ix+00fh),h
     add hl,bc
-    ld (ix+008h),080h
-    ld (ix+009h),0eeh
-    ld (ix+000h),000h
-    ld (ix+001h),000h
+    ld (ix+08h),80h
+    ld (ix+09h),0eeh
+    ld (ix+00h),00h
+    ld (ix+01h),00h
 lf5d5h:
-    ld bc,00010h
+    ld bc,0010h
     add ix,bc
     pop af
     inc a
@@ -989,7 +989,7 @@ lf5d5h:
     rra
     jr c,lf587h
     inc de
-    cp 008h
+    cp 08h
     jr nz,lf587h
     pop af
 
@@ -997,7 +997,7 @@ lf5d5h:
     ld (dirsave),a      ;Save it
 
     ld a,(iobyte)       ;Get current IOBYTE
-    and 001h            ;Mask off all but bit 0 (low bit of CON:)
+    and 01h             ;Mask off all but bit 0 (low bit of CON:)
     ld b,a              ;Save current CON: assignment (TTY: or CRT:) in B
 
     ld a,(iosetup)      ;Get user defaults for IOBYTE
@@ -1012,13 +1012,13 @@ lf5d5h:
     nop
     out (usart_st),a
 
-    ld a,040h           ;Reset
+    ld a,40h            ;Reset
     out (usart_st),a
 
     ld a,(ser_mode)
     out (usart_st),a    ;Set mode
 
-    ld a,037h           ;Set command
+    ld a,37h            ;Set command
                         ;  Bit 7: EH   0 = Normal (not hunt mode)
                         ;  Bit 6: IR   0 = Normal (not internal reset)
                         ;  Bit 5: RTS  1 = RTS output = 0
@@ -1042,7 +1042,7 @@ lf5d5h:
     rla                 ;Rotate uppercase graphics flag into carry
     jr nc,lf62bh        ;Jump if lowercase mode
 
-    ld c,015h           ;015h = Go to uppercase mode
+    ld c,15h            ;015h = Go to uppercase mode
     call conout
 
 lf62bh:
@@ -1061,21 +1061,21 @@ sub_f651h:
     push bc
     push de
     ld hl,filename      ;"0:CP/M"
-    ld c,006h           ;6 characters
-    ld e,000h
+    ld c,06h            ;6 characters
+    ld e,00h
     call e_fb56h
     pop de
     push de
     call sub_f9bfh
     pop de
-    ld e,000h
+    ld e,00h
     pop bc
     or a
     ret nz
     push de
     call e_faf9h
     ld hl,ccp_base
-    ld b,000h
+    ld b,00h
 lf671h:
     call cbm_get_byte
     ld (hl),a
@@ -1104,82 +1104,82 @@ lf691h:
     call sub_f245h
     pop bc
     or a
-    cp 006h
+    cp 06h
     jp z,lf6a1h
-    ld a,010h
+    ld a,10h
     jp lf6a3h
 lf6a1h:
-    ld a,020h
+    ld a,20h
 lf6a3h:
-    ld (00048h),a
-    ld a,(00040h)
-    ld (00049h),a
+    ld (0048h),a
+    ld a,(0040h)
+    ld (0049h),a
     ld hl,(track)
-    ld (0004ah),hl
+    ld (004ah),hl
     ld a,(sector)
-    ld (0004ch),a
+    ld (004ch),a
     ret
 sub_f6b9h:
-    ld a,(00040h)
-    ld hl,00044h
+    ld a,(0040h)
+    ld hl,0044h
     xor (hl)
     ld b,a
     ld a,(track)
-    ld hl,00045h
+    ld hl,0045h
     xor (hl)
     or b
     ld b,a
-    ld a,(00042h)
+    ld a,(0042h)
     inc hl
     xor (hl)
     or b
     ld b,a
     ld a,(sector)
     rra
-    ld hl,00047h
+    ld hl,0047h
     xor (hl)
     or b
     ret z
-    ld hl,00051h
+    ld hl,0051h
     ld a,(hl)
-    ld (hl),000h
+    ld (hl),00h
     or a
     call nz,sub_f2dfh
-    ld a,(00040h)
+    ld a,(0040h)
     ld (drive),a
     ld hl,(track)
-    ld (00045h),hl
+    ld (0045h),hl
     ld a,(sector)
     or a
     rra
-    ld (00047h),a
+    ld (0047h),a
     or 0ffh
     ret
 lf6fch:
-    ld (00055h),hl
+    ld (0055h),hl
     call sub_f8dah
 lf702h:
-    ld a,003h
-    ld (00050h),a
+    ld a,03h
+    ld (0050h),a
 lf707h:
     ld a,(drive)
     call e_fabch
-    ld hl,(00055h)
-    ld c,005h
+    ld hl,(0055h)
+    ld c,05h
     call e_ff1fh
     ld a,(drive)
-    and 001h
-    add a,030h
+    and 01h
+    add a,30h
     call e_fe62h
-    ld a,(0004dh)
+    ld a,(004dh)
     call e_f9a3h
-    ld a,(0004eh)
+    ld a,(004eh)
     call e_f9a3h
     call e_ff09h
     call e_fb47h
     ld a,(drive)
     call e_f9bch
-    cp 016h
+    cp 16h
     jr nz,lf73fh
     ex af,af'
     or a
@@ -1190,7 +1190,7 @@ lf73fh:
     or a                ;Set flags
     ret z               ;Return if error code = 0 (OK)
 
-    ld hl,00050h
+    ld hl,0050h
     dec (hl)
     jr z,lf752h
     ld a,(drive)
@@ -1201,7 +1201,7 @@ lf752h:
     call puts           ;Write "BDOS err on " to console out
 
     ld a,(drive)        ;Get current drive number
-    add a,041h          ;Convert it to ASCII (0=A, 1=B, 2=C, etc)
+    add a,41h           ;Convert it to ASCII (0=A, 1=B, 2=C, etc)
     ld c,a
     call conout         ;Write drive letter to console out
 
@@ -1213,10 +1213,10 @@ lf752h:
 lf76dh:
     call conin          ;Wait for a key to be pressed
 
-    cp 003h             ;Control-C pressed?
+    cp 03h              ;Control-C pressed?
     jp z,jp_warm        ;  Yes: Jump to BDOS warm start
 
-    cp 03fh             ;Question mark ("?") pressed?
+    cp 3fh              ;Question mark ("?") pressed?
     jr nz,lf790h        ;  No: Jump over printing CBM DOS error msg
 
     ld hl,newline
@@ -1226,7 +1226,7 @@ lf76dh:
                         ;     like "23,READ ERROR,45,27,0",0d
 lf782h:
     ld a,(hl)           ;Get a char from CBM DOS error message
-    cp 00dh
+    cp 0dh
     jr z,lf76dh         ;Jump if end of CBM DOS error message reached
 
     ld c,a
@@ -1240,11 +1240,11 @@ lf790h:
     ld a,(drive)
     call e_fac4h
     ld a,(dos_err)
-    cp 01ah             ;Error = Write protect on?
+    cp 1ah              ;Error = Write protect on?
     jp z,lf702h
-    cp 015h             ;Error = Drive not ready?
+    cp 15h              ;Error = Drive not ready?
     jp z,lf702h
-    ld a,000h
+    ld a,00h
     ret
 
 puts_dos_error:
@@ -1293,34 +1293,34 @@ lf8d2h:
     db "U2 2 "
 
 newline:
-    db 00dh,00ah,00h
+    db 0dh,0ah,00h
 
 sub_f8dah:
     ld a,(drive)
     call e_f224h
     ld a,c
     or a
-    ld ix,00057h
+    ld ix,0057h
     ld hl,lf957h
-    ld e,010h
+    ld e,10h
     jr z,lf8f9h
-    ld e,025h
+    ld e,25h
     ld hl,lf96bh
-    cp 001h
+    cp 01h
     jr z,lf8f9h
     ld hl,lf97fh
 lf8f9h:
     push de
     push hl
-    ld (ix+000h),000h
-    ld hl,(00045h)
-    ld h,000h
+    ld (ix+00h),00h
+    ld hl,(0045h)
+    ld h,00h
     add hl,hl
     add hl,hl
     add hl,hl
     add hl,hl
-    ld de,(00047h)
-    ld d,000h
+    ld de,(0047h)
+    ld d,00h
     add hl,de
     ld b,h
     ld c,l
@@ -1342,7 +1342,7 @@ lf923h:
     dec hl
     dec hl
     ld a,(hl)
-    ld (ix+000h),a
+    ld (ix+00h),a
     dec hl
     ld a,(hl)
     dec hl
@@ -1354,36 +1354,36 @@ lf923h:
     ld l,c
     or a
     sbc hl,de
-    ld b,000h
+    ld b,00h
     ld c,a
 lf938h:
     ld a,l
     or a
     sbc hl,bc
     jp c,lf945h
-    inc (ix+000h)
+    inc (ix+00h)
     jp lf938h
 lf945h:
-    ld (0004eh),a
-    ld a,(ix+000h)
-    ld (0004dh),a
+    ld (004eh),a
+    ld a,(ix+00h)
+    ld (004dh),a
     pop de
     cp e
     ret c
-    add a,003h
-    ld (0004dh),a
+    add a,03h
+    ld (004dh),a
     ret
 lf957h:
     nop
     nop
     dec d
-    ld bc,0013bh
+    ld bc,013bh
     inc de
     djnz $-81
-    ld bc,01612h
+    ld bc,1612h
     add hl,de
     ld (bc),a
-    ld de,00f1ch
+    ld de,0f1ch
     daa
     nop
     nop
@@ -1391,7 +1391,7 @@ lf96bh:
     nop
     nop
     dec e
-    ld bc,00414h
+    ld bc,0414h
     dec de
     dec h
     adc a,(hl)
@@ -1399,8 +1399,8 @@ lf96bh:
     add hl,de
     inc sp
     and c
-    ld b,017h
-    ld a,00fh
+    ld b,17h
+    ld a,0fh
     daa
     nop
     nop
@@ -1408,7 +1408,7 @@ lf97fh:
     nop
     nop
     dec e
-    ld bc,00414h
+    ld bc,0414h
     dec de
     dec h
     adc a,(hl)
@@ -1416,7 +1416,7 @@ lf97fh:
     add hl,de
     inc sp
     and c
-    ld b,017h
+    ld b,17h
     ld a,0cch
     rlca
     dec e
@@ -1429,7 +1429,7 @@ lf97fh:
     dec c
     add hl,de
     add a,b
-    call nz,0170eh
+    call nz,170eh
     adc a,e
     rrca
     daa
@@ -1437,15 +1437,15 @@ lf97fh:
     nop
 e_f9a3h:
     push af
-    ld a,020h
+    ld a,20h
     call e_fe62h
     pop af
-    ld e,02fh
+    ld e,2fh
 lf9ach:
-    sub 00ah
+    sub 0ah
     inc e
     jr nc,lf9ach
-    add a,03ah
+    add a,3ah
     push af
     ld a,e
     call e_fe62h
@@ -1454,15 +1454,15 @@ lf9ach:
 e_f9bch:
     call e_faadh
 sub_f9bfh:
-    ld e,00fh
+    ld e,0fh
     call e_faf9h
     ld hl,dos_msg
 lf9c7h:
     call cbm_get_byte
     ld (hl),a
-    sub 030h
+    sub 30h
     jr c,lf9c7h
-    cp 00ah
+    cp 0ah
     jr nc,lf9c7h
     inc hl
     ld b,a
@@ -1474,10 +1474,10 @@ lf9c7h:
     call cbm_get_byte
     ld (hl),a
     inc hl
-    sub 030h
+    sub 30h
     add a,b
     push af
-    ld c,03ch
+    ld c,3ch
 lf9e5h:
     call cbm_get_byte
     dec c
@@ -1485,15 +1485,15 @@ lf9e5h:
     ld (hl),a
     inc hl
 lf9eeh:
-    cp 00dh
+    cp 0dh
     jr nz,lf9e5h
     call e_fb21h
     pop af
     ret
 lf9f7h:
     push hl
-    ld hl,dos_cmds_3    ;"M-W",00h,013h,01h
-    ld c,006h           ;6 bytes in string
+    ld hl,dos_cmds_3    ;"M-W",00h,13h,01h
+    ld c,06h            ;6 bytes in string
     ld a,(drive)        ;CP/M drive number
     call e_fabch        ;? write to device ?
     call e_ff1fh
@@ -1505,7 +1505,7 @@ lf9f7h:
     call e_fb47h
 
     ld hl,dos_cmds_2    ;"B-P 2 1"
-    ld c,007h           ;7 bytes in string
+    ld c,07h            ;7 bytes in string
     ld a,(drive)
     call e_fabch
     call e_ff1fh
@@ -1514,7 +1514,7 @@ lf9f7h:
     call e_fb47h
     ld a,(drive)
     call e_faadh
-    ld e,002h
+    ld e,02h
     call e_fb31h
     pop hl
 
@@ -1529,8 +1529,8 @@ lfa3eh:
     ld hl,lf8cdh
     call lf6fch
 
-    ld hl,dos_cmds_4    ;"M-R",00h,013h
-    ld c,005h           ;5 bytes in string
+    ld hl,dos_cmds_4    ;"M-R",00h,13h
+    ld c,05h            ;5 bytes in string
     ld a,(drive)
     call e_fabch
     call e_ff1fh
@@ -1539,7 +1539,7 @@ lfa3eh:
     call e_fb47h
     ld a,(drive)
     call e_faadh
-    ld e,00fh
+    ld e,0fh
     call e_faf9h
     call cbm_get_byte
     pop hl
@@ -1550,18 +1550,18 @@ lfa3eh:
     call e_fabch
 
     ld hl,dos_cmds_2    ;"B-P 2 1"
-    ld c,007h           ;7 bytes in string
+    ld c,07h            ;7 bytes in string
     call e_ff1fh
 
     call e_ff09h
     call e_fb47h
     ld a,(drive)
     call e_f9bch
-    cp 046h
+    cp 46h
     jr z,lfaa4h
     ld a,(drive)
     call e_faadh
-    ld e,002h
+    ld e,02h
     call e_faf9h
     pop de
     inc de
@@ -1583,7 +1583,7 @@ e_faadh:
     or a
     rra
     ld e,a
-    ld d,000h
+    ld d,00h
     ld hl,ddevs
     add hl,de
     ld d,(hl)
@@ -1592,14 +1592,14 @@ e_faadh:
     ret
 e_fabch:
     call e_faadh
-    ld e,00fh
+    ld e,0fh
     jp e_fb31h
 e_fac4h:
     call e_faadh
-    ld e,00fh
+    ld e,0fh
     push de
 
-    ld c,002h           ;2 bytes in string
+    ld c,02h            ;2 bytes in string
     ld hl,dos_cmds_0    ;"I0"
     rra
     jr nc,lfad5h
@@ -1608,8 +1608,8 @@ e_fac4h:
 lfad5h:
     call e_fb56h
     pop de
-    ld e,002h
-    ld c,002h
+    ld e,02h
+    ld c,02h
     ld hl,lf687h
     jp e_fb56h
 
@@ -1623,31 +1623,31 @@ dos_cmds_2:
     db "B-P 2 1"
 
 dos_cmds_3:
-    db "M-W",00h,013h,01h
+    db "M-W",00h,13h,01h
 
 dos_cmds_4:
-    db "M-R",00h,013h
+    db "M-R",00h,13h
 
 e_faf9h:
     in a,(ppi2_pb)
-    or 001h
+    or 01h
     out (ppi2_pb),a
-    ld a,040h
+    ld a,40h
     or d
     call e_fe62h
     jr c,lfb13h
     ld a,e
-    or 060h
+    or 60h
     call p,e_fe62h
     in a,(ppi2_pb)
-    or 00ch
+    or 0ch
     out (ppi2_pb),a
 lfb13h:
     push af
     in a,(ppi2_pb)
     and 0feh
     out (ppi2_pb),a
-    ld a,019h
+    ld a,19h
 lfb1ch:
     dec a
     jr nz,lfb1ch
@@ -1655,41 +1655,41 @@ lfb1ch:
     ret
 e_fb21h:
     in a,(ppi2_pb)
-    or 001h
+    or 01h
     out (ppi2_pb),a
     in a,(ppi2_pb)
     and 0f3h
     out (ppi2_pb),a
-    ld a,05fh
+    ld a,5fh
     jr e_fb49h
 e_fb31h:
     in a,(ppi2_pb)
-    or 001h
+    or 01h
     out (ppi2_pb),a
-    ld a,020h
+    ld a,20h
     or d
     call e_fe62h
     jr c,lfb13h
     ld a,e
-    or 060h
+    or 60h
     call p,e_fe62h
     jr lfb13h
 e_fb47h:
-    ld a,03fh
+    ld a,3fh
 e_fb49h:
     push af
     in a,(ppi2_pb)
-    or 001h
+    or 01h
     out (ppi2_pb),a
     pop af
     call e_fe62h
     jr lfb13h
 e_fb56h:
     in a,(ppi2_pb)
-    or 001h
+    or 01h
     out (ppi2_pb),a
     ld a,d
-    or 020h
+    or 20h
     call e_fe62h
     ld a,e
     or 0f0h
@@ -1701,10 +1701,10 @@ e_fb56h:
     jr e_fb47h
 e_fb72h:
     in a,(ppi2_pb)
-    or 001h
+    or 01h
     out (ppi2_pb),a
     ld a,d
-    or 020h
+    or 20h
     call e_fe62h
     ld a,e
     or 0e0h
@@ -1721,7 +1721,7 @@ sub_fb8fh:
     push bc
     ld b,0c8h
 lfb92h:
-    add a,000h
+    add a,00h
     djnz lfb92h
     pop bc
     ret
@@ -1735,10 +1735,10 @@ conin:
     jp nc,ser_in        ;Jump out if console is RS-232 port (CON: = TTY:)
 
     in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
-    or 004h             ;Turn on bit 2 (NDAC)
+    or 04h              ;Turn on bit 2 (NDAC)
     out (ppi2_pb),a     ;NDAC=?
 
-    ld a,002h           ;Command 002h = Wait for a key and send it
+    ld a,02h            ;Command 02h = Wait for a key and send it
     call cbm_srq
     call cbm_get_byte
 
@@ -1758,9 +1758,9 @@ const:
     rra
     jp nc,ser_rx_status ;Jump out if console is RS-232 port (CON: = TTY:)
 
-    ld a,001h           ;Command 001h = Key available?
+    ld a,01h            ;Command 01h = Key available?
     call cbm_srq
-    ld a,000h
+    ld a,00h
     ret nc              ;Return with A=0 if no key
     ld a,0ffh
     ret                 ;Return with A=0ffh if a key is available
@@ -1773,7 +1773,7 @@ conout:
     rra
     jp nc,ser_out       ;Jump out if console is RS-232 port (CON: = TTY:)
 
-    ld a,(0005ah)
+    ld a,(005ah)
     or a
     jp nz,lfc1dh
 
@@ -1785,22 +1785,22 @@ conout:
     cp c
     jr nz,lfbe6h
 
-    ld a,001h
-    ld (00059h),a
+    ld a,01h
+    ld (0059h),a
     ret
 
 lfbe6h:
-    ld a,(00059h)
+    ld a,(0059h)
     or a
     jp z,lfbf3h
     xor a
-    ld (00059h),a
+    ld (0059h),a
     set 7,c
 lfbf3h:
     ld a,c
-    cp 020h
+    cp 20h
     jr c,lfbfch
-    cp 07bh
+    cp 7bh
     jr c,cbm_conout
 lfbfch:
     ld hl,scrtab
@@ -1813,31 +1813,31 @@ lfbffh:
     ld a,(hl)
     inc hl
     jr nz,lfbffh
-    cp 01bh
+    cp 1bh
     jr z,lfc17h
     ld c,a
 
 cbm_conout:
 ;Put the character in C on the CBM screen
 ;
-    ld a,004h           ;Command 004h = Write to the terminal screen
+    ld a,04h            ;Command 04h = Write to the terminal screen
     call cbm_srq
     ld a,c              ;A=C
     jp cbm_send_byte    ;Jump out to send byte in A
 
 lfc17h:
-    ld a,002h
-    ld (0005ah),a
+    ld a,02h
+    ld (005ah),a
     ret
 lfc1dh:
     dec a
-    ld (0005ah),a
+    ld (005ah),a
     jr z,lfc28h
     ld a,c
-    ld (0005bh),a
+    ld (005bh),a
     ret
 lfc28h:
-    ld a,(0005bh)
+    ld a,(005bh)
     ld d,a
     ld e,c
     ld a,(xy_order)
@@ -1848,30 +1848,30 @@ lfc28h:
     ld d,a
 lfc36h:
     ld a,(iobyte)
-    and 003h            ;Mask off all but bits 1 and 0
-    cp 001h             ;Compare to 1 (CON: = CRT:)
+    and 03h             ;Mask off all but bits 1 and 0
+    cp 01h              ;Compare to 1 (CON: = CRT:)
     ret nz              ;Return if console is not CBM computer (CRT:)
 
     push de
-    ld c,01bh
+    ld c,1bh
     call cbm_conout
     pop de
     push de
     ld a,e
     ld hl,x_offset
     sub (hl)
-    cp 060h
+    cp 60h
     jr c,lfc51h
-    sub 060h
+    sub 60h
 lfc51h:
-    add a,020h
+    add a,20h
     ld c,a
     call cbm_conout
     pop af
     ld hl,y_offset
     sub (hl)
-    and 01fh
-    or 020h
+    and 1fh
+    or 20h
     ld c,a
     jp cbm_conout
 
@@ -1880,7 +1880,7 @@ ser_rx_status:
 ;Returns A=0 if no byte is ready, A=0FFh if one is.
 ;
     in a,(usart_st)     ;Read USART status register
-    and 002h            ;Mask off all but RxRDY bit
+    and 02h             ;Mask off all but RxRDY bit
     ret z               ;Return A=0 if no byte
     or 0ffh
     ret                 ;Return A=FF if a byte is ready
@@ -1891,7 +1891,7 @@ ser_out:
 ;
     in a,(usart_st)     ;Read USART status register
     cpl                 ;Invert it
-    and 084h            ;Mask off all but bits 7 (DSR) and 2 (TxEMPTY)
+    and 84h             ;Mask off all but bits 7 (DSR) and 2 (TxEMPTY)
     jr nz,ser_out       ;Wait until DSR=1 and TxEMPTY=1
 
     ld a,c
@@ -1903,7 +1903,7 @@ ser_in:
 ;Blocks until a byte is available, then returns it in A.
 ;
     in a,(usart_st)     ;Read USART status register
-    and 002h            ;Mask off all but bit 1 (RxRDY)
+    and 02h             ;Mask off all but bit 1 (RxRDY)
     jr z,ser_in         ;Wait until a byte is available
 
     in a,(usart_db)     ;Read data byte
@@ -1913,12 +1913,12 @@ cbm_srq:
 ;Send a Service Request (SRQ) to the CBM computer.
 ;
 ;A = command to send, one of:
-;  020h = Transfer bytes from the SoftBox to CBM memory
-;  010h = Transfer bytes from CBM memory to the SoftBox
-;  008h = Jump to a subroutine in CBM memory
-;  004h = Write to the terminal screen
-;  002h = Wait for a key and send it
-;  001h = Key available?
+;  20h = Transfer bytes from the SoftBox to CBM memory
+;  10h = Transfer bytes from CBM memory to the SoftBox
+;  08h = Jump to a subroutine in CBM memory
+;  04h = Write to the terminal screen
+;  02h = Wait for a key and send it
+;  01h = Key available?
 ;
 ;This routine queries the CBM keyboard status each time it is called.
 ;The Carry flag will be set if a key is available, clear if not.
@@ -1933,7 +1933,7 @@ lfc81h:
     out (ppi1_pb),a     ;Write data byte to IC17 8255 Port B (IEEE data out)
 
     in a,(ppi2_pb)
-    or 020h
+    or 20h
     out (ppi2_pb),a     ;Set SRQ high (?)
 
     in a,(ppi2_pb)
@@ -1948,7 +1948,7 @@ lfc95h:
     rla                 ;Rotate bit 7 (key available status) into Carry flag
     push af             ;Push data IEEE data byte read from CBM
 
-    ld a,000h
+    ld a,00h
     out (ppi1_pb),a     ;Release IEEE data lines
 
 lfca1h:
@@ -1968,7 +1968,7 @@ list:
     jp p,cbm_conout     ;Jump out if List is CBM computer (LST: = CRT:)
 
     ld e,0ffh
-    and 040h            ;Mask off all but bit 6
+    and 40h             ;Mask off all but bit 6
     jr z,lfcc3h         ;Jump if List is CBM printer (LST: = LPT:)
 
                         ;List must be ASCII printer (LST: = UL1:)
@@ -1980,7 +1980,7 @@ lfcc3h:
     ld a,(lpt_dev)
     ld d,a
     in a,(ppi2_pb)
-    or 001h
+    or 01h
     out (ppi2_pb),a
     ld a,(lptype)
     ld b,a
@@ -1992,35 +1992,35 @@ lfcc3h:
     ld hl,0ea6eh
     ld a,(hl)
     ld (hl),c
-    cp 00ah
+    cp 0ah
     jr z,lfcf8h
-    cp 00dh
+    cp 0dh
     jr nz,lfd04h
     ld a,c
-    cp 00ah
+    cp 0ah
     jr z,lfd04h
     ld a,b
     or a
     call z,sub_fb8fh
-    ld a,08dh
+    ld a,8dh
     call e_fe62h
 lfcf8h:
     bit 1,b
     jr nz,lfd04h
     call sub_fb8fh
-    ld a,011h
+    ld a,11h
     call e_fe62h
 lfd04h:
     ld a,c
-    cp 05fh
+    cp 5fh
     jr nz,lfd0bh
     ld a,0a4h
 lfd0bh:
-    cp 00dh
+    cp 0dh
     jr z,lfd20h
-    cp 00ah
+    cp 0ah
     jr nz,lfd15h
-    ld a,00dh
+    ld a,0dh
 lfd15h:
     call sub_fd6bh
     bit 1,b
@@ -2028,7 +2028,7 @@ lfd15h:
     call e_fe62h
 lfd20h:
     in a,(ppi2_pb)
-    or 001h
+    or 01h
     out (ppi2_pb),a
     jp e_fb47h
 lfd29h:
@@ -2051,7 +2051,7 @@ listst:
     ret nc
 
     ld a,(iobyte)
-    and 040h            ;Mask off all but bit 6
+    and 40h             ;Mask off all but bit 6
     ld a,(lpt_dev)
     jr z,lfd4bh         ;Jump if List is CBM printer (LST: = LPT:)
 
@@ -2064,7 +2064,7 @@ lfd4bh:
     call sub_fb8fh
     in a,(ppi2_pa)      ;Read IEEE-488 control lines in
     cpl                 ;Invert byte
-    and 008h            ;Mask off all except bit 3 (NRFD in)
+    and 08h             ;Mask off all except bit 3 (NRFD in)
     push af
     call e_fb47h
     pop af
@@ -2078,23 +2078,23 @@ ser_tx_status:
 ;
     in a,(usart_st)     ;Read USART status register
     cpl                 ;Invert it
-    and 084h            ;Mask off all but bits 7 (DSR) and 2 (TxEMPTY)
+    and 84h             ;Mask off all but bits 7 (DSR) and 2 (TxEMPTY)
     ld a,0ffh
     ret z               ;Return A=0FFh if ready to transmit
     inc a
     ret                 ;Return A=0 if not ready
 
 sub_fd6bh:
-    cp 041h
+    cp 41h
     ret c
-    cp 060h
+    cp 60h
     jr c,lfd78h
-    cp 07bh
+    cp 7bh
     ret nc
-    xor 020h
+    xor 20h
     ret
 lfd78h:
-    xor 080h
+    xor 80h
     ret
 
 punch:
@@ -2102,7 +2102,7 @@ punch:
 ;C = character to write to the punch
 ;
     ld a,(iobyte)
-    and 030h
+    and 30h
     jp z,ser_out        ;Jump out if Punch is RS-232 port (PUN: = TTY:)
 
                         ;Punch must be Other Device (PUN: = PTP:)
@@ -2120,7 +2120,7 @@ reader:
 ;Blocks until a byte is available, then returns it in A.
 ;
     ld a,(iobyte)
-    and 00ch
+    and 0ch
     jp z,ser_in         ;Jump out if Reader is RS-232 port (RDR: = TTY:)
 
                         ;Punch must be Other Device (PUN: = PTR:)
@@ -2156,7 +2156,7 @@ cbm_clear:
     rra
     ret nc              ;Do nothing if console is RS-232 (CRT: = TTY:)
 
-    ld c,01ah           ;01ah = Lear Siegler ADM-3A clear screen code
+    ld c,1ah            ;01ah = Lear Siegler ADM-3A clear screen code
     jp cbm_conout
 
 cbm_jsr:
@@ -2164,7 +2164,7 @@ cbm_jsr:
 ;
 ;HL = Subroutine address on CBM
 ;
-    ld a,008h           ;Command 008h = Jump to a subroutine in CBM memory
+    ld a,08h            ;Command 08h = Jump to a subroutine in CBM memory
     call cbm_srq
     ld a,l
     call cbm_send_byte  ;Send low byte of address
@@ -2178,7 +2178,7 @@ cbm_peek:
 ;HL = Start address on SoftBox
 ;BC = Number of bytes to transfer
 ;
-    ld a,010h           ;Command 010h = Transfer from CBM to SoftBox
+    ld a,10h            ;Command 10h = Transfer from CBM to SoftBox
     call cbm_srq
     ld a,c
     call cbm_send_byte  ;Send low byte of byte counter
@@ -2190,7 +2190,7 @@ cbm_peek:
     call cbm_send_byte  ;Send high byte
 
     in a,(ppi2_pb)
-    or 004h
+    or 04h
     out (ppi2_pb),a     ;NDAC=?
 
 cbm_peek_loop:
@@ -2214,7 +2214,7 @@ cbm_poke:
 ;HL = Start address on SoftBox
 ;BC = Number of bytes to transfer
 ;
-    ld a,020h           ;Command 020h = Transfer from SoftBox to CBM
+    ld a,20h            ;Command 20h = Transfer from SoftBox to CBM
     call cbm_srq
     ld a,c
     call cbm_send_byte  ;Send low byte of byte counter
@@ -2236,12 +2236,12 @@ cbm_poke_loop:
 
 cbm_set_time:
 ;Set the time on the CBM real time clock
-    ld e,000h
+    ld e,00h
     ld (jiffies),de
     ld (mins),hl
-    ld de,00014h        ;CBM start address
+    ld de,0014h         ;CBM start address
     ld hl,jiffies       ;SoftBox start address
-    ld bc,00004h        ;4 bytes to transfer
+    ld bc,0004h         ;4 bytes to transfer
     jp cbm_poke         ;Transfer from SoftBox to CBM
 
 cbm_clr_jiff:
@@ -2252,15 +2252,15 @@ cbm_clr_jiff:
     ld (jiffy1),a
     ld (jiffy0),a
     ld hl,jiffy2        ;SoftBox start address
-    ld de,00018h        ;CBM start address
-    ld bc,00003h        ;3 bytes to transfer
+    ld de,0018h         ;CBM start address
+    ld bc,0003h         ;3 bytes to transfer
     jp cbm_poke         ;Transfer from SoftBox to CBM
 
 cbm_get_time:
 ;Read the CBM clocks (both RTC and jiffy counter)
-    ld bc,00007h        ;7 bytes to transfer
+    ld bc,0007h         ;7 bytes to transfer
     ld hl,jiffies       ;SoftBox start address
-    ld de,00014h        ;CBM start address
+    ld de,0014h         ;CBM start address
     call cbm_peek       ;Transfer from CBM to SoftBox
     ld de,(jiffies)
     ld hl,(mins)
@@ -2273,25 +2273,25 @@ e_fe62h:
 lfe63h:
     in a,(ppi2_pa)      ;Read IEEE-488 control lines in
     cpl                 ;Invert byte
-    and 008h            ;Mask off all except bit 3 (NRFD in)
+    and 08h             ;Mask off all except bit 3 (NRFD in)
     jr z,lfe63h         ;Wait until NRFD=?
 
     in a,(ppi2_pa)      ;Read IEEE-488 control lines in
     cpl                 ;Invert byte
-    and 004h            ;Mask off all except bit 2 (NDAC in)
+    and 04h             ;Mask off all except bit 2 (NDAC in)
     jr nz,lfe9eh        ;Jump if NDAC=?
 
     pop af
     out (ppi1_pb),a     ;Write byte to IEEE-488 data lines
 
     in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
-    or 002h             ;Turn on bit 1 (DAV)
+    or 02h              ;Turn on bit 1 (DAV)
     out (ppi2_pb),a     ;DAV=?
 
 lfe7ah:
     in a,(ppi2_pa)      ;Read IEEE-488 control lines in
     cpl                 ;Invert byte
-    and 004h            ;Mask off all except bit 2 (NDAC in)
+    and 04h             ;Mask off all except bit 2 (NDAC in)
     jr z,lfe7ah         ;Wait until NDAC=?
 
     in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
@@ -2304,7 +2304,7 @@ lfe7ah:
 lfe8ah:
     in a,(ppi2_pa)      ;Read IEEE-488 control lines in
     cpl                 ;Invert byte
-    and 004h            ;Mask off all except bit 2 (NDAC in)
+    and 04h             ;Mask off all except bit 2 (NDAC in)
     jr nz,lfe8ah        ;Wait until NDAC=?
 
     ex (sp),hl          ;Waste time
@@ -2314,7 +2314,7 @@ lfe8ah:
 
     in a,(ppi2_pa)     ;Read IEEE-488 control lines in
     cpl                ;Mask off all except bit 2 (NDAC in)
-    and 004h           ;Mask off all except bit 2 (NDAC in)
+    and 04h            ;Mask off all except bit 2 (NDAC in)
     jr nz,lfe8ah       ;Wait until NDAC=?
 
     or a               ;Set flags
@@ -2333,17 +2333,17 @@ cbm_send_byte:
 lfea3h:
     in a,(ppi2_pa)
     cpl                 ;Invert A
-    and 008h            ;Mask off all except bit 3 (NRFD in)
+    and 08h             ;Mask off all except bit 3 (NRFD in)
     jr z,lfea3h         ;Wait until NRFD=?
 
     in a,(ppi2_pb)
-    or 002h             ;Turn on bit 2 (NDAC out)
+    or 02h              ;Turn on bit 2 (NDAC out)
     out (ppi2_pb),a     ;NDAC=?
 
 lfeb0h:
     in a,(ppi2_pa)
     cpl                 ;Invert A
-    and 004h            ;Mask off all except bit 2 (NDAC in)
+    and 04h             ;Mask off all except bit 2 (NDAC in)
     jr z,lfeb0h         ;Wait until NDAC=?
 
     in a,(ppi2_pb)
@@ -2361,7 +2361,7 @@ e_fec1h:
 lfec7h:
     in a,(ppi2_pa)
     cpl
-    and 002h
+    and 02h
     jr z,lfee5h
     call sub_fb8fh
     dec bc
@@ -2380,7 +2380,7 @@ cbm_get_byte:
 lfedeh:
     in a,(ppi2_pa)
     cpl                 ;Invert A
-    and 002h            ;Mask off all except bit 1 (DAV in)
+    and 02h             ;Mask off all except bit 1 (DAV in)
     jr nz,lfedeh        ;Wait until DAV=?
 
 lfee5h:
@@ -2391,7 +2391,7 @@ lfee5h:
     ld (0ea6ch),a       ;TODO What is 0ea6ch?
 
     in a,(ppi2_pb)
-    or 008h             ;Turn on bit 3 (NRFD out)
+    or 08h              ;Turn on bit 3 (NRFD out)
     out (ppi2_pb),a     ;NRFD=?
 
     in a,(ppi2_pb)
@@ -2401,11 +2401,11 @@ lfee5h:
 lfef9h:
     in a,(ppi2_pa)
     cpl                 ;Invert A
-    and 002h            ;Mask off all except bit 1 (DAV in)
+    and 02h             ;Mask off all except bit 1 (DAV in)
     jr z,lfef9h         ;Wait until DAV=?
 
     in a,(ppi2_pb)
-    or 004h             ;Turn on bit 2 (NDAC out)
+    or 04h              ;Turn on bit 2 (NDAC out)
     out (ppi2_pb),a     ;NDAC=?
 
     pop af              ;Pop the IEEE data byte off the stack
@@ -2413,11 +2413,11 @@ lfef9h:
     ret
 
 e_ff09h:
-    ld a,00dh
+    ld a,0dh
 e_ff0bh:
     push af
     in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
-    or 010h             ;Turn on bit 4 (EOI)
+    or 10h              ;Turn on bit 4 (EOI)
     out (ppi2_pb),a     ;EOI=?
 
     pop af
@@ -2464,7 +2464,7 @@ filler:
     db 00h,00h,00h
 
 checksum:
-    db 091h, 0ffh
+    db 91h, 0ffh
 
 lffffh:
     db 0ffh
