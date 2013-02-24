@@ -552,44 +552,45 @@ CTRL_CODES:
 ;on the Lear Seigler ADM-3A terminal.  Some bytes that are unused on
 ;that terminal are used for other purposes here.
 ;
-$071E:           .WORD CTRL_00  ;Do nothing
-$0720:           .WORD CTRL_01  ;Go to 8-bit character mode
-$0722:           .WORD CTRL_02  ;Go to 7-bit character mode
-$0724:           .WORD CTRL_03  ;Do nothing
-$0726:           .WORD CTRL_04  ;Set TAB STOP at current position
-$0728:           .WORD CTRL_05  ;Clear TAB STOP at current position
-$072A:           .WORD CTRL_06  ;Clear all TAB STOPS
-$072C:           .WORD CTRL_07  ;Ring bell
-$072E:           .WORD CTRL_08  ;Cursor left
-$0730:           .WORD CTRL_09  ;Perform TAB
-$0732:           .WORD CTRL_0A  ;Cursor down (Line feed)
-$0734:           .WORD CTRL_0B  ;Cursor up
-$0736:           .WORD CTRL_0C  ;Cursor right
-$0738:           .WORD CTRL_0D  ;Carriage return
-$073A:           .WORD CTRL_0E  ;Reverse video on
-$073C:           .WORD CTRL_0F  ;Reverse video off
-$073E:           .WORD CTRL_10  ;Cursor off
-$0740:           .WORD CTRL_11  ;Insert a blank line
-$0742:           .WORD CTRL_12  ;Scroll up one line
-$0744:           .WORD CTRL_13  ;Clear to end of line
-$0746:           .WORD CTRL_14  ;Clear to end of screen
-$0748:           .WORD CTRL_15  ;Go to uppercase mode
-$074A:           .WORD CTRL_16  ;Go to lowercase mode
-$074C:           .WORD CTRL_17  ;Set line spacing to tall
-$074E:           .WORD CTRL_18  ;Set line spacing to short
-$0750:           .WORD CTRL_19  ;Cursor on
-$0752:           .WORD CTRL_1A  ;Clear screen
-$0754:           .WORD CTRL_1B  ;Move cursor to X,Y position
-$0756:           .WORD CTRL_1C  ;Insert a space on current line
-$0758:           .WORD CTRL_1D  ;Delete character at cursor
-$075A:           .WORD CTRL_1E  ;Home cursor
-$075C:           .WORD CTRL_1F  ;Do nothing
+;                               ;Hex  Keyboard
+$071E:           .WORD CTRL_00  ;00   CTRL-@    Do nothing
+$0720:           .WORD CTRL_01  ;01   CTRL-A    Go to 8-bit character mode
+$0722:           .WORD CTRL_02  ;02   CTRL-B    Go to 7-bit character mode
+$0724:           .WORD CTRL_03  ;03   CTRL-C    Do nothing
+$0726:           .WORD CTRL_04  ;04   CTRL-D    Set a TAB stop at current position
+$0728:           .WORD CTRL_05  ;05   CTRL-E    Clear TAB stop at current position
+$072A:           .WORD CTRL_06  ;06   CTRL-F    Clear all TAB stops
+$072C:           .WORD CTRL_07  ;07   CTRL-G    Ring bell
+$072E:           .WORD CTRL_08  ;08   CTRL-H    Cursor left
+$0730:           .WORD CTRL_09  ;09   CTRL-I    Perform TAB
+$0732:           .WORD CTRL_0A  ;0A   CTRL-J    Cursor down (Line feed)
+$0734:           .WORD CTRL_0B  ;0B   CTRL-K    Cursor up
+$0736:           .WORD CTRL_0C  ;0C   CTRL-L    Cursor right
+$0738:           .WORD CTRL_0D  ;0D   CTRL-M    Carriage return
+$073A:           .WORD CTRL_0E  ;0E   CTRL-N    Reverse video on
+$073C:           .WORD CTRL_0F  ;0F   CTRL-O    Reverse video off
+$073E:           .WORD CTRL_10  ;10   CTRL-P    Cursor off
+$0740:           .WORD CTRL_11  ;11   CTRL-Q    Insert a blank line
+$0742:           .WORD CTRL_12  ;12   CTRL-R    Scroll up one line
+$0744:           .WORD CTRL_13  ;13   CTRL-S    Clear to end of line
+$0746:           .WORD CTRL_14  ;14   CTRL-T    Clear to end of screen
+$0748:           .WORD CTRL_15  ;15   CTRL-U    Go to uppercase mode
+$074A:           .WORD CTRL_16  ;16   CTRL-V    Go to lowercase mode
+$074C:           .WORD CTRL_17  ;17   CTRL-W    Set line spacing to tall
+$074E:           .WORD CTRL_18  ;18   CTRL-X    Set line spacing to short
+$0750:           .WORD CTRL_19  ;19   CTRL-Y    Cursor on
+$0752:           .WORD CTRL_1A  ;1A   CTRL-Z    Clear screen
+$0754:           .WORD CTRL_1B  ;1B   ESC       Move cursor to X,Y position
+$0756:           .WORD CTRL_1C  ;1C   CTRL-/    Insert a space on current line
+$0758:           .WORD CTRL_1D  ;1D   CTRL-]    Delete character at cursor
+$075A:           .WORD CTRL_1E  ;1E   CTRL-^    Home cursor
+$075C:           .WORD CTRL_1F  ;1F             Do nothing
 
 CTRL_07:
 ;Ring bell
 ;
-$075E: A9 07     LDA #$07   ;CHR$(7) = Bell
-$0760: 4C D2 FF  JMP CHROUT ;Kernal Print a byte
+$075E: A9 07     LDA #$07     ;CHR$(7) = Bell
+$0760: 4C D2 FF  JMP CHROUT   ;KERNAL
 
 CTRL_18:
 ;Set line spacing to tall (the default spacing for lowercase graphic mode).

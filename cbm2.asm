@@ -788,38 +788,39 @@ ctrl_codes:
 ;on the Lear Seigler ADM-3A terminal.  Some bytes that are unused on
 ;that terminal are used for other purposes here.
 ;
-    !word ctrl_00   ; Do nothing
-    !word ctrl_01   ; Go to 8-bit character mode
-    !word ctrl_02   ; Go to 7-bit character mode
-    !word ctrl_03   ; Do nothing
-    !word ctrl_04   ; Set TAB STOP at current position
-    !word ctrl_05   ; Clear TAB STOP at current position
-    !word ctrl_06   ; Clear all TAB STOPS
-    !word ctrl_07   ; Ring bell
-    !word ctrl_08   ; Cursor left
-    !word ctrl_09   ; Perform TAB
-    !word ctrl_0a   ; Cursor down (Line feed)
-    !word ctrl_0b   ; Cursor up
-    !word ctrl_0c   ; Cursor right
-    !word ctrl_0d   ; Carriage return
-    !word ctrl_0e   ; Reverse video on
-    !word ctrl_0f   ; Reverse video off
-    !word ctrl_10   ; Cursor off
-    !word ctrl_11   ; Insert a blank line
-    !word ctrl_12   ; Scroll up one line
-    !word ctrl_13   ; Clear to end of line
-    !word ctrl_14   ; Clear to end of screen
-    !word ctrl_15   ; Go to uppercase mode
-    !word ctrl_16   ; Go to lowercase mode
-    !word ctrl_17   ; Set line spacing to tall
-    !word ctrl_18   ; Set line spacing to short
-    !word ctrl_19   ; Cursor on
-    !word ctrl_1a   ; Clear screen
-    !word ctrl_1b   ; Move cursor to X,Y position
-    !word ctrl_1c   ; Insert a space on current line
-    !word ctrl_1d   ; Delete character at cursor
-    !word ctrl_1e   ; Home cursor
-    !word ctrl_1f   ; Do nothing
+                    ;Hex  Keyboard
+    !word ctrl_00   ;00   CTRL-@    Do nothing
+    !word ctrl_01   ;01   CTRL-A    Go to 8-bit character mode
+    !word ctrl_02   ;02   CTRL-B    Go to 7-bit character mode
+    !word ctrl_03   ;03   CTRL-C    Do nothing
+    !word ctrl_04   ;04   CTRL-D    Set a TAB stop at current position
+    !word ctrl_05   ;05   CTRL-E    Clear TAB stop at current position
+    !word ctrl_06   ;06   CTRL-F    Clear all TAB stops
+    !word ctrl_07   ;07   CTRL-G    Ring bell
+    !word ctrl_08   ;08   CTRL-H    Cursor left
+    !word ctrl_09   ;09   CTRL-I    Perform TAB
+    !word ctrl_0a   ;0A   CTRL-J    Cursor down (Line feed)
+    !word ctrl_0b   ;0B   CTRL-K    Cursor up
+    !word ctrl_0c   ;0C   CTRL-L    Cursor right
+    !word ctrl_0d   ;0D   CTRL-M    Carriage return
+    !word ctrl_0e   ;0E   CTRL-N    Reverse video on
+    !word ctrl_0f   ;0F   CTRL-O    Reverse video off
+    !word ctrl_10   ;10   CTRL-P    Cursor off
+    !word ctrl_11   ;11   CTRL-Q    Insert a blank line
+    !word ctrl_12   ;12   CTRL-R    Scroll up one line
+    !word ctrl_13   ;13   CTRL-S    Clear to end of line
+    !word ctrl_14   ;14   CTRL-T    Clear to end of screen
+    !word ctrl_15   ;15   CTRL-U    Go to uppercase mode
+    !word ctrl_16   ;16   CTRL-V    Go to lowercase mode
+    !word ctrl_17   ;17   CTRL-W    Set line spacing to tall
+    !word ctrl_18   ;18   CTRL-X    Set line spacing to short
+    !word ctrl_19   ;19   CTRL-Y    Cursor on
+    !word ctrl_1a   ;1A   CTRL-Z    Clear screen
+    !word ctrl_1b   ;1B   ESC       Move cursor to X,Y position
+    !word ctrl_1c   ;1C   CTRL-/    Insert a space on current line
+    !word ctrl_1d   ;1D   CTRL-]    Delete character at cursor
+    !word ctrl_1e   ;1E   CTRL-^    Home cursor
+    !word ctrl_1f   ;1F             Do nothing
 
 ctrl_07:
 ;Ring bell
