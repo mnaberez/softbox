@@ -1319,12 +1319,12 @@ graphics_keys:
 
 ;80-column business keyboard table           ----- ----- ----- ----- ----- ----- ----- -----
 business_keys:
-    !byte $b2,$b5,$b8,$ad,$38,$0c,$ff,$ff ;  ^2    ^5    ^8    -     8     CSRRT NONE  NONE     ^ = Extra Bits Set
-    !byte $b1,$b4,$b7,$30,$37,$5e,$ff,$39 ;  ^1    ^4    ^7    0     7     UARRW NONE  9        UARROW = Up Arrow
-    !byte $1b,$53,$46,$48,$5d,$4b,$bb,$35 ;  ESC   S     F     H     ]     K     ;     5
-    !byte $41,$44,$47,$4a,$0d,$4c,$40,$36 ;  A     D     G     J     RTRN  L     @     6
-    !byte $09,$57,$52,$59,$5c,$49,$50,$7f ;  TAB   W     R     Y     \     I     P     DEL
-    !byte $51,$45,$54,$55,$0a,$4f,$5b,$34 ;  Q     E     T     U     CSRDN O     [     4
+    !byte $b2,$b5,$b8,$ad,$38,$0c,$ff,$ff ;  ^2    ^5    ^8    -     8     CSRRT NONE  NONE     UARROW = Up Arrow
+    !byte $b1,$b4,$b7,$30,$37,$5e,$ff,$39 ;  ^1    ^4    ^7    0     7     UARRW NONE  9
+    !byte $1b,$53,$46,$48,$5d,$4b,$bb,$35 ;  ESC   S     F     H     ]     K     ;     5        ^ = Bit 7 is set,
+    !byte $41,$44,$47,$4a,$0d,$4c,$40,$36 ;  A     D     G     J     RTRN  L     @     6            indicating the
+    !byte $09,$57,$52,$59,$5c,$49,$50,$7f ;  TAB   W     R     Y     \     I     P     DEL          key shifts to a
+    !byte $51,$45,$54,$55,$0a,$4f,$5b,$34 ;  Q     E     T     U     CSRDN O     [     4            special character
     !byte $01,$43,$42,$ae,$2e,$ff,$01,$33 ;  SHIFT C     B     ^.    .     NONE  SHIFT 3
     !byte $5a,$56,$4e,$ac,$30,$ff,$ff,$32 ;  Z     V     N     ,     0     NONE  NONE  2
     !byte $00,$58,$20,$4d,$1e,$ff,$af,$31 ;  RVS   X     SPACE M     HOME  NONE  ^/    1
