@@ -45,9 +45,9 @@ uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
 
 bas_header:
 ;"50 sys(1039)"
-;  Note: The line number is used in a clever way.  It can be manually set
-;  to either 50 or 60 to tell the program whether the power line frequency
-;  is 50 Hz (Europe) or 60 Hz (North America).
+;  Note: The line number is used in a clever way.  It is changed by the
+;  configuration utility NEWSYS to either 50 or 60.  This tells the program
+;  the frequency (in Hertz) at which the CBM system interrupt occurs.
 ;
     !byte $00,$0d,$04,$32,$00,$9e,$28,$31
     !byte $30,$33,$39,$29,$00,$00,$00
@@ -409,10 +409,10 @@ l_0649:
     rts             ;  Got key: done.  Key is now in A.
 
 irq_handler:
-;On the PET/CBM, an IRQ occurs at 50 or 60 Hz depending on the power line
-;frequency.  The 6502 calls the main IRQ entry point ($E442 on BASIC 4.0)
-;which pushes A, X, and Y onto the stack and then executes JMP (cinv_lo).
-;We install this routine, IRQ_HANDLER, into cinv_lo during init.
+;On PET/CBM, an IRQ occurs at 50 or 60 Hz depending on the model and ROMs.
+;The 6502 calls the main IRQ entry point ($E442 on BASIC 4.0) which pushes
+;A, X, and Y onto the stack and then executes JMP (cinv_lo).  We install
+;this routine, IRQ_HANDLER, into cinv_lo during init.
 ;
     inc jiffy0          ;Counts number of Interrupts
     bne l_0659

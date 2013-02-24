@@ -50,9 +50,9 @@ JIFFY0      = $1A     ;Jiffy counter (LSB)
 
 BAS_HEADER:
 ;"50 sys(1039)"
-;  Note: The line number is used in a clever way.  It can be manually set
-;  to either 50 or 60 to tell the program whether the power line frequency
-;  is 50 Hz (Europe) or 60 Hz (North America).
+;  Note: The line number is used in a clever way.  It is changed by the
+;  configuration utility NEWSYS to either 50 or 60.  This tells the program
+;  the frequency (in Hertz) at which the CBM system interrupt occurs.
 ;
 $0400:           .BYT 00,0D,04,32,00,9E,28,31
 $0408:           .BYT 30,33,39,29,00,00,00
@@ -421,10 +421,10 @@ $064C: F0 E0     BEQ GET_KEY     ;  No key:  loop until we get one.
 $064E: 60        RTS             ;  Got key: done.  Key is now in A.
 
 IRQ_HANDLER:
-;On the PET/CBM, an IRQ occurs at 50 or 60 Hz depending on the power line
-;frequency.  The 6502 calls the main IRQ entry point ($E442 on BASIC 4.0)
-;which pushes A, X, and Y onto the stack and then executes JMP (CINV_LO).
-;We install this routine, IRQ_HANDLER, into CINV_LO during init.
+;On PET/CBM, an IRQ occurs at 50 or 60 Hz depending on the model and ROMs.
+;The 6502 calls the main IRQ entry point ($E442 on BASIC 4.0) which pushes
+;A, X, and Y onto the stack and then executes JMP (cinv_lo).  We install
+;this routine, IRQ_HANDLER, into cinv_lo during init.
 ;
 $064F: E6 1A     INC JIFFY0          ;Counts number of Interrupts
 $0651: D0 06     BNE L_0659
