@@ -1261,14 +1261,26 @@ key_check2:
 
 ;---- Translate SHIFTED 0-31 codes to terminal control codes
 key_sh_codes:
-    ldx #$0b               ;CTRL_0B Cursor up
-    cmp #$0a               ;SCAN=CRSR DOWN
+    ldx #$0b               ;Change to $0b (cursor up)
+    cmp #$0a               ;  from $0a (cursor down)
     beq key_ctrl_code
-    ldx #$08               ;CTRL_08 Cursor left
-    cmp #$0c               ;SCAN=CRSR RIGHT
+    ldx #$08               ;Change to $08 (cursor left)
+    cmp #$0c               ;  from $0c (cursor right)
     beq key_ctrl_code
-    ldx #$1a               ;CTRL_1A Clear screen
-    cmp #$1e               ;SCAN=HOME
+    ldx #$1a               ;Change to $1a (clear screen)
+    cmp #$1e               ;  from $1e (home)
+    beq key_ctrl_code
+    ldx #$7b               ;Change to $7b ( { )
+    cmp #$5b               ;  from $5b ( [ )
+    beq key_ctrl_code
+    ldx #$7c               ;Change to $7c ( | )
+    cmp #$5c               ;  from $5c ( \ )
+    beq key_ctrl_code
+    ldx #$7d               ;Change to $7d ( } )
+    cmp #$5d               ;  from $5d ( ] )
+    beq key_ctrl_code
+    ldx #$7e               ;Change to $7e ( ~ )
+    cmp #$5e               ;  from $5e ( ^ )
     beq key_ctrl_code
 
 ;---- these must be normal shifted keys or Graphics?
