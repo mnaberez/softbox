@@ -83,6 +83,7 @@ sector:   equ  0043h    ;Sector number
 drive:    equ  0044h    ;Drive number (0=A, 1=B, 2=C, etc.)
 dos_err:  equ  004fh    ;Last error code returned from CBM DOS
 dma:      equ  0052h    ;DMA buffer area address
+move_cnt: equ  005ah    ;Counts down bytes to consume in a cursor move seq
 dma_buf:  equ  0080h    ;Default DMA buffer area (128 bytes) for disk I/O
 ccp_base: equ 0d400h    ;Start of CCP area
 dirsize:  equ 0d8b2h    ;CCP directory width: 0=1 col, 1=2 cols, 3=4 cols
@@ -816,7 +817,7 @@ lf4c5h:
     ld (cdisk),a        ;CDISK=0 (User=0, Drive=A:)
     ld (0054h),a
     ld (0059h),a
-    ld (005ah),a
+    ld (move_cnt),a
     ld (scrtab),a
     out (ppi2_pc),a     ;Turn off LEDs
 
@@ -1773,51 +1774,56 @@ conout:
     rra
     jp nc,ser_out       ;Jump out if console is RS-232 port (CON: = TTY:)
 
-    ld a,(005ah)
+    ld a,(move_cnt)
     or a
-    jp nz,lfc1dh
+    jp nz,lfc1dh        ;Jump if already in a move-to sequence
 
     ld a,c
     rla
-    jr c,cbm_conout
+    jr c,conout_cbm     ;Jump if bit 7 of C is set
 
     ld a,(leadin)
     cp c
-    jr nz,lfbe6h
+    jr nz,lfbe6h        ;Jump if the character is not the lead-in
 
     ld a,01h
-    ld (0059h),a
-    ret
+    ld (0059h),a        ;Set 0059h = 1 if character is the lead-in
+    ret                 ;  and return
 
 lfbe6h:
     ld a,(0059h)
     or a
-    jp z,lfbf3h
-    xor a
-    ld (0059h),a
+    jp z,lfbf3h         ;Jump if 0059h = 0
+
+    xor a               ;A = 0
+    ld (0059h),a        ;Set 0059h = 0
+
     set 7,c
 lfbf3h:
-    ld a,c
+    ld a,c              ;A = C
     cp 20h
     jr c,lfbfch
+
     cp 7bh
-    jr c,cbm_conout
+    jr c,conout_cbm
+
 lfbfch:
-    ld hl,scrtab
+    ld hl,scrtab        ;HL = scrtab
 lfbffh:
     ld a,(hl)
     inc hl
     or a
-    jr z,cbm_conout
+    jr z,conout_cbm
     cp c
     ld a,(hl)
     inc hl
     jr nz,lfbffh
+
     cp 1bh
     jr z,lfc17h
     ld c,a
 
-cbm_conout:
+conout_cbm:
 ;Put the character in C on the CBM screen
 ;
     ld a,04h            ;Command 04h = Write to the terminal screen
@@ -1827,35 +1833,47 @@ cbm_conout:
 
 lfc17h:
     ld a,02h
-    ld (005ah),a
+    ld (move_cnt),a
     ret
+
 lfc1dh:
-    dec a
-    ld (005ah),a
-    jr z,lfc28h
+    dec a               ;A = A - 1
+    ld (move_cnt),a     ;Store A in 005ah
+    jr z,lfc28h         ;Jump if no more bytes to consume
+
     ld a,c
-    ld (005bh),a
+    ld (005bh),a        ;Remember C in 005bh
     ret
+
 lfc28h:
-    ld a,(005bh)
-    ld d,a
-    ld e,c
-    ld a,(xy_order)
+;No more bytes to consume
+;C contains one position (X or Y)
+;
+    ld a,(005bh)        ;A = contains other position (X or Y)
+    ld d,a              ;D = A
+    ld e,c              ;E = C
+
+    ld a,(xy_order)     ;xy_order: 0=Y first, 1=X first
     or a
-    jr z,lfc36h
+    jr z,lfc36h         ;Jump if positions don't need to be swapped
+
     ld a,e
     ld e,d
-    ld d,a
+    ld d,a              ;Swap D and E
+
 lfc36h:
+;Send move-to sequence
+;
     ld a,(iobyte)
     and 03h             ;Mask off all but bits 1 and 0
     cp 01h              ;Compare to 1 (CON: = CRT:)
     ret nz              ;Return if console is not CBM computer (CRT:)
 
     push de
-    ld c,1bh
-    call cbm_conout
+    ld c,1bh            ;1bh = LSI ADM-3A command to start move-to sequence
+    call conout_cbm     ;Send start of move-to
     pop de
+
     push de
     ld a,e
     ld hl,x_offset
@@ -1866,14 +1884,15 @@ lfc36h:
 lfc51h:
     add a,20h
     ld c,a
-    call cbm_conout
+    call conout_cbm     ;Send X-position byte for move-to
+
     pop af
     ld hl,y_offset
     sub (hl)
     and 1fh
     or 20h
     ld c,a
-    jp cbm_conout
+    jp conout_cbm       ;Send Y-position byte for move-to
 
 ser_rx_status:
 ;RS-232 serial port receive status
@@ -1955,6 +1974,7 @@ lfca1h:
     in a,(ppi1_pa)      ;A = Read IEEE data byte
     or a                ;Set flags
     jr nz,lfca1h        ;Wait for IEEE data bus to go to zero
+
     pop af
     ret
 
@@ -1965,7 +1985,7 @@ list:
     ld a,(iobyte)
     and 0c0h            ;Mask off all but buts 6 and 7
     jp z,ser_out        ;Jump out if List is RS-232 port (LST: = TTY:)
-    jp p,cbm_conout     ;Jump out if List is CBM computer (LST: = CRT:)
+    jp p,conout_cbm     ;Jump out if List is CBM computer (LST: = CRT:)
 
     ld e,0ffh
     and 40h             ;Mask off all but bit 6
@@ -2157,7 +2177,7 @@ cbm_clear:
     ret nc              ;Do nothing if console is RS-232 (CRT: = TTY:)
 
     ld c,1ah            ;01ah = Lear Siegler ADM-3A clear screen code
-    jp cbm_conout
+    jp conout_cbm
 
 cbm_jsr:
 ;Jump to a subroutine in CBM memory
