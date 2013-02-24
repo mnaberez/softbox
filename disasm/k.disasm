@@ -1072,39 +1072,43 @@ $0985: D0 F9     BNE L_0980
 $0987: 60        RTS
 
 CALC_SCRLINE:
-;Calculate a new pointer (SCRLINE) to the first byte of the current line
-;in screen RAM from the cursor position in CURSOR_X and CURSOR_Y.  The
-;address of the current character is SCRLINE + CURSOR_X.
+;Calculate a new pointer (scrline) to the first byte of the current
+;line in screen RAM by multiplying cursor_y by 40 or 80.
 ;
 ;Preserves A and X.
-;Returns CURSOR_X in Y.
+;Returns cursor_x in Y.
 ;
 $0988: 48        PHA
 $0989: A9 00     LDA #$00
-$098B: 85 03     STA SCRLINE_HI
+$098B: 85 03     STA SCRLINE_HI      ;Initialize high byte to zero
 $098D: A5 05     LDA CURSOR_Y
-$098F: 85 02     STA SCRLINE_LO
-$0991: 0A        ASL A
-$0992: 0A        ASL A
-$0993: 65 02     ADC SCRLINE_LO
-$0995: 0A        ASL A
-$0996: 0A        ASL A
-$0997: 26 03     ROL SCRLINE_HI
-$0999: 0A        ASL A
-$099A: 26 03     ROL SCRLINE_HI
-$099C: 85 02     STA SCRLINE_LO
+$098F: 85 02     STA SCRLINE_LO      ;Initialize low byte to row number (Y-pos)
+
+                                     ;Multiply by ( 2 * 2 + 1 ) * 2 * 2 * 2 = 40
+$0991: 0A        ASL A               ;  * 2
+$0992: 0A        ASL A               ;  * 2
+$0993: 65 02     ADC SCRLINE_LO      ;  + 1
+$0995: 0A        ASL A               ;  * 2
+$0996: 0A        ASL A               ;  * 2
+$0997: 26 03     ROL SCRLINE_HI      ;  Rotate any carry into high byte
+$0999: 0A        ASL A               ;  * 2
+$099A: 26 03     ROL SCRLINE_HI      ;  Rotate any additional carry into high byte
+$099C: 85 02     STA SCRLINE_LO      ;  Save row number (Y-pos) multiplied by 40
+
 $099E: A5 09     LDA X_WIDTH
-$09A0: C9 50     CMP #$50
-$09A2: D0 04     BNE L_09A8
+$09A0: C9 50     CMP #$50            ;80 columns?
+$09A2: D0 04     BNE L_09A8          ;  No: done multiplying
 $09A4: 06 02     ASL SCRLINE_LO
-$09A6: 26 03     ROL SCRLINE_HI
+$09A6: 26 03     ROL SCRLINE_HI      ;  Yes: multiply by 2 again
+
 L_09A8:
-$09A8: 18        CLC
+$09A8: 18        CLC                 ;Add screen base address to high byte
 $09A9: A4 04     LDY CURSOR_X
 $09AB: A5 03     LDA SCRLINE_HI
 $09AD: 69 80     ADC #>SCREEN
 $09AF: 85 03     STA SCRLINE_HI
-$09B1: 68        PLA
+
+$09B1: 68        PLA                 ;Return with column (X-pos) in Y register
 $09B2: 60        RTS
 
 CTRL_1B:

@@ -1237,37 +1237,41 @@ l_0980:
     rts
 
 calc_scrline:
-;Calculate a new pointer (scrline) to the first byte of the current line
-;in screen RAM from the cursor position in cursor_x and cursor_y.  The
-;address of the current character is scrline + cursor_x.
+;Calculate a new pointer (scrline) to the first byte of the current
+;line in screen RAM by multiplying cursor_y by 40 or 80.
 ;
 ;Preserves A and X.
 ;Returns cursor_x in Y.
 ;
     tay
     lda #$00
-    sta scrline_hi
+    sta scrline_hi      ;Initialize high byte to zero
     lda cursor_y
-    sta scrline_lo
-    asl ;a
-    asl ;a
-    adc scrline_lo
-    asl ;a
-    asl ;a
-    rol scrline_hi
-    asl ;a
-    rol scrline_hi
-    sta scrline_lo
-    bit x_width
-    bvc l_09a8
+    sta scrline_lo      ;Initialize low byte to row number (Y-pos)
+
+                        ;Multiply by ( 2 * 2 + 1 ) * 2 * 2 * 2 = 40
+    asl ;a              ;  * 2
+    asl ;a              ;  * 2
+    adc scrline_lo      ;  + 1
+    asl ;a              ;  * 2
+    asl ;a              ;  * 2
+    rol scrline_hi      ;  Rotate any carry into high byte
+    asl ;a              ;  * 2
+    rol scrline_hi      ;  Rotate any additional carry into high byte
+    sta scrline_lo      ;  Save row number (Y-pos) multiplied by 40
+
+    bit x_width         ;80 columns?
+    bvc l_09a8          ;  No: done multiplying
     asl scrline_lo
-    rol scrline_hi
+    rol scrline_hi      ;  Yes: multiply by 2 again
+
 l_09a8:
-    lda scrline_hi
+    lda scrline_hi      ;Add screen base address to high byte
     clc
     adc #>screen
     sta scrline_hi
-    tya
+
+    tya                 ;Return with column (X-pos) in Y register
     ldy cursor_x
     rts
 
