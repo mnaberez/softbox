@@ -427,84 +427,93 @@ IRQ_HANDLER:
 ;this routine, IRQ_HANDLER, into cinv_lo during init.
 ;
 $064F: E6 1A     INC JIFFY0          ;Counts number of Interrupts
-$0651: D0 06     BNE L_0659
+$0651: D0 06     BNE IRQ_CLOCK
 $0653: E6 19     INC JIFFY1          ;counter
-$0655: D0 02     BNE L_0659
+$0655: D0 02     BNE IRQ_CLOCK
 $0657: E6 18     INC JIFFY2          ;counter
-L_0659:
+
+IRQ_CLOCK:
+;Update the jiffy clock
 $0659: E6 14     INC RTC_JIFFIES     ;Increment Jiffies
 $065B: A5 14     LDA RTC_JIFFIES
 $065D: CD 03 04  CMP BAS_HEADER+3    ;50 or 60 (Hz).  See note in BAS_HEADER.
-$0660: D0 28     BNE BLINK_CURSOR
+$0660: D0 28     BNE IRQ_BLINK
 $0662: A9 00     LDA #$00            ;Reset RTC_JIFFIES counter
 $0664: 85 14     STA RTC_JIFFIES
 $0666: E6 15     INC RTC_SECS        ;Increment Seconds
 $0668: A5 15     LDA RTC_SECS
 $066A: C9 3C     CMP #$3C            ;Have we reached 60 seconds?
-$066C: D0 1C     BNE BLINK_CURSOR    ; No, skip
+$066C: D0 1C     BNE IRQ_BLINK       ; No, skip
 $066E: A9 00     LDA #$00            ; Yes, reset seconds
 $0670: 85 15     STA RTC_SECS
 $0672: E6 16     INC RTC_MINS        ;Increment Minutes
 $0674: A5 16     LDA RTC_MINS
 $0676: C9 3C     CMP #$3C            ;Have we reached 60 minutes?
-$0678: D0 10     BNE BLINK_CURSOR    ; No, skip
+$0678: D0 10     BNE IRQ_BLINK       ; No, skip
 $067A: A9 00     LDA #$00            ; Yes, reset minutes
 $067C: 85 16     STA RTC_MINS
 $067E: E6 17     INC RTC_HOURS       ;Increment hours
 $0680: A5 17     LDA RTC_HOURS
 $0682: C9 18     CMP #$18            ;Have we reached 24 hours
-$0684: D0 04     BNE BLINK_CURSOR    ; No, skip
+$0684: D0 04     BNE IRQ_BLINK       ; No, skip
 $0686: A9 00     LDA #$00            ; Yes, reset hours
 $0688: 85 17     STA RTC_HOURS
-BLINK_CURSOR:
+
+IRQ_BLINK:
+;Blink the cursor
 $068A: A5 06     LDA CURSOR_OFF      ;Is the cursor off?
-$068C: D0 11     BNE L_069F          ;  Yes: skip cursor blink
+$068C: D0 11     BNE IRQ_REPEAT      ;  Yes: skip cursor blink
 $068E: C6 01     DEC BLINK_CNT       ;Decrement cursor blink countdown
-$0690: D0 0D     BNE L_069F          ;Not time to blink? Done.
+$0690: D0 0D     BNE IRQ_REPEAT      ;Not time to blink? Done.
 $0692: A9 14     LDA #$14
 $0694: 85 01     STA BLINK_CNT       ;Reset cursor blink countdown
 $0696: 20 88 09  JSR CALC_SCRLINE
 $0699: B1 02     LDA (SCRLINE_LO),Y  ;Read character at cursor
 $069B: 49 80     EOR #$80            ;Flip the REVERSE bit
 $069D: 91 02     STA (SCRLINE_LO),Y  ;Write it back
-L_069F:
+
+IRQ_REPEAT:
+;Repeat key handling
 $069F: AD 37 0B  LDA SCANCODE        ;Get the SCANCODE
 $06A2: CD 3E 0B  CMP REPEATCODE      ;Compare to SAVED scancode
 $06A5: F0 0A     BEQ L_06B1          ;They are the same, so continue
 $06A7: 8D 3E 0B  STA REPEATCODE      ;if not, save it
 $06AA: A9 10     LDA #$10            ;reset counter
 $06AC: 8D 3C 0B  STA REPEATCOUNT0    ;save to counter
-$06AF: D0 21     BNE IRQ_KEY
+$06AF: D0 21     BNE IRQ_SCAN
 L_06B1:
 $06B1: C9 FF     CMP #$FF            ; NO KEY?
-$06B3: F0 1D     BEQ IRQ_KEY         ; Yes, jump to scan for another
+$06B3: F0 1D     BEQ IRQ_SCAN        ; Yes, jump to scan for another
 $06B5: AD 3C 0B  LDA REPEATCOUNT0    ; No, there was a key, so get the counter
 $06B8: F0 05     BEQ L_06BF          ; Is it zero?
 $06BA: CE 3C 0B  DEC REPEATCOUNT0    ; Count Down
-$06BD: D0 13     BNE IRQ_KEY         ; Is it Zero
+$06BD: D0 13     BNE IRQ_SCAN         ; Is it Zero
 L_06BF:
 $06BF: CE 3D 0B  DEC REPEATCOUNT1    ; Count Down
-$06C2: D0 0E     BNE IRQ_KEY         ; Is it zero? No, scan for another
+$06C2: D0 0E     BNE IRQ_SCAN        ; Is it zero? No, scan for another
 $06C4: A9 04     LDA #$04            ; Yes, Reset it to 4
 $06C6: 8D 3D 0B  STA REPEATCOUNT1    ; Store it
 $06C9: A9 00     LDA #$00            ;Clear the SCANCODE and allow the key to be processed
 $06CB: 8D 37 0B  STA SCANCODE        ;Store it
 $06CE: A9 02     LDA #$02
 $06D0: 85 01     STA BLINK_CNT       ;Fast cursor blink(?)
-IRQ_KEY:
+
+IRQ_SCAN:
+;Scan the keyboard
 $06D2: 20 D4 09  JSR SCAN_KEYB       ;Scan the keyboard
                                      ;  An important side effect of SCAN_KEYB is
                                      ;  that it reads PIA1_COL.  The read clears
                                      ;  PIA #1's IRQB1 flag (50/60 Hz interrupt).
                                      ;  If this read is not performed, IRQ will
                                      ;  continuously retrigger.
-$06D5: F0 0B     BEQ L_06E2          ;Nothing to do if no key was pressed.
+$06D5: F0 0B     BEQ IRQ_DONE        ;Nothing to do if no key was pressed.
 $06D7: A6 08     LDX KEYCOUNT
 $06D9: E0 50     CPX #$50            ;Is the keyboard buffer full?
-$06DB: F0 05     BEQ L_06E2          ;  Yes:  Nothing we can do.  Forget the key.
+$06DB: F0 05     BEQ IRQ_DONE        ;  Yes:  Nothing we can do.  Forget the key.
 $06DD: 9D 6F 02  STA KEYD,X          ;  No:   Store the key in the buffer
 $06E0: E6 08     INC KEYCOUNT        ;        and increment the keycount.
-L_06E2:
+
+IRQ_DONE:
 $06E2: 68        PLA
 $06E3: A8        TAY
 $06E4: 68        PLA

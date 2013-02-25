@@ -38,7 +38,7 @@ rtc_hours   = $17     ;  TIME.COM using DO_MEM_READ and DO_MEM_WRITE.
 jiffy2      = $18     ;Jiffy counter (MSB)
 jiffy1      = $19     ;Jiffy counter
 jiffy0      = $1a     ;Jiffy counter (LSB)
-blink_cnt   = $1b     ;Counter used for cursor blink timing
+blink_cnt   = $1b     ;Counts down number of interrupts until cursor blinks
 uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
 ;
     *=$0400
@@ -415,84 +415,93 @@ irq_handler:
 ;this routine, IRQ_HANDLER, into cinv_lo during init.
 ;
     inc jiffy0          ;Counts number of Interrupts
-    bne l_0659
+    bne irq_clock
     inc jiffy1          ;counter
-    bne l_0659
+    bne irq_clock
     inc jiffy2          ;counter
-l_0659:
+
+irq_clock:
+;Update the jiffy clock
     inc rtc_jiffies     ;Increment Jiffies
     lda rtc_jiffies
     cmp bas_header+3    ;50 or 60 (Hz).  See note in BAS_HEADER.
-    bne blink_cursor
+    bne irq_blink
     lda #$00            ;Reset RTC_JIFFIES counter
     sta rtc_jiffies
     inc rtc_secs        ;Increment Seconds
     lda rtc_secs
     cmp #$3c            ;Have we reached 60 seconds?
-    bne blink_cursor    ; No, skip
+    bne irq_blink       ; No, skip
     lda #$00            ; Yes, reset seconds
     sta rtc_secs
     inc rtc_mins        ;Increment Minutes
     lda rtc_mins
     cmp #$3c            ;Have we reached 60 minutes?
-    bne blink_cursor    ; No, skip
+    bne irq_blink       ; No, skip
     lda #$00            ; Yes, reset minutes
     sta rtc_mins
     inc rtc_hours       ;Increment hours
     lda rtc_hours
-    cmp #$18            ;Have we reached 24 hours
-    bne blink_cursor    ; No, skip
+    cmp #$18            ;Have we reached 24 hours?
+    bne irq_blink       ; No, skip
     lda #$00            ; Yes, reset hours
     sta rtc_hours
-blink_cursor:
+
+irq_blink:
+;Blink the cursor
     lda cursor_off      ;Is the cursor off?
-    bne l_069f          ;  Yes: skip cursor blink
+    bne irq_repeat          ;  Yes: skip cursor blink
     dec blink_cnt       ;Decrement cursor blink countdown
-    bne l_069f          ;Not time to blink? Done.
+    bne irq_repeat          ;Not time to blink? Done.
     lda #$14
     sta blink_cnt       ;Reset cursor blink countdown
     jsr calc_scrline
     lda (scrline_lo),y  ;Read character at cursor
     eor #$80            ;Flip the REVERSE bit
     sta (scrline_lo),y  ;Write it back
-l_069f:
+
+irq_repeat:
+;Repeat key handling
     lda scancode        ;Get the SCANCODE
     cmp repeatcode      ;Compare to SAVED scancode
     beq l_06b1          ;They are the same, so continue
     sta repeatcode      ;if not, save it
     lda #$10            ;reset counter
     sta repeatcount0    ;save to counter
-    bne irq_key
+    bne irq_scan
 l_06b1:
     cmp #$ff            ; NO KEY?
-    beq irq_key         ; Yes, jump to scan for another
+    beq irq_scan        ; Yes, jump to scan for another
     lda repeatcount0    ; No, there was a key, so get the counter
     beq l_06bf          ; Is it zero?
     dec repeatcount0    ; Count Down
-    bne irq_key         ; Is it Zero
+    bne irq_scan        ; Is it Zero
 l_06bf:
     dec repeatcount1    ; Count Down
-    bne irq_key         ; Is it zero? No, scan for another
+    bne irq_scan        ; Is it zero? No, scan for another
     lda #$04            ; Yes, Reset it to 4
     sta repeatcount1    ; Store it
     lda #$00            ;Clear the SCANCODE and allow the key to be processed
     sta scancode        ;Store it
     lda #$02
     sta blink_cnt       ;Fast cursor blink(?)
-irq_key:
+
+irq_scan:
+;Scan the keyboard
     jsr scan_keyb       ;Scan the keyboard
                         ;  An important side effect of scan_keyb is
                         ;  that it reads pia1_col.  The read clears
                         ;  PIA #1's IRQB1 flag (50/60 Hz interrupt).
                         ;  If this read is not performed, IRQ will
                         ;  continuously retrigger.
-    beq l_06e2          ;Nothing to do if no key was pressed.
+    beq irq_done        ;Nothing to do if no key was pressed.
     ldx keycount
     cpx #$50            ;Is the keyboard buffer full?
-    beq l_06e2          ;  Yes:  Nothing we can do.  Forget the key.
+    beq irq_done        ;  Yes:  Nothing we can do.  Forget the key.
     sta keyd,x          ;  No:   Store the key in the buffer
     inc keycount        ;        and increment the keycount.
-l_06e2:
+
+irq_done:
     pla
     tay
     pla
