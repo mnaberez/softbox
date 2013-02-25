@@ -19,7 +19,7 @@ VIA_PB      = $E840   ;6522 VIA Port B
 VIA_PCR     = $E84C   ;6522 VIA Peripheral Control Register (PCR)
 CHROUT      = $FFD2   ;KERNAL Send a char to the current output device
 ;
-BLINK_CNT   = $01     ;Counter used for cursor blink timing
+BLINK_CNT   = $01     ;Counts down number of IRQs until cursor reverses
 SCRLINE_LO  = $02     ;Pointer to start of current line in screen RAM - LO
 SCRLINE_HI  = $03     ;Pointer to start of current line in screen RAM - HI
 CURSOR_X    = $04     ;Current X position: 0-79

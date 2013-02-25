@@ -38,7 +38,7 @@ rtc_hours   = $17     ;  TIME.COM using DO_MEM_READ and DO_MEM_WRITE.
 jiffy2      = $18     ;Jiffy counter (MSB)
 jiffy1      = $19     ;Jiffy counter
 jiffy0      = $1a     ;Jiffy counter (LSB)
-blink_cnt   = $1b     ;Counts down number of interrupts until cursor blinks
+blink_cnt   = $1b     ;Counts down number of IRQs until cursor reverses
 uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
 ;
     *=$0400
