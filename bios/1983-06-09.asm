@@ -819,7 +819,7 @@ lf4c5h:
     ld (0059h),a
     ld (move_cnt),a
     ld (scrtab),a
-    out (ppi2_pc),a     ;Turn off LEDs
+    out (ppi2_pc),a     ;Turn on LEDs
 
     ld bc,03e8h
     call e_fb86h
