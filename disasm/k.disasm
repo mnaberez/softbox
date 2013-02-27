@@ -897,7 +897,8 @@ $0896: A9 80     LDA #>SCREEN
 $0898: 85 03     STA SCRLINE_HI
 $089A: 85 0E     STA TARGET_HI
 $089C: A2 18     LDX #$18
-L_089E:
+
+SCROLL:
 $089E: A0 00     LDY #$00
 L_08A0:
 $08A0: B1 0D     LDA (TARGET_LO),Y
@@ -915,7 +916,7 @@ $08B4: 85 03     STA SCRLINE_HI
 $08B6: 69 00     ADC #$00
 $08B8: 85 0E     STA TARGET_HI
 $08BA: CA        DEX
-$08BB: D0 E1     BNE L_089E
+$08BB: D0 E1     BNE SCROLL
 $08BD: A0 00     LDY #$00
 $08BF: A9 20     LDA #$20          ;SPACE
 L_08C1:
@@ -1025,7 +1026,7 @@ $0932: A9 18     LDA #$18
 $0934: 38        SEC
 $0935: E5 05     SBC CURSOR_Y
 $0937: AA        TAX
-$0938: 4C 9E 08  JMP L_089E         ;Jump into SCROLL_UP, bypassing some init
+$0938: 4C 9E 08  JMP SCROLL
 
 CTRL_11:
 ;Insert a blank line

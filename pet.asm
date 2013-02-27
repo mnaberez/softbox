@@ -1004,7 +1004,7 @@ ctrl_12:
     sec
     sbc cursor_y
     tax
-    jmp l_089e         ;Jump into SCROLL_UP, bypassing some init
+    jmp scroll
 
 ctrl_11:
 ;Insert a blank line
@@ -1108,7 +1108,7 @@ scroll_up:
     sta scrline_hi
     sta source_hi
     ldx #$18
-l_089e:
+scroll:
     ldy x_width
     dey
 l_08a0:
@@ -1126,7 +1126,7 @@ l_08a0:
     adc #$00
     sta source_hi
     dex
-    bne l_089e
+    bne scroll
     lda #$20          ;SPACE
     ldy x_width
 l_08c1:
