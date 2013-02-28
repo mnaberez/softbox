@@ -925,16 +925,16 @@ lf52bh:
 lf555h:
     call e_fb47h
     ld de,080fh
-    ld c,02h
-    ld hl,lf68fh
+    ld c,02h            ;2 bytes in string
+    ld hl,dos_i0_0      ;"I0"
     call e_fb56h
     ld d,08h
     ld c,1ch
     call sub_f651h
     jp nz,lf52bh
     ld de,0802h
-    ld c,02h
-    ld hl,lf687h
+    ld c,02h            ;2 bytes in string
+    ld hl,dos_num2      ;"#2"
     call e_fb56h
 e_f578h:
     ld sp,0100h
@@ -1091,13 +1091,13 @@ lf671h:
     pop de
     jp sub_f9bfh
 
-lf687h:
+dos_num2:
     db "#2"
 
 filename:
     db "0:CP/M"
 
-lf68fh:
+dos_i0_0:
     db "I0"
 
 lf691h:
@@ -1493,9 +1493,9 @@ lf9eeh:
     ret
 lf9f7h:
     push hl
-    ld hl,dos_cmds_3    ;"M-W",00h,13h,01h
+    ld hl,dos_mw        ;"M-W",00h,13h,01h
     ld c,06h            ;6 bytes in string
-    ld a,(drive)        ;CP/M drive number
+    ld a,(drive)        ;A = CP/M drive number
     call e_fabch        ;? write to device ?
     call e_ff1fh
     pop hl
@@ -1505,7 +1505,7 @@ lf9f7h:
     call e_ff0bh
     call e_fb47h
 
-    ld hl,dos_cmds_2    ;"B-P 2 1"
+    ld hl,dos_bp        ;"B-P 2 1"
     ld c,07h            ;7 bytes in string
     ld a,(drive)
     call e_fabch
@@ -1530,7 +1530,7 @@ lfa3eh:
     ld hl,lf8cdh
     call lf6fch
 
-    ld hl,dos_cmds_4    ;"M-R",00h,13h
+    ld hl,dos_mr        ;"M-R",00h,13h
     ld c,05h            ;5 bytes in string
     ld a,(drive)
     call e_fabch
@@ -1550,7 +1550,7 @@ lfa3eh:
     ld a,(drive)
     call e_fabch
 
-    ld hl,dos_cmds_2    ;"B-P 2 1"
+    ld hl,dos_bp        ;"B-P 2 1"
     ld c,07h            ;7 bytes in string
     call e_ff1fh
 
@@ -1601,32 +1601,32 @@ e_fac4h:
     push de
 
     ld c,02h            ;2 bytes in string
-    ld hl,dos_cmds_0    ;"I0"
+    ld hl,dos_i0        ;"I0"
     rra
     jr nc,lfad5h
-    ld hl,dos_cmds_1    ;"I1"
+    ld hl,dos_i1        ;"I1"
 
 lfad5h:
     call e_fb56h
     pop de
     ld e,02h
-    ld c,02h
-    ld hl,lf687h
+    ld c,02h            ;2 bytes in string
+    ld hl,dos_num2      ;"#2"
     jp e_fb56h
 
-dos_cmds_0:
+dos_i0:
     db "I0"
 
-dos_cmds_1:
+dos_i1:
     db "I1"
 
-dos_cmds_2:
+dos_bp:
     db "B-P 2 1"
 
-dos_cmds_3:
+dos_mw:
     db "M-W",00h,13h,01h
 
-dos_cmds_4:
+dos_mr:
     db "M-R",00h,13h
 
 e_faf9h:
