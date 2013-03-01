@@ -188,7 +188,7 @@ lf000h:
     jp e_fb49h       ;f07b
     jp e_fec1h       ;f07e
     jp cbm_clr_jiff  ;f081  Clear the CBM jiffy counter
-    jp e_fb86h       ;f084
+    jp delay         ;f084  Programmable delay
 
 banner:
     db 0dh,0ah,"60K SoftBox CP/M vers. 2.2"
@@ -824,7 +824,7 @@ lf4c5h:
     out (ppi2_pc),a     ;Turn on LEDs
 
     ld bc,03e8h
-    call e_fb86h
+    call delay
 
     ld a,1bh
     ld (leadin),a       ;Terminal lead-in = 01bh (escape)
@@ -909,8 +909,9 @@ lf52bh:
     call puts           ;Write "Loading CP/M ..."
     ld de,080fh
     call e_fb31h
+
     ld bc,0007h
-    call e_fb86h
+    call delay
 
     in a,(ppi2_pa)      ;Read IEEE-488 control lines
     cpl                 ;Invert byte
@@ -1713,20 +1714,27 @@ e_fb72h:
     or 0e0h
     call e_fe62h
     jr e_fb47h
-e_fb86h:
-    call sub_fb8fh
-    dec bc
+
+delay:
+;Programmable delay
+;BC = number of short delays to wait
+;
+    call short_delay    ;Short delay
+    dec bc              ;Decrement BC
     ld a,b
     or c
-    jr nz,e_fb86h
+    jr nz,delay         ;Loop until BC=0
     ret
-sub_fb8fh:
-    push bc
-    ld b,0c8h
+
+short_delay:
+;Wait a short amount of time.
+;
+    push bc             ;Preserve BC
+    ld b,0c8h           ;B=0c8h
 lfb92h:
-    add a,00h
-    djnz lfb92h
-    pop bc
+    add a,00h           ;A=A+0
+    djnz lfb92h         ;Decrement B, loop until B=0
+    pop bc              ;Restore BC
     ret
 
 conin:
@@ -2022,7 +2030,7 @@ lfcc3h:
     ld a,(lptype)
     ld b,a
     or a
-    call z,sub_fb8fh
+    call z,short_delay
     call e_fb31h
     bit 0,b
     jr nz,lfd29h
@@ -2038,13 +2046,13 @@ lfcc3h:
     jr z,lfd04h
     ld a,b
     or a
-    call z,sub_fb8fh
+    call z,short_delay
     ld a,8dh
     call e_fe62h
 lfcf8h:
     bit 1,b
     jr nz,lfd04h
-    call sub_fb8fh
+    call short_delay
     ld a,11h
     call e_fe62h
 lfd04h:
@@ -2061,7 +2069,7 @@ lfd0bh:
 lfd15h:
     call sub_fd6bh
     bit 1,b
-    call z,sub_fb8fh
+    call z,short_delay
     call e_fe62h
 lfd20h:
     in a,(ppi2_pb)
@@ -2098,7 +2106,7 @@ lfd4bh:
     ld d,a
     ld e,0ffh
     call e_fb31h
-    call sub_fb8fh
+    call short_delay
     in a,(ppi2_pa)      ;Read IEEE-488 control lines in
     cpl                 ;Invert byte
     and 08h             ;Mask off all except bit 3 (NRFD in)
@@ -2400,7 +2408,7 @@ lfec7h:
     cpl
     and 02h
     jr z,lfee5h
-    call sub_fb8fh
+    call short_delay
     dec bc
     ld a,b
     or c
