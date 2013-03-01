@@ -83,7 +83,9 @@ sector:   equ  0043h    ;Sector number
 drive:    equ  0044h    ;Drive number (0=A, 1=B, 2=C, etc.)
 dos_err:  equ  004fh    ;Last error code returned from CBM DOS
 dma:      equ  0052h    ;DMA buffer area address
+leadrcvd: equ  0059h    ;Lead-in received flag: 1=last char was lead-in
 move_cnt: equ  005ah    ;Counts down bytes to consume in a cursor move seq
+move_tmp: equ  005bh    ;Holds first byte received (X or Y pos) in move seq
 dma_buf:  equ  0080h    ;Default DMA buffer area (128 bytes) for disk I/O
 ccp_base: equ 0d400h    ;Start of CCP area
 dirsize:  equ 0d8b2h    ;CCP directory width: 0=1 col, 1=2 cols, 3=4 cols
@@ -816,8 +818,8 @@ lf4c5h:
     ld (iobyte),a       ;IOBYTE=0 (CON:=TTY:, the RS-232 port)
     ld (cdisk),a        ;CDISK=0 (User=0, Drive=A:)
     ld (0054h),a
-    ld (0059h),a
-    ld (move_cnt),a
+    ld (leadrcvd),a     ;Last char received was not the lead-in
+    ld (move_cnt),a     ;Not in a move-to sequence
     ld (scrtab),a
     out (ppi2_pc),a     ;Turn on LEDs
 
@@ -1771,34 +1773,34 @@ conout:
 ;C = character to write to the screen
 ;
     ld a,(iobyte)
-    rra
-    jp nc,ser_out       ;Jump out if console is RS-232 port (CON: = TTY:)
+    rra                 ;If the console is the RS-232 port (CON: = TTY:),
+    jp nc,ser_out       ;  do no translation and jump out to send the char
 
     ld a,(move_cnt)
-    or a
-    jp nz,lfc1dh        ;Jump if already in a move-to sequence
+    or a                ;If handling a move-to sequence, jump to consume
+    jp nz,move_consume  ;  the next byte in the sequence.
 
     ld a,c
-    rla
-    jr c,conout_cbm     ;Jump if bit 7 of C is set
+    rla                 ;If bit 7 of the char is set, do no translation
+    jr c,conout_cbm     ;  and send it directly to the CBM screen.
 
     ld a,(leadin)
-    cp c
-    jr nz,lfbe6h        ;Jump if the character is not the lead-in
+    cp c                ;If the char is not the lead-in code,
+    jr nz,conout_char   ;  jump to handle it.
 
     ld a,01h
-    ld (0059h),a        ;Set 0059h = 1 if character is the lead-in
+    ld (leadrcvd),a     ;If the char is the lead-in code, set a flag
     ret                 ;  and return
 
-lfbe6h:
-    ld a,(0059h)
-    or a
-    jp z,lfbf3h         ;Jump if 0059h = 0
+conout_char:
+    ld a,(leadrcvd)
+    or a                ;If the last char received was not the lead-in
+    jp z,lfbf3h         ;  jump
 
-    xor a               ;A = 0
-    ld (0059h),a        ;Set 0059h = 0
+    xor a
+    ld (leadrcvd),a     ;Clear the lead-in received flag
+    set 7,c             ;Set bit 7 of the char
 
-    set 7,c
 lfbf3h:
     ld a,c              ;A = C
     cp 20h
@@ -1819,8 +1821,9 @@ lfbffh:
     inc hl
     jr nz,lfbffh
 
-    cp 1bh
-    jr z,lfc17h
+    cp 1bh              ;1bh = LSI ADM-3A command to start move-to sequence
+    jr z,move_start     ;Jump to start move-to sequence
+
     ld c,a
 
 conout_cbm:
@@ -1831,38 +1834,52 @@ conout_cbm:
     ld a,c              ;A=C
     jp cbm_send_byte    ;Jump out to send byte in A
 
-lfc17h:
-    ld a,02h
+move_start:
+;Start a cursor move sequence.  The next two bytes received will be
+;the X and Y positions.
+;
+    ld a,02h            ;2 more bytes to consume (X and Y positions)
     ld (move_cnt),a
     ret
 
-lfc1dh:
-    dec a               ;A = A - 1
-    ld (move_cnt),a     ;Store A in 005ah
-    jr z,lfc28h         ;Jump if no more bytes to consume
+move_consume:
+;Consume the next byte in a cursor move position.  When both X and
+;Y position bytes have been received, jump to do the move.
+;
+;A = current value of MOVE_CNT
+;C = byte received
+;
+    dec a               ;Decrement bytes remaining to consume
+    ld (move_cnt),a
+    jr z,move_prep_xy   ;Jump if no more bytes to consume
 
     ld a,c
-    ld (005bh),a        ;Remember C in 005bh
+    ld (move_tmp),a     ;Remember C in MOVE_TMP
     ret
 
-lfc28h:
-;No more bytes to consume
-;C contains one position (X or Y)
+move_prep_xy:
+;Prepare to send the move-to sequence.  Both X and Y position bytes
+;have been received.  Swap them in necessary, then send the move-to
+;sequence to the CBM.
 ;
-    ld a,(005bh)        ;A = contains other position (X or Y)
+;C = one position (X or Y), other position is in MOVE_TMP
+;
+    ld a,(move_tmp)     ;A = contains other position (X or Y)
     ld d,a              ;D = A
     ld e,c              ;E = C
 
     ld a,(xy_order)     ;xy_order: 0=Y first, 1=X first
     or a
-    jr z,lfc36h         ;Jump if positions don't need to be swapped
+    jr z,move_send      ;Jump if positions don't need to be swapped
 
     ld a,e
     ld e,d
     ld d,a              ;Swap D and E
+                        ;Fall through into MOVE_SEND
 
-lfc36h:
+move_send:
 ;Send move-to sequence
+;D = X-position, E = Y-position
 ;
     ld a,(iobyte)
     and 03h             ;Mask off all but bits 1 and 0
@@ -1892,7 +1909,7 @@ lfc51h:
     and 1fh
     or 20h
     ld c,a
-    jp conout_cbm       ;Send Y-position byte for move-to
+    jp conout_cbm       ;Jump out to send Y-position byte for move-to
 
 ser_rx_status:
 ;RS-232 serial port receive status
