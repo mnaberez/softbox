@@ -1429,10 +1429,42 @@ key_check1:
 
 ;---- CTRL KEY not pressed
 key_hi:
-    and #$7f               ;Remove the TOP bit (shift flag for character?)
-    ldy shiftflag          ;Check SHIFT Flag
-    beq key_low            ;SHIFT=0? Yes, skip
-    eor #$10               ;No, flip BIT 4 (what does bit 4 do?)
+    and #$7f               ;Clear bit 7
+    ldy shiftflag          ;Shift key pressed?
+    beq key_low            ;  No: skip translation to symbol
+
+    ldx #$22               ;Change to $22 ( " )
+    cmp #$27               ;  from $27 ( ' )
+    beq key_in_x
+    ldx #$3c               ;Change to $3c ( < )
+    cmp #$2c               ;  from $2c ( , )
+    beq key_in_x
+    ldx #$29               ;Change to $29 ( ) )
+    cmp #$30               ;  from $30 ( 0 )
+    beq key_in_x
+    ldx #$40               ;Change to $40 ( @ )
+    cmp #$32               ;  from $30 ( 2 )
+    beq key_in_x
+    ldx #$5e               ;Change to $5e ( ^ )
+    cmp #$36               ;  from $36 ( 6 )
+    beq key_in_x
+    ldx #$26               ;Change to $26 ( & )
+    cmp #$37               ;  from $37 ( 7 )
+    beq key_in_x
+    ldx #$2a               ;Change to $2a ( * )
+    cmp #$38               ;  from $38 ( 8 )
+    beq key_in_x
+    ldx #$28               ;Change to $28 ( ( )
+    cmp #$39               ;  from $39 ( 9 )
+    beq key_in_x
+    ldx #$3a               ;Change to $3a ( : )
+    cmp #$3b               ;  from $3b ( ; )
+    beq key_in_x
+    ldx #$2b               ;Change to $2a ( + )
+    cmp #$3d               ;  from $38 ( = )
+    beq key_in_x
+
+    eor #$10               ;Invert bit 4 to shift the character
     rts
 
 ;---- Check if in A-Z range
@@ -1473,9 +1505,9 @@ key_check2:
 
 ;---- Translate SHIFTED 0-31 codes to terminal control codes
 key_sh_codes:
-    ldx #$1a               ;CTRL_1A Clear screen
-    cmp #$1e               ;SCAN=HOME
-    beq key_ctrl_code
+    ldx #$1a               ;Change to $1a (clear screen)
+    cmp #$1e               ;  from $1e (home)
+    beq key_in_x
 
 ;---- these must be normal shifted keys or Graphics?
     bit uppercase
@@ -1483,8 +1515,8 @@ key_sh_codes:
     ora #$80               ;Set the HIGH BIT
     rts                    ;Return with character code in A?
 
-;---- Return a terminal control code (CTRL_CODES table)
-key_ctrl_code:
+;---- Return the key in the X register
+key_in_x:
     txa                    ;Substitute the terminal control code
     rts                    ;Return with control code in A
 
@@ -1511,10 +1543,10 @@ key_table:
     !byte $ff,$b4,$52,$54,$47,$42 ; F5    ^4    R     T     G     B
     !byte $ff,$b5,$b6,$59,$48,$4e ; F6    ^5    6     Y     H     N
     !byte $ff,$b7,$55,$4a,$4d,$20 ; F7    ^7    U     J     M     SPACE
-    !byte $ff,$b8,$49,$4b,$2c,$ae ; F8    ^8    I     K     ,     ^.
-    !byte $ff,$b9,$4f,$4c,$3b,$af ; F9    ^9    NONE  L     ;     ^/
-    !byte $05,$b0,$2d,$50,$5b,$27 ; F10   ^0    -     P     [     '
-    !byte $0a,$3d,$5f,$5d,$0d,$de ; DOWN  =     BARRW ]     RETRN PI
+    !byte $ff,$b8,$49,$4b,$ac,$ae ; F8    ^8    I     K     ^,    ^.
+    !byte $ff,$b9,$4f,$4c,$bb,$af ; F9    ^9    NONE  L     ^;    ^/
+    !byte $05,$b0,$2d,$50,$5b,$a7 ; F10   ^0    -     P     [     ^'
+    !byte $0a,$bd,$5f,$5d,$0d,$de ; DOWN  ^=    BARRW ]     RETRN PI
     !byte $0b,$08,$0c,$7f,$02,$ff ; UP    LEFT  RIGHT DEL   CBM   NONE
     !byte $1e,$3f,$37,$34,$31,$30 ; HOME  ?     7     4     1     0
     !byte $12,$04,$38,$35,$32,$2e ; RVS   CE    8     5     2     .
