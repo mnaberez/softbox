@@ -1511,8 +1511,8 @@ key_table:
     !byte $ff,$b4,$52,$54,$47,$42 ; F5    ^4    R     T     G     B
     !byte $ff,$b5,$b6,$59,$48,$4e ; F6    ^5    6     Y     H     N
     !byte $ff,$b7,$55,$4a,$4d,$20 ; F7    ^7    U     J     M     SPACE
-    !byte $ff,$b8,$49,$4b,$2c,$2e ; F8    ^8    I     K     ,     .
-    !byte $ff,$b9,$4f,$4c,$3b,$2f ; F9    ^9    NONE  L     ;     /
+    !byte $ff,$b8,$49,$4b,$2c,$ae ; F8    ^8    I     K     ,     ^.
+    !byte $ff,$b9,$4f,$4c,$3b,$af ; F9    ^9    NONE  L     ;     ^/
     !byte $05,$b0,$2d,$50,$5b,$27 ; F10   ^0    -     P     [     '
     !byte $0a,$3d,$5f,$5d,$0d,$de ; DOWN  =     BARRW ]     RETRN PI
     !byte $0b,$08,$0c,$7f,$02,$ff ; UP    LEFT  RIGHT DEL   CBM   NONE
