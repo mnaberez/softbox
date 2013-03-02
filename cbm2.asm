@@ -1517,8 +1517,8 @@ key_sh_codes:
 
 ;---- Return the key in the X register
 key_in_x:
-    txa                    ;Substitute the terminal control code
-    rts                    ;Return with control code in A
+    txa
+    rts                    ;Return with the key in A
 
 key_set:
     cmp #$00               ;Set CARRY if non-zero character?

@@ -1277,25 +1277,25 @@ key_check2:
 key_sh_codes:
     ldx #$0b               ;Change to $0b (cursor up)
     cmp #$0a               ;  from $0a (cursor down)
-    beq key_ctrl_code
+    beq key_in_x
     ldx #$08               ;Change to $08 (cursor left)
     cmp #$0c               ;  from $0c (cursor right)
-    beq key_ctrl_code
+    beq key_in_x
     ldx #$1a               ;Change to $1a (clear screen)
     cmp #$1e               ;  from $1e (home)
-    beq key_ctrl_code
+    beq key_in_x
     ldx #$7b               ;Change to $7b ( { )
     cmp #$5b               ;  from $5b ( [ )
-    beq key_ctrl_code
+    beq key_in_x
     ldx #$7c               ;Change to $7c ( | )
     cmp #$5c               ;  from $5c ( \ )
-    beq key_ctrl_code
+    beq key_in_x
     ldx #$7d               ;Change to $7d ( } )
     cmp #$5d               ;  from $5d ( ] )
-    beq key_ctrl_code
+    beq key_in_x
     ldx #$7e               ;Change to $7e ( ~ )
     cmp #$5e               ;  from $5e ( ^ )
-    beq key_ctrl_code
+    beq key_in_x
 
 ;---- these must be normal shifted keys or Graphics?
     bit uppercase
@@ -1303,8 +1303,8 @@ key_sh_codes:
     ora #$80               ;Set the HIGH BIT
     rts                    ;Return with character code in A?
 
-;---- Return a terminal control code (CTRL_CODES table)
-key_ctrl_code:
+;---- Return the key in the X register
+key_in_x:
     txa                    ;Substitute the terminal control code
     rts                    ;Return with control code in A
 

@@ -1307,15 +1307,15 @@ $0A72: F0 20     BEQ KEY_SET            ;  Yes, skip out
 
 ;---- Translate SHIFTED 0-31 codes to terminal control codes
 KEY_SH_CODES:
-$0A74: A2 0B     LDX #$0B               ;CTRL_0B Cursor up
-$0A76: C9 0A     CMP #$0A               ;SCAN=CRSR DOWN
-$0A78: F0 18     BEQ KEY_CTRL_CODE
-$0A7A: A2 08     LDX #$08               ;CTRL_08 Cursor left
-$0A7C: C9 0C     CMP #$0C               ;SCAN=CRSR RIGHT
-$0A7E: F0 12     BEQ KEY_CTRL_CODE
-$0A80: A2 1A     LDX #$1A               ;CTRL_1A Clear screen
-$0A82: C9 1E     CMP #$1E               ;SCAN=HOME
-$0A84: F0 0C     BEQ KEY_CTRL_CODE
+$0A74: A2 0B     LDX #$0B               ;Change to $0b (cursor up)
+$0A76: C9 0A     CMP #$0A               ;  from $0a (cursor down)
+$0A78: F0 18     BEQ KEY_IN_X
+$0A7A: A2 08     LDX #$08               ;Change to $08 (cursor left)
+$0A7C: C9 0C     CMP #$0C               ;  from $0c (cursor right)
+$0A7E: F0 12     BEQ KEY_IN_X
+$0A80: A2 1A     LDX #$1A               ;Change to $1a (clear screen)
+$0A82: C9 1E     CMP #$1E               ;  from $1e (home)
+$0A84: F0 0C     BEQ KEY_IN_X
 
 ;---- these must be normal shifted keys or Graphics?
 $0A86: 48        PHA                    ;Push key to stack
@@ -1328,10 +1328,10 @@ $0A8D: B0 05     BCS KEY_SET            ;Branch if lowercase mode
 $0A8F: 09 80     ORA #$80               ;Set the HIGH BIT
 $0A91: 60        RTS                    ;Return with character code in A?
 
-;---- Return a terminal control code (CTRL_CODES table)
-KEY_CTRL_CODE:
-$0A92: 8A        TXA                    ;Substitute the terminal control code
-$0A93: 60        RTS                    ;Return with control code in A
+;---- Return the key in the X register
+KEY_IN_X:
+$0A92: 8A        TXA
+$0A93: 60        RTS                    ;Return with the key in A
 
 KEY_SET:
 $0A94: C9 00     CMP #$00               ;Set CARRY if non-zero character?
