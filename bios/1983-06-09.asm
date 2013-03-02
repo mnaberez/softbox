@@ -812,8 +812,8 @@ lf4bah:
 
 lf4c5h:
     in a,(ppi2_pb)
-    or 80h              ;Turn on bit 7 (IFC out)
-    out (ppi2_pb),a     ;IFC=?
+    or 80h
+    out (ppi2_pb),a     ;IFC_OUT=low
 
     xor a               ;A=0
     ld (iobyte),a       ;IOBYTE=0 (CON:=TTY:, the RS-232 port)
@@ -828,7 +828,7 @@ lf4c5h:
     call delay          ;Wait 1 second
 
     ld a,1bh
-    ld (leadin),a       ;Terminal lead-in = 01bh (escape)
+    ld (leadin),a       ;Terminal lead-in = 1bh (escape)
 
     xor a               ;8251 USART initialization sequence
     out (usart_st),a
@@ -878,7 +878,7 @@ lf4c5h:
     jr nz,lf52bh
 
     ld a,01h
-    ld (iobyte),a      ;IOBYTE=1 (CON:=CRT:, the CBM computer)
+    ld (iobyte),a       ;IOBYTE=1 (CON:=CRT:, the CBM computer)
 
 wait_for_atn:
 ;Wait until the CBM computer addresses the SoftBox.  The SoftBox
@@ -886,38 +886,40 @@ wait_for_atn:
 ;by sending attention to its address (57).  At that point, the CBM
 ;must start waiting for SRQs and the SoftBox can take over the bus.
 ;
-    in a,(ppi2_pa)      ;Read IEEE-488 control lines
-    cpl                 ;Invert byte
-    and 03h             ;Mask off all but bit 1 (ATN), bit 2 (DAV)
-    in a,(ppi1_pa)      ;Read IEEE-488 data byte
-    jr nz,wait_for_atn  ;Wait until ATN=? and DAV=?
+    in a,(ppi2_pa)
+    cpl
+    and 03h
+    in a,(ppi1_pa)
+    jr nz,wait_for_atn  ;Wait until ATN_IN=low and DAV_IN=low
+
     cp 39h
     jr nz,wait_for_atn  ;Wait until data byte = 57 (SoftBox address)
 
-    in a,(ppi2_pa)      ;Read IEEE-488 control lines
-    cpl                 ;Invert byte
-    and 02h             ;Mask off all but bit 1 (DAV in)
-    jr nz,wait_for_atn  ;Loop until DAV=?
+    in a,(ppi2_pa)
+    cpl
+    and 02h
+    jr nz,wait_for_atn  ;Wait until DAV_IN=low
 
 lf524h:
-    in a,(ppi2_pa)      ;Read IEEE-488 control lines
-    cpl                 ;Invert byte
-    and 02h             ;Mask off all but bit 1 (DAV in)
-    jr z,lf524h         ;Wait until DAV=?
+    in a,(ppi2_pa)
+    cpl
+    and 02h
+    jr z,lf524h         ;Wait until DAV_IN=high
 
 lf52bh:
     ld hl,loading
-    call puts           ;Write "Loading CP/M ..."
+    call puts           ;Write "Loading CP/M ..." to console out
+
     ld de,080fh
     call e_fb31h
 
     ld bc,0007h
     call delay          ;Wait 7 ms
 
-    in a,(ppi2_pa)      ;Read IEEE-488 control lines
-    cpl                 ;Invert byte
-    and 04h             ;Mask off all but bit 3 (NDAC)
-    jr z,lf555h         ;Wait for NDAC=?
+    in a,(ppi2_pa)
+    cpl
+    and 04h
+    jr z,lf555h         ;Jump if NDAC_IN=low
 
     ld a,02h
     ld (dtypes),a
@@ -926,6 +928,7 @@ lf52bh:
     ld b,38h
     call sub_f0fch
     jr e_f578h
+
 lf555h:
     call e_fb47h
     ld de,080fh
@@ -1052,10 +1055,12 @@ lf5d5h:
 
 lf62bh:
     ld hl,banner
-    call puts           ;Display "60K SoftBox CP/M" banner
-    call const          ;Returns 00=key waiting, FF=no key
+    call puts           ;Write "60K SoftBox CP/M" banner to console out
+
+    call const          ;Check if a key is waiting (0=key, 0ffh=no key)
     inc a
     call z,conin        ;Get a key if one is waiting
+
     ld hl,ccp_base
     jp init_and_jp_hl   ;Jump to start CCP
 
@@ -1746,18 +1751,18 @@ conin:
     rra
     jp nc,ser_in        ;Jump out if console is RS-232 port (CON: = TTY:)
 
-    in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
-    or 04h              ;Turn on bit 2 (NDAC)
-    out (ppi2_pb),a     ;NDAC=?
+    in a,(ppi2_pb)
+    or 04h
+    out (ppi2_pb),a     ;NDAC_OUT=low
 
     ld a,02h            ;Command 02h = Wait for a key and send it
     call cbm_srq
     call cbm_get_byte
 
     push af
-    in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
-    and 0f3h            ;Clear bits 2 (NDAC) and 3 (NRFD)
-    out (ppi2_pb),a     ;NDAC=?, NRFD=?
+    in a,(ppi2_pb)
+    and 0f3h
+    out (ppi2_pb),a     ;NDAC_OUT=high, NRFD_OUT=high
     pop af
     ret
 
@@ -1783,23 +1788,23 @@ conout:
 ;
     ld a,(iobyte)
     rra                 ;If the console is the RS-232 port (CON: = TTY:),
-    jp nc,ser_out       ;  do no translation and jump out to send the char
+    jp nc,ser_out       ;  jump out to send the char directly to the port
 
     ld a,(move_cnt)
     or a                ;If handling a move-to sequence, jump to consume
     jp nz,move_consume  ;  the next byte in the sequence.
 
     ld a,c
-    rla                 ;If bit 7 of the char is set, do no translation
-    jr c,conout_cbm     ;  and send it directly to the CBM screen.
+    rla                 ;If bit 7 of the char is set,
+    jr c,conout_cbm     ;  jump out to send it directly to the CBM screen.
 
     ld a,(leadin)
     cp c                ;If the char is not the lead-in code,
     jr nz,conout_char   ;  jump to handle it.
 
     ld a,01h
-    ld (leadrcvd),a     ;If the char is the lead-in code, set a flag
-    ret                 ;  and return
+    ld (leadrcvd),a     ;If the char is the lead-in code,
+    ret                 ;  set a flag and return.
 
 conout_char:
     ld a,(leadrcvd)
@@ -1970,24 +1975,24 @@ cbm_srq:
 ;
     push af
 lfc81h:
-    in a,(ppi1_pa)      ;A = Read IC17 8255 Port A (IEEE data in)
-    or a                ;Set flags
-    jr nz,lfc81h        ;Wait for IEEE data bus to go to zero
+    in a,(ppi1_pa)
+    or a
+    jr nz,lfc81h        ;Wait for IEEE data bus to be released
 
     pop af
-    out (ppi1_pb),a     ;Write data byte to IC17 8255 Port B (IEEE data out)
+    out (ppi1_pb),a     ;Write data byte to IEEE data bus
 
     in a,(ppi2_pb)
     or 20h
-    out (ppi2_pb),a     ;Set SRQ high (?)
+    out (ppi2_pb),a     ;SRQ_OUT=low
 
     in a,(ppi2_pb)
     and 0dfh
-    out (ppi2_pb),a     ;Set SRQ low (?)
+    out (ppi2_pb),a     ;SRQ_OUT=high
 
 lfc95h:
-    in a,(ppi1_pa)      ;A = Read IEEE data byte
-    and 0c0h            ;Mask off all but bits 6 and 7
+    in a,(ppi1_pa)      ;Read IEEE data byte
+    and 0c0h            ;Mask off all except bits 6 and 7
     jr z,lfc95h         ;Wait until CBM changes one of those bits
 
     rla                 ;Rotate bit 7 (key available status) into Carry flag
@@ -1997,9 +2002,9 @@ lfc95h:
     out (ppi1_pb),a     ;Release IEEE data lines
 
 lfca1h:
-    in a,(ppi1_pa)      ;A = Read IEEE data byte
-    or a                ;Set flags
-    jr nz,lfca1h        ;Wait for IEEE data bus to go to zero
+    in a,(ppi1_pa)
+    or a
+    jr nz,lfca1h        ;Wait for IEEE data bus to be released
 
     pop af
     ret
@@ -2237,7 +2242,7 @@ cbm_peek:
 
     in a,(ppi2_pb)
     or 04h
-    out (ppi2_pb),a     ;NDAC=?
+    out (ppi2_pb),a     ;NDAC_OUT=low
 
 cbm_peek_loop:
     call cbm_get_byte   ;Read a byte from the CBM
@@ -2250,7 +2255,7 @@ cbm_peek_loop:
 
     in a,(ppi2_pb)
     and 0f3h
-    out (ppi2_pb),a     ;NDAC=?, NRFD=?
+    out (ppi2_pb),a     ;NRFD_OUT=high, NDAC_OUT=high
     ret
 
 cbm_poke:
@@ -2317,53 +2322,53 @@ cbm_get_time:
 e_fe62h:
     push af
 lfe63h:
-    in a,(ppi2_pa)      ;Read IEEE-488 control lines in
-    cpl                 ;Invert byte
-    and 08h             ;Mask off all except bit 3 (NRFD in)
-    jr z,lfe63h         ;Wait until NRFD=?
+    in a,(ppi2_pa)
+    cpl
+    and 08h
+    jr z,lfe63h         ;Wait until NRFD_IN=high
 
-    in a,(ppi2_pa)      ;Read IEEE-488 control lines in
-    cpl                 ;Invert byte
-    and 04h             ;Mask off all except bit 2 (NDAC in)
-    jr nz,lfe9eh        ;Jump if NDAC=?
+    in a,(ppi2_pa)
+    cpl
+    and 04h
+    jr nz,lfe9eh        ;Jump if NDAC_IN=high
 
     pop af
     out (ppi1_pb),a     ;Write byte to IEEE-488 data lines
 
-    in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
-    or 02h              ;Turn on bit 1 (DAV)
-    out (ppi2_pb),a     ;DAV=?
+    in a,(ppi2_pb)
+    or 02h
+    out (ppi2_pb),a     ;DAV_OUT=low
 
 lfe7ah:
-    in a,(ppi2_pa)      ;Read IEEE-488 control lines in
-    cpl                 ;Invert byte
-    and 04h             ;Mask off all except bit 2 (NDAC in)
-    jr z,lfe7ah         ;Wait until NDAC=?
+    in a,(ppi2_pa)
+    cpl
+    and 04h
+    jr z,lfe7ah         ;Wait until NDAC_IN=hi
 
-    in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
-    and 0fdh            ;Turn off bit 1 (DAV)
-    out (ppi2_pb),a     ;DAV=?
+    in a,(ppi2_pb)
+    and 0fdh
+    out (ppi2_pb),a     ;DAV_OUT=high
 
-    xor a               ;A=0
+    xor a
     out (ppi1_pb),a     ;Release IEEE-488 data lines
 
 lfe8ah:
-    in a,(ppi2_pa)      ;Read IEEE-488 control lines in
-    cpl                 ;Invert byte
-    and 04h             ;Mask off all except bit 2 (NDAC in)
-    jr nz,lfe8ah        ;Wait until NDAC=?
+    in a,(ppi2_pa)
+    cpl
+    and 04h
+    jr nz,lfe8ah        ;Wait until NDAC_IN=high
 
     ex (sp),hl          ;Waste time
     ex (sp),hl
     ex (sp),hl
     ex (sp),hl
 
-    in a,(ppi2_pa)     ;Read IEEE-488 control lines in
-    cpl                ;Mask off all except bit 2 (NDAC in)
-    and 04h            ;Mask off all except bit 2 (NDAC in)
-    jr nz,lfe8ah       ;Wait until NDAC=?
+    in a,(ppi2_pa)
+    cpl
+    and 04h
+    jr nz,lfe8ah        ;Wait until NDAC_IN=high
 
-    or a               ;Set flags
+    or a                ;Set flags
     ret
 
 lfe9eh:
@@ -2433,7 +2438,7 @@ lfee5h:
     in a,(ppi1_pa)      ;Read byte from IEEE data bus
     push af             ;Push it on the stack
 
-    in a,(ppi2_pa)
+    in a,(ppi2_pa)      ;Read state of IEEE-488 control lines in
     ld (ieeestat),a     ;TODO 0ea6ch Is this used?
 
     in a,(ppi2_pb)
@@ -2462,17 +2467,17 @@ e_ff09h:
     ld a,0dh
 e_ff0bh:
     push af
-    in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
-    or 10h              ;Turn on bit 4 (EOI)
-    out (ppi2_pb),a     ;EOI=?
+    in a,(ppi2_pb)
+    or 10h
+    out (ppi2_pb),a     ;EOI_OUT=low
 
     pop af
     call e_fe62h
     push af
 
-    in a,(ppi2_pb)      ;Read state of IEEE-488 control lines out
-    and 0efh            ;Turn off bit 5 (EOI)
-    out (ppi2_pb),a     ;EOI=?
+    in a,(ppi2_pb)
+    and 0efh
+    out (ppi2_pb),a     ;EOI_OUT=high
 
     pop af
     ret
