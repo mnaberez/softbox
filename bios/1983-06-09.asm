@@ -2377,25 +2377,25 @@ cbm_send_byte:
 
 lfea3h:
     in a,(ppi2_pa)
-    cpl                 ;Invert A
-    and 08h             ;Mask off all except bit 3 (NRFD in)
-    jr z,lfea3h         ;Wait until NRFD=?
+    cpl
+    and 08h
+    jr z,lfea3h         ;Wait until NRFD_IN=hi
 
     in a,(ppi2_pb)
-    or 02h              ;Turn on bit 2 (NDAC out)
-    out (ppi2_pb),a     ;NDAC=?
+    or 02h
+    out (ppi2_pb),a     ;DAV_OUT=low
 
 lfeb0h:
     in a,(ppi2_pa)
-    cpl                 ;Invert A
-    and 04h             ;Mask off all except bit 2 (NDAC in)
-    jr z,lfeb0h         ;Wait until NDAC=?
+    cpl
+    and 04h
+    jr z,lfeb0h         ;Wait until NDAC_IN=hi
 
     in a,(ppi2_pb)
-    and 0fdh            ;Turn off bit 2 (NDAC out)
-    out (ppi2_pb),a     ;NDAC=?
+    and 0fdh
+    out (ppi2_pb),a     ;DAV_OUT=high
 
-    xor a               ;A=0
+    xor a
     out (ppi1_pb),a     ;Release IEEE-488 data lines
     ret
 
@@ -2419,39 +2419,39 @@ lfec7h:
 cbm_get_byte:
 ;Read a single byte from the CBM
     in a,(ppi2_pb)
-    and 0f7h            ;Turn off bit 3 (NRFD out)
-    out (ppi2_pb),a     ;NRFD=?
+    and 0f7h
+    out (ppi2_pb),a     ;NRFD_OUT=high
 
 lfedeh:
     in a,(ppi2_pa)
-    cpl                 ;Invert A
-    and 02h             ;Mask off all except bit 1 (DAV in)
-    jr nz,lfedeh        ;Wait until DAV=?
+    cpl
+    and 02h
+    jr nz,lfedeh        ;Wait until DAV_IN=low
 
 lfee5h:
     in a,(ppi1_pa)      ;Read byte from IEEE data bus
-    push af             ;Put it on the stack
+    push af             ;Push it on the stack
 
     in a,(ppi2_pa)
     ld (0ea6ch),a       ;TODO What is 0ea6ch?
 
     in a,(ppi2_pb)
-    or 08h              ;Turn on bit 3 (NRFD out)
-    out (ppi2_pb),a     ;NRFD=?
+    or 08h
+    out (ppi2_pb),a     ;NRFD_OUT=low
 
     in a,(ppi2_pb)
-    and 0fbh            ;Turn off bit 2 (NDAC out)
-    out (ppi2_pb),a     ;NDAC=?
+    and 0fbh
+    out (ppi2_pb),a     ;NDAC_OUT=high
 
 lfef9h:
     in a,(ppi2_pa)
-    cpl                 ;Invert A
-    and 02h             ;Mask off all except bit 1 (DAV in)
-    jr z,lfef9h         ;Wait until DAV=?
+    cpl
+    and 02h
+    jr z,lfef9h         ;Wait until DAV_IN=high
 
     in a,(ppi2_pb)
-    or 04h              ;Turn on bit 2 (NDAC out)
-    out (ppi2_pb),a     ;NDAC=?
+    or 04h
+    out (ppi2_pb),a     ;NDAC_OUT=low
 
     pop af              ;Pop the IEEE data byte off the stack
     or a                ;Set flags
