@@ -188,7 +188,7 @@ lf000h:
     jp e_fb49h       ;f07b
     jp e_fec1h       ;f07e
     jp cbm_clr_jiff  ;f081  Clear the CBM jiffy counter
-    jp delay         ;f084  Programmable delay
+    jp delay         ;f084  Programmable millisecond delay
 
 banner:
     db 0dh,0ah,"60K SoftBox CP/M vers. 2.2"
@@ -824,7 +824,7 @@ lf4c5h:
     out (ppi2_pc),a     ;Turn on LEDs
 
     ld bc,03e8h
-    call delay
+    call delay          ;Wait 1 second
 
     ld a,1bh
     ld (leadin),a       ;Terminal lead-in = 01bh (escape)
@@ -911,7 +911,7 @@ lf52bh:
     call e_fb31h
 
     ld bc,0007h
-    call delay
+    call delay          ;Wait 7 ms
 
     in a,(ppi2_pa)      ;Read IEEE-488 control lines
     cpl                 ;Invert byte
@@ -1716,18 +1716,18 @@ e_fb72h:
     jr e_fb47h
 
 delay:
-;Programmable delay
-;BC = number of short delays to wait
+;Programmable millisecond delay
+;BC = number of milliseconds to wait
 ;
-    call short_delay    ;Short delay
+    call delay_1ms
     dec bc              ;Decrement BC
     ld a,b
     or c
     jr nz,delay         ;Loop until BC=0
     ret
 
-short_delay:
-;Wait a short amount of time.
+delay_1ms:
+;Wait for 1 millisecond
 ;
     push bc             ;Preserve BC
     ld b,0c8h           ;B=0c8h
@@ -2030,7 +2030,7 @@ lfcc3h:
     ld a,(lptype)
     ld b,a
     or a
-    call z,short_delay
+    call z,delay_1ms
     call e_fb31h
     bit 0,b
     jr nz,lfd29h
@@ -2046,13 +2046,13 @@ lfcc3h:
     jr z,lfd04h
     ld a,b
     or a
-    call z,short_delay
+    call z,delay_1ms
     ld a,8dh
     call e_fe62h
 lfcf8h:
     bit 1,b
     jr nz,lfd04h
-    call short_delay
+    call delay_1ms
     ld a,11h
     call e_fe62h
 lfd04h:
@@ -2069,7 +2069,7 @@ lfd0bh:
 lfd15h:
     call sub_fd6bh
     bit 1,b
-    call z,short_delay
+    call z,delay_1ms
     call e_fe62h
 lfd20h:
     in a,(ppi2_pb)
@@ -2106,7 +2106,7 @@ lfd4bh:
     ld d,a
     ld e,0ffh
     call e_fb31h
-    call short_delay
+    call delay_1ms
     in a,(ppi2_pa)      ;Read IEEE-488 control lines in
     cpl                 ;Invert byte
     and 08h             ;Mask off all except bit 3 (NRFD in)
@@ -2408,7 +2408,7 @@ lfec7h:
     cpl
     and 02h
     jr z,lfee5h
-    call short_delay
+    call delay_1ms
     dec bc
     ld a,b
     or c
