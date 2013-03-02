@@ -113,6 +113,7 @@ leadin:   equ 0ea68h    ;Terminal command lead-in: 1bh=escape, 7eh=tilde
 xy_order: equ 0ea69h    ;X,Y order when sending move-to: 0=X first, 1=Y first
 y_offset: equ 0ea6ah    ;Offset added to Y when sending move-to sequence
 x_offset: equ 0ea6bh    ;Offset added to X when sending move-to sequence
+ieeestat: equ 0ea6ch    ;Temp byte stores IEEE-488 control lines input state
 lptype:   equ 0ea6dh    ;CBM printer (LPT:) type: 0=3022, 3032, 4022, 4023
                         ;                         1=8026, 8027 (daisywheel)
                         ;                         2=8024
@@ -2433,7 +2434,7 @@ lfee5h:
     push af             ;Push it on the stack
 
     in a,(ppi2_pa)
-    ld (0ea6ch),a       ;TODO What is 0ea6ch?
+    ld (ieeestat),a     ;TODO 0ea6ch Is this used?
 
     in a,(ppi2_pb)
     or 08h
