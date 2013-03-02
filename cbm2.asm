@@ -1504,16 +1504,16 @@ key_table:
 ;                                   ----- ----- ----- ----- ----- -----
 ;                                   COL0  COL1  COl2  COL3  COL4  COL5
 ;                                   ----- ----- ----- ----- ----- -----
-    !byte $ff,$1b,$09,$ff,$01,$00 ; F1    ESC   TAB   NONE  SHIFT CTRL
-    !byte $ff,$b1,$51,$41,$5a,$ff ; F2    1     Q     A     Z     NONE
-    !byte $ff,$b2,$57,$53,$58,$43 ; F3    2     W     S     X     C
-    !byte $ff,$b3,$45,$44,$46,$56 ; F4    3     E     D     F     V
-    !byte $ff,$b4,$52,$54,$47,$42 ; F5    4     R     T     G     B
-    !byte $ff,$b5,$b6,$59,$48,$4e ; F6    5     6     Y     H     N
-    !byte $ff,$b7,$55,$4a,$4d,$20 ; F7    7     U     J     M     SPACE
-    !byte $ff,$b8,$49,$4b,$2c,$2e ; F8    8     I     K     ,     .
-    !byte $ff,$b9,$4f,$4c,$3b,$2f ; F9    9     NONE  L     ;     /
-    !byte $05,$b0,$2d,$50,$5b,$27 ; F10   0     -     P     [     '
+    !byte $ff,$1b,$09,$ff,$01,$00 ; F1    ESC   TAB   NONE  SHIFT CTRL   ^ = Bit 7 is set,
+    !byte $ff,$b1,$51,$41,$5a,$ff ; F2    ^1    Q     A     Z     NONE       indicating the
+    !byte $ff,$b2,$57,$53,$58,$43 ; F3    ^2    W     S     X     C          key shifts to a
+    !byte $ff,$b3,$45,$44,$46,$56 ; F4    ^3    E     D     F     V          special character
+    !byte $ff,$b4,$52,$54,$47,$42 ; F5    ^4    R     T     G     B
+    !byte $ff,$b5,$b6,$59,$48,$4e ; F6    ^5    6     Y     H     N
+    !byte $ff,$b7,$55,$4a,$4d,$20 ; F7    ^7    U     J     M     SPACE
+    !byte $ff,$b8,$49,$4b,$2c,$2e ; F8    ^8    I     K     ,     .
+    !byte $ff,$b9,$4f,$4c,$3b,$2f ; F9    ^9    NONE  L     ;     /
+    !byte $05,$b0,$2d,$50,$5b,$27 ; F10   ^0    -     P     [     '
     !byte $0a,$3d,$5f,$5d,$0d,$de ; DOWN  =     BARRW ]     RETRN PI
     !byte $0b,$08,$0c,$7f,$02,$ff ; UP    LEFT  RIGHT DEL   CBM   NONE
     !byte $1e,$3f,$37,$34,$31,$30 ; HOME  ?     7     4     1     0
