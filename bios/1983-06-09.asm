@@ -116,7 +116,7 @@ x_offset: equ 0ea6bh    ;Offset added to X when sending move-to sequence
 lptype:   equ 0ea6dh    ;CBM printer (LPT:) type: 0=3022, 3032, 4022, 4023
                         ;                         1=8026, 8027 (daisywheel)
                         ;                         2=8024
-
+list_tmp: equ 0ea6eh    ;Temporary storage byte used by LIST routine
 dtypes:   equ 0ea70h    ;Disk drive types:
 dtype_ab: equ dtypes+0  ;  A:, B:    00h = CBM 3040/4040
 dtype_cd: equ dtypes+1  ;  C:, D:    01h = CBM 8050
@@ -2034,7 +2034,7 @@ lfcc3h:
     call e_fb31h
     bit 0,b
     jr nz,lfd29h
-    ld hl,0ea6eh
+    ld hl,list_tmp
     ld a,(hl)
     ld (hl),c
     cp 0ah
