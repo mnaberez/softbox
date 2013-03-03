@@ -143,17 +143,17 @@ init_term:
 init_ieee:
 ;
 ;6525 TPI #1 ($DE00)
-;    PA0 75161A pin 11 DC
-;    PA1 75161A pin  1 TE
-;    PA2 REN
-;    PA3 ATN
-;    PA4 DAV
-;    PA5 EOI
-;    PA6 NDAC
 ;    PA7 NRFD
+;    PA6 NDAC
+;    PA5 EOI
+;    PA4 DAV
+;    PA3 ATN
+;    PA2 REN
+;    PA1 75161A pin  1 TE
+;    PA0 75161A pin 11 DC
 ;
-;    PB0 IFC
 ;    PB1 SRQ
+;    PB0 IFC
 ;
 ;6526 CIA #2 ($DC00)
 ;    PA0-7 Data
@@ -214,11 +214,17 @@ main_loop:
                       ;PA0 DC    Output
     sta tpi1_ddra
 
-wait_for_srq:
+wait_srq_low:
     lda got_srq
-    beq wait_for_srq
+    beq wait_srq_low   ;Wait until the 6525 detects a falling edge on SRQ.
 
     sei
+
+wait_srq_high:
+    lda tpi1_pb        ;Wait until SRQ returns high.
+    and #%00000010     ;  The command byte is only valid after SRQ returns
+    beq wait_srq_high  ;  high.  Unfortunately, SRQ is wired to a pin on the
+                       ;  the 6525 that can't detect a rising edge.
 
     lda tpi1_pa
     and #%10111111
