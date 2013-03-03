@@ -278,6 +278,9 @@ send_k_a_wait:
     lda #$00
     sta cia2_ddra      ;Data lines all inputs
 
+    lda #%10001000     ;NRFD=high, NDAC=low, ATN=high, REN=low, TE=low, DC=low
+    sta tpi1_pa
+
     lda #%11001111     ;PA7 NRFD  Output
                        ;PA6 NDAC  Output
                        ;PA5 EOI   Input
@@ -287,15 +290,6 @@ send_k_a_wait:
                        ;PA1 TE    Output
                        ;PA0 DC    Output
     sta tpi1_ddra
-
-    lda #%11001000    ;NRFD=high, NDAC=high, ATN=high, REN=low, TE=low, DC=low
-    sta tpi1_pa
-
-handshake:
-    lda cia2_pa
-    and #$3f
-    cmp #$3f
-    bne handshake
 
 dispatch_command:
     txa                ;Recall the original command byte from X
