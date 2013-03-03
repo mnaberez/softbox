@@ -231,8 +231,6 @@ do_get_key:
 do_terminal:
 ;Write to the terminal screen
     jsr ieee_get_byte
-    ldx #%00111100
-    stx pia2_ndac      ;NDAC_OUT=high
     jsr process_byte
     jmp main_loop
 
@@ -242,8 +240,6 @@ do_mem_jsr:
     sta target_lo      ; -> Target vector lo
     jsr ieee_get_byte  ;Get byte
     sta target_hi      ; -> Target vector hi
-    ldx #%00111100
-    stx pia2_ndac      ;NDAC_OUT=high
     jsr do_mem_jsr_ind ;Jump to the subroutine through TARGET_LO
     jmp main_loop
 do_mem_jsr_ind:

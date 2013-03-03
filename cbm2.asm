@@ -226,10 +226,6 @@ wait_srq_high:
     beq wait_srq_high  ;  high.  Unfortunately, SRQ is wired to a pin on the
                        ;  the 6525 that can't detect a rising edge.
 
-    lda tpi1_pa
-    and #%10111111
-    sta tpi1_pa        ;NDAC=low
-
     ldx cia2_pa        ;Read IEEE data byte with command from SoftBox
                        ;
                        ; Bit 7: CBM to SoftBox: Key not available
@@ -318,11 +314,6 @@ do_get_key:
 do_terminal:
 ;Write to the terminal screen
     jsr ieee_get_byte
-    pha
-    lda tpi1_pa
-    ora #%01000000
-    sta tpi1_pa        ;NDAC=high
-    pla
     jsr process_byte
     jmp main_loop
 
@@ -332,9 +323,6 @@ do_mem_jsr:
     sta target_lo      ; -> Target vector lo
     jsr ieee_get_byte  ;Get byte
     sta target_hi      ; -> Target vector hi
-    lda tpi1_pa
-    ora #%01000000
-    sta tpi1_pa        ;NDAC=high
     jsr do_mem_jsr_ind ;Jump to the subroutine through TARGET_LO
     jmp main_loop
 do_mem_jsr_ind:
