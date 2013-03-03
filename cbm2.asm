@@ -226,7 +226,7 @@ wait_srq_high:
     beq wait_srq_high  ;  high.  Unfortunately, SRQ is wired to a pin on the
                        ;  the 6525 that can't detect a rising edge.
 
-    ldx cia2_pa        ;Read IEEE data byte with command from SoftBox
+    lda cia2_pa        ;Read IEEE data byte with command from SoftBox
                        ;
                        ; Bit 7: CBM to SoftBox: Key not available
                        ; Bit 6: CBM to SoftBox: Key available
@@ -237,7 +237,7 @@ wait_srq_high:
                        ; Bit 1: SoftBox to CBM: Wait for a key and send it
                        ; Bit 0: SoftBox to CBM: Key available?
 
-    txa                ;Remember the original command byte in X
+    tax                ;Remember the original command byte in X
     ror ;a
 
     lda #$7f           ;Next byte we'll put on IEEE will be #$80 (key available)

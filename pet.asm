@@ -172,7 +172,7 @@ wait_for_srq:
     lda #%00110100
     sta pia2_ndac      ;NDAC_OUT=low
 
-    ldx pia2_ieee      ;Read IEEE data byte with command from SoftBox
+    lda pia2_ieee      ;Read IEEE data byte with command from SoftBox
                        ;
                        ; Bit 7: CBM to SoftBox: Key not available
                        ; Bit 6: CBM to SoftBox: Key available
@@ -183,7 +183,7 @@ wait_for_srq:
                        ; Bit 1: SoftBox to CBM: Wait for a key and send it
                        ; Bit 0: SoftBox to CBM: Key available?
 
-    txa                ;Remember the original command byte in X
+    tax                ;Remember the original command byte in X
     ror ;a
     lda #$7f           ;Next byte we'll put on IEEE will be #$80 (key available)
     bcs send_key_avail ;Bypass the key buffer check
