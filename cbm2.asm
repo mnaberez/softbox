@@ -161,11 +161,14 @@ init_ieee:
     lda #$00
     sta got_srq
 
+    lda #$c6           ;Data byte must be inverted
+    sta cia2_pa        ;Put #$39 on IEEE data lines
+
     lda #$ff
     sta cia2_ddra      ;Data lines all outputs
 
-    lda #$c6           ;Data byte must be inverted
-    sta cia2_pa        ;Put #$39 on IEEE data lines
+    lda #%00100010     ;EOI=high, DAV=low, ATN=low, REN=low
+    sta tpi1_pa
 
     lda #%00111111     ;PA7 NRFD  Input
                        ;PA6 NDAC  Input
@@ -176,9 +179,6 @@ init_ieee:
                        ;PA1 TE    Output
                        ;PA0 DC    Output
     sta tpi1_ddra
-
-    lda #%00100010     ;EOI=high, DAV=low, ATN=low, REN=low
-    sta tpi1_pa
 
     ldx #$02
 atn_wait:
@@ -274,7 +274,7 @@ send_k_a_wait:
     lda #$00
     sta cia2_ddra      ;Data lines all inputs
 
-    lda #%10001000     ;NRFD=high, NDAC=low, ATN=high, REN=low, TE=low, DC=low
+    lda #%00001000     ;NRFD=low, NDAC=low, ATN=high, REN=low, TE=low, DC=low
     sta tpi1_pa
 
     lda #%11001111     ;PA7 NRFD  Output
@@ -431,6 +431,9 @@ ieee_send_byte:
     lda #$ff
     sta cia2_ddra      ;Data lines all outputs
 
+    lda #%00111010     ;EOI=high, DAV=high, ATN=high, REN=low, TE=high, DC=low
+    sta tpi1_pa
+
     lda #%00111111     ;PA7 NRFD  Input
                        ;PA6 NDAC  Input
                        ;PA5 EOI   Output
@@ -440,9 +443,6 @@ ieee_send_byte:
                        ;PA1 TE    Output
                        ;PA0 DC    Output
     sta tpi1_ddra
-
-    lda #%00111010     ;EOI=high, DAV=high, ATN=high, REN=low, TE=high, DC=low
-    sta tpi1_pa
 
 l_060d:
     bit tpi1_pa
@@ -468,6 +468,9 @@ l_0627:
     lda #$00
     sta cia2_ddra     ;Data lines all inputs
 
+    lda #%11001000    ;NRFD=high, NDAC=high, ATN=high, REN=low, TE=low, DC=low
+    sta tpi1_pa
+
     lda #%11001111    ;PA7 NRFD  Output
                       ;PA6 NDAC  Output
                       ;PA5 EOI   Input
@@ -477,9 +480,6 @@ l_0627:
                       ;PA1 TE    Output
                       ;PA0 DC    Output
     sta tpi1_ddra
-
-    lda #%11001000    ;NRFD=high, NDAC=high, ATN=high, REN=low, TE=low, DC=low
-    sta tpi1_pa
 
     rts
 
