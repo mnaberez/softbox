@@ -253,6 +253,9 @@ send_key_avail:
     lda #$ff
     sta cia2_ddra      ;Data lines all outputs
 
+    lda #%00111010     ;EOI=high, DAV=high, ATN=high, REN=low, TE=high, DC=low
+    sta tpi1_pa
+
     lda #%00111111     ;PA7 NRFD  Input
                        ;PA6 NDAC  Input
                        ;PA5 EOI   Output
@@ -262,9 +265,6 @@ send_key_avail:
                        ;PA1 TE    Output
                        ;PA0 DC    Output
     sta tpi1_ddra
-
-    lda #%00111010     ;EOI=high, DAV=high, ATN=high, REN=low, TE=high, DC=low
-    sta tpi1_pa
 
     ldy #$10
 send_k_a_wait:
@@ -468,7 +468,7 @@ l_0627:
     lda #$00
     sta cia2_ddra     ;Data lines all inputs
 
-    lda #%11001000    ;NRFD=high, NDAC=high, ATN=high, REN=low, TE=low, DC=low
+    lda #%00001000    ;NRFD=low, NDAC=low, ATN=high, REN=low, TE=low, DC=low
     sta tpi1_pa
 
     lda #%11001111    ;PA7 NRFD  Output
