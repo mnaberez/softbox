@@ -606,6 +606,11 @@ irq_scan:
     beq irq_done        ;Nothing to do if no key was pressed.
     cmp #$05            ;F10 pressed for Softbox reset?
     beq irq_reset       ;  Yes: rti will start the reset routine
+    cmp #$06            ;F9 pressed for simulate SRQ?
+    bne irq_scan_2      ;  No: process the key normally
+    sta got_srq         ;  Yes: set the SRQ flag and exit
+    jmp irq_done
+irq_scan_2:
     ldx keycount
     cpx #$50            ;Is the keyboard buffer full?
     beq irq_done        ;  Yes:  Nothing we can do.  Forget the key.
@@ -1532,7 +1537,7 @@ key_table:
     !byte $ff,$b5,$b6,$59,$48,$4e ; F6    ^5    6     Y     H     N
     !byte $ff,$b7,$55,$4a,$4d,$20 ; F7    ^7    U     J     M     SPACE
     !byte $ff,$b8,$49,$4b,$ac,$ae ; F8    ^8    I     K     ^,    ^.
-    !byte $ff,$b9,$4f,$4c,$bb,$af ; F9    ^9    NONE  L     ^;    ^/
+    !byte $06,$b9,$4f,$4c,$bb,$af ; F9    ^9    NONE  L     ^;    ^/
     !byte $05,$b0,$2d,$50,$5b,$a7 ; F10   ^0    -     P     [     ^'
     !byte $0a,$bd,$5f,$5d,$0d,$de ; DOWN  ^=    BARRW ]     RETRN PI
     !byte $0b,$08,$0c,$7f,$02,$ff ; UP    LEFT  RIGHT DEL   CBM   NONE
