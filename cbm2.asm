@@ -266,10 +266,34 @@ send_key_avail:
                        ;PA0 DC    Output
     sta tpi1_ddra
 
-    ldy #$10
-send_k_a_wait:
-    dey
-    bne send_k_a_wait  ;Let keyboard status sit on the lines a while
+                       ;At this point the SoftBox is guaranteed to be waiting
+                       ;for bit 6 or 7 to be pulled low.  It will be within
+                       ;this loop in its cbm_srq routine:
+                       ;
+                       ;  lfc95h:
+                       ;    in a,(ppi1_pa) ;Read IEEE data byte
+                       ;    and 0c0h       ;Mask off all except bits 6 and 7
+                       ;    jr z,lfc95h    ;Wait one of those bits to go low
+                       ;
+                       ;One pass through the loop takes ~10 microseconds.
+
+                       ;The PET/CBM code pulls bit 6-7 low, then waits for
+                       ;the SoftBox to release bits 0-5 to high.  The CBM-II
+                       ;hardware is not capable of this, so we must wait:
+
+    ldy #$06           ;Delay count for B-series
+    bit x_width        ;80 columns?
+    bvs send_k_a_wait  ;  Yes: Keep B-series count
+    ldy #$02           ;  No:  Delay count for P-series
+
+send_k_a_wait:         ;Wait at least 20 microseconds after the keyboard
+    dey                ;  status is put on the data bus to ensure the
+    bne send_k_a_wait  ;  SoftBox receives it.
+
+                       ;After the SoftBox receives the keyboard status, it
+                       ;loops waiting for all data lines to return high.
+                       ;The data lines will return high when we switch the
+                       ;drivers back to input mode:
 
     lda #$00
     sta cia2_ddra      ;Data lines all inputs
