@@ -58,14 +58,13 @@ hertz       = $1e     ;Constant for powerline frequency: 50 or 60 Hz
 ;  Settings > CBM2 Settings > Memory > Enable Bank 15 $4000-5FFF RAM
 ;
 ;B-series
-;  BLOAD"CBM2.PRG",B15  ;BLOAD into Bank 15
-;  SYS 16384            ;Start terminal
+;  bload"cbm2.prg",b15  ;BLOAD into bank 15
+;  sys 16384            ;Start terminal
 ;
 ;P-series
-;  SYS 4                ;Start monitor
-;  L"CBM2.PRG",08       ;"08" is the device number in hex
-;  X                    ;Exit monitor
-;  SYS 16384            ;Start terminal
+;  sys 4                ;Start monitor
+;  l"cbm2.prg",08       ;"08" is the device number in hex
+;  g 4000               ;Start terminal
 
     *=$4000
 
