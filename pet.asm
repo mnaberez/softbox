@@ -163,9 +163,8 @@ main_loop:
     sta via_pb         ;NRFD_OUT=high, ATN_OUT=high
 
 wait_for_srq:
-    lda pia2_dav       ;Read PIA #2 CRB
-    asl ;a             ;  bit 7 = IRQB1 flag for CB1 (SRQ_IN detect)
-    bcc wait_for_srq   ;Wait until SRQ_IN is detected
+    bit pia2_dav       ;Bit 7 = IRQB1 flag for CB1 (SRQ_IN detect)
+    bpl wait_for_srq   ;Wait until positive transition on SRQ_IN is detected
 
     lda pia2_iout      ;Read clears IRQB1 flag (SRQ_IN detect)
 
