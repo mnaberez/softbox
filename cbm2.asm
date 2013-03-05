@@ -51,7 +51,7 @@ jiffy1      = $19     ;Jiffy counter
 jiffy0      = $1a     ;Jiffy counter (LSB)
 blink_cnt   = $1b     ;Counts down number of IRQs until cursor reverses
 uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
-got_srq     = $1d     ;IEEE-488 SRQ detect: zero=no SRQ, nonzero=SRQ pending
+got_srq     = $1d     ;IEEE-488 SRQ detect: 0=no SRQ, 1=SRQ pending
 hertz       = $1e     ;Constant for powerline frequency: 50 or 60 Hz
 
 ;Configure VICE
@@ -97,7 +97,6 @@ init:
     sta keycount       ;Reset key counter (no keys hit)
     lda #$0a
     sta repeatcount1   ;Store #$0A in REPEATCOUNT1
-;--    CLI                ;Enable interrupts again
 
 init_scrn:
 ;Detect 40/80 column screen and store in X_WIDTH.
@@ -158,7 +157,7 @@ init_ieee:
 ;    PA0-7 Data
 ;
     lda #$00
-    sta got_srq
+    sta got_srq        ;Initialize SRQ pending flag
 
     lda #$c6           ;Data byte must be inverted
     sta cia2_pa        ;Put #$39 on IEEE data lines
@@ -191,12 +190,9 @@ atn_wait_1:
     lda #%00111010     ;EOI=high, DAV=high, ATN=high, REN=low, TE=high, DC=low
     sta tpi1_pa
 
+    cli                ;Enable interrupts again
+
 main_loop:
-    lda #$00
-    sta got_srq
-
-    cli
-
     lda #$00
     sta cia2_ddra     ;Data lines all inputs
 
@@ -217,7 +213,7 @@ wait_srq_low:
     lda got_srq
     beq wait_srq_low   ;Wait until the 6525 detects a falling edge on SRQ.
 
-    sei
+    dec got_srq        ;Clear SRQ pending flag (decrement 1 to 0)
 
 wait_srq_high:
     lda tpi1_pb        ;Wait until SRQ returns high.
@@ -294,12 +290,6 @@ send_k_a_wait:         ;Wait at least 20 microseconds after the keyboard
                        ;The data lines will return high when we switch the
                        ;drivers back to input mode:
 
-    lda #$00
-    sta cia2_ddra      ;Data lines all inputs
-
-    lda #%00001000     ;NRFD=low, NDAC=low, ATN=high, REN=low, TE=low, DC=low
-    sta tpi1_pa
-
     lda #%11001111     ;PA7 NRFD  Output
                        ;PA6 NDAC  Output
                        ;PA5 EOI   Input
@@ -309,6 +299,12 @@ send_k_a_wait:         ;Wait at least 20 microseconds after the keyboard
                        ;PA1 TE    Output
                        ;PA0 DC    Output
     sta tpi1_ddra
+
+    lda #%00001000     ;NRFD=low, NDAC=low, ATN=high, REN=low, TE=low, DC=low
+    sta tpi1_pa
+
+    lda #$00
+    sta cia2_ddra      ;Data lines all inputs
 
 dispatch_command:
     txa                ;Recall the original command byte from X
@@ -544,7 +540,7 @@ irq_handler:
 check_ieee:
     cmp #$02            ;IRQ from IEEE-488 SRQ?
     bne irq_50hz
-    sta got_srq
+    inc got_srq         ;Clear SRQ pending flag (increment 0 to 1)
     jmp irq_done
 
 ;IRQ must have been caused by 50/60 Hz
@@ -631,7 +627,7 @@ irq_scan:
     beq irq_reset       ;  Yes: rti will start the reset routine
     cmp #$06            ;F9 pressed for simulate SRQ?
     bne irq_scan_2      ;  No: process the key normally
-    sta got_srq         ;  Yes: set the SRQ flag and exit
+    inc got_srq         ;  Yes: set the SRQ flag (incr 0 to 1) and exit
     jmp irq_done
 irq_scan_2:
     ldx keycount
