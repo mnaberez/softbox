@@ -521,7 +521,7 @@ lf305h:
     djnz lf305h
     in a,(ppi2_pc)
     and 20h
-    jr nz,sub_f2ffh
+    jr nz,sub_f2ffh     ;Wait until Corvus ACTIVE=low
     call sub_f38fh
     cp 8fh
     jr nz,sub_f2ffh
@@ -1641,7 +1641,7 @@ dos_mr:
 e_faf9h:
     in a,(ppi2_pb)
     or 01h
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;ATN_OUT=low
     ld a,40h
     or d
     call e_fe62h
@@ -1651,12 +1651,12 @@ e_faf9h:
     call p,e_fe62h
     in a,(ppi2_pb)
     or 0ch
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;NDAC_OUT=low, NRFD_OUT=low
 lfb13h:
     push af
     in a,(ppi2_pb)
     and 0feh
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;ATN_OUT=high
     ld a,19h
 lfb1ch:
     dec a
@@ -1666,16 +1666,16 @@ lfb1ch:
 e_fb21h:
     in a,(ppi2_pb)
     or 01h
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;ATN_OUT=low
     in a,(ppi2_pb)
     and 0f3h
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;NDAC_OUT=high, NRFD_OUT=high
     ld a,5fh
     jr e_fb49h
 e_fb31h:
     in a,(ppi2_pb)
     or 01h
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;ATN_OUT=low
     ld a,20h
     or d
     call e_fe62h
@@ -1690,14 +1690,14 @@ e_fb49h:
     push af
     in a,(ppi2_pb)
     or 01h
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;ATN_OUT=low
     pop af
     call e_fe62h
     jr lfb13h
 e_fb56h:
     in a,(ppi2_pb)
     or 01h
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;ATN_OUT=low
     ld a,d
     or 20h
     call e_fe62h
@@ -1712,7 +1712,7 @@ e_fb56h:
 e_fb72h:
     in a,(ppi2_pb)
     or 01h
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;ATN_OUT=low
     ld a,d
     or 20h
     call e_fe62h
@@ -2032,7 +2032,7 @@ lfcc3h:
     ld d,a
     in a,(ppi2_pb)
     or 01h
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;ATN_OUT=low
     ld a,(lptype)
     ld b,a
     or a
@@ -2080,7 +2080,7 @@ lfd15h:
 lfd20h:
     in a,(ppi2_pb)
     or 01h
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;ATN_OUT=low
     jp e_fb47h
 lfd29h:
     ld a,c
@@ -2343,7 +2343,7 @@ lfe7ah:
     in a,(ppi2_pa)
     cpl
     and 04h
-    jr z,lfe7ah         ;Wait until NDAC_IN=hi
+    jr z,lfe7ah         ;Wait until NDAC_IN=high
 
     in a,(ppi2_pb)
     and 0fdh
@@ -2356,7 +2356,7 @@ lfe8ah:
     in a,(ppi2_pa)
     cpl
     and 04h
-    jr nz,lfe8ah        ;Wait until NDAC_IN=high
+    jr nz,lfe8ah        ;Wait until NDAC_IN=low
 
     ex (sp),hl          ;Waste time
     ex (sp),hl
@@ -2366,7 +2366,7 @@ lfe8ah:
     in a,(ppi2_pa)
     cpl
     and 04h
-    jr nz,lfe8ah        ;Wait until NDAC_IN=high
+    jr nz,lfe8ah        ;Wait until NDAC_IN=low
 
     or a                ;Set flags
     ret
@@ -2385,7 +2385,7 @@ lfea3h:
     in a,(ppi2_pa)
     cpl
     and 08h
-    jr z,lfea3h         ;Wait until NRFD_IN=hi
+    jr z,lfea3h         ;Wait until NRFD_IN=high
 
     in a,(ppi2_pb)
     or 02h
@@ -2395,7 +2395,7 @@ lfeb0h:
     in a,(ppi2_pa)
     cpl
     and 04h
-    jr z,lfeb0h         ;Wait until NDAC_IN=hi
+    jr z,lfeb0h         ;Wait until NDAC_IN=high
 
     in a,(ppi2_pb)
     and 0fdh
@@ -2408,17 +2408,17 @@ lfeb0h:
 e_fec1h:
     in a,(ppi2_pb)
     and 0f7h
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;NRFD_OUT=high
 lfec7h:
     in a,(ppi2_pa)
     cpl
     and 02h
-    jr z,lfee5h
+    jr z,lfee5h         ;Wait until DAV_IN=high
     call delay_1ms
-    dec bc
+    dec bc              ;Decrement BC
     ld a,b
     or c
-    jr nz,lfec7h
+    jr nz,lfec7h        ;Loop until BC=0
     scf
     ret
 
