@@ -198,6 +198,8 @@ banner:
     db 00h
 
 wboot:
+;Warm start
+;
     ld sp,0100h
     xor a
     call sub_f245h
@@ -373,7 +375,13 @@ seldsk_table:
     db 00h, 80h, 00h, 20h, 00h, 00h,  00h, 00h
 
 sectran:
-    ld l,c
+;Translate a logical sector number into a physical sector number
+;to take account of skewing.
+;
+;Called with BC=logical sector number and DE=address of translation table.
+;Returns a physical sector number in HL.
+;
+    ld l,c              ;HL=BC
     ld h,b
     ret
 
@@ -418,6 +426,9 @@ sub_f245h:
     ret
 
 read:
+;Read the currently set track and sector at the current DMA address.
+;Returns A=0 for OK, 1 for unrecoverable error, 0FFh if media changed.
+;
     ld a,(0040h)
     call sub_f245h
     jp c,lf315h
@@ -432,6 +443,16 @@ read:
     ret
 
 write:
+;Write the currently set track and sector.
+;
+;Called with deblocking code in C:
+;  C=0 - Write can be deferred
+;  C=1 - Write must be immediate
+;  C=2 - Write can be deferred, no pre-read is necessary.
+;
+;Returns A=0 for OK, 1 for unrecoverable error,
+;  2 if disc is readonly, 0FFh if media changed.
+;
     push bc
     ld a,(0040h)
     call sub_f245h
@@ -674,6 +695,8 @@ lf413h:
     jp conout
 
 boot:
+;Cold start
+;
     ld sp,0100h         ;Initialize stack pointer
     ld a,99h
     out (ppi1_cr),a
