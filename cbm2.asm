@@ -669,6 +669,8 @@ reset_softbox:
     sta tpi1_pb         ;IFC=low
 
     ldx #$00
+    stx cursor_tmp      ;Turn cursor on
+    stx cursor_off
     stx rtc_jiffies     ;Reset jiffy counter
     ldx #$0d
 reset_ifc:
