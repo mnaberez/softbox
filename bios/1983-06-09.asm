@@ -141,6 +141,7 @@ ddev_op:  equ ddevs+7   ;  O:, P:
 
 scrtab:   equ 0ea80h    ;64 byte buffer for tab stops
 dos_msg:  equ 0eac0h    ;Last error message returned from CBM DOS
+dos_buf:  equ 0ef00h    ;256 byte buffer for CBM DOS sector data
 
     org 0f000h
 
@@ -166,17 +167,17 @@ lf000h:
     jp e_fb47h       ;f036
     jp e_faf9h       ;f039
     jp e_fb21h       ;f03c
-    jp cbm_get_byte  ;f03f  Read a single byte from the CBM
-    jp e_fe62h       ;f042
+    jp ieee_get_byte ;f03f  Read a byte from the current IEEE-488 device
+    jp ieee_put_byte ;f042  Send a byte to the current IEEE-488 device
     jp e_ff0bh       ;f045
     jp e_ff09h       ;f048
-    jp e_ff1fh       ;f04b
+    jp ieee_put_str  ;f04b  Send a string to the current IEEE-488 device
     jp e_f9a3h       ;f04e
     jp e_f224h       ;f051
-    jp e_faadh       ;f054
-    jp e_fabch       ;f057
+    jp ieee_find_dev ;f054  Find the IEEE-488 device number for a CP/M drive
+    jp ieee_open_cmd ;f057  Open command channel on IEEE-488 device
     jp e_f9bch       ;f05a
-    jp e_fb56h       ;f05d
+    jp ieee_atn_str  ;f05d  Send ATN then write string to an IEEE-488 device
     jp e_fb72h       ;f060
     jp cbm_clear     ;f063  Clear the CBM screen
     jp cbm_jsr       ;f066  Jump to a subroutine in CBM memory
@@ -185,9 +186,9 @@ lf000h:
     jp cbm_set_time  ;f06f  Set the time on the CBM real time clock
     jp cbm_get_time  ;f072  Read the CBM clocks (both RTC and jiffy counter)
     jp e_f578h       ;f075
-    jp e_fac4h       ;f078
+    jp ieee_init_drv ;f078  Initialize an IEEE-488 disk drive
     jp e_fb49h       ;f07b
-    jp e_fec1h       ;f07e
+    jp ieee_get_tmo  ;f07e  Read a byte from IEEE-488 device with timeout
     jp cbm_clr_jiff  ;f081  Clear the CBM jiffy counter
     jp delay         ;f084  Programmable millisecond delay
 
@@ -205,7 +206,7 @@ wboot:
     call sub_f245h
     jr c,lf0e6h
     xor a
-    call e_faadh
+    call ieee_find_dev
     ld c,16h
     call sub_f651h
     jr lf0ebh
@@ -219,7 +220,7 @@ lf0ebh:
     ld hl,ccp_base+3
     jr z,init_and_jp_hl
     xor a
-    call e_fac4h
+    call ieee_init_drv
     jr wboot
 sub_f0fch:
     ld hl,ccp_base
@@ -402,7 +403,6 @@ e_f224h:
     pop hl
     ld a,h
     jr nz,lf23eh
-
     bit 0,a
     jr lf240h
 lf23eh:
@@ -434,7 +434,7 @@ read:
     jp c,lf315h
     call sub_f6b9h
     ld a,01h
-    call nz,sub_f2d8h
+    call nz,read_sector
     ld a,(sector)
     rrca
     call sub_f2e5h
@@ -491,7 +491,7 @@ lf2b1h:
     ld (0048h),a
     call sub_f6b9h
     ld a,00h
-    call nz,sub_f2d8h
+    call nz,read_sector
 lf2bdh:
     ld a,(sector)
     rrca
@@ -501,7 +501,7 @@ lf2bdh:
     jr nz,lf2d1h
     ld a,(dos_err)
     or a
-    call z,sub_f2dfh
+    call z,write_sector
     xor a
     ret
 lf2d1h:
@@ -509,20 +509,27 @@ lf2d1h:
     ld (0051h),a
     xor a
     ret
-sub_f2d8h:
-    ld hl,0ef00h
+
+read_sector:
+;Read a sector from CBM DOS into the dos_buf buffer.
+;
+    ld hl,dos_buf
     ex af,af'
-    jp lfa3eh
-sub_f2dfh:
-    ld hl,0ef00h
-    jp lf9f7h
+    jp read_sector_hl
+
+write_sector:
+;Write a sector from the dos_buf out to CBM DOS.
+;
+    ld hl,dos_buf
+    jp write_sector_hl
+
 sub_f2e5h:
     ld a,00h
     jr lf2ebh
 sub_f2e9h:
     ld a,01h
 lf2ebh:
-    ld hl,0ef00h
+    ld hl,dos_buf
     ld de,(dma)
     ld bc,dma_buf
     jr nc,lf2f8h
@@ -670,7 +677,7 @@ lf3d1h:
     push hl
     push af
     ld a,(0040h)
-    call e_faadh
+    call ieee_find_dev
     pop af
     pop hl
     add a,d
@@ -963,7 +970,7 @@ lf555h:
     ld de,080fh
     ld c,02h            ;2 bytes in string
     ld hl,dos_i0_0      ;"I0"
-    call e_fb56h
+    call ieee_atn_str
     ld d,08h
     ld c,1ch
     call sub_f651h
@@ -971,7 +978,7 @@ lf555h:
     ld de,0802h
     ld c,02h            ;2 bytes in string
     ld hl,dos_num2      ;"#2"
-    call e_fb56h
+    call ieee_atn_str
 e_f578h:
     ld sp,0100h
     xor a
@@ -1102,7 +1109,7 @@ sub_f651h:
     ld hl,filename      ;"0:CP/M"
     ld c,06h            ;6 characters
     ld e,00h
-    call e_fb56h
+    call ieee_atn_str
     pop de
     push de
     call sub_f9bfh
@@ -1116,7 +1123,7 @@ sub_f651h:
     ld hl,ccp_base
     ld b,00h
 lf671h:
-    call cbm_get_byte
+    call ieee_get_byte
     ld (hl),a
     inc hl
     djnz lf671h
@@ -1183,7 +1190,7 @@ sub_f6b9h:
     ld a,(hl)
     ld (hl),00h
     or a
-    call nz,sub_f2dfh
+    call nz,write_sector
     ld a,(0040h)
     ld (drive),a
     ld hl,(track)
@@ -1194,6 +1201,7 @@ sub_f6b9h:
     ld (0047h),a
     or 0ffh
     ret
+
 lf6fch:
     ld (0055h),hl
     call sub_f8dah
@@ -1202,14 +1210,14 @@ lf702h:
     ld (0050h),a
 lf707h:
     ld a,(drive)
-    call e_fabch
+    call ieee_open_cmd
     ld hl,(0055h)
     ld c,05h
-    call e_ff1fh
+    call ieee_put_str
     ld a,(drive)
     and 01h
     add a,30h
-    call e_fe62h
+    call ieee_put_byte
     ld a,(004dh)
     call e_f9a3h
     ld a,(004eh)
@@ -1233,7 +1241,7 @@ lf73fh:
     dec (hl)
     jr z,lf752h
     ld a,(drive)
-    call e_fac4h
+    call ieee_init_drv
     jr lf707h
 lf752h:
     ld hl,bdos_err_on
@@ -1277,7 +1285,7 @@ lf782h:
 
 lf790h:
     ld a,(drive)
-    call e_fac4h
+    call ieee_init_drv
     ld a,(dos_err)
     cp 1ah              ;Error = Write protect on?
     jp z,lf702h
@@ -1325,10 +1333,10 @@ colon_space:
 bdos_err_on:
     db 0dh,0ah,"BDOS err on ",00h
 
-lf8cdh:
+dos_u1_2:
     db "U1 2 "
 
-lf8d2h:
+dos_u2_2:
     db "U2 2 "
 
 newline:
@@ -1474,10 +1482,11 @@ lf97fh:
     daa
     nop
     nop
+
 e_f9a3h:
     push af
     ld a,20h
-    call e_fe62h
+    call ieee_put_byte
     pop af
     ld e,2fh
 lf9ach:
@@ -1487,17 +1496,18 @@ lf9ach:
     add a,3ah
     push af
     ld a,e
-    call e_fe62h
+    call ieee_put_byte
     pop af
-    jp e_fe62h
+    jp ieee_put_byte
+
 e_f9bch:
-    call e_faadh
+    call ieee_find_dev
 sub_f9bfh:
     ld e,0fh
     call e_faf9h
     ld hl,dos_msg
 lf9c7h:
-    call cbm_get_byte
+    call ieee_get_byte
     ld (hl),a
     sub 30h
     jr c,lf9c7h
@@ -1510,7 +1520,7 @@ lf9c7h:
     add a,b
     add a,a
     ld b,a
-    call cbm_get_byte
+    call ieee_get_byte
     ld (hl),a
     inc hl
     sub 30h
@@ -1518,7 +1528,7 @@ lf9c7h:
     push af
     ld c,3ch
 lf9e5h:
-    call cbm_get_byte
+    call ieee_get_byte
     dec c
     jp m,lf9eeh
     ld (hl),a
@@ -1529,13 +1539,16 @@ lf9eeh:
     call e_fb21h
     pop af
     ret
-lf9f7h:
+
+write_sector_hl:
+;Write a sector to the CBM disk drive from buffer at HL.
+;
     push hl
-    ld hl,dos_mw        ;"M-W",00h,13h,01h
+    ld hl,dos_mw        ;"M-W",00h,13h,01h (Memory-Write)
     ld c,06h            ;6 bytes in string
     ld a,(drive)        ;A = CP/M drive number
-    call e_fabch        ;? write to device ?
-    call e_ff1fh
+    call ieee_open_cmd  ;Open command channel
+    call ieee_put_str   ;Send the command
     pop hl
 
     ld a,(hl)
@@ -1543,80 +1556,88 @@ lf9f7h:
     call e_ff0bh
     call e_fb47h
 
-    ld hl,dos_bp        ;"B-P 2 1"
+    ld hl,dos_bp        ;"B-P 2 1" (Buffer-Pointer)
     ld c,07h            ;7 bytes in string
-    ld a,(drive)
-    call e_fabch
-    call e_ff1fh
-
+    ld a,(drive)        ;A = CP/M drive number
+    call ieee_open_cmd  ;Open command channel
+    call ieee_put_str   ;Send the command
     call e_ff09h
     call e_fb47h
-    ld a,(drive)
-    call e_faadh
+
+    ld a,(drive)        ;A = CP/M drive number
+    call ieee_find_dev  ;D = its IEEE-488 device number
     ld e,02h
     call e_fb31h
-    pop hl
 
+    pop hl
     inc hl
     ld c,0ffh
-    call e_ff1fh
+    call ieee_put_str
     call e_fb47h
-    ld hl,lf8d2h
+    ld hl,dos_u2_2      ;"U2 2 " (Block Write)
     jp lf6fch
-lfa3eh:
+
+read_sector_hl:
+;Read a sector from a CBM disk drive into buffer at HL.
+;
     push hl
-    ld hl,lf8cdh
+    ld hl,dos_u1_2      ;"U1 2 " (Block Read)
     call lf6fch
 
-    ld hl,dos_mr        ;"M-R",00h,13h
+    ld hl,dos_mr        ;"M-R",00h,13h (Memory-Read)
     ld c,05h            ;5 bytes in string
-    ld a,(drive)
-    call e_fabch
-    call e_ff1fh
-
+    ld a,(drive)        ;A = CP/M drive number
+    call ieee_open_cmd  ;Open command channel
+    call ieee_put_str   ;Send the command
     call e_ff09h
     call e_fb47h
-    ld a,(drive)
-    call e_faadh
+
+    ld a,(drive)        ;A = CP/M drive number
+    call ieee_find_dev  ;D = its IEEE-488 device number
     ld e,0fh
     call e_faf9h
-    call cbm_get_byte
+    call ieee_get_byte
     pop hl
     ld (hl),a
     push hl
     call e_fb21h
-    ld a,(drive)
-    call e_fabch
 
-    ld hl,dos_bp        ;"B-P 2 1"
+    ld a,(drive)        ;A = CP/M drive number
+    call ieee_open_cmd  ;Open command channel
+    ld hl,dos_bp        ;"B-P 2 1" (Buffer-Pointer)
     ld c,07h            ;7 bytes in string
-    call e_ff1fh
-
+    call ieee_put_str   ;Send the command
     call e_ff09h
     call e_fb47h
+
     ld a,(drive)
     call e_f9bch
     cp 46h
     jr z,lfaa4h
     ld a,(drive)
-    call e_faadh
+    call ieee_find_dev
     ld e,02h
     call e_faf9h
     pop de
     inc de
     ld b,0ffh
 lfa9ah:
-    call cbm_get_byte
+    call ieee_get_byte
     ld (de),a
     inc de
     djnz lfa9ah
     jp e_fb21h
 lfaa4h:
-    ld a,(drive)
-    call e_fac4h
+    ld a,(drive)        ;A = CP/M drive number
+    call ieee_init_drv  ;Initialize the CBM disk drive
     pop hl
-    jr lfa3eh
-e_faadh:
+    jr read_sector_hl
+
+ieee_find_dev:
+;Find the IEEE-488 device number for a CP/M drive
+;A = CP/M drive number (0=A:, 1=B:, ...)
+;Returns IEEE-488 device number in D
+;
     push hl
     push af
     or a
@@ -1629,13 +1650,23 @@ e_faadh:
     pop af
     pop hl
     ret
-e_fabch:
-    call e_faadh
+
+ieee_open_cmd:
+;Open command channel on IEEE-488
+;A = CP/M drive number (0=A:, 1=B:, ...)
+;HL = pointer to string
+;C = number of bytes in string
+;
+    call ieee_find_dev
     ld e,0fh
     jp e_fb31h
-e_fac4h:
-    call e_faadh
-    ld e,0fh
+
+ieee_init_drv:
+;Initialize an IEEE-488 disk drive
+;A = CP/M drive number (0=A:, 1=B:, ...)
+;
+    call ieee_find_dev  ;D = IEEE-488 device number
+    ld e,0fh            ;0fh = Command channel
     push de
 
     ld c,02h            ;2 bytes in string
@@ -1643,14 +1674,13 @@ e_fac4h:
     rra
     jr nc,lfad5h
     ld hl,dos_i1        ;"I1"
-
 lfad5h:
-    call e_fb56h
+    call ieee_atn_str
     pop de
     ld e,02h
     ld c,02h            ;2 bytes in string
     ld hl,dos_num2      ;"#2"
-    jp e_fb56h
+    jp ieee_atn_str
 
 dos_i0:
     db "I0"
@@ -1673,11 +1703,11 @@ e_faf9h:
     out (ppi2_pb),a     ;ATN_OUT=low
     ld a,40h
     or d
-    call e_fe62h
+    call ieee_put_byte
     jr c,lfb13h
     ld a,e
     or 60h
-    call p,e_fe62h
+    call p,ieee_put_byte
     in a,(ppi2_pb)
     or 0ch
     out (ppi2_pb),a     ;NDAC_OUT=low, NRFD_OUT=low
@@ -1692,6 +1722,7 @@ lfb1ch:
     jr nz,lfb1ch
     pop af
     ret
+
 e_fb21h:
     in a,(ppi2_pb)
     or 01h
@@ -1701,53 +1732,64 @@ e_fb21h:
     out (ppi2_pb),a     ;NDAC_OUT=high, NRFD_OUT=high
     ld a,5fh
     jr e_fb49h
+
 e_fb31h:
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
     ld a,20h
     or d
-    call e_fe62h
+    call ieee_put_byte
     jr c,lfb13h
     ld a,e
     or 60h
-    call p,e_fe62h
+    call p,ieee_put_byte
     jr lfb13h
+
 e_fb47h:
     ld a,3fh
+
 e_fb49h:
     push af
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
     pop af
-    call e_fe62h
+    call ieee_put_byte
     jr lfb13h
-e_fb56h:
+
+ieee_atn_str:
+;Send attention and write a string to an IEEE-488 device.
+;
+;E = channel number
+;C = number of bytes in string
+;HL = pointer to string
+;
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
     ld a,d
     or 20h
-    call e_fe62h
+    call ieee_put_byte
     ld a,e
     or 0f0h
     call e_fb49h
     dec c
-    call nz,e_ff1fh
+    call nz,ieee_put_str
     ld a,(hl)
     call e_ff0bh
     jr e_fb47h
+
 e_fb72h:
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
     ld a,d
     or 20h
-    call e_fe62h
+    call ieee_put_byte
     ld a,e
     or 0e0h
-    call e_fe62h
+    call ieee_put_byte
     jr e_fb47h
 
 delay:
@@ -1786,7 +1828,7 @@ conin:
 
     ld a,02h            ;Command 02h = Wait for a key and send it
     call cbm_srq
-    call cbm_get_byte
+    call ieee_get_byte
 
     push af
     in a,(ppi2_pb)
@@ -1875,7 +1917,7 @@ conout_cbm:
     ld a,04h            ;Command 04h = Write to the terminal screen
     call cbm_srq
     ld a,c              ;A=C
-    jp cbm_send_byte    ;Jump out to send byte in A
+    jp cbm_put_byte     ;Jump out to send byte in A
 
 move_start:
 ;Start a cursor move sequence.  The next two bytes received will be
@@ -2083,13 +2125,13 @@ lfcc3h:
     or a
     call z,delay_1ms
     ld a,8dh
-    call e_fe62h
+    call ieee_put_byte
 lfcf8h:
     bit 1,b
     jr nz,lfd04h
     call delay_1ms
     ld a,11h
-    call e_fe62h
+    call ieee_put_byte
 lfd04h:
     ld a,c
     cp 5fh
@@ -2105,7 +2147,7 @@ lfd15h:
     call sub_fd6bh
     bit 1,b
     call z,delay_1ms
-    call e_fe62h
+    call ieee_put_byte
 lfd20h:
     in a,(ppi2_pb)
     or 01h
@@ -2114,7 +2156,7 @@ lfd20h:
 lfd29h:
     ld a,c
     call sub_fd6bh
-    call e_fe62h
+    call ieee_put_byte
     jp e_fb47h
 
 listst:
@@ -2192,7 +2234,7 @@ punch:
     call e_fb31h
 lfd8ch:
     ld a,c
-    call e_fe62h
+    call ieee_put_byte
     jp e_fb47h
 
 reader:
@@ -2208,7 +2250,7 @@ reader:
     ld d,a
     ld e,0ffh
     call e_faf9h
-    call cbm_get_byte
+    call ieee_get_byte
     push af
     call e_fb21h
     pop af
@@ -2247,9 +2289,9 @@ cbm_jsr:
     ld a,08h            ;Command 08h = Jump to a subroutine in CBM memory
     call cbm_srq
     ld a,l
-    call cbm_send_byte  ;Send low byte of address
+    call cbm_put_byte   ;Send low byte of address
     ld a,h
-    jp cbm_send_byte    ;Send high byte
+    jp cbm_put_byte     ;Send high byte
 
 cbm_peek:
 ;Transfer bytes from CBM memory to the SoftBox
@@ -2261,20 +2303,20 @@ cbm_peek:
     ld a,10h            ;Command 10h = Transfer from CBM to SoftBox
     call cbm_srq
     ld a,c
-    call cbm_send_byte  ;Send low byte of byte counter
+    call cbm_put_byte   ;Send low byte of byte counter
     ld a,b
-    call cbm_send_byte  ;Send high byte
+    call cbm_put_byte   ;Send high byte
     ld a,e
-    call cbm_send_byte  ;Send low byte of CBM start address
+    call cbm_put_byte   ;Send low byte of CBM start address
     ld a,d
-    call cbm_send_byte  ;Send high byte
+    call cbm_put_byte   ;Send high byte
 
     in a,(ppi2_pb)
     or 04h
     out (ppi2_pb),a     ;NDAC_OUT=low
 
 cbm_peek_loop:
-    call cbm_get_byte   ;Read a byte from the CBM
+    call ieee_get_byte  ;Read a byte from the CBM
     ld (hl),a           ;Store it at the pointer
     inc hl              ;Increment pointer
     dec bc              ;Decrement bytes remaining to transfer
@@ -2297,16 +2339,16 @@ cbm_poke:
     ld a,20h            ;Command 20h = Transfer from SoftBox to CBM
     call cbm_srq
     ld a,c
-    call cbm_send_byte  ;Send low byte of byte counter
+    call cbm_put_byte   ;Send low byte of byte counter
     ld a,b
-    call cbm_send_byte  ;Send high byte
+    call cbm_put_byte   ;Send high byte
     ld a,e
-    call cbm_send_byte  ;Send low byte of CBM start address
+    call cbm_put_byte   ;Send low byte of CBM start address
     ld a,d
-    call cbm_send_byte  ;Send high byte
+    call cbm_put_byte   ;Send high byte
 cbm_poke_loop:
     ld a,(hl)           ;Read byte at pointer
-    call cbm_send_byte  ;Send it to the CBM
+    call cbm_put_byte   ;Send it to the CBM
     inc hl              ;Increment pointer
     dec bc              ;Decrement bytes remaining to transfer
     ld a,b
@@ -2348,7 +2390,7 @@ cbm_get_time:
     ld bc,(jiffy1)
     ret
 
-e_fe62h:
+ieee_put_byte:
     push af
 lfe63h:
     in a,(ppi2_pa)
@@ -2405,7 +2447,7 @@ lfe9eh:
     scf
     ret
 
-cbm_send_byte:
+cbm_put_byte:
 ;Send a single byte to the CBM
 ;
     out (ppi1_pb),a     ;Put byte on IEEE data bus
@@ -2434,7 +2476,10 @@ lfeb0h:
     out (ppi1_pb),a     ;Release IEEE-488 data lines
     ret
 
-e_fec1h:
+ieee_get_tmo:
+;Read a byte from IEEE-488 device with timeout
+;BC = number milliseconds before timeout
+;
     in a,(ppi2_pb)
     and 0f7h
     out (ppi2_pb),a     ;NRFD_OUT=high
@@ -2442,7 +2487,7 @@ lfec7h:
     in a,(ppi2_pa)
     cpl
     and 02h
-    jr z,lfee5h         ;Wait until DAV_IN=high
+    jr z,lfee5h         ;Jump out if DAV_IN=low
     call delay_1ms
     dec bc              ;Decrement BC
     ld a,b
@@ -2451,8 +2496,9 @@ lfec7h:
     scf
     ret
 
-cbm_get_byte:
-;Read a single byte from the CBM
+ieee_get_byte:
+;Read a byte from the current IEEE-488 device
+;
     in a,(ppi2_pb)
     and 0f7h
     out (ppi2_pb),a     ;NRFD_OUT=high
@@ -2494,6 +2540,7 @@ lfef9h:
 
 e_ff09h:
     ld a,0dh
+
 e_ff0bh:
     push af
     in a,(ppi2_pb)
@@ -2501,7 +2548,7 @@ e_ff0bh:
     out (ppi2_pb),a     ;EOI_OUT=low
 
     pop af
-    call e_fe62h
+    call ieee_put_byte
     push af
 
     in a,(ppi2_pb)
@@ -2511,12 +2558,16 @@ e_ff0bh:
     pop af
     ret
 
-e_ff1fh:
+ieee_put_str:
+;Send a string to the current IEEE-488 device
+;HL = pointer to string
+;C = number of bytes in string
+;
     ld a,(hl)
     inc hl
-    call e_fe62h
+    call ieee_put_byte
     dec c
-    jr nz,e_ff1fh
+    jr nz,ieee_put_str
     ret
 
 filler:
