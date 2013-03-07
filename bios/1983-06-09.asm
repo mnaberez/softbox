@@ -560,7 +560,7 @@ lf315h:
     call sub_f39ah
     ld hl,(dma)
     call sub_f37bh
-    jr nz,lf36dh
+    jr nz,corvus_error
     ld b,80h
 lf334h:
     in a,(ppi2_pc)
@@ -598,14 +598,15 @@ lf35ch:
     djnz lf35ch
     call sub_f37bh
     jr z,lf340h
-lf36dh:
-    ld hl,lf3e5h
+corvus_error:
+    ld hl,corvus_msg
     push af
-    call puts
+    call puts           ;Write "*** HARD DISK ERROR " to console out
     pop af
-    call sub_f402h
+    call puts_hex_byte  ;Write Corvus error code to console out
     and 0ffh
-    ret
+    ret                 ;Return with A=0FFh
+
 sub_f37bh:
     in a,(ppi2_pc)
     xor 10h
@@ -674,25 +675,30 @@ lf3d1h:
     pop hl
     add a,d
     ret
-lf3e5h:
+
+corvus_msg:
     db 0dh,0ah,07h,"*** HARD DISK ERROR ***  ",00h
-sub_f402h:
-    push af
+
+puts_hex_byte:
+;Write the byte in A to console out as a two digit hex number.
+;
+    push af             ;Preserve A
+    rra                 ;Rotate high nybble into low
     rra
     rra
     rra
-    rra
-    call sub_f40bh
-    pop af
+    call sub_f40bh      ;Write it to console out
+    pop af              ;Recall A for the low nybble
+                        ;Fall through to write it to console out
 sub_f40bh:
-    and 0fh
-    cp 0ah
+    and 0fh             ;Mask off high nybble
+    cp 0ah              ;Convert low nybble to ASCII char
     jr c,lf413h
     add a,07h
 lf413h:
     add a,30h
     ld c,a
-    jp conout
+    jp conout           ;Write char to console out and return.
 
 boot:
 ;Cold start
