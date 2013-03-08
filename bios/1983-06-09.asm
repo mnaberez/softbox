@@ -205,14 +205,14 @@ banner:
 wboot:
 ;Warm start
 ;
-    ld sp,0100h
-    xor a
+    ld sp,0100h         ;Initialize stack pointer
+    xor a               ;A = 0
     call sub_f245h
     jr c,lf0e6h
-    xor a
-    call ieee_find_dev
-    ld c,16h
-    call sub_f651h
+    xor a               ;A = CP/M drive number 0 (A:)
+    call ieee_find_dev  ;D = its IEEE-488 primary address
+    ld c,16h            ;C = 22 pages to load
+    call load_cpm_image ;Load from CP/M image file
     jr lf0ebh
 lf0e6h:
     ld b,2ch
@@ -221,11 +221,14 @@ lf0ebh:
     ld a,(dirsave)      ;Get original CCP directory width
     ld (dirsize),a      ;Restore it
 
-    ld hl,ccp_base+3
-    jr z,init_and_jp_hl
-    xor a
-    call ieee_init_drv
-    jr wboot
+    ld hl,ccp_base+3    ;HL = address that clears the initial command,
+                        ;  then starts the CCP
+    jr z,start_ccp      ;Start CCP via HL
+
+    xor a               ;A = CP/M drive number 0 (A:)
+    call ieee_init_drv  ;Initialize disk drive
+    jr wboot            ;Jump to do warm start over again
+
 sub_f0fch:
     ld hl,ccp_base
     ld c,00h
@@ -258,11 +261,11 @@ lf11dh:
     djnz lf11dh
     ret
 
-init_and_jp_hl:
+start_ccp:
 ;Initialize low memory locations as required by CP/M and
-;then jump to the address in HL.
+;then jump to the address in HL to start the CCP.
 ;
-    push hl             ;Save address
+    push hl             ;Save CCP entry address
     ld bc,dma_buf
     call setdma         ;Initialize DMA pointer
 
@@ -979,10 +982,12 @@ lf555h:
     ld c,02h            ;2 bytes in string
     ld hl,dos_i0_0      ;"I0"
     call ieee_atn_str
-    ld d,08h
-    ld c,1ch
-    call sub_f651h
+
+    ld d,08h            ;D = IEEE-488 primary address 8
+    ld c,1ch            ;C = 28 pages to load
+    call load_cpm_image ;Load from CP/M image file
     jp nz,lf52bh
+
     ld de,0802h
     ld c,02h            ;2 bytes in string
     ld hl,dos_num2      ;"#2"
@@ -1106,19 +1111,23 @@ lf62bh:
     inc a
     call z,conin        ;Get a key if one is waiting
 
-    ld hl,ccp_base
-    jp init_and_jp_hl   ;Jump to start CCP
+    ld hl,ccp_base      ;HL = address that starts CCP with initial command
+    jp start_ccp        ;Start CCP via HL
 
 loading:
     db 0dh,0ah,"Loading CP/M ...",00h
 
-sub_f651h:
+load_cpm_image:
+;Load CP/M image file into memory
+;D = IEEE-488 primary address of CBM disk drive
+;C = number of pages to load from the image file
+;
     push bc
     push de
     ld hl,filename      ;"0:CP/M"
     ld c,06h            ;6 characters
-    ld e,00h
-    call ieee_atn_str
+    ld e,00h            ;0 = Secondary address
+    call ieee_atn_str   ;Send LOAD and filename
     pop de
     push de
     call sub_f9bfh      ;Read error channel
@@ -1127,21 +1136,24 @@ sub_f651h:
     pop bc
     or a
     ret nz
+
     push de
-    call ieee_talk
-
-    ld hl,ccp_base
-    ld b,00h
+    call ieee_talk      ;Send TALK
+    ld hl,ccp_base      ;HL = base address of CP/M system.  The image file
+                        ;      contains the CCP first, then BDOS.
+                        ;C = number of pages to load (1 page = 256 bytes),
+                        ;      which is set by the caller.
+    ld b,00h            ;B = counts down bytes within each page
 lf671h:
-    call ieee_get_byte
-    ld (hl),a
-    inc hl
-    djnz lf671h
-    dec c
-    jr nz,lf671h
-
-    call ieee_untalk
+    call ieee_get_byte  ;Get byte from CP/M image file
+    ld (hl),a           ;Store it in memory
+    inc hl              ;Increment memory pointer
+    djnz lf671h         ;Decrement B and loop until current page is done
+    dec c               ;Decrement C
+    jr nz,lf671h        ;Loop until all pages are done
+    call ieee_untalk    ;Send UNTALK
     pop de
+
     push de
     call e_fb72h
     pop de
@@ -1847,12 +1859,15 @@ ieee_atn_str:
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
-    ld a,d
-    or 20h
+
+    ld a,d              ;Low nybble (D) = primary address
+    or 20h              ;High nybble (2) = Listen Address Group
     call ieee_put_byte
+
     ld a,e
-    or 0f0h
+    or 0f0h             ;High nybble (F) = LOAD secondary address
     call ieee_atn_byte
+
     dec c
     call nz,ieee_put_str
     ld a,(hl)
