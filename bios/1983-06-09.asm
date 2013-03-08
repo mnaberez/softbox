@@ -168,9 +168,9 @@ lf000h:
     jp listst        ;f02d  List (printer) status
     jp sectran       ;f030  Sector translation for skewing
     jp ieee_listen   ;f033  Send LISTEN to an IEEE-488 device
-    jp ieee_unlisten ;f036  Send UNLISTEN to an IEEE-488 device
+    jp ieee_unlisten ;f036  Send UNLISTEN to all IEEE-488 devices
     jp ieee_talk     ;f039  Send TALK to an IEEE-488 device
-    jp ieee_untalk   ;f03c  Send UNTALK to an IEEE-488 device
+    jp ieee_untalk   ;f03c  Send UNTALK to all IEEE-488 devices
     jp ieee_get_byte ;f03f  Read a byte from an IEEE-488 device
     jp ieee_put_byte ;f042  Send a byte to an IEEE-488 device
     jp ieee_eoi_byte ;f045  Send a byte to IEEE-488 device with EOI asserted
@@ -1740,19 +1740,30 @@ dos_mr:
     db "M-R",00h,13h
 
 ieee_talk:
+;Send TALK to an IEEE-488 device
+;D = primary address
+;E = secondary address (0ffh if none)
+;
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
-    ld a,40h
-    or d
+
+                        ;Send primary address:
+    ld a,40h            ;  High nybble (4) = Talk Address Group
+    or d                ;  Low nybble (D) = primary address
     call ieee_put_byte
+
     jr c,atn_out_high
-    ld a,e
-    or 60h
+
+                        ;Send secondary address if any:
+    ld a,e              ;  Low nybble (E) = secondary address
+    or 60h              ;  High nybble (6) = Secondary Command Group
     call p,ieee_put_byte
+
     in a,(ppi2_pb)
     or 0ch
     out (ppi2_pb),a     ;NDAC_OUT=low, NRFD_OUT=low
+                        ;Fall through into atn_out_high
 
 atn_out_high:
 ;ATN_OUT=high then wait a short time
@@ -1769,31 +1780,46 @@ lfb1ch:
     ret
 
 ieee_untalk:
+;Send UNTALK to all IEEE-488 devices.
+;
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
+
     in a,(ppi2_pb)
     and 0f3h
     out (ppi2_pb),a     ;NDAC_OUT=high, NRFD_OUT=high
-    ld a,5fh
+
+    ld a,5fh            ;5fh = UNTALK
     jr ieee_atn_byte
 
 ieee_listen:
-;Open a channel on an IEEE-488 device
+;Send LISTEN to an IEEE-488 device
+;D = primary address
+;E = secondary address (0ffh if none)
+;
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
-    ld a,20h
-    or d
+
+                        ;Send primary address:
+    ld a,20h            ;  High nybble (2) = Listen Address Group
+    or d                ;  Low nybble (D) = primary address
     call ieee_put_byte
+
     jr c,atn_out_high
-    ld a,e
-    or 60h
+
+                        ;Send secondary address if any:
+    ld a,e              ;  Low nybble (E) = secondary address
+    or 60h              ;  High nybble (6) = Secondary Command Group
     call p,ieee_put_byte
     jr atn_out_high
 
 ieee_unlisten:
-    ld a,3fh
+;Send UNLISTEN to all IEEE-488 devices.
+;
+    ld a,3fh            ;3fh = UNLISTEN
+                        ;Fall through into ieee_atn_byte
 
 ieee_atn_byte:
 ;Send a byte to an IEEE-488 device with ATN asserted
