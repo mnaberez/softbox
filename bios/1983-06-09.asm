@@ -950,28 +950,32 @@ lf52bh:
     ld hl,loading
     call puts           ;Write "Loading CP/M ..." to console out
 
-    ld de,080fh
-    call ieee_listen
+    ld de,080fh         ;D = IEEE-488 primary address 8
+                        ;E = IEEE-488 secondary address 15
+    call ieee_listen    ;Send LISTEN
 
-    ld bc,0007h
-    call delay          ;Wait 7 ms
+    ld bc,0007h         ;Wait 7 ms to allow IEEE-488 device 8
+    call delay          ;time to respond to LISTEN
 
     in a,(ppi2_pa)
     cpl
-    and 04h
-    jr z,lf555h         ;Jump if NDAC_IN=low
+    and 04h             ;If NDAC_IN=low, it means device 8 is present.
+    jr z,lf555h         ;  Jump to load CP/M from it.
 
-    ld a,02h
-    ld (dtypes),a
+    ld a,02h            ;Boot CP/M from Corvus hard drive:
+    ld (dtypes),a       ;  Drive A: type = 2 (Corvus 10MB)
     ld a,01h
-    ld (ddevs),a
+    ld (ddevs),a        ;  Drive A: address = 1 (Corvus ID 1)
     ld b,38h
     call sub_f0fch
     jr e_f578h
 
 lf555h:
-    call ieee_unlisten
-    ld de,080fh
+    call ieee_unlisten  ;Send UNLISTEN.  Device 8 should still be
+                        ;  listening from when we tested it above.
+
+    ld de,080fh         ;D = IEEE-488 primary address 8
+                        ;E = IEEE-488 secondary address 15
     ld c,02h            ;2 bytes in string
     ld hl,dos_i0_0      ;"I0"
     call ieee_atn_str
