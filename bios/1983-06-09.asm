@@ -81,8 +81,12 @@ jp_sysc:  equ  0005h    ;Jump to BDOS system call (3 byte instruction)
 track:    equ  0041h    ;Track number
 sector:   equ  0043h    ;Sector number
 drive:    equ  0044h    ;Drive number (0=A, 1=B, 2=C, etc.)
+dos_trk:  equ  004dh    ;CBM DOS track number
+dos_sec:  equ  004eh    ;CBM DOS sector number
 dos_err:  equ  004fh    ;Last error code returned from CBM DOS
+tries:    equ  0050h    ;Counter used to retry drive faults in ieee_u1_or_u2
 dma:      equ  0052h    ;DMA buffer area address
+hl_tmp:   equ  0055h    ;Temporary storage for HL reg used in ieee_u1_or_u2
 leadrcvd: equ  0059h    ;Lead-in received flag: 1=last char was lead-in
 move_cnt: equ  005ah    ;Counts down bytes to consume in a cursor move seq
 move_tmp: equ  005bh    ;Holds first byte received (X or Y pos) in move seq
@@ -163,20 +167,20 @@ lf000h:
     jp write         ;f02a  Write selected sector
     jp listst        ;f02d  List (printer) status
     jp sectran       ;f030  Sector translation for skewing
-    jp e_fb31h       ;f033
-    jp e_fb47h       ;f036
-    jp e_faf9h       ;f039
-    jp e_fb21h       ;f03c
-    jp ieee_get_byte ;f03f  Read a byte from the current IEEE-488 device
-    jp ieee_put_byte ;f042  Send a byte to the current IEEE-488 device
-    jp e_ff0bh       ;f045
-    jp e_ff09h       ;f048
+    jp ieee_listen   ;f033  Send LISTEN to an IEEE-488 device
+    jp ieee_unlisten ;f036  Send UNLISTEN to an IEEE-488 device
+    jp ieee_talk     ;f039  Send TALK to an IEEE-488 device
+    jp ieee_untalk   ;f03c  Send UNTALK to an IEEE-488 device
+    jp ieee_get_byte ;f03f  Read a byte from an IEEE-488 device
+    jp ieee_put_byte ;f042  Send a byte to an IEEE-488 device
+    jp ieee_eoi_byte ;f045  Send a byte to IEEE-488 device with EOI asserted
+    jp ieee_eoi_cr   ;f048  Send a carriage return to IEEE-488 dev with EOI
     jp ieee_put_str  ;f04b  Send a string to the current IEEE-488 device
-    jp e_f9a3h       ;f04e
+    jp ieee_put_itoa ;f04e  Send a number as decimal string to IEEE-488 dev
     jp e_f224h       ;f051
     jp ieee_find_dev ;f054  Find the IEEE-488 device number for a CP/M drive
-    jp ieee_open_cmd ;f057  Open command channel on IEEE-488 device
-    jp e_f9bch       ;f05a
+    jp ieee_lisn_cmd ;f057  Open the command channel on IEEE-488 device
+    jp ieee_read_err ;f05a  Read the error channel of an IEEE-488 device
     jp ieee_atn_str  ;f05d  Send ATN then write string to an IEEE-488 device
     jp e_fb72h       ;f060
     jp cbm_clear     ;f063  Clear the CBM screen
@@ -187,7 +191,7 @@ lf000h:
     jp cbm_get_time  ;f072  Read the CBM clocks (both RTC and jiffy counter)
     jp e_f578h       ;f075
     jp ieee_init_drv ;f078  Initialize an IEEE-488 disk drive
-    jp e_fb49h       ;f07b
+    jp ieee_atn_byte ;f07b  Send a byte to IEEE-488 device with ATN asserted
     jp ieee_get_tmo  ;f07e  Read a byte from IEEE-488 device with timeout
     jp cbm_clr_jiff  ;f081  Clear the CBM jiffy counter
     jp delay         ;f084  Programmable millisecond delay
@@ -947,7 +951,7 @@ lf52bh:
     call puts           ;Write "Loading CP/M ..." to console out
 
     ld de,080fh
-    call e_fb31h
+    call ieee_listen
 
     ld bc,0007h
     call delay          ;Wait 7 ms
@@ -966,7 +970,7 @@ lf52bh:
     jr e_f578h
 
 lf555h:
-    call e_fb47h
+    call ieee_unlisten
     ld de,080fh
     ld c,02h            ;2 bytes in string
     ld hl,dos_i0_0      ;"I0"
@@ -979,6 +983,7 @@ lf555h:
     ld c,02h            ;2 bytes in string
     ld hl,dos_num2      ;"#2"
     call ieee_atn_str
+
 e_f578h:
     ld sp,0100h
     xor a
@@ -1112,14 +1117,15 @@ sub_f651h:
     call ieee_atn_str
     pop de
     push de
-    call sub_f9bfh
+    call sub_f9bfh      ;Read error channel
     pop de
     ld e,00h
     pop bc
     or a
     ret nz
     push de
-    call e_faf9h
+    call ieee_talk
+
     ld hl,ccp_base
     ld b,00h
 lf671h:
@@ -1129,12 +1135,13 @@ lf671h:
     djnz lf671h
     dec c
     jr nz,lf671h
-    call e_fb21h
+
+    call ieee_untalk
     pop de
     push de
     call e_fb72h
     pop de
-    jp sub_f9bfh
+    jp sub_f9bfh        ;Read error channel
 
 dos_num2:
     db "#2"
@@ -1202,30 +1209,41 @@ sub_f6b9h:
     or 0ffh
     ret
 
-lf6fch:
-    ld (0055h),hl
+ieee_u1_or_u2:
+;Perform a CBM DOS block read or block write.
+;
+;HL = pointer to string, either "U1 2 " (Block Read)
+;       or "U1 2 " (Block Write)
+;
+    ld (hl_tmp),hl      ;Preserve HL
     call sub_f8dah
 lf702h:
     ld a,03h
-    ld (0050h),a
+    ld (tries),a        ;3 tries
 lf707h:
-    ld a,(drive)
-    call ieee_open_cmd
-    ld hl,(0055h)
-    ld c,05h
-    call ieee_put_str
-    ld a,(drive)
-    and 01h
-    add a,30h
-    call ieee_put_byte
-    ld a,(004dh)
-    call e_f9a3h
-    ld a,(004eh)
-    call e_f9a3h
-    call e_ff09h
-    call e_fb47h
-    ld a,(drive)
-    call e_f9bch
+    ld a,(drive)        ;A = CP/M drive number
+    call ieee_lisn_cmd  ;Open the command channel
+
+    ld hl,(hl_tmp)      ;Recall HL (pointer to "U1 2 " or "U2 2 ")
+    ld c,05h            ;5 bytes in string
+    call ieee_put_str   ;Send the string
+
+    ld a,(drive)        ;A = CP/M drive number
+    and 01h             ;Mask off all except bit 0
+    add a,30h           ;Convert to ASCII
+    call ieee_put_byte  ;Send CBM drive number (either "0" or "1")
+
+    ld a,(dos_trk)
+    call ieee_put_itoa  ;Send the CBM DOS track
+
+    ld a,(dos_sec)
+    call ieee_put_itoa  ;Send the CBM DOS sector
+
+    call ieee_eoi_cr    ;Send carriage return with EOI
+    call ieee_unlisten  ;Send UNLISTEN
+
+    ld a,(drive)        ;A = CP/M drive number
+    call ieee_read_err  ;Read the error channel
     cp 16h
     jr nz,lf73fh
     ex af,af'
@@ -1237,12 +1255,14 @@ lf73fh:
     or a                ;Set flags
     ret z               ;Return if error code = 0 (OK)
 
-    ld hl,0050h
-    dec (hl)
-    jr z,lf752h
-    ld a,(drive)
-    call ieee_init_drv
-    jr lf707h
+    ld hl,tries
+    dec (hl)            ;Decrement tries
+    jr z,lf752h         ;Give up number of tries exceeded
+
+    ld a,(drive)        ;A = CP/M drive number
+    call ieee_init_drv  ;Initialize the disk drive
+    jr lf707h           ;Try again
+
 lf752h:
     ld hl,bdos_err_on
     call puts           ;Write "BDOS err on " to console out
@@ -1284,13 +1304,13 @@ lf782h:
     jr lf782h           ;Loop to continue printing the error msg
 
 lf790h:
-    ld a,(drive)
-    call ieee_init_drv
+    ld a,(drive)        ;A = CP/M drive number
+    call ieee_init_drv  ;Initialize the disk drive
     ld a,(dos_err)
-    cp 1ah              ;Error = Write protect on?
-    jp z,lf702h
-    cp 15h              ;Error = Drive not ready?
-    jp z,lf702h
+    cp 1ah
+    jp z,lf702h         ;Try again if error is write protect on
+    cp 15h
+    jp z,lf702h         ;Try again if error is drive not ready
     ld a,00h
     ret
 
@@ -1313,18 +1333,20 @@ lf7b3h:
     jr puts_dos_error
 
 cbm_dos_errs:
-    db 1ah,"Disk write protected",00h
-    db 19h,"Write verify error",00h
-    db 1ch,"Long data block",00h
-    db 14h,"Missing header",00h
-    db 15h,"Disk not ready",00h
-    db 4ah,"Disk not ready",00h
-    db 16h,"Missing data block",00h
-    db 17h,"Checksum error in data",00h
-    db 1bh,"Checksum error in header",00h
-    db 18h,"Byte decoding error",00h
-    db 46h,"Commodore DOS bug !",00h
-    db 49h,"Wrong DOS format",00h
+;      Hex SoftBox Error Message          Dec  CBM DOS Error Description
+;      --- ---------------------          ---  -------------------------
+    db 1ah,"Disk write protected",00h     ;26  Write Protect On
+    db 19h,"Write verify error",00h       ;25  Write Error (write-verify)
+    db 1ch,"Long data block",00h          ;28  Write Error (long data block)
+    db 14h,"Missing header",00h           ;20  Read Error (no block header)
+    db 15h,"Disk not ready",00h           ;21  Read Error (no sync char)
+    db 4ah,"Disk not ready",00h           ;74  Drive Not Ready
+    db 16h,"Missing data block",00h       ;22  Read Error (no data block)
+    db 17h,"Checksum error in data",00h   ;23  Read Error (data checksum)
+    db 1bh,"Checksum error in header",00h ;27  Read Error (header checksum)
+    db 18h,"Byte decoding error",00h      ;24  Read Error (byte decoding)
+    db 46h,"Commodore DOS bug !",00h      ;70  No Channel
+    db 49h,"Wrong DOS format",00h         ;73  DOS Mismatch
     db 0ffh,"Unknown error code",00h
 
 colon_space:
@@ -1411,14 +1433,14 @@ lf938h:
     inc (ix+00h)
     jp lf938h
 lf945h:
-    ld (004eh),a
+    ld (dos_sec),a
     ld a,(ix+00h)
-    ld (004dh),a
+    ld (dos_trk),a
     pop de
     cp e
     ret c
     add a,03h
-    ld (004dh),a
+    ld (dos_trk),a
     ret
 lf957h:
     nop
@@ -1483,7 +1505,10 @@ lf97fh:
     nop
     nop
 
-e_f9a3h:
+ieee_put_itoa:
+;Send a number as decimal string to IEEE-488 device
+;A = number (e.g. A=2ah sends " 42")
+;
     push af
     ld a,20h
     call ieee_put_byte
@@ -1500,11 +1525,14 @@ lf9ach:
     pop af
     jp ieee_put_byte
 
-e_f9bch:
+ieee_read_err:
+;Read the error channel of an IEEE-488 device
+;A = CP/M drive number
+;
     call ieee_find_dev
 sub_f9bfh:
     ld e,0fh
-    call e_faf9h
+    call ieee_talk
     ld hl,dos_msg
 lf9c7h:
     call ieee_get_byte
@@ -1536,7 +1564,7 @@ lf9e5h:
 lf9eeh:
     cp 0dh
     jr nz,lf9e5h
-    call e_fb21h
+    call ieee_untalk
     pop af
     ret
 
@@ -1544,94 +1572,108 @@ write_sector_hl:
 ;Write a sector to the CBM disk drive from buffer at HL.
 ;
     push hl
-    ld hl,dos_mw        ;"M-W",00h,13h,01h (Memory-Write)
-    ld c,06h            ;6 bytes in string
-    ld a,(drive)        ;A = CP/M drive number
-    call ieee_open_cmd  ;Open command channel
-    call ieee_put_str   ;Send the command
+                        ;Send memory-write (M-W) command:
+    ld hl,dos_mw        ;  HL = pointer to "M-W",00h,13h,01h
+    ld c,06h            ;  6 bytes in string
+    ld a,(drive)        ;  A = CP/M drive number
+    call ieee_lisn_cmd  ;  Open command channel
+    call ieee_put_str   ;  Send the command
     pop hl
 
-    ld a,(hl)
+                        ;Send first byte of sector to M-W:
+    ld a,(hl)           ;  Get first byte
     push hl
-    call e_ff0bh
-    call e_fb47h
+    call ieee_eoi_byte  ;  Send it for M-W
+    call ieee_unlisten  ;  Send UNLISTEN
 
-    ld hl,dos_bp        ;"B-P 2 1" (Buffer-Pointer)
-    ld c,07h            ;7 bytes in string
-    ld a,(drive)        ;A = CP/M drive number
-    call ieee_open_cmd  ;Open command channel
-    call ieee_put_str   ;Send the command
-    call e_ff09h
-    call e_fb47h
+                        ;Move pointer to second byte of buffer:
+    ld hl,dos_bp        ;  "B-P 2 1" (Buffer-Pointer)
+    ld c,07h            ;  7 bytes in string
+    ld a,(drive)        ;  A = CP/M drive number
+    call ieee_lisn_cmd  ;  Open command channel
+    call ieee_put_str   ;  Send B-P command
+    call ieee_eoi_cr    ;  Send carriage return with EOI
+    call ieee_unlisten  ;  Send UNLISTEN
 
-    ld a,(drive)        ;A = CP/M drive number
-    call ieee_find_dev  ;D = its IEEE-488 device number
-    ld e,02h
-    call e_fb31h
-
+                        ;Send remaining 255 bytes of block:
+    ld a,(drive)        ;  A = CP/M drive number
+    call ieee_find_dev  ;  D = its IEEE-488 device number
+    ld e,02h            ;  E = file #2
+    call ieee_listen    ;  Send LISTEN
     pop hl
     inc hl
-    ld c,0ffh
-    call ieee_put_str
-    call e_fb47h
-    ld hl,dos_u2_2      ;"U2 2 " (Block Write)
-    jp lf6fch
+    ld c,0ffh           ;  255 bytes to send
+    call ieee_put_str   ;  Send the bytes
+    call ieee_unlisten  ;  Send UNLISTEN
+
+                        ;Perform block write (U2):
+    ld hl,dos_u2_2      ;  HL = pointer to "U2 2 " string (Block Write)
+    jp ieee_u1_or_u2    ;  Jump out to perform the block write.  It will
+                        ;    return to the caller.
 
 read_sector_hl:
 ;Read a sector from a CBM disk drive into buffer at HL.
 ;
     push hl
-    ld hl,dos_u1_2      ;"U1 2 " (Block Read)
-    call lf6fch
+                        ;Perform block read (U1):
+    ld hl,dos_u1_2      ;  HL = pointer to "U1 2 " string
+    call ieee_u1_or_u2  ;  Call to perform the block read
 
-    ld hl,dos_mr        ;"M-R",00h,13h (Memory-Read)
-    ld c,05h            ;5 bytes in string
-    ld a,(drive)        ;A = CP/M drive number
-    call ieee_open_cmd  ;Open command channel
-    call ieee_put_str   ;Send the command
-    call e_ff09h
-    call e_fb47h
+                        ;Send memory read (M-R) command:
+    ld hl,dos_mr        ;  HL = pointer to "M-R",00h,13h
+    ld c,05h            ;  5 bytes in string
+    ld a,(drive)        ;  A = CP/M drive number
+    call ieee_lisn_cmd  ;  Open command channel
+    call ieee_put_str   ;  Send M-R command
+    call ieee_eoi_cr    ;  Send carriage return with EOI
+    call ieee_unlisten  ;  Send UNLISTEN
 
-    ld a,(drive)        ;A = CP/M drive number
-    call ieee_find_dev  ;D = its IEEE-488 device number
-    ld e,0fh
-    call e_faf9h
-    call ieee_get_byte
+                        ;Read first byte of sector from M-R:
+    ld a,(drive)        ;  A = CP/M drive number
+    call ieee_find_dev  ;  D = its IEEE-488 device number
+    ld e,0fh            ;  E = Command channel number (15)
+    call ieee_talk      ;  Send TALK
+    call ieee_get_byte  ;  Read the byte returned by M-R
     pop hl
-    ld (hl),a
+    ld (hl),a           ;  Save as first byte of sector
     push hl
-    call e_fb21h
+    call ieee_untalk    ;  Send UNTALK
 
-    ld a,(drive)        ;A = CP/M drive number
-    call ieee_open_cmd  ;Open command channel
-    ld hl,dos_bp        ;"B-P 2 1" (Buffer-Pointer)
-    ld c,07h            ;7 bytes in string
-    call ieee_put_str   ;Send the command
-    call e_ff09h
-    call e_fb47h
+                        ;Move pointer to second byte of buffer:
+    ld a,(drive)        ;  A = CP/M drive number
+    call ieee_lisn_cmd  ;  Open command channel
+    ld hl,dos_bp        ;  "B-P 2 1" (Buffer-Pointer)
+    ld c,07h            ;  7 bytes in string
+    call ieee_put_str   ;  Send B-P command
+    call ieee_eoi_cr    ;  Send carriage return with EOI
+    call ieee_unlisten  ;  Send UNLISTEN
 
-    ld a,(drive)
-    call e_f9bch
-    cp 46h
-    jr z,lfaa4h
-    ld a,(drive)
-    call ieee_find_dev
-    ld e,02h
-    call e_faf9h
+                        ;Check for CBM DOS bug:
+    ld a,(drive)        ;  A = CP/M drive number
+    call ieee_read_err  ;  Read CBM DOS error channel
+    cp 46h              ;  Error code = 70 No Channel?
+    jr z,read_sec_retry ;    Yes: CBM DOS bug, jump to retry
+
+                        ;Read remaining 255 bytes of block:
+    ld a,(drive)        ;  A = CP/M drive number
+    call ieee_find_dev  ;  D = its IEEE-488 device number
+    ld e,02h            ;  E = file #2
+    call ieee_talk      ;  Send TALK
     pop de
     inc de
-    ld b,0ffh
-lfa9ah:
-    call ieee_get_byte
-    ld (de),a
+    ld b,0ffh           ;  255 bytes to read
+read_sec_loop:
+    call ieee_get_byte  ;  Read byte
+    ld (de),a           ;  Store it
     inc de
-    djnz lfa9ah
-    jp e_fb21h
-lfaa4h:
+    djnz read_sec_loop  ;  Decrement B, loop until all bytes read
+    jp ieee_untalk      ;  Send UNTALK and return to caller
+
+read_sec_retry:
     ld a,(drive)        ;A = CP/M drive number
     call ieee_init_drv  ;Initialize the CBM disk drive
-    pop hl
-    jr read_sector_hl
+    pop hl              ;Recall original HL
+    jr read_sector_hl   ;Try again
 
 ieee_find_dev:
 ;Find the IEEE-488 device number for a CP/M drive
@@ -1651,7 +1693,7 @@ ieee_find_dev:
     pop hl
     ret
 
-ieee_open_cmd:
+ieee_lisn_cmd:
 ;Open command channel on IEEE-488
 ;A = CP/M drive number (0=A:, 1=B:, ...)
 ;HL = pointer to string
@@ -1659,7 +1701,7 @@ ieee_open_cmd:
 ;
     call ieee_find_dev
     ld e,0fh
-    jp e_fb31h
+    jp ieee_listen
 
 ieee_init_drv:
 ;Initialize an IEEE-488 disk drive
@@ -1697,21 +1739,24 @@ dos_mw:
 dos_mr:
     db "M-R",00h,13h
 
-e_faf9h:
+ieee_talk:
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
     ld a,40h
     or d
     call ieee_put_byte
-    jr c,lfb13h
+    jr c,atn_out_high
     ld a,e
     or 60h
     call p,ieee_put_byte
     in a,(ppi2_pb)
     or 0ch
     out (ppi2_pb),a     ;NDAC_OUT=low, NRFD_OUT=low
-lfb13h:
+
+atn_out_high:
+;ATN_OUT=high then wait a short time
+;
     push af
     in a,(ppi2_pb)
     and 0feh
@@ -1719,11 +1764,11 @@ lfb13h:
     ld a,19h
 lfb1ch:
     dec a
-    jr nz,lfb1ch
+    jr nz,lfb1ch        ;Delay loop
     pop af
     ret
 
-e_fb21h:
+ieee_untalk:
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
@@ -1731,35 +1776,39 @@ e_fb21h:
     and 0f3h
     out (ppi2_pb),a     ;NDAC_OUT=high, NRFD_OUT=high
     ld a,5fh
-    jr e_fb49h
+    jr ieee_atn_byte
 
-e_fb31h:
+ieee_listen:
+;Open a channel on an IEEE-488 device
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
     ld a,20h
     or d
     call ieee_put_byte
-    jr c,lfb13h
+    jr c,atn_out_high
     ld a,e
     or 60h
     call p,ieee_put_byte
-    jr lfb13h
+    jr atn_out_high
 
-e_fb47h:
+ieee_unlisten:
     ld a,3fh
 
-e_fb49h:
+ieee_atn_byte:
+;Send a byte to an IEEE-488 device with ATN asserted
+;ATN_OUT=low, put byte, ATN_OUT=high, wait
+;
     push af
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
     pop af
     call ieee_put_byte
-    jr lfb13h
+    jr atn_out_high
 
 ieee_atn_str:
-;Send attention and write a string to an IEEE-488 device.
+;Send ATN then write a string to an IEEE-488 device.
 ;
 ;E = channel number
 ;C = number of bytes in string
@@ -1773,12 +1822,12 @@ ieee_atn_str:
     call ieee_put_byte
     ld a,e
     or 0f0h
-    call e_fb49h
+    call ieee_atn_byte
     dec c
     call nz,ieee_put_str
     ld a,(hl)
-    call e_ff0bh
-    jr e_fb47h
+    call ieee_eoi_byte
+    jr ieee_unlisten
 
 e_fb72h:
     in a,(ppi2_pb)
@@ -1790,7 +1839,7 @@ e_fb72h:
     ld a,e
     or 0e0h
     call ieee_put_byte
-    jr e_fb47h
+    jr ieee_unlisten
 
 delay:
 ;Programmable millisecond delay
@@ -2096,7 +2145,7 @@ list:
                         ;List must be ASCII printer (LST: = UL1:)
     ld a,(ul1_dev)
     ld d,a
-    call e_fb31h
+    call ieee_listen
     jp lfd8ch
 lfcc3h:
     ld a,(lpt_dev)
@@ -2108,7 +2157,7 @@ lfcc3h:
     ld b,a
     or a
     call z,delay_1ms
-    call e_fb31h
+    call ieee_listen
     bit 0,b
     jr nz,lfd29h
     ld hl,list_tmp
@@ -2152,12 +2201,12 @@ lfd20h:
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
-    jp e_fb47h
+    jp ieee_unlisten
 lfd29h:
     ld a,c
     call sub_fd6bh
     call ieee_put_byte
-    jp e_fb47h
+    jp ieee_unlisten
 
 listst:
 ;List (printer) status
@@ -2182,13 +2231,13 @@ listst:
 lfd4bh:
     ld d,a
     ld e,0ffh
-    call e_fb31h
+    call ieee_listen
     call delay_1ms
     in a,(ppi2_pa)      ;Read IEEE-488 control lines in
     cpl                 ;Invert byte
     and 08h             ;Mask off all except bit 3 (NRFD in)
     push af
-    call e_fb47h
+    call ieee_unlisten
     pop af
     ret z
     dec a
@@ -2231,11 +2280,11 @@ punch:
     ld a,(ptp_dev)
     ld d,a
     ld e,0ffh
-    call e_fb31h
+    call ieee_listen
 lfd8ch:
     ld a,c
     call ieee_put_byte
-    jp e_fb47h
+    jp ieee_unlisten
 
 reader:
 ;Reader (paper tape) input
@@ -2249,10 +2298,10 @@ reader:
     ld a,(ptr_dev)
     ld d,a
     ld e,0ffh
-    call e_faf9h
+    call ieee_talk
     call ieee_get_byte
     push af
-    call e_fb21h
+    call ieee_untalk
     pop af
     ret
 
@@ -2538,10 +2587,14 @@ lfef9h:
     or a                ;Set flags
     ret
 
-e_ff09h:
+ieee_eoi_cr:
+;Send a carriage return to IEEE-488 device with EOI
+;
     ld a,0dh
 
-e_ff0bh:
+ieee_eoi_byte:
+;Send a byte to IEEE-488 device with EOI asserted
+;
     push af
     in a,(ppi2_pb)
     or 10h
