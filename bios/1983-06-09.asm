@@ -211,7 +211,7 @@ wboot:
     jr c,lf0e6h
     xor a               ;A = CP/M drive number 0 (A:)
     call ieee_find_dev  ;D = its IEEE-488 primary address
-    ld c,16h            ;C = 22 pages to load
+    ld c,16h            ;C = 22 pages to load: D400-E9FF
     call load_cpm_image ;Load from CP/M image file
     jr lf0ebh
 lf0e6h:
@@ -984,7 +984,7 @@ lf555h:
     call ieee_atn_str
 
     ld d,08h            ;D = IEEE-488 primary address 8
-    ld c,1ch            ;C = 28 pages to load
+    ld c,1ch            ;C = 28 pages to load: D400-EFFF
     call load_cpm_image ;Load from CP/M image file
     jp nz,lf52bh
 
@@ -1122,6 +1122,21 @@ load_cpm_image:
 ;D = IEEE-488 primary address of CBM disk drive
 ;C = number of pages to load from the image file
 ;
+;SoftBox Memory Map:
+;  F800-FFFF  BIOS ROM High (IC4)   2048
+;  F000-F7FF  BIOS ROM Low (IC3)    2048
+;  EA80-EFFF  BIOS Working Storage  1408 -+
+;  EA00-EA7F  BIOS Configuration     128  | CP/M
+;  DC00-E9FF  BDOS                  3584  | image file
+;  D400-DBFF  CCP                   2048 -+
+;  0100-D3FF  TPA                  54016
+;  0000-00FF  Low Storage            256
+;
+;The CP/M image is a CBM DOS program file called "CP/M" on the SoftBox
+;boot disk.  The file is 7168 bytes total.  During cold start, the entire
+;file is loaded into memory from D400-EFFF (28 pages).  During warm start,
+;only D400-E9FF (22 pages) is reloaded from the file.
+;
     push bc
     push de
     ld hl,filename      ;"0:CP/M"
@@ -1139,10 +1154,9 @@ load_cpm_image:
 
     push de
     call ieee_talk      ;Send TALK
-    ld hl,ccp_base      ;HL = base address of CP/M system.  The image file
-                        ;      contains the CCP first, then BDOS.
+    ld hl,ccp_base      ;HL = base address of CP/M system
                         ;C = number of pages to load (1 page = 256 bytes),
-                        ;      which is set by the caller.
+                        ;      which is set by the caller
     ld b,00h            ;B = counts down bytes within each page
 lf671h:
     call ieee_get_byte  ;Get byte from CP/M image file
