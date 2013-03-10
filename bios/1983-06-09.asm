@@ -182,7 +182,7 @@ lf000h:
     jp ieee_lisn_cmd ;f057  Open the command channel on IEEE-488 device
     jp ieee_read_err ;f05a  Read the error channel of an IEEE-488 device
     jp ieee_atn_str  ;f05d  Send ATN then write string to an IEEE-488 device
-    jp e_fb72h       ;f060
+    jp ieee_close    ;f060  Close an open file on an IEEE-488 device.
     jp cbm_clear     ;f063  Clear the CBM screen
     jp cbm_jsr       ;f066  Jump to a subroutine in CBM memory
     jp cbm_poke      ;f069  Transfer bytes from the SoftBox to CBM memory
@@ -1200,7 +1200,7 @@ lf671h:
     pop de
 
     push de
-    call e_fb72h
+    call ieee_close     ;Close the file
     pop de
     jp ieee_rd_err_d    ;Jump out to read CBM DOS error channel.  It will
                         ;  return to the caller.
@@ -1903,6 +1903,7 @@ ieee_atn_byte:
 ieee_atn_str:
 ;Send ATN then write a string to an IEEE-488 device.
 ;
+;D = primary address
 ;E = channel number
 ;C = number of bytes in string
 ;HL = pointer to string
@@ -1915,8 +1916,8 @@ ieee_atn_str:
     or 20h              ;High nybble (2) = Listen Address Group
     call ieee_put_byte
 
-    ld a,e
-    or 0f0h             ;High nybble (F) = LOAD secondary address
+    ld a,e              ;Low nybble (E)
+    or 0f0h             ;High nybble (0Fh) = LOAD
     call ieee_atn_byte
 
     dec c
@@ -1925,15 +1926,22 @@ ieee_atn_str:
     call ieee_eoi_byte
     jr ieee_unlisten
 
-e_fb72h:
+ieee_close:
+;Close an open file on an IEEE-488 device.
+;
+;D = primary address
+;E = file number
+;
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
-    ld a,d
-    or 20h
+
+    ld a,d              ;Low nybble (D) = primary address
+    or 20h              ;High nybble (2) = Listen Address Group
     call ieee_put_byte
-    ld a,e
-    or 0e0h
+
+    ld a,e              ;Low nybble (E) = file number
+    or 0e0h             ;High nybble (0Eh) = CLOSE
     call ieee_put_byte
     jr ieee_unlisten
 
