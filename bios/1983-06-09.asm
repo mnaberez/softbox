@@ -181,7 +181,7 @@ lf000h:
     jp ieee_find_dev ;f054  Find the IEEE-488 device number for a CP/M drive
     jp ieee_lisn_cmd ;f057  Open the command channel on IEEE-488 device
     jp ieee_read_err ;f05a  Read the error channel of an IEEE-488 device
-    jp ieee_atn_str  ;f05d  Send ATN then write string to an IEEE-488 device
+    jp ieee_open     ;f05d  Open a file on an IEEE-488 device.
     jp ieee_close    ;f060  Close an open file on an IEEE-488 device.
     jp cbm_clear     ;f063  Clear the CBM screen
     jp cbm_jsr       ;f066  Jump to a subroutine in CBM memory
@@ -667,6 +667,7 @@ sub_f38fh:
     in a,(corvus)
     bit 7,a
     ret
+
 sub_f39ah:
     push af
 lf39bh:
@@ -1008,7 +1009,7 @@ lf555h:
                         ;E = IEEE-488 secondary address 15
     ld c,02h            ;2 bytes in string
     ld hl,dos_i0_0      ;"I0"
-    call ieee_atn_str
+    call ieee_open
 
     ld d,08h            ;D = IEEE-488 primary address 8
     ld c,1ch            ;C = 28 pages to load: D400-EFFF
@@ -1019,7 +1020,7 @@ lf555h:
                         ;E = IEEE-488 secondary address 2
     ld c,02h            ;2 bytes in string
     ld hl,dos_num2      ;"#2"
-    call ieee_atn_str
+    call ieee_open
 
 e_f578h:
     ld sp,0100h
@@ -1173,7 +1174,7 @@ ieee_load_cpm:
     ld hl,filename      ;"0:CP/M"
     ld c,06h            ;6 characters
     ld e,00h            ;0 = Secondary address
-    call ieee_atn_str   ;Send LOAD and filename
+    call ieee_open      ;Send LOAD and filename
     pop de
     push de
     call ieee_rd_err_d  ;A = CBM DOS error code
@@ -1784,12 +1785,12 @@ ieee_init_drv:
     jr nc,lfad5h
     ld hl,dos_i1        ;"I1"
 lfad5h:
-    call ieee_atn_str
+    call ieee_open
     pop de
-    ld e,02h
-    ld c,02h            ;2 bytes in string
+    ld e,02h            ;E = Secondary address 2
+    ld c,02h            ;C = 2 bytes in string
     ld hl,dos_num2      ;"#2"
-    jp ieee_atn_str
+    jp ieee_open
 
 dos_i0:
     db "I0"
@@ -1900,13 +1901,13 @@ ieee_atn_byte:
     call ieee_put_byte
     jr atn_out_high
 
-ieee_atn_str:
-;Send ATN then write a string to an IEEE-488 device.
+ieee_open:
+;Open a file on an IEEE-488 device.
 ;
 ;D = primary address
-;E = channel number
-;C = number of bytes in string
-;HL = pointer to string
+;E = file number
+;C = number of bytes in filename
+;HL = pointer to filename
 ;
     in a,(ppi2_pb)
     or 01h
@@ -1917,14 +1918,17 @@ ieee_atn_str:
     call ieee_put_byte
 
     ld a,e              ;Low nybble (E)
-    or 0f0h             ;High nybble (0Fh) = LOAD
+    or 0f0h             ;High nybble (0Fh) = Secondary Command Group
+                        ;                    OPEN"file" and SAVE only
     call ieee_atn_byte
 
     dec c
-    call nz,ieee_put_str
+    call nz,ieee_put_str ;Send string except for last char
+
     ld a,(hl)
-    call ieee_eoi_byte
-    jr ieee_unlisten
+    call ieee_eoi_byte  ;Send the last char with EOI asserted
+
+    jr ieee_unlisten    ;Send UNLISTEN
 
 ieee_close:
 ;Close an open file on an IEEE-488 device.
@@ -1943,7 +1947,8 @@ ieee_close:
     ld a,e              ;Low nybble (E) = file number
     or 0e0h             ;High nybble (0Eh) = CLOSE
     call ieee_put_byte
-    jr ieee_unlisten
+
+    jr ieee_unlisten    ;Send UNLISTEN
 
 delay:
 ;Programmable millisecond delay
