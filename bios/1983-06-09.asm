@@ -213,6 +213,7 @@ wboot:
     call ieee_find_dev  ;D = its IEEE-488 primary address
     ld c,16h            ;C = 22 pages to load: D400-E9FF
     call load_cpm_image ;Load from CP/M image file
+                        ;  Returns CBM DOS error code in A (0=OK)
     jr lf0ebh
 lf0e6h:
     ld b,2ch
@@ -223,7 +224,7 @@ lf0ebh:
 
     ld hl,ccp_base+3    ;HL = address that clears the initial command,
                         ;  then starts the CCP
-    jr z,start_ccp      ;Start CCP via HL
+    jr z,start_ccp      ;Jump to start CCP via HL if image load succeeded
 
     xor a               ;A = CP/M drive number 0 (A:)
     call ieee_init_drv  ;Initialize disk drive
@@ -281,18 +282,19 @@ start_ccp:
     ld hl,cdisk
     ld a,(hl)           ;A = current user and disk
     and 0fh             ;Mask off user nybble leaving A = current disk
-    call e_f224h
 
-    jr c,lf15ch
-    ld (hl),00h
+    call e_f224h        ;Drive number valid?
+    jr c,lf15ch         ;  Yes: keep it
+    ld (hl),00h         ;  No: reset drive number to 0 (A:)
+
 lf15ch:
-    ld c,(hl)
+    ld c,(hl)           ;C = pass current drive number to CCP
     xor a               ;A=0
     ld (0048h),a
     ld (0051h),a
     dec a               ;A=0ffh
     ld (drive),a
-    pop hl              ;Recall address
+    pop hl              ;Recall CCP entry address
     jp (hl)             ;  and jump to it
 
 home:
@@ -414,6 +416,7 @@ e_f224h:
     jr lf240h
 lf23eh:
     bit 7,c
+
 lf240h:
     pop hl
     scf
@@ -422,6 +425,8 @@ lf240h:
     ret
 
 sub_f245h:
+;A = CP/M drive number
+;
     call e_f224h
     ret nc
     ld a,c
@@ -986,6 +991,7 @@ lf555h:
     ld d,08h            ;D = IEEE-488 primary address 8
     ld c,1ch            ;C = 28 pages to load: D400-EFFF
     call load_cpm_image ;Load from CP/M image file
+                        ;  Returns CBM DOS error code in A (0=OK)
     jp nz,lf52bh
 
     ld de,0802h
@@ -1119,8 +1125,11 @@ loading:
 
 load_cpm_image:
 ;Load CP/M image file into memory
+;
 ;D = IEEE-488 primary address of CBM disk drive
 ;C = number of pages to load from the image file
+;
+;Returns the CBM DOS error code in A (0=OK)
 ;
 ;SoftBox Memory Map:
 ;  F800-FFFF  BIOS ROM High (IC4)   2048
@@ -1145,12 +1154,12 @@ load_cpm_image:
     call ieee_atn_str   ;Send LOAD and filename
     pop de
     push de
-    call sub_f9bfh      ;Read error channel
+    call ieee_rd_err_d  ;A = CBM DOS error code
     pop de
     ld e,00h
     pop bc
     or a
-    ret nz
+    ret nz              ;Return if CBM DOS error is not 0 (OK)
 
     push de
     call ieee_talk      ;Send TALK
@@ -1171,7 +1180,8 @@ lf671h:
     push de
     call e_fb72h
     pop de
-    jp sub_f9bfh        ;Read error channel
+    jp ieee_rd_err_d    ;Jump out to read CBM DOS error channel.  It will
+                        ;  return to the caller.
 
 dos_num2:
     db "#2"
@@ -1559,8 +1569,13 @@ ieee_read_err:
 ;Read the error channel of an IEEE-488 device
 ;A = CP/M drive number
 ;
-    call ieee_find_dev
-sub_f9bfh:
+    call ieee_find_dev  ;D = IEEE-488 primary address
+                        ;Fall through into ieee_rd_err_d
+
+ieee_rd_err_d:
+;Read the error channel of an IEEE-488 device
+;D = IEEE-488 primary address
+;
     ld e,0fh
     call ieee_talk
     ld hl,dos_msg
