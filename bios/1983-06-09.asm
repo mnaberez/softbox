@@ -78,7 +78,7 @@ cdisk:    equ  0004h    ;Current drive and user number
                         ;  Bits 3-0: Current drive number (0=A,1=B,etc.)
 
 jp_sysc:  equ  0005h    ;Jump to BDOS system call (3 byte instruction)
-track:    equ  0041h    ;Track number
+track:    equ  0041h    ;Track number (2 bytes)
 sector:   equ  0043h    ;Sector number
 drive:    equ  0044h    ;Drive number (0=A, 1=B, 2=C, etc.)
 dos_trk:  equ  004dh    ;CBM DOS track number
@@ -127,8 +127,8 @@ dtype_ab: equ dtypes+0  ;  A:, B:    00h = CBM 3040/4040
 dtype_cd: equ dtypes+1  ;  C:, D:    01h = CBM 8050
 dtype_ef: equ dtypes+2  ;  E:, F:    02h = Corvus 10MB
 dtype_gh: equ dtypes+3  ;  G:, H:    03h = Corvus 20MB
-dtype_ij: equ dtypes+4  ;  I:, J:    04h = Corvus 5MB
-dtype_kl: equ dtypes+5  ;  L:, K:    05h = Corvus 5MB*
+dtype_ij: equ dtypes+4  ;  I:, J:    04h = Corvus 5MB (as 1 CP/M drive)
+dtype_kl: equ dtypes+5  ;  L:, K:    05h = Corvus 5MB (as 2 CP/M drives)
 dtype_mn: equ dtypes+6  ;  M:, N:    06h = CBM 8250
 dtype_op: equ dtypes+7  ;  O:, P:    07h = Undefined
                         ;           0ffh = No device
@@ -206,31 +206,38 @@ wboot:
 ;Warm start
 ;
     ld sp,0100h         ;Initialize stack pointer
-    xor a               ;A = 0
+    xor a               ;A = CP/M drive number 0 (A:)
     call sub_f245h
-    jr c,lf0e6h
-    xor a               ;A = CP/M drive number 0 (A:)
-    call ieee_find_dev  ;D = its IEEE-488 primary address
-    ld c,16h            ;C = 22 pages to load: D400-E9FF
-    call load_cpm_image ;Load from CP/M image file
-                        ;  Returns CBM DOS error code in A (0=OK)
-    jr lf0ebh
-lf0e6h:
+    jr c,wboot_corvus
+
+wboot_ieee:             ;Reload the system from an IEEE-488 drive:
+    xor a               ;  A = CP/M drive number 0 (A:)
+    call ieee_find_dev  ;  D = its IEEE-488 primary address
+    ld c,16h            ;  C = 22 pages to load: D400-E9FF
+    call load_cpm_ieee  ;  Load CP/M from image file (A = CBM DOS error)
+    jr wboot_start_ccp
+
+wboot_corvus:           ;Reload the system from a Corvus drive:
     ld b,2ch
-    call sub_f0fch
-lf0ebh:
-    ld a,(dirsave)      ;Get original CCP directory width
-    ld (dirsize),a      ;Restore it
+    call load_cpm_corv  ;  Load CP/M from Corvus drive (A = Corvus error)
 
-    ld hl,ccp_base+3    ;HL = address that clears the initial command,
-                        ;  then starts the CCP
-    jr z,start_ccp      ;Jump to start CCP via HL if image load succeeded
+wboot_start_ccp:        ;System reload finished, now start the CCP:
+    ld a,(dirsave)      ;  Get original CCP directory width
+    ld (dirsize),a      ;  Restore it
+    ld hl,ccp_base+3    ;  HL = address that clears the initial command,
+                        ;       then starts the CCP
 
-    xor a               ;A = CP/M drive number 0 (A:)
-    call ieee_init_drv  ;Initialize disk drive
-    jr wboot            ;Jump to do warm start over again
+                        ;  If system reload succeeded:
+    jr z,start_ccp      ;    Jump to start CCP via HL
 
-sub_f0fch:
+                        ;  If system reload failed:
+    xor a               ;    A = CP/M drive number 0 (A:)
+    call ieee_init_drv  ;    Initialize disk drive
+    jr wboot            ;    Jump to do warm start over again
+
+load_cpm_corv:
+;Load the CP/M system from a Corvus hard drive.
+;
     ld hl,ccp_base
     ld c,00h
     push hl
@@ -396,16 +403,21 @@ sectran:
     ret
 
 e_f224h:
+;A = CP/M drive number
+;
     cp 10h              ;Valid drives are 0 (A:) through 00fh (P:)
     ret nc              ;Return if drive is greater than P:
     push hl
     push af
     or a
-    rra
+    rra                 ;Rotate bit 0 of drive number into carry
+
     ld c,a
+
     ld b,00h
     ld hl,dtypes
     add hl,bc           ;HL = pointer to drive in dtypes table
+
     ld c,(hl)           ;C = drive type
     ld a,c              ;A = C
     cp 04h
@@ -416,7 +428,6 @@ e_f224h:
     jr lf240h
 lf23eh:
     bit 7,c
-
 lf240h:
     pop hl
     scf
@@ -426,13 +437,16 @@ lf240h:
 
 sub_f245h:
 ;A = CP/M drive number
+;Returns carry flag set if Corvus drive
 ;
     call e_f224h
-    ret nc
-    ld a,c
+    ret nc              ;Return if drive number is invalid
+
+    ld a,c              ;A = drive type
     or a
     cp 06h
-    ret nc
+    ret nc              ;Return if drive number is >= 6
+
     cp 02h
     ccf
     ret
@@ -444,6 +458,7 @@ read:
     ld a,(0040h)
     call sub_f245h
     jp c,lf315h
+
     call sub_f6b9h
     ld a,01h
     call nz,read_sector
@@ -975,7 +990,7 @@ lf52bh:
     ld a,01h
     ld (ddevs),a        ;  Drive A: address = 1 (Corvus ID 1)
     ld b,38h
-    call sub_f0fch
+    call load_cpm_corv
     jr e_f578h
 
 lf555h:
@@ -990,11 +1005,11 @@ lf555h:
 
     ld d,08h            ;D = IEEE-488 primary address 8
     ld c,1ch            ;C = 28 pages to load: D400-EFFF
-    call load_cpm_image ;Load from CP/M image file
-                        ;  Returns CBM DOS error code in A (0=OK)
+    call load_cpm_ieee  ;Load CP/M from image file (A = CBM DOS error)
     jp nz,lf52bh
 
-    ld de,0802h
+    ld de,0802h         ;D = IEEE-488 primary address 8
+                        ;E = IEEE-488 secondary address 2
     ld c,02h            ;2 bytes in string
     ld hl,dos_num2      ;"#2"
     call ieee_atn_str
@@ -1123,8 +1138,8 @@ lf62bh:
 loading:
     db 0dh,0ah,"Loading CP/M ...",00h
 
-load_cpm_image:
-;Load CP/M image file into memory
+load_cpm_ieee:
+;Load the CP/M system from an IEEE-488 disk drive.
 ;
 ;D = IEEE-488 primary address of CBM disk drive
 ;C = number of pages to load from the image file
