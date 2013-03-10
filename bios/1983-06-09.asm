@@ -214,12 +214,12 @@ wboot_ieee:             ;Reload the system from an IEEE-488 drive:
     xor a               ;  A = CP/M drive number 0 (A:)
     call ieee_find_dev  ;  D = its IEEE-488 primary address
     ld c,16h            ;  C = 22 pages to load: D400-E9FF
-    call load_cpm_ieee  ;  Load CP/M from image file (A = CBM DOS error)
+    call ieee_load_cpm  ;  Load CP/M from image file (A = CBM DOS error)
     jr wboot_start_ccp
 
 wboot_corvus:           ;Reload the system from a Corvus drive:
     ld b,2ch
-    call load_cpm_corv  ;  Load CP/M from Corvus drive (A = Corvus error)
+    call corv_load_cpm  ;  Load CP/M from Corvus drive (A = Corvus error)
 
 wboot_start_ccp:        ;System reload finished, now start the CCP:
     ld a,(dirsave)      ;  Get original CCP directory width
@@ -235,7 +235,7 @@ wboot_start_ccp:        ;System reload finished, now start the CCP:
     call ieee_init_drv  ;    Initialize disk drive
     jr wboot            ;    Jump to do warm start over again
 
-load_cpm_corv:
+corv_load_cpm:
 ;Load the CP/M system from a Corvus hard drive.
 ;
     ld hl,ccp_base
@@ -457,11 +457,11 @@ read:
 ;
     ld a,(0040h)
     call sub_f245h
-    jp c,lf315h
+    jp c,corv_read_sec
 
     call sub_f6b9h
     ld a,01h
-    call nz,read_sector
+    call nz,ieee_read_sec
     ld a,(sector)
     rrca
     call sub_f2e5h
@@ -484,7 +484,7 @@ write:
     ld a,(0040h)
     call sub_f245h
     pop bc
-    jp c,lf342h
+    jp c,corv_writ_sec
     ld a,c
     push af
     cp 02h
@@ -518,7 +518,7 @@ lf2b1h:
     ld (0048h),a
     call sub_f6b9h
     ld a,00h
-    call nz,read_sector
+    call nz,ieee_read_sec
 lf2bdh:
     ld a,(sector)
     rrca
@@ -528,7 +528,7 @@ lf2bdh:
     jr nz,lf2d1h
     ld a,(dos_err)
     or a
-    call z,write_sector
+    call z,ieee_writ_sec
     xor a
     ret
 lf2d1h:
@@ -537,18 +537,18 @@ lf2d1h:
     xor a
     ret
 
-read_sector:
+ieee_read_sec:
 ;Read a sector from CBM DOS into the dos_buf buffer.
 ;
     ld hl,dos_buf
     ex af,af'
-    jp read_sector_hl
+    jp ieee_read_sec_hl
 
-write_sector:
+ieee_writ_sec:
 ;Write a sector from the dos_buf out to CBM DOS.
 ;
     ld hl,dos_buf
-    jp write_sector_hl
+    jp ieee_writ_sec_hl
 
 sub_f2e5h:
     ld a,00h
@@ -581,7 +581,10 @@ lf305h:
     cp 8fh
     jr nz,sub_f2ffh
     ret
-lf315h:
+
+corv_read_sec:
+;Read a sector from a Corvus hard drive.
+;
     call sub_f3a5h
     push af
     ld a,12h
@@ -608,7 +611,10 @@ lf334h:
 lf340h:
     xor a
     ret
-lf342h:
+
+corv_writ_sec:
+;Write a sector to a Corvus hard drive.
+;
     call sub_f3a5h
     push af
     ld a,13h
@@ -632,6 +638,7 @@ lf35ch:
     djnz lf35ch
     call sub_f37bh
     jr z,lf340h
+
 corvus_error:
     ld hl,corvus_msg
     push af
@@ -990,7 +997,7 @@ lf52bh:
     ld a,01h
     ld (ddevs),a        ;  Drive A: address = 1 (Corvus ID 1)
     ld b,38h
-    call load_cpm_corv
+    call corv_load_cpm
     jr e_f578h
 
 lf555h:
@@ -1005,7 +1012,7 @@ lf555h:
 
     ld d,08h            ;D = IEEE-488 primary address 8
     ld c,1ch            ;C = 28 pages to load: D400-EFFF
-    call load_cpm_ieee  ;Load CP/M from image file (A = CBM DOS error)
+    call ieee_load_cpm  ;Load CP/M from image file (A = CBM DOS error)
     jp nz,lf52bh
 
     ld de,0802h         ;D = IEEE-488 primary address 8
@@ -1138,7 +1145,7 @@ lf62bh:
 loading:
     db 0dh,0ah,"Loading CP/M ...",00h
 
-load_cpm_ieee:
+ieee_load_cpm:
 ;Load the CP/M system from an IEEE-488 disk drive.
 ;
 ;D = IEEE-488 primary address of CBM disk drive
@@ -1252,7 +1259,7 @@ sub_f6b9h:
     ld a,(hl)
     ld (hl),00h
     or a
-    call nz,write_sector
+    call nz,ieee_writ_sec
     ld a,(0040h)
     ld (drive),a
     ld hl,(track)
@@ -1628,7 +1635,7 @@ lf9eeh:
     pop af
     ret
 
-write_sector_hl:
+ieee_writ_sec_hl:
 ;Write a sector to the CBM disk drive from buffer at HL.
 ;
     push hl
@@ -1671,7 +1678,7 @@ write_sector_hl:
     jp ieee_u1_or_u2    ;  Jump out to perform the block write.  It will
                         ;    return to the caller.
 
-read_sector_hl:
+ieee_read_sec_hl:
 ;Read a sector from a CBM disk drive into buffer at HL.
 ;
     push hl
@@ -1733,7 +1740,7 @@ read_sec_retry:
     ld a,(drive)        ;A = CP/M drive number
     call ieee_init_drv  ;Initialize the CBM disk drive
     pop hl              ;Recall original HL
-    jr read_sector_hl   ;Try again
+    jr ieee_read_sec_hl ;Try again
 
 ieee_find_dev:
 ;Find the IEEE-488 device number for a CP/M drive
