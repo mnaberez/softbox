@@ -592,13 +592,13 @@ corv_read_sec:
     call sub_f3a5h
     push af
     ld a,12h
-    call sub_f39ah
+    call corv_put_byte
     pop af
-    call sub_f39ah
+    call corv_put_byte
     ld a,l
-    call sub_f39ah
+    call corv_put_byte
     ld a,h
-    call sub_f39ah
+    call corv_put_byte
     ld hl,(dma)
     call sub_f37bh
     jr nz,corvus_error
@@ -622,13 +622,13 @@ corv_writ_sec:
     call sub_f3a5h
     push af
     ld a,13h
-    call sub_f39ah
+    call corv_put_byte
     pop af
-    call sub_f39ah
+    call corv_put_byte
     ld a,l
-    call sub_f39ah
+    call corv_put_byte
     ld a,h
-    call sub_f39ah
+    call corv_put_byte
     ld b,80h
     ld hl,(dma)
 lf35ch:
@@ -672,15 +672,21 @@ sub_f38fh:
     bit 7,a
     ret
 
-sub_f39ah:
+corv_put_byte:
+;Send a byte to the Corvus hard drive.  Waits until the Corvus
+;is ready to accept the byte, sends it, then returns immediately.
+;
+;A = byte to send
+;
     push af
 lf39bh:
     in a,(ppi2_pc)
     and 10h
-    jr z,lf39bh
+    jr z,lf39bh         ;Wait until Corvus READY=high
     pop af
-    out (corvus),a
+    out (corvus),a      ;Put byte on Corvus data bus
     ret
+
 sub_f3a5h:
     ld hl,(track)
     ld a,00h
@@ -990,7 +996,7 @@ lf52bh:
     call ieee_listen    ;Send LISTEN
 
     ld bc,0007h         ;Wait 7 ms to allow IEEE-488 device 8
-    call delay          ;time to respond to LISTEN
+    call delay          ;  time to respond to LISTEN
 
     in a,(ppi2_pa)
     cpl
