@@ -572,12 +572,15 @@ lf2f8h:
 lf2fch:
     ldir
     ret
+
 sub_f2ffh:
     ld a,0ffh
     out (corvus),a
+
     ld b,0ffh
 lf305h:
-    djnz lf305h
+    djnz lf305h         ;Delay loop
+
     in a,(ppi2_pc)
     and 20h
     jr nz,sub_f2ffh     ;Wait until Corvus ACTIVE=low
@@ -587,89 +590,112 @@ lf305h:
     ret
 
 corv_read_sec:
-;Read a sector from a Corvus hard drive.
+;Read a sector from a Corvus hard drive into the DMA buffer.
+;
+;Returns error code in A: 0=OK, 0ffh=Error.
 ;
     call sub_f3a5h
     push af
-    ld a,12h
-    call corv_put_byte
+    ld a,12h            ;12h = Read Sector (128 bytes)
+    call corv_put_byte  ;Send command byte
+
     pop af
-    call corv_put_byte
+    call corv_put_byte  ;Send A
     ld a,l
-    call corv_put_byte
+    call corv_put_byte  ;Send L
     ld a,h
-    call corv_put_byte
-    ld hl,(dma)
-    call sub_f37bh
-    jr nz,corvus_error
-    ld b,80h
+    call corv_put_byte  ;Send H
+
+    ld hl,(dma)         ;HL = start address of DMA buffer area
+
+    call corv_read_err  ;A = Corvus error code
+    jr nz,corv_ret_err  ;Jump if error code is not OK
+
+    ld b,80h            ;B = 128 bytes to read
 lf334h:
     in a,(ppi2_pc)
-    and 10h             ;Mask off all but bit 4 (Corvus READY)
+    and 10h
     jr z,lf334h         ;Wait until Corvus READY=high
+    in a,(corvus)       ;Read data byte from Corvus
+    ld (hl),a           ;Store it in the buffer
+    inc hl              ;Increment to next position in DMA buffer
+    djnz lf334h         ;Decrement B, loop until all bytes read
 
-    in a,(corvus)
-    ld (hl),a
-    inc hl
-    djnz lf334h
-lf340h:
-    xor a
+corv_ret_ok:
+;Return to the caller with an OK status in A indicating
+;that the last Corvus operation succeeded.
+;
+    xor a               ;A=0 (OK)
     ret
 
 corv_writ_sec:
-;Write a sector to a Corvus hard drive.
+;Write a sector from the DMA buffer to a Corvus hard drive.
+;
+;Returns error code in A: 0=OK, 0ffh=Error.
 ;
     call sub_f3a5h
     push af
-    ld a,13h
-    call corv_put_byte
+    ld a,13h            ;13h = Write sector (128 bytes)
+    call corv_put_byte  ;Send command byte
+
     pop af
-    call corv_put_byte
+    call corv_put_byte  ;Send A
     ld a,l
-    call corv_put_byte
+    call corv_put_byte  ;Send L
     ld a,h
-    call corv_put_byte
-    ld b,80h
-    ld hl,(dma)
+    call corv_put_byte  ;Send H
+
+    ld b,80h            ;B = 128 bytes to write
+    ld hl,(dma)         ;HL = start address of DMA buffer area
 lf35ch:
     in a,(ppi2_pc)
     and 10h             ;Mask off all but bit 4 (Corvus READY)
     jr z,lf35ch         ;Wait until Corvus READY=high
+    ld a,(hl)           ;Read data byte from DMA buffer
+    out (corvus),a      ;Send it to the Corvus
+    inc hl              ;Increment to next position in DMA buffer
+    djnz lf35ch         ;Decrement B, loop until all bytes written
 
-    ld a,(hl)
-    out (corvus),a
-    inc hl
-    djnz lf35ch
-    call sub_f37bh
-    jr z,lf340h
+    call corv_read_err  ;A = Corvus error
+    jr z,corv_ret_ok    ;Jump if error code is OK
 
-corvus_error:
+corv_ret_err:
+;Return to the caller with an Error status in A indicating
+;that the last Corvus operation failed.
+;
     ld hl,corvus_msg
     push af
     call puts           ;Write "*** HARD DISK ERROR " to console out
     pop af
     call puts_hex_byte  ;Write Corvus error code to console out
-    and 0ffh
-    ret                 ;Return with A=0FFh
+    and 0ffh            ;A=0FFh (Error)
+    ret
 
-sub_f37bh:
+corv_read_err:
+;Read the error code from a Corvus hard drive.
+;
+;Returns the error code in A (0=OK) and also changes
+;the Z flag: Z=1 if OK, Z=0 if error.
+;
     in a,(ppi2_pc)
     xor 10h
     and 30h
-    jr nz,sub_f37bh
+    jr nz,corv_read_err
+
     ld b,19h
 lf385h:
-    djnz lf385h
+    djnz lf385h         ;Delay loop
+
     in a,(ppi2_pc)
     xor 10h
     and 30h
-    jr nz,sub_f37bh
+    jr nz,corv_read_err
 sub_f38fh:
     in a,(ppi2_pc)
     and 10h             ;Mask off all but bit 4 (Corvus READY)
     jr z,sub_f38fh      ;Wait until Corvus READY=high
     in a,(corvus)
-    bit 7,a
+    bit 7,a             ;Z flag = 1 if OK, 0 if error.
     ret
 
 corv_put_byte:
