@@ -218,7 +218,7 @@ wboot_ieee:             ;Reload the system from an IEEE-488 drive:
     jr wboot_start_ccp
 
 wboot_corvus:           ;Reload the system from a Corvus drive:
-    ld b,2ch
+    ld b,2ch            ;  B = 44 sectors to load: D400-E9FF
     call corv_load_cpm  ;  Load CP/M from Corvus drive (A = Corvus error)
 
 wboot_start_ccp:        ;System reload finished, now start the CCP:
@@ -237,6 +237,10 @@ wboot_start_ccp:        ;System reload finished, now start the CCP:
 
 corv_load_cpm:
 ;Load the CP/M system from a Corvus hard drive.
+;
+;B = number of 128-byte sectors to load
+;
+;Returns an error code in A (0=OK)
 ;
     ld hl,ccp_base
     ld c,00h
@@ -997,8 +1001,8 @@ lf52bh:
     ld (dtypes),a       ;  Drive A: type = 2 (Corvus 10MB)
     ld a,01h
     ld (ddevs),a        ;  Drive A: address = 1 (Corvus ID 1)
-    ld b,38h
-    call corv_load_cpm
+    ld b,38h            ;  B = 56 sectors to load: D400-EFFF
+    call corv_load_cpm  ;  Load CP/M from Corvus drive (A = Corvus error)
     jr e_f578h
 
 lf555h:
@@ -1150,7 +1154,7 @@ ieee_load_cpm:
 ;Load the CP/M system from an IEEE-488 disk drive.
 ;
 ;D = IEEE-488 primary address of CBM disk drive
-;C = number of pages to load from the image file
+;C = number of 256-byte pages to load from the image file
 ;
 ;Returns the CBM DOS error code in A (0=OK)
 ;
