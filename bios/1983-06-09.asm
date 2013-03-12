@@ -1086,8 +1086,8 @@ lf587h:
     ld a,20h
     ld (0058h),a
 lf5afh:
-    ld (ix+00ch),l
-    ld (ix+00dh),h
+    ld (ix+0ch),l
+    ld (ix+0dh),h
     ld a,(0058h)
     ld b,00h
     ld c,a
@@ -1095,8 +1095,8 @@ lf5afh:
     rla
     ld c,a
 lf5beh:
-    ld (ix+00eh),l
-    ld (ix+00fh),h
+    ld (ix+0eh),l
+    ld (ix+0fh),h
     add hl,bc
     ld (ix+08h),80h
     ld (ix+09h),0eeh
