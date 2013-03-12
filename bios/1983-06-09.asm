@@ -2423,11 +2423,11 @@ punch:
 
                         ;Punch must be Other Device (PUN: = PTP:)
     ld a,(ptp_dev)
-    ld d,a
-    ld e,0ffh
+    ld d,a              ;D = IEEE-488 primary address for PTP:
+    ld e,0ffh           ;E = no IEEE-488 secondary address
     call ieee_listen
 lfd8ch:
-    ld a,c
+    ld a,c              ;C = byte to send to IEEE-488 device
     call ieee_put_byte
     jp ieee_unlisten
 
@@ -2439,12 +2439,12 @@ reader:
     and 0ch
     jp z,ser_in         ;Jump out if Reader is RS-232 port (RDR: = TTY:)
 
-                        ;Punch must be Other Device (PUN: = PTR:)
+                        ;Reader must be Other Device (RDR: = PTR:)
     ld a,(ptr_dev)
-    ld d,a
-    ld e,0ffh
+    ld d,a              ;D = IEEE-488 primary address for PTR:
+    ld e,0ffh           ;E = no IEEE-488 secondary address
     call ieee_talk
-    call ieee_get_byte
+    call ieee_get_byte  ;A = byte read from IEEE-488 device
     push af
     call ieee_untalk
     pop af
