@@ -121,7 +121,7 @@ ieeestat: equ 0ea6ch    ;Temp byte stores IEEE-488 control lines input state
 lptype:   equ 0ea6dh    ;CBM printer (LPT:) type: 0=3022, 3032, 4022, 4023
                         ;                         1=8026, 8027 (daisywheel)
                         ;                         2=8024
-list_tmp: equ 0ea6eh    ;Temporary storage byte used by LIST routine
+list_tmp: equ 0ea6eh    ;Temporary storage byte used by LIST routine (2 bytes)
 dtypes:   equ 0ea70h    ;Disk drive types:
 dtype_ab: equ dtypes+0  ;  A:, B:    00h = CBM 3040/4040
 dtype_cd: equ dtypes+1  ;  C:, D:    01h = CBM 8050
@@ -2305,7 +2305,7 @@ lfcc3h:
     call ieee_listen
     bit 0,b
     jr nz,lfd29h
-    ld hl,list_tmp
+    ld hl,list_tmp      ;TODO Where is the initial value of list_tmp set?
     ld a,(hl)
     ld (hl),c
     cp 0ah
