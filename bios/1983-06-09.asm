@@ -1415,7 +1415,7 @@ lf790h:
 
 puts_dos_error:
 ;Write a description of a CBM DOS error to console out.
-;HL be loaded with the address of cbm_dos_errs when calling.
+;HL = pointer to cbm_dos_errs table
 ;
     ld a,(dos_err)       ;A=last error code returned from CBM DOS
     cp (hl)
