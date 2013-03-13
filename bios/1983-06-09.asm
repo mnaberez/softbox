@@ -262,7 +262,7 @@ lf11dh:
     push hl
     push bc
     call read
-    ld hl,0043h
+    ld hl,sector
     inc (hl)
     pop bc
     pop hl
