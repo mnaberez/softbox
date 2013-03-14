@@ -1273,7 +1273,7 @@ lf6a3h:
     ret
 sub_f6b9h:
     ld a,(0040h)
-    ld hl,0044h
+    ld hl,drive
     xor (hl)
     ld b,a
     ld a,(track)
