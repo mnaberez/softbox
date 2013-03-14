@@ -1469,14 +1469,14 @@ sub_f8dah:
     ld a,c
     or a
     ld ix,0057h
-    ld hl,lf957h
+    ld hl,f957h_table
     ld e,10h
     jr z,lf8f9h
     ld e,25h
-    ld hl,lf96bh
+    ld hl,lf96bh_table
     cp 01h
     jr z,lf8f9h
-    ld hl,lf97fh
+    ld hl,lf97fh_table
 lf8f9h:
     push de
     push hl
@@ -1541,68 +1541,19 @@ lf945h:
     add a,03h
     ld (dos_trk),a
     ret
-lf957h:
-    nop
-    nop
-    dec d
-    ld bc,013bh
-    inc de
-    djnz $-81
-    ld bc,1612h
-    add hl,de
-    ld (bc),a
-    ld de,0f1ch
-    daa
-    nop
-    nop
-lf96bh:
-    nop
-    nop
-    dec e
-    ld bc,0414h
-    dec de
-    dec h
-    adc a,(hl)
-    dec b
-    add hl,de
-    inc sp
-    and c
-    ld b,17h
-    ld a,0fh
-    daa
-    nop
-    nop
-lf97fh:
-    nop
-    nop
-    dec e
-    ld bc,0414h
-    dec de
-    dec h
-    adc a,(hl)
-    dec b
-    add hl,de
-    inc sp
-    and c
-    ld b,17h
-    ld a,0cch
-    rlca
-    dec e
-    ld c,e
-    scf
-    inc c
-    dec de
-    ld (hl),d
-    or c
-    dec c
-    add hl,de
-    add a,b
-    call nz,170eh
-    adc a,e
-    rrca
-    daa
-    nop
-    nop
+
+f957h_table:
+    db 00h,00h,15h,01h,3bh,01h,13h,10h,0adh,01h,012h,016h
+    db 19h,02h,11h,1ch,0fh,27h,00h,00h
+
+lf96bh_table:
+    db 00h,00h,1dh,01h,14h,04h,1bh,25h,8eh,05h,19h,33h,0a1h
+    db 06h,17h,3eh,0fh,27h,00h,00h
+
+lf97fh_table:
+    db 00h,00h,1dh,01h,14h,04h,1bh,25h,8eh,05h,19h,33h,0a1h
+    db 06h,17h,3eh,0cch,07h,1dh,4bh,37h,0ch,1bh,72h,0b1h,0dh
+    db 19h,80h,0c4h,0eh,17h,8bh,0fh,27h,00h,00h
 
 ieee_put_itoa:
 ;Send a number as decimal string to IEEE-488 device
