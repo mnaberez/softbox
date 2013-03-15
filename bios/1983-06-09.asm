@@ -468,7 +468,7 @@ read:
     call nz,ieee_read_sec
     ld a,(sector)
     rrca
-    call sub_f2e5h
+    call copy_to_dma
     xor a
     ld (0048h),a
     ret
@@ -526,7 +526,7 @@ lf2b1h:
 lf2bdh:
     ld a,(sector)
     rrca
-    call sub_f2e9h
+    call copy_from_dma
     pop af
     dec a
     jr nz,lf2d1h
@@ -554,12 +554,24 @@ ieee_writ_sec:
     ld hl,dos_buf
     jp ieee_writ_sec_hl
 
-sub_f2e5h:
+copy_to_dma:
+;Copy from dos_buf to dma_buf
+;
     ld a,00h
-    jr lf2ebh
-sub_f2e9h:
+    jr copy_dos_dma
+
+copy_from_dma:
+;Copy from dma_buf to dos_buf
+;
     ld a,01h
-lf2ebh:
+
+copy_dos_dma:
+;Copy a 128-byte CP/M sector between the CBM DOS buffer (dos_buf)
+;and the CP/M DMA buffer (dma_buf).
+;
+;A = direction (0=dos_buf->dma_buf, 1=dma_buf->dos_buf)
+;Carry flag selects which half of 256-byte CBM DOS buffer to copy
+;
     ld hl,dos_buf
     ld de,(dma)
     ld bc,dma_buf
