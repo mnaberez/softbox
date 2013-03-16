@@ -409,6 +409,8 @@ sectran:
 e_f224h:
 ;A = CP/M drive number
 ;
+;Returns drive type in C.
+;
     cp 10h              ;Valid drives are 0 (A:) through 00fh (P:)
     ret nc              ;Return if drive is greater than P:
     push hl
@@ -1283,13 +1285,14 @@ lf6a3h:
     ld a,(sector)
     ld (004ch),a
     ret
+
 sub_f6b9h:
     ld a,(0040h)
     ld hl,drive
     xor (hl)
     ld b,a
     ld a,(track)
-    ld hl,0045h
+    ld hl,0045h         ;0045h = CP/M track number
     xor (hl)
     or b
     ld b,a
@@ -1300,7 +1303,7 @@ sub_f6b9h:
     ld b,a
     ld a,(sector)
     rra
-    ld hl,0047h
+    ld hl,0047h         ;0047h = CP/M sector number
     xor (hl)
     or b
     ret z
@@ -1327,7 +1330,7 @@ ieee_u1_or_u2:
 ;       or "U1 2 " (Block Write)
 ;
     ld (hl_tmp),hl      ;Preserve HL
-    call sub_f8dah
+    call find_trk_sec   ;Update dos_trk and dos_sec
 lf702h:
     ld a,03h
     ld (tries),a        ;3 tries
@@ -1475,31 +1478,36 @@ dos_u2_2:
 newline:
     db 0dh,0ah,00h
 
-sub_f8dah:
+find_trk_sec:
+;Find the CBM DOS track and sector for the current CP/M track and sector.
+;
     ld a,(drive)
-    call e_f224h
-    ld a,c
+    call e_f224h        ;Returns drive type in C
+    ld a,c              ;A = drive type
     or a
     ld ix,0057h
-    ld hl,f957h_table
+
+    ld hl,ts_cbm3040    ;HL = table for CBM 3040
     ld e,10h
-    jr z,lf8f9h
+    jr z,lf8f9h         ;Jump if drive type = 0 (CBM 3040/4040)
+
     ld e,25h
-    ld hl,lf96bh_table
+    ld hl,ts_cbm8050    ;HL = table for CBM 8050
     cp 01h
-    jr z,lf8f9h
-    ld hl,lf97fh_table
+    jr z,lf8f9h         ;Jump if drive type = 1 (CBM 8050)
+
+    ld hl,ts_cbm8250    ;HL = table for CBM 8250
 lf8f9h:
     push de
     push hl
     ld (ix+00h),00h
-    ld hl,(0045h)
+    ld hl,(0045h)       ;0045h = CP/M track number
     ld h,00h
     add hl,hl
     add hl,hl
     add hl,hl
     add hl,hl
-    ld de,(0047h)
+    ld de,(0047h)       ;0047h = CP/M sector number
     ld d,00h
     add hl,de
     ld b,h
@@ -1554,15 +1562,15 @@ lf945h:
     ld (dos_trk),a
     ret
 
-f957h_table:
+ts_cbm3040:
     db 00h,00h,15h,01h,3bh,01h,13h,10h,0adh,01h,012h,016h
     db 19h,02h,11h,1ch,0fh,27h,00h,00h
 
-lf96bh_table:
+ts_cbm8050:
     db 00h,00h,1dh,01h,14h,04h,1bh,25h,8eh,05h,19h,33h,0a1h
     db 06h,17h,3eh,0fh,27h,00h,00h
 
-lf97fh_table:
+ts_cbm8250:
     db 00h,00h,1dh,01h,14h,04h,1bh,25h,8eh,05h,19h,33h,0a1h
     db 06h,17h,3eh,0cch,07h,1dh,4bh,37h,0ch,1bh,72h,0b1h,0dh
     db 19h,80h,0c4h,0eh,17h,8bh,0fh,27h,00h,00h
