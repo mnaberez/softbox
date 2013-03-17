@@ -598,7 +598,7 @@ lf305h:
     in a,(ppi2_pc)
     and 20h
     jr nz,sub_f2ffh     ;Wait until Corvus ACTIVE=low
-    call sub_f38fh
+    call corv_wait_read ;Wait until Corvus READY=high, then read byte
     cp 8fh
     jr nz,sub_f2ffh
     ret
@@ -704,10 +704,17 @@ lf385h:
     xor 10h
     and 30h
     jr nz,corv_read_err
-sub_f38fh:
+                        ;Fall through into corv_wait_read
+
+corv_wait_read:
+;Wait until Corvus READY=high, then a data byte from Corvus.
+;
+;Returns the data byte in A and also changes the Z flag:
+;the Z flag: Z=1 if OK, Z=0 if error.
+;
     in a,(ppi2_pc)
     and 10h             ;Mask off all but bit 4 (Corvus READY)
-    jr z,sub_f38fh      ;Wait until Corvus READY=high
+    jr z,corv_wait_read ;Wait until Corvus READY=high
     in a,(corvus)
     bit 7,a             ;Z flag = 1 if OK, 0 if error.
     ret
