@@ -85,6 +85,7 @@ dos_trk:  equ  004dh    ;CBM DOS track number
 dos_sec:  equ  004eh    ;CBM DOS sector number
 dos_err:  equ  004fh    ;Last error code returned from CBM DOS
 tries:    equ  0050h    ;Counter used to retry drive faults in ieee_u1_or_u2
+wrt_pend: equ  0051h    ;CBM DOS buffer state (1=write is pending, 0=none)
 dma:      equ  0052h    ;DMA buffer area address
 hl_tmp:   equ  0055h    ;Temporary storage for HL reg used in ieee_u1_or_u2
 leadrcvd: equ  0059h    ;Lead-in received flag: 1=last char was lead-in
@@ -251,7 +252,7 @@ corv_load_cpm:
     xor a
     ld (sector),a
     ld (0048h),a
-    ld (0051h),a
+    ld (wrt_pend),a     ;No write pending for CBM DOS
     call seldsk
     ld a,0ffh
     ld (drive),a
@@ -302,7 +303,7 @@ lf15ch:
     ld c,(hl)           ;C = pass current drive number to CCP
     xor a               ;A=0
     ld (0048h),a
-    ld (0051h),a
+    ld (wrt_pend),a     ;No write pending for CBM DOS
     dec a               ;A=0ffh
     ld (drive),a
     pop hl              ;Recall CCP entry address
@@ -348,7 +349,7 @@ seldsk:
     ld hl,0000h         ;HL = error code
     ret nc              ;Return if drive is invalid
 
-    ld (0040h),a
+    ld (0040h),a        ;0040h = CP/M drive number
     ld l,a
     add hl,hl
     add hl,hl
@@ -410,9 +411,11 @@ e_f224h:
 ;A = CP/M drive number
 ;
 ;Returns drive type in C.
+;Sets carry flag is drive is valid, clears it otherwise.
 ;
     cp 10h              ;Valid drives are 0 (A:) through 00fh (P:)
-    ret nc              ;Return if drive is greater than P:
+    ret nc              ;Return with carry clear if drive is greater than P:
+
     push hl
     push af
     or a
@@ -443,15 +446,15 @@ lf240h:
 
 sub_f245h:
 ;A = CP/M drive number
-;Returns carry flag set if Corvus drive
+;Sets carry flag if drive is valid and Corvus, clears it otherwise.
 ;
     call e_f224h
-    ret nc              ;Return if drive number is invalid
+    ret nc              ;Return with no carry if drive number is invalid
 
     ld a,c              ;A = drive type
     or a
     cp 06h
-    ret nc              ;Return if drive number is >= 6
+    ret nc              ;Return with no carry if drive number is >= 6
 
     cp 02h
     ccf
@@ -461,7 +464,7 @@ read:
 ;Read the currently set track and sector at the current DMA address.
 ;Returns A=0 for OK, 1 for unrecoverable error, 0FFh if media changed.
 ;
-    ld a,(0040h)
+    ld a,(0040h)        ;0040h = CP/M drive number
     call sub_f245h
     jp c,corv_read_sec
 
@@ -487,10 +490,11 @@ write:
 ;  2 if disc is readonly, 0FFh if media changed.
 ;
     push bc
-    ld a,(0040h)
+    ld a,(0040h)        ;0040h = CP/M drive number
     call sub_f245h
     pop bc
     jp c,corv_writ_sec
+
     ld a,c
     push af
     cp 02h
@@ -539,7 +543,7 @@ lf2bdh:
     ret
 lf2d1h:
     ld a,01h
-    ld (0051h),a
+    ld (wrt_pend),a     ;Set flag to indicate a write is pending for CBM DOS
     xor a
     ret
 
@@ -1274,10 +1278,10 @@ dos_i0_0:
 
 lf691h:
     push bc
-    call sub_f245h
+    call sub_f245h      ;A = drive type
     pop bc
     or a
-    cp 06h
+    cp 06h              ;06h = CBM 8250
     jp z,lf6a1h
     ld a,10h
     jp lf6a3h
@@ -1294,7 +1298,7 @@ lf6a3h:
     ret
 
 sub_f6b9h:
-    ld a,(0040h)
+    ld a,(0040h)        ;0040h = CP/M drive number
     ld hl,drive
     xor (hl)
     ld b,a
@@ -1314,11 +1318,13 @@ sub_f6b9h:
     xor (hl)
     or b
     ret z
-    ld hl,0051h
-    ld a,(hl)
-    ld (hl),00h
+
+    ld hl,wrt_pend
+    ld a,(hl)          ;A = CBM DOS write pending flag
+    ld (hl),00h        ;Reset the flag
     or a
-    call nz,ieee_writ_sec
+    call nz,ieee_writ_sec ;Perform the write if one is pending
+
     ld a,(0040h)
     ld (drive),a
     ld hl,(track)
