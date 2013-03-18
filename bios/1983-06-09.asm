@@ -623,6 +623,7 @@ lf2fch:
     ret
 
 sub_f2ffh:
+;Called only from seldsk
     ld a,0ffh
     out (corvus),a
 
@@ -770,6 +771,7 @@ lf39bh:
     ret
 
 sub_f3a5h:
+;Called from corv_read_sec and corv_writ_sec
     ld hl,(track)
     ld a,00h
     ld b,06h
@@ -821,10 +823,13 @@ puts_hex_byte:
     rra
     rra
     rra
-    call sub_f40bh      ;Write it to console out
+    call puts_hex_nybl  ;Write it to console out
     pop af              ;Recall A for the low nybble
                         ;Fall through to write it to console out
-sub_f40bh:
+
+puts_hex_nybl:
+;Write the low nybble in A to console out as a one digit hex number.
+;
     and 0fh             ;Mask off high nybble
     cp 0ah              ;Convert low nybble to ASCII char
     jr c,lf413h
