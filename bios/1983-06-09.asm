@@ -78,9 +78,22 @@ cdisk:    equ  0004h    ;Current drive and user number
                         ;  Bits 3-0: Current drive number (0=A,1=B,etc.)
 
 jp_sysc:  equ  0005h    ;Jump to BDOS system call (3 byte instruction)
-track:    equ  0041h    ;Track number (2 bytes)
-sector:   equ  0043h    ;Sector number
-drive:    equ  0044h    ;Drive number (0=A, 1=B, 2=C, etc.)
+
+                        ;Latest disk position set by BDOS:
+drive:    equ  0040h    ;  Drive number (0=A, 1=B, 2=C, etc.)
+track:    equ  0041h    ;  Track number (2 bytes)
+sector:   equ  0043h    ;  Sector number
+
+                        ;Alternate copy of disk position (??):
+x_drive:  equ  0044h    ;  Drive number (0=A, 1=B, 2=C, etc.)
+x_track:  equ  0045h    ;  Track number (2 bytes)
+x_sector: equ  0047h    ;  Sector number
+
+                        ;Alternate copy of disk position (??):
+y_drive:  equ  0049h    ;  Drive number (0=A, 1=B, 2=C, etc.)
+y_track:  equ  004ah    ;  Track number (2 bytes)
+y_sector: equ  004ch    ;  Sector number
+
 dos_trk:  equ  004dh    ;CBM DOS track number
 dos_sec:  equ  004eh    ;CBM DOS sector number
 dos_err:  equ  004fh    ;Last error code returned from CBM DOS
@@ -254,7 +267,7 @@ corv_load_cpm:
     ld (wrt_pend),a     ;No write pending for CBM DOS
     call seldsk
     ld a,0ffh
-    ld (drive),a
+    ld (x_drive),a
     pop bc
     pop hl
 lf11dh:
@@ -304,7 +317,7 @@ lf15ch:
     ld (0048h),a
     ld (wrt_pend),a     ;No write pending for CBM DOS
     dec a               ;A=0ffh
-    ld (drive),a
+    ld (x_drive),a
     pop hl              ;Recall CCP entry address
     jp (hl)             ;  and jump to it
 
@@ -350,7 +363,7 @@ seldsk:
     ret nc              ;  Return if drive is invalid
 
                         ;Calculate pointer to a Disk Parameter Header (DPH):
-    ld (0040h),a        ;  Save requsted CP/M drive number in 0040h
+    ld (drive),a        ;  Save requsted CP/M drive number in drive
     ld l,a              ;  HL = A * 8
     add hl,hl
     add hl,hl
@@ -382,7 +395,7 @@ seldsk:
     ld (hl),d
 
                         ;Special handling if requested drive is a Corvus:
-    ld a,(0040h)        ;  A = CP/M drive number
+    ld a,(drive)        ;  A = CP/M drive number
     call sub_f245h      ;  Sets carry if drive is a Corvus
     call c,sub_f2ffh    ;  TODO: Corvus select or reset?
 
@@ -482,7 +495,7 @@ read:
 ;Read the currently set track and sector at the current DMA address.
 ;Returns A=0 for OK, 1 for unrecoverable error, 0FFh if media changed.
 ;
-    ld a,(0040h)        ;0040h = CP/M drive number
+    ld a,(drive)        ;0040h = CP/M drive number
     call sub_f245h
     jp c,corv_read_sec
 
@@ -508,7 +521,7 @@ write:
 ;  2 if disc is readonly, 0FFh if media changed.
 ;
     push bc
-    ld a,(0040h)        ;0040h = CP/M drive number
+    ld a,(drive)        ;0040h = CP/M drive number
     call sub_f245h
     pop bc
     jp c,corv_writ_sec
@@ -522,12 +535,12 @@ write:
     or a
     jr z,lf2b1h
     dec (hl)
-    ld a,(0040h)
-    ld hl,0049h
+    ld a,(drive)
+    ld hl,y_drive
     cp (hl)
     jr nz,lf2b1h
     ld a,(track)
-    ld hl,004ah
+    ld hl,y_track
     cp (hl)
     jr nz,lf2b1h
     ld a,(0042h)
@@ -535,7 +548,7 @@ write:
     cp (hl)
     jr nz,lf2b1h
     ld a,(sector)
-    ld hl,004ch
+    ld hl,y_sector
     cp (hl)
     jr nz,lf2b1h
     inc (hl)
@@ -769,14 +782,14 @@ lf3ach:
     or l
     ld l,a
     ld de,941ch
-    ld a,(0040h)
+    ld a,(drive)
     call e_f224h
     ld a,c
     cp 05h
     jr nz,lf3c7h
     ld de,577ah
 lf3c7h:
-    ld a,(0040h)
+    ld a,(drive)
     and 01h
     jr nz,lf3d1h
     ld de,005ch
@@ -790,7 +803,7 @@ lf3d1h:
     add a,a
     push hl
     push af
-    ld a,(0040h)
+    ld a,(drive)
     call ieee_find_dev
     pop af
     pop hl
@@ -1317,21 +1330,24 @@ lf6a1h:
     ld a,20h
 lf6a3h:
     ld (0048h),a
-    ld a,(0040h)
-    ld (0049h),a
+
+    ld a,(drive)
+    ld (y_drive),a
+
     ld hl,(track)
-    ld (004ah),hl
+    ld (y_track),hl
+
     ld a,(sector)
-    ld (004ch),a
+    ld (y_sector),a
     ret
 
 sub_f6b9h:
-    ld a,(0040h)        ;0040h = CP/M drive number
-    ld hl,drive
+    ld a,(drive)        ;0040h = CP/M drive number
+    ld hl,x_drive
     xor (hl)
     ld b,a
     ld a,(track)
-    ld hl,0045h         ;0045h = CP/M track number
+    ld hl,x_track       ;0045h = CP/M track number
     xor (hl)
     or b
     ld b,a
@@ -1353,14 +1369,14 @@ sub_f6b9h:
     or a
     call nz,ieee_writ_sec ;Perform the write if one is pending
 
-    ld a,(0040h)
-    ld (drive),a
+    ld a,(drive)
+    ld (x_drive),a
     ld hl,(track)
-    ld (0045h),hl
+    ld (x_track),hl
     ld a,(sector)
     or a
     rra
-    ld (0047h),a
+    ld (x_sector),a
     or 0ffh
     ret
 
@@ -1376,14 +1392,14 @@ lf702h:
     ld a,03h
     ld (tries),a        ;3 tries
 lf707h:
-    ld a,(drive)        ;A = CP/M drive number
+    ld a,(x_drive)      ;A = CP/M drive number
     call ieee_lisn_cmd  ;Open the command channel
 
     ld hl,(hl_tmp)      ;Recall HL (pointer to "U1 2 " or "U2 2 ")
     ld c,05h            ;5 bytes in string
     call ieee_put_str   ;Send the string
 
-    ld a,(drive)        ;A = CP/M drive number
+    ld a,(x_drive)      ;A = CP/M drive number
     and 01h             ;Mask off all except bit 0
     add a,30h           ;Convert to ASCII
     call ieee_put_byte  ;Send CBM drive number (either "0" or "1")
@@ -1397,7 +1413,7 @@ lf707h:
     call ieee_eoi_cr    ;Send carriage return with EOI
     call ieee_unlisten  ;Send UNLISTEN
 
-    ld a,(drive)        ;A = CP/M drive number
+    ld a,(x_drive)      ;A = CP/M drive number
     call ieee_read_err  ;Read the error channel
     cp 16h
     jr nz,lf73fh
@@ -1414,7 +1430,7 @@ lf73fh:
     dec (hl)            ;Decrement tries
     jr z,lf752h         ;Give up number of tries exceeded
 
-    ld a,(drive)        ;A = CP/M drive number
+    ld a,(x_drive)      ;A = CP/M drive number
     call ieee_init_drv  ;Initialize the disk drive
     jr lf707h           ;Try again
 
@@ -1422,7 +1438,7 @@ lf752h:
     ld hl,bdos_err_on
     call puts           ;Write "BDOS err on " to console out
 
-    ld a,(drive)        ;Get current drive number
+    ld a,(x_drive)      ;Get current drive number
     add a,41h           ;Convert it to ASCII (0=A, 1=B, 2=C, etc)
     ld c,a
     call conout         ;Write drive letter to console out
@@ -1459,7 +1475,7 @@ lf782h:
     jr lf782h           ;Loop to continue printing the error msg
 
 lf790h:
-    ld a,(drive)        ;A = CP/M drive number
+    ld a,(x_drive)      ;A = CP/M drive number
     call ieee_init_drv  ;Initialize the disk drive
     ld a,(dos_err)
     cp 1ah
@@ -1522,7 +1538,7 @@ newline:
 find_trk_sec:
 ;Find the CBM DOS track and sector for the current CP/M track and sector.
 ;
-    ld a,(drive)
+    ld a,(x_drive)
     call e_f224h        ;Returns drive type in C
     ld a,c              ;A = drive type
     or a
@@ -1542,13 +1558,13 @@ lf8f9h:
     push de
     push hl
     ld (ix+00h),00h
-    ld hl,(0045h)       ;0045h = CP/M track number
+    ld hl,(x_track)     ;0045h = CP/M track number
     ld h,00h
     add hl,hl
     add hl,hl
     add hl,hl
     add hl,hl
-    ld de,(0047h)       ;0047h = CP/M sector number
+    ld de,(x_sector)    ;0047h = CP/M sector number
     ld d,00h
     add hl,de
     ld b,h
@@ -1691,7 +1707,7 @@ ieee_writ_sec_hl:
                         ;Send memory-write (M-W) command:
     ld hl,dos_mw        ;  HL = pointer to "M-W",00h,13h,01h
     ld c,06h            ;  6 bytes in string
-    ld a,(drive)        ;  A = CP/M drive number
+    ld a,(x_drive)      ;  A = CP/M drive number
     call ieee_lisn_cmd  ;  Open command channel
     call ieee_put_str   ;  Send the command
     pop hl
@@ -1705,14 +1721,14 @@ ieee_writ_sec_hl:
                         ;Move pointer to second byte of buffer:
     ld hl,dos_bp        ;  "B-P 2 1" (Buffer-Pointer)
     ld c,07h            ;  7 bytes in string
-    ld a,(drive)        ;  A = CP/M drive number
+    ld a,(x_drive)      ;  A = CP/M drive number
     call ieee_lisn_cmd  ;  Open command channel
     call ieee_put_str   ;  Send B-P command
     call ieee_eoi_cr    ;  Send carriage return with EOI
     call ieee_unlisten  ;  Send UNLISTEN
 
                         ;Send remaining 255 bytes of block:
-    ld a,(drive)        ;  A = CP/M drive number
+    ld a,(x_drive)      ;  A = CP/M drive number
     call ieee_find_dev  ;  D = its IEEE-488 device number
     ld e,02h            ;  E = file #2
     call ieee_listen    ;  Send LISTEN
@@ -1738,14 +1754,14 @@ ieee_read_sec_hl:
                         ;Send memory read (M-R) command:
     ld hl,dos_mr        ;  HL = pointer to "M-R",00h,13h
     ld c,05h            ;  5 bytes in string
-    ld a,(drive)        ;  A = CP/M drive number
+    ld a,(x_drive)      ;  A = CP/M drive number
     call ieee_lisn_cmd  ;  Open command channel
     call ieee_put_str   ;  Send M-R command
     call ieee_eoi_cr    ;  Send carriage return with EOI
     call ieee_unlisten  ;  Send UNLISTEN
 
                         ;Read first byte of sector from M-R:
-    ld a,(drive)        ;  A = CP/M drive number
+    ld a,(x_drive)      ;  A = CP/M drive number
     call ieee_find_dev  ;  D = its IEEE-488 device number
     ld e,0fh            ;  E = Command channel number (15)
     call ieee_talk      ;  Send TALK
@@ -1756,7 +1772,7 @@ ieee_read_sec_hl:
     call ieee_untalk    ;  Send UNTALK
 
                         ;Move pointer to second byte of buffer:
-    ld a,(drive)        ;  A = CP/M drive number
+    ld a,(x_drive)      ;  A = CP/M drive number
     call ieee_lisn_cmd  ;  Open command channel
     ld hl,dos_bp        ;  "B-P 2 1" (Buffer-Pointer)
     ld c,07h            ;  7 bytes in string
@@ -1765,13 +1781,13 @@ ieee_read_sec_hl:
     call ieee_unlisten  ;  Send UNLISTEN
 
                         ;Check for CBM DOS bug:
-    ld a,(drive)        ;  A = CP/M drive number
+    ld a,(x_drive)      ;  A = CP/M drive number
     call ieee_read_err  ;  Read CBM DOS error channel
     cp 46h              ;  Error code = 70 No Channel?
     jr z,read_sec_retry ;    Yes: CBM DOS bug, jump to retry
 
                         ;Read remaining 255 bytes of block:
-    ld a,(drive)        ;  A = CP/M drive number
+    ld a,(x_drive)      ;  A = CP/M drive number
     call ieee_find_dev  ;  D = its IEEE-488 device number
     ld e,02h            ;  E = file #2
     call ieee_talk      ;  Send TALK
@@ -1786,7 +1802,7 @@ read_sec_loop:
     jp ieee_untalk      ;  Send UNTALK and return to caller
 
 read_sec_retry:
-    ld a,(drive)        ;A = CP/M drive number
+    ld a,(x_drive)      ;A = CP/M drive number
     call ieee_init_drv  ;Initialize the CBM disk drive
     pop hl              ;Recall original HL
     jr ieee_read_sec_hl ;Try again
