@@ -131,8 +131,7 @@ dtype_gh: equ dtypes+3  ;  G:, H:    03h = Corvus 20MB
 dtype_ij: equ dtypes+4  ;  I:, J:    04h = Corvus 5MB (as 1 CP/M drive)
 dtype_kl: equ dtypes+5  ;  L:, K:    05h = Corvus 5MB (as 2 CP/M drives)
 dtype_mn: equ dtypes+6  ;  M:, N:    06h = CBM 8250
-dtype_op: equ dtypes+7  ;  O:, P:    07h = Undefined
-                        ;           0ffh = No device
+dtype_op: equ dtypes+7  ;  O:, P:   0ffh = No device
 
 ddevs:    equ 0ea78h    ;Disk drive device addresses:
 ddev_ab:  equ ddevs+0   ;  A:, B:
@@ -341,58 +340,77 @@ seldsk:
 ;  If bit 0 of E is 0, the disk will be logged in as new.
 ;  If bit 0 of E is 1, the disk has already been logged in.
 ;
-;Returns the address of a Disk Parameter Header in HL.  If the
+;Returns the address of a DPH (Disk Parameter Header) in HL.  If the
 ;disk could not be selected, HL = 0.
 ;
-    ld a,c
-    call e_f224h
-    ld hl,0000h         ;HL = error code
-    ret nc              ;Return if drive is invalid
+                        ;Check if requested drive is valid:
+    ld a,c              ;  A = requested drive number
+    call e_f224h        ;  Check if drive number is valid
+    ld hl,0000h         ;  HL = error code
+    ret nc              ;  Return if drive is invalid
 
-    ld (0040h),a        ;0040h = CP/M drive number
-    ld l,a
+                        ;Calculate pointer to a Disk Parameter Header (DPH):
+    ld (0040h),a        ;  Save requsted CP/M drive number in 0040h
+    ld l,a              ;  HL = A * 8
     add hl,hl
     add hl,hl
     add hl,hl
     add hl,hl
     ld de,0eb00h
-    add hl,de
+    add hl,de           ;  HL = dph_base + HL
     push hl
-    ld l,c
-    ld h,00h
+
+                        ;Calculate pointer to a Disk Parameter Block (DPB):
+    ld l,c              ;  C = requested drive number
+    ld h,00h            ;  HL = C * 8
     add hl,hl
     add hl,hl
     add hl,hl
     add hl,hl
-    ld bc,seldsk_table
-    add hl,bc
-    ex de,hl
-    pop hl
+    ld bc,dpb_base
+    add hl,bc           ;  HL = dpb_base + HL
+
+                        ;Load both pointers:
+    ex de,hl            ;  DE = pointer to a DPB
+    pop hl              ;  HL = pointer to a DPH
     push hl
-    ld bc,000ah
-    add hl,bc
+                        ;Install pointer to the DPB in the DPH:
+    ld bc,000ah         ;
+    add hl,bc           ;  DPH + 0ah = E (DPB low byte)
     ld (hl),e
-    inc hl
+    inc hl              ;  DPH + 0bh = D (DPB high byte)
     ld (hl),d
-    ld a,(0040h)
-    call sub_f245h
-    call c,sub_f2ffh
-    pop hl
+
+                        ;Special handling if requested drive is a Corvus:
+    ld a,(0040h)        ;  A = CP/M drive number
+    call sub_f245h      ;  Sets carry if drive is a Corvus
+    call c,sub_f2ffh    ;  TODO: Corvus select or reset?
+
+    pop hl              ;HL = address of the DPH
     ret
 
-seldsk_table:
+dpb_base:
+;Disk Parameter Block (DPB) tables.  One DPB for each drive type:
+;
+;0 = CBM 3040
     db 20h, 00h, 04h, 0fh, 01h, 4ch,  00h, 3fh
     db 00h, 80h, 00h, 10h, 00h, 00h,  00h, 00h
+;1 = CBM 8050
     db 20h, 00h, 04h, 0fh, 01h, 0f8h, 00h, 3fh
     db 00h, 80h, 00h, 10h, 00h, 00h,  00h, 00h
+;2 = Corvus 10MB
     db 40h, 00h, 06h, 3fh, 03h, 4ch,  02h, 0ffh
     db 00h, 80h, 00h, 00h, 00h, 02h,  00h, 00h
+;3 = Corvus 20MB
     db 40h, 00h, 06h, 3fh, 03h, 4ch,  02h, 0ffh
     db 00h, 80h, 00h, 00h, 00h, 02h,  00h, 00h
+;4 = Corvus 5MB (as 1 CP/M drive)
     db 40h, 00h, 06h, 3fh, 03h, 0b8h, 02h, 0ffh
     db 00h, 80h, 00h, 00h, 00h, 02h,  00h, 00h
+;5 = Corvus 5MB (as 2 CP/M drives)
     db 40h, 00h, 06h, 3fh, 03h, 59h,  01h, 0ffh
     db 00h, 80h, 00h, 00h, 00h, 02h,  00h, 00h
+;6 = CBM 8250
     db 20h, 00h, 05h, 1fh, 03h, 0fch, 00h, 07fh
     db 00h, 80h, 00h, 20h, 00h, 00h,  00h, 00h
 
@@ -446,7 +464,7 @@ lf240h:
 
 sub_f245h:
 ;A = CP/M drive number
-;Sets carry flag if drive is valid and Corvus, clears it otherwise.
+;Sets carry flag if drive is a Corvus and valid, clears it otherwise.
 ;
     call e_f224h
     ret nc              ;Return with no carry if drive number is invalid
@@ -1084,35 +1102,43 @@ lf555h:
     call ieee_open
 
 e_f578h:
-    ld sp,0100h
+;? Initializes data at 0eb00h for each drive ?
+;
+    ld sp,0100h         ;Initialize stack pointer
     xor a
     push af
-    ld ix,0eb00h
-    ld hl,0ec00h
-    ld de,dtypes
+    ld ix,0eb00h        ;IX = destination address to write to (?)
+    ld hl,0ec00h        ;HL = source address to read from (?)
+    ld de,dtypes        ;DE = pointer to drive types
 lf587h:
-    ld a,(de)
+    ld a,(de)           ;A = drive type
     or a
-    jp m,lf5d5h
-    cp 02h
+    jp m,lf5d5h         ;Jump if bit 7 is set (indicates no device)
+
+    cp 02h              ;01h = Corvus 10MB
     ld bc,004ah
     jr z,lf5beh
-    cp 03h
+
+    cp 03h              ;03h = Corvus 20MB
     jr z,lf5beh
-    cp 04h
+
+    cp 04h              ;04h = Corvus 5MB (as 1 CP/M drive)
     ld bc,0058h
     jr z,lf5beh
+
     push af
     ld a,10h
     ld (0058h),a
     pop af
-    cp 06h
+    cp 06h              ;06h = CBM 8250
     jp nz,lf5afh
+
     ld a,20h
     ld (0058h),a
+
 lf5afh:
-    ld (ix+0ch),l
-    ld (ix+0dh),h
+    ld (ix+0ch),l       ;EB0C = L
+    ld (ix+0dh),h       ;EB0D = H
     ld a,(0058h)
     ld b,00h
     ld c,a
@@ -1120,16 +1146,18 @@ lf5afh:
     rla
     ld c,a
 lf5beh:
-    ld (ix+0eh),l
-    ld (ix+0fh),h
+    ld (ix+0eh),l       ;EB0E = L
+    ld (ix+0fh),h       ;EB0F = H
     add hl,bc
-    ld (ix+08h),80h
-    ld (ix+09h),0eeh
-    ld (ix+00h),00h
-    ld (ix+01h),00h
+    ld (ix+08h),80h     ;EB08 = 80
+    ld (ix+09h),0eeh    ;EB09 = EE
+    ld (ix+00h),00h     ;EB00 = 00
+    ld (ix+01h),00h     ;EB01 = 00
+
 lf5d5h:
+;Increment to the next drive
     ld bc,0010h
-    add ix,bc
+    add ix,bc          ;IX = IX + 10h
     pop af
     inc a
     push af
@@ -1137,8 +1165,8 @@ lf5d5h:
     rra
     jr c,lf587h
     inc de
-    cp 08h
-    jr nz,lf587h
+    cp 08h              ;Last drive?
+    jr nz,lf587h        ;  No: continue until all 8 are done
     pop af
 
     ld a,(dirsize)      ;Get CCP directory width
