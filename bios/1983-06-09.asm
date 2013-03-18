@@ -543,7 +543,7 @@ write:
     ld hl,y_track
     cp (hl)
     jr nz,lf2b1h
-    ld a,(0042h)
+    ld a,(track+1)
     inc hl
     cp (hl)
     jr nz,lf2b1h
@@ -1318,6 +1318,8 @@ dos_i0_0:
     db "I0"
 
 lf691h:
+;Called only from write
+;
     push bc
     call sub_f245h      ;A = drive type
     pop bc
@@ -1342,6 +1344,8 @@ lf6a3h:
     ret
 
 sub_f6b9h:
+;Called from read and write
+;
     ld a,(drive)        ;0040h = CP/M drive number
     ld hl,x_drive
     xor (hl)
@@ -1351,21 +1355,21 @@ sub_f6b9h:
     xor (hl)
     or b
     ld b,a
-    ld a,(0042h)
+    ld a,(track+1)
     inc hl
     xor (hl)
     or b
     ld b,a
     ld a,(sector)
     rra
-    ld hl,0047h         ;0047h = CP/M sector number
+    ld hl,x_sector      ;0047h = CP/M sector number
     xor (hl)
     or b
     ret z
 
     ld hl,wrt_pend
-    ld a,(hl)          ;A = CBM DOS write pending flag
-    ld (hl),00h        ;Reset the flag
+    ld a,(hl)           ;A = CBM DOS write pending flag
+    ld (hl),00h         ;Reset the flag
     or a
     call nz,ieee_writ_sec ;Perform the write if one is pending
 
@@ -2429,6 +2433,7 @@ ser_tx_status:
     ret                 ;Return A=0 if not ready
 
 sub_fd6bh:
+;Called only from list
     cp 41h
     ret c
     cp 60h
