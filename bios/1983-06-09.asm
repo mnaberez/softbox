@@ -2320,21 +2320,29 @@ list:
     jp z,ser_out        ;Jump out if List is RS-232 port (LST: = TTY:)
     jp p,conout_cbm     ;Jump out if List is CBM computer (LST: = CRT:)
 
-    ld e,0ffh
-    and 40h             ;Mask off all but bit 6
-    jr z,lfcc3h         ;Jump if List is CBM printer (LST: = LPT:)
+    ld e,0ffh           ;E = no IEEE-488 secondary address
 
-                        ;List must be ASCII printer (LST: = UL1:)
+    and 40h             ;Mask off all but bit 6
+    jr z,list_lpt       ;Jump if List is CBM printer (LST: = LPT:)
+
+list_ul1:
+;List to an ASCII printer (LST: = UL1:)
+;
     ld a,(ul1_dev)
-    ld d,a
-    call ieee_listen
-    jp lfd8ch
-lfcc3h:
+    ld d,a              ;D = IEEE-488 primary address of UL1:
+    call ieee_listen    ;Send LISTEN
+    jp ieee_unl_byte    ;Jump out to send byte, UNLISTEN, then return.
+
+list_lpt:
+;List to a CBM printer (LST: = LPT:)
+;
     ld a,(lpt_dev)
-    ld d,a
+    ld d,a              ;D = IEEE-488 primary address of LPT:
+
     in a,(ppi2_pb)
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
+
     ld a,(lptype)
     ld b,a
     or a
@@ -2463,8 +2471,12 @@ punch:
     ld a,(ptp_dev)
     ld d,a              ;D = IEEE-488 primary address for PTP:
     ld e,0ffh           ;E = no IEEE-488 secondary address
-    call ieee_listen
-lfd8ch:
+    call ieee_listen    ;Send LISTEN
+                        ;Fall through into ieee_unl_byte
+
+ieee_unl_byte:
+;Send the byte in A to IEEE-488 device then send UNLISTEN.
+;
     ld a,c              ;C = byte to send to IEEE-488 device
     call ieee_put_byte
     jp ieee_unlisten
