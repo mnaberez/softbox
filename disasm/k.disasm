@@ -38,13 +38,13 @@ INSERT_HI   = $10     ;Insert line (CTRL_11) destination screen address - HI
 XFER_LO     = $11     ;Memory transfer byte counter - LO
 XFER_HI     = $12     ;Memory transfer byte counter - HI
 CHAR_MASK   = $13     ;Masks incoming bytes for 7- or 8-bit character mode
-RTC_JIFFIES = $14     ;Software Real Time Clock
-RTC_SECS    = $15     ;  The RTC locations can't be changed because they
-RTC_MINS    = $16     ;  are accessed directly by the SoftBox CP/M program
-RTC_HOURS   = $17     ;  TIME.COM using DO_MEM_READ and DO_MEM_WRITE.
-JIFFY2      = $18     ;Jiffy counter (MSB)
-JIFFY1      = $19     ;Jiffy counter
-JIFFY0      = $1A     ;Jiffy counter (LSB)
+RTC_JIFFIES = $14     ;Real Time Clock Jiffies
+RTC_SECS    = $15     ;Real Time Clock Seconds   Note: the RTC and Jiffy
+RTC_MINS    = $16     ;Real Time Clock Minutes   locations can't be changed
+RTC_HOURS   = $17     ;Real Time Clock Hours     because they are accessed by
+JIFFY2      = $18     ;Jiffy Counter (MSB)       the SoftBox BIOS to support
+JIFFY1      = $19     ;Jiffy Counter             CP/M programs like TIME.COM.
+JIFFY0      = $1A     ;Jiffy Counter (LSB)
 ;
 *=$0400
 

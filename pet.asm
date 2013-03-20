@@ -31,13 +31,13 @@ target_hi   = $10     ;Pointer to target address for memory operations - HI
 xfer_lo     = $11     ;Memory transfer byte counter - LO
 xfer_hi     = $12     ;Memory transfer byte counter - HI
 char_mask   = $13     ;Masks incoming bytes for 7- or 8-bit character mode
-rtc_jiffies = $14     ;Software Real Time Clock
-rtc_secs    = $15     ;  The RTC locations can't be changed because they
-rtc_mins    = $16     ;  are accessed directly by the SoftBox CP/M program
-rtc_hours   = $17     ;  TIME.COM using DO_MEM_READ and DO_MEM_WRITE.
-jiffy2      = $18     ;Jiffy counter (MSB)
-jiffy1      = $19     ;Jiffy counter
-jiffy0      = $1a     ;Jiffy counter (LSB)
+rtc_jiffies = $14     ;Real Time Clock Jiffies
+rtc_secs    = $15     ;Real Time Clock Seconds   Note: the RTC and Jiffy
+rtc_mins    = $16     ;Real Time Clock Minutes   locations can't be changed
+rtc_hours   = $17     ;Real Time Clock Hours     because they are accessed by
+jiffy2      = $18     ;Jiffy Counter (MSB)       the SoftBox BIOS to support
+jiffy1      = $19     ;Jiffy Counter             CP/M programs like TIME.COM.
+jiffy0      = $1a     ;Jiffy Counter (LSB)
 blink_cnt   = $1b     ;Counts down number of IRQs until cursor reverses
 uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
 ;
