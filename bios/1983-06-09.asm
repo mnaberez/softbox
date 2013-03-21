@@ -424,7 +424,7 @@ dpb_base:
     db 40h, 00h, 06h, 3fh, 03h, 59h,  01h, 0ffh
     db 00h, 80h, 00h, 00h, 00h, 02h,  00h, 00h
 ;6 = CBM 8250
-    db 20h, 00h, 05h, 1fh, 03h, 0fch, 00h, 07fh
+    db 20h, 00h, 05h, 1fh, 03h, 0fch, 00h, 7fh
     db 00h, 80h, 00h, 20h, 00h, 00h,  00h, 00h
 
 sectran:
@@ -1035,9 +1035,9 @@ lf4c5h:
                         ;  0eeh =  9600 baud
                         ;  0cch =  4800 buad
                         ;  0aah =  2400 baud
-                        ;  077h =  1200 baud
-                        ;  055h =   300 baud
-                        ;  022h =   110 baud
+                        ;   77h =  1200 baud
+                        ;   55h =   300 baud
+                        ;   22h =   110 baud
     out (baud_gen),a    ;Set baud rate to 9600 baud
 
     in a,(ppi2_pa)      ;IEEE-488 control lines in
@@ -1236,7 +1236,7 @@ lf5d5h:
     rla                 ;Rotate uppercase graphics flag into carry
     jr nc,lf62bh        ;Jump if lowercase mode
 
-    ld c,15h            ;015h = Go to uppercase mode
+    ld c,15h            ;15h = Go to uppercase mode
     call conout
 
 lf62bh:
@@ -1629,7 +1629,7 @@ lf945h:
     ret
 
 ts_cbm3040:
-    db 00h,00h,15h,01h,3bh,01h,13h,10h,0adh,01h,012h,016h
+    db 00h,00h,15h,01h,3bh,01h,13h,10h,0adh,01h,12h,16h
     db 19h,02h,11h,1ch,0fh,27h,00h,00h
 
 ts_cbm8050:
