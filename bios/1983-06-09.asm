@@ -1156,8 +1156,11 @@ lf587h:
     ld (0058h),a
 
 lf5afh:
-    ld (ix+0ch),l       ;EB0C = L
-    ld (ix+0dh),h       ;EB0D = H
+;Build the DPH for the current drive
+;
+    ld (ix+0ch),l       ;CSV: address of the directory checksum vector
+    ld (ix+0dh),h       ;     for this drive
+
     ld a,(0058h)
     ld b,00h
     ld c,a
@@ -1165,16 +1168,20 @@ lf5afh:
     rla
     ld c,a
 lf5beh:
-    ld (ix+0eh),l       ;EB0E = L
-    ld (ix+0fh),h       ;EB0F = H
+    ld (ix+0eh),l       ;ALV: address of the allocation vector
+    ld (ix+0fh),h       ;     for this drive
+
     add hl,bc
-    ld (ix+08h),80h     ;EB08 = 80
-    ld (ix+09h),0eeh    ;EB09 = EE
-    ld (ix+00h),00h     ;EB00 = 00
-    ld (ix+01h),00h     ;EB01 = 00
+
+    ld (ix+08h),80h     ;DIRBUF: address of 128-byte directory buffer
+    ld (ix+09h),0eeh    ;        shared for all drives
+
+    ld (ix+00h),00h     ;XLT: address of sector translation table
+    ld (ix+01h),00h     ;     (address of zero indicates no translation)
 
 lf5d5h:
 ;Increment to the next drive
+;
     ld bc,0010h
     add ix,bc          ;IX = IX + 10h
     pop af
