@@ -158,6 +158,7 @@ ddev_op:  equ ddevs+7   ;  O:, P:
 
 scrtab:   equ 0ea80h    ;64 byte buffer for tab stops
 dos_msg:  equ 0eac0h    ;Last error message returned from CBM DOS
+dph_base: equ 0eb00h    ;CP/M Disk Parameter Headers (DPH)
 dos_buf:  equ 0ef00h    ;256 byte buffer for CBM DOS sector data
 
     org 0f000h
@@ -369,7 +370,7 @@ seldsk:
     add hl,hl
     add hl,hl
     add hl,hl
-    ld de,0eb00h
+    ld de,dph_base
     add hl,de           ;  HL = dph_base + HL
     push hl
 
@@ -1120,12 +1121,12 @@ lf555h:
     call ieee_open
 
 e_f578h:
-;? Initializes data at 0eb00h for each drive ?
+;? Initializes data at 0eb00h (DPH) for each drive ?
 ;
     ld sp,0100h         ;Initialize stack pointer
     xor a
     push af
-    ld ix,0eb00h        ;IX = destination address to write to (?)
+    ld ix,dph_base      ;IX = destination address to write to (?)
     ld hl,0ec00h        ;HL = source address to read from (?)
     ld de,dtypes        ;DE = pointer to drive types
 lf587h:
