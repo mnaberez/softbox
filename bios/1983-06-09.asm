@@ -1129,6 +1129,7 @@ e_f578h:
     ld ix,dph_base      ;IX = destination address to write to (?)
     ld hl,0ec00h        ;HL = source address to read from (?)
     ld de,dtypes        ;DE = pointer to drive types
+
 lf587h:
     ld a,(de)           ;A = drive type
     or a
@@ -1165,8 +1166,10 @@ lf5afh:
     ld b,00h
     ld c,a
     add hl,bc
+
     rla
     ld c,a
+
 lf5beh:
     ld (ix+0eh),l       ;ALV: address of the allocation vector
     ld (ix+0fh),h       ;     for this drive
@@ -1183,13 +1186,15 @@ lf5d5h:
 ;Increment to the next drive
 ;
     ld bc,0010h
-    add ix,bc          ;IX = IX + 10h
+    add ix,bc           ;IX = IX + 10h
+
     pop af
     inc a
     push af
     or a
     rra
     jr c,lf587h
+
     inc de
     cp 08h              ;Last drive?
     jr nz,lf587h        ;  No: continue until all 8 are done
@@ -2351,13 +2356,16 @@ list_lpt:
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
 
-    ld a,(lptype)
-    ld b,a
+    ld a,(lptype)       ;A = lptype
+    ld b,a              ;B = lptype
     or a
-    call z,delay_1ms
-    call ieee_listen
+    call z,delay_1ms    ;Delay if lptype = 0 (3022, 3032, 4022, 4023)
+
+    call ieee_listen    ;Send LISTEN
+
     bit 0,b
-    jr nz,lfd29h
+    jr nz,lfd29h        ;Jump if lptype = 0 (3022) or lptype = 2 (8024)
+
     ld hl,list_tmp      ;TODO Where is the initial value of list_tmp set?
     ld a,(hl)
     ld (hl),c
@@ -2409,41 +2417,45 @@ lfd29h:
 listst:
 ;List (printer) status
 ;
-;Returns A=0 if no character is ready, A=0FFh if one is.
+;Returns A=0 (not ready) or A=0FFh (ready).
 ;
     ld a,(iobyte)
     and 0c0h
     jr z,ser_tx_status  ;Jump out if List is RS-232 port (LST: = TTY:)
 
     rla
-    ld a,0ffh
-    ret nc
+    ld a,0ffh           ;A=0FFh (indicates ready)
+    ret nc              ;Return if List is Console (LST: = CRT:)
 
     ld a,(iobyte)
-    and 40h             ;Mask off all but bit 6
-    ld a,(lpt_dev)
-    jr z,lfd4bh         ;Jump if List is CBM printer (LST: = LPT:)
+    and 40h             ;Mask off all except bit 6
+    ld a,(lpt_dev)      ;A = IEEE-488 primary address of LPT:
+    jr z,listst_ieee    ;Jump to keep A if CBM printer (LST: = LPT:)
 
                         ;List must be ASCII printer (LST: = UL1:)
-    ld a,(ul1_dev)
-lfd4bh:
-    ld d,a
-    ld e,0ffh
+    ld a,(ul1_dev)      ;A = IEEE-488 primary address of UL1:
+
+listst_ieee:
+    ld d,a              ;D = IEEE-488 primary address of LPT: or UL1:
+    ld e,0ffh           ;E = no IEEE-488 secondary address
     call ieee_listen
     call delay_1ms
+
     in a,(ppi2_pa)      ;Read IEEE-488 control lines in
     cpl                 ;Invert byte
     and 08h             ;Mask off all except bit 3 (NRFD in)
+
     push af
     call ieee_unlisten
     pop af
-    ret z
+
+    ret z               ;Return with 0 if NRFD_IN=low
     dec a
-    ret
+    ret                 ;Return with 0FFh if NRFD_IN=high
 
 ser_tx_status:
 ;RS-232 serial port transmit status
-;Returns A=0 if not ready, A=0FFh if ready
+;Returns A=0 (not ready) or A=0FFh (ready).
 ;
     in a,(usart_st)     ;Read USART status register
     cpl                 ;Invert it
