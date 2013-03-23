@@ -183,13 +183,10 @@ wait_for_srq:
                        ;Bit 1: SoftBox to CBM: Wait for a key and send it
                        ;Bit 0: SoftBox to CBM: Key available?
 
-    ror ;a             ;Rotate bit 0 of command into carry flag
-    lda #$7f           ;Response will be $80 (key available)
-    bcs send_key_avail ;Skip buffer check if command is not "key available?"
-
-    ldy keycount       ;Is there a key in the buffer?
-    bne send_key_avail ;  Yes: Keep response as $80 (key available)
-    lda #$bf           ;  No:  Response will be $40 (no key available)
+    lda #$bf           ;Response will be $40 (no key available)
+    ldy keycount       ;Is the keyboard buffer empty?
+    beq send_key_avail ;  Yes: Keep response as $40 (no key available)
+    lda #$7f           ;  No:  Response will be $80 (key available)
 
 send_key_avail:
     sta pia2_iout      ;Put keyboard status on the data lines
