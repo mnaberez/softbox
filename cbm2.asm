@@ -239,8 +239,8 @@ wait_srq_high:
     bcs send_key_avail ;Bypass the key buffer check
 
     ldy keycount       ;Is there a key in the buffer?
-    bne send_key_avail ;  No:  Response will be #$80 (key available)
-    lda #$bf           ;  Yes: Response will be #$40 (no key available)
+    bne send_key_avail ;  Yes: Response will be #$80 (key available)
+    lda #$bf           ;  No:  Response will be #$40 (no key available)
 
 send_key_avail:
     sta cia2_pa        ;Put keyboard status on the bus

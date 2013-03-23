@@ -188,8 +188,8 @@ wait_for_srq:
     bcs send_key_avail ;Bypass the key buffer check
 
     ldy keycount       ;Is there a key in the buffer?
-    bne send_key_avail ;  No:  Response will be #$80 (key available)
-    lda #$bf           ;  Yes: Response will be #$40 (no key available)
+    bne send_key_avail ;  Yes: Response will be #$80 (key available)
+    lda #$bf           ;  No:  Response will be #$40 (no key available)
 
 send_key_avail:
     sta pia2_iout      ;Put keyboard status on the data lines
