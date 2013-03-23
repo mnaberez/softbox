@@ -185,24 +185,24 @@ $04FD: A9 34     LDA #%00110100
 $04FF: 8D 21 E8  STA PIA2_NDAC      ;NDAC_OUT=low
 
 $0502: AE 20 E8  LDX PIA2_IEEE      ;Read IEEE data byte with command from SoftBox
-                                    ;
-                                    ; Bit 7: CBM to SoftBox: Key not available
-                                    ; Bit 6: CBM to SoftBox: Key available
-                                    ; Bit 5: SoftBox to CBM: Transfer from the SoftBox to CBM memory
-                                    ; Bit 4: SoftBox to CBM: Transfer from CBM memory to the SoftBox
-                                    ; Bit 3: SoftBox to CBM: Jump to a subroutine in CBM memory
-                                    ; Bit 2: SoftBox to CBM: Write to the terminal screen
-                                    ; Bit 1: SoftBox to CBM: Wait for a key and send it
-                                    ; Bit 0: SoftBox to CBM: Key available?
+$0505: 8A        TXA                ;Use A for work and keep original command in X
 
-$0505: 8A        TXA                ;Remember the original command byte in X
-$0506: 6A        ROR A
-$0507: A9 7F     LDA #$7F           ;Next byte we'll put on IEEE will be #$80 (key available)
-$0509: B0 06     BCS SEND_KEY_AVAIL ;Bypass the key buffer check
+                                    ;Bit 7: CBM to SoftBox: Key not available
+                                    ;Bit 6: CBM to SoftBox: Key available
+                                    ;Bit 5: SoftBox to CBM: Transfer from the SoftBox to CBM memory
+                                    ;Bit 4: SoftBox to CBM: Transfer from CBM memory to the SoftBox
+                                    ;Bit 3: SoftBox to CBM: Jump to a subroutine in CBM memory
+                                    ;Bit 2: SoftBox to CBM: Write to the terminal screen
+                                    ;Bit 1: SoftBox to CBM: Wait for a key and send it
+                                    ;Bit 0: SoftBox to CBM: Key available?
+
+$0506: 6A        ROR A              ;Rotate bit 0 of command into carry flag
+$0507: A9 7F     LDA #$7F           ;Response will be $80 (key available)
+$0509: B0 06     BCS SEND_KEY_AVAIL ;Skip buffer check if command is not "key available?"
 
 $050B: A4 08     LDY KEYCOUNT       ;Is there a key in the buffer?
-$050D: D0 02     BNE SEND_KEY_AVAIL ;  Yes: Response will be #$80 (key available)
-$050F: A9 BF     LDA #$BF           ;  No:  Response will be #$40 (no key available)
+$050D: D0 02     BNE SEND_KEY_AVAIL ;  Yes: Keep response as $80 (key available)
+$050F: A9 BF     LDA #$BF           ;  No:  Response will be $40 (no key available)
 
 SEND_KEY_AVAIL:
 $0511: 8D 22 E8  STA PIA2_IOUT      ;Drive only bit 7 (no key) or bit 6 (key) on the bus

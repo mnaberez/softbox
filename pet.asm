@@ -172,24 +172,24 @@ wait_for_srq:
     sta pia2_ndac      ;NDAC_OUT=low
 
     lda pia2_ieee      ;Read IEEE data byte with command from SoftBox
-                       ;
-                       ; Bit 7: CBM to SoftBox: Key not available
-                       ; Bit 6: CBM to SoftBox: Key available
-                       ; Bit 5: SoftBox to CBM: Transfer from the SoftBox to CBM memory
-                       ; Bit 4: SoftBox to CBM: Transfer from CBM memory to the SoftBox
-                       ; Bit 3: SoftBox to CBM: Jump to a subroutine in CBM memory
-                       ; Bit 2: SoftBox to CBM: Write to the terminal screen
-                       ; Bit 1: SoftBox to CBM: Wait for a key and send it
-                       ; Bit 0: SoftBox to CBM: Key available?
+    tax                ;Save the original command byte in X
 
-    tax                ;Remember the original command byte in X
-    ror ;a
-    lda #$7f           ;Next byte we'll put on IEEE will be #$80 (key available)
-    bcs send_key_avail ;Bypass the key buffer check
+                       ;Bit 7: CBM to SoftBox: Key not available
+                       ;Bit 6: CBM to SoftBox: Key available
+                       ;Bit 5: SoftBox to CBM: Transfer from the SoftBox to CBM memory
+                       ;Bit 4: SoftBox to CBM: Transfer from CBM memory to the SoftBox
+                       ;Bit 3: SoftBox to CBM: Jump to a subroutine in CBM memory
+                       ;Bit 2: SoftBox to CBM: Write to the terminal screen
+                       ;Bit 1: SoftBox to CBM: Wait for a key and send it
+                       ;Bit 0: SoftBox to CBM: Key available?
+
+    ror ;a             ;Rotate bit 0 of command into carry flag
+    lda #$7f           ;Response will be $80 (key available)
+    bcs send_key_avail ;Skip buffer check if command is not "key available?"
 
     ldy keycount       ;Is there a key in the buffer?
-    bne send_key_avail ;  Yes: Response will be #$80 (key available)
-    lda #$bf           ;  No:  Response will be #$40 (no key available)
+    bne send_key_avail ;  Yes: Keep response as $80 (key available)
+    lda #$bf           ;  No:  Response will be $40 (no key available)
 
 send_key_avail:
     sta pia2_iout      ;Put keyboard status on the data lines
