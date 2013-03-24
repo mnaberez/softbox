@@ -312,19 +312,17 @@ send_k_a_wait:         ;Wait at least 20 microseconds after the keyboard
     sta cia2_ddra      ;Data lines all inputs
 
 dispatch_command:
-    txa                ;Recall the command byte from X
-
-    cmp #$01           ;$01 = Key availability (sent with handshake, so done)
+    cpx #$01           ;$01 = Key availability (sent with handshake, so done)
     beq main_loop
-    cmp #$02           ;$02 = Wait for a key and send it
+    cpx #$02           ;$02 = Wait for a key and send it
     beq do_get_key
-    cmp #$04           ;$04 = Write to the terminal screen
+    cpx #$04           ;$04 = Write to the terminal screen
     beq do_terminal
-    cmp #$08           ;$08 = Jump to a subroutine in CBM memory
+    cpx #$08           ;$08 = Jump to a subroutine in CBM memory
     beq do_mem_jsr
-    cmp #$10           ;$10 = Transfer from CBM memory to the SoftBox
+    cpx #$10           ;$10 = Transfer from CBM memory to the SoftBox
     beq do_mem_read
-    cmp #$20           ;$20 = Transfer from the SoftBox to CBM memory
+    cpx #$20           ;$20 = Transfer from the SoftBox to CBM memory
     beq do_mem_write
     jmp main_loop      ;Bad command
 
