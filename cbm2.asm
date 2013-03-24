@@ -224,14 +224,21 @@ wait_srq_high:
     lda cia2_pa        ;Read IEEE data byte with command from SoftBox
     tax                ;Save the original command byte in X
 
-                       ;Bit 7: CBM to SoftBox: Key not available
-                       ;Bit 6: CBM to SoftBox: Key available
-                       ;Bit 5: SoftBox to CBM: Transfer from the SoftBox to CBM memory
-                       ;Bit 4: SoftBox to CBM: Transfer from CBM memory to the SoftBox
-                       ;Bit 3: SoftBox to CBM: Jump to a subroutine in CBM memory
-                       ;Bit 2: SoftBox to CBM: Write to the terminal screen
-                       ;Bit 1: SoftBox to CBM: Wait for a key and send it
-                       ;Bit 0: SoftBox to CBM: Key available?
+                       ;On the both PET/CBM and the SoftBox, the IEEE-488
+                       ;hardware allows individual control of the data
+                       ;lines: some data lines can be asserted while at the
+                       ;same time, other data lines can be read.
+                       ;
+                       ;The SoftBox exploits this.  It places a command on
+                       ;the lower 6 bits, and uses the upper 2 bits as both
+                       ;acknowledgement and keyboard status:
+                       ;
+                       ;Bits 7-6: CBM to SoftBox: Handshake & key status
+                       ;Bits 5-0: SoftBox to CBM: Command
+                       ;
+                       ;The CBM-II machines have different IEEE-488 hardware
+                       ;and are not capable of driving some data lines while
+                       ;reading others.  See the note below.
 
     lda #$bf           ;Response will be $40 (no key available)
     ldy keycount       ;Is the keyboard buffer empty?
@@ -268,8 +275,8 @@ send_key_avail:
                        ;
                        ;One pass through the loop takes ~10 microseconds.
 
-                       ;The PET/CBM code pulls bit 6-7 low, then waits for
-                       ;the SoftBox to release bits 0-5 to high.  The CBM-II
+                       ;The PET/CBM code pulls bits 7-6 low, then waits for
+                       ;the SoftBox to release bits 5-0 to high.  The CBM-II
                        ;hardware is not capable of this, so we must wait:
 
     ldy #$06           ;Delay count for B-series
@@ -304,17 +311,20 @@ send_k_a_wait:         ;Wait at least 20 microseconds after the keyboard
 
 dispatch_command:
     txa                ;Recall the original command byte from X
-    ror ;a
-    bcc main_loop      ;Bit 0: Key availability
-    ror ;a
-    bcc do_get_key     ;Bit 1: Wait for a key and send it
-    ror ;a
-    bcc do_terminal    ;Bit 2: Write to the terminal screen
-    ror ;a
-    bcc do_mem_jsr     ;Bit 3: Jump to a subroutine in CBM memory
-    ror ;a
-    bcc do_mem_read    ;Bit 4: Transfer from CBM memory to the SoftBox
-    jmp do_mem_write   ;Bit 5: Transfer from the SoftBox to CBM memory
+                       ;  Note: the byte is inverted and bits 7-6 are invalid
+                       ;        because they are used for handshaking.
+
+    ror ;a             ;$01 = Key availability (sent with handshake, so done)
+    bcc main_loop
+    ror ;a             ;$02 = Wait for a key and send it
+    bcc do_get_key
+    ror ;a             ;$04 = Write to the terminal screen
+    bcc do_terminal
+    ror ;a             ;$08 = Jump to a subroutine in CBM memory
+    bcc do_mem_jsr
+    ror ;a             ;$10 = Transfer from CBM memory to the SoftBox
+    bcc do_mem_read
+    jmp do_mem_write   ;$20 = Transfer from the SoftBox to CBM memory
 
 do_get_key:
 ;Wait for a key and send it to the SoftBox.

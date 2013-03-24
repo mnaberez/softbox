@@ -187,14 +187,17 @@ $04FF: 8D 21 E8  STA PIA2_NDAC      ;NDAC_OUT=low
 $0502: AE 20 E8  LDX PIA2_IEEE      ;Read IEEE data byte with command from SoftBox
 $0505: 8A        TXA                ;Use A for work and keep original command in X
 
-                                    ;Bit 7: CBM to SoftBox: Key not available
-                                    ;Bit 6: CBM to SoftBox: Key available
-                                    ;Bit 5: SoftBox to CBM: Transfer from the SoftBox to CBM memory
-                                    ;Bit 4: SoftBox to CBM: Transfer from CBM memory to the SoftBox
-                                    ;Bit 3: SoftBox to CBM: Jump to a subroutine in CBM memory
-                                    ;Bit 2: SoftBox to CBM: Write to the terminal screen
-                                    ;Bit 1: SoftBox to CBM: Wait for a key and send it
-                                    ;Bit 0: SoftBox to CBM: Key available?
+                                    ;On the both PET/CBM and the SoftBox, the IEEE-488
+                                    ;hardware allows individual control of the data
+                                    ;lines: some data lines can be asserted while at the
+                                    ;same time, other data lines can be read.
+                                    ;
+                                    ;The SoftBox exploits this.  It places a command on
+                                    ;the lower 6 bits, and uses the upper 2 bits as both
+                                    ;acknowledgement and keyboard status:
+                                    ;
+                                    ;Bits 7-6: CBM to SoftBox: Handshake & key status
+                                    ;Bits 5-0: SoftBox to CBM: Command
 
 $0506: 6A        ROR A              ;Rotate bit 0 of command into carry flag
 $0507: A9 7F     LDA #$7F           ;Response will be $80 (key available)
@@ -218,17 +221,20 @@ $051F: 8D 22 E8  STA PIA2_IOUT      ;Release all data lines
 
 DISPATCH_COMMAND:
 $0522: 8A        TXA                ;Recall the original command byte from X
-$0523: 6A        ROR A              ;Bit 0: Key availability was already answered above
-$0524: 90 C1     BCC MAIN_LOOP      ;       so we're done
-$0526: 6A        ROR A
-$0527: 90 0C     BCC JMP_DO_GET_KEY ;Bit 1: Wait for a key and send it
-$0529: 6A        ROR A
-$052A: 90 0C     BCC DO_TERMINAL    ;Bit 2: Write to the terminal screen
-$052C: 6A        ROR A
-$052D: 90 17     BCC DO_MEM_JSR     ;Bit 3: Jump to a subroutine in CBM memory
-$052F: 6A        ROR A
-$0530: 90 5D     BCC DO_MEM_READ    ;Bit 4: Transfer from CBM memory to the SoftBox
-$0532: 4C 5B 05  JMP DO_MEM_WRITE   ;Bit 5: Transfer from the SoftBox to CBM memory
+                                    ;  Note: the byte is inverted and bits 7-6 are invalid
+                                    ;        because they are used for handshaking.
+
+$0523: 6A        ROR A              ;$01 = Key availability (sent with handshake, so done)
+$0524: 90 C1     BCC MAIN_LOOP
+$0526: 6A        ROR A              ;$02 = Wait for a key and send it
+$0527: 90 0C     BCC JMP_DO_GET_KEY
+$0529: 6A        ROR A              ;$04 = Write to the terminal screen
+$052A: 90 0C     BCC DO_TERMINAL
+$052C: 6A        ROR A              ;$08 = Jump to a subroutine in CBM memory
+$052D: 90 17     BCC DO_MEM_JSR
+$052F: 6A        ROR A              ;$10 = Transfer from CBM memory to the SoftBox
+$0530: 90 5D     BCC DO_MEM_READ
+$0532: 4C 5B 05  JMP DO_MEM_WRITE   ;$20 = Transfer from the SoftBox to CBM memory
 
 JMP_DO_GET_KEY:
 $0535: 4C C6 05  JMP DO_GET_KEY
