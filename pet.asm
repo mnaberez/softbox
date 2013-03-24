@@ -171,8 +171,10 @@ wait_for_srq:
     lda #%00110100
     sta pia2_ndac      ;NDAC_OUT=low
 
-    lda pia2_ieee      ;Read IEEE data byte with command from SoftBox
-    tax                ;Save the original command byte in X
+    lda pia2_ieee      ;Read IEEE data byte from SoftBox
+    eor #$ff           ;Invert it (IEEE-488 uses negative logic)
+    and #%00111111     ;Remove bits 7-6 which are only used for handshaking
+    tax                ;Save the command byte in X
 
                        ;On the both PET/CBM and the SoftBox, the IEEE-488
                        ;hardware allows individual control of the data
@@ -204,21 +206,21 @@ handshake:
     sta pia2_iout      ;Release all data lines
 
 dispatch_command:
-    txa                ;Recall the original command byte from X
-                       ;  Note: the byte is inverted and bits 7-6 are invalid
-                       ;        because they are used for handshaking.
+    txa                ;Recall the command byte from X
 
-    ror ;a             ;$01 = Key availability (sent with handshake, so done)
-    bcc main_loop
-    ror ;a             ;$02 = Wait for a key and send it
-    bcc do_get_key
-    ror ;a             ;$04 = Write to the terminal screen
-    bcc do_terminal
-    ror ;a             ;$08 = Jump to a subroutine in CBM memory
-    bcc do_mem_jsr
-    ror ;a             ;$10 = Transfer from CBM memory to the SoftBox
-    bcc do_mem_read
-    jmp do_mem_write   ;$20 = Transfer from the SoftBox to CBM memory
+    cmp #$01           ;$01 = Key availability (sent with handshake, so done)
+    beq main_loop
+    cmp #$02           ;$02 = Wait for a key and send it
+    beq do_get_key
+    cmp #$04           ;$04 = Write to the terminal screen
+    beq do_terminal
+    cmp #$08           ;$08 = Jump to a subroutine in CBM memory
+    beq do_mem_jsr
+    cmp #$10           ;$10 = Transfer from CBM memory to the SoftBox
+    beq do_mem_read
+    cmp #$20           ;$20 = Transfer from the SoftBox to CBM memory
+    beq do_mem_write
+    jmp main_loop      ;Bad command
 
 do_get_key:
 ;Wait for a key and send it to the SoftBox.
