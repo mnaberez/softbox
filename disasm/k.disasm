@@ -305,7 +305,7 @@ $05A5: 88        DEY
 $05A6: D0 FD     BNE L_05A5   ; delay
 L_05A8:
 $05A8: B1 0D     LDA (TARGET_LO),Y
-$05AA: 20 FB 05  JSR IEEE_SEND_BYTE
+$05AA: 20 FB 05  JSR IEEE_PUT_BYTE
 $05AD: C8        INY
 $05AE: D0 02     BNE L_05B2
 $05B0: E6 0E     INC TARGET_HI
@@ -325,10 +325,10 @@ DO_GET_KEY:
 ;Wait for a key and send it to the SoftBox.
 ;
 ;At the CP/M "A>" prompt, the SoftBox sends this command and then
-;waits for the CBM to answer.
+;waits for the CBM to return a key.
 ;
 $05C6: 20 2E 06  JSR GET_KEY         ;Block until we get a key.  Key will be in A.
-$05C9: 20 FB 05  JSR IEEE_SEND_BYTE  ;Send the key to the Softbox.
+$05C9: 20 FB 05  JSR IEEE_PUT_BYTE   ;Send the key to the Softbox.
 $05CC: 4C E7 04  JMP MAIN_LOOP
 
 IEEE_GET_BYTE:
@@ -363,7 +363,7 @@ $05F6: 8D 21 E8  STA PIA2_NDAC      ;NDAC_OUT=low
 $05F9: 68        PLA
 $05FA: 60        RTS
 
-IEEE_SEND_BYTE:
+IEEE_PUT_BYTE:
 ;Send a byte to the SoftBox over the IEEE-488 bus.
 ;
 $05FB: 49 FF     EOR #$FF           ;Invert the byte

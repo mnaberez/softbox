@@ -330,10 +330,10 @@ do_get_key:
 ;Wait for a key and send it to the SoftBox.
 ;
 ;At the CP/M "A>" prompt, the SoftBox sends this command and then
-;waits for the CBM to answer.
+;waits for the CBM to return a key.
 ;
     jsr get_key         ;Block until we get a key.  Key will be in A.
-    jsr ieee_send_byte  ;Send the key to the Softbox.
+    jsr ieee_put_byte   ;Send the key to the Softbox.
     jmp main_loop
 
 do_terminal:
@@ -369,7 +369,7 @@ l_05a5:
     bne l_05a5   ; delay
 l_05a8:
     lda (source_lo),y
-    jsr ieee_send_byte
+    jsr ieee_put_byte
     iny
     bne l_05b2
     inc source_hi
@@ -446,7 +446,7 @@ l_05ef:
     pla
     rts
 
-ieee_send_byte:
+ieee_put_byte:
 ;Send a byte to the SoftBox over the IEEE-488 bus.
 ;
     eor #$ff           ;Invert the byte
