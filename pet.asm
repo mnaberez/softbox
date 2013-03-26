@@ -213,11 +213,11 @@ dispatch_command:
     cpx #$04           ;$04 = Write to the terminal screen
     beq do_terminal
     cpx #$08           ;$08 = Jump to a subroutine in CBM memory
-    beq do_mem_jsr
+    beq do_execute
     cpx #$10           ;$10 = Transfer from CBM memory to the SoftBox
-    beq do_mem_read
+    beq do_peek
     cpx #$20           ;$20 = Transfer from the SoftBox to CBM memory
-    beq do_mem_write
+    beq do_poke
     jmp main_loop      ;Bad command
 
 do_get_key:
@@ -236,18 +236,18 @@ do_terminal:
     jsr process_byte
     jmp main_loop
 
-do_mem_jsr:
-;Jump to a subroutine in CBM memory
+do_execute:
+;Execute a subroutine in CBM memory
     jsr ieee_get_byte  ;Get byte
     sta target_lo      ; -> Target vector lo
     jsr ieee_get_byte  ;Get byte
     sta target_hi      ; -> Target vector hi
-    jsr do_mem_jsr_ind ;Jump to the subroutine through TARGET_LO
+    jsr do_execute_ind ;Jump to the subroutine through TARGET_LO
     jmp main_loop
-do_mem_jsr_ind:
+do_execute_ind:
     jmp (target_lo)
 
-do_mem_read:
+do_peek:
 ;Transfer bytes from CBM memory to the SoftBox
     jsr ieee_get_byte
     sta xfer_lo
@@ -281,7 +281,7 @@ l_05b2:
     bne l_05a8
     jmp main_loop
 
-do_mem_write:
+do_poke:
 ;Transfer bytes from the SoftBox to CBM memory
     jsr ieee_get_byte
     sta xfer_lo

@@ -197,17 +197,17 @@ lf000h:
     jp ieee_read_err ;f05a  Read the error channel of an IEEE-488 device
     jp ieee_open     ;f05d  Open a file on an IEEE-488 device.
     jp ieee_close    ;f060  Close an open file on an IEEE-488 device.
-    jp cbm_clear     ;f063  Clear the CBM screen
-    jp cbm_jsr       ;f066  Jump to a subroutine in CBM memory
-    jp cbm_poke      ;f069  Transfer bytes from the SoftBox to CBM memory
-    jp cbm_peek      ;f06c  Transfer bytes from CBM memory to the SoftBox
-    jp cbm_set_time  ;f06f  Set the time on the CBM real time clock
-    jp cbm_get_time  ;f072  Read the CBM clocks (both RTC and jiffy counter)
+    jp clear_screen  ;f063  Clear the CBM screen
+    jp execute       ;f066  Execute a subroutine in CBM memory
+    jp poke          ;f069  Transfer bytes from the SoftBox to CBM memory
+    jp peek          ;f06c  Transfer bytes from CBM memory to the SoftBox
+    jp set_time      ;f06f  Set the time on the CBM real time clock
+    jp get_time      ;f072  Read the CBM clocks (both RTC and jiffy counter)
     jp e_f578h       ;f075
     jp ieee_init_drv ;f078  Initialize an IEEE-488 disk drive
     jp ieee_atn_byte ;f07b  Send a byte to IEEE-488 device with ATN asserted
     jp ieee_get_tmo  ;f07e  Read a byte from IEEE-488 device with timeout
-    jp cbm_clr_jiff  ;f081  Clear the CBM jiffy counter
+    jp reset_jiffies ;f081  Reset the CBM jiffy counter
     jp delay         ;f084  Programmable millisecond delay
 
 banner:
@@ -1239,7 +1239,7 @@ lf5d5h:
     ld a,(ser_baud)
     out (baud_gen),a    ;Set baud rate
 
-    call cbm_clear      ;Clear CBM screen (no-op if console is RS-232)
+    call clear_screen   ;Clear CBM screen (no-op if console is RS-232)
 
     ld a,(iobyte)
     rra
@@ -2535,7 +2535,7 @@ puts:
     inc hl              ;Increment HL pointer
     jr puts             ;Loop to handle the next byte
 
-cbm_clear:
+clear_screen:
 ;Clear the CBM screen
 ;
     ld a,(iobyte)
@@ -2545,7 +2545,7 @@ cbm_clear:
     ld c,1ah            ;01ah = Lear Siegler ADM-3A clear screen code
     jp conout_cbm
 
-cbm_jsr:
+execute:
 ;Jump to a subroutine in CBM memory
 ;
 ;HL = Subroutine address on CBM
@@ -2557,7 +2557,7 @@ cbm_jsr:
     ld a,h
     jp cbm_put_byte     ;Send high byte
 
-cbm_peek:
+peek:
 ;Transfer bytes from CBM memory to the SoftBox
 ;
 ;DE = Start address on CBM
@@ -2579,21 +2579,21 @@ cbm_peek:
     or 04h
     out (ppi2_pb),a     ;NDAC_OUT=low
 
-cbm_peek_loop:
+peek_loop:
     call ieee_get_byte  ;Read a byte from the CBM
     ld (hl),a           ;Store it at the pointer
     inc hl              ;Increment pointer
     dec bc              ;Decrement bytes remaining to transfer
     ld a,b
     or c
-    jr nz,cbm_peek_loop ;Loop until no bytes are remaining
+    jr nz,peek_loop     ;Loop until no bytes are remaining
 
     in a,(ppi2_pb)
     and 0f3h
     out (ppi2_pb),a     ;NRFD_OUT=high, NDAC_OUT=high
     ret
 
-cbm_poke:
+poke:
 ;Transfer bytes from the SoftBox to CBM memory
 ;
 ;DE = Start address on CBM
@@ -2610,28 +2610,29 @@ cbm_poke:
     call cbm_put_byte   ;Send low byte of CBM start address
     ld a,d
     call cbm_put_byte   ;Send high byte
-cbm_poke_loop:
+poke_loop:
     ld a,(hl)           ;Read byte at pointer
     call cbm_put_byte   ;Send it to the CBM
     inc hl              ;Increment pointer
     dec bc              ;Decrement bytes remaining to transfer
     ld a,b
     or c
-    jr nz,cbm_poke_loop ;Loop until no bytes are remaining
+    jr nz,poke_loop     ;Loop until no bytes are remaining
     ret
 
-cbm_set_time:
+set_time:
 ;Set the time on the CBM real time clock
+;
     ld e,00h
     ld (jiffies),de
     ld (mins),hl
     ld de,0014h         ;CBM start address
     ld hl,jiffies       ;SoftBox start address
     ld bc,0004h         ;4 bytes to transfer
-    jp cbm_poke         ;Transfer from SoftBox to CBM
+    jp poke             ;Transfer from SoftBox to CBM
 
-cbm_clr_jiff:
-;Clear the CBM jiffy counter
+reset_jiffies:
+;Reset the CBM jiffy counter
 ;
     xor a               ;A=0
     ld (jiffy2),a       ;Clear jiffy counter values
@@ -2640,14 +2641,15 @@ cbm_clr_jiff:
     ld hl,jiffy2        ;SoftBox start address
     ld de,0018h         ;CBM start address
     ld bc,0003h         ;3 bytes to transfer
-    jp cbm_poke         ;Transfer from SoftBox to CBM
+    jp poke             ;Transfer from SoftBox to CBM
 
-cbm_get_time:
+get_time:
 ;Read the CBM clocks (both RTC and jiffy counter)
+;
     ld bc,0007h         ;7 bytes to transfer
     ld hl,jiffies       ;SoftBox start address
     ld de,0014h         ;CBM start address
-    call cbm_peek       ;Transfer from CBM to SoftBox
+    call peek           ;Transfer from CBM to SoftBox
     ld de,(jiffies)
     ld hl,(mins)
     ld a,(jiffy2)
