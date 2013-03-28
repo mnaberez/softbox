@@ -149,7 +149,7 @@ dtype_op: equ dtypes+7  ;  O:, P:   0ffh = No device
 ddevs:    equ 0ea78h    ;Disk drive device addresses:
 ddev_ab:  equ ddevs+0   ;  A:, B:
 ddev_cd:  equ ddevs+1   ;  C:, D:    For CBM floppy drives, the number
-ddev_ef:  equ ddevs+2   ;  E:, F:    is an IEEE-488 device primary address.
+ddev_ef:  equ ddevs+2   ;  E:, F:    is an IEEE-488 primary address.
 ddev_gh:  equ ddevs+3   ;  G:, H:
 ddev_ij:  equ ddevs+4   ;  I:, J:    For Corvus hard drives, the number
 ddev_kl:  equ ddevs+5   ;  L:, K:    is an ID on a Corvus unit.
@@ -451,7 +451,10 @@ e_f224h:
     push hl
     push af
     or a
-    rra                 ;Rotate bit 0 of drive number into carry
+    rra                 ;Rotate bit 0 of CP/M drive number into carry flag
+                        ;  For CBM dual drive units, bit 0 of the CP/M drive
+                        ;  number indicates either drive 0 (bit 0 clear)
+                        ;  or drive 1 (bit 0 set).
 
     ld c,a
 
@@ -1728,7 +1731,7 @@ ieee_writ_sec_hl:
     push hl
                         ;Send memory-write (M-W) command:
     ld hl,dos_mw        ;  HL = pointer to "M-W",00h,13h,01h
-    ld c,06h            ;  6 bytes in string
+    ld c,06h            ;  C = 6 bytes in string
     ld a,(x_drive)      ;  A = CP/M drive number
     call ieee_lisn_cmd  ;  Open command channel
     call ieee_put_str   ;  Send the command
@@ -1741,8 +1744,8 @@ ieee_writ_sec_hl:
     call ieee_unlisten  ;  Send UNLISTEN
 
                         ;Move pointer to second byte of buffer:
-    ld hl,dos_bp        ;  "B-P 2 1" (Buffer-Pointer)
-    ld c,07h            ;  7 bytes in string
+    ld hl,dos_bp        ;  HL = pointer "B-P 2 1" (Buffer-Pointer) string
+    ld c,07h            ;  C = 7 bytes in string
     ld a,(x_drive)      ;  A = CP/M drive number
     call ieee_lisn_cmd  ;  Open command channel
     call ieee_put_str   ;  Send B-P command
@@ -1751,8 +1754,8 @@ ieee_writ_sec_hl:
 
                         ;Send remaining 255 bytes of block:
     ld a,(x_drive)      ;  A = CP/M drive number
-    call ieee_find_dev  ;  D = its IEEE-488 device number
-    ld e,02h            ;  E = file #2
+    call ieee_find_dev  ;  D = its IEEE-488 primary address
+    ld e,02h            ;  E = IEEE-488 secondary address 2
     call ieee_listen    ;  Send LISTEN
     pop hl
     inc hl
@@ -1774,8 +1777,8 @@ ieee_read_sec_hl:
     call ieee_u1_or_u2  ;  Call to perform the block read
 
                         ;Send memory read (M-R) command:
-    ld hl,dos_mr        ;  HL = pointer to "M-R",00h,13h
-    ld c,05h            ;  5 bytes in string
+    ld hl,dos_mr        ;  HL = pointer to "M-R",00h,13h string
+    ld c,05h            ;  C = 5 bytes in string
     ld a,(x_drive)      ;  A = CP/M drive number
     call ieee_lisn_cmd  ;  Open command channel
     call ieee_put_str   ;  Send M-R command
@@ -1784,7 +1787,7 @@ ieee_read_sec_hl:
 
                         ;Read first byte of sector from M-R:
     ld a,(x_drive)      ;  A = CP/M drive number
-    call ieee_find_dev  ;  D = its IEEE-488 device number
+    call ieee_find_dev  ;  D = its IEEE-488 primary address
     ld e,0fh            ;  E = Command channel number (15)
     call ieee_talk      ;  Send TALK
     call ieee_get_byte  ;  Read the byte returned by M-R
@@ -1796,8 +1799,8 @@ ieee_read_sec_hl:
                         ;Move pointer to second byte of buffer:
     ld a,(x_drive)      ;  A = CP/M drive number
     call ieee_lisn_cmd  ;  Open command channel
-    ld hl,dos_bp        ;  "B-P 2 1" (Buffer-Pointer)
-    ld c,07h            ;  7 bytes in string
+    ld hl,dos_bp        ;  HL = pointer to "B-P 2 1" (Buffer-Pointer)
+    ld c,07h            ;  C = 7 bytes in string
     call ieee_put_str   ;  Send B-P command
     call ieee_eoi_cr    ;  Send carriage return with EOI
     call ieee_unlisten  ;  Send UNLISTEN
@@ -1810,8 +1813,8 @@ ieee_read_sec_hl:
 
                         ;Read remaining 255 bytes of block:
     ld a,(x_drive)      ;  A = CP/M drive number
-    call ieee_find_dev  ;  D = its IEEE-488 device number
-    ld e,02h            ;  E = file #2
+    call ieee_find_dev  ;  D = its IEEE-488 primary address
+    ld e,02h            ;  E = IEEE-488 secondary address 2
     call ieee_talk      ;  Send TALK
     pop de
     inc de
@@ -1854,28 +1857,34 @@ ieee_lisn_cmd:
 ;C = number of bytes in string
 ;
     call ieee_find_dev
-    ld e,0fh
+    ld e,0fh            ;E = IEEE-488 secondary address 15 (command channel)
     jp ieee_listen
 
 ieee_init_drv:
 ;Initialize an IEEE-488 disk drive
 ;A = CP/M drive number (0=A:, 1=B:, ...)
 ;
-    call ieee_find_dev  ;D = IEEE-488 device number
-    ld e,0fh            ;0fh = Command channel
+    call ieee_find_dev  ;D = IEEE-488 primary address
+    ld e,0fh            ;E = IEEE-488 secondary address 15 (command channel)
     push de
 
-    ld c,02h            ;2 bytes in string
-    ld hl,dos_i0        ;"I0"
-    rra
-    jr nc,lfad5h
-    ld hl,dos_i1        ;"I1"
+    ld c,02h            ;C = 2 bytes in string
+    ld hl,dos_i0        ;HL = pointer to "I0" string for CBM DOS drive 0
+
+    rra                 ;Rotate bit 0 of CP/M drive number into carry flag
+                        ;  For CBM dual drive units, bit 0 of the CP/M drive
+                        ;  number indicates either drive 0 (bit 0 clear)
+                        ;  or drive 1 (bit 0 set).
+
+    jr nc,lfad5h        ;Jump to keep "I0" string if CBM drive 0
+
+    ld hl,dos_i1        ;HL = pointer to "I1" string for CBM drive 1
 lfad5h:
     call ieee_open
     pop de
-    ld e,02h            ;E = Secondary address 2
+    ld e,02h            ;E = IEEE-488 secondary address 2
     ld c,02h            ;C = 2 bytes in string
-    ld hl,dos_num2      ;"#2"
+    ld hl,dos_num2      ;HL = pointer to "#2"
     jp ieee_open
 
 dos_i0:
