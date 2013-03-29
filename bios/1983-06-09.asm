@@ -598,32 +598,45 @@ ieee_writ_sec:
 copy_to_dma:
 ;Copy from dos_buf to dma_buf
 ;
-    ld a,00h
+    ld a,00h            ;A=0: dos_buf -> dma_buf
     jr copy_dos_dma
 
 copy_from_dma:
 ;Copy from dma_buf to dos_buf
 ;
-    ld a,01h
+    ld a,01h            ;A=1: dma_buf -> dos_buf
+                        ;Fall through into copy_dos_dma
 
 copy_dos_dma:
 ;Copy a 128-byte CP/M sector between the CBM DOS buffer (dos_buf)
 ;and the CP/M DMA buffer (dma_buf).
 ;
-;A = direction (0=dos_buf->dma_buf, 1=dma_buf->dos_buf)
-;Carry flag selects which half of 256-byte CBM DOS buffer to copy
+;A selects direction of copy:
+;  A=0: dos_buf -> dma_buf
+;  A=1: dma_buf -> dos_buf
 ;
-    ld hl,dos_buf
-    ld de,(dma)
-    ld bc,dma_buf
-    jr nc,lf2f8h
-    add hl,bc
+;Carry flag selects which half of the 256-byte CBM DOS buffer:
+;  Carry clear: first half
+;  Carry set:   second half
+;
+    ld hl,dos_buf       ;HL = pointer to CBM DOS buffer
+    ld de,(dma)         ;DE = pointer to DMA buffer
+    ld bc,0080h         ;BC = 128 bytes to copy
+
+    jr nc,lf2f8h        ;If carry is clear, jump to keep HL pointing
+                        ;  at the first half of the CBM DOS buffer
+
+    add hl,bc           ;If carry is set, add 0080h to HL to point
+                        ;  at the second half of the CBM DOS buffer
 lf2f8h:
     or a
-    jr z,lf2fch
-    ex de,hl
+    jr z,lf2fch         ;If A = 0, keep HL and DE so that the copy
+                        ;  direction is CBM DOS buffer -> DMA buffer
+
+    ex de,hl            ;If A != 0, exchange HL and DE so that the copy
+                        ;  direction is DMA buffer -> CBM DOS buffer
 lf2fch:
-    ldir
+    ldir                ;Copy BC bytes from (HL) to (DE)
     ret
 
 sub_f2ffh:
