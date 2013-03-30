@@ -164,51 +164,51 @@ dos_buf:  equ 0ef00h    ;256 byte buffer for CBM DOS sector data
     org 0f000h
 
 lf000h:
-    jp boot          ;f000  Cold start
-    jp wboot         ;f003  Warm start
-    jp const         ;f006  Console status
-    jp conin         ;f009  Console input
-    jp conout        ;f00c  Console output
-    jp list          ;f00f  List (printer) output
-    jp punch         ;f012  Punch (paper tape) output
-    jp reader        ;f015  Reader (paper tape) input
-    jp home          ;f018  Move to track 0 on selected disk
-    jp seldsk        ;f01b  Select disk drive
-    jp settrk        ;f01e  Set track number
-    jp setsec        ;f021  Set sector number
-    jp setdma        ;f024  Set DMA address
-    jp read          ;f027  Read selected sector
-    jp write         ;f02a  Write selected sector
-    jp listst        ;f02d  List (printer) status
-    jp sectran       ;f030  Sector translation for skewing
-    jp ieee_listen   ;f033  Send LISTEN to an IEEE-488 device
-    jp ieee_unlisten ;f036  Send UNLISTEN to all IEEE-488 devices
-    jp ieee_talk     ;f039  Send TALK to an IEEE-488 device
-    jp ieee_untalk   ;f03c  Send UNTALK to all IEEE-488 devices
-    jp ieee_get_byte ;f03f  Read a byte from an IEEE-488 device
-    jp ieee_put_byte ;f042  Send a byte to an IEEE-488 device
-    jp ieee_eoi_byte ;f045  Send a byte to IEEE-488 device with EOI asserted
-    jp ieee_eoi_cr   ;f048  Send a carriage return to IEEE-488 dev with EOI
-    jp ieee_put_str  ;f04b  Send a string to the current IEEE-488 device
-    jp ieee_put_itoa ;f04e  Send a number as decimal string to IEEE-488 dev
-    jp e_f224h       ;f051
-    jp ieee_find_dev ;f054  Find the IEEE-488 device number for a CP/M drive
-    jp ieee_lisn_cmd ;f057  Open the command channel on IEEE-488 device
-    jp ieee_read_err ;f05a  Read the error channel of an IEEE-488 device
-    jp ieee_open     ;f05d  Open a file on an IEEE-488 device.
-    jp ieee_close    ;f060  Close an open file on an IEEE-488 device.
-    jp clear_screen  ;f063  Clear the CBM screen
-    jp execute       ;f066  Execute a subroutine in CBM memory
-    jp poke          ;f069  Transfer bytes from the SoftBox to CBM memory
-    jp peek          ;f06c  Transfer bytes from CBM memory to the SoftBox
-    jp set_time      ;f06f  Set the time on the CBM real time clock
-    jp get_time      ;f072  Read the CBM clocks (both RTC and jiffy counter)
-    jp e_f578h       ;f075
-    jp ieee_init_drv ;f078  Initialize an IEEE-488 disk drive
-    jp ieee_atn_byte ;f07b  Send a byte to IEEE-488 device with ATN asserted
-    jp ieee_get_tmo  ;f07e  Read a byte from IEEE-488 device with timeout
-    jp reset_jiffies ;f081  Reset the CBM jiffy counter
-    jp delay         ;f084  Programmable millisecond delay
+    jp boot             ;f000  Cold start
+    jp wboot            ;f003  Warm start
+    jp const            ;f006  Console status
+    jp conin            ;f009  Console input
+    jp conout           ;f00c  Console output
+    jp list             ;f00f  List (printer) output
+    jp punch            ;f012  Punch (paper tape) output
+    jp reader           ;f015  Reader (paper tape) input
+    jp home             ;f018  Move to track 0 on selected disk
+    jp seldsk           ;f01b  Select disk drive
+    jp settrk           ;f01e  Set track number
+    jp setsec           ;f021  Set sector number
+    jp setdma           ;f024  Set DMA address
+    jp read             ;f027  Read selected sector
+    jp write            ;f02a  Write selected sector
+    jp listst           ;f02d  List (printer) status
+    jp sectran          ;f030  Sector translation for skewing
+    jp ieee_listen      ;f033  Send LISTEN to an IEEE-488 device
+    jp ieee_unlisten    ;f036  Send UNLISTEN to all IEEE-488 devices
+    jp ieee_talk        ;f039  Send TALK to an IEEE-488 device
+    jp ieee_untalk      ;f03c  Send UNTALK to all IEEE-488 devices
+    jp ieee_get_byte    ;f03f  Read byte from an IEEE-488 device
+    jp ieee_put_byte    ;f042  Send byte to an IEEE-488 device
+    jp ieee_eoi_byte    ;f045  Send byte to IEEE-488 device with EOI asserted
+    jp ieee_eoi_cr      ;f048  Send carriage return to IEEE-488 dev with EOI
+    jp ieee_put_str     ;f04b  Send string to the current IEEE-488 device
+    jp ieee_put_itoa    ;f04e  Send number as decimal string to IEEE-488 dev
+    jp e_f224h          ;f051
+    jp ieee_find_dev    ;f054  Find IEEE-488 device number for a CP/M drive
+    jp ieee_lisn_cmd    ;f057  Open the command channel on IEEE-488 device
+    jp ieee_read_err    ;f05a  Read the error channel of an IEEE-488 device
+    jp ieee_open        ;f05d  Open a file on an IEEE-488 device
+    jp ieee_close       ;f060  Close an open file on an IEEE-488 device
+    jp clear_screen     ;f063  Clear the CBM screen
+    jp execute          ;f066  Execute a subroutine in CBM memory
+    jp poke             ;f069  Transfer bytes from the SoftBox to CBM memory
+    jp peek             ;f06c  Transfer bytes from CBM memory to the SoftBox
+    jp set_time         ;f06f  Set the time on the CBM real time clock
+    jp get_time         ;f072  Read the CBM clocks (both RTC and jiffies)
+    jp e_f578h          ;f075
+    jp ieee_init_drv    ;f078  Initialize an IEEE-488 disk drive
+    jp ieee_atn_byte    ;f07b  Send byte to IEEE-488 device with ATN asserted
+    jp ieee_get_tmo     ;f07e  Read byte from IEEE-488 device with timeout
+    jp reset_jiffies    ;f081  Reset the CBM jiffy counter
+    jp delay            ;f084  Programmable millisecond delay
 
 banner:
     db 0dh,0ah,"60K SoftBox CP/M vers. 2.2"
