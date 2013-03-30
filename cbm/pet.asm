@@ -176,14 +176,12 @@ wait_for_srq:
     and #%00111111      ;Remove bits 7-6 which are only used for handshaking
     tax                 ;Save the command byte in X
 
-                        ;On the both PET/CBM and the SoftBox, the IEEE-488
-                        ;hardware allows individual control of the data
-                        ;lines: some data lines can be asserted while at the
-                        ;same time, other data lines can be read.
-                        ;
-                        ;The SoftBox exploits this.  It places a command on
-                        ;the lower 6 bits, and uses the upper 2 bits as both
-                        ;acknowledgement and keyboard status:
+                        ;The hardware of both the PET/CBM machines and the
+                        ;SoftBox allows each IEEE-488 data line to be
+                        ;individually selected as an input or output.  The
+                        ;SoftBox exploits this by using the lower 6 bits of
+                        ;the data bus to output a command, while the upper
+                        ;2 bits are used as input:
                         ;
                         ;Bits 7-6: CBM to SoftBox: Handshake & key status
                         ;Bits 5-0: SoftBox to CBM: Command

@@ -187,14 +187,12 @@ $04FF: 8D 21 E8  STA PIA2_NDAC       ;NDAC_OUT=low
 $0502: AE 20 E8  LDX PIA2_IEEE       ;Read IEEE data byte with command from SoftBox
 $0505: 8A        TXA                 ;Use A for work and keep original command in X
 
-                                     ;On the both PET/CBM and the SoftBox, the IEEE-488
-                                     ;hardware allows individual control of the data
-                                     ;lines: some data lines can be asserted while at the
-                                     ;same time, other data lines can be read.
-                                     ;
-                                     ;The SoftBox exploits this.  It places a command on
-                                     ;the lower 6 bits, and uses the upper 2 bits as both
-                                     ;acknowledgement and keyboard status:
+                                     ;The hardware of both the PET/CBM machines and the
+                                     ;SoftBox allows each IEEE-488 data line to be
+                                     ;individually selected as an input or output.  The
+                                     ;SoftBox exploits this by using the lower 6 bits of
+                                     ;the data bus to output a command, while the upper
+                                     ;2 bits are used as input:
                                      ;
                                      ;Bits 7-6: CBM to SoftBox: Handshake & key status
                                      ;Bits 5-0: SoftBox to CBM: Command
