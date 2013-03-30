@@ -75,32 +75,32 @@ $045A:           .BYT 4C,59,20,31,39,38,31,20
 $0462:           .BYT 20,20,20,20
 
 INIT:
-$0466: 78        SEI                ;Disable interrupts
+$0466: 78        SEI                 ;Disable interrupts
 $0467: A9 4F     LDA #<IRQ_HANDLER
 $0469: 85 90     STA CINV_LO
 $046B: A9 06     LDA #>IRQ_HANDLER
-$046D: 85 91     STA CINV_HI        ;Install our interrupt handler
+$046D: 85 91     STA CINV_HI         ;Install our interrupt handler
 $046F: A9 00     LDA #$00
-$0471: 85 08     STA KEYCOUNT       ;Reset key counter (no keys hit)
+$0471: 85 08     STA KEYCOUNT        ;Reset key counter (no keys hit)
 $0473: A9 00     LDA #$00
-$0475: 85 14     STA RTC_JIFFIES    ;Reset software real time clock
+$0475: 85 14     STA RTC_JIFFIES     ;Reset software real time clock
 $0477: 85 15     STA RTC_SECS
 $0479: 85 16     STA RTC_MINS
 $047B: 85 17     STA RTC_HOURS
-$047D: 85 18     STA JIFFY2         ;Reset jiffy counter
+$047D: 85 18     STA JIFFY2          ;Reset jiffy counter
 $047F: 85 19     STA JIFFY1
 $0481: 85 1A     STA JIFFY0
 $0483: A9 0A     LDA #$0A
-$0485: 8D 3D 0B  STA REPEATCOUNT1   ;Store #$0A in REPEATCOUNT1
-$0488: 58        CLI                ;Enable interrupts again
+$0485: 8D 3D 0B  STA REPEATCOUNT1    ;Store #$0A in REPEATCOUNT1
+$0488: 58        CLI                 ;Enable interrupts again
 $0489: A9 0E     LDA #$0E
-$048B: 8D 4C E8  STA VIA_PCR        ;Graphic mode = lowercase
-$048E: 20 84 07  JSR CTRL_02        ;Go to 7-bit character mode
+$048B: 8D 4C E8  STA VIA_PCR         ;Graphic mode = lowercase
+$048E: 20 84 07  JSR CTRL_02         ;Go to 7-bit character mode
 $0491: A9 14     LDA #$14
-$0493: 85 01     STA BLINK_CNT      ;Initialize cursor blink countdown
+$0493: 85 01     STA BLINK_CNT       ;Initialize cursor blink countdown
 $0495: A9 00     LDA #$00
-$0497: 85 06     STA CURSOR_OFF     ;Cursor state = show the cursor
-$0499: 85 0B     STA MOVETO_CNT     ;Move-to counter = not in a move-to seq
+$0497: 85 06     STA CURSOR_OFF      ;Cursor state = show the cursor
+$0499: 85 0B     STA MOVETO_CNT      ;Move-to counter = not in a move-to seq
 
 INIT_4080:
 ;Detect 40/80 column screen and store in X_WIDTH
@@ -115,22 +115,22 @@ INIT_4080:
 ;means the 2001B machines (40-column, business keyboard) are not supported.
 ;
 $049B: A9 28     LDA #$28
-$049D: 85 09     STA X_WIDTH        ;X_WIDTH = 40 characters
+$049D: 85 09     STA X_WIDTH         ;X_WIDTH = 40 characters
 $049F: A9 55     LDA #$55
-$04A1: 8D 00 80  STA SCREEN         ;Store #$55 in first byte of screen RAM.
+$04A1: 8D 00 80  STA SCREEN          ;Store #$55 in first byte of screen RAM.
 $04A4: 0A        ASL A
-$04A5: 8D 00 84  STA SCREEN+$400    ;Store #$AA in first byte of 80 col page.
-$04A8: CD 00 84  CMP SCREEN+$400    ;Does it read back correctly?
-$04AB: D0 08     BNE INIT_TERM      ;  No: we're done, X_WIDTH = 40.
+$04A5: 8D 00 84  STA SCREEN+$400     ;Store #$AA in first byte of 80 col page.
+$04A8: CD 00 84  CMP SCREEN+$400     ;Does it read back correctly?
+$04AB: D0 08     BNE INIT_TERM       ;  No: we're done, X_WIDTH = 40.
 $04AD: 4A        LSR A
-$04AE: CD 00 80  CMP SCREEN         ;Is the #$55 still intact?
-$04B1: D0 02     BNE INIT_TERM      ;  No: incomplete decoding, X_WIDTH = 40
-$04B3: 06 09     ASL X_WIDTH        ;  Yes: X_WIDTH = 80 characters
+$04AE: CD 00 80  CMP SCREEN          ;Is the #$55 still intact?
+$04B1: D0 02     BNE INIT_TERM       ;  No: incomplete decoding, X_WIDTH = 40
+$04B3: 06 09     ASL X_WIDTH         ;  Yes: X_WIDTH = 80 characters
 
 INIT_TERM:
-$04B5: A9 1A     LDA #$1A           ;Load #$1A = CTRL_1A Clear Screen
-$04B7: 20 E8 06  JSR PROCESS_BYTE   ;Call into terminal to execute clear screen
-$04BA: 20 D4 08  JSR CTRL_06        ;Clear all tab stops
+$04B5: A9 1A     LDA #$1A            ;Load #$1A = CTRL_1A Clear Screen
+$04B7: 20 E8 06  JSR PROCESS_BYTE    ;Call into terminal to execute clear screen
+$04BA: 20 D4 08  JSR CTRL_06         ;Clear all tab stops
 
 INIT_IEEE:
 ;
@@ -141,125 +141,128 @@ INIT_IEEE:
 ;  PB6: NFRD_IN                              CB2: DAV_OUT
 ;  PB7: DAV_IN
 ;
-$04BD: AD 22 E8  LDA PIA2_IOUT      ;Read clears IRQA1 flag (ATN_IN detect)
+$04BD: AD 22 E8  LDA PIA2_IOUT       ;Read clears IRQA1 flag (ATN_IN detect)
 
 $04C0: AD 40 E8  LDA VIA_PB
 $04C3: 29 FB     AND #%11111011
-$04C5: 8D 40 E8  STA VIA_PB         ;ATN_OUT=low
+$04C5: 8D 40 E8  STA VIA_PB          ;ATN_OUT=low
 
 $04C8: A9 34     LDA #%00110100
-$04CA: 8D 23 E8  STA PIA2_DAV       ;DAV_OUT=low
+$04CA: 8D 23 E8  STA PIA2_DAV        ;DAV_OUT=low
 
 $04CD: A9 C6     LDA #$C6
-$04CF: 8D 22 E8  STA PIA2_IOUT      ;Put #$39 on IEEE data lines
+$04CF: 8D 22 E8  STA PIA2_IOUT       ;Put #$39 on IEEE data lines
 
 $04D2: A0 00     LDY #$00
 L_04D4:
 $04D4: 88        DEY
-$04D5: D0 FD     BNE L_04D4         ;Let #$39 sit on the lines so the SoftBox sees it
+$04D5: D0 FD     BNE L_04D4          ;Let #$39 sit on the lines so the SoftBox sees it
 
 $04D7: A9 FF     LDA #$FF
-$04D9: 8D 22 E8  STA PIA2_IOUT      ;Release IEEE data lines
+$04D9: 8D 22 E8  STA PIA2_IOUT       ;Release IEEE data lines
 
 $04DC: A9 3C     LDA #%00111100
-$04DE: 8D 11 E8  STA PIA1_EOI       ;EOI_OUT=high, disable IRQ from CA1 (Cassette Read)
-$04E1: 8D 21 E8  STA PIA2_NDAC      ;NDAC_OUT=high, disable IRQ from CA1 (ATN_IN)
-$04E4: 8D 23 E8  STA PIA2_DAV       ;DAV_OUT=high, disable IRQ from CB1 (SRQ_IN),
-                                    ;  CB1 transition mode = positive (low-to-high)
+$04DE: 8D 11 E8  STA PIA1_EOI        ;EOI_OUT=high, disable IRQ from CA1 (Cassette Read)
+$04E1: 8D 21 E8  STA PIA2_NDAC       ;NDAC_OUT=high, disable IRQ from CA1 (ATN_IN)
+$04E4: 8D 23 E8  STA PIA2_DAV        ;DAV_OUT=high, disable IRQ from CB1 (SRQ_IN),
+                                     ;  CB1 transition mode = positive (low-to-high)
 MAIN_LOOP:
 $04E7: A9 3C     LDA #%00111100
-$04E9: 8D 21 E8  STA PIA2_NDAC      ;NDAC_OUT=high
+$04E9: 8D 21 E8  STA PIA2_NDAC       ;NDAC_OUT=high
 
 $04EC: AD 40 E8  LDA VIA_PB
 $04EF: 09 06     ORA #%00000110
-$04F1: 8D 40 E8  STA VIA_PB         ;NRFD_OUT=high, ATN_OUT=high
+$04F1: 8D 40 E8  STA VIA_PB          ;NRFD_OUT=high, ATN_OUT=high
 
 WAIT_FOR_SRQ:
-$04F4: AD 23 E8  LDA PIA2_DAV       ;Read PIA #2 CRB
-$04F7: 0A        ASL A              ;  bit 7 = IRQB1 flag for CB1 (SRQ_IN detect)
-$04F8: 90 FA     BCC WAIT_FOR_SRQ   ;Wait until SRQ_IN is detected
+$04F4: AD 23 E8  LDA PIA2_DAV        ;Read PIA #2 CRB
+$04F7: 0A        ASL A               ;  bit 7 = IRQB1 flag for CB1 (SRQ_IN detect)
+$04F8: 90 FA     BCC WAIT_FOR_SRQ    ;Wait until SRQ_IN is detected
 
-$04FA: AD 22 E8  LDA PIA2_IOUT      ;Read clears IRQB1 flag (SRQ_IN detect)
+$04FA: AD 22 E8  LDA PIA2_IOUT       ;Read clears IRQB1 flag (SRQ_IN detect)
 
 $04FD: A9 34     LDA #%00110100
-$04FF: 8D 21 E8  STA PIA2_NDAC      ;NDAC_OUT=low
+$04FF: 8D 21 E8  STA PIA2_NDAC       ;NDAC_OUT=low
 
-$0502: AE 20 E8  LDX PIA2_IEEE      ;Read IEEE data byte with command from SoftBox
-$0505: 8A        TXA                ;Use A for work and keep original command in X
+$0502: AE 20 E8  LDX PIA2_IEEE       ;Read IEEE data byte with command from SoftBox
+$0505: 8A        TXA                 ;Use A for work and keep original command in X
 
-                                    ;On the both PET/CBM and the SoftBox, the IEEE-488
-                                    ;hardware allows individual control of the data
-                                    ;lines: some data lines can be asserted while at the
-                                    ;same time, other data lines can be read.
-                                    ;
-                                    ;The SoftBox exploits this.  It places a command on
-                                    ;the lower 6 bits, and uses the upper 2 bits as both
-                                    ;acknowledgement and keyboard status:
-                                    ;
-                                    ;Bits 7-6: CBM to SoftBox: Handshake & key status
-                                    ;Bits 5-0: SoftBox to CBM: Command
+                                     ;On the both PET/CBM and the SoftBox, the IEEE-488
+                                     ;hardware allows individual control of the data
+                                     ;lines: some data lines can be asserted while at the
+                                     ;same time, other data lines can be read.
+                                     ;
+                                     ;The SoftBox exploits this.  It places a command on
+                                     ;the lower 6 bits, and uses the upper 2 bits as both
+                                     ;acknowledgement and keyboard status:
+                                     ;
+                                     ;Bits 7-6: CBM to SoftBox: Handshake & key status
+                                     ;Bits 5-0: SoftBox to CBM: Command
 
-$0506: 6A        ROR A              ;Rotate bit 0 of command into carry flag
-$0507: A9 7F     LDA #$7F           ;Response will be $80 (key available)
-$0509: B0 06     BCS SEND_KEY_AVAIL ;Skip buffer check if command is not "key available?"
+$0506: 6A        ROR A               ;Rotate bit 0 of command into carry flag
+$0507: A9 7F     LDA #$7F            ;Response will be $80 (key available)
+$0509: B0 06     BCS SEND_KEY_AVAIL  ;Skip buffer check if command is not "key available?"
 
-$050B: A4 08     LDY KEYCOUNT       ;Is there a key in the buffer?
-$050D: D0 02     BNE SEND_KEY_AVAIL ;  Yes: Keep response as $80 (key available)
-$050F: A9 BF     LDA #$BF           ;  No:  Response will be $40 (no key available)
+$050B: A4 08     LDY KEYCOUNT        ;Is there a key in the buffer?
+$050D: D0 02     BNE SEND_KEY_AVAIL  ;  Yes: Keep response as $80 (key available)
+$050F: A9 BF     LDA #$BF            ;  No:  Response will be $40 (no key available)
 
 SEND_KEY_AVAIL:
-$0511: 8D 22 E8  STA PIA2_IOUT      ;Drive only bit 7 (no key) or bit 6 (key) on the bus
+$0511: 8D 22 E8  STA PIA2_IOUT       ;Drive only bit 7 (no key) or bit 6 (key) on the bus
 
 HANDSHAKE:
-$0514: AD 20 E8  LDA PIA2_IEEE      ;Read IEEE data byte
-$0517: 29 3F     AND #%00111111     ;We are driving only bits 7 and 6 with the keyboard status
+$0514: AD 20 E8  LDA PIA2_IEEE       ;Read IEEE data byte
+$0517: 29 3F     AND #%00111111      ;We are driving only bits 7 and 6 with the keyboard status
 $0519: C9 3F     CMP #%00111111
-$051B: D0 F7     BNE HANDSHAKE      ;Wait for the SoftBox to drive the other lines to zero
+$051B: D0 F7     BNE HANDSHAKE       ;Wait for the SoftBox to drive the other lines to zero
 
 $051D: A9 FF     LDA #$FF
-$051F: 8D 22 E8  STA PIA2_IOUT      ;Release all data lines
+$051F: 8D 22 E8  STA PIA2_IOUT       ;Release all data lines
 
 DISPATCH_COMMAND:
-$0522: 8A        TXA                ;Recall the original command byte from X
-                                    ;  Note: the byte is inverted and bits 7-6 are invalid
-                                    ;        because they are used for handshaking.
+$0522: 8A        TXA                 ;Recall the original command byte from X
+                                     ;  Note: the byte is inverted and bits 7-6 are invalid
+                                     ;        because they are used for handshaking.
 
-$0523: 6A        ROR A              ;$01 = Key availability (sent with handshake, so done)
+$0523: 6A        ROR A               ;$01 = Key availability (sent with handshake, so done)
 $0524: 90 C1     BCC MAIN_LOOP
-$0526: 6A        ROR A              ;$02 = Wait for a key and send it
+$0526: 6A        ROR A               ;$02 = Wait for a key and send it
 $0527: 90 0C     BCC JMP_DO_GET_KEY
-$0529: 6A        ROR A              ;$04 = Write to the terminal screen
+$0529: 6A        ROR A               ;$04 = Write to the terminal screen
 $052A: 90 0C     BCC DO_TERMINAL
-$052C: 6A        ROR A              ;$08 = Jump to a subroutine in CBM memory
+$052C: 6A        ROR A               ;$08 = Jump to a subroutine in CBM memory
 $052D: 90 17     BCC DO_EXECUTE
-$052F: 6A        ROR A              ;$10 = Transfer from CBM memory to the SoftBox
+$052F: 6A        ROR A               ;$10 = Transfer from CBM memory to the SoftBox
 $0530: 90 5D     BCC DO_PEEK
-$0532: 4C 5B 05  JMP DO_POKE        ;$20 = Transfer from the SoftBox to CBM memory
+$0532: 4C 5B 05  JMP DO_POKE         ;$20 = Transfer from the SoftBox to CBM memory
 
 JMP_DO_GET_KEY:
 $0535: 4C C6 05  JMP DO_GET_KEY
 
 DO_TERMINAL:
 ;Write to the terminal screen
+;
 $0538: 20 CF 05  JSR IEEE_GET_BYTE
 $053B: A2 3C     LDX #%00111100
-$053D: 8E 21 E8  STX PIA2_NDAC      ;NDAC_OUT=high
+$053D: 8E 21 E8  STX PIA2_NDAC       ;NDAC_OUT=high
 $0540: 20 E8 06  JSR PROCESS_BYTE
 $0543: 4C E7 04  JMP MAIN_LOOP
 
 DO_EXECUTE:
 ;Execute to a subroutine in CBM memory
-$0546: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
-$0549: 85 0D     STA TARGET_LO      ; -> Target vector lo
-$054B: 20 CF 05  JSR IEEE_GET_BYTE  ;Get byte
-$054E: 85 0E     STA TARGET_HI      ; -> Target vector hi
+;
+$0546: 20 CF 05  JSR IEEE_GET_BYTE   ;Get byte
+$0549: 85 0D     STA TARGET_LO       ; -> Target vector lo
+$054B: 20 CF 05  JSR IEEE_GET_BYTE   ;Get byte
+$054E: 85 0E     STA TARGET_HI       ; -> Target vector hi
 $0550: A2 3C     LDX #%00111100
-$0552: 8E 21 E8  STX PIA2_NDAC      ;NDAC_OUT=high
-$0555: 20 1B 07  JSR JUMP_CMD       ;Jump to the subroutine through TARGET_LO
+$0552: 8E 21 E8  STX PIA2_NDAC       ;NDAC_OUT=high
+$0555: 20 1B 07  JSR JUMP_CMD        ;Jump to the subroutine through TARGET_LO
 $0558: 4C E7 04  JMP MAIN_LOOP
 
 DO_POKE:
 ;Transfer bytes from the SoftBox to CBM memory
+;
 $055B: 20 CF 05  JSR IEEE_GET_BYTE
 $055E: 85 11     STA XFER_LO
 $0560: 20 CF 05  JSR IEEE_GET_BYTE
@@ -291,6 +294,7 @@ $058C: 4C E7 04  JMP MAIN_LOOP
 
 DO_PEEK:
 ;Transfer bytes from CBM memory to the SoftBox
+;
 $058F: 20 CF 05  JSR IEEE_GET_BYTE
 $0592: 85 11     STA XFER_LO
 $0594: 20 CF 05  JSR IEEE_GET_BYTE
@@ -302,7 +306,7 @@ $05A1: 85 0E     STA TARGET_HI
 $05A3: A0 00     LDY #$00
 L_05A5:
 $05A5: 88        DEY
-$05A6: D0 FD     BNE L_05A5   ; delay
+$05A6: D0 FD     BNE L_05A5          ;Delay loop
 L_05A8:
 $05A8: B1 0D     LDA (TARGET_LO),Y
 $05AA: 20 FB 05  JSR IEEE_PUT_BYTE
@@ -336,29 +340,29 @@ IEEE_GET_BYTE:
 ;
 $05CF: AD 40 E8  LDA VIA_PB
 $05D2: 09 02     ORA #%00000010
-$05D4: 8D 40 E8  STA VIA_PB         ;NRFD_OUT=high
+$05D4: 8D 40 E8  STA VIA_PB          ;NRFD_OUT=high
 
 L_05D7:
 $05D7: 2C 40 E8  BIT VIA_PB
-$05DA: 30 FB     BMI L_05D7         ;Wait until DAV_IN=low
+$05DA: 30 FB     BMI L_05D7          ;Wait until DAV_IN=low
 
-$05DC: AD 20 E8  LDA PIA2_IEEE      ;Read data byte
-$05DF: 49 FF     EOR #$FF           ;Invert it
-$05E1: 48        PHA                ;Push data byte
+$05DC: AD 20 E8  LDA PIA2_IEEE       ;Read data byte
+$05DF: 49 FF     EOR #$FF            ;Invert it
+$05E1: 48        PHA                 ;Push data byte
 
 $05E2: AD 40 E8  LDA VIA_PB
 $05E5: 29 FD     AND #%11111101
-$05E7: 8D 40 E8  STA VIA_PB         ;NRFD_OUT=low
+$05E7: 8D 40 E8  STA VIA_PB          ;NRFD_OUT=low
 
 $05EA: A9 3C     LDA #%00111100
-$05EC: 8D 21 E8  STA PIA2_NDAC      ;NDAC_OUT=high
+$05EC: 8D 21 E8  STA PIA2_NDAC       ;NDAC_OUT=high
 
 L_05EF:
 $05EF: 2C 40 E8  BIT VIA_PB
-$05F2: 10 FB     BPL L_05EF         ;Wait until DAV_IN=high
+$05F2: 10 FB     BPL L_05EF          ;Wait until DAV_IN=high
 
 $05F4: A9 34     LDA #%00110100
-$05F6: 8D 21 E8  STA PIA2_NDAC      ;NDAC_OUT=low
+$05F6: 8D 21 E8  STA PIA2_NDAC       ;NDAC_OUT=low
 
 $05F9: 68        PLA
 $05FA: 60        RTS
@@ -366,37 +370,37 @@ $05FA: 60        RTS
 IEEE_PUT_BYTE:
 ;Send a byte to the SoftBox over the IEEE-488 bus.
 ;
-$05FB: 49 FF     EOR #$FF           ;Invert the byte
-$05FD: 8D 22 E8  STA PIA2_IOUT      ;Put byte on IEEE data output lines
+$05FB: 49 FF     EOR #$FF            ;Invert the byte
+$05FD: 8D 22 E8  STA PIA2_IOUT       ;Put byte on IEEE data output lines
 
 $0600: AD 40 E8  LDA VIA_PB
 $0603: 09 02     ORA #%00000010
-$0605: 8D 40 E8  STA VIA_PB         ;NRFD_OUT=high
+$0605: 8D 40 E8  STA VIA_PB          ;NRFD_OUT=high
 
 $0608: A9 3C     LDA #%00111100
-$060A: 8D 21 E8  STA PIA2_NDAC      ;NDAC_OUT=high
+$060A: 8D 21 E8  STA PIA2_NDAC       ;NDAC_OUT=high
 
 L_060D:
 $060D: 2C 40 E8  BIT VIA_PB
-$0610: 50 FB     BVC L_060D         ;Wait until NRFD_IN=high
+$0610: 50 FB     BVC L_060D          ;Wait until NRFD_IN=high
 $0612: A9 34     LDA #%00110100
-$0614: 8D 23 E8  STA PIA2_DAV       ;DAV_OUT=low
+$0614: 8D 23 E8  STA PIA2_DAV        ;DAV_OUT=low
 
 L_0617:
 $0617: AD 40 E8  LDA VIA_PB
 $061A: 4A        LSR A
-$061B: 90 FA     BCC L_0617         ;Wait until NDAC_IN=high
+$061B: 90 FA     BCC L_0617          ;Wait until NDAC_IN=high
 
 $061D: A9 3C     LDA #%00111100
-$061F: 8D 23 E8  STA PIA2_DAV       ;DAV_OUT=high
+$061F: 8D 23 E8  STA PIA2_DAV        ;DAV_OUT=high
 
 $0622: A9 FF     LDA #$FF
-$0624: 8D 22 E8  STA PIA2_IOUT      ;Release data lines
+$0624: 8D 22 E8  STA PIA2_IOUT       ;Release data lines
 
 L_0627:
 $0627: AD 40 E8  LDA VIA_PB
 $062A: 4A        LSR A
-$062B: B0 FA     BCS L_0627         ;Wait until NDAC_IN=low
+$062B: B0 FA     BCS L_0627          ;Wait until NDAC_IN=low
 $062D: 60        RTS
 
 GET_KEY:
@@ -405,26 +409,26 @@ GET_KEY:
 ;block until it gets one.  Meanwhile, the interrupt handler
 ;calls SCAN_KEYB and puts any key into the buffer.
 ;
-$062E: A9 FF     LDA #$FF        ;FF = no key
-$0630: 78        SEI             ;Disable interrupts
-$0631: A6 08     LDX KEYCOUNT    ;Is there a key waiting in the buffer?
-$0633: F0 14     BEQ L_0649      ;  No: nothing to do with the buffer.
-$0635: AD 6F 02  LDA KEYD        ;Read the next key in the buffer (FIFO)
-$0638: 48        PHA             ;Push the key onto the stack
+$062E: A9 FF     LDA #$FF            ;FF = no key
+$0630: 78        SEI                 ;Disable interrupts
+$0631: A6 08     LDX KEYCOUNT        ;Is there a key waiting in the buffer?
+$0633: F0 14     BEQ L_0649          ;  No: nothing to do with the buffer.
+$0635: AD 6F 02  LDA KEYD            ;Read the next key in the buffer (FIFO)
+$0638: 48        PHA                 ;Push the key onto the stack
 $0639: A2 00     LDX #$00
-$063B: C6 08     DEC KEYCOUNT    ;Keycount = Keycount - 1
+$063B: C6 08     DEC KEYCOUNT        ;Keycount = Keycount - 1
 L_063D:
-$063D: BD 70 02  LDA KEYD+1,X    ;Remove the key from the buffer by rotating
-$0640: 9D 6F 02  STA KEYD,X      ;  bytes in the buffer to the left
+$063D: BD 70 02  LDA KEYD+1,X        ;Remove the key from the buffer by rotating
+$0640: 9D 6F 02  STA KEYD,X          ;  bytes in the buffer to the left
 $0643: E8        INX
-$0644: E4 08     CPX KEYCOUNT    ;Finished updating the buffer?
-$0646: D0 F5     BNE L_063D      ;  No: loop until we're done.
-$0648: 68        PLA             ;Pull the key off the stack.
+$0644: E4 08     CPX KEYCOUNT        ;Finished updating the buffer?
+$0646: D0 F5     BNE L_063D          ;  No: loop until we're done.
+$0648: 68        PLA                 ;Pull the key off the stack.
 L_0649:
-$0649: 58        CLI             ;Enable interrupts again
-$064A: C9 FF     CMP #$FF        ;No key or key is "NONE" in the tables?
-$064C: F0 E0     BEQ GET_KEY     ;  No key:  loop until we get one.
-$064E: 60        RTS             ;  Got key: done.  Key is now in A.
+$0649: 58        CLI                 ;Enable interrupts again
+$064A: C9 FF     CMP #$FF            ;No key or key is "NONE" in the tables?
+$064C: F0 E0     BEQ GET_KEY         ;  No key:  loop until we get one.
+$064E: 60        RTS                 ;  Got key: done.  Key is now in A.
 
 IRQ_HANDLER:
 ;On PET/CBM, an IRQ occurs at 50 or 60 Hz depending on the model and ROMs.
@@ -488,17 +492,17 @@ $06AA: A9 10     LDA #$10            ;reset counter
 $06AC: 8D 3C 0B  STA REPEATCOUNT0    ;save to counter
 $06AF: D0 21     BNE IRQ_SCAN
 L_06B1:
-$06B1: C9 FF     CMP #$FF            ; NO KEY?
-$06B3: F0 1D     BEQ IRQ_SCAN        ; Yes, jump to scan for another
-$06B5: AD 3C 0B  LDA REPEATCOUNT0    ; No, there was a key, so get the counter
-$06B8: F0 05     BEQ L_06BF          ; Is it zero?
-$06BA: CE 3C 0B  DEC REPEATCOUNT0    ; Count Down
-$06BD: D0 13     BNE IRQ_SCAN         ; Is it Zero
+$06B1: C9 FF     CMP #$FF            ;NO KEY?
+$06B3: F0 1D     BEQ IRQ_SCAN        ;  Yes, jump to scan for another
+$06B5: AD 3C 0B  LDA REPEATCOUNT0    ;  No, there was a key, so get the counter
+$06B8: F0 05     BEQ L_06BF          ;Is it zero?
+$06BA: CE 3C 0B  DEC REPEATCOUNT0    ;Count Down
+$06BD: D0 13     BNE IRQ_SCAN        ;Is it Zero
 L_06BF:
-$06BF: CE 3D 0B  DEC REPEATCOUNT1    ; Count Down
-$06C2: D0 0E     BNE IRQ_SCAN        ; Is it zero? No, scan for another
-$06C4: A9 04     LDA #$04            ; Yes, Reset it to 4
-$06C6: 8D 3D 0B  STA REPEATCOUNT1    ; Store it
+$06BF: CE 3D 0B  DEC REPEATCOUNT1    ;Count Down
+$06C2: D0 0E     BNE IRQ_SCAN        ;Is it zero? No, scan for another
+$06C4: A9 04     LDA #$04            ;  Yes, Reset it to 4
+$06C6: 8D 3D 0B  STA REPEATCOUNT1    ;Store it
 $06C9: A9 00     LDA #$00            ;Clear the SCANCODE and allow the key to be processed
 $06CB: 8D 37 0B  STA SCANCODE        ;Store it
 $06CE: A9 02     LDA #$02
@@ -534,33 +538,33 @@ PROCESS_BYTE:
 ;code paths will end up at PROCESS_DONE.
 ;
 $06E8: 48        PHA
-$06E9: A5 06     LDA CURSOR_OFF    ;Get the current cursor state
-$06EB: 85 0C     STA CURSOR_TMP    ;  Remember it
+$06E9: A5 06     LDA CURSOR_OFF      ;Get the current cursor state
+$06EB: 85 0C     STA CURSOR_TMP      ;  Remember it
 $06ED: A9 FF     LDA #$FF
-$06EF: 85 06     STA CURSOR_OFF    ;Hide the cursor
-$06F1: 20 88 09  JSR CALC_SCRLINE  ;Calculate screen RAM pointer
-$06F4: A5 07     LDA SCRCODE_TMP   ;Get the screen code previously saved
-$06F6: 91 02     STA (SCRLINE_LO),Y ;  Put it on the screen
+$06EF: 85 06     STA CURSOR_OFF      ;Hide the cursor
+$06F1: 20 88 09  JSR CALC_SCRLINE    ;Calculate screen RAM pointer
+$06F4: A5 07     LDA SCRCODE_TMP     ;Get the screen code previously saved
+$06F6: 91 02     STA (SCRLINE_LO),Y  ;Put it on the screen
 $06F8: 68        PLA
-$06F9: 25 13     AND CHAR_MASK     ;Mask off bits depending on char mode
-$06FB: A6 0B     LDX MOVETO_CNT    ;More bytes to consume for a move-to seq?
-$06FD: D0 16     BNE L_0715        ;  Yes: branch to jump to move-to handler
-$06FF: C9 20     CMP #$20          ;Is this byte a control code?
-$0701: B0 15     BCS L_0718        ;  No: branch to put char on screen
+$06F9: 25 13     AND CHAR_MASK       ;Mask off bits depending on char mode
+$06FB: A6 0B     LDX MOVETO_CNT      ;More bytes to consume for a move-to seq?
+$06FD: D0 16     BNE L_0715          ;  Yes: branch to jump to move-to handler
+$06FF: C9 20     CMP #$20            ;Is this byte a control code?
+$0701: B0 15     BCS L_0718          ;  No: branch to put char on screen
 $0703: 0A        ASL A
 $0704: AA        TAX
-$0705: BD 1E 07  LDA CTRL_CODES,X  ;Load vector from control code table
+$0705: BD 1E 07  LDA CTRL_CODES,X    ;Load vector from control code table
 $0708: 85 0D     STA TARGET_LO
 $070A: BD 1F 07  LDA CTRL_CODES+1,X
 $070D: 85 0E     STA TARGET_HI
-$070F: 20 1B 07  JSR JUMP_CMD      ;Jump to vector to handle control code
+$070F: 20 1B 07  JSR JUMP_CMD        ;Jump to vector to handle control code
 $0712: 4C 8D 07  JMP PROCESS_DONE
 L_0715:
-$0715: 4C B8 09  JMP MOVE_TO       ;Jump to handle move-to sequence
+$0715: 4C B8 09  JMP MOVE_TO         ;Jump to handle move-to sequence
 L_0718:
-$0718: 4C 99 07  JMP PUT_CHAR      ;Jump to put character on the screen
+$0718: 4C 99 07  JMP PUT_CHAR        ;Jump to put character on the screen
 JUMP_CMD:
-$071B: 6C 0D 00  JMP (TARGET_LO)   ;Jump to handle the control code
+$071B: 6C 0D 00  JMP (TARGET_LO)     ;Jump to handle the control code
 
 CTRL_CODES:
 ;Terminal control code dispatch table.  These control codes are based
@@ -604,31 +608,31 @@ $075C:           .WORD CTRL_1F  ;1F             Do nothing
 CTRL_07:
 ;Ring bell
 ;
-$075E: A9 07     LDA #$07     ;CHR$(7) = Bell
-$0760: 4C D2 FF  JMP CHROUT   ;KERNAL
+$075E: A9 07     LDA #$07            ;CHR$(7) = Bell
+$0760: 4C D2 FF  JMP CHROUT
 
 CTRL_18:
 ;Set line spacing to tall (the default spacing for lowercase graphic mode).
 ;The current graphic mode will not be changed.
 ;
-$0763: AD 4C E8  LDA VIA_PCR  ;Remember current upper/lower graphic mode
+$0763: AD 4C E8  LDA VIA_PCR         ;Remember current upper/lower graphic mode
 $0766: 48        PHA
-$0767: A9 0E     LDA #$0E     ;CHR$(14) = Switch to lowercase mode
-$0769: 20 D2 FF  JSR CHROUT   ;  and set more vertical space between chars
+$0767: A9 0E     LDA #$0E            ;CHR$(14) = Switch to lowercase mode
+$0769: 20 D2 FF  JSR CHROUT          ;  and set more vertical space between chars
 $076C: 68        PLA
-$076D: 8D 4C E8  STA VIA_PCR  ;Restore graphic mode
+$076D: 8D 4C E8  STA VIA_PCR         ;Restore graphic mode
 $0770: 60        RTS
 
 CTRL_17:
 ;Set line spacing to short (the default spacing for uppercase graphic mode).
 ;The current graphic mode will not be changed.
 ;
-$0771: AD 4C E8  LDA VIA_PCR  ;Remember current upper/lower graphic mode
+$0771: AD 4C E8  LDA VIA_PCR         ;Remember current upper/lower graphic mode
 $0774: 48        PHA
-$0775: A9 8E     LDA #$8E     ;CHR$(142) = Switch to uppercase mode
-$0777: 20 D2 FF  JSR CHROUT   ;  and set less vertical space between chars
+$0775: A9 8E     LDA #$8E            ;CHR$(142) = Switch to uppercase mode
+$0777: 20 D2 FF  JSR CHROUT          ;  and set less vertical space between chars
 $077A: 68        PLA
-$077B: 8D 4C E8  STA VIA_PCR  ;Restore graphic mode
+$077B: 8D 4C E8  STA VIA_PCR         ;Restore graphic mode
 $077E: 60        RTS
 
 CTRL_01:
@@ -661,11 +665,11 @@ $078A: 20 F4 07  JSR PUT_SCRCODE
 PROCESS_DONE:
 ;This routine always returns to DO_TERMINAL except during init.
 ;
-$078D: 20 88 09  JSR CALC_SCRLINE   ;Calculate screen RAM pointer
-$0790: B1 02     LDA (SCRLINE_LO),Y ;Get the current character on the screen
-$0792: 85 07     STA SCRCODE_TMP    ;  Remember it
-$0794: A5 0C     LDA CURSOR_TMP     ;Get the previous state of the cursor
-$0796: 85 06     STA CURSOR_OFF     ;  Restore it
+$078D: 20 88 09  JSR CALC_SCRLINE    ;Calculate screen RAM pointer
+$0790: B1 02     LDA (SCRLINE_LO),Y  ;Get the current character on the screen
+$0792: 85 07     STA SCRCODE_TMP     ;  Remember it
+$0794: A5 0C     LDA CURSOR_TMP      ;Get the previous state of the cursor
+$0796: 85 06     STA CURSOR_OFF      ;  Restore it
 $0798: 60        RTS
 
 PUT_CHAR:
@@ -684,29 +688,29 @@ PUT_CHAR:
 ;  $80-BF -> $40-7F
 ;  $C0-FF -> $40-7F
 ;
-$0799: C9 40     CMP #$40              ;Is it < 64?
+$0799: C9 40     CMP #$40            ;Is it < 64?
 $079B: 90 ED     BCC PUTSCR_THEN_DONE  ;  Yes: done, put it on the screen
-$079D: C9 60     CMP #$60              ;Is it >= 96?
-$079F: B0 05     BCS L_07A6            ;  Yes: branch to L_07A6
-$07A1: 29 3F     AND #$3F              ;Turn off bits 6 and 7
-$07A3: 4C AC 07  JMP L_07AC            ;Jump to L_07AC
+$079D: C9 60     CMP #$60            ;Is it >= 96?
+$079F: B0 05     BCS L_07A6          ;  Yes: branch to L_07A6
+$07A1: 29 3F     AND #$3F            ;Turn off bits 6 and 7
+$07A3: 4C AC 07  JMP L_07AC          ;Jump to L_07AC
 L_07A6:
-$07A6: C9 80     CMP #$80              ;Is bit 7 set?
-$07A8: B0 20     BCS L_07CA            ;  Yes: branch to L_07CA
+$07A6: C9 80     CMP #$80            ;Is bit 7 set?
+$07A8: B0 20     BCS L_07CA          ;  Yes: branch to L_07CA
 $07AA: 29 5F     AND #$5F
 L_07AC:
 $07AC: AA        TAX
-$07AD: 29 3F     AND #$3F              ;Turn off bit 7 and bit 6
+$07AD: 29 3F     AND #$3F            ;Turn off bit 7 and bit 6
 $07AF: F0 15     BEQ L_07C6
 $07B1: C9 1B     CMP #$1B
 $07B3: B0 11     BCS L_07C6
 $07B5: 8A        TXA
-$07B6: 49 40     EOR #$40              ;Flip bit 6
+$07B6: 49 40     EOR #$40            ;Flip bit 6
 $07B8: AA        TAX
-$07B9: AD 4C E8  LDA VIA_PCR           ;Bit 1 off = uppercase, on = lowercase
+$07B9: AD 4C E8  LDA VIA_PCR         ;Bit 1 off = uppercase, on = lowercase
 $07BC: 4A        LSR A
 $07BD: 4A        LSR A
-$07BE: B0 06     BCS L_07C6            ;Branch if lowercase mode
+$07BE: B0 06     BCS L_07C6          ;Branch if lowercase mode
 $07C0: 8A        TXA
 $07C1: 29 1F     AND #$1F
 $07C3: 4C 8A 07  JMP PUTSCR_THEN_DONE
@@ -714,36 +718,36 @@ L_07C6:
 $07C6: 8A        TXA
 $07C7: 4C 8A 07  JMP PUTSCR_THEN_DONE
 L_07CA:
-$07CA: 29 7F     AND #$7F              ;Turn off bit 7
-$07CC: 09 40     ORA #$40              ;Turn on bit 6
+$07CA: 29 7F     AND #$7F            ;Turn off bit 7
+$07CC: 09 40     ORA #$40            ;Turn on bit 6
 $07CE: 4C 8A 07  JMP PUTSCR_THEN_DONE  ;Put it on the screen
 
 CTRL_15:
 ;Go to uppercase mode
 ;
 $07D1: A9 0C     LDA #$0C
-$07D3: 8D 4C E8  STA VIA_PCR  ;Graphic mode = uppercase
+$07D3: 8D 4C E8  STA VIA_PCR         ;Graphic mode = uppercase
 $07D6: 60        RTS
 
 CTRL_16:
 ;Go to lowercase mode
 ;
 $07D7: A9 0E     LDA #$0E
-$07D9: 8D 4C E8  STA VIA_PCR  ;Graphic mode = lowercase
+$07D9: 8D 4C E8  STA VIA_PCR         ;Graphic mode = lowercase
 $07DC: 60        RTS
 
 CTRL_08:
 ;Cursor left
 ;
 $07DD: A6 04     LDX CURSOR_X
-$07DF: D0 08     BNE L_07E9     ; X > 0? Y will not change.
-$07E1: A6 09     LDX X_WIDTH    ; X = max X + 1
+$07DF: D0 08     BNE L_07E9          ;X > 0? Y will not change.
+$07E1: A6 09     LDX X_WIDTH         ;X = max X + 1
 $07E3: A5 05     LDA CURSOR_Y
-$07E5: F0 05     BEQ L_07EC     ; Y=0? Can't move up.
-$07E7: C6 05     DEC CURSOR_Y   ; Y=Y-1
+$07E5: F0 05     BEQ L_07EC          ;Y=0? Can't move up.
+$07E7: C6 05     DEC CURSOR_Y        ;Y=Y-1
 L_07E9:
 $07E9: CA        DEX
-$07EA: 86 04     STX CURSOR_X   ; X=X-1
+$07EA: 86 04     STX CURSOR_X        ;X=X-1
 L_07EC:
 $07EC: 60        RTS
 
@@ -751,40 +755,40 @@ CTRL_0B:
 ;Cursor up
 ;
 $07ED: A4 05     LDY CURSOR_Y
-$07EF: F0 FB     BEQ L_07EC     ; Y=0? Can't move up.
-$07F1: C6 05     DEC CURSOR_Y   ; Y=Y-1
+$07EF: F0 FB     BEQ L_07EC          ;Y=0? Can't move up.
+$07F1: C6 05     DEC CURSOR_Y        ;Y=Y-1
 $07F3: 60        RTS
 
 PUT_SCRCODE:
 ;Put the screen code in A on the screen at the current cursor position
 ;
-$07F4: A6 0A     LDX REVERSE        ;Is reverse video mode on?
-$07F6: F0 02     BEQ L_07FA         ;  No:  leave character alone
-$07F8: 49 80     EOR #$80           ;  Yes: Flip bit 7 to reverse the character
+$07F4: A6 0A     LDX REVERSE         ;Is reverse video mode on?
+$07F6: F0 02     BEQ L_07FA          ;  No:  leave character alone
+$07F8: 49 80     EOR #$80            ;  Yes: Flip bit 7 to reverse the character
 L_07FA:
-$07FA: 20 88 09  JSR CALC_SCRLINE   ;Calculate screen RAM pointer
-$07FD: 91 02     STA (SCRLINE_LO),Y ;Write the character to the screen
-                                    ;Fall through into CTRL_0C to advance cursor
+$07FA: 20 88 09  JSR CALC_SCRLINE    ;Calculate screen RAM pointer
+$07FD: 91 02     STA (SCRLINE_LO),Y  ;Write the character to the screen
+                                     ;Fall through into CTRL_0C to advance cursor
 
 CTRL_0C:
 ;Cursor right
 ;
-$07FF: E6 04     INC CURSOR_X   ;X=X+1
+$07FF: E6 04     INC CURSOR_X        ;X=X+1
 $0801: A6 04     LDX CURSOR_X
-$0803: E4 09     CPX X_WIDTH    ;X > max X?
-$0805: D0 10     BNE L_0817     ;  No:  Done, no need to scroll up.
-$0807: A9 00     LDA #$00       ;  Yes: Set X=0 and then
-$0809: 85 04     STA CURSOR_X   ;       fall through into CTRL_0A to scroll.
+$0803: E4 09     CPX X_WIDTH         ;X > max X?
+$0805: D0 10     BNE L_0817          ;  No:  Done, no need to scroll up.
+$0807: A9 00     LDA #$00            ;  Yes: Set X=0 and then
+$0809: 85 04     STA CURSOR_X        ;       fall through into CTRL_0A to scroll.
 
 CTRL_0A:
 ;Cursor down (Line feed)
 ;
 $080B: A4 05     LDY CURSOR_Y
-$080D: C0 18     CPY #$18       ;Are we on the bottom line?
-$080F: D0 03     BNE L_0814     ;  No:  Increment Y, do not scroll up
-$0811: 4C 8E 08  JMP SCROLL_UP  ;  Yes: Y remains unchanged, jump out to scroll
+$080D: C0 18     CPY #$18            ;Are we on the bottom line?
+$080F: D0 03     BNE L_0814          ;  No:  Increment Y, do not scroll up
+$0811: 4C 8E 08  JMP SCROLL_UP       ;  Yes: Y remains unchanged, jump out to scroll
 L_0814:
-$0814: E6 05     INC CURSOR_Y   ;Increment Y position
+$0814: E6 05     INC CURSOR_Y        ;Increment Y position
 $0816: 60        RTS
 L_0817:
 $0817: 60        RTS
@@ -792,7 +796,7 @@ $0817: 60        RTS
 CTRL_1E:
 ;Home cursor
 ;
-$0818: A9 00     LDA #$00       ;Home cursor
+$0818: A9 00     LDA #$00
 $081A: 85 05     STA CURSOR_Y
 $081C: 85 04     STA CURSOR_X
 $081E: 60        RTS
@@ -800,11 +804,11 @@ $081E: 60        RTS
 CTRL_1A:
 ;Clear screen
 ;
-$081F: A2 00     LDX #$00      ; Home cursor
+$081F: A2 00     LDX #$00            ;Home cursor
 $0821: 86 04     STX CURSOR_X
 $0823: 86 05     STX CURSOR_Y
-$0825: 86 0A     STX REVERSE   ;Reverse video off
-$0827: A9 20     LDA #$20      ;Space character
+$0825: 86 0A     STX REVERSE         ;Reverse video off
+$0827: A9 20     LDA #$20            ;Space character
 L_0829:
 $0829: 9D 00 80  STA SCREEN,X
 $082C: 9D 00 81  STA SCREEN+$100,X
@@ -821,7 +825,7 @@ $0844: 60        RTS
 CTRL_0D:
 ;Carriage return
 ;
-$0845: A9 00     LDA #$00       ;Move to X=0 on this line
+$0845: A9 00     LDA #$00            ;Move to X=0 on this line
 $0847: 85 04     STA CURSOR_X
 $0849: 60        RTS
 
@@ -856,39 +860,39 @@ $085D: 60        RTS
 CTRL_13:
 ;Clear to end of line
 ;
-$085E: 20 88 09  JSR CALC_SCRLINE   ;Leaves CURSOR_X in Y register
-$0861: A9 20     LDA #$20           ;Space character
+$085E: 20 88 09  JSR CALC_SCRLINE    ;Leaves CURSOR_X in Y register
+$0861: A9 20     LDA #$20            ;Space character
 L_0863:
-$0863: 91 02     STA (SCRLINE_LO),Y ;Write space to screen RAM
-$0865: C8        INY                ;X=X+1
+$0863: 91 02     STA (SCRLINE_LO),Y  ;Write space to screen RAM
+$0865: C8        INY                 ;X=X+1
 $0866: C4 09     CPY X_WIDTH
-$0868: D0 F9     BNE L_0863         ;Loop until end of line
+$0868: D0 F9     BNE L_0863          ;Loop until end of line
 $086A: 60        RTS
 
 CTRL_14:
 ;Clear from Current line to end of screen
 ;
-$086B: 20 5E 08  JSR CTRL_13     ;Clear to the end of the current line
-$086E: A6 05     LDX CURSOR_Y    ;Get the Current line#
+$086B: 20 5E 08  JSR CTRL_13         ;Clear to the end of the current line
+$086E: A6 05     LDX CURSOR_Y        ;Get the Current line#
 L_0870:
-$0870: E8        INX             ;Next Row
-$0871: E0 19     CPX #$19        ;Is it 25 (last line of screen?
-$0873: F0 18     BEQ L_088D      ;  Yes, we're done
-$0875: 18        CLC             ;  No, continue
-$0876: A5 02     LDA SCRLINE_LO  ;Current screen position
-$0878: 65 09     ADC X_WIDTH     ;Add the line width
-$087A: 85 02     STA SCRLINE_LO  ;Save it
-$087C: 90 02     BCC L_0880      ;Need to update HI?
-$087E: E6 03     INC SCRLINE_HI  ;  Yes, increment HI pointer
+$0870: E8        INX                 ;Next Row
+$0871: E0 19     CPX #$19            ;Is it 25 (last line of screen?
+$0873: F0 18     BEQ L_088D          ;  Yes, we're done
+$0875: 18        CLC                 ;  No, continue
+$0876: A5 02     LDA SCRLINE_LO      ;Current screen position
+$0878: 65 09     ADC X_WIDTH         ;Add the line width
+$087A: 85 02     STA SCRLINE_LO      ;Save it
+$087C: 90 02     BCC L_0880          ;Need to update HI?
+$087E: E6 03     INC SCRLINE_HI      ;  Yes, increment HI pointer
 L_0880:
-$0880: A9 20     LDA #$20        ;SPACE
-$0882: A0 00     LDY #$00        ;Position 0
+$0880: A9 20     LDA #$20            ;SPACE
+$0882: A0 00     LDY #$00            ;Position 0
 L_0884:
-$0884: 91 02     STA (SCRLINE_LO),Y ;Write a space
-$0886: C8        INY                ;Next character
-$0887: C4 09     CPY X_WIDTH        ;Is it end of line?
-$0889: D0 F9     BNE L_0884         ;No, loop back for more on this line
-$088B: F0 E3     BEQ L_0870         ;Yes, loop back for next line
+$0884: 91 02     STA (SCRLINE_LO),Y  ;Write a space
+$0886: C8        INY                 ;Next character
+$0887: C4 09     CPY X_WIDTH         ;Is it end of line?
+$0889: D0 F9     BNE L_0884          ;No, loop back for more on this line
+$088B: F0 E3     BEQ L_0870          ;Yes, loop back for next line
 L_088D:
 $088D: 60        RTS
 
@@ -924,7 +928,7 @@ $08B8: 85 0E     STA TARGET_HI
 $08BA: CA        DEX
 $08BB: D0 E1     BNE SCROLL
 $08BD: A0 00     LDY #$00
-$08BF: A9 20     LDA #$20          ;SPACE
+$08BF: A9 20     LDA #$20            ;SPACE
 L_08C1:
 $08C1: 91 02     STA (SCRLINE_LO),Y
 $08C3: C8        INY
@@ -935,24 +939,24 @@ $08C8: 60        RTS
 CTRL_04:
 ;Set TAB stop at current position
 ;
-$08C9: A9 01     LDA #$01         ;1=TAB STOP yes
-$08CB:           .BYT 2C          ;Falls through to become BIT $00A9
+$08C9: A9 01     LDA #$01            ;1=TAB STOP yes
+$08CB:           .BYT 2C             ;Falls through to become BIT $00A9
 
 CTRL_05:
 ;Clear TAB stop at current position
 ;
-$08CC: A9 00     LDA #$00         ;0=No TAB STOP
-$08CE: A6 04     LDX CURSOR_X     ;Get cursor position
-$08D0: 9D 3F 0B  STA TAB_STOPS,X  ;Clear the TAB at that position
+$08CC: A9 00     LDA #$00            ;0=No TAB STOP
+$08CE: A6 04     LDX CURSOR_X        ;Get cursor position
+$08D0: 9D 3F 0B  STA TAB_STOPS,X     ;Clear the TAB at that position
 $08D3: 60        RTS
 
 CTRL_06:
 ;Clear ALL TAB STOPS
 ;
-$08D4: A2 4F     LDX #$4F  ; 80 characters-1
-$08D6: A9 00     LDA #$00  ; zero
+$08D4: A2 4F     LDX #$4F            ;80 characters-1
+$08D6: A9 00     LDA #$00            ;zero
 L_08D8:
-$08D8: 9D 3F 0B  STA TAB_STOPS,X  ;store in the buffer
+$08D8: 9D 3F 0B  STA TAB_STOPS,X     ;store in the buffer
 $08DB: CA        DEX
 $08DC: 10 FA     BPL L_08D8
 $08DE: 60        RTS
@@ -962,12 +966,12 @@ CTRL_09:
 ;
 $08DF: A6 04     LDX CURSOR_X
 L_08E1:
-$08E1: E8        INX               ; next position
-$08E2: E0 50     CPX #$50          ; 80 characters?
-$08E4: B0 07     BCS L_08ED        ; yes, exit
-$08E6: BD 3F 0B  LDA TAB_STOPS,X   ; read from the TAB STOPS table
-$08E9: F0 F6     BEQ L_08E1        ; is it zero? yes, loop again
-$08EB: 86 04     STX CURSOR_X      ; no, we hit a STOP, so store the position
+$08E1: E8        INX                 ;next position
+$08E2: E0 50     CPX #$50            ;80 characters?
+$08E4: B0 07     BCS L_08ED          ;  yes, exit
+$08E6: BD 3F 0B  LDA TAB_STOPS,X     ;read from the TAB STOPS table
+$08E9: F0 F6     BEQ L_08E1          ;is it zero? yes, loop again
+$08EB: 86 04     STX CURSOR_X        ;  no, we hit a STOP, so store the position
 L_08ED:
 $08ED: 60        RTS
 
@@ -987,8 +991,8 @@ $08FC: 91 02     STA (SCRLINE_LO),Y  ;write it back
 $08FE: 88        DEY                 ;we are counting down to zero
 $08FF: D0 F3     BNE L_08F4          ;loop for another character
 L_0901:
-$0901: A9 20     LDA #$20            ; SPACE
-$0903: 91 02     STA (SCRLINE_LO),Y  ; Write it to current character position
+$0901: A9 20     LDA #$20            ;SPACE
+$0903: 91 02     STA (SCRLINE_LO),Y  ;Write it to current character position
 $0905: 60        RTS
 
 CTRL_1D:
@@ -1041,13 +1045,13 @@ CTRL_11:
 ;The line at the current position will be erased (filled with spaces).
 ;The current cursor position will not be changed.
 ;
-$093B: A9 C0     LDA #<SCREEN+$03C0 ;A->TARGET_LO, Y->TARGET_HI
-$093D: A0 83     LDY #>SCREEN+$03C0 ;Start address of last 40 col line
+$093B: A9 C0     LDA #<SCREEN+$03C0  ;A->TARGET_LO, Y->TARGET_HI
+$093D: A0 83     LDY #>SCREEN+$03C0  ;Start address of last 40 col line
 $093F: A6 09     LDX X_WIDTH
-$0941: E0 50     CPX #$50           ;Is this an 80 column screen?
-$0943: D0 04     BNE L_0949         ;  No: keep address for 40 col
+$0941: E0 50     CPX #$50            ;Is this an 80 column screen?
+$0943: D0 04     BNE L_0949          ;  No: keep address for 40 col
 $0945: A9 80     LDA #<SCREEN+$0780
-$0947: A0 87     LDY #>SCREEN+$0780 ;Start address of last 80 col line
+$0947: A0 87     LDY #>SCREEN+$0780  ;Start address of last 80 col line
 L_0949:
 $0949: 85 0D     STA TARGET_LO
 $094B: 84 0E     STY TARGET_HI
@@ -1080,7 +1084,7 @@ $0977: D0 F7     BNE L_0970
 $0979: 4C 51 09  JMP L_0951
 L_097C:
 $097C: A0 00     LDY #$00
-$097E: A9 20     LDA #$20          ;SPACE
+$097E: A9 20     LDA #$20            ;SPACE
 L_0980:
 $0980: 91 02     STA (SCRLINE_LO),Y
 $0982: C8        INY
@@ -1143,8 +1147,8 @@ CTRL_1B:
 ;get the equivalent CURSOR_X and CURSOR_Y.  The offset is because this
 ;emulates the behavior of the Lear Siegler ADM-3A terminal.
 ;
-$09B3: A9 02     LDA #$02          ;Two more bytes to consume (X-pos, Y-pos)
-$09B5: 85 0B     STA MOVETO_CNT    ;Store count for next pass of PROCESS_BYTE
+$09B3: A9 02     LDA #$02            ;Two more bytes to consume (X-pos, Y-pos)
+$09B5: 85 0B     STA MOVETO_CNT      ;Store count for next pass of PROCESS_BYTE
 $09B7: 60        RTS
 
 MOVE_TO:
@@ -1152,22 +1156,22 @@ MOVE_TO:
 ;and the Y-position byte on the second call.  After the Y-position byte
 ;has been consumed, MOVETO_CNT = 0, exiting the move-to sequence.
 ;
-$09B8: C6 0B     DEC MOVETO_CNT    ;Decrement bytes remaining to consume
-$09BA: F0 0C     BEQ L_09C8        ;Already got X pos?  Handle this byte as Y.
+$09B8: C6 0B     DEC MOVETO_CNT      ;Decrement bytes remaining to consume
+$09BA: F0 0C     BEQ L_09C8          ;Already got X pos?  Handle this byte as Y.
 $09BC: 38        SEC
-$09BD: E9 20     SBC #$20          ;X-pos = X-pos - #$20
-$09BF: C5 09     CMP X_WIDTH       ;Requested X position out of range?
-$09C1: B0 02     BCS L_09C5        ;  Yes: Do nothing.
-$09C3: 85 04     STA CURSOR_X      ;  No:  Move cursor to requested X.
+$09BD: E9 20     SBC #$20            ;X-pos = X-pos - #$20
+$09BF: C5 09     CMP X_WIDTH         ;Requested X position out of range?
+$09C1: B0 02     BCS L_09C5          ;  Yes: Do nothing.
+$09C3: 85 04     STA CURSOR_X        ;  No:  Move cursor to requested X.
 L_09C5:
-$09C5: 4C 8D 07  JMP PROCESS_DONE  ;Done.
+$09C5: 4C 8D 07  JMP PROCESS_DONE    ;Done.
 L_09C8:
 $09C8: 38        SEC
-$09C9: E9 20     SBC #$20          ;Y-pos = Y-pos - #$20
-$09CB: C9 19     CMP #$19          ;Requested Y position out of range?
-$09CD: B0 F6     BCS L_09C5        ;  Yes: Do nothing.
-$09CF: 85 05     STA CURSOR_Y      ;  No:  Move cursor to requested Y.
-$09D1: 4C 8D 07  JMP PROCESS_DONE  ;Done.
+$09C9: E9 20     SBC #$20            ;Y-pos = Y-pos - #$20
+$09CB: C9 19     CMP #$19            ;Requested Y position out of range?
+$09CD: B0 F6     BCS L_09C5          ;  Yes: Do nothing.
+$09CF: 85 05     STA CURSOR_Y        ;  No:  Move cursor to requested Y.
+$09D1: 4C 8D 07  JMP PROCESS_DONE    ;Done.
 
 SCAN_KEYB:
 ;Scan the keyboard.
@@ -1184,163 +1188,163 @@ SCAN_KEYB:
 ;       SHIFTFLAG - Shift Flag
 ;       KEYFLAG   - Regular Key Flag
 ;
-$09D4: AD 37 0B  LDA SCANCODE           ;Old SCANCODE
-$09D7: 8D 38 0B  STA LASTCODE           ;Save It
-$09DA: A2 00     LDX #$00               ;X=0 Index into Keyboard Scan Table
-$09DC: 8E 3A 0B  STX SHIFTFLAG          ;Reset Shift Flag
-$09DF: 8E 3B 0B  STX KEYFLAG            ;Reset Key Flag
+$09D4: AD 37 0B  LDA SCANCODE        ;Old SCANCODE
+$09D7: 8D 38 0B  STA LASTCODE        ;Save It
+$09DA: A2 00     LDX #$00            ;X=0 Index into Keyboard Scan Table
+$09DC: 8E 3A 0B  STX SHIFTFLAG       ;Reset Shift Flag
+$09DF: 8E 3B 0B  STX KEYFLAG         ;Reset Key Flag
 
-$09E2: 8E 10 E8  STX PIA1_ROW           ;Select a keyboard ROW
-$09E5: A9 FF     LDA #$FF               ;$FF = no key
-$09E7: 8D 37 0B  STA SCANCODE           ;Set it
-$09EA: A9 0A     LDA #$0A               ;Keyboard has 10 ROWS
-$09EC: 8D 39 0B  STA ROWCOUNT           ;ROW=10 - Keyboard ROW counter
+$09E2: 8E 10 E8  STX PIA1_ROW        ;Select a keyboard ROW
+$09E5: A9 FF     LDA #$FF            ;$FF = no key
+$09E7: 8D 37 0B  STA SCANCODE        ;Set it
+$09EA: A9 0A     LDA #$0A            ;Keyboard has 10 ROWS
+$09EC: 8D 39 0B  STA ROWCOUNT        ;ROW=10 - Keyboard ROW counter
 
 ;---- top of loop for keyboard ROWS
 ;
 SCAN_ROW:
-$09EF: A0 08     LDY #$08               ;Y=8 -- 8 Columns in Table
+$09EF: A0 08     LDY #$08            ;Y=8 -- 8 Columns in Table
 
 DEBOUNCE:
-$09F1: AD 12 E8  LDA PIA1_COL           ;PIA#1 Keyboard Columns Read
-$09F4: CD 12 E8  CMP PIA1_COL           ;PIA#1 Keyboard Columns Read
-$09F7: D0 F8     BNE DEBOUNCE           ;wait for stable value on keyboard switches (debounce)
-                                        ;Result of Row scan is now in A (call is SCANCODE)
+$09F1: AD 12 E8  LDA PIA1_COL        ;PIA#1 Keyboard Columns Read
+$09F4: CD 12 E8  CMP PIA1_COL        ;PIA#1 Keyboard Columns Read
+$09F7: D0 F8     BNE DEBOUNCE        ;wait for stable value on keyboard switches (debounce)
+                                     ;Result of Row scan is now in A (call is SCANCODE)
 
 ;---- top of loop to go through each bit returned from scan. Each "0" bit represents a key pressed down
 
 SCAN_COL:
-$09F9: 4A        LSR A                  ;Shift byte RIGHT leaving CARRY flag set if it is a "1"
-$09FA: 48        PHA                    ;Push it to the stack
-$09FB: B0 22     BCS NEXTCOL            ;Is the BIT a "1"? Yes. Means key was NOT pressed. Bypass testing
-$09FD: A5 09     LDA X_WIDTH            ; No, Need to check it.Check the terminal width
-$09FF: C9 50     CMP #$50               ;Is this an 80 column screen?
+$09F9: 4A        LSR A               ;Shift byte RIGHT leaving CARRY flag set if it is a "1"
+$09FA: 48        PHA                 ;Push it to the stack
+$09FB: B0 22     BCS NEXTCOL         ;Is the BIT a "1"? Yes. Means key was NOT pressed. Bypass testing
+$09FD: A5 09     LDA X_WIDTH         ; No, Need to check it.Check the terminal width
+$09FF: C9 50     CMP #$50            ;Is this an 80 column screen?
 $0A01: D0 06     BNE SKIP40
-$0A03: BD E7 0A  LDA BUSINESS_KEYS,X    ;  Yes, read from Business keyboard table
+$0A03: BD E7 0A  LDA BUSINESS_KEYS,X  ;  Yes, read from Business keyboard table
 $0A06: 4C 0C 0A  JMP GOT_ROW
 SKIP40:
-$0A09: BD 97 0A  LDA GRAPHICS_KEYS,X    ;  No,  read from Graphics keyboard table
+$0A09: BD 97 0A  LDA GRAPHICS_KEYS,X  ;  No,  read from Graphics keyboard table
 
 GOT_ROW:
-$0A0C: C9 01     CMP #$01               ;IS it the SHIFT key?
-$0A0E: F0 07     BEQ KEY_SHIFT          ; Yes, skip
-$0A10: 90 0A     BCC KEY_REG            ; No, It's a regular key
-$0A12: 8D 37 0B  STA SCANCODE           ;Store the SCANCODE as-is
+$0A0C: C9 01     CMP #$01            ;IS it the SHIFT key?
+$0A0E: F0 07     BEQ KEY_SHIFT       ; Yes, skip
+$0A10: 90 0A     BCC KEY_REG         ; No, It's a regular key
+$0A12: 8D 37 0B  STA SCANCODE        ;Store the SCANCODE as-is
 $0A15: B0 08     BCS NEXTCOL
 
 KEY_SHIFT:
-$0A17: EE 3A 0B  INC SHIFTFLAG          ;Increment SHIFT Flag
-$0A1A: D0 03     BNE NEXTCOL            ; Is it >0? Yes, loop back for another key
+$0A17: EE 3A 0B  INC SHIFTFLAG       ;Increment SHIFT Flag
+$0A1A: D0 03     BNE NEXTCOL         ; Is it >0? Yes, loop back for another key
 
 KEY_REG:
-$0A1C: EE 3B 0B  INC KEYFLAG            ;Increment KEY flag
+$0A1C: EE 3B 0B  INC KEYFLAG         ;Increment KEY flag
 
 NEXTCOL:
-$0A1F: 68        PLA                    ;pull the original scan value from stack
-$0A20: E8        INX                    ;X=X+1 - next entry in table
-$0A21: 88        DEY                    ;Y=Y-1 - next BIT in scan value
-$0A22: D0 D5     BNE SCAN_COL           ;Is it ZERO? No, go back for next COL
+$0A1F: 68        PLA                 ;pull the original scan value from stack
+$0A20: E8        INX                 ;X=X+1 - next entry in table
+$0A21: 88        DEY                 ;Y=Y-1 - next BIT in scan value
+$0A22: D0 D5     BNE SCAN_COL        ;Is it ZERO? No, go back for next COL
 
 NEXTROW:
-$0A24: EE 10 E8  INC PIA1_ROW           ;Increment Keyboard scanning ROW register - PIA#1 Keyboard Row Select
-$0A27: CE 39 0B  DEC ROWCOUNT           ;ROW=ROW-1
-$0A2A: D0 C3     BNE SCAN_ROW           ;Is ROW > 0 ? Yes, loop back up for next ROW
+$0A24: EE 10 E8  INC PIA1_ROW        ;Increment Keyboard scanning ROW register - PIA#1 Keyboard Row Select
+$0A27: CE 39 0B  DEC ROWCOUNT        ;ROW=ROW-1
+$0A2A: D0 C3     BNE SCAN_ROW        ;Is ROW > 0 ? Yes, loop back up for next ROW
 
 ;-------------------------------------- end of scanning loops
 ; Check if there is anything to do. SCANCODE will be $FF if no key.
 ; If the SCANCODE = LASTCODE then key is being held down. Don't do anything until it is released.
 ; The IRQ handler implements key repeat by clearing the SCANCODE after a short interval.
 
-$0A2C: AD 37 0B  LDA SCANCODE           ;Get the current SCANCODE
-$0A2F: C9 FF     CMP #$FF               ;Is it NO KEY?
-$0A31: F0 22     BEQ KEYDONE            ; Yes, exit
+$0A2C: AD 37 0B  LDA SCANCODE        ;Get the current SCANCODE
+$0A2F: C9 FF     CMP #$FF            ;Is it NO KEY?
+$0A31: F0 22     BEQ KEYDONE         ; Yes, exit
 
-$0A33: CD 38 0B  CMP LASTCODE           ;Is it the same as last? (Key is registered on key UP?)
-$0A36: F0 1D     BEQ KEYDONE            ; Yes, exit
+$0A33: CD 38 0B  CMP LASTCODE        ;Is it the same as last? (Key is registered on key UP?)
+$0A36: F0 1D     BEQ KEYDONE         ; Yes, exit
 
 ;---- Check for CTRL key
 KEY_CHECK1:
-$0A38: C9 00     CMP #$00               ;Compare to CTRL key
-$0A3A: 10 0A     BPL KEY_LOW            ;No, skip
+$0A38: C9 00     CMP #$00            ;Compare to CTRL key
+$0A3A: 10 0A     BPL KEY_LOW         ;No, skip
 
 ;---- CTRL KEY not pressed
 KEY_HI:
-$0A3C: 29 7F     AND #$7F               ;Remove the TOP bit (shift flag for character?)
-$0A3E: AC 3A 0B  LDY SHIFTFLAG          ;Check SHIFT Flag
-$0A41: F0 03     BEQ KEY_LOW            ;SHIFT=0? Yes, skip
-$0A43: 49 10     EOR #$10               ;No, flip BIT 4 (what does bit 4 do?)
+$0A3C: 29 7F     AND #$7F            ;Remove the TOP bit (shift flag for character?)
+$0A3E: AC 3A 0B  LDY SHIFTFLAG       ;Check SHIFT Flag
+$0A41: F0 03     BEQ KEY_LOW         ;SHIFT=0? Yes, skip
+$0A43: 49 10     EOR #$10            ;No, flip BIT 4 (what does bit 4 do?)
 $0A45: 60        RTS
 
 ;---- Check if in A-Z range
 KEY_LOW:
-$0A46: C9 40     CMP #$40               ;Start of compare to A-Z Range. "@" is lower limit?
-$0A48: 90 25     BCC KEY_CHECK2         ;It is below? Yes, must be COMMAND character
-$0A4A: C9 60     CMP #$60               ;Compare to upper ascii limit?
-$0A4C: B0 21     BCS KEY_CHECK2         ;Is it above the A-Z range? Yes, skip
+$0A46: C9 40     CMP #$40            ;Start of compare to A-Z Range. "@" is lower limit?
+$0A48: 90 25     BCC KEY_CHECK2      ;It is below? Yes, must be COMMAND character
+$0A4A: C9 60     CMP #$60            ;Compare to upper ascii limit?
+$0A4C: B0 21     BCS KEY_CHECK2      ;Is it above the A-Z range? Yes, skip
 
 ;----  Check KEY Flag
-$0A4E: AC 3B 0B  LDY KEYFLAG            ;Check KEY Flag
-$0A51: F0 03     BEQ KEY_ATOZ           ;Is it zero? Yes, skip
-$0A53: 29 1F     AND #$1F               ;RETURN CTRL-A to Z - Use only the lower 5 BITS (0 to 31)
+$0A4E: AC 3B 0B  LDY KEYFLAG         ;Check KEY Flag
+$0A51: F0 03     BEQ KEY_ATOZ        ;Is it zero? Yes, skip
+$0A53: 29 1F     AND #$1F            ;RETURN CTRL-A to Z - Use only the lower 5 BITS (0 to 31)
 
 KEYDONE:
 $0A55: 60        RTS
 
 ;---- Check A to Z or CTRL key
 KEY_ATOZ:
-$0A56: C9 40     CMP #$40               ;Compare to "@" symbol
+$0A56: C9 40     CMP #$40            ;Compare to "@" symbol
 $0A58: F0 15     BEQ KEY_CHECK2
-$0A5A: C9 5B     CMP #$5B               ;Compare to "[" symbol?
+$0A5A: C9 5B     CMP #$5B            ;Compare to "[" symbol?
 $0A5C: B0 11     BCS KEY_CHECK2
 
-$0A5E: AC 3A 0B  LDY SHIFTFLAG          ;Is SHIFT Flag set?
-$0A61: D0 0C     BNE KEY_CHECK2         ; No,skip to next test
+$0A5E: AC 3A 0B  LDY SHIFTFLAG       ;Is SHIFT Flag set?
+$0A61: D0 0C     BNE KEY_CHECK2      ; No,skip to next test
 
 ;---- Handle regular A-Z
-$0A63: 48        PHA                    ;Yes, push the character code to stack
-$0A64: AD 4C E8  LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
-$0A67: 4A        LSR A                  ;shift
-$0A68: 4A        LSR A                  ;shift to get BIT 2
-$0A69: 68        PLA                    ;pull the character code from stack
-$0A6A: 90 03     BCC KEY_CHECK2         ;Branch if uppercase mode
-$0A6C: 09 20     ORA #$20               ;Convert character to UPPERCASE HERE
-$0A6E: 60        RTS                    ;Return with character code in A
+$0A63: 48        PHA                 ;Yes, push the character code to stack
+$0A64: AD 4C E8  LDA VIA_PCR         ;Bit 1 off = uppercase, on = lowercase
+$0A67: 4A        LSR A               ;shift
+$0A68: 4A        LSR A               ;shift to get BIT 2
+$0A69: 68        PLA                 ;pull the character code from stack
+$0A6A: 90 03     BCC KEY_CHECK2      ;Branch if uppercase mode
+$0A6C: 09 20     ORA #$20            ;Convert character to UPPERCASE HERE
+$0A6E: 60        RTS                 ;Return with character code in A
 
 ;---- Check SHIFT flag
 KEY_CHECK2:
-$0A6F: AC 3A 0B  LDY SHIFTFLAG          ;Check SHIFT flag for zero
-$0A72: F0 20     BEQ KEY_SET            ;  Yes, skip out
+$0A6F: AC 3A 0B  LDY SHIFTFLAG       ;Check SHIFT flag for zero
+$0A72: F0 20     BEQ KEY_SET         ;  Yes, skip out
 
 ;---- Translate SHIFTED 0-31 codes to terminal control codes
 KEY_SH_CODES:
-$0A74: A2 0B     LDX #$0B               ;Change to $0b (cursor up)
-$0A76: C9 0A     CMP #$0A               ;  from $0a (cursor down)
+$0A74: A2 0B     LDX #$0B            ;Change to $0b (cursor up)
+$0A76: C9 0A     CMP #$0A            ;  from $0a (cursor down)
 $0A78: F0 18     BEQ KEY_IN_X
-$0A7A: A2 08     LDX #$08               ;Change to $08 (cursor left)
-$0A7C: C9 0C     CMP #$0C               ;  from $0c (cursor right)
+$0A7A: A2 08     LDX #$08            ;Change to $08 (cursor left)
+$0A7C: C9 0C     CMP #$0C            ;  from $0c (cursor right)
 $0A7E: F0 12     BEQ KEY_IN_X
-$0A80: A2 1A     LDX #$1A               ;Change to $1a (clear screen)
-$0A82: C9 1E     CMP #$1E               ;  from $1e (home)
+$0A80: A2 1A     LDX #$1A            ;Change to $1a (clear screen)
+$0A82: C9 1E     CMP #$1E            ;  from $1e (home)
 $0A84: F0 0C     BEQ KEY_IN_X
 
 ;---- these must be normal shifted keys or Graphics?
-$0A86: 48        PHA                    ;Push key to stack
-$0A87: AD 4C E8  LDA VIA_PCR            ;Bit 1 off = uppercase, on = lowercase
-$0A8A: 4A        LSR A                  ;shift
-$0A8B: 4A        LSR A                  ;shift - check bit 1
-$0A8C: 68        PLA                    ;Pull original key from stack
-$0A8D: B0 05     BCS KEY_SET            ;Branch if lowercase mode
+$0A86: 48        PHA                 ;Push key to stack
+$0A87: AD 4C E8  LDA VIA_PCR         ;Bit 1 off = uppercase, on = lowercase
+$0A8A: 4A        LSR A               ;shift
+$0A8B: 4A        LSR A               ;shift - check bit 1
+$0A8C: 68        PLA                 ;Pull original key from stack
+$0A8D: B0 05     BCS KEY_SET         ;Branch if lowercase mode
 
-$0A8F: 09 80     ORA #$80               ;Set the HIGH BIT
-$0A91: 60        RTS                    ;Return with character code in A?
+$0A8F: 09 80     ORA #$80            ;Set the HIGH BIT
+$0A91: 60        RTS                 ;Return with character code in A?
 
 ;---- Return the key in the X register
 KEY_IN_X:
 $0A92: 8A        TXA
-$0A93: 60        RTS                    ;Return with the key in A
+$0A93: 60        RTS                 ;Return with the key in A
 
 KEY_SET:
-$0A94: C9 00     CMP #$00               ;Set CARRY if non-zero character?
+$0A94: C9 00     CMP #$00            ;Set CARRY if non-zero character?
 $0A96: 60        RTS
 
 
