@@ -1139,18 +1139,21 @@ l_08c1:
 
 scan_keyb:
 ;Scan the keyboard.
-; The PET/CBM uses a 10x8 keyboard matrix. There are 10 rows, and 8 columns.
-; To scan you select a ROW by writing the ROW NUMBER to the pia1_row register. The lower 4 bits are sent to
-; a 4 to 10 decoder. Then the PAI1COL register is read and each of the 8 bits represent one key in that row.
-; IMPORTANT!!!! If a key is PRESSED the BIT will be ZERO.
-; There are two keyboard tables which consists of 80 bytes each.
-; One for "Graphic" (40 column) and one for "Business" (80 column).
 ;
-; USES: SCANCODE  - Code of Pressed KEY ($FF=NONE)
-;       LASTCODE  - Code of Previous KEY
-;       ROWCOUNT  - Keyboard ROW counter
-;       SHIFTFLAG - Shift Flag
-;       KEYFLAG   - Regular Key Flag
+;The PET/CBM machines use a 10x8 keyboard matrix.  There are 10 rows and
+;8 columns.  To scan you select a row by writing the row number to the
+;pia1_row register.  The lower 4 bits are sent to a 4 to 10 decoder.  The
+;pia1_col register is then read and each of the 8 bits represent one key
+;in that row.  If a key is pressed, the bit will be zero.
+;
+;There are two keyboard tables: one for "graphics" (40 columns) and
+;one for "business" (80 columns).
+;
+;Uses: SCANCODE  - Code of Pressed KEY ($FF=NONE)
+;      LASTCODE  - Code of Previous KEY
+;      ROWCOUNT  - Keyboard ROW counter
+;      SHIFTFLAG - Shift Flag
+;      KEYFLAG   - Regular Key Flag
 ;
     lda scancode        ;Old SCANCODE
     sta lastcode        ;Save It
