@@ -406,27 +406,111 @@ seldsk:
 dpb_base:
 ;Disk Parameter Block (DPB) tables.  One DPB for each drive type:
 ;
-;0 = CBM 3040
-    db 20h, 00h, 04h, 0fh, 01h, 4ch,  00h, 3fh
-    db 00h, 80h, 00h, 10h, 00h, 00h,  00h, 00h
-;1 = CBM 8050
-    db 20h, 00h, 04h, 0fh, 01h, 0f8h, 00h, 3fh
-    db 00h, 80h, 00h, 10h, 00h, 00h,  00h, 00h
-;2 = Corvus 10MB
-    db 40h, 00h, 06h, 3fh, 03h, 4ch,  02h, 0ffh
-    db 00h, 80h, 00h, 00h, 00h, 02h,  00h, 00h
-;3 = Corvus 20MB
-    db 40h, 00h, 06h, 3fh, 03h, 4ch,  02h, 0ffh
-    db 00h, 80h, 00h, 00h, 00h, 02h,  00h, 00h
-;4 = Corvus 5MB (as 1 CP/M drive)
-    db 40h, 00h, 06h, 3fh, 03h, 0b8h, 02h, 0ffh
-    db 00h, 80h, 00h, 00h, 00h, 02h,  00h, 00h
-;5 = Corvus 5MB (as 2 CP/M drives)
-    db 40h, 00h, 06h, 3fh, 03h, 59h,  01h, 0ffh
-    db 00h, 80h, 00h, 00h, 00h, 02h,  00h, 00h
-;6 = CBM 8250
-    db 20h, 00h, 05h, 1fh, 03h, 0fch, 00h, 7fh
-    db 00h, 80h, 00h, 20h, 00h, 00h,  00h, 00h
+
+dpb_0_cbm_3040:
+;Commodore 2040/3040/4040 floppy drive
+;
+    dw 0020h            ;SPT  Number of 128-byte records per track
+    db 04h              ;BSH  Block shift
+    db 0fh              ;BLM  Block mask
+    db 01h              ;EXM  Extent mask
+    dw 004ch            ;DSM  Number of blocks on disk - 1
+    dw 003fh            ;DRM  Number of directory entries - 1
+    db 80h              ;AL0  Directory allocation bitmap, first byte
+    db 00h              ;AL1  Directory allocation bitmap, second byte
+    dw 0010h            ;CKS  Checksum vector size
+    dw 0000h            ;OFF  Offset: number of reserved tracks
+    db 00h              ;     Unused
+
+dpb_1_cbm_8050:
+;Commodore 8050 floppy drive
+;
+    dw 0020h            ;SPT  Number of 128-byte records per track
+    db 04h              ;BSH  Block shift
+    db 0fh              ;BLM  Block mask
+    db 01h              ;EXM  Extent mask
+    dw 00f8h            ;DSM  Number of blocks on disk - 1
+    dw 003fh            ;DRM  Number of directory entries - 1
+    db 80h              ;AL0  Directory allocation bitmap, first byte
+    db 00h              ;AL1  Directory allocation bitmap, second byte
+    dw 0010h            ;CKS  Checksum vector size
+    dw 0000h            ;OFF  Offset: number of reserved tracks
+    db 00h              ;     Unused
+
+dpb_2_corvus_10mb:
+;Corvus 10MB hard drive
+;
+    dw 0040h            ;SPT  Number of 128-byte records per track
+    db 06h              ;BSH  Block shift
+    db 3fh              ;BLM  Block mask
+    db 03h              ;EXM  Extent mask
+    dw 024ch            ;DSM  Number of blocks on disk - 1
+    dw 00ffh            ;DRM  Number of directory entries - 1
+    db 80h              ;AL0  Directory allocation bitmap, first byte
+    db 00h              ;AL1  Directory allocation bitmap, second byte
+    dw 0000h            ;CKS  Checksum vector size
+    dw 0002h            ;OFF  Offset: number of reserved tracks
+    db 00h              ;     Unused
+
+dpb_3_corvus_20mb:
+;Corvus 20MB hard drive
+;
+    dw 0040h            ;SPT  Number of 128-byte records per track
+    db 06h              ;BSH  Block shift
+    db 3fh              ;BLM  Block mask
+    db 03h              ;EXM  Extent mask
+    dw 024ch            ;DSM  Number of blocks on disk - 1
+    dw 00ffh            ;DRM  Number of directory entries - 1
+    db 80h              ;AL0  Directory allocation bitmap, first byte
+    db 00h              ;AL1  Directory allocation bitmap, second byte
+    dw 0000h            ;CKS  Checksum vector size
+    dw 0002h            ;OFF  Offset: number of reserved tracks
+    db 00h              ;     Unused
+
+dpb_4_corvus_5mb_1:
+;Corvus 5MB hard drive (as 1 CP/M drive)
+;
+    dw 0040h            ;SPT  Number of 128-byte records per track
+    db 06h              ;BSH  Block shift
+    db 3fh              ;BLM  Block mask
+    db 03h              ;EXM  Extent mask
+    dw 02b8h            ;DSM  Number of blocks on disk - 1
+    dw 00ffh            ;DRM  Number of directory entries - 1
+    db 80h              ;AL0  Directory allocation bitmap, first byte
+    db 00h              ;AL1  Directory allocation bitmap, second byte
+    dw 0000h            ;CKS  Checksum vector size
+    dw 0002h            ;OFF  Offset: number of reserved tracks
+    db 00h              ;     Unused
+
+dbp_5_corvus_5mb_2:
+;Corvus 5MB hard drive (as 1 CP/M drive)
+;
+    dw 0040h            ;SPT  Number of 128-byte records per track
+    db 06h              ;BSH  Block shift
+    db 3fh              ;BLM  Block mask
+    db 03h              ;EXM  Extent mask
+    dw 0159h            ;DSM  Number of blocks on disk - 1
+    dw 00ffh            ;DRM  Number of directory entries - 1
+    db 80h              ;AL0  Directory allocation bitmap, first byte
+    db 00h              ;AL1  Directory allocation bitmap, second byte
+    dw 0000h            ;CKS  Checksum vector size
+    dw 0002h            ;OFF  Offset: number of reserved tracks
+    db 00h              ;     Unused
+
+dbp_6_cbm_8250:
+;Commodore 8250 floppy drive
+;
+    dw 0020h            ;SPT  Number of 128-byte records per track
+    db 05h              ;BSH  Block shift
+    db 1fh              ;BLM  Block mask
+    db 03h              ;EXM  Extent mask
+    dw 00fch            ;DSM  Number of blocks on disk - 1
+    dw 007fh            ;DRM  Number of directory entries - 1
+    db 80h              ;AL0  Directory allocation bitmap, first byte
+    db 00h              ;AL1  Directory allocation bitmap, second byte
+    dw 0020h            ;CKS  Checksum vector size
+    dw 0000h            ;OFF  Offset: number of reserved tracks
+    db 00h              ;     Unused
 
 sectran:
 ;Translate a logical sector number into a physical sector number
