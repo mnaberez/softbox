@@ -365,9 +365,11 @@ do_peek:
     jsr ieee_get_byte
     sta source_hi
     ldy #$00
+
 l_05a5:
     dey
-    bne l_05a5   ; delay
+    bne l_05a5          ;Delay loop
+
 l_05a8:
     lda (source_lo),y
     jsr ieee_put_byte
