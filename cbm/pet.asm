@@ -1050,7 +1050,7 @@ l_0970:
     bpl l_0970
     bmi l_0951
 l_097c:
-    lda #$20          ;SPACE
+    lda #$20            ;SPACE
     ldy x_width
 l_0980:
     dey
@@ -1127,7 +1127,7 @@ l_08a0:
     sta source_hi
     dex
     bne scroll
-    lda #$20          ;SPACE
+    lda #$20            ;SPACE
     ldy x_width
 l_08c1:
     dey
