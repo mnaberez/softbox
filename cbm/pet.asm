@@ -75,7 +75,7 @@ init:
     sta jiffy0
     sta keycount        ;Reset key counter (no keys hit)
     lda #$0a
-    sta repeatcount1    ;Store #$0A in REPEATCOUNT1
+    sta repeatcount1    ;Number of interrupts between repeats of a key
     cli                 ;Enable interrupts again
 
 init_scrn:

@@ -91,7 +91,7 @@ $047D: 85 18     STA JIFFY2          ;Reset jiffy counter
 $047F: 85 19     STA JIFFY1
 $0481: 85 1A     STA JIFFY0
 $0483: A9 0A     LDA #$0A
-$0485: 8D 3D 0B  STA REPEATCOUNT1    ;Store #$0A in REPEATCOUNT1
+$0485: 8D 3D 0B  STA REPEATCOUNT1    ;Number of interrupts between repeats of a key
 $0488: 58        CLI                 ;Enable interrupts again
 $0489: A9 0E     LDA #$0E
 $048B: 8D 4C E8  STA VIA_PCR         ;Graphic mode = lowercase
