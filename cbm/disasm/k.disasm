@@ -1400,7 +1400,7 @@ $0B3D:           .BYT AA
 REPEATCODE:
 $0B3E:           .BYT AA
 
-;Start of buffer used by control codes 05, 06, and 09
+;Buffer for TAB stop positions (80 bytes: one for each screen column)
 TAB_STOPS:
 $0B3F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B47:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
@@ -1410,6 +1410,9 @@ $0B5F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B67:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B6F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B77:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
+
+;Filler pads the binary to 2048 bytes (2 byte load address + 2046 bytes)
+FILLER:
 $0B7F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B87:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B8F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
