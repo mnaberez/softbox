@@ -793,7 +793,7 @@ ctrl_0a_incy:
 ctrl_1e:
 ;Home cursor
 ;
-    lda #$00            ;Home cursor
+    lda #$00
     sta cursor_y
     sta cursor_x
     rts
