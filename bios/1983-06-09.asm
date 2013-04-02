@@ -828,6 +828,37 @@ corv_read_err:
 ;Returns the error code in A (0=OK) and also changes
 ;the Z flag: Z=1 if OK, Z=0 if error.
 ;
+;The upper 3 bits of the error code are flags:
+;
+;  Bit 7: Set if any fatal error has occurred.  Most utility programs
+;         from Corvus will not show the error unless bit 7 is set.
+;
+;  Bit 6: Set if an error occurred on a re-read (verification)
+;         following a disk write.
+;
+;  Bit 5: Set if there was a recoverable error (as in a retry
+;         of a read or write).
+;
+;The lower 5 bits of the error code are reserved for the code itself
+;but only the lower 4 bits are actually used:
+;
+;  00 Disk Header Fault         10 Drive Not Acknowledged
+;  01 Seek Timeout              11 Acknowledge Stuck Active
+;  02 Seek Fault                12 Timeout
+;  03 Seek Error                13 Fault
+;  04 Header CRC Error          14 CRC
+;  05 Re-zero (Head) Fault      15 Seek
+;  06 Re-zero Timeout           16 Verification
+;  07 Drive Not On Line         17 Drive Speed Error
+;  08 Write Fault               18 Drive Illegal Address Error
+;  09 (Unused)                  19 Drive R/W Fault Error
+;  0A Read Data Fault           1A Drive Servo Error
+;  0B Data CRC Error            1B Drive Guard Band
+;  0C Sector Locate Error       1C Drive PLO (Phase Lockout) Error
+;  0D Write Protected           1D Drive R/W Unsafe
+;  0E Illegal Sector Address    1E (Unused)
+;  0F Illegal Command           1F (Unused)
+;
     in a,(ppi2_pc)
     xor 10h
     and 30h
