@@ -1391,9 +1391,9 @@ ieee_load_cpm:
 ;
     push bc
     push de
-    ld hl,filename      ;"0:CP/M"
-    ld c,06h            ;6 characters
-    ld e,00h            ;0 = Secondary address
+    ld hl,filename      ;HL = pointer to "0:CP/M" string
+    ld c,06h            ;C = 6 bytes in string
+    ld e,00h            ;E = IEEE-488 secondary address 0
     call ieee_open      ;Send LOAD and filename
     pop de
     push de
@@ -2729,12 +2729,21 @@ poke_loop:
 set_time:
 ;Set the time on the CBM real time clock
 ;
-    ld e,00h
-    ld (jiffies),de
-    ld (mins),hl
-    ld de,0014h         ;CBM start address
-    ld hl,jiffies       ;SoftBox start address
-    ld bc,0004h         ;4 bytes to transfer
+;H = Hours
+;L = Minutes
+;D = Seconds
+;E = Jiffies (ignored: E is always reset to 0)
+;
+    ld e,00h            ;E = 0 to reset jiffies
+
+    ld (jiffies),de     ;Store E in jiffies
+                        ;Store D in secs
+    ld (mins),hl        ;Store L in mins
+                        ;Store H in hours
+
+    ld de,0014h         ;DE = CBM start address
+    ld hl,jiffies       ;HL = SoftBox start address
+    ld bc,0004h         ;BC = 4 bytes to transfer
     jp poke             ;Transfer from SoftBox to CBM
 
 reset_jiffies:
@@ -2744,22 +2753,37 @@ reset_jiffies:
     ld (jiffy2),a       ;Clear jiffy counter values
     ld (jiffy1),a
     ld (jiffy0),a
-    ld hl,jiffy2        ;SoftBox start address
-    ld de,0018h         ;CBM start address
-    ld bc,0003h         ;3 bytes to transfer
+    ld hl,jiffy2        ;HL = SoftBox start address
+    ld de,0018h         ;DE = CBM start address
+    ld bc,0003h         ;BC = 3 bytes to transfer
     jp poke             ;Transfer from SoftBox to CBM
 
 get_time:
 ;Read the CBM clocks (both RTC and jiffy counter)
 ;
-    ld bc,0007h         ;7 bytes to transfer
-    ld hl,jiffies       ;SoftBox start address
-    ld de,0014h         ;CBM start address
+;Returns RTC values in H,L,D,E:
+;  H = Hours
+;  L = Minutes
+;  D = Seconds
+;  E = Jiffies (counts up to 50 or 60)
+;
+;Returns jiffy counter values in A,B,C:
+;  A = Jiffy0 (MSB)
+;  B = Jiffy1
+;  C = Jiffy2 (LSB)
+;
+    ld bc,0007h         ;BC = 7 bytes to transfer
+    ld hl,jiffies       ;HL = SoftBox start address
+    ld de,0014h         ;DE = CBM start address
     call peek           ;Transfer from CBM to SoftBox
-    ld de,(jiffies)
-    ld hl,(mins)
-    ld a,(jiffy2)
-    ld bc,(jiffy1)
+
+    ld de,(jiffies)     ;E = jiffies
+                        ;D = secs
+    ld hl,(mins)        ;L = mins
+                        ;H = hours
+    ld a,(jiffy2)       ;A = jiffy2 (MSB)
+    ld bc,(jiffy1)      ;B = jiffy1
+                        ;C = jiffy0 (LSB)
     ret
 
 ieee_put_byte:
