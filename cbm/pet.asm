@@ -1147,17 +1147,17 @@ scan_keyb:
 ;There are two keyboard tables: one for "graphics" (40 columns) and
 ;one for "business" (80 columns).
 ;
-;Uses: SCANCODE  - Code of Pressed KEY ($FF=NONE)
-;      LASTCODE  - Code of Previous KEY
-;      ROWCOUNT  - Keyboard ROW counter
-;      SHIFTFLAG - Shift Flag
-;      KEYFLAG   - Regular Key Flag
+;Uses: scancode   - Code of Pressed KEY ($FF=NONE)
+;      lastcode   - Code of Previous KEY
+;      rowcount   - Keyboard ROW counter
+;      shift_flag - SHIFT key flag
+;      ctrl_flag  - CTRL key flag
 ;
     lda scancode        ;Old SCANCODE
     sta lastcode        ;Save It
     ldx #$00            ;X=0 Index into Keyboard Scan Table
-    stx shiftflag       ;Reset Shift Flag
-    stx keyflag         ;Reset Key Flag
+    stx shift_flag      ;Reset SHIFT key flag
+    stx ctrl_flag       ;Reset CTRL key flag
 
     stx pia1_row        ;Select a keyboard ROW
     lda #$ff            ;$FF = no key
@@ -1191,18 +1191,21 @@ skip40:
     lda graphics_keys,x ;  No,  read from Graphics keyboard table
 
 got_row:
-    cmp #$01            ;IS it the SHIFT key?
-    beq key_shift       ; Yes, skip
-    bcc key_reg         ; No, It's a regular key
+    cmp #$01            ;Is it the SHIFT key?
+    beq key_shift       ;  Yes: branch to handle SHIFT
+    bcc key_ctrl        ;  No:  if it is < 1 then it is CTRL key,
+                        ;         branch to handle CTRL key
+
     sta scancode        ;Store the SCANCODE as-is
-    bcs nextcol
+    bcs nextcol         ;Always branch to nextcol
 
 key_shift:
-    inc shiftflag       ;Increment SHIFT Flag
-    bne nextcol         ; Is it >0? Yes, loop back for another key
+    inc shift_flag      ;Increment SHIFT key flag
+    bne nextcol         ;Always branch to nextcol
 
-key_reg:
-    inc keyflag         ;Increment KEY flag
+key_ctrl:
+    inc ctrl_flag       ;Increment CTRL key flag
+                        ;Fall through to nextcol
 
 nextcol:
     pla                 ;pull the original scan value from stack
@@ -1227,15 +1230,13 @@ nextrow:
     cmp lastcode        ;Is it the same as last? (Key is registered on key UP?)
     beq keydone         ; Yes, exit
 
-;---- Check for CTRL key
 key_check1:
-    cmp #$00            ;Compare to CTRL key
-    bpl key_low         ;No, skip
+    cmp #$00            ;Is bit 7 set?
+    bpl key_low         ;  No: branch to key_low
 
-;---- CTRL KEY not pressed
 key_hi:
     and #$7f            ;Remove the TOP bit (shift flag for character?)
-    ldy shiftflag       ;Check SHIFT Flag
+    ldy shift_flag      ;Check SHIFT Flag
     beq key_low         ;SHIFT=0? Yes, skip
     eor #$10            ;No, flip BIT 4 (what does bit 4 do?)
     rts
@@ -1247,8 +1248,8 @@ key_low:
     cmp #$60            ;Compare to upper ascii limit?
     bcs key_check2      ;Is it above the A-Z range? Yes, skip
 
-;----  Check KEY Flag
-    ldy keyflag         ;Check KEY Flag
+;---- Check CTRL key flag
+    ldy ctrl_flag       ;Check CTRL key flag
     beq key_atoz        ;Is it zero? Yes, skip
     and #$1f            ;RETURN CTRL-A to Z - Use only the lower 5 BITS (0 to 31)
 
@@ -1262,7 +1263,7 @@ key_atoz:
     cmp #$5b            ;Compare to "[" symbol?
     bcs key_check2
 
-    ldy shiftflag       ;Is SHIFT Flag set?
+    ldy shift_flag      ;Is SHIFT Flag set?
     bne key_check2      ; No,skip to next test
 
 ;---- Handle regular A-Z
@@ -1273,7 +1274,7 @@ key_atoz:
 
 ;---- Check SHIFT flag
 key_check2:
-    ldy shiftflag       ;Check SHIFT flag for zero
+    ldy shift_flag      ;Check SHIFT flag for zero
     beq key_set         ;  Yes, skip out
 
 ;---- Translate SHIFTED 0-31 codes to terminal control codes
@@ -1352,10 +1353,10 @@ lastcode:
 rowcount:
     !byte $aa
 
-shiftflag:
+shift_flag:
     !byte $aa
 
-keyflag:
+ctrl_flag:
     !byte $aa
 
 repeatcount0:

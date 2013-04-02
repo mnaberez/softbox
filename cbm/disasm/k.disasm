@@ -1183,17 +1183,17 @@ SCAN_KEYB:
 ;There are two keyboard tables: one for "graphics" (40 columns) and
 ;one for "business" (80 columns).
 ;
-;Uses: SCANCODE  - Code of Pressed KEY ($FF=NONE)
-;      LASTCODE  - Code of Previous KEY
-;      ROWCOUNT  - Keyboard ROW counter
-;      SHIFTFLAG - Shift Flag
-;      KEYFLAG   - Regular Key Flag
+;Uses: SCANCODE   - Code of Pressed KEY ($FF=NONE)
+;      LASTCODE   - Code of Previous KEY
+;      ROWCOUNT   - Keyboard ROW counter
+;      SHIFT_FLAG - SHIFT key flag
+;      CTRL_FLAG  - CTRL key flag
 ;
 $09D4: AD 37 0B  LDA SCANCODE        ;Old SCANCODE
 $09D7: 8D 38 0B  STA LASTCODE        ;Save It
 $09DA: A2 00     LDX #$00            ;X=0 Index into Keyboard Scan Table
-$09DC: 8E 3A 0B  STX SHIFTFLAG       ;Reset Shift Flag
-$09DF: 8E 3B 0B  STX KEYFLAG         ;Reset Key Flag
+$09DC: 8E 3A 0B  STX SHIFT_FLAG      ;Reset SHIFT key flag
+$09DF: 8E 3B 0B  STX CTRL_FLAG       ;Reset CTRL key flag
 
 $09E2: 8E 10 E8  STX PIA1_ROW        ;Select a keyboard ROW
 $09E5: A9 FF     LDA #$FF            ;$FF = no key
@@ -1227,18 +1227,21 @@ SKIP40:
 $0A09: BD 97 0A  LDA GRAPHICS_KEYS,X  ;  No,  read from Graphics keyboard table
 
 GOT_ROW:
-$0A0C: C9 01     CMP #$01            ;IS it the SHIFT key?
-$0A0E: F0 07     BEQ KEY_SHIFT       ; Yes, skip
-$0A10: 90 0A     BCC KEY_REG         ; No, It's a regular key
+$0A0C: C9 01     CMP #$01            ;Is it the SHIFT key?
+$0A0E: F0 07     BEQ KEY_SHIFT       ;  Yes: branch to handle SHIFT
+$0A10: 90 0A     BCC KEY_REG         ;  No:  if it is < 1 then it is CTRL key,
+                                     ;         branch to handle CTRL key
+
 $0A12: 8D 37 0B  STA SCANCODE        ;Store the SCANCODE as-is
-$0A15: B0 08     BCS NEXTCOL
+$0A15: B0 08     BCS NEXTCOL         ;Always branch to NEXTCOL
 
 KEY_SHIFT:
-$0A17: EE 3A 0B  INC SHIFTFLAG       ;Increment SHIFT Flag
-$0A1A: D0 03     BNE NEXTCOL         ; Is it >0? Yes, loop back for another key
+$0A17: EE 3A 0B  INC SHIFT_FLAG      ;Increment SHIFT key flag
+$0A1A: D0 03     BNE NEXTCOL         ;Always branch to NEXTCOL
 
 KEY_REG:
-$0A1C: EE 3B 0B  INC KEYFLAG         ;Increment KEY flag
+$0A1C: EE 3B 0B  INC CTRL_FLAG       ;Increment CTRL key flag
+                                     ;Fall through to NEXTCOL
 
 NEXTCOL:
 $0A1F: 68        PLA                 ;pull the original scan value from stack
@@ -1263,15 +1266,13 @@ $0A31: F0 22     BEQ KEYDONE         ; Yes, exit
 $0A33: CD 38 0B  CMP LASTCODE        ;Is it the same as last? (Key is registered on key UP?)
 $0A36: F0 1D     BEQ KEYDONE         ; Yes, exit
 
-;---- Check for CTRL key
 KEY_CHECK1:
-$0A38: C9 00     CMP #$00            ;Compare to CTRL key
-$0A3A: 10 0A     BPL KEY_LOW         ;No, skip
+$0A38: C9 00     CMP #$00            ;Is bit 7 set?
+$0A3A: 10 0A     BPL KEY_LOW         ;  No: branch to key_low
 
-;---- CTRL KEY not pressed
 KEY_HI:
 $0A3C: 29 7F     AND #$7F            ;Remove the TOP bit (shift flag for character?)
-$0A3E: AC 3A 0B  LDY SHIFTFLAG       ;Check SHIFT Flag
+$0A3E: AC 3A 0B  LDY SHIFT_FLAG      ;Check SHIFT Flag
 $0A41: F0 03     BEQ KEY_LOW         ;SHIFT=0? Yes, skip
 $0A43: 49 10     EOR #$10            ;No, flip BIT 4 (what does bit 4 do?)
 $0A45: 60        RTS
@@ -1283,8 +1284,8 @@ $0A48: 90 25     BCC KEY_CHECK2      ;It is below? Yes, must be COMMAND characte
 $0A4A: C9 60     CMP #$60            ;Compare to upper ascii limit?
 $0A4C: B0 21     BCS KEY_CHECK2      ;Is it above the A-Z range? Yes, skip
 
-;----  Check KEY Flag
-$0A4E: AC 3B 0B  LDY KEYFLAG         ;Check KEY Flag
+;----  Check CTRL key flag
+$0A4E: AC 3B 0B  LDY CTRL_FLAG       ;Check CTRL key flag
 $0A51: F0 03     BEQ KEY_ATOZ        ;Is it zero? Yes, skip
 $0A53: 29 1F     AND #$1F            ;RETURN CTRL-A to Z - Use only the lower 5 BITS (0 to 31)
 
@@ -1298,7 +1299,7 @@ $0A58: F0 15     BEQ KEY_CHECK2
 $0A5A: C9 5B     CMP #$5B            ;Compare to "[" symbol?
 $0A5C: B0 11     BCS KEY_CHECK2
 
-$0A5E: AC 3A 0B  LDY SHIFTFLAG       ;Is SHIFT Flag set?
+$0A5E: AC 3A 0B  LDY SHIFT_FLAG      ;Is SHIFT Flag set?
 $0A61: D0 0C     BNE KEY_CHECK2      ; No,skip to next test
 
 ;---- Handle regular A-Z
@@ -1313,7 +1314,7 @@ $0A6E: 60        RTS                 ;Return with character code in A
 
 ;---- Check SHIFT flag
 KEY_CHECK2:
-$0A6F: AC 3A 0B  LDY SHIFTFLAG       ;Check SHIFT flag for zero
+$0A6F: AC 3A 0B  LDY SHIFT_FLAG      ;Check SHIFT flag for zero
 $0A72: F0 20     BEQ KEY_SET         ;  Yes, skip out
 
 ;---- Translate SHIFTED 0-31 codes to terminal control codes
@@ -1385,10 +1386,10 @@ $0B38:           .BYT AA
 ROWCOUNT:
 $0B39:           .BYT AA
 
-SHIFTFLAG:
+SHIFT_FLAG:
 $0B3A:           .BYT AA
 
-KEYFLAG:
+CTRL_FLAG:
 $0B3B:           .BYT AA
 
 REPEATCOUNT0:
