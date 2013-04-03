@@ -256,35 +256,47 @@ corv_load_cpm:
 ;
 ;Returns an error code in A (0=OK)
 ;
-    ld hl,ccp_base
-    ld c,00h
+    ld hl,ccp_base      ;HL = base address of CP/M system
+    ld c,00h            ;C = CP/M drive number 0 (A:)
     push hl
     push bc
-    ld hl,0000h
-    ld (track),hl
-    xor a
-    ld (sector),a
-    ld (0048h),a
+
+    ld hl,0000h         ;HL = 0
+    ld (track),hl       ;Track = 0
+
+    xor a               ;A = 0
+    ld (sector),a       ;Sector = 0
+    ld (0048h),a        ;TODO 0048h?
     ld (wrt_pend),a     ;No write pending for CBM DOS
-    call seldsk
+
+    call seldsk         ;Select CP/M drive number 0 (A:)
     ld a,0ffh
-    ld (x_drive),a
+    ld (x_drive),a      ;TODO x_drive?
+
     pop bc
     pop hl
-lf11dh:
-    ld (dma),hl
+
+corv_load_loop:
+    ld (dma),hl         ;Set DMA buffer address to HL.  Instead of the usual
+                        ;  DMA buffer, data from the next sector read will
+                        ;  be loaded into the CP/M system area.
     push hl
     push bc
-    call read
-    ld hl,sector
-    inc (hl)
+    call read           ;Read a 128-byte sector into the CP/M system area
+                        ;A = error code (0=OK)
+
+    ld hl,sector        ;HL = address that stores the current sector
+    inc (hl)            ;Increment to the next sector
     pop bc
     pop hl
-    or a
-    ret nz
-    ld de,dma_buf
-    add hl,de
-    djnz lf11dh
+
+    or a                ;Set flags from error code
+    ret nz              ;Return if not OK
+
+    ld de,0080h         ;DE = 128 bytes were read
+    add hl,de           ;Advance HL pointer: HL = HL + 128
+
+    djnz corv_load_loop ;Decrement B, loop until all sectors are read
     ret
 
 start_ccp:
