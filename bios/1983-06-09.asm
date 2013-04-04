@@ -266,7 +266,7 @@ corv_load_cpm:
 
     xor a               ;A = 0
     ld (sector),a       ;Sector = 0
-    ld (0048h),a        ;TODO 0048h?
+    ld (0048h),a        ;0048h = 0 (TODO 0048h?)
     ld (wrt_pend),a     ;No write pending for CBM DOS
 
     call seldsk         ;Select CP/M drive number 0 (A:)
@@ -327,7 +327,7 @@ start_ccp:
 lf15ch:
     ld c,(hl)           ;C = pass current drive number to CCP
     xor a               ;A=0
-    ld (0048h),a
+    ld (0048h),a        ;0048h=0 (TODO 0048h?)
     ld (wrt_pend),a     ;No write pending for CBM DOS
     dec a               ;A=0ffh
     ld (x_drive),a
@@ -376,7 +376,7 @@ seldsk:
     ret nc              ;  Return if drive is invalid
 
                         ;Calculate pointer to a Disk Parameter Header (DPH):
-    ld (drive),a        ;  Save requsted CP/M drive number in drive
+    ld (drive),a        ;  Save requested CP/M drive number
     ld l,a              ;  HL = A * 8
     add hl,hl
     add hl,hl
@@ -605,8 +605,8 @@ read:
     ld a,(sector)
     rrca
     call copy_to_dma
-    xor a
-    ld (0048h),a
+    xor a               ;A=0
+    ld (0048h),a        ;0048h=0 (TODO 0048h?)
     ret
 
 write:
@@ -621,61 +621,91 @@ write:
 ;  2 if disc is readonly, 0FFh if media changed.
 ;
     push bc
-    ld a,(drive)        ;0040h = CP/M drive number
+    ld a,(drive)        ;A = CP/M drive number
     call sub_f245h
     pop bc
     jp c,corv_writ_sec
 
-    ld a,c
-    push af
-    cp 02h
-    call z,lf691h
-    ld hl,0048h
-    ld a,(hl)
+    ld a,c              ;A = deblocking code in C
+    push af             ;Save it on the stack
+
+    cp 02h              ;Deblocking code = 2?
+    call z,lf691h       ;  Yes: call lf691h
+
+                        ;Compare value at 0048h (TODO 0048h?):
+    ld hl,0048h         ;  HL = address of 0048h
+    ld a,(hl)           ;  A = value stored at 0048h
     or a
-    jr z,lf2b1h
-    dec (hl)
-    ld a,(drive)
-    ld hl,y_drive
+    jr z,lf2b1h         ;  Jump if A=0
+
+    dec (hl)            ;Decrement value at 0048h
+
+                        ;Compare CP/M drive number:
+    ld a,(drive)        ;  A = CP/M drive number
+    ld hl,y_drive       ;  HL = address of y_drive
     cp (hl)
-    jr nz,lf2b1h
-    ld a,(track)
-    ld hl,y_track
+    jr nz,lf2b1h        ;  Jump if drive != y_drive
+
+                        ;Compare CP/M track number (low byte):
+    ld a,(track)        ;  A = CP/M track number (low)
+    ld hl,y_track       ;  HL = address of y_track
     cp (hl)
-    jr nz,lf2b1h
-    ld a,(track+1)
-    inc hl
+    jr nz,lf2b1h        ;  Jump if track != y_track
+
+                        ;Compare CP/M track number (high byte):
+    ld a,(track+1)      ;  A = CP/M track number (high)
+    inc hl              ;  HL = address of y_track+1
     cp (hl)
-    jr nz,lf2b1h
-    ld a,(sector)
-    ld hl,y_sector
+    jr nz,lf2b1h        ;  Jump if track+1 != y_track+1
+
+                        ;Compare CP/M sector number:
+    ld a,(sector)       ;  A = CP/M sector number
+    ld hl,y_sector      ;  HL = address of y_sector
     cp (hl)
-    jr nz,lf2b1h
-    inc (hl)
+    jr nz,lf2b1h        ;  Jump if sector != y_sector
+
+    inc (hl)            ;Increment y_sector
+
     call sub_f6b9h
     jr lf2bdh
+
 lf2b1h:
-    xor a
-    ld (0048h),a
+;Entered if (0048h)=0 or if drive/track/sector != y_drive/y_track/y_sector
+;
+    xor a               ;A=0
+    ld (0048h),a        ;0048h=0 (TODO 0048h?)
     call sub_f6b9h
     ld a,00h
     call nz,ieee_read_sec
+                           ;Fall through into lf2bdh
+
 lf2bdh:
-    ld a,(sector)
-    rrca
-    call copy_from_dma
-    pop af
+;Entered if (0048h)>0 or if drive/track/sector = y_drive/y_track/y_sector
+;
+    ld a,(sector)       ;A = CP/M sector number
+    rrca                ;Rotate bit 0 of CP/M sector into the carry flag
+                        ;  The carry flag selects which half of the 256-byte
+                        ;  CBM DOS buffer will receive the contents of
+                        ;  the 128-byte CP/M DMA buffer
+    call copy_from_dma  ;Copy from CP/M DMA buffer into CBM DOS buffer
+                        ;  (dma_buf -> dos_buf)
+
+    pop af              ;A = deblocking code
     dec a
     jr nz,lf2d1h
-    ld a,(dos_err)
+
+    ld a,(dos_err)      ;A = last error code from CBM DOS (0=OK)
     or a
-    call z,ieee_writ_sec
-    xor a
+    call z,ieee_writ_sec  ;Write the CBM DOS sector if OK
+
+    xor a               ;Return A=0 (OK)
     ret
+
 lf2d1h:
     ld a,01h
     ld (wrt_pend),a     ;Set flag to indicate a write is pending for CBM DOS
-    xor a
+
+    xor a               ;Return with A=0 (OK)
     ret
 
 ieee_read_sec:
@@ -1479,37 +1509,39 @@ dos_i0_0:
     db "I0"
 
 lf691h:
-;Called only from write
+;Called only from write, and only if deblocking code = 2
+;  (2 = Write can be deferred, no pre-read is necessary)
 ;
     push bc
     call sub_f245h      ;A = drive type
     pop bc
     or a
-    cp 06h              ;06h = CBM 8250
-    jp z,lf6a1h
-    ld a,10h
+    cp 06h              ;Drive type = 06h (CBM 8250)?
+    jp z,lf6a1h         ;  Yes: jump over to set A=20h
+    ld a,10h            ;  No: A=10h
     jp lf6a3h
 lf6a1h:
     ld a,20h
 lf6a3h:
-    ld (0048h),a
-
+    ld (0048h),a        ;Store A in 0048h
+                        ;  For CBM 8250, A=20h
+                        ;  For all other drives, A=10h
     ld a,(drive)
-    ld (y_drive),a
+    ld (y_drive),a      ;y_drive = drive
 
     ld hl,(track)
-    ld (y_track),hl
+    ld (y_track),hl     ;y_track = track
 
     ld a,(sector)
-    ld (y_sector),a
+    ld (y_sector),a     ;y_sector = sector
     ret
 
 sub_f6b9h:
 ;Called from read and write
 ;
     ld a,(drive)        ;0040h = CP/M drive number
-    ld hl,x_drive
-    xor (hl)
+    ld hl,x_drive       ;HL = address of x_drive
+    xor (hl)            ;x_drive = 0
     ld b,a
     ld a,(track)
     ld hl,x_track       ;0045h = CP/M track number
