@@ -221,8 +221,8 @@ wboot:
 ;
     ld sp,0100h         ;Initialize stack pointer
     xor a               ;A = CP/M drive number 0 (A:)
-    call sub_f245h
-    jr c,wboot_corvus
+    call get_dtype_corv ;Is it a Corvus hard drive?
+    jr c,wboot_corvus   ;  Yes: jump to warm boot from Corvus
 
 wboot_ieee:             ;Reload the system from an IEEE-488 drive:
     xor a               ;  A = CP/M drive number 0 (A:)
@@ -409,8 +409,8 @@ seldsk:
 
                         ;Special handling if requested drive is a Corvus:
     ld a,(drive)        ;  A = CP/M drive number
-    call sub_f245h      ;  Sets carry if drive is a Corvus
-    call c,sub_f2ffh    ;  TODO: Corvus select or reset?
+    call get_dtype_corv ;  Is it a Corvus hard drive?
+    call c,sub_f2ffh    ;    Yes: TODO: Corvus select or reset?
 
     pop hl              ;HL = address of the DPH
     ret
@@ -541,6 +541,7 @@ get_dtype:
 ;A = CP/M drive number
 ;
 ;Returns drive type in C.  Preserves drive number in A.
+;
 ;Sets carry flag is drive is valid, clears it otherwise.
 ;
     cp 10h              ;Valid drives are 0 (A:) through 00fh (P:)
@@ -551,7 +552,7 @@ get_dtype:
 
                         ;Find index of this drive in the dtypes table:
     or a                ;  Clear carry flag
-    rra                 ;  A = index into ddevs table for this drive
+    rra                 ;  A = index into dtypes table for this drive
                         ;      Dividing the CP/M drive number by 2 finds its
                         ;      index in the ddevs or dtypes tables.  There
                         ;      are 16 possible CP/M drives, which the SoftBox
@@ -601,22 +602,33 @@ lf240h:
     or a                ;  Clear carry flag to indicate drive is not valid
     ret                 ;  and return
 
-sub_f245h:
+get_dtype_corv:
+;Get the drive type for a CP/M drive number from the dtypes table
+;and check if it is a Corvus hard drive.
+;
 ;A = CP/M drive number
 ;
-;Sets carry flag if drive is a Corvus and valid, clears it otherwise.
+;Returns the drive type in C and A.
+;
+;Sets the carry flag if the CP/M drive number is valid and if
+;it corresponds to a Corvus hard drive.  Clears it otherwise.
 ;
     call get_dtype      ;C = drive type
     ret nc              ;Return with no carry if drive number is invalid
 
     ld a,c              ;A = drive type
     or a
-
-    cp 06h
-    ret nc              ;Return with no carry if drive number is >= 6
-
-    cp 02h
-    ccf
+                        ;Corvus drive types are: 2, 3, 4, 5
+                        ;Return with carry set if the drive type is one
+                        ;of those, otherwise return with carry clear:
+                        ;
+                        ;  Check if drive type is >= 6:
+    cp 06h              ;    Set carry if A < 6, clear carry if A >= 6
+    ret nc              ;    Return if no carry
+                        ;
+                        ;  Check if drive type is < 2:
+    cp 02h              ;    Set carry if A < 2, clear carry if A >= 2
+    ccf                 ;    Invert the carry flag
     ret
 
 read:
@@ -624,8 +636,8 @@ read:
 ;Returns A=0 for OK, 1 for unrecoverable error, 0FFh if media changed.
 ;
     ld a,(drive)        ;0040h = CP/M drive number
-    call sub_f245h
-    jp c,corv_read_sec
+    call get_dtype_corv ;Is it a Corvus hard drive?
+    jp c,corv_read_sec  ;  Yes: jump to Corvus read sector
 
     call sub_f6b9h
     ld a,01h
@@ -651,9 +663,9 @@ write:
 ;
     push bc
     ld a,(drive)        ;A = CP/M drive number
-    call sub_f245h
+    call get_dtype_corv ;Is it a Corvus hard drive?
     pop bc
-    jp c,corv_writ_sec
+    jp c,corv_writ_sec  ;  Yes: jump to Corvus write sector
 
     ld a,c              ;A = deblocking code in C
     push af             ;Save it on the stack
@@ -1544,7 +1556,8 @@ lf691h:
 ;  (2 = Write can be deferred, no pre-read is necessary)
 ;
     push bc
-    call sub_f245h      ;A = drive type
+    call get_dtype_corv ;Carry flag = set if drive type is Corvus
+                        ;A = drive type
     pop bc
     or a
     cp 06h              ;Drive type = 06h (CBM 8250)?
