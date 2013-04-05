@@ -549,14 +549,18 @@ get_dtype:
     push hl             ;Save original HL
     push af             ;Save A (CP/M drive type)
 
-    or a
-    rra                 ;Rotate bit 0 of CP/M drive number into carry flag
-                        ;  For CBM dual drive units, bit 0 of the CP/M drive
-                        ;  number indicates either drive 0 (bit 0 clear)
-                        ;  or drive 1 (bit 0 set).
+                        ;Find index of this drive in the dtypes table:
+    or a                ;  Clear carry flag
+    rra                 ;  A = index into ddevs table for this drive
+                        ;      Dividing the CP/M drive number by 2 finds its
+                        ;      index in the ddevs or dtypes tables.  There
+                        ;      are 16 possible CP/M drives, which the SoftBox
+                        ;      maps to 8 units (each unit may provide up to
+                        ;      2 drives).  Bit 0 of the CP/M drive number
+                        ;      indicates which drive in the unit's pair.
 
                         ;Calculate address of drive in dtypes table:
-    ld c,a              ;  C = CP/M drive number
+    ld c,a              ;  C = index of this drive in dtypes table
     ld b,00h            ;  B = 0
     ld hl,dtypes        ;  HL = address of dtypes table
     add hl,bc           ;  HL = HL + BC (address of this drive in dtypes)
@@ -599,6 +603,7 @@ lf240h:
 
 sub_f245h:
 ;A = CP/M drive number
+;
 ;Sets carry flag if drive is a Corvus and valid, clears it otherwise.
 ;
     call get_dtype      ;C = drive type
@@ -606,6 +611,7 @@ sub_f245h:
 
     ld a,c              ;A = drive type
     or a
+
     cp 06h
     ret nc              ;Return with no carry if drive number is >= 6
 
@@ -969,7 +975,8 @@ lf39bh:
 
 sub_f3a5h:
 ;Called from corv_read_sec and corv_writ_sec
-    ld hl,(track)
+;
+    ld hl,(track)       ;HL = CP/M current track
     ld a,00h
     ld b,06h
 lf3ach:
@@ -977,19 +984,20 @@ lf3ach:
     rla
     djnz lf3ach
     push af
-    ld a,(sector)
+    ld a,(sector)       ;A = CP/M current sector
     or l
     ld l,a
     ld de,941ch
-    ld a,(drive)
-    call get_dtype
-    ld a,c
-    cp 05h
+    ld a,(drive)        ;A = CP/M drive number
+    call get_dtype      ;C = its drive type
+    ld a,c              ;A = C
+    cp 05h              ;Drive type = 5?
+                        ;  (5 = Corvus 5MB as 2 CP/M drives)
     jr nz,lf3c7h
     ld de,577ah
 lf3c7h:
-    ld a,(drive)
-    and 01h
+    ld a,(drive)        ;A = CP/M drive number
+    and 01h             ;Mask off all except bit 0
     jr nz,lf3d1h
     ld de,005ch
 lf3d1h:
@@ -1002,8 +1010,8 @@ lf3d1h:
     add a,a
     push hl
     push af
-    ld a,(drive)
-    call get_ddev
+    ld a,(drive)        ;A = CP/M drive number
+    call get_ddev       ;D = its Corvus unit ID
     pop af
     pop hl
     add a,d
@@ -2047,10 +2055,18 @@ get_ddev:
 ;
     push hl
     push af
-    or a
-    rra
+                        ;Find index of this drive in the ddevs table:
+    or a                ;  Clear carry flag
+    rra                 ;  A = index into ddevs table for this drive
+                        ;      Dividing the CP/M drive number by 2 finds its
+                        ;      index in the ddevs or dtypes tables.  There
+                        ;      are 16 possible CP/M drives, which the SoftBox
+                        ;      maps to 8 units (each unit may provide up to
+                        ;      2 drives).  Bit 0 of the CP/M drive number
+                        ;      indicates which drive in the unit's pair.
+
                         ;Calculate address of this drive in ddevs table:
-    ld e,a              ;  E = CP/M drive number
+    ld e,a              ;  E = index of this drive in ddevs table
     ld d,00h            ;  D = 0
     ld hl,ddevs         ;  HL = base address of ddevs table
     add hl,de           ;  HL = HL + DE (address of this drive in ddevs)
