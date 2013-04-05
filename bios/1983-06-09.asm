@@ -857,7 +857,7 @@ lf334h:
     djnz lf334h         ;Decrement B, loop until all bytes read
 
 corv_ret_ok:
-;Return to the caller with an OK status in A indicating
+;Return to the caller with A=0 (OK status) indicating
 ;that the last Corvus operation succeeded.
 ;
     xor a               ;A=0 (OK)
@@ -896,7 +896,7 @@ lf35ch:
     jr z,corv_ret_ok    ;Jump if error code is OK
 
 corv_ret_err:
-;Return to the caller with an Error status in A indicating
+;Return to the caller with A=0FFh (error status) indicating
 ;that the last Corvus operation failed.
 ;
     ld hl,corv_fault    ;HL = address of "*** HARD DISK ERROR" string
