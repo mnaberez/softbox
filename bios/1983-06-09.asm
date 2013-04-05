@@ -192,7 +192,7 @@ lf000h:
     jp ieee_put_str     ;f04b  Send string to the current IEEE-488 device
     jp ieee_put_itoa    ;f04e  Send number as decimal string to IEEE-488 dev
     jp get_dtype        ;f051  Get drive type for a CP/M drive number
-    jp ieee_find_dev    ;f054  Find IEEE-488 device number for a CP/M drive
+    jp get_ddev         ;f054  Get device address for a CP/M drive number
     jp ieee_lisn_cmd    ;f057  Open the command channel on IEEE-488 device
     jp ieee_read_err    ;f05a  Read the error channel of an IEEE-488 device
     jp ieee_open        ;f05d  Open a file on an IEEE-488 device
@@ -226,7 +226,7 @@ wboot:
 
 wboot_ieee:             ;Reload the system from an IEEE-488 drive:
     xor a               ;  A = CP/M drive number 0 (A:)
-    call ieee_find_dev  ;  D = its IEEE-488 primary address
+    call get_ddev       ;  D = its IEEE-488 primary address
     ld c,16h            ;  C = 22 pages to load: D400-E9FF
     call ieee_load_cpm  ;  Load CP/M from image file (A = CBM DOS error)
     jr wboot_start_ccp
@@ -536,6 +536,8 @@ sectran:
     ret
 
 get_dtype:
+;Get the drive type for a CP/M drive number from the dtypes table
+;
 ;A = CP/M drive number
 ;
 ;Returns drive type in C.  Preserves drive number in A.
@@ -1001,7 +1003,7 @@ lf3d1h:
     push hl
     push af
     ld a,(drive)
-    call ieee_find_dev
+    call get_ddev
     pop af
     pop hl
     add a,d
@@ -1885,7 +1887,7 @@ ieee_read_err:
 ;Read the error channel of an IEEE-488 device
 ;A = CP/M drive number
 ;
-    call ieee_find_dev  ;D = IEEE-488 primary address
+    call get_ddev       ;D = IEEE-488 primary address
                         ;Fall through into ieee_rd_err_d
 
 ieee_rd_err_d:
@@ -1958,7 +1960,7 @@ ieee_writ_sec_hl:
 
                         ;Send remaining 255 bytes of block:
     ld a,(x_drive)      ;  A = CP/M drive number
-    call ieee_find_dev  ;  D = its IEEE-488 primary address
+    call get_ddev       ;  D = its IEEE-488 primary address
     ld e,02h            ;  E = IEEE-488 secondary address 2
     call ieee_listen    ;  Send LISTEN
     pop hl
@@ -1991,7 +1993,7 @@ ieee_read_sec_hl:
 
                         ;Read first byte of sector from M-R:
     ld a,(x_drive)      ;  A = CP/M drive number
-    call ieee_find_dev  ;  D = its IEEE-488 primary address
+    call get_ddev       ;  D = its IEEE-488 primary address
     ld e,0fh            ;  E = Command channel number (15)
     call ieee_talk      ;  Send TALK
     call ieee_get_byte  ;  Read the byte returned by M-R
@@ -2017,7 +2019,7 @@ ieee_read_sec_hl:
 
                         ;Read remaining 255 bytes of block:
     ld a,(x_drive)      ;  A = CP/M drive number
-    call ieee_find_dev  ;  D = its IEEE-488 primary address
+    call get_ddev       ;  D = its IEEE-488 primary address
     ld e,02h            ;  E = IEEE-488 secondary address 2
     call ieee_talk      ;  Send TALK
     pop de
@@ -2036,20 +2038,25 @@ read_sec_retry:
     pop hl              ;Recall original HL
     jr ieee_read_sec_hl ;Try again
 
-ieee_find_dev:
-;Find the IEEE-488 device number for a CP/M drive
+get_ddev:
+;Get the device address for a CP/M drive number from the ddevs table
+;
 ;A = CP/M drive number (0=A:, 1=B:, ...)
-;Returns IEEE-488 device number in D
+;
+;Returns either an IEEE-488 primary address or a Corvus ID in D.
 ;
     push hl
     push af
     or a
     rra
-    ld e,a
-    ld d,00h
-    ld hl,ddevs
-    add hl,de
-    ld d,(hl)
+                        ;Calculate address of this drive in ddevs table:
+    ld e,a              ;  E = CP/M drive number
+    ld d,00h            ;  D = 0
+    ld hl,ddevs         ;  HL = base address of ddevs table
+    add hl,de           ;  HL = HL + DE (address of this drive in ddevs)
+
+    ld d,(hl)           ;D = device number of this drive
+                        ;    (IEEE-488 primary address or Corvus ID)
     pop af
     pop hl
     ret
@@ -2060,7 +2067,7 @@ ieee_lisn_cmd:
 ;HL = pointer to string
 ;C = number of bytes in string
 ;
-    call ieee_find_dev
+    call get_ddev       ;D = IEEE-488 primary address
     ld e,0fh            ;E = IEEE-488 secondary address 15 (command channel)
     jp ieee_listen
 
@@ -2068,7 +2075,7 @@ ieee_init_drv:
 ;Initialize an IEEE-488 disk drive
 ;A = CP/M drive number (0=A:, 1=B:, ...)
 ;
-    call ieee_find_dev  ;D = IEEE-488 primary address
+    call get_ddev       ;D = IEEE-488 primary address
     ld e,0fh            ;E = IEEE-488 secondary address 15 (command channel)
     push de
 
