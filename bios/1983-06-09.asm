@@ -899,9 +899,9 @@ corv_ret_err:
 ;Return to the caller with an Error status in A indicating
 ;that the last Corvus operation failed.
 ;
-    ld hl,corvus_msg
+    ld hl,corv_fault    ;HL = address of "*** HARD DISK ERROR" string
     push af
-    call puts           ;Write "*** HARD DISK ERROR " to console out
+    call puts           ;Write fault message to console out
     pop af
     call puts_hex_byte  ;Write Corvus error code to console out
     and 0ffh            ;A=0FFh (Error)
@@ -1050,7 +1050,7 @@ lf3d1h:
     add a,d
     ret
 
-corvus_msg:
+corv_fault:
     db 0dh,0ah,07h,"*** HARD DISK ERROR ***  ",00h
 
 puts_hex_byte:
