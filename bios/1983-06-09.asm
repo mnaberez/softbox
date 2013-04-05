@@ -635,7 +635,7 @@ read:
 ;Read the currently set track and sector at the current DMA address.
 ;Returns A=0 for OK, 1 for unrecoverable error, 0FFh if media changed.
 ;
-    ld a,(drive)        ;0040h = CP/M drive number
+    ld a,(drive)        ;A = CP/M drive number
     call get_dtype_corv ;Is it a Corvus hard drive?
     jp c,corv_read_sec  ;  Yes: jump to Corvus read sector
 
@@ -2812,7 +2812,7 @@ clear_screen:
     rra
     ret nc              ;Do nothing if console is RS-232 (CRT: = TTY:)
 
-    ld c,1ah            ;01ah = Lear Siegler ADM-3A clear screen code
+    ld c,1ah            ;1ah = Lear Siegler ADM-3A clear screen code
     jp conout_cbm
 
 execute:
