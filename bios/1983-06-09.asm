@@ -191,7 +191,7 @@ lf000h:
     jp ieee_eoi_cr      ;f048  Send carriage return to IEEE-488 dev with EOI
     jp ieee_put_str     ;f04b  Send string to the current IEEE-488 device
     jp ieee_put_itoa    ;f04e  Send number as decimal string to IEEE-488 dev
-    jp e_f224h          ;f051
+    jp get_dtype        ;f051  Get drive type for a CP/M drive number
     jp ieee_find_dev    ;f054  Find IEEE-488 device number for a CP/M drive
     jp ieee_lisn_cmd    ;f057  Open the command channel on IEEE-488 device
     jp ieee_read_err    ;f05a  Read the error channel of an IEEE-488 device
@@ -320,9 +320,9 @@ start_ccp:
     ld a,(hl)           ;A = current user and disk
     and 0fh             ;Mask off user nybble leaving A = current disk
 
-    call e_f224h        ;Drive number valid?
+    call get_dtype      ;Drive number valid?
     jr c,lf15ch         ;  Yes: keep it
-    ld (hl),00h         ;  No: reset drive number to 0 (A:)
+    ld (hl),00h         ;   No: reset drive number to 0 (A:)
 
 lf15ch:
     ld c,(hl)           ;C = pass current drive number to CCP
@@ -371,7 +371,7 @@ seldsk:
 ;
                         ;Check if requested drive is valid:
     ld a,c              ;  A = requested drive number
-    call e_f224h        ;  Check if drive number is valid
+    call get_dtype      ;  Check if drive number is valid
     ld hl,0000h         ;  HL = error code
     ret nc              ;  Return if drive is invalid
 
@@ -535,51 +535,71 @@ sectran:
     ld h,b
     ret
 
-e_f224h:
+get_dtype:
 ;A = CP/M drive number
 ;
-;Returns drive type in C.
+;Returns drive type in C.  Preserves drive number in A.
 ;Sets carry flag is drive is valid, clears it otherwise.
 ;
     cp 10h              ;Valid drives are 0 (A:) through 00fh (P:)
     ret nc              ;Return with carry clear if drive is greater than P:
 
-    push hl
-    push af
+    push hl             ;Save original HL
+    push af             ;Save A (CP/M drive type)
+
     or a
     rra                 ;Rotate bit 0 of CP/M drive number into carry flag
                         ;  For CBM dual drive units, bit 0 of the CP/M drive
                         ;  number indicates either drive 0 (bit 0 clear)
                         ;  or drive 1 (bit 0 set).
 
-    ld c,a
+                        ;Calculate address of drive in dtypes table:
+    ld c,a              ;  C = CP/M drive number
+    ld b,00h            ;  B = 0
+    ld hl,dtypes        ;  HL = address of dtypes table
+    add hl,bc           ;  HL = HL + BC (address of this drive in dtypes)
 
-    ld b,00h
-    ld hl,dtypes
-    add hl,bc           ;HL = pointer to drive in dtypes table
+                        ;Load drive type into C:
+    ld c,(hl)           ;  C = drive type
+    ld a,c              ;  A = C
 
-    ld c,(hl)           ;C = drive type
-    ld a,c              ;A = C
-    cp 04h
-    pop hl
-    ld a,h
-    jr nz,lf23eh
-    bit 0,a
-    jr lf240h
-lf23eh:
-    bit 7,c
+    cp 04h              ;Drive type 4?
+                        ;  (4 = Corvus 5MB as 1 CP/M drive)
+
+                        ;Load drive number back into A:
+    pop hl              ;  H = CP/M drive number
+    ld a,h              ;  A = H
+
+    jr nz,lf23eh        ;If drive type is not 4:
+                        ;  Jump over check specific to type 4
+
+                        ;If drive type is 4:
+    bit 0,a             ;  Z flag = opposite of bit 0 in drive number
+                        ;  For drive type 4 (Corvus 5MB as 1 CP/M drive),
+                        ;    only the first drive in each pair is valid.
+    jr lf240h           ;  Jump over drive type check
+
+lf23eh:                 ;If drive type is not 4:
+    bit 7,c             ;  Z flag = opposite of bit 7 of drive type
+                        ;  If bit 7 of the drive type is set, it indicates
+                        ;    no drive is installed.
+
 lf240h:
-    pop hl
-    scf
-    ret z
-    or a
-    ret
+    pop hl              ;Recall original HL
+
+                        ;If Z flag is clear:
+    scf                 ;  Set carry flag to indicate drive is valid
+    ret z               ;  and return
+
+                        ;If Z flag is set:
+    or a                ;  Clear carry flag to indicate drive is not valid
+    ret                 ;  and return
 
 sub_f245h:
 ;A = CP/M drive number
 ;Sets carry flag if drive is a Corvus and valid, clears it otherwise.
 ;
-    call e_f224h
+    call get_dtype      ;C = drive type
     ret nc              ;Return with no carry if drive number is invalid
 
     ld a,c              ;A = drive type
@@ -602,6 +622,7 @@ read:
     call sub_f6b9h
     ld a,01h
     call nz,ieee_read_sec
+
     ld a,(sector)
     rrca
     call copy_to_dma
@@ -959,7 +980,7 @@ lf3ach:
     ld l,a
     ld de,941ch
     ld a,(drive)
-    call e_f224h
+    call get_dtype
     ld a,c
     cp 05h
     jr nz,lf3c7h
@@ -1539,24 +1560,33 @@ lf6a3h:
 sub_f6b9h:
 ;Called from read and write
 ;
-    ld a,(drive)        ;0040h = CP/M drive number
+    ld a,(drive)        ;A = CP/M drive number
+
     ld hl,x_drive       ;HL = address of x_drive
     xor (hl)            ;x_drive = 0
+
     ld b,a
-    ld a,(track)
-    ld hl,x_track       ;0045h = CP/M track number
-    xor (hl)
+
+    ld a,(track)        ;A = CP/M track number
+
+    ld hl,x_track       ;HL = address of x_track
+    xor (hl)            ;x_track = 0
+
     or b
+
     ld b,a
     ld a,(track+1)
     inc hl
     xor (hl)
     or b
     ld b,a
+
     ld a,(sector)
     rra
-    ld hl,x_sector      ;0047h = CP/M sector number
-    xor (hl)
+
+    ld hl,x_sector      ;HL = addresses of x_sector, 0048h (TODO 0048h?)
+    xor (hl)            ;x_sector = 0, (0048h)=0
+
     or b
     ret z
 
@@ -1567,9 +1597,11 @@ sub_f6b9h:
     call nz,ieee_writ_sec ;Perform the write if one is pending
 
     ld a,(drive)
-    ld (x_drive),a
+    ld (x_drive),a      ;x_drive = drive
+
     ld hl,(track)
-    ld (x_track),hl
+    ld (x_track),hl     ;x_track = track
+
     ld a,(sector)
     or a
     rra
@@ -1736,8 +1768,8 @@ find_trk_sec:
 ;Find the CBM DOS track and sector for the current CP/M track and sector.
 ;
     ld a,(x_drive)
-    call e_f224h        ;Returns drive type in C
-    ld a,c              ;A = drive type
+    call get_dtype      ;C = drive type
+    ld a,c              ;A = C
     or a
     ld ix,0057h
 
