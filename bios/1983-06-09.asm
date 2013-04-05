@@ -828,17 +828,18 @@ corv_read_sec:
 ;
 ;Returns error code in A: 0=OK, 0ffh=Error.
 ;
-    call sub_f3a5h
+    call corv_find_dadr ;A,H,L = Corvus DADR ("Disk Address")
+
     push af
     ld a,12h            ;12h = Read Sector (128 bytes)
     call corv_put_byte  ;Send command byte
-
     pop af
-    call corv_put_byte  ;Send A
+
+    call corv_put_byte  ;Send A (DADR byte 0)
     ld a,l
-    call corv_put_byte  ;Send L
+    call corv_put_byte  ;Send L (DADR byte 1)
     ld a,h
-    call corv_put_byte  ;Send H
+    call corv_put_byte  ;Send H (DADR byte 2)
 
     ld hl,(dma)         ;HL = start address of DMA buffer area
 
@@ -867,17 +868,18 @@ corv_writ_sec:
 ;
 ;Returns error code in A: 0=OK, 0ffh=Error.
 ;
-    call sub_f3a5h
+    call corv_find_dadr ;A,H,L = Corvus DADR ("Disk Address")
+
     push af
     ld a,13h            ;13h = Write sector (128 bytes)
     call corv_put_byte  ;Send command byte
-
     pop af
-    call corv_put_byte  ;Send A
+
+    call corv_put_byte  ;Send A (DADR byte 0)
     ld a,l
-    call corv_put_byte  ;Send L
+    call corv_put_byte  ;Send L (DADR byte 1)
     ld a,h
-    call corv_put_byte  ;Send H
+    call corv_put_byte  ;Send H (DADR byte 2)
 
     ld b,80h            ;B = 128 bytes to write
     ld hl,(dma)         ;HL = start address of DMA buffer area
@@ -985,8 +987,27 @@ lf39bh:
     out (corvus),a      ;Put byte on Corvus data bus
     ret
 
-sub_f3a5h:
-;Called from corv_read_sec and corv_writ_sec
+corv_find_dadr:
+;Find the Corvus DADR ("Disk Address") for the current
+;CP/M drive, track and sector.
+;
+;Sectors on Corvus hard drives are not addressed by physical track
+;and sector.  Instead, they are addressed as a single large
+;logical sector space.
+;
+;The DADR is 3 bytes (24 bits), consisting of a 4-bit Corvus unit ID
+;and a 20-bit logical sector address.
+;
+;Returns:
+;  A = DADR byte 0 "D"
+;        Upper nybble: Bits 16-19 of the logical sector address
+;        Lower nybble: Corvus unit ID (1 to 15)
+;
+;  L = DADR byte 1 "LSB"
+;        Bits 0-7 of the logical sector address
+;
+;  H = DADR byte 2 "MSB"
+;        Bits 8-15 of the logical sector address
 ;
     ld hl,(track)       ;HL = CP/M current track
     ld a,00h
