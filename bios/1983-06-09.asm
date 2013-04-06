@@ -1203,6 +1203,13 @@ lf4b0h:
     jr test_failed
 
 calc_checksum:
+;Calculate the ROM checksum.
+;
+;HL = start address of ROM
+;BC = number of bytes to process
+;
+;Returns the checksum in A.
+;
     xor a               ;A=0
 lf4bah:
     add a,(hl)          ;Add byte at pointer to A
