@@ -962,14 +962,14 @@ lf385h:
 corv_wait_read:
 ;Wait until Corvus READY=high, then a data byte from Corvus.
 ;
-;Returns the data byte in A and also changes the Z flag:
-;the Z flag: Z=1 if OK, Z=0 if error.
+;Returns the data byte in A and sets the Z flag: Z=1 if OK, Z=0 if error.
 ;
     in a,(ppi2_pc)
     and 10h             ;Mask off all but bit 4 (Corvus READY)
     jr z,corv_wait_read ;Wait until Corvus READY=high
     in a,(corvus)
-    bit 7,a             ;Z flag = 1 if OK, 0 if error.
+    bit 7,a             ;Bit 7 of Corvus error byte is set if fatal error
+                        ;Z = opposite of bit 7 (Z=1 if OK, Z=0 if error)
     ret
 
 corv_put_byte:
