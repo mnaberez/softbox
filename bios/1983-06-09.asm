@@ -1160,7 +1160,7 @@ lf47ah:
     call calc_checksum  ;Calculate ROM checksum
 
     ld c,03h
-    ld hl,checksum      ;Load checksum in ROM
+    ld hl,checksum      ;HL = address of checksum byte in ROM
     cp (hl)             ;Any difference from the calculated value?
     jp z,test_passed    ;  No: ROM check passed
 
@@ -1172,7 +1172,7 @@ lf492h:
     xor a
     out (ppi2_pc),a     ;Invert "Ready" LED
 
-    ld de,lffffh
+    ld de,0ffffh
 lf498h:
     dec de
     ld a,e
@@ -1182,7 +1182,7 @@ lf498h:
     ld a,04h
     out (ppi2_pc),a     ;Turn on "Ready" LED
 
-    ld de,lffffh
+    ld de,0ffffh
 lf4a4h:
     dec de
     ld a,e
@@ -1192,7 +1192,7 @@ lf4a4h:
     djnz lf492h
 
     ld b,03h
-    ld de,lffffh
+    ld de,0ffffh
 lf4b0h:
     dec de
     ld a,e
@@ -3153,7 +3153,7 @@ filler:
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 checksum:
-    db 91h, 0ffh
+    db 91h
 
-lffffh:
-    db 0ffh
+lfffeh:
+    db 0ffh, 0ffh
