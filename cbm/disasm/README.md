@@ -11,7 +11,7 @@ terminal program for Commodore PET/CBM computers.
    [CBMXfer](http://www.6502.org/users/sjgray/software/cbmxfer/cbmxfer.html),
    then reverse engineered and commented.
 
- - `disasm2acme.rb` is a Ruby script that will convert the disassembly
+ - `disasm2acme.py` is a Python script that will convert the disassembly
    into [ACME](http://www.esw-heim.tu-clausthal.de/~marco/smorbrod/acme/)
    assembler format.
 
@@ -19,7 +19,7 @@ terminal program for Commodore PET/CBM computers.
 
 Convert `k.disasm` into ACME assembler source code:
 
-    $ ruby disasm2acme.rb k.disasm > k2.asm
+    $ python disasm2acme.py k.disasm > k2.asm
 
 Assemble the source:
 
