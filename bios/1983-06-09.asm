@@ -1115,7 +1115,7 @@ lf43fh:
 lf44ah:
     ld a,(hl)
     cp l
-    jr nz,help_me
+    jr nz,test_failed
     cpl
     ld (hl),a
     inc hl
@@ -1139,7 +1139,7 @@ lf468h:
     ld a,(hl)
     cpl
     cp l
-    jr nz,help_me
+    jr nz,test_failed
     inc hl
     ld a,h
     and 0fh
@@ -1162,9 +1162,9 @@ lf47ah:
     ld c,03h
     ld hl,checksum      ;Load checksum in ROM
     cp (hl)             ;Any difference from the calculated value?
-    jp z,lf4c5h         ;  No: ROM check passed
+    jp z,test_passed    ;  No: ROM check passed
 
-help_me:
+test_failed:
 ;Self-test failed.  Blink the LED forever.
 ;
     ld b,c
@@ -1200,7 +1200,7 @@ lf4b0h:
     jr nz,lf4b0h        ;Delay loop
 
     djnz lf4b0h
-    jr help_me
+    jr test_failed
 
 calc_checksum:
     xor a               ;A=0
@@ -1216,7 +1216,9 @@ lf4bah:
     jr nz,lf4bah        ;Loop if more bytes remaining
     ret
 
-lf4c5h:
+test_passed:
+;Self-test passed.  Continue normal startup.
+;
     in a,(ppi2_pb)
     or 80h
     out (ppi2_pb),a     ;IFC_OUT=low
