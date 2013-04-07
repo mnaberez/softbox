@@ -410,7 +410,7 @@ seldsk:
                         ;Special handling if requested drive is a Corvus:
     ld a,(drive)        ;  A = CP/M drive number
     call get_dtype_corv ;  Is it a Corvus hard drive?
-    call c,sub_f2ffh    ;    Yes: TODO: Corvus select or reset?
+    call c,corv_init    ;    Yes: initialize the Corvus controller
 
     pop hl              ;HL = address of the DPH
     ret
@@ -806,10 +806,11 @@ lf2fch:
     ldir                ;Copy BC bytes from (HL) to (DE)
     ret
 
-sub_f2ffh:
-;Called only from seldsk
-    ld a,0ffh
-    out (corvus),a
+corv_init:
+;Initialize the Corvus hard drive controller
+;
+    ld a,0ffh           ;0ffh = byte that is an invalid command
+    out (corvus),a      ;Send it to the controller
 
     ld b,0ffh
 lf305h:
@@ -817,10 +818,11 @@ lf305h:
 
     in a,(ppi2_pc)
     and 20h
-    jr nz,sub_f2ffh     ;Wait until Corvus ACTIVE=low
+    jr nz,corv_init     ;Loop until Corvus ACTIVE=low
     call corv_wait_read ;Wait until Corvus READY=high, then read byte
-    cp 8fh
-    jr nz,sub_f2ffh
+
+    cp 8fh              ;Response should be 8fh (Illegal Command)
+    jr nz,corv_init     ;Loop until the expected response is received
     ret
 
 corv_read_sec:
