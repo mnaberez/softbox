@@ -1012,29 +1012,37 @@ corv_find_dadr:
 ;        Bits 8-15 of the logical sector address
 ;
     ld hl,(track)       ;HL = CP/M current track
+
     ld a,00h
     ld b,06h
 lf3ach:
     add hl,hl
     rla
-    djnz lf3ach
+    djnz lf3ach         ;Decrement B, loop until B=0
+
     push af
     ld a,(sector)       ;A = CP/M current sector
     or l
     ld l,a
-    ld de,941ch
-    ld a,(drive)        ;A = CP/M drive number
-    call get_dtype      ;C = its drive type
-    ld a,c              ;A = C
-    cp 05h              ;Drive type = 5?
-                        ;  (5 = Corvus 5MB as 2 CP/M drives)
-    jr nz,lf3c7h
-    ld de,577ah
-lf3c7h:
-    ld a,(drive)        ;A = CP/M drive number
-    and 01h             ;Mask off all except bit 0
-    jr nz,lf3d1h
-    ld de,005ch
+
+                        ;Find offset for second half of drive:
+    ld de,941ch         ;  DE = logical sector offset for the second half
+                        ;       of a Corvus hard drive
+                        ;
+    ld a,(drive)        ;  A = CP/M drive number
+    call get_dtype      ;  C = its drive type
+    ld a,c              ;  A = C
+                        ;
+    cp 05h              ;  Drive type = 5 (Corvus 5MB as 2 CP/M drives)?
+    jr nz,lf3c7h        ;    No:  Keep current second half offset
+    ld de,577ah         ;    Yes: Change to smaller second half offset
+
+lf3c7h:                 ;Select offset for first or second drive half:
+    ld a,(drive)        ;  A = CP/M drive number
+    and 01h             ;  Is it the first drive in drive pair (e.g. A:/B:)?
+    jr nz,lf3d1h        ;    No:  jump to keep offset for second half
+    ld de,005ch         ;    Yes: change to offset for first half
+
 lf3d1h:
     pop af
     add hl,de
@@ -1043,13 +1051,14 @@ lf3d1h:
     add a,a
     add a,a
     add a,a
-    push hl
-    push af
-    ld a,(drive)        ;A = CP/M drive number
-    call get_ddev       ;D = its Corvus unit ID
-    pop af
-    pop hl
-    add a,d
+                        ;Set lower nybble of A to the Corvus unit ID:
+    push hl             ;
+    push af             ;
+    ld a,(drive)        ;  A = CP/M drive number
+    call get_ddev       ;  D = its Corvus unit ID
+    pop af              ;
+    pop hl              ;
+    add a,d             ;  A lower nybble = Corvus unit ID
     ret
 
 corv_fault:
