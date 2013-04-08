@@ -1,13 +1,15 @@
 ;TIME.COM
 ;  Read or set time on the CBM computer clock
 
-get_time:      equ 0f072h ;BIOS Read the CBM clocks (both RTC and jiffies)
-set_time:      equ 0f06fh ;BIOS Set the time on the CBM real time clock
+args:       equ  0080h  ;Command line arguments passed from CCP
+get_time:   equ 0f072h  ;BIOS Read the CBM clocks (both RTC and jiffies)
+set_time:   equ 0f06fh  ;BIOS Set the time on the CBM real time clock
 
     org 0100h           ;CP/M TPA
 
-    ld hl,0080h         ;0100
-    ld c,(hl)           ;0103
+    ld hl,args          ;HL = command line arguments from CCP: first byte is
+                        ;       number of chars, followed by the chars
+    ld c,(hl)           ;C = number of chars
     call sub_0168h      ;0104
     jp nc,time_input    ;0107
 
@@ -60,11 +62,11 @@ time_input:
 ;
     ld d,a              ;0135
     call sub_0168h      ;0136
-    jp c,l015dh         ;0139
+    jp c,bad_syntax     ;0139
     ld e,a              ;013c
     push de             ;013d
     call sub_0168h      ;013e
-    jp c,l015dh         ;0141
+    jp c,bad_syntax     ;0141
     ld d,a              ;0144
 
     push de             ;0145
@@ -81,7 +83,7 @@ time_input:
     jp set_time         ;Jump out to set time on the CBM computer,
                         ;  it will return to CP/M.
 
-l015dh:
+bad_syntax:
     ld de,syntax_err    ;015d
     ld c,09h            ;C = 09h, C_WRITESTR (Output String)
     call 0005h          ;BDOS System Call
@@ -116,7 +118,6 @@ sub_0168h:
     pop af              ;018f
     add a,b             ;0190
     ret                 ;0191
-
 l0192h:
     ld a,b              ;0192
     dec hl              ;0193

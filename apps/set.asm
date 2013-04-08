@@ -1,6 +1,7 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels set.com
 
+args:       equ  0080h  ;Command line arguments passed from CCP
 dirsize:    equ 0d8b2h  ;CCP directory width: 0=1 col, 1=2 cols, 3=4 cols
 lpt_dev:    equ 0ea61h  ;CBM printer (LPT:) IEEE-488 primary address
 ptr_dev:    equ 0ea62h  ;Paper Tape Reader (PTR:) IEEE-488 primary address
@@ -15,19 +16,22 @@ jp_conout:  equ 0ea0ch  ;Jumps to conout (Console Output) routine in BIOS
 
     org 0100h           ;CP/M TPA
 
-    ld hl,0080h
-    ld c,(hl)
-l0104h:
-    inc hl
-    ld a,(hl)
-    cp 20h
-    jp nz,dispatch
-    dec c
-    jp nz,l0104h
-    jp bad_syntax
+    ld hl,args          ;HL = command line arguments from CCP: first byte is
+                        ;       number of chars, followed by the chars
+    ld c,(hl)           ;C = number of chars
+next_char:
+    inc hl              ;HL = HL + 1 (increment to next char)
+    ld a,(hl)           ;A = char from args
+    cp ' '              ;Is it a space?
+    jp nz,dispatch      ;  No: jump to dispatch it
+    dec c               ;C = C - 1 (decrement num of chars remaining)
+                        ;End of command arguments?
+    jp nz,next_char     ;   No: Loop to handle the next char.
+    jp bad_syntax       ;  Yes: Exit with syntax error.
 
 p_bad_syntax:
 ;Pop DE then fall through to bad_syntax
+;
     pop de
 
 bad_syntax:
@@ -39,6 +43,8 @@ bad_syntax:
                         ;  return to CP/M.
 
 dispatch:
+;Dispatch the first character of the command arguments.
+;
     and 5fh
     cp 'U'              ;U = Set uppercase mode
     jp z,set_u
