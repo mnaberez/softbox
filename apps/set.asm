@@ -24,8 +24,10 @@ l0104h:
     dec c               ;010b
     jp nz,l0104h        ;010c
     jp bad_syntax       ;010f
-l0112h:
-    pop de              ;0112
+
+p_bad_syntax:
+;Pop DE then fall through to bad_syntax
+    pop de
 
 bad_syntax:
 ;Write "Syntax error" to console out and return to CP/M.
@@ -37,13 +39,13 @@ bad_syntax:
 
 dispatch:
     and 5fh
-    cp 'U'
+    cp 'U'              ;U = Set uppercase mode
     jp z,set_u
-    cp 'L'
+    cp 'L'              ;L = Set lowercase mode
     jp z,set_l
-    cp 'T'
+    cp 'T'              ;T = Set line spacing to tall
     jp z,set_t
-    cp 'G'
+    cp 'G'              ;G = Set line spacing to short
     jp z,set_g
     cp 'V'
     jp z,set_v
@@ -57,23 +59,35 @@ dispatch:
     jp z,set_r
     cp 'N'
     jp z,set_n
-    cp 'E'
+    cp 'E'              ;E = Set terminal command lead-in
     jp z,set_e
     jp bad_syntax
 
 set_u:
+;Set uppercase mode
+;  SET U
+;
     ld c,15h            ;15h = Go to uppercase mode
     jp 0ea0ch           ;0159
 
 set_l:
+;Set lowercase mode
+;  SET L
+;
     ld c,16h            ;16h = Go to lowercase mode
     jp 0ea0ch           ;015e
 
 set_g:
+;Set line spacing to tall
+;  SET T
+;
     ld c,17h            ;17h = Set line spacing to tall
     jp 0ea0ch           ;0163
 
 set_t:
+;Set line spacing to short
+;  SET G
+;
     ld c,18h            ;18h = Set line spacing to short
     jp 0ea0ch           ;0168
 
@@ -81,28 +95,32 @@ sub_016bh:
     inc hl              ;016b
     ld a,(hl)           ;016c
     cp '='              ;016d
-    jp nz,l0112h        ;016f
+    jp nz,p_bad_syntax  ;016f
     inc hl              ;0172
     ld a,(hl)           ;0173
     dec c               ;0174
     dec c               ;0175
     dec c               ;0176
-    jp m,l0112h         ;0177
+    jp m,p_bad_syntax         ;0177
     ret                 ;017a
 
 set_e:
-    call sub_016bh      ;017b
-    and 5fh             ;017e
-    cp 'E'              ;0180
-    ld b,1bh            ;0182
-    jp z,l018eh         ;0184
-    cp 'T'              ;0187
-    jp nz,bad_syntax    ;0189
-    ld b,7eh            ;018c
+;Set terminal command lead-in
+;  SET E=E  Escape
+;  SET E=T  Tilde
+;
+    call sub_016bh
+    and 5fh
+    cp 'E'
+    ld b,1bh            ;01bh = ESC
+    jp z,l018eh
+    cp 'T'
+    jp nz,bad_syntax
+    ld b,7eh            ;7eh = Tilde
 l018eh:
-    ld hl,leadin        ;018e
-    ld (hl),b           ;0191
-    ret                 ;0192
+    ld hl,leadin
+    ld (hl),b
+    ret
 
 set_v:
     call sub_016bh      ;0193
