@@ -77,171 +77,22 @@ l017ch:
     ld c,009h           ;018b
     jp 00005h           ;018d
 l0190h:
-    dec c               ;0190
-    ld a,(bc)           ;0191
-    ld b,e              ;0192
-    ld l,a              ;0193
-    ld (hl),b           ;0194
-    ld a,c              ;0195
-    jr nz,$+101         ;0196
-    ld l,a              ;0198
-    ld l,l              ;0199
-    ld (hl),b           ;019a
-    ld l,h              ;019b
-    ld h,l              ;019c
-    ld (hl),h           ;019d
-    ld h,l              ;019e
-    inc h               ;019f
-    dec c               ;01a0
-    ld a,(bc)           ;01a1
-    ld d,e              ;01a2
-    ld a,c              ;01a3
-    ld l,(hl)           ;01a4
-    ld (hl),h           ;01a5
-    ld h,c              ;01a6
-    ld a,b              ;01a7
-    jr nz,l020fh        ;01a8
-    ld (hl),d           ;01aa
-    ld (hl),d           ;01ab
-    ld l,a              ;01ac
-    ld (hl),d           ;01ad
-    inc h               ;01ae
+    db 0dh,0ah,"Copy complete$"
+    db 0dh,0ah,"Syntax error$"
 l01afh:
-    dec c               ;01af
-    ld a,(bc)           ;01b0
-    ld b,h              ;01b1
-    ld (hl),d           ;01b2
-    ld l,c              ;01b3
-    halt                ;01b4
-    ld h,l              ;01b5
-    ld (hl),e           ;01b6
-    jr nz,l0226h        ;01b7
-    ld (hl),l           ;01b9
-    ld (hl),e           ;01ba
-    ld (hl),h           ;01bb
-    jr nz,l0220h        ;01bc
-    ld h,l              ;01be
-    jr nz,l0230h        ;01bf
-    ld l,(hl)           ;01c1
-    jr nz,l0238h        ;01c2
-    ld l,b              ;01c4
-    ld h,l              ;01c5
-    jr nz,l023bh        ;01c6
-    ld h,c              ;01c8
-    ld l,l              ;01c9
-    ld h,l              ;01ca
-    jr nz,l0242h        ;01cb
-    ld l,(hl)           ;01cd
-    ld l,c              ;01ce
-    ld (hl),h           ;01cf
-    jr nz,$+35          ;01d0
-    inc h               ;01d2
+    db 0dh,0ah,"Drives must be on the same unit !$"
 l01d3h:
-    dec c               ;01d3
-    ld a,(bc)           ;01d4
-    ld b,h              ;01d5
-    ld l,c              ;01d6
-    ld (hl),e           ;01d7
-    ld l,e              ;01d8
-    jr nz,l0240h        ;01d9
-    ld (hl),d           ;01db
-    ld (hl),d           ;01dc
-    ld l,a              ;01dd
-    ld (hl),d           ;01de
-    jr nz,l021bh        ;01df
-    jr nz,l0207h        ;01e1
+    db 0dh,0ah,"Disk error : $"
 l01e3h:
-    dec c               ;01e3
-    ld a,(bc)           ;01e4
-    ld b,h              ;01e5
-    ld l,c              ;01e6
-    ld (hl),e           ;01e7
-    ld l,e              ;01e8
-    jr nz,$+113         ;01e9
-    ld l,(hl)           ;01eb
-    jr nz,l0252h        ;01ec
-    ld (hl),d           ;01ee
-    ld l,c              ;01ef
-    halt                ;01f0
-    ld h,l              ;01f1
-    jr nz,l0218h        ;01f2
+    db 0dh,0ah,"Disk on drive $"
 l01f4h:
-    ld a,(07720h)       ;01f4
-    ld l,c              ;01f7
-    ld l,h              ;01f8
-    ld l,h              ;01f9
-    jr nz,$+100         ;01fa
-    ld h,l              ;01fc
-    jr nz,l0264h        ;01fd
-    ld (hl),d           ;01ff
-    ld h,c              ;0200
-    ld (hl),e           ;0201
-    ld h,l              ;0202
-    ld h,h              ;0203
-    ld l,00dh           ;0204
-    ld a,(bc)           ;0206
+    db ": will be erased.",0dh,0ah
 l0207h:
-    ld d,b              ;0207
-    ld (hl),d           ;0208
-    ld h,l              ;0209
-    ld (hl),e           ;020a
-    ld (hl),e           ;020b
-    jr nz,$+84          ;020c
-    ld b,l              ;020e
-l020fh:
-    ld d,h              ;020f
-    ld d,l              ;0210
-    ld d,d              ;0211
-    ld c,(hl)           ;0212
-    jr nz,$+118         ;0213
-    ld l,a              ;0215
-    jr nz,l027bh        ;0216
-l0218h:
-    ld l,a              ;0218
-    ld l,(hl)           ;0219
-    ld (hl),h           ;021a
-l021bh:
-    ld l,c              ;021b
-    ld l,(hl)           ;021c
-    ld (hl),l           ;021d
-    ld h,l              ;021e
-    inc l               ;021f
-l0220h:
-    dec c               ;0220
-    ld a,(bc)           ;0221
-    ld d,b              ;0222
-    ld (hl),d           ;0223
-    ld h,l              ;0224
-    ld (hl),e           ;0225
-l0226h:
-    ld (hl),e           ;0226
-    jr nz,$+118         ;0227
-    ld l,b              ;0229
-    ld h,l              ;022a
-    jr nz,$+85          ;022b
-    ld d,b              ;022d
-    ld b,c              ;022e
-    ld b,e              ;022f
-l0230h:
-    ld b,l              ;0230
-    jr nz,$+68          ;0231
-    ld b,c              ;0233
-    ld d,d              ;0234
-    jr nz,$+118         ;0235
-    ld l,a              ;0237
-l0238h:
-    jr nz,$+99          ;0238
-    ld h,d              ;023a
-l023bh:
-    ld l,a              ;023b
-    ld (hl),d           ;023c
-    ld (hl),h           ;023d
-    jr nz,l027ah        ;023e
-l0240h:
-    jr nz,$+38          ;0240
+    db "Press RETURN to continue,",0dh,0ah
+    db "Press the SPACE BAR to abort : $"
+
 l0242h:
-    ld b,h              ;0242
-    ld sp,0303dh        ;0243
+    db "D1=0"
 l0246h:
     ld b,h              ;0246
     jr nc,$+63          ;0247
