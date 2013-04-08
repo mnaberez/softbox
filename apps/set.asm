@@ -1,7 +1,7 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels set.com
 
-    org 0100h
+    org 0100h           ;CP/M TPA
 
     ld hl,0080h         ;0100
     ld c,(hl)           ;0103
@@ -9,53 +9,63 @@ l0104h:
     inc hl              ;0104
     ld a,(hl)           ;0105
     cp 20h              ;0106
-    jp nz,l011bh        ;0108
+    jp nz,dispatch      ;0108
     dec c               ;010b
     jp nz,l0104h        ;010c
-    jp l0113h           ;010f
+    jp bad_syntax       ;010f
 l0112h:
     pop de              ;0112
-l0113h:
-    ld de,l0252h        ;0113
-    ld c,09h            ;0116
-    jp 0005h            ;0118
-l011bh:
-    and 5fh             ;
-    cp 55h              ;"U"
-    jp z,l0157h         ;
-    cp 4ch              ;"L"
-    jp z,l015ch         ;
-    cp 54h              ;"T"
-    jp z,l0166h         ;
-    cp 47h              ;"G"
-    jp z,l0161h         ;
-    cp 56h              ;"V"
-    jp z,l0193h         ;
-    cp 44h              ;"D"
-    jp z,l01ech         ;
-    cp 50h              ;"P"
-    jp z,l020ch         ;
-    cp 41h              ;"A"
-    jp z,l0209h         ;
-    cp 52h              ;"R"
-    jp z,l0218h         ;
-    cp 4eh              ;"N"
-    jp z,l0212h         ;
-    cp 45h              ;"E"
-    jp z,l017bh         ;0151
-    jp l0113h           ;0154
-l0157h:
+
+bad_syntax:
+;Write "Syntax error" to console out and return to CP/M.
+;
+    ld de,syntax_err    ;DE = address of "Syntax error" string
+    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    jp 0005h            ;Jump out to BDOS System Call.  It will
+                        ;  return to CP/M.
+
+dispatch:
+    and 5fh
+    cp 'U'
+    jp z,set_u
+    cp 'L'
+    jp z,set_l
+    cp 'T'
+    jp z,set_t
+    cp 'G'
+    jp z,set_g
+    cp 'V'
+    jp z,set_v
+    cp 'D'
+    jp z,set_d
+    cp 'P'
+    jp z,set_p
+    cp 'A'
+    jp z,set_a
+    cp 'R'
+    jp z,set_n
+    cp 'N'
+    jp z,set_e
+    cp 'E'
+    jp z,l017bh
+    jp bad_syntax
+
+set_u:
     ld c,15h            ;15h = Go to uppercase mode
     jp 0ea0ch           ;0159
-l015ch:
+
+set_l:
     ld c,16h            ;16h = Go to lowercase mode
     jp 0ea0ch           ;015e
-l0161h:
+
+set_g:
     ld c,17h            ;17h = Set line spacing to tall
     jp 0ea0ch           ;0163
-l0166h:
+
+set_t:
     ld c,18h            ;18h = Set line spacing to short
     jp 0ea0ch           ;0168
+
 sub_016bh:
     inc hl              ;016b
     ld a,(hl)           ;016c
@@ -68,6 +78,7 @@ sub_016bh:
     dec c               ;0176
     jp m,l0112h         ;0177
     ret                 ;017a
+
 l017bh:
     call sub_016bh      ;017b
     and 5fh             ;017e
@@ -75,13 +86,14 @@ l017bh:
     ld b,1bh            ;0182
     jp z,l018eh         ;0184
     cp 54h              ;0187
-    jp nz,l0113h        ;0189
+    jp nz,bad_syntax    ;0189
     ld b,7eh            ;018c
 l018eh:
     ld hl,0ea68h        ;018e
     ld (hl),b           ;0191
     ret                 ;0192
-l0193h:
+
+set_v:
     call sub_016bh      ;0193
     and 5fh             ;0196
     ld hl,l027ah        ;0198
@@ -93,7 +105,7 @@ l0193h:
     ld b,07eh           ;01a7
     jp z,l01b3h         ;01a9
     cp 45h              ;01ac  "E"
-    jp nz,l0113h        ;01ae
+    jp nz,bad_syntax    ;01ae
     ld b,1bh            ;01b1
 l01b3h:
     ld a,b              ;01b3
@@ -121,7 +133,7 @@ l01cfh:
     ld bc,002bh         ;01e6
     ldir                ;01e9
     ret                 ;01eb
-l01ech:
+set_d:
     call sub_016bh      ;01ec
     ld b,00h            ;01ef
     cp 31h              ;01f1
@@ -131,24 +143,24 @@ l01ech:
     jp z,l0204h         ;01fa
     ld b,03h            ;01fd
     cp 34h              ;01ff
-    jp nz,l0113h        ;0201
+    jp nz,bad_syntax    ;0201
 l0204h:
     ld a,b              ;0204
     ld (0d8b2h),a       ;0205
     ret                 ;0208
-l0209h:
+set_a:
     ld de,0ea66h        ;0209
-l020ch:
+set_p:
     ld de,0ea61h        ;020c
     jp l021bh           ;020f
-l0212h:
+set_e:
     ld de,0ea63h        ;0212
     jp l021bh           ;0215
-l0218h:
+set_n:
     ld de,0ea62h        ;0218
 l021bh:
     call sub_0223h      ;021b
-    jp c,l0113h         ;021e
+    jp c,bad_syntax     ;021e
     ld (de),a           ;0221
     ret                 ;0222
 sub_0223h:
@@ -187,7 +199,7 @@ l024dh:
     or a                ;0250
     ret                 ;0251
 
-l0252h:
+syntax_err:
     db "Syntax error$"
 
 l025fh:
