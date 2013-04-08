@@ -1,16 +1,17 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels set.com
 
-dirsize:  equ 0d8b2h    ;CCP directory width: 0=1 col, 1=2 cols, 3=4 cols
-lpt_dev:  equ 0ea61h    ;CBM printer (LPT:) IEEE-488 primary address
-ptr_dev:  equ 0ea62h    ;Paper Tape Reader (PTR:) IEEE-488 primary address
-ptp_dev:  equ 0ea63h    ;Paper Tape Punch (PTP:) IEEE-488 primary address
-leadin:   equ 0ea68h    ;Terminal command lead-in: 1bh=escape, 7eh=tilde
-xy_order: equ 0ea69h    ;X,Y order when sending move-to: 0=X first, 1=Y first
-y_offset: equ 0ea6ah    ;Offset added to Y when sending move-to sequence
-x_offset: equ 0ea6bh    ;Offset added to X when sending move-to sequence
-ul1_dev:  equ 0ea66h    ;ASCII printer (UL1:) IEEE-488 primary address
-scrtab:   equ 0ea80h    ;64 byte buffer for tab stops
+dirsize:    equ 0d8b2h  ;CCP directory width: 0=1 col, 1=2 cols, 3=4 cols
+lpt_dev:    equ 0ea61h  ;CBM printer (LPT:) IEEE-488 primary address
+ptr_dev:    equ 0ea62h  ;Paper Tape Reader (PTR:) IEEE-488 primary address
+ptp_dev:    equ 0ea63h  ;Paper Tape Punch (PTP:) IEEE-488 primary address
+leadin:     equ 0ea68h  ;Terminal command lead-in: 1bh=escape, 7eh=tilde
+xy_order:   equ 0ea69h  ;X,Y order when sending move-to: 0=X first, 1=Y first
+y_offset:   equ 0ea6ah  ;Offset added to Y when sending move-to sequence
+x_offset:   equ 0ea6bh  ;Offset added to X when sending move-to sequence
+ul1_dev:    equ 0ea66h  ;ASCII printer (UL1:) IEEE-488 primary address
+scrtab:     equ 0ea80h  ;64 byte buffer for tab stops
+jp_conout:  equ 0ea0ch  ;Jumps to conout (Console Output) routine in BIOS
 
     org 0100h           ;CP/M TPA
 
@@ -68,28 +69,32 @@ set_u:
 ;  SET U
 ;
     ld c,15h            ;15h = Go to uppercase mode
-    jp 0ea0ch           ;0159
+    jp jp_conout        ;Jump out to conout (in BIOS) through jp_conout.
+                        ;  It will return to CP/M.
 
 set_l:
 ;Set lowercase mode
 ;  SET L
 ;
     ld c,16h            ;16h = Go to lowercase mode
-    jp 0ea0ch           ;015e
+    jp jp_conout        ;Jump out to conout (in BIOS) through jp_conout.
+                        ;  It will return to CP/M.
 
 set_g:
 ;Set line spacing to tall
 ;  SET T
 ;
     ld c,17h            ;17h = Set line spacing to tall
-    jp 0ea0ch           ;0163
+    jp jp_conout        ;Jump out to conout (in BIOS) through jp_conout.
+                        ;  It will return to CP/M.
 
 set_t:
 ;Set line spacing to short
 ;  SET G
 ;
     ld c,18h            ;18h = Set line spacing to short
-    jp 0ea0ch           ;0168
+    jp jp_conout        ;Jump out to conout (in BIOS) through jp_conout.
+                        ;  It will return to CP/M.
 
 sub_016bh:
     inc hl              ;016b
