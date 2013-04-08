@@ -49,7 +49,7 @@ dispatch:
     jp z,set_g
     cp 'V'
     jp z,set_v
-    cp 'D'
+    cp 'D'              ;D = Set directory width
     jp z,set_d
     cp 'P'
     jp z,set_p
@@ -162,21 +162,28 @@ l01cfh:
     ld bc,002bh         ;01e6
     ldir                ;01e9
     ret                 ;01eb
+
 set_d:
-    call sub_016bh      ;01ec
-    ld b,00h            ;01ef
-    cp '1'              ;01f1
-    jp z,l0204h         ;01f3
-    ld b,01h            ;01f6
-    cp '2'              ;01f8
-    jp z,l0204h         ;01fa
-    ld b,03h            ;01fd
-    cp '4'              ;01ff
-    jp nz,bad_syntax    ;0201
+;Set directory width
+;  SET D=1
+;  SET D=2  Listings from DIR command will be 1,2,4 columns
+;  SET D=4
+;
+    call sub_016bh
+    ld b,00h
+    cp '1'
+    jp z,l0204h
+    ld b,01h
+    cp '2'
+    jp z,l0204h
+    ld b,03h
+    cp '4'
+    jp nz,bad_syntax
 l0204h:
-    ld a,b              ;0204
-    ld (dirsize),a      ;0205
-    ret                 ;0208
+    ld a,b
+    ld (dirsize),a
+    ret
+
 set_a:
     ld de,ul1_dev       ;0209
 set_p:
