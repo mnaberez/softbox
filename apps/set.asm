@@ -15,16 +15,16 @@ jp_conout:  equ 0ea0ch  ;Jumps to conout (Console Output) routine in BIOS
 
     org 0100h           ;CP/M TPA
 
-    ld hl,0080h         ;0100
-    ld c,(hl)           ;0103
+    ld hl,0080h
+    ld c,(hl)
 l0104h:
-    inc hl              ;0104
-    ld a,(hl)           ;0105
-    cp 20h              ;0106
-    jp nz,dispatch      ;0108
-    dec c               ;010b
-    jp nz,l0104h        ;010c
-    jp bad_syntax       ;010f
+    inc hl
+    ld a,(hl)
+    cp 20h
+    jp nz,dispatch
+    dec c
+    jp nz,l0104h
+    jp bad_syntax
 
 p_bad_syntax:
 ;Pop DE then fall through to bad_syntax
@@ -97,17 +97,17 @@ set_t:
                         ;  It will return to CP/M.
 
 sub_016bh:
-    inc hl              ;016b
-    ld a,(hl)           ;016c
-    cp '='              ;016d
-    jp nz,p_bad_syntax  ;016f
-    inc hl              ;0172
-    ld a,(hl)           ;0173
-    dec c               ;0174
-    dec c               ;0175
-    dec c               ;0176
-    jp m,p_bad_syntax   ;0177
-    ret                 ;017a
+    inc hl
+    ld a,(hl)
+    cp '='
+    jp nz,p_bad_syntax
+    inc hl
+    ld a,(hl)
+    dec c
+    dec c
+    dec c
+    jp m,p_bad_syntax
+    ret
 
 set_e:
 ;Set terminal command lead-in
@@ -128,45 +128,45 @@ l018eh:
     ret
 
 set_v:
-    call sub_016bh      ;0193
-    and 5fh             ;0196
-    ld hl,l027ah        ;0198
-    cp 'A'              ;019b
-    jp z,l01cfh         ;019d
-    cp 'T'              ;01a0
-    jp z,l01cfh         ;01a2
-    cp 'H'              ;01a5
-    ld b,07eh           ;01a7
-    jp z,l01b3h         ;01a9
-    cp 'E'              ;01ac
-    jp nz,bad_syntax    ;01ae
-    ld b,1bh            ;01b1
+    call sub_016bh
+    and 5fh
+    ld hl,l027ah
+    cp 'A'
+    jp z,l01cfh
+    cp 'T'
+    jp z,l01cfh
+    cp 'H'
+    ld b,07eh
+    jp z,l01b3h
+    cp 'E'
+    jp nz,bad_syntax
+    ld b,1bh
 l01b3h:
-    ld a,b              ;01b3
-    ld (leadin),a       ;01b4
-    xor a               ;01b7
-    ld (x_offset),a     ;01b8
-    ld (y_offset),a     ;01bb
-    ld a,001h           ;01be
-    ld (xy_order),a     ;01c0
-    ld hl,l025fh        ;01c3
-    ld de,scrtab        ;01c6
-    ld bc,0001bh        ;01c9
-    ldir                ;01cc
-    ret                 ;01ce
+    ld a,b
+    ld (leadin),a
+    xor a
+    ld (x_offset),a
+    ld (y_offset),a
+    ld a,001h
+    ld (xy_order),a
+    ld hl,l025fh
+    ld de,scrtab
+    ld bc,0001bh
+    ldir
+    ret
 l01cfh:
-    ld a,20h            ;01cf
-    ld (y_offset),a     ;01d1
-    ld (x_offset),a     ;01d4
-    xor a               ;01d7
-    ld (xy_order),a     ;01d8
-    ld a,1bh            ;01db
-    ld (leadin),a       ;01dd
-    ld hl,l027ah        ;01e0
-    ld de,scrtab        ;01e3
-    ld bc,002bh         ;01e6
-    ldir                ;01e9
-    ret                 ;01eb
+    ld a,20h
+    ld (y_offset),a
+    ld (x_offset),a
+    xor a
+    ld (xy_order),a
+    ld a,1bh
+    ld (leadin),a
+    ld hl,l027ah
+    ld de,scrtab
+    ld bc,002bh
+    ldir
+    ret
 
 set_d:
 ;Set directory width
@@ -227,40 +227,40 @@ l021bh:
     ret
 
 sub_0223h:
-    inc hl              ;0223
-    ld a,(hl)           ;0224
-    dec c               ;0225
-    scf                 ;0226
-    ret m               ;0227
-    sub 30h             ;0228
-    jp c,sub_0223h      ;022a
-    cp 0ah              ;022d
-    jp nc,sub_0223h     ;022f
-    ld b,a              ;0232
-    inc hl              ;0233
-    dec c               ;0234
-    jp m,l024dh         ;0235
-    ld a,(hl)           ;0238
-    sub 30h             ;0239
-    jp c,l024dh         ;023b
-    cp 0ah              ;023e
-    jp nc,l024dh        ;0240
-    push af             ;0243
-    ld a,b              ;0244
-    add a,a             ;0245
-    add a,a             ;0246
-    add a,b             ;0247
-    add a,a             ;0248
-    ld b,a              ;0249
-    pop af              ;024a
-    add a,b             ;024b
-    ret                 ;024c
+    inc hl
+    ld a,(hl)
+    dec c
+    scf
+    ret m
+    sub 30h
+    jp c,sub_0223h
+    cp 0ah
+    jp nc,sub_0223h
+    ld b,a
+    inc hl
+    dec c
+    jp m,l024dh
+    ld a,(hl)
+    sub 30h
+    jp c,l024dh
+    cp 0ah
+    jp nc,l024dh
+    push af
+    ld a,b
+    add a,a
+    add a,a
+    add a,b
+    add a,a
+    ld b,a
+    pop af
+    add a,b
+    ret
 l024dh:
-    ld a,b              ;024d
-    dec hl              ;024e
-    inc c               ;024f
-    or a                ;0250
-    ret                 ;0251
+    ld a,b
+    dec hl
+    inc c
+    or a
+    ret
 
 syntax_err:
     db "Syntax error$"
