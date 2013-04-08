@@ -51,13 +51,13 @@ dispatch:
     jp z,set_v
     cp 'D'              ;D = Set directory width
     jp z,set_d
-    cp 'P'
+    cp 'P'              ;P = Set IEEE-488 primary address of LPT:
     jp z,set_p
-    cp 'A'
+    cp 'A'              ;A = Set IEEE-488 primary address of UL1:
     jp z,set_a
-    cp 'R'
+    cp 'R'              ;R = Set IEEE-488 primary address of PTR:
     jp z,set_r
-    cp 'N'
+    cp 'N'              ;N = Set IEEE-488 primary address of PTP:
     jp z,set_n
     cp 'E'              ;E = Set terminal command lead-in
     jp z,set_e
@@ -101,7 +101,7 @@ sub_016bh:
     dec c               ;0174
     dec c               ;0175
     dec c               ;0176
-    jp m,p_bad_syntax         ;0177
+    jp m,p_bad_syntax   ;0177
     ret                 ;017a
 
 set_e:
@@ -185,20 +185,42 @@ l0204h:
     ret
 
 set_a:
-    ld de,ul1_dev       ;0209
+;Set IEEE-488 primary address of UL1:
+;  SET A=?
+;
+    ld de,ul1_dev       ;DE = address of UL1: device number
+    ;XXX no jump
+                        ;TODO: This is a bug.  There should be a jump here.
+                        ;      Instead it just falls through, where DE will
+                        ;      be immediately overwritten.
+
 set_p:
-    ld de,lpt_dev       ;020c
-    jp l021bh           ;020f
+;Set IEEE-488 primary address of LPT:
+;  SET P=?
+;
+    ld de,lpt_dev       ;DE = address of LPT: device number
+    jp l021bh
+
 set_n:
-    ld de,ptp_dev       ;0212
-    jp l021bh           ;0215
+;Set IEEE-488 primary address of PTP:
+;  SET N=?
+;
+    ld de,ptp_dev       ;DE = address of PTP: device number
+    jp l021bh
+
 set_r:
-    ld de,ptr_dev       ;0218
+;Set IEEE-488 primary address of PTR:
+;  SET R=?
+;
+    ld de,ptr_dev       ;DE = address of PTR: device number
+                        ;Fall through
+
 l021bh:
-    call sub_0223h      ;021b
-    jp c,bad_syntax     ;021e
-    ld (de),a           ;0221
-    ret                 ;0222
+    call sub_0223h
+    jp c,bad_syntax
+    ld (de),a
+    ret
+
 sub_0223h:
     inc hl              ;0223
     ld a,(hl)           ;0224
