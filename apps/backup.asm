@@ -16,33 +16,33 @@ l0104h:
     cp ' '              ;0106
     jp nz,l0112h        ;0108
     dec c               ;010b
-    jp z,024ah          ;010c
+    jp z,l024ah         ;010c
     jp l0104h           ;010f
 
 l0112h:
     dec c               ;0112
     dec c               ;0113
     dec c               ;0114
-    jp nz,024ah         ;0115
+    jp nz,l024ah        ;0115
     and 5fh             ;0118
     sub 41h             ;011a
-    jp c,024ah          ;011c
+    jp c,l024ah         ;011c
     cp 10h              ;011f
-    jp nc,024ah         ;0121
+    jp nc,l024ah        ;0121
     ld b,a              ;0124
     inc hl              ;0125
     ld a,(hl)           ;0126
     cp 3dh              ;0127
-    jp nz,024ah         ;0129
+    jp nz,l024ah        ;0129
     inc hl              ;012c
     ld a,(hl)           ;012d
     and 5fh             ;012e
     sub 41h             ;0130
-    jp c,024ah          ;0132
+    jp c,l024ah         ;0132
     cp 10h              ;0135
-    jp nc,024ah         ;0137
+    jp nc,l024ah        ;0137
     cp b                ;013a
-    jp z,024ah          ;013b
+    jp z,l024ah         ;013b
     xor 01h             ;013e
     cp b                ;0140
     jp nz,l0254h        ;0141
@@ -82,8 +82,10 @@ l017ch:
     ld de,l0190h        ;0188
     ld c,09h            ;018b
     jp 0005h            ;018d
+
 l0190h:
     db 0dh,0ah,"Copy complete$"
+l01a0h:
     db 0dh,0ah,"Syntax error$"
 l01afh:
     db 0dh,0ah,"Drives must be on the same unit !$"
@@ -96,27 +98,29 @@ l01f4h:
 l0207h:
     db "Press RETURN to continue,",0dh,0ah
     db "Press the SPACE BAR to abort : $"
-
 l0242h:
     db "D1=0"
 l0246h:
-    ld b,h              ;0246
-    jr nc,$+63          ;0247
-    ld sp,0a011h        ;0249
-    ld bc,090eh         ;024c
+    db "D0=1"
+
+l024ah:
+    ld de,l01a0h        ;024a
+    ld c,09h            ;024d
     jp 0005h            ;024f
+
 l0252h:
     pop af              ;0252
     ret                 ;0253
+
 l0254h:
-    ld de,l01afh        ;0254
+    ld de,01afh         ;0254
     ld c,09h            ;0257
     jp 0005h            ;0259
+
 l025ch:
-    ld de,l01d3h        ;025c
+    ld de,01d3h         ;025c
     ld c,09h            ;025f
     call 0005h          ;0261
-l0264h:
     ld hl,0eac0h        ;0264
 l0267h:
     ld a,(hl)           ;0267
@@ -132,9 +136,7 @@ l0267h:
     nop                 ;0277
     nop                 ;0278
     nop                 ;0279
-l027ah:
     nop                 ;027a
-l027bh:
     nop                 ;027b
     nop                 ;027c
     nop                 ;027d
