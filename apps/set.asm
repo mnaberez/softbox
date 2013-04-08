@@ -266,74 +266,11 @@ syntax_err:
     db "Syntax error$"
 
 l025fh:
-    adc a,e             ;025f
-    dec bc              ;0260
-    adc a,h             ;0261
-    inc c               ;0262
-    adc a,a             ;0263
-    inc de              ;0264
-    sub c               ;0265
-    dec de              ;0266
-    sub d               ;0267
-    ld e,93h            ;0268
-    ld (de),a           ;026a
-    sub a               ;026b
-    inc d               ;026c
-    sbc a,b             ;026d
-    inc d               ;026e
-    sbc a,d             ;026f
-    ld de,1a9ch         ;0270
-    sbc a,l             ;0273
-    ld a,(de)           ;0274
-    sbc a,c             ;0275
-    nop                 ;0276
-    sbc a,a             ;0277
-    nop                 ;0278
-    nop                 ;0279
+    db 8bh,0bh,8ch,0ch,8fh,13h,91h,1bh,92h,1eh,93h,12h,97h,14h
+    db 98h,14h,9ah,11h,9ch,1ah,9dh,1ah,99h,00h,9fh,00h,00h
+
 l027ah:
-    or c                ;027a
-    inc b               ;027b
-    or d                ;027c
-    dec b               ;027d
-    or e                ;027e
-    ld b,0eah           ;027f
-    ld c,0ebh           ;0281
-    rrca                ;0283
-    pop de              ;0284
-    inc e               ;0285
-    rst 10h             ;0286
-    dec e               ;0287
-    push bc             ;0288
-    ld de,12d2h         ;0289
-    call nc,0f413h      ;028c
-    inc de              ;028f
-    exx                 ;0290
-    inc d               ;0291
-    ld sp,hl            ;0292
-    inc d               ;0293
-    xor e               ;0294
-    ld a,(de)           ;0295
-    xor d               ;0296
-    ld a,(de)           ;0297
-    cp d                ;0298
-    ld a,(de)           ;0299
-    cp e                ;029a
-    ld a,(de)           ;029b
-    jp c,0bd1ah         ;029c
-    dec de              ;029f
-    xor b               ;02a0
-    nop                 ;02a1
-    xor c               ;02a2
-    nop                 ;02a3
-    nop                 ;02a4
-    nop                 ;02a5
-    nop                 ;02a6
-    nop                 ;02a7
-    nop                 ;02a8
-    nop                 ;02a9
-    nop                 ;02aa
-    nop                 ;02ab
-    nop                 ;02ac
-    nop                 ;02ad
-    nop                 ;02ae
-    nop                 ;02af
+    db 0b1h,04h,0b2h,05h,0b3h,06h,0eah,0eh,0ebh,0fh,0d1h,1ch,0d7h
+    db 1dh,0c5h,11h,0d2h,12h,0d4h,13h,0f4h,13h,0d9h,14h,0f9h,14h
+    db 0abh,1ah,0aah,1ah,0bah,1ah,0bbh,1ah,0dah,1ah,0bdh,1bh,0a8h
+    db 00h,0a9h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
