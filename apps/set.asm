@@ -54,11 +54,11 @@ dispatch:
     cp 'A'
     jp z,set_a
     cp 'R'
-    jp z,set_n
+    jp z,set_r
     cp 'N'
-    jp z,set_e
+    jp z,set_n
     cp 'E'
-    jp z,l017bh
+    jp z,set_e
     jp bad_syntax
 
 set_u:
@@ -90,7 +90,7 @@ sub_016bh:
     jp m,l0112h         ;0177
     ret                 ;017a
 
-l017bh:
+set_e:
     call sub_016bh      ;017b
     and 5fh             ;017e
     cp 'E'              ;0180
@@ -164,10 +164,10 @@ set_a:
 set_p:
     ld de,lpt_dev       ;020c
     jp l021bh           ;020f
-set_e:
+set_n:
     ld de,ptp_dev       ;0212
     jp l021bh           ;0215
-set_n:
+set_r:
     ld de,ptr_dev       ;0218
 l021bh:
     call sub_0223h      ;021b
