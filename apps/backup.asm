@@ -1,18 +1,24 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels backup.com
 
-    org 0100h
+args:           equ  0080h  ;Command line arguments passed from CCP
+get_ddev:       equ 0f054h  ;BIOS Get device address for a CP/M drive number
+ieee_read_err:  equ 0f05ah  ;BIOS Read error channel of an IEEE-488 device
+ieee_open:      equ 0f05dh  ;BIOS Open a file on an IEEE-488 device
+
+    org 0100h           ;CP/M TPA
 
     ld hl,0080h         ;0100
     ld c,(hl)           ;0103
 l0104h:
     inc hl              ;0104
     ld a,(hl)           ;0105
-    cp 20h              ;0106
+    cp ' '              ;0106
     jp nz,l0112h        ;0108
     dec c               ;010b
     jp z,024ah          ;010c
     jp l0104h           ;010f
+
 l0112h:
     dec c               ;0112
     dec c               ;0113
@@ -59,7 +65,7 @@ l0112h:
     jp nz,l0252h        ;0166
     pop af              ;0169
     push af             ;016a
-    call 0f054h         ;016b
+    call get_ddev       ;016b
     ld e,0fh            ;016e
     pop af              ;0170
     push af             ;0171
@@ -69,9 +75,9 @@ l0112h:
     ld hl,l0246h        ;0179
 l017ch:
     ld c,04h            ;017c
-    call 0f05dh         ;017e
+    call ieee_open      ;017e
     pop af              ;0181
-    call 0f05ah         ;0182
+    call ieee_read_err  ;0182
     jp nz,l025ch        ;0185
     ld de,l0190h        ;0188
     ld c,09h            ;018b
