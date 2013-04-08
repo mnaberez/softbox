@@ -1,35 +1,63 @@
-; z80dasm 1.1.3
-; command line: z80dasm --origin=256 --address --labels time.com
+;TIME.COM
+;  Read or set time on the CBM computer clock
 
-    org 0100h
+get_time:      equ 0f072h ;BIOS Read the CBM clocks (both RTC and jiffies)
+set_time:      equ 0f06fh ;BIOS Set the time on the CBM real time clock
+
+    org 0100h           ;CP/M TPA
 
     ld hl,0080h         ;0100
     ld c,(hl)           ;0103
     call sub_0168h      ;0104
-    jp nc,l0135h        ;0107
-    ld de,l01b3h        ;010a
-    ld c,09h            ;010d
-    call 0005h          ;010f
-    call 0f072h         ;0112
-    ld a,h              ;0115
-    call sub_0197h      ;0116
-    push hl             ;0119
-    push de             ;011a
-    ld e,3ah            ;011b
-    ld c,02h            ;011d
-    call 0005h          ;011f
-    pop de              ;0122
-    pop hl              ;0123
-    ld a,l              ;0124
-    call sub_0197h      ;0125
-    push de             ;0128
-    ld e,3ah            ;0129
-    ld c,02h            ;012b
-    call 0005h          ;012d
-    pop hl              ;0130
-    ld a,d              ;0131
-    jp sub_0197h        ;0132
-l0135h:
+    jp nc,time_input    ;0107
+
+time_output:
+;Write the current time to the console and exit.
+;
+    ld de,time_is       ;DE = address of "Time is" string
+    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    call 0005h          ;BDOS System Call
+
+    call get_time       ;Read the CBM clocks (both RTC and jiffies):
+                        ;  Real Time Clock:
+                        ;    H = Hours, L = Minutes, D = Seconds
+                        ;    E = Jiffies (counts up to 50 or 60)
+                        ;  Jiffy Clock:
+                        ;    A = Jiffy0 (MSB), B = Jiffy1, C = Jiffy2 (LSB)
+
+                        ;Write the hour to console out:
+    ld a,h              ;  A = Hours
+    call put_dec        ;  Print A as a decimal number
+
+                        ;Write a colon after the hour:
+    push hl             ;
+    push de             ;
+    ld e,3ah            ;  E = ":" character
+    ld c,02h            ;  C = 02h, C_WRITE (Console Output)
+    call 0005h          ;  BDOS System Call
+    pop de              ;
+    pop hl              ;
+
+                        ;Write the minute to console out:
+    ld a,l              ;  A = Minutes
+    call put_dec        ;  Print A as a decimal number
+
+                        ;Write a colon after the minute:
+    push de             ;
+    ld e,3ah            ;  E = ":" character
+    ld c,02h            ;  C = 02h, C_WRITE (Console Output)
+    call 0005h          ;  BDOS System Call
+    pop hl              ;  XXX
+                        ;  TODO: pushes DE but pops HL.  Is this a bug?
+
+                        ;Write the second to console out:
+    ld a,d              ;  A = Seconds
+    jp put_dec          ;  Jump out print A as a decimal number,
+                        ;    it will return to CP/M.
+
+time_input:
+;Get a new time from the user and set the clock.
+;
     ld d,a              ;0135
     call sub_0168h      ;0136
     jp c,l015dh         ;0139
@@ -38,22 +66,27 @@ l0135h:
     call sub_0168h      ;013e
     jp c,l015dh         ;0141
     ld d,a              ;0144
+
     push de             ;0145
-    ld de,l01bdh        ;0146
-    ld c,09h            ;0149
-    call 0005h          ;014b
-    ld c,01h            ;014e
-    call 0005h          ;0150
-    cp 03h              ;0153
+    ld de,hit_key       ;0146
+    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    call 0005h          ;BDOS System Call
+    ld c,01h            ;C = 01h, C_READ (Console Input)
+    call 0005h          ;BDOS System Call
+    cp 03h              ;Control-C pressed?
     jp z,0000h          ;0155
     pop de              ;0158
     pop hl              ;0159
-    jp 0f06fh           ;015a
+
+    jp set_time         ;Jump out to set time on the CBM computer,
+                        ;  it will return to CP/M.
+
 l015dh:
-    ld de,l01dbh        ;015d
-    ld c,09h            ;0160
-    call 0005h          ;0162
-    jp 0000h            ;0165
+    ld de,syntax_err    ;015d
+    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    call 0005h          ;BDOS System Call
+    jp 0000h
+
 sub_0168h:
     inc hl              ;0168
     ld a,(hl)           ;0169
@@ -83,13 +116,15 @@ sub_0168h:
     pop af              ;018f
     add a,b             ;0190
     ret                 ;0191
+
 l0192h:
     ld a,b              ;0192
     dec hl              ;0193
     inc c               ;0194
     or a                ;0195
     ret                 ;0196
-sub_0197h:
+
+put_dec:
     push de             ;0197
     push hl             ;0198
     ld e,2fh            ;0199
@@ -99,21 +134,21 @@ l019bh:
     jp p,l019bh         ;019e
     add a,3ah           ;01a1
     push af             ;01a3
-    ld c,02h            ;01a4
-    call 0005h          ;01a6
+    ld c,02h            ;C = 02h, C_WRITE (Console Output)
+    call 0005h          ;BDOS System Call
     pop af              ;01a9
     ld e,a              ;01aa
-    ld c,02h            ;01ab
-    call 0005h          ;01ad
+    ld c,02h            ;C = 02h, C_WRITE (Console Output)
+    call 0005h          ;BDOS System Call
     pop hl              ;01b0
     pop de              ;01b1
     ret                 ;01b2
 
-l01b3h:
+time_is:
     db "Time is  $"
-l01bdh:
+hit_key:
     db "Hit any key to start clock : $"
-l01dbh:
+syntax_err:
     db "Syntax error$"
 
     add hl,bc           ;01e8
