@@ -1,6 +1,17 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels set.com
 
+dirsize:  equ 0d8b2h    ;CCP directory width: 0=1 col, 1=2 cols, 3=4 cols
+lpt_dev:  equ 0ea61h    ;CBM printer (LPT:) IEEE-488 primary address
+ptr_dev:  equ 0ea62h    ;Paper Tape Reader (PTR:) IEEE-488 primary address
+ptp_dev:  equ 0ea63h    ;Paper Tape Punch (PTP:) IEEE-488 primary address
+leadin:   equ 0ea68h    ;Terminal command lead-in: 1bh=escape, 7eh=tilde
+xy_order: equ 0ea69h    ;X,Y order when sending move-to: 0=X first, 1=Y first
+y_offset: equ 0ea6ah    ;Offset added to Y when sending move-to sequence
+x_offset: equ 0ea6bh    ;Offset added to X when sending move-to sequence
+ul1_dev:  equ 0ea66h    ;ASCII printer (UL1:) IEEE-488 primary address
+scrtab:   equ 0ea80h    ;64 byte buffer for tab stops
+
     org 0100h           ;CP/M TPA
 
     ld hl,0080h         ;0100
@@ -69,7 +80,7 @@ set_t:
 sub_016bh:
     inc hl              ;016b
     ld a,(hl)           ;016c
-    cp 3dh              ;016d
+    cp '='              ;016d
     jp nz,l0112h        ;016f
     inc hl              ;0172
     ld a,(hl)           ;0173
@@ -82,14 +93,14 @@ sub_016bh:
 l017bh:
     call sub_016bh      ;017b
     and 5fh             ;017e
-    cp 45h              ;0180
+    cp 'E'              ;0180
     ld b,1bh            ;0182
     jp z,l018eh         ;0184
-    cp 54h              ;0187
+    cp 'T'              ;0187
     jp nz,bad_syntax    ;0189
     ld b,7eh            ;018c
 l018eh:
-    ld hl,0ea68h        ;018e
+    ld hl,leadin        ;018e
     ld (hl),b           ;0191
     ret                 ;0192
 
@@ -97,67 +108,67 @@ set_v:
     call sub_016bh      ;0193
     and 5fh             ;0196
     ld hl,l027ah        ;0198
-    cp 41h              ;019b  "A"
+    cp 'A'              ;019b
     jp z,l01cfh         ;019d
-    cp 54h              ;01a0  "T"
+    cp 'T'              ;01a0
     jp z,l01cfh         ;01a2
-    cp 48h              ;01a5  "H"
+    cp 'H'              ;01a5
     ld b,07eh           ;01a7
     jp z,l01b3h         ;01a9
-    cp 45h              ;01ac  "E"
+    cp 'E'              ;01ac
     jp nz,bad_syntax    ;01ae
     ld b,1bh            ;01b1
 l01b3h:
     ld a,b              ;01b3
-    ld (0ea68h),a       ;01b4
+    ld (leadin),a       ;01b4
     xor a               ;01b7
-    ld (0ea6bh),a       ;01b8
-    ld (0ea6ah),a       ;01bb
+    ld (x_offset),a     ;01b8
+    ld (y_offset),a     ;01bb
     ld a,001h           ;01be
-    ld (0ea69h),a       ;01c0
+    ld (xy_order),a     ;01c0
     ld hl,l025fh        ;01c3
-    ld de,0ea80h        ;01c6
+    ld de,scrtab        ;01c6
     ld bc,0001bh        ;01c9
     ldir                ;01cc
     ret                 ;01ce
 l01cfh:
     ld a,20h            ;01cf
-    ld (0ea6ah),a       ;01d1
-    ld (0ea6bh),a       ;01d4
+    ld (y_offset),a     ;01d1
+    ld (x_offset),a     ;01d4
     xor a               ;01d7
-    ld (0ea69h),a       ;01d8
+    ld (xy_order),a     ;01d8
     ld a,1bh            ;01db
-    ld (0ea68h),a       ;01dd
+    ld (leadin),a       ;01dd
     ld hl,l027ah        ;01e0
-    ld de,0ea80h        ;01e3
+    ld de,scrtab        ;01e3
     ld bc,002bh         ;01e6
     ldir                ;01e9
     ret                 ;01eb
 set_d:
     call sub_016bh      ;01ec
     ld b,00h            ;01ef
-    cp 31h              ;01f1
+    cp '1'              ;01f1
     jp z,l0204h         ;01f3
     ld b,01h            ;01f6
-    cp 32h              ;01f8
+    cp '2'              ;01f8
     jp z,l0204h         ;01fa
     ld b,03h            ;01fd
-    cp 34h              ;01ff
+    cp '4'              ;01ff
     jp nz,bad_syntax    ;0201
 l0204h:
     ld a,b              ;0204
-    ld (0d8b2h),a       ;0205
+    ld (dirsize),a      ;0205
     ret                 ;0208
 set_a:
-    ld de,0ea66h        ;0209
+    ld de,ul1_dev       ;0209
 set_p:
-    ld de,0ea61h        ;020c
+    ld de,lpt_dev       ;020c
     jp l021bh           ;020f
 set_e:
-    ld de,0ea63h        ;0212
+    ld de,ptp_dev       ;0212
     jp l021bh           ;0215
 set_n:
-    ld de,0ea62h        ;0218
+    ld de,ptr_dev       ;0218
 l021bh:
     call sub_0223h      ;021b
     jp c,bad_syntax     ;021e
