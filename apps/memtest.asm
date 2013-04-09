@@ -277,57 +277,16 @@ sub_02b7h:
     call sub_030eh      ;02be  cd 00 00
     ret                 ;02c1  c9
 l02c2h:
-    dec c               ;02c2  0d
-    ld a,(bc)           ;02c3  0a
-    ld d,h              ;02c4  54
-    ld h,l              ;02c5  65
-    ld (hl),e           ;02c6  73
-    ld (hl),h           ;02c7  74
-    ld l,c              ;02c8  69
-    ld l,(hl)           ;02c9  6e
-    ld h,a              ;02ca  67
-    jr nz,l0310h        ;02cb  20 00
-    ld d,b              ;02cd  50
-    cpl                 ;02ce  2f
-    ld c,l              ;02cf  4d
-    jr nz,$+68          ;02d0  20 42
-    ld l,a              ;02d2  6f
-    ld a,b              ;02d3  78
-    jr nz,l0343h        ;02d4  20 00
-    ld h,l              ;02d6  65
-    ld l,l              ;02d7  6d
-    ld l,a              ;02d8  6f
-    ld (hl),d           ;02d9  72
-    ld a,c              ;02da  79
-    dec c               ;02db  0d
-    ld a,(bc)           ;02dc  0a
-    nop                 ;02dd  00
+    db 0dh,0ah,"Testing CP/M Box memory",0dh,0ah,00h
 l02deh:
-    ld b,d              ;02de  42
-    ld (hl),d           ;02df  72
-    ld h,l              ;02e0  65
-    ld h,c              ;02e1  61
-    ld l,e              ;02e2  6b
-    ld l,02eh           ;02e3  2e 2e
-    ld l,00h            ;02e5  2e 00
+    db "Break",02eh,02eh,02eh,00h
 l02e7h:
-    ld d,b              ;02e7  50
-    ld h,c              ;02e8  61
-    ld (hl),e           ;02e9  73
-    ld (hl),e           ;02ea  73
-    dec a               ;02eb  3d
-    nop                 ;02ec  00
+    db "Pass=",00h
 l02edh:
-    jr nz,l0334h        ;02ed  20 00
-    ld (hl),d           ;02ef  72
-    ld (hl),d           ;02f0  72
-    dec a               ;02f1  3d
-    nop                 ;02f2  00
+    db " Err=",00h
 l02f3h:
-    jr nz,l0337h        ;02f3  20 00
-    ld l,c              ;02f5  69
-    ld (hl),h           ;02f6  74
-    jr nz,l02f9h        ;02f7  20 00
+    db " Bit ",00h
+
 l02f9h:
     call sub_0300h      ;02f9  cd 00 00
     or a                ;02fc  b7
@@ -382,54 +341,13 @@ l0337h:
     ld a,0ah            ;033c  3e 0a
     call sub_030eh      ;033e  cd 0e 03
     ret                 ;0341  c9
-    dec c               ;0342  0d
-l0343h:
-    ld a,(bc)           ;0343  0a
-    ld d,h              ;0344  54
-    ld h,l              ;0345  65
-    ld (hl),e           ;0346  73
-    ld (hl),h           ;0347  74
-    ld l,c              ;0348  69
-    ld l,(hl)           ;0349  6e
-    ld h,a              ;034a  67
-    jr nz,$+69          ;034b  20 43
-    ld d,b              ;034d  50
-    cpl                 ;034e  2f
-    ld c,l              ;034f  4d
-    jr nz,l0394h        ;0350  20 00
-    ld l,a              ;0352  6f
-    ld a,b              ;0353  78
-    jr nz,l03c3h        ;0354  20 00
-    ld h,l              ;0356  65
-    ld l,l              ;0357  6d
-    ld l,a              ;0358  6f
-    ld (hl),d           ;0359  72
-    ld a,c              ;035a  79
-    dec c               ;035b  0d
-    ld a,(bc)           ;035c  0a
-    nop                 ;035d  00
-    ld b,d              ;035e  42
-    ld (hl),d           ;035f  72
-    ld h,l              ;0360  65
-    ld h,c              ;0361  61
-    ld l,e              ;0362  6b
-    ld l,2eh            ;0363  2e 2e
-    ld l,00h            ;0365  2e 00
-    ld d,b              ;0367  50
-    ld h,c              ;0368  61
-    ld (hl),e           ;0369  73
-    ld (hl),e           ;036a  73
-    dec a               ;036b  3d
-    nop                 ;036c  00
-    jr nz,l03b4h        ;036d  20 00
-    ld (hl),d           ;036f  72
-    ld (hl),d           ;0370  72
-    dec a               ;0371  3d
-    nop                 ;0372  00
-    jr nz,l03b7h        ;0373  20 00
-    ld l,c              ;0375  69
-    ld (hl),h           ;0376  74
-    jr nz,l0379h        ;0377  20 00
+
+    db 0dh,0ah,"Testing CP/M Box memory",0dh,0ah,00h
+    db "Break",02eh,02eh,02eh,00h
+    db "Pass=",00h
+    db " Err=",00h
+    db " Bit ",00h
+
 l0379h:
     call sub_0300h      ;0379  cd 00 03
     or a                ;037c  b7
@@ -479,54 +397,13 @@ l03b7h:
     ld a,0ah            ;03bc  3e 0a
     call sub_030eh      ;03be  cd 0e 03
     ret                 ;03c1  c9
-    dec c               ;03c2  0d
-l03c3h:
-    ld a,(bc)           ;03c3  0a
-    ld d,h              ;03c4  54
-    ld h,l              ;03c5  65
-    ld (hl),e           ;03c6  73
-    ld (hl),h           ;03c7  74
-    ld l,c              ;03c8  69
-    ld l,(hl)           ;03c9  6e
-    ld h,a              ;03ca  67
-    jr nz,$+69          ;03cb  20 43
-    ld d,b              ;03cd  50
-    cpl                 ;03ce  2f
-    ld c,l              ;03cf  4d
-    jr nz,$+68          ;03d0  20 42
-    ld l,a              ;03d2  6f
-    ld a,b              ;03d3  78
-    jr nz,$+111         ;03d4  20 6d
-    ld h,l              ;03d6  65
-    ld l,l              ;03d7  6d
-    ld l,a              ;03d8  6f
-    ld (hl),d           ;03d9  72
-    ld a,c              ;03da  79
-    dec c               ;03db  0d
-    ld a,(bc)           ;03dc  0a
-    nop                 ;03dd  00
-    ld b,d              ;03de  42
-    ld (hl),d           ;03df  72
-    ld h,l              ;03e0  65
-    ld h,c              ;03e1  61
-    ld l,e              ;03e2  6b
-    ld l,2eh            ;03e3  2e 2e
-    ld l,00h            ;03e5  2e 00
-    ld d,b              ;03e7  50
-    ld h,c              ;03e8  61
-    ld (hl),e           ;03e9  73
-    ld (hl),e           ;03ea  73
-    dec a               ;03eb  3d
-    nop                 ;03ec  00
-    jr nz,$+71          ;03ed  20 45
-    ld (hl),d           ;03ef  72
-    ld (hl),d           ;03f0  72
-    dec a               ;03f1  3d
-    nop                 ;03f2  00
-    jr nz,$+68          ;03f3  20 42
-    ld l,c              ;03f5  69
-    ld (hl),h           ;03f6  74
-    jr nz,l03f9h        ;03f7  20 00
+
+    db 0dh,0ah,"Testing CP/M Box memory",0dh,0ah,00h
+    db "Break",02eh,02eh,02eh,00h
+    db "Pass=",00h
+    db " Err=",00h
+    db " Bit ",00h
+
 l03f9h:
     call sub_0300h      ;03f9  cd 00 03
     or a                ;03fc  b7
