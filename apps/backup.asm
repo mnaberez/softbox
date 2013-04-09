@@ -9,95 +9,121 @@ ieee_open:      equ 0f05dh  ;BIOS Open a file on an IEEE-488 device
 
     org 0100h           ;CP/M TPA
 
-    ld hl,args
-    ld c,(hl)
+    ld hl,args          ;HL = command line arguments from CCP: first byte is
+                        ;       number of chars, followed by the chars
+    ld c,(hl)           ;C = number of chars
 next_char:
-    inc hl
-    ld a,(hl)
-    cp ' '
-    jp nz,backup
-    dec c
-    jp z,exit_syntax
-    jp next_char
+    inc hl              ;HL = HL + 1 (increment to next char)
+    ld a,(hl)           ;A = char from args
+    cp ' '              ;Is it a space?
+    jp nz,backup        ;  No: jump to handle next char as start of args
+    dec c               ;C = C - 1 (decrement num of chars remaining)
+                        ;End of command arguments?
+    jp z,exit_syntax    ;  Yes: exit, syntax error
+    jp next_char        ;  No:  loop to handle the next char
 
 backup:
-                        ;Check that args has exactly 3 characters:
-    dec c               ;  Destination drive letter
-    dec c               ;  Equals character
-    dec c               ;  Source drive letter
-    jp nz,exit_syntax   ;  Jump if wrong number of chars for args
+                        ;Check that args count is exactly 3 chars:
+    dec c               ;  Destination drive (CP/M drive letter)
+    dec c               ;  Equals sign
+    dec c               ;  Source drive (CP/M drive letter)
+    jp nz,exit_syntax   ;  Jump to exit if wrong number of chars
 
                         ;Parse first char as destination, store in B:
-    and 5fh
-    sub 41h
-    jp c,exit_syntax
-    cp 10h
-    jp nc,exit_syntax
-    ld b,a
+                        ;  Char is already in A
+    and 5fh             ;  Normalize to uppercase
+    sub 41h             ;  Convert char to binary CP/M drive number
+    jp c,exit_syntax    ;  Jump to exit if drive number is < 0
+    cp 10h              ;  Is it < 10h? (last drive is P: 0fh)
+    jp nc,exit_syntax   ;    No: jump to exit
+    ld b,a              ;  Store this drive (destination) in B
 
                         ;Check second char is equals sign ("="):
-    inc hl              ;HL = address of second char
-    ld a,(hl)           ;A = second char
-    cp '='              ;Is it the equals sign?
-    jp nz,exit_syntax   ;  No: exit, bad syntax
+    inc hl              ;  HL = address of second char
+    ld a,(hl)           ;  A = second char
+    cp '='              ;  Is it the equals sign?
+    jp nz,exit_syntax   ;    No: exit, bad syntax
 
                         ;Parse third char as source drive, store in A:
-    inc hl
-    ld a,(hl)
-    and 5fh
-    sub 41h
-    jp c,exit_syntax
-    cp 10h
-    jp nc,exit_syntax
-    cp b
-    jp z,exit_syntax
-    xor 01h
-    cp b
-    jp nz,exit_units
+    inc hl              ;  Move to next char in args
+    ld a,(hl)           ;  A = char
+    and 5fh             ;  Normalize char to uppercase
+    sub 41h             ;  Convert char to binary CP/M drive number
+    jp c,exit_syntax    ;  Jump to exit if drive number is < 0
+    cp 10h              ;  Is it < 10h? (last drive is P: 0fh)
+    jp nc,exit_syntax   ;    No: jump to exit
 
-    push af
-    ld de,disk_on_drive ;DE = address of "Disk on drive" string
-    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
-    call 0005h          ;BDOS System Call
-    pop af
+                        ;Check source and destination are different:
+    cp b                ;  A = B?
+    jp z,exit_syntax    ;    Yes: exit, same drive letter for both
 
-    push af
-    add a,41h
-    ld e,a
-    ld c,02h
-    call 0005h
+                        ;Check both drives are on same CBM dual drive unit:
+    xor 01h             ;  Flip bit 0 of A.
+                        ;    If both drive letters are on the same CBM drive
+                        ;    unit, then now A = B (destination drive).
+    cp b                ;  Same CBM drive unit?
+    jp nz,exit_units    ;    No: exit, not same unit
 
-    ld de,will_be_erasd
-    ld c,09h
-    call 0005h
+                        ;Destination CP/M drive number is now in A and B
 
-    ld c,01h
-    call 0005h
-    cp 0dh
-    jp nz,exit_abort
-    pop af
+                        ;Write "Disk on drive " to console out:
+    push af             ;
+    ld de,disk_on_drive ;  DE = address of "Disk on drive" string
+    ld c,09h            ;  C = 09h, C_WRITESTR (Output String)
+    call 0005h          ;  BDOS System Call
+    pop af              ;
 
-    push af
+    push af             ;Push destination CP/M drive number
+
+                        ;Write drive letter of destination to console out:
+    add a,41h           ;  A = drive letter in ASCII
+    ld e,a              ;  E = A
+    ld c,02h            ;  C = 02h, C_WRITE (Console Output)
+    call 0005h          ;  BDOS System Call
+
+                        ;Write "will be erased..." to console out
+    ld de,will_be_erasd ;  HL = address of string
+    ld c,09h            ;  C = 09h, C_WRITESTR (Output String)
+    call 0005h          ;  BDOS System Call
+
+                        ;Get a key from the console:
+    ld c,01h            ;  C = 01h, C_READ (Console Input)
+    call 0005h          ;  BDOS System Call
+
+                        ;Check for RETURN to continue, other key aborts:
+    cp 0dh              ;  Key pressed = RETURN?
+    jp nz,exit_abort    ;    No: jump to abort
+
+    pop af              ;Pop destination CP/M drive number
+
+                        ;Get IEEE-488 primary address from CP/M drive number:
+    push af             ;
     call get_ddev       ;  D = IEEE-488 primary address
     ld e,0fh            ;  E = IEEE-488 secondary address 15 (command)
-    pop af
+    pop af              ;
 
-    push af
-    ld hl,dos_d1_to_d0
-    rra
-    jp c,l017ch
-    ld hl,dos_d0_to_d1
-l017ch:
-    ld c,04h
-    call ieee_open
-    pop af
+                        ;Send CBM DOS backup command to the drive:
+    push af             ;
+    ld hl,dos_d1_to_d0  ;  HL = address of "D1=0" (from drive 0 to drive 1)
+    rra                 ;  Rotate bit 0 of CP/M drive number into carry
+                        ;    (indicates CBM drive: 0=drive 0, 1=drive 1)
+    jp c,send_cmd       ;  Jump to keep HL if destination is drive 1
+    ld hl,dos_d0_to_d1  ;  HL = address of "D0=1" (from drive 1 to drive 0)
+send_cmd:
+    ld c,04h            ;  C = 4 bytes in string
+    call ieee_open      ;  Send OPEN with the backup command
+    pop af              ;
 
-    call ieee_read_err
-    jp nz,exit_error
+                        ;Wait for backup to finish, check for error:
+    call ieee_read_err  ;  A = error code from CBM DOS
+                        ;      (blocks until the backup has finished)
+    jp nz,exit_error    ;  Jump to exit if error code != 0 (OK)
 
-    ld de,copy_complete
-    ld c,09h
-    jp 0005h
+                        ;Write success message and exit:
+    ld de,copy_complete ;  HL = address of "Copy complete" string
+    ld c,09h            ;  C = 09h, C_WRITESTR (Output String)
+    jp 0005h            ;  Jump out to BDOS System Call.
+                        ;    It will return to CP/M.
 
 copy_complete:
     db 0dh,0ah,"Copy complete$"
@@ -122,47 +148,43 @@ dos_d0_to_d1:
 exit_syntax:
 ;Exit to CP/M: Bad arguments
 ;
-    ld de,syntax_err
-    ld c,09h
-    jp 0005h
+    ld de,syntax_err    ;DE = address of "Syntax error" string
+    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    jp 0005h            ;Jump out to BDOS System Call.
+                        ;  It will return to CP/M.
 
 exit_abort:
 ;Exit to CP/M: User aborted
 ;
     pop af
-    ret
+    ret                 ;Return to CP/M.
 
 exit_units:
 ;Exit to CP/M: Drives are not on the same unit
 ;
-    ld de,not_same_unit
-    ld c,09h
-    jp 0005h
+    ld de,not_same_unit ;DE = address of "Drives must be same unit" string
+    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    jp 0005h            ;Jump out to BDOS System Call.
+                        ;  It will return to CP/M.
 
 exit_error:
 ;Exit to CP/M: Error reported by CBM DOS
 ;
-    ld de,disk_error
-    ld c,09h
-    call 0005h
-    ld hl,dos_msg
-l0267h:
-    ld a,(hl)
-    cp 0dh
-    ret z
+    ld de,disk_error    ;DE = address of "Drive error: " string
+    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    call 0005h          ;BDOS System Call
+
+    ld hl,dos_msg       ;HL = address of CBM DOS error string
+dos_msg_loop:
+    ld a,(hl)           ;A = next char in string
+    cp 0dh              ;Is it a carriage return?
+    ret z               ;  Yes: end of DOS message, return to CP/M.
+
     push hl
-    ld e,a
-    ld c,02h
-    call 0005h
+    ld e,a              ;E = A (pass char to C_WRITE)
+    ld c,02h            ;C = 02h, C_WRITE (Console Output)
+    call 0005h          ;BDOS System Call
     pop hl
-    inc hl
-    jp l0267h
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
+
+    inc hl              ;Move to next char in string
+    jp dos_msg_loop     ;Loop to handle next char
