@@ -1,32 +1,32 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin 256 --address --labels memtest.com
 
-    org 00100h
+    org 0100h
 
 l0100h:
     ld sp,l0100h        ;0100
-    ld hl,00000h        ;0103
-    ld (0002ah),hl      ;0106
-    ld (00020h),hl      ;0109
-    ld (00022h),hl      ;010c
-    ld (00028h),hl      ;010f
+    ld hl,0000h         ;0103
+    ld (002ah),hl       ;0106
+    ld (0020h),hl       ;0109
+    ld (0022h),hl       ;010c
+    ld (0028h),hl       ;010f
     xor a               ;0112
-    ld (00024h),a       ;0113
+    ld (0024h),a        ;0113
     ld a,0feh           ;0116
-    ld (00025h),a       ;0118
+    ld (0025h),a        ;0118
     ld hl,0ffffh        ;011b
-    ld (00026h),hl      ;011e
+    ld (0026h),hl       ;011e
     ld hl,l02c2h        ;0121
     call sub_02aeh      ;0124
-    ld hl,00600h        ;0127
-    ld (0002ch),hl      ;012a
+    ld hl,0600h         ;0127
+    ld (002ch),hl       ;012a
     ld de,0ea00h        ;012d
 l0130h:
-    ld c,001h           ;0130
+    ld c,01h            ;0130
 l0132h:
-    ld b,001h           ;0132
+    ld b,01h            ;0132
 l0134h:
-    ld hl,(0002ch)      ;0134
+    ld hl,(002ch)       ;0134
     call sub_0300h      ;0137
     or a                ;013a
     jp nz,l01f6h        ;013b
@@ -43,9 +43,9 @@ l013fh:
     jr nz,l013fh        ;014a
     pop bc              ;014c
     djnz l0134h         ;014d
-    ld b,001h           ;014f
+    ld b,01h            ;014f
 l0151h:
-    ld hl,(0002ch)      ;0151
+    ld hl,(002ch)       ;0151
     call sub_0300h      ;0154
     or a                ;0157
     jp nz,l01f6h        ;0158
@@ -91,82 +91,82 @@ l017eh:
     push bc             ;018a
     ld hl,l02e7h        ;018b
     call sub_02aeh      ;018e
-    ld hl,(0002ah)      ;0191
+    ld hl,(002ah)       ;0191
     inc hl              ;0194
-    ld (0002ah),hl      ;0195
+    ld (002ah),hl       ;0195
     call sub_0293h      ;0198
     ld hl,l02edh        ;019b
     call sub_02aeh      ;019e
-    ld hl,(00022h)      ;01a1
+    ld hl,(0022h)       ;01a1
     call sub_0293h      ;01a4
-    ld hl,(00020h)      ;01a7
+    ld hl,(0020h)       ;01a7
     call sub_0293h      ;01aa
-    ld ix,00020h        ;01ad
-    ld a,(ix+000h)      ;01b1
-    or (ix+001h)        ;01b4
-    or (ix+002h)        ;01b7
-    or (ix+003h)        ;01ba
+    ld ix,0020h         ;01ad
+    ld a,(ix+00h)       ;01b1
+    or (ix+01h)         ;01b4
+    or (ix+02h)         ;01b7
+    or (ix+03h)         ;01ba
     jr z,l01e1h         ;01bd
-    ld a,020h           ;01bf
+    ld a,20h            ;01bf
     call sub_030eh      ;01c1
-    ld hl,(00026h)      ;01c4
+    ld hl,(0026h)       ;01c4
     call sub_0293h      ;01c7
-    ld a,02dh           ;01ca
+    ld a,2dh            ;01ca
     call sub_030eh      ;01cc
-    ld hl,(00028h)      ;01cf
+    ld hl,(0028h)       ;01cf
     call sub_0293h      ;01d2
     ld hl,l02f3h        ;01d5
     call sub_02aeh      ;01d8
-    ld a,(00024h)       ;01db
+    ld a,(0024h)        ;01db
     call sub_0298h      ;01de
 l01e1h:
     call sub_02b7h      ;01e1
     pop bc              ;01e4
     inc c               ;01e5
     ld a,c              ;01e6
-    cp 00bh             ;01e7
+    cp 0bh              ;01e7
     jp nz,l0132h        ;01e9
-    ld a,(00025h)       ;01ec
+    ld a,(0025h)        ;01ec
     rrca                ;01ef
-    ld (00025h),a       ;01f0
+    ld (0025h),a        ;01f0
     jp l0130h           ;01f3
 l01f6h:
     ld hl,l02deh        ;01f6
     call sub_02aeh      ;01f9
-    jp 00000h           ;01fc
+    jp 0000h            ;01fc
 sub_01ffh:
     push bc             ;01ff
     push de             ;0200
     push hl             ;0201
     xor b               ;0202
-    ld hl,00024h        ;0203
+    ld hl,0024h         ;0203
     or (hl)             ;0206
     ld (hl),a           ;0207
-    ld hl,(00020h)      ;0208
+    ld hl,(0020h)       ;0208
     inc hl              ;020b
-    ld (00020h),hl      ;020c
+    ld (0020h),hl       ;020c
     ld a,h              ;020f
     or l                ;0210
     jr nz,l021ah        ;0211
-    ld hl,(00022h)      ;0213
+    ld hl,(0022h)       ;0213
     inc hl              ;0216
-    ld (00022h),hl      ;0217
+    ld (0022h),hl       ;0217
 l021ah:
     pop de              ;021a
     push de             ;021b
-    ld a,(00026h)       ;021c
+    ld a,(0026h)        ;021c
     sub e               ;021f
-    ld a,(00027h)       ;0220
+    ld a,(0027h)        ;0220
     sbc a,d             ;0223
     jr c,l022ah         ;0224
-    ld (00026h),de      ;0226
+    ld (0026h),de       ;0226
 l022ah:
-    ld a,(00028h)       ;022a
+    ld a,(0028h)        ;022a
     sub e               ;022d
-    ld a,(00029h)       ;022e
+    ld a,(0029h)        ;022e
     sbc a,d             ;0231
     jr nc,l0238h        ;0232
-    ld (00028h),de      ;0234
+    ld (0028h),de       ;0234
 l0238h:
     pop hl              ;0238
     pop de              ;0239
@@ -174,7 +174,7 @@ l0238h:
     ret                 ;023b
 sub_023ch:
     push hl             ;023c
-    ld b,000h           ;023d
+    ld b,00h            ;023d
     ld hl,l0244h        ;023f
     add hl,bc           ;0242
     add hl,bc           ;0243
@@ -197,7 +197,7 @@ l025ah:
     rrca                ;025c
     rrca                ;025d
     xor h               ;025e
-    and 001h            ;025f
+    and 01h             ;025f
     jr z,l0265h         ;0261
 l0263h:
     xor a               ;0263
@@ -216,7 +216,7 @@ l026dh:
     cpl                 ;026e
     ret                 ;026f
 l0270h:
-    ld a,055h           ;0270
+    ld a,55h            ;0270
     ret                 ;0272
 l0273h:
     ld a,l              ;0273
@@ -224,24 +224,24 @@ l0273h:
     rrca                ;0275
     rrca                ;0276
     xor h               ;0277
-    and 001h            ;0278
+    and 01h             ;0278
     jr z,l0263h         ;027a
     jr l0265h           ;027c
 l027eh:
     ld a,l              ;027e
     rra                 ;027f
     jr c,l0286h         ;0280
-    ld a,(00025h)       ;0282
+    ld a,(0025h)        ;0282
     ret                 ;0285
 l0286h:
-    ld a,(00025h)       ;0286
+    ld a,(0025h)        ;0286
     cpl                 ;0289
     ret                 ;028a
 l028bh:
     ld a,l              ;028b
     rra                 ;028c
     jr nc,l0286h        ;028d
-    ld a,(00025h)       ;028f
+    ld a,(0025h)        ;028f
     ret                 ;0292
 sub_0293h:
     ld a,h              ;0293
@@ -256,12 +256,12 @@ sub_0298h:
     call sub_02a1h      ;029d
     pop af              ;02a0
 sub_02a1h:
-    and 00fh            ;02a1
-    cp 00ah             ;02a3
+    and 0fh             ;02a1
+    cp 0ah              ;02a3
     jr c,l02a9h         ;02a5
-    add a,007h          ;02a7
+    add a,07h           ;02a7
 l02a9h:
-    add a,030h          ;02a9
+    add a,30h           ;02a9
     jp sub_030eh        ;02ab
 sub_02aeh:
     ld a,(hl)           ;02ae
@@ -271,9 +271,9 @@ sub_02aeh:
     inc hl              ;02b4
     jr sub_02aeh        ;02b5
 sub_02b7h:
-    ld a,00dh           ;02b7
+    ld a,0dh            ;02b7
     call sub_030eh      ;02b9
-    ld a,00ah           ;02bc
+    ld a,0ah            ;02bc
     call sub_030eh      ;02be
     ret                 ;02c1
 l02c2h:
@@ -309,7 +309,7 @@ l02deh:
     ld h,c              ;02e1
     ld l,e              ;02e2
     ld l,02eh           ;02e3
-    ld l,000h           ;02e5
+    ld l,00h            ;02e5
 l02e7h:
     ld d,b              ;02e7
     ld h,c              ;02e8
@@ -361,12 +361,12 @@ l0310h:
     and c               ;031e
     ld (bc),a           ;031f
     pop af              ;0320
-    and 00fh            ;0321
-    cp 00ah             ;0323
+    and 0fh             ;0321
+    cp 0ah              ;0323
     jr c,l0329h         ;0325
-    add a,007h          ;0327
+    add a,07h           ;0327
 l0329h:
-    add a,030h          ;0329
+    add a,30h           ;0329
     jp sub_030eh        ;032b
 l032eh:
     ld a,(hl)           ;032e
@@ -377,9 +377,9 @@ l0334h:
     inc hl              ;0334
     jr l032eh           ;0335
 l0337h:
-    ld a,00dh           ;0337
+    ld a,0dh            ;0337
     call sub_030eh      ;0339
-    ld a,00ah           ;033c
+    ld a,0ah            ;033c
     call sub_030eh      ;033e
     ret                 ;0341
     dec c               ;0342
@@ -413,8 +413,8 @@ l0343h:
     ld h,l              ;0360
     ld h,c              ;0361
     ld l,e              ;0362
-    ld l,02eh           ;0363
-    ld l,000h           ;0365
+    ld l,2eh            ;0363
+    ld l,00h            ;0365
     ld d,b              ;0367
     ld h,c              ;0368
     ld (hl),e           ;0369
@@ -436,16 +436,16 @@ l0379h:
     jr z,l0379h         ;037d
     ret                 ;037f
     jr c,l0386h         ;0380
-    ld a,(00025h)       ;0382
+    ld a,(0025h)        ;0382
     ret                 ;0385
 l0386h:
-    ld a,(00025h)       ;0386
+    ld a,(0025h)        ;0386
     cpl                 ;0389
     ret                 ;038a
     ld a,l              ;038b
     rra                 ;038c
     jr nc,l0386h        ;038d
-    ld a,(00025h)       ;038f
+    ld a,(0025h)        ;038f
     ret                 ;0392
     ld a,h              ;0393
 l0394h:
@@ -458,12 +458,12 @@ l0394h:
     rrca                ;039c
     call sub_02a1h      ;039d
     pop af              ;03a0
-    and 00fh            ;03a1
-    cp 00ah             ;03a3
+    and 0fh             ;03a1
+    cp 0ah              ;03a3
     jr c,l03a9h         ;03a5
-    add a,007h          ;03a7
+    add a,07h           ;03a7
 l03a9h:
-    add a,030h          ;03a9
+    add a,30h           ;03a9
     jp sub_030eh        ;03ab
 l03aeh:
     ld a,(hl)           ;03ae
@@ -474,9 +474,9 @@ l03b4h:
     inc hl              ;03b4
     jr l03aeh           ;03b5
 l03b7h:
-    ld a,00dh           ;03b7
+    ld a,0dh            ;03b7
     call sub_030eh      ;03b9
-    ld a,00ah           ;03bc
+    ld a,0ah            ;03bc
     call sub_030eh      ;03be
     ret                 ;03c1
     dec c               ;03c2
@@ -510,8 +510,8 @@ l03c3h:
     ld h,l              ;03e0
     ld h,c              ;03e1
     ld l,e              ;03e2
-    ld l,02eh           ;03e3
-    ld l,000h           ;03e5
+    ld l,2eh            ;03e3
+    ld l,00h            ;03e5
     ld d,b              ;03e7
     ld h,c              ;03e8
     ld (hl),e           ;03e9
