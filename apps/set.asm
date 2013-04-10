@@ -1,6 +1,7 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels set.com
 
+bdos:       equ  0005h  ;BDOS entry point
 args:       equ  0080h  ;Command line arguments passed from CCP
 dirsize:    equ 0d8b2h  ;CCP directory width: 0=1 col, 1=2 cols, 3=4 cols
 lpt_dev:    equ 0ea61h  ;CBM printer (LPT:) IEEE-488 primary address
@@ -39,7 +40,7 @@ bad_syntax:
 ;
     ld de,syntax_err    ;DE = address of "Syntax error" string
     ld c,09h            ;C = 09h, C_WRITESTR (Output String)
-    jp 0005h            ;Jump out to BDOS System Call.  It will
+    jp bdos             ;Jump out to BDOS System Call.  It will
                         ;  return to CP/M.
 
 dispatch:

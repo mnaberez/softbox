@@ -1,6 +1,7 @@
 ;TIME.COM
 ;  Read or set time on the CBM computer clock
 
+bdos:       equ  0005h  ;BDOS entry point
 args:       equ  0080h  ;Command line arguments passed from CCP
 get_time:   equ 0f072h  ;BIOS Read the CBM clocks (both RTC and jiffies)
 set_time:   equ 0f06fh  ;BIOS Set the time on the CBM real time clock
@@ -18,7 +19,7 @@ time_output:
 ;
     ld de,time_is       ;DE = address of "Time is" string
     ld c,09h            ;C = 09h, C_WRITESTR (Output String)
-    call 0005h          ;BDOS System Call
+    call bdos           ;BDOS System Call
 
     call get_time       ;Read the CBM clocks (both RTC and jiffies):
                         ;  Real Time Clock:
@@ -36,7 +37,7 @@ time_output:
     push de             ;
     ld e,3ah            ;  E = ":" character
     ld c,02h            ;  C = 02h, C_WRITE (Console Output)
-    call 0005h          ;  BDOS System Call
+    call bdos           ;  BDOS System Call
     pop de              ;
     pop hl              ;
 
@@ -48,7 +49,7 @@ time_output:
     push de             ;
     ld e,3ah            ;  E = ":" character
     ld c,02h            ;  C = 02h, C_WRITE (Console Output)
-    call 0005h          ;  BDOS System Call
+    call bdos           ;  BDOS System Call
     pop hl              ;  XXX
                         ;  TODO: pushes DE but pops HL.  Is this a bug?
 
@@ -72,9 +73,9 @@ time_input:
     push de             ;0145
     ld de,hit_key       ;0146
     ld c,09h            ;C = 09h, C_WRITESTR (Output String)
-    call 0005h          ;BDOS System Call
+    call bdos           ;BDOS System Call
     ld c,01h            ;C = 01h, C_READ (Console Input)
-    call 0005h          ;BDOS System Call
+    call bdos           ;BDOS System Call
     cp 03h              ;Control-C pressed?
     jp z,0000h          ;0155
     pop de              ;0158
@@ -86,7 +87,7 @@ time_input:
 bad_syntax:
     ld de,syntax_err    ;015d
     ld c,09h            ;C = 09h, C_WRITESTR (Output String)
-    call 0005h          ;BDOS System Call
+    call bdos           ;BDOS System Call
     jp 0000h
 
 sub_0168h:
@@ -136,11 +137,11 @@ l019bh:
     add a,3ah           ;01a1
     push af             ;01a3
     ld c,02h            ;C = 02h, C_WRITE (Console Output)
-    call 0005h          ;BDOS System Call
+    call bdos           ;BDOS System Call
     pop af              ;01a9
     ld e,a              ;01aa
     ld c,02h            ;C = 02h, C_WRITE (Console Output)
-    call 0005h          ;BDOS System Call
+    call bdos           ;BDOS System Call
     pop hl              ;01b0
     pop de              ;01b1
     ret                 ;01b2

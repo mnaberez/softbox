@@ -1,6 +1,7 @@
 ;BACKUP.COM
 ;  Duplicate a floppy disk in a CBM dual drive unit
 
+bdos:           equ  0005h  ;BDOS entry point
 args:           equ  0080h  ;Command line arguments passed from CCP
 dos_msg:        equ 0eac0h  ;Last error message returned from CBM DOS
 get_ddev:       equ 0f054h  ;BIOS Get device address for a CP/M drive number
@@ -70,7 +71,7 @@ backup:
     push af             ;
     ld de,disk_on_drive ;  DE = address of "Disk on drive" string
     ld c,09h            ;  C = 09h, C_WRITESTR (Output String)
-    call 0005h          ;  BDOS System Call
+    call bdos           ;  BDOS System Call
     pop af              ;
 
     push af             ;Push destination CP/M drive number
@@ -79,16 +80,16 @@ backup:
     add a,41h           ;  A = drive letter in ASCII
     ld e,a              ;  E = A
     ld c,02h            ;  C = 02h, C_WRITE (Console Output)
-    call 0005h          ;  BDOS System Call
+    call bdos           ;  BDOS System Call
 
                         ;Write "will be erased..." to console out
     ld de,will_be_erasd ;  HL = address of string
     ld c,09h            ;  C = 09h, C_WRITESTR (Output String)
-    call 0005h          ;  BDOS System Call
+    call bdos           ;  BDOS System Call
 
                         ;Get a key from the console:
     ld c,01h            ;  C = 01h, C_READ (Console Input)
-    call 0005h          ;  BDOS System Call
+    call bdos           ;  BDOS System Call
 
                         ;Check for RETURN to continue, other key aborts:
     cp 0dh              ;  Key pressed = RETURN?
@@ -122,7 +123,7 @@ send_cmd:
                         ;Write success message and exit:
     ld de,copy_complete ;  HL = address of "Copy complete" string
     ld c,09h            ;  C = 09h, C_WRITESTR (Output String)
-    jp 0005h            ;  Jump out to BDOS System Call.
+    jp bdos             ;  Jump out to BDOS System Call.
                         ;    It will return to CP/M.
 
 copy_complete:
@@ -150,7 +151,7 @@ exit_syntax:
 ;
     ld de,syntax_err    ;DE = address of "Syntax error" string
     ld c,09h            ;C = 09h, C_WRITESTR (Output String)
-    jp 0005h            ;Jump out to BDOS System Call.
+    jp bdos             ;Jump out to BDOS System Call.
                         ;  It will return to CP/M.
 
 exit_abort:
@@ -164,7 +165,7 @@ exit_units:
 ;
     ld de,not_same_unit ;DE = address of "Drives must be same unit" string
     ld c,09h            ;C = 09h, C_WRITESTR (Output String)
-    jp 0005h            ;Jump out to BDOS System Call.
+    jp bdos             ;Jump out to BDOS System Call.
                         ;  It will return to CP/M.
 
 exit_error:
@@ -172,7 +173,7 @@ exit_error:
 ;
     ld de,disk_error    ;DE = address of "Drive error: " string
     ld c,09h            ;C = 09h, C_WRITESTR (Output String)
-    call 0005h          ;BDOS System Call
+    call bdos           ;BDOS System Call
 
     ld hl,dos_msg       ;HL = address of CBM DOS error string
 dos_msg_loop:
@@ -183,7 +184,7 @@ dos_msg_loop:
     push hl
     ld e,a              ;E = A (pass char to C_WRITE)
     ld c,02h            ;C = 02h, C_WRITE (Console Output)
-    call 0005h          ;BDOS System Call
+    call bdos           ;BDOS System Call
     pop hl
 
     inc hl              ;Move to next char in string
