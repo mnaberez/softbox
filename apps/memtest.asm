@@ -1,6 +1,10 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin 256 --address --labels memtest.com
 
+const:      equ 0f006h  ;BIOS Console status
+conin:      equ 0f009h  ;BIOS Console input
+conout:     equ 0f00ch  ;BIOS Console output
+
     org 0100h
 
 l0100h:
@@ -296,9 +300,9 @@ sub_0300h:
     push hl             ;0300  e5
     push bc             ;0301  c5
     push de             ;0302  d5
-    call 0f006h         ;0303  cd 06 f0
+    call const          ;0303  cd 06 f0
     or a                ;0306  b7
-    call nz,0f009h      ;0307  c4 09 f0
+    call nz,conin       ;0307  c4 09 f0
     pop de              ;030a  d1
     pop bc              ;030b  c1
     pop hl              ;030c  e1
@@ -310,7 +314,7 @@ l0310h:
     push de             ;0310  d5
     push af             ;0311  f5
     ld c,a              ;0312  4f
-    call 0f00ch         ;0313  cd 0c f0
+    call conout         ;0313  cd 0c f0
     pop af              ;0316  f1
     pop de              ;0317  d1
     pop hl              ;0318  e1
