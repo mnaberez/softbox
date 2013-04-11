@@ -152,15 +152,3 @@ hit_key:
     db "Hit any key to start clock : $"
 syntax_err:
     db "Syntax error$"
-
-    add hl,bc           ;01e8
-    ld c,(hl)           ;01e9
-    call 0786h          ;01ea
-    ld hl,1d84h         ;01ed
-    inc (hl)            ;01f0
-    jp nz,08cch         ;01f1
-    ld hl,1cdeh         ;01f4
-    ld (hl),00h         ;01f7
-    ld bc,014ah         ;01f9
-    nop                 ;01fc
-    call nz,1ce5h       ;01fd
