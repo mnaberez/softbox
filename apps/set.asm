@@ -46,7 +46,7 @@ bad_syntax:
 dispatch:
 ;Dispatch the first character of the command arguments.
 ;
-    and 5fh
+    and 5fh             ;Normalize char to uppercase
     cp 'U'              ;U = Set uppercase mode
     jp z,set_u
     cp 'L'              ;L = Set lowercase mode
@@ -67,9 +67,9 @@ dispatch:
     jp z,set_r
     cp 'N'              ;N = Set IEEE-488 primary address of PTP:
     jp z,set_n
-    cp 'E'              ;E = Set terminal command lead-in
+    cp 'E'              ;E = Set terminal command lead-in (escape) char
     jp z,set_e
-    jp bad_syntax
+    jp bad_syntax       ;Syntax error if character is not matched
 
 set_u:
 ;Set uppercase mode
@@ -103,26 +103,34 @@ set_t:
     jp jp_conout        ;Jump out to conout (in BIOS) through jp_conout.
                         ;  It will return to CP/M.
 
-sub_016bh:
-    inc hl
-    ld a,(hl)
-    cp '='
-    jp nz,p_bad_syntax
-    inc hl
-    ld a,(hl)
-    dec c
-    dec c
-    dec c
-    jp m,p_bad_syntax
+get_value:
+;Get the value for the setting from args.  If the command was
+;"SET A=B" then "B" would be returned in A.
+;
+                        ;Check for equals sign:
+    inc hl              ;  Move to next character in args
+    ld a,(hl)           ;  A = char from args
+    cp '='              ;  Is it an equals sign?
+    jp nz,p_bad_syntax  ;    No: bad syntax
+
+                        ;Get value after equals sign:
+    inc hl              ;  Move to next character in args
+    ld a,(hl)           ;  A = char from args
+
+                        ;Check that args has exactly three chars ("A=B"):
+    dec c               ;  "A"
+    dec c               ;  "="
+    dec c               ;  "B"
+    jp m,p_bad_syntax   ;  Jump if sign flag is set (decremented past 0)
     ret
 
 set_e:
-;Set terminal command lead-in
+;Set terminal command lead-in (escape) character
 ;  SET E=E  Escape
 ;  SET E=T  Tilde
 ;
-    call sub_016bh
-    and 5fh
+    call get_value      ;A = value char
+    and 5fh             ;Normalize char to uppercase
     cp 'E'
     ld b,1bh            ;01bh = ESC
     jp z,l018eh
@@ -135,17 +143,17 @@ l018eh:
     ret
 
 set_v:
-    call sub_016bh
-    and 5fh
+    call get_value      ;A = value char
+    and 5fh             ;Normalize char to uppercase
     ld hl,l027ah
-    cp 'A'
+    cp 'A'              ;ADM-3A?
     jp z,l01cfh
-    cp 'T'
+    cp 'T'              ;TeleVideo 912?
     jp z,l01cfh
-    cp 'H'
+    cp 'H'              ;Hazeltime 1500?
     ld b,07eh
     jp z,l01b3h
-    cp 'E'
+    cp 'E'              ;TODO what is E?
     jp nz,bad_syntax
     ld b,1bh
 l01b3h:
@@ -181,7 +189,7 @@ set_d:
 ;  SET D=2  Listings from DIR command will be 1,2,4 columns
 ;  SET D=4
 ;
-    call sub_016bh
+    call get_value      ;A = value char
     ld b,00h
     cp '1'
     jp z,l0204h
