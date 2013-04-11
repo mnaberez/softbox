@@ -131,7 +131,9 @@ leadin:   equ 0ea68h    ;Terminal command lead-in: 1bh=escape, 7eh=tilde
 xy_order: equ 0ea69h    ;X,Y order when sending move-to: 0=X first, 1=Y first
 y_offset: equ 0ea6ah    ;Offset added to Y when sending move-to sequence
 x_offset: equ 0ea6bh    ;Offset added to X when sending move-to sequence
-ieeestat: equ 0ea6ch    ;Temp byte stores IEEE-488 control lines input state
+eoisav:   equ 0ea6ch    ;Stores ppi2_pa IEEE-488 control lines after get byte
+                        ;  This allows a program to check for EOI after it
+                        ;  calls ieee_get_byte or ieee_get_tmo.
 lptype:   equ 0ea6dh    ;CBM printer (LPT:) type: 0=3022, 3032, 4022, 4023
                         ;                         1=8026, 8027 (daisywheel)
                         ;                         2=8024
@@ -3060,6 +3062,10 @@ ieee_get_tmo:
 ;Read a byte from IEEE-488 device with timeout
 ;BC = number milliseconds before timeout
 ;
+;Returns carry flag set if a timeout occurred.
+;Returns the byte in A.
+;Stores ppi2_pa in eoisav so EOI state can be checked later.
+;
     in a,(ppi2_pb)
     and 0f7h
     out (ppi2_pb),a     ;NRFD_OUT=high
@@ -3067,7 +3073,7 @@ lfec7h:
     in a,(ppi2_pa)
     cpl
     and 02h
-    jr z,lfee5h         ;Jump out if DAV_IN=low
+    jr z,ieee_dav_get   ;Jump out to read the byte if DAV_IN=low
     call delay_1ms
     dec bc              ;Decrement BC
     ld a,b
@@ -3078,23 +3084,36 @@ lfec7h:
 
 ieee_get_byte:
 ;Read a byte from the current IEEE-488 device
+;No timeout; waits forever for DAV_IN=low.
+;
+;Returns the byte in A.
+;Stores ppi2_pa in eoisav so EOI state can be checked later.
 ;
     in a,(ppi2_pb)
     and 0f7h
     out (ppi2_pb),a     ;NRFD_OUT=high
-
 lfedeh:
     in a,(ppi2_pa)
     cpl
     and 02h
     jr nz,lfedeh        ;Wait until DAV_IN=low
+                        ;Fall through to read the byte
 
-lfee5h:
+ieee_dav_get:
+;This is not a BIOS entry point.  It is only used internally
+;to implement ieee_get_byte and ieee_get_tmo.
+;
+;Read a byte from the current IEEE-488 device.  The caller
+;must wait for DAV_IN=low before calling this routine.
+;
+;Returns the byte in A.
+;Stores ppi2_pa in eoisav so EOI state can be checked later.
+;
     in a,(ppi1_pa)      ;Read byte from IEEE data bus
     push af             ;Push it on the stack
 
     in a,(ppi2_pa)      ;Read state of IEEE-488 control lines in
-    ld (ieeestat),a     ;TODO 0ea6ch Is this used?
+    ld (eoisav),a       ;Save it so EOI state can be checked later
 
     in a,(ppi2_pb)
     or 08h
