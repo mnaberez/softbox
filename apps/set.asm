@@ -200,15 +200,18 @@ hz1500:
 adm3a_tv912:
 ;ADM-3A and TeleVideo 912
 ;
-    ld a,20h            ;20h = offset used by ADM-3A and compatibles
-    ld (y_offset),a     ;Set Y offset for cursor move-to sequence
-    ld (x_offset),a     ;Set X offset
+                        ;Set cursor move-to offsets:
+    ld a,20h            ;  20h = offset used by ADM-3A and compatibles
+    ld (y_offset),a     ;  Set Y offset for cursor move-to sequence
+    ld (x_offset),a     ;  Set X offset
 
-    xor a               ;A=0 indicates Y-first
-    ld (xy_order),a     ;Set X-Y order for cursor move-to sequence
+                        ;Set cursor move-to order:
+    xor a               ;  A=0 indicates Y-first
+    ld (xy_order),a     ;  Set X-Y order for cursor move-to sequence
 
-    ld a,1bh            ;A = ESC character
-    ld (leadin),a       ;Set terminal lead-in character
+                        ;Set lead-in:
+    ld a,1bh            ;  A = ESC character
+    ld (leadin),a       ;  Set terminal lead-in character
 
                         ;Copy tab stop data:
     ld hl,tabs_adm_tv   ;  HL = address of tabs_adm_tv
