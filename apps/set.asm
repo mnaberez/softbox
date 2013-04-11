@@ -55,7 +55,7 @@ dispatch:
     jp z,set_t
     cp 'G'              ;G = Set line spacing to short
     jp z,set_g
-    cp 'V'
+    cp 'V'              ;V = Set video terminal type
     jp z,set_v
     cp 'D'              ;D = Set directory width
     jp z,set_d
@@ -132,7 +132,7 @@ set_e:
     call get_value      ;A = value char
     and 5fh             ;Normalize char to uppercase
     cp 'E'
-    ld b,1bh            ;01bh = ESC
+    ld b,1bh            ;1bh = ESC
     jp z,l018eh
     cp 'T'
     jp nz,bad_syntax
@@ -143,44 +143,78 @@ l018eh:
     ret
 
 set_v:
+;Set video terminal type
+;  SET V=A  Lear Siegler ADM-3A
+;  SET V=T  TeleVideo 912
+;  SET V=H  Hazeltine 1500 with tilde lead-in
+;  SET V=E  Hazeltine 1500 with ESC lead-in
+;
     call get_value      ;A = value char
     and 5fh             ;Normalize char to uppercase
-    ld hl,l027ah
-    cp 'A'              ;ADM-3A?
-    jp z,l01cfh
-    cp 'T'              ;TeleVideo 912?
-    jp z,l01cfh
-    cp 'H'              ;Hazeltime 1500?
-    ld b,07eh
-    jp z,l01b3h
-    cp 'E'              ;TODO what is E?
-    jp nz,bad_syntax
-    ld b,1bh
-l01b3h:
-    ld a,b
-    ld (leadin),a
-    xor a
-    ld (x_offset),a
-    ld (y_offset),a
-    ld a,001h
-    ld (xy_order),a
-    ld hl,l025fh
-    ld de,scrtab
-    ld bc,0001bh
-    ldir
+
+    ld hl,tabs_adm_tv   ;HL = address of ADM-3A/TV-912 tabs table
+                        ;TODO: This is not needed because HL will
+                        ;      be set to the correct tabs table
+                        ;      in both adm3a_tv912 and hz1500.
+
+    cp 'A'              ;'A' = ADM-3A
+    jp z,adm3a_tv912
+
+    cp 'T'              ;'T' = TeleVideo 912
+    jp z,adm3a_tv912
+
+    cp 'H'              ;'H' = Hazeltine 1500 with ~ lead-in
+    ld b,'~'            ;B = ~ lead-in
+    jp z,hz1500
+
+    cp 'E'              ;'E' = Hazeltine 1500 with ESC lead-in
+    jp nz,bad_syntax    ;Jump to bad syntax if not 'E'
+
+    ld b,1bh            ;B = ESC lead-in
+                        ;Fall through into hz1500
+
+hz1500:
+;Hazeltine 1500
+;B = lead-in (escape) character
+;
+                        ;Set lead-in:
+    ld a,b              ;  A = B (lead-in)
+    ld (leadin),a       ;  Set terminal lead-in character
+
+                        ;Set cursor move-to offsets:
+    xor a               ;  A=0 (no offset)
+    ld (x_offset),a     ;  Set Y offset for cursor move-to sequence
+    ld (y_offset),a     ;  Set X offset
+
+                        ;Set cursor move-to order:
+    ld a,01h            ;  A=1 indicates X-first
+    ld (xy_order),a     ;  Set X-Y order for cursor move-to sequence
+
+                        ;Copy tab stop data:
+    ld hl,tabs_hz1500   ;  HL = address of Hazeltine 1500 tabs table
+    ld de,scrtab        ;  DE = address of BIOS scrtab area
+    ld bc,001bh         ;  BC = 27 bytes to copy
+    ldir                ;  Copy BC bytes from (HL) to (DE)
     ret
-l01cfh:
-    ld a,20h
-    ld (y_offset),a
-    ld (x_offset),a
-    xor a
-    ld (xy_order),a
-    ld a,1bh
-    ld (leadin),a
-    ld hl,l027ah
-    ld de,scrtab
-    ld bc,002bh
-    ldir
+
+adm3a_tv912:
+;ADM-3A and TeleVideo 912
+;
+    ld a,20h            ;20h = offset used by ADM-3A and compatibles
+    ld (y_offset),a     ;Set Y offset for cursor move-to sequence
+    ld (x_offset),a     ;Set X offset
+
+    xor a               ;A=0 indicates Y-first
+    ld (xy_order),a     ;Set X-Y order for cursor move-to sequence
+
+    ld a,1bh            ;A = ESC character
+    ld (leadin),a       ;Set terminal lead-in character
+
+                        ;Copy tab stop data:
+    ld hl,tabs_adm_tv   ;  HL = address of tabs_adm_tv
+    ld de,scrtab        ;  DE = address of BIOS scrtab area
+    ld bc,002bh         ;  BC = 43 bytes to copy
+    ldir                ;  Copy BC bytes from (HL) to (DE)
     ret
 
 set_d:
@@ -280,11 +314,13 @@ l024dh:
 syntax_err:
     db "Syntax error$"
 
-l025fh:
+tabs_hz1500:
+;Tab stop data for Hazeltine 1500
     db 8bh,0bh,8ch,0ch,8fh,13h,91h,1bh,92h,1eh,93h,12h,97h,14h
     db 98h,14h,9ah,11h,9ch,1ah,9dh,1ah,99h,00h,9fh,00h,00h
 
-l027ah:
+tabs_adm_tv:
+;Tab stop data for Lear Siegler ADM-3A and TeleVideo 912
     db 0b1h,04h,0b2h,05h,0b3h,06h,0eah,0eh,0ebh,0fh,0d1h,1ch,0d7h
     db 1dh,0c5h,11h,0d2h,12h,0d4h,13h,0f4h,13h,0d9h,14h,0f9h,14h
     db 0abh,1ah,0aah,1ah,0bah,1ah,0bbh,1ah,0dah,1ah,0bdh,1bh,0a8h
