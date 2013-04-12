@@ -47,27 +47,27 @@ dispatch:
 ;Dispatch the first character of the command arguments.
 ;
     and 5fh             ;Normalize char to uppercase
-    cp 'U'              ;U = Set uppercase mode
+    cp 'U'              ;'U' = Set uppercase mode
     jp z,set_u
-    cp 'L'              ;L = Set lowercase mode
+    cp 'L'              ;'L' = Set lowercase mode
     jp z,set_l
-    cp 'T'              ;T = Set line spacing to tall
+    cp 'T'              ;'T' = Set line spacing to tall
     jp z,set_t
-    cp 'G'              ;G = Set line spacing to short
+    cp 'G'              ;'G' = Set line spacing to short
     jp z,set_g
-    cp 'V'              ;V = Set video terminal type
+    cp 'V'              ;'V' = Set video terminal type
     jp z,set_v
-    cp 'D'              ;D = Set directory width
+    cp 'D'              ;'D' = Set directory width
     jp z,set_d
-    cp 'P'              ;P = Set IEEE-488 primary address of LPT:
+    cp 'P'              ;'P' = Set IEEE-488 primary address of LPT:
     jp z,set_p
-    cp 'A'              ;A = Set IEEE-488 primary address of UL1:
+    cp 'A'              ;'A' = Set IEEE-488 primary address of UL1:
     jp z,set_a
-    cp 'R'              ;R = Set IEEE-488 primary address of PTR:
+    cp 'R'              ;'R' = Set IEEE-488 primary address of PTR:
     jp z,set_r
-    cp 'N'              ;N = Set IEEE-488 primary address of PTP:
+    cp 'N'              ;'N' = Set IEEE-488 primary address of PTP:
     jp z,set_n
-    cp 'E'              ;E = Set terminal command lead-in (escape) char
+    cp 'E'              ;'E' = Set terminal command lead-in (escape) char
     jp z,set_e
     jp bad_syntax       ;Syntax error if character is not matched
 
@@ -227,18 +227,25 @@ set_d:
 ;  SET D=4
 ;
     call get_value      ;A = value char
-    ld b,00h
-    cp '1'
-    jp z,l0204h
-    ld b,01h
-    cp '2'
-    jp z,l0204h
-    ld b,03h
-    cp '4'
-    jp nz,bad_syntax
-l0204h:
+
+                        ;Select 1 column directory:
+    ld b,00h            ;  B=0
+    cp '1'              ;  Value = 1?
+    jp z,store_dirsize  ;    Yes: jump to store B in dirsize
+
+                        ;Select 2 column directory:
+    ld b,01h            ;  B=1
+    cp '2'              ;  Value = 2?
+    jp z,store_dirsize  ;    Yes: jump to store B in dirsize
+
+                        ;Select 4 column directory:
+    ld b,03h            ;  B=3
+    cp '4'              ;  Value = 4?
+    jp nz,bad_syntax    ;    No:  jump to syntax error, no options left
+                        ;    Yes: fall through to store B in dirsize
+store_dirsize:
     ld a,b
-    ld (dirsize),a
+    ld (dirsize),a      ;Set CCP directory width to B
     ret
 
 set_a:
@@ -256,26 +263,28 @@ set_p:
 ;  SET P=?
 ;
     ld de,lpt_dev       ;DE = address of LPT: device number
-    jp l021bh
+    jp store_dev
 
 set_n:
 ;Set IEEE-488 primary address of PTP:
 ;  SET N=?
 ;
     ld de,ptp_dev       ;DE = address of PTP: device number
-    jp l021bh
+    jp store_dev
 
 set_r:
 ;Set IEEE-488 primary address of PTR:
 ;  SET R=?
 ;
     ld de,ptr_dev       ;DE = address of PTR: device number
-                        ;Fall through
+                        ;Fall through to store_dev
 
-l021bh:
-    call sub_0223h
-    jp c,bad_syntax
-    ld (de),a
+store_dev:
+;DE = address to receive device number
+;
+    call sub_0223h      ;A = device number
+    jp c,bad_syntax     ;Jump to syntax error if parsing number failed
+    ld (de),a           ;Store device number
     ret
 
 sub_0223h:
@@ -307,6 +316,7 @@ sub_0223h:
     pop af
     add a,b
     ret
+
 l024dh:
     ld a,b
     dec hl
