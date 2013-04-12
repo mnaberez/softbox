@@ -185,6 +185,7 @@ sub_023ch:
 l0244h:
     ex (sp),hl          ;0244  e3
     ret                 ;0245  c9
+
     jr l025ah           ;0246  18 00
     jr l0268h           ;0248  18 00
     jr l026ah           ;024a  18 00
@@ -320,96 +321,3 @@ l0310h:
     pop hl              ;0318  e1
     pop bc              ;0319  c1
     ret                 ;031a  c9
-    jp nc,0cd0fh        ;031b  d2 0f cd
-    and c               ;031e  a1
-    ld (bc),a           ;031f  02
-    pop af              ;0320  f1
-    and 0fh             ;0321  e6 0f
-    cp 0ah              ;0323  fe 0a
-    jr c,l0329h         ;0325  38 00
-    add a,07h           ;0327  c6 07
-l0329h:
-    add a,30h           ;0329  c6 30
-    jp sub_030eh        ;032b  c3 0e 03
-l032eh:
-    ld a,(hl)           ;032e  7e
-    or a                ;032f  b7
-    ret z               ;0330  c8
-    call sub_030eh      ;0331  cd 0e 03
-l0334h:
-    inc hl              ;0334  23
-    jr l032eh           ;0335  18 f7
-l0337h:
-    ld a,0dh            ;0337  3e 0d
-    call sub_030eh      ;0339  cd 0e 03
-    ld a,0ah            ;033c  3e 0a
-    call sub_030eh      ;033e  cd 0e 03
-    ret                 ;0341  c9
-
-    db 0dh,0ah,"Testing CP/M Box memory",0dh,0ah,00h
-    db "Break",02eh,02eh,02eh,00h
-    db "Pass=",00h
-    db " Err=",00h
-    db " Bit ",00h
-
-l0379h:
-    call sub_0300h      ;0379  cd 00 03
-    or a                ;037c  b7
-    jr z,l0379h         ;037d  28 fa
-    ret                 ;037f  c9
-    jr c,l0386h         ;0380  38 00
-    ld a,(0025h)        ;0382  3a 25 00
-    ret                 ;0385  c9
-l0386h:
-    ld a,(0025h)        ;0386  3a 25 00
-    cpl                 ;0389  2f
-    ret                 ;038a  c9
-    ld a,l              ;038b  7d
-    rra                 ;038c  1f
-    jr nc,l0386h        ;038d  30 f7
-    ld a,(0025h)        ;038f  3a 25 00
-    ret                 ;0392  c9
-    ld a,h              ;0393  7c
-l0394h:
-    call sub_0298h      ;0394  cd 98 02
-    ld a,l              ;0397  7d
-    push af             ;0398  f5
-    rrca                ;0399  0f
-    rrca                ;039a  0f
-    rrca                ;039b  0f
-    rrca                ;039c  0f
-    call sub_02a1h      ;039d  cd a1 02
-    pop af              ;03a0  f1
-    and 0fh             ;03a1  e6 0f
-    cp 0ah              ;03a3  fe 0a
-    jr c,l03a9h         ;03a5  38 00
-    add a,07h           ;03a7  c6 07
-l03a9h:
-    add a,30h           ;03a9  c6 30
-    jp sub_030eh        ;03ab  c3 0e 03
-l03aeh:
-    ld a,(hl)           ;03ae  7e
-    or a                ;03af  b7
-    ret z               ;03b0  c8
-    call sub_030eh      ;03b1  cd 0e 03
-l03b4h:
-    inc hl              ;03b4  23
-    jr l03aeh           ;03b5  18 f7
-l03b7h:
-    ld a,0dh            ;03b7  3e 0d
-    call sub_030eh      ;03b9  cd 0e 03
-    ld a,0ah            ;03bc  3e 0a
-    call sub_030eh      ;03be  cd 0e 03
-    ret                 ;03c1  c9
-
-    db 0dh,0ah,"Testing CP/M Box memory",0dh,0ah,00h
-    db "Break",02eh,02eh,02eh,00h
-    db "Pass=",00h
-    db " Err=",00h
-    db " Bit ",00h
-
-l03f9h:
-    call sub_0300h      ;03f9  cd 00 03
-    or a                ;03fc  b7
-    jr z,l03f9h         ;03fd  28 fa
-    ret                 ;03ff  c9
