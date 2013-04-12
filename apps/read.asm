@@ -1,6 +1,9 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --labels --address read.com
 
+const:      equ 0f006h  ;BIOS Console status
+conin:      equ 0f009h  ;BIOS Console input
+
     org 0100h
 
     ld hl,0068h         ;0100 21 68 00
@@ -114,10 +117,10 @@ sub_01ech:
     sub 07h             ;01f4 d6 07
     ret                 ;01f6 c9
 sub_01f7h:
-    call 0f006h         ;01f7 cd 06 f0
+    call const          ;01f7 cd 06 f0
     or a                ;01fa b7
     jp z,l0206h         ;01fb ca 06 02
-    call 0f009h         ;01fe cd 09 f0
+    call conin          ;01fe cd 09 f0
     cp 03h              ;0201 fe 03
     jp z,l0196h         ;0203 ca 96 01
 l0206h:
