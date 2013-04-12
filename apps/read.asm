@@ -1,6 +1,7 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --labels --address read.com
 
+bdos:       equ  0005h  ;BDOS entry point
 const:      equ 0f006h  ;BIOS Console status
 conin:      equ 0f009h  ;BIOS Console input
 
@@ -26,16 +27,16 @@ l0115h:
     dec c               ;011a 0d
     jp nz,l0115h        ;011b c2 15 01
     ld de,005ch         ;011e 11 5c 00
-    ld c,13h            ;0121 0e 13
-    call 0005h          ;0123 cd 05 00
+    ld c,13h            ;C = 13h, F_DELETE (Delete File)
+    call bdos           ;BDOS System Call
     ld de,005ch         ;0126 11 5c 00
-    ld c,16h            ;0129 0e 16
-    call 0005h          ;012b cd 05 00
+    ld c,16h            ;C = 16h, F_MAKE (Create File)
+    call bdos           ;BDOS System Call
     inc a               ;012e 3c
     jp z,l0183h         ;012f ca 83 01
     ld de,l01a5h        ;0132 11 a5 01
-    ld c,09h            ;0135 0e 09
-    call 0005h          ;0137 cd 05 00
+    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    call bdos           ;BDOS System Call
 l013ah:
     call sub_01f7h      ;013a cd f7 01
     cp 7fh              ;013d fe 7f
@@ -68,26 +69,26 @@ l0159h:
     add a,b             ;016c 80
     jp nz,l018eh        ;016d c2 8e 01
     ld e,2eh            ;0170 1e 2e
-    ld c,02h            ;0172 0e 02
-    call 0005h          ;0174 cd 05 00
+    ld c,02h            ;C = 02h, C_WRITE (Console Output)
+    call bdos           ;BDOS System Call
     ld de,005ch         ;0177 11 5c 00
-    ld c,15h            ;017a 0e 15
-    call 0005h          ;017c cd 05 00
+    ld c,15h            ;C = 15h, F_WRITE (Write Next Record)
+    call bdos           ;BDOS System Call
     or a                ;017f b7
     jp z,l0142h         ;0180 ca 42 01
 l0183h:
     ld de,l01bah        ;0183 11 ba 01
-    ld c,09h            ;0186 0e 09
-    call 0005h          ;0188 cd 05 00
+    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    call bdos           ;BDOS System Call
     jp l019eh           ;018b c3 9e 01
 l018eh:
     ld de,l01cdh        ;018e 11 cd 01
-    ld c,09h            ;0191 0e 09
-    call 0005h          ;0193 cd 05 00
+    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    call bdos           ;BDOS System Call
 l0196h:
     ld de,005ch         ;0196 11 5c 00
-    ld c,10h            ;0199 0e 10
-    call 0005h          ;019b cd 05 00
+    ld c,10h            ;C = 10h, C_READSTR (Buffered Console Input)
+    call bdos           ;BDOS System Call
 l019eh:
     ld a,37h            ;019e 3e 37
     out (09h),a         ;01a0 d3 09
