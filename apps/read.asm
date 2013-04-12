@@ -1,6 +1,10 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --labels --address read.com
 
+usart:      equ 08h     ;8251 USART (IC15)
+usart_db:   equ usart+0 ;  Data Buffer
+usart_st:   equ usart+1 ;  Status Register
+
 bdos:       equ  0005h  ;BDOS entry point
 const:      equ 0f006h  ;BIOS Console status
 conin:      equ 0f009h  ;BIOS Console input
@@ -91,7 +95,7 @@ l0196h:
     call bdos           ;BDOS System Call
 l019eh:
     ld a,37h            ;019e 3e 37
-    out (09h),a         ;01a0 d3 09
+    out (usart_st),a    ;01a0 d3 09
     jp 0000h            ;01a2 c3 00 00
 l01a5h:
     db 0dh,0ah,"Ready to receive",0dh,0ah,"$"
@@ -126,13 +130,13 @@ sub_01f7h:
     jp z,l0196h         ;0203 ca 96 01
 l0206h:
     ld a,37h            ;0206 3e 37
-    out (09h),a         ;0208 d3 09
+    out (usart_st),a    ;0208 d3 09
 l020ah:
-    in a,(09h)          ;020a db 09
+    in a,(usart_st)     ;020a db 09
     and 02h             ;020c e6 02
     jp z,l020ah         ;020e ca 0a 02
     ld a,17h            ;0211 3e 17
-    out (09h),a         ;0213 d3 09
-    in a,(08h)          ;0215 db 08
+    out (usart_st),a    ;0213 d3 09
+    in a,(usart_db)     ;0215 db 08
     and 7fh             ;0217 e6 7f
     ret                 ;0219 c9
