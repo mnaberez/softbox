@@ -90,60 +90,11 @@ l019eh:
     out (09h),a         ;01a0 d3 09
     jp 0000h            ;01a2 c3 00 00
 l01a5h:
-    dec c               ;01a5 0d
-    ld a,(bc)           ;01a6 0a
-    ld d,d              ;01a7 52
-    ld h,l              ;01a8 65
-    ld h,c              ;01a9 61
-    ld h,h              ;01aa 64
-    ld a,c              ;01ab 79
-    jr nz,$+118         ;01ac 20 74
-    ld l,a              ;01ae 6f
-    jr nz,$+116         ;01af 20 72
-    ld h,l              ;01b1 65
-    ld h,e              ;01b2 63
-    ld h,l              ;01b3 65
-    ld l,c              ;01b4 69
-    halt                ;01b5 76
-    ld h,l              ;01b6 65
-    dec c               ;01b7 0d
-    ld a,(bc)           ;01b8 0a
-    inc h               ;01b9 24
+    db 0dh,0ah,"Ready to receive",0dh,0ah,"$"
 l01bah:
-    dec c               ;01ba 0d
-    ld a,(bc)           ;01bb 0a
-    ld b,h              ;01bc 44
-    ld l,c              ;01bd 69
-    ld (hl),e           ;01be 73
-    ld l,e              ;01bf 6b
-    jr nz,$+121         ;01c0 20 77
-    ld (hl),d           ;01c2 72
-    ld l,c              ;01c3 69
-    ld (hl),h           ;01c4 74
-    ld h,l              ;01c5 65
-    jr nz,$+103         ;01c6 20 65
-    ld (hl),d           ;01c8 72
-    ld (hl),d           ;01c9 72
-    ld l,a              ;01ca 6f
-    ld (hl),d           ;01cb 72
-    inc h               ;01cc 24
+    db 0dh,0ah,"Disk write error$"
 l01cdh:
-    dec c               ;01cd 0d
-    ld a,(bc)           ;01ce 0a
-    ld b,e              ;01cf 43
-    ld l,b              ;01d0 68
-    ld h,l              ;01d1 65
-    ld h,e              ;01d2 63
-    ld l,e              ;01d3 6b
-    ld (hl),e           ;01d4 73
-    ld (hl),l           ;01d5 75
-    ld l,l              ;01d6 6d
-    jr nz,$+103         ;01d7 20 65
-    ld (hl),d           ;01d9 72
-    ld (hl),d           ;01da 72
-    ld l,a              ;01db 6f
-    ld (hl),d           ;01dc 72
-    inc h               ;01dd 24
+    db 0dh,0ah,"Checksum error$"
 sub_01deh:
     call sub_01ech      ;01de cd ec 01
     add a,a             ;01e1 87
