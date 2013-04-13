@@ -49,8 +49,7 @@ l0142h:
     call sub_01f7h      ;0142 cd f7 01
     cp 7fh              ;0145 fe 7f
     jp z,l0142h         ;0147 ca 42 01
-    di                  ;014a f3
-    inc hl              ;014b 23
+    cp 23h
     jp z,l0196h         ;014c ca 96 01
     cp 3ah              ;014f fe 3a
     jp nz,l018eh        ;0151 c2 8e 01
