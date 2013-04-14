@@ -2603,7 +2603,7 @@ lfc95h:
     jr z,lfc95h         ;Wait until CBM changes one of those bits
 
     rla                 ;Rotate bit 7 (key available status) into Carry flag
-    push af             ;Push data IEEE data byte read from CBM
+    push af             ;Push flags to save Carry
 
     ld a,00h
     out (ppi1_pb),a     ;Release IEEE data lines
@@ -2613,7 +2613,7 @@ lfca1h:
     or a
     jr nz,lfca1h        ;Wait for IEEE data bus to be released
 
-    pop af
+    pop af              ;Pop flags to restore Carry
     ret
 
 list:
