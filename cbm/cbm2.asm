@@ -550,7 +550,7 @@ irq_handler:
 check_ieee:
     cmp #$02            ;IRQ from IEEE-488 SRQ?
     bne irq_50hz
-    inc got_srq         ;Clear SRQ pending flag (increment 0 to 1)
+    inc got_srq         ;Set SRQ pending flag (increment 0 to 1)
     jmp irq_done
 
 ;IRQ must have been caused by 50/60 Hz
