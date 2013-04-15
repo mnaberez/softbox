@@ -2578,7 +2578,7 @@ cbm_srq:
 ;  01h = Key available?
 ;
 ;This routine queries the CBM keyboard status each time it is called.
-;The Carry flag will be set if a key is available, clear if not.
+;The carry flag will be set if a key is available, clear if not.
 ;
     push af
 lfc81h:
@@ -2602,8 +2602,8 @@ lfc95h:
     and 0c0h            ;Mask off all except bits 6 and 7
     jr z,lfc95h         ;Wait until CBM changes one of those bits
 
-    rla                 ;Rotate bit 7 (key available status) into Carry flag
-    push af             ;Push flags to save Carry
+    rla                 ;Rotate bit 7 (key available status) into carry flag
+    push af             ;Push flags to save carry
 
     ld a,00h
     out (ppi1_pb),a     ;Release IEEE data lines
@@ -2613,7 +2613,7 @@ lfca1h:
     or a
     jr nz,lfca1h        ;Wait for IEEE data bus to be released
 
-    pop af              ;Pop flags to restore Carry
+    pop af              ;Pop flags to restore carry
     ret
 
 list:
@@ -2973,7 +2973,13 @@ get_time:
     ret
 
 ieee_put_byte:
-    push af
+;Send a byte to an IEEE-488 device
+;
+;A = byte to send
+;
+;Returns carry flag set if an error occurred, clear if OK.
+;
+    push af             ;Push data byte
 lfe63h:
     in a,(ppi2_pa)
     cpl
@@ -2983,9 +2989,9 @@ lfe63h:
     in a,(ppi2_pa)
     cpl
     and 04h
-    jr nz,lfe9eh        ;Jump if NDAC_IN=high
+    jr nz,lfe9eh        ;Jump to error if NDAC_IN=high
 
-    pop af
+    pop af              ;Push data byte
     out (ppi1_pb),a     ;Write byte to IEEE-488 data lines
 
     in a,(ppi2_pb)
@@ -3021,16 +3027,18 @@ lfe8ah:
     and 04h
     jr nz,lfe8ah        ;Wait until NDAC_IN=low
 
-    or a                ;Set flags
+    or a                ;Clear carry flag to indicate OK
     ret
 
 lfe9eh:
-    pop af
-    scf
+    pop af              ;Pop data byte
+    scf                 ;Set carry flag to indicate error
     ret
 
 cbm_put_byte:
 ;Send a single byte to the CBM
+;
+;A = byte to send
 ;
     out (ppi1_pb),a     ;Put byte on IEEE data bus
 
@@ -3100,11 +3108,11 @@ lfedeh:
                         ;Fall through to read the byte
 
 ieee_dav_get:
-;This is not a BIOS entry point.  It is only used internally
-;to implement ieee_get_byte and ieee_get_tmo.
-;
 ;Read a byte from the current IEEE-488 device.  The caller
 ;must wait for DAV_IN=low before calling this routine.
+;
+;This routine is not called from a BIOS entry point.  It is only
+;used internally to implement ieee_get_byte and ieee_get_tmo.
 ;
 ;Returns the byte in A.
 ;Stores ppi2_pa in eoisav so EOI state can be checked later.
