@@ -205,7 +205,7 @@ lf000h:
     jp peek             ;f06c  Transfer bytes from CBM memory to the SoftBox
     jp set_time         ;f06f  Set the time on the CBM real time clock
     jp get_time         ;f072  Read the CBM clocks (both RTC and jiffies)
-    jp run_cpm          ;f075  Perform system init and then and run CP/M
+    jp run_cpm          ;f075  Perform system init and then run CP/M
     jp ieee_init_drv    ;f078  Initialize an IEEE-488 disk drive
     jp ieee_atn_byte    ;f07b  Send byte to IEEE-488 device with ATN asserted
     jp ieee_get_tmo     ;f07e  Read byte from IEEE-488 device with timeout
@@ -1307,7 +1307,7 @@ test_passed:
     in a,(ppi2_pa)      ;IEEE-488 control lines in
     cpl                 ;Invert byte
     and 40h             ;Mask off all but bit 6 (REN in)
-    jr nz,lf52bh
+    jr nz,try_load_cpm
 
     ld a,01h
     ld (iobyte),a       ;IOBYTE=1 (CON:=CRT:, the CBM computer)
@@ -1338,7 +1338,16 @@ lf524h:
     and 02h
     jr z,lf524h         ;Wait until DAV_IN=high
 
-lf52bh:
+try_load_cpm:
+;Try to load the CP/M system and then run it.
+;
+;If an IEEE-488 drive responds on primary address 8, try to load
+;CP/M from it.  If the drive is not present, try to load from
+;a Corvus hard drive on ID 1.
+;
+;Loops forever until CP/M is successfully loaded, then
+;jumps to run CP/M.
+;
     ld hl,loading
     call puts           ;Write "Loading CP/M ..." to console out
 
@@ -1352,17 +1361,18 @@ lf52bh:
     in a,(ppi2_pa)
     cpl
     and 04h             ;If NDAC_IN=low, it means device 8 is present.
-    jr z,lf555h         ;  Jump to load CP/M from it.
+    jr z,try_load_ieee  ;  Jump to load CP/M from it.
 
-    ld a,02h            ;Boot CP/M from Corvus hard drive:
+try_load_corvus:
+    ld a,02h            ;Load CP/M from Corvus hard drive:
     ld (dtypes),a       ;  Drive A: type = 2 (Corvus 10MB)
     ld a,01h
     ld (ddevs),a        ;  Drive A: address = 1 (Corvus ID 1)
     ld b,38h            ;  B = 56 sectors to load: D400-EFFF
     call corv_load_cpm  ;  Load CP/M from Corvus drive (A = Corvus error)
-    jr run_cpm
+    jr run_cpm          ;Jump to run CP/M
 
-lf555h:
+try_load_ieee:
     call ieee_unlisten  ;Send UNLISTEN.  Device 8 should still be
                         ;  listening from when we tested it above.
 
@@ -1375,16 +1385,17 @@ lf555h:
     ld d,08h            ;D = IEEE-488 primary address 8
     ld c,1ch            ;C = 28 pages to load: D400-EFFF
     call ieee_load_cpm  ;Load CP/M from image file (A = CBM DOS error)
-    jp nz,lf52bh
+    jp nz,try_load_cpm
 
     ld de,0802h         ;D = IEEE-488 primary address 8
                         ;E = IEEE-488 secondary address 2
     ld c,02h            ;2 bytes in string
     ld hl,dos_num2      ;"#2"
-    call ieee_open
+    call ieee_open      ;Open the channel
+                        ;Fall through to run CP/M
 
 run_cpm:
-;Perform system init and then and run CP/M
+;Perform system init and then run CP/M
 ;
 ;Initializes data at 0eb00h (DPH), initialize USART, displays
 ;the SoftBox banner, then jumps to start the CCP.
