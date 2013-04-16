@@ -1304,13 +1304,15 @@ test_passed:
                         ;   22h =   110 baud
     out (baud_gen),a    ;Set baud rate to 9600 baud
 
-    in a,(ppi2_pa)      ;IEEE-488 control lines in
-    cpl                 ;Invert byte
-    and 40h             ;Mask off all but bit 6 (REN in)
-    jr nz,try_load_cpm
+                        ;Detect if a CBM computer is on the IEEE-488 bus:
+    in a,(ppi2_pa)      ;  IEEE-488 control lines in
+    cpl                 ;  Invert byte
+    and 40h             ;  Mask off all but bit 6 (REN in)
+    jr nz,try_load_cpm  ;  Jump if REN=high (a CBM holds REN=low)
 
-    ld a,01h
-    ld (iobyte),a       ;IOBYTE=1 (CON:=CRT:, the CBM computer)
+                        ;CBM computer detected.  Set console in IOBYTE:
+    ld a,01h            ;
+    ld (iobyte),a       ;  IOBYTE=1 (CON:=CRT:, the CBM computer)
 
 wait_for_atn:
 ;Wait until the CBM computer addresses the SoftBox.  The SoftBox
