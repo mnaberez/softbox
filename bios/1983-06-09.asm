@@ -320,7 +320,7 @@ start_ccp:
 
     ld hl,cdisk
     ld a,(hl)           ;A = current user and disk
-    and 0fh             ;Mask off user nybble leaving A = current disk
+    and 0fh             ;Mask off user nibble leaving A = current disk
 
     call get_dtype      ;Drive number valid?
     jr c,lf15ch         ;  Yes: keep it
@@ -1004,8 +1004,8 @@ corv_find_dadr:
 ;
 ;Returns:
 ;  A = DADR byte 0 "D"
-;        Upper nybble: Bits 16-19 of the logical sector address
-;        Lower nybble: Corvus unit ID (1 to 15)
+;        Upper nibble: Bits 16-19 of the logical sector address
+;        Lower nibble: Corvus unit ID (1 to 15)
 ;
 ;  L = DADR byte 1 "LSB"
 ;        Bits 0-7 of the logical sector address
@@ -1047,20 +1047,21 @@ lf3c7h:                 ;Select offset for first or second drive half:
 
 lf3d1h:
     pop af
+
     add hl,de
     adc a,00h
     add a,a
     add a,a
     add a,a
     add a,a
-                        ;Set lower nybble of A to the Corvus unit ID:
+                        ;Set lower nibble of A to the Corvus unit ID:
     push hl             ;
     push af             ;
     ld a,(drive)        ;  A = CP/M drive number
     call get_ddev       ;  D = its Corvus unit ID
     pop af              ;
     pop hl              ;
-    add a,d             ;  A lower nybble = Corvus unit ID
+    add a,d             ;  A lower nibble = Corvus unit ID
     ret
 
 corv_fault:
@@ -1070,19 +1071,19 @@ puts_hex_byte:
 ;Write the byte in A to console out as a two digit hex number.
 ;
     push af             ;Preserve A
-    rra                 ;Rotate high nybble into low
+    rra                 ;Rotate high nibble into low
     rra
     rra
     rra
-    call puts_hex_nybl  ;Write it to console out
-    pop af              ;Recall A for the low nybble
+    call puts_hex_nib   ;Write it to console out
+    pop af              ;Recall A for the low nibble
                         ;Fall through to write it to console out
 
-puts_hex_nybl:
-;Write the low nybble in A to console out as a one digit hex number.
+puts_hex_nib:
+;Write the low nibble in A to console out as a one digit hex number.
 ;
-    and 0fh             ;Mask off high nybble
-    cp 0ah              ;Convert low nybble to ASCII char
+    and 0fh             ;Mask off high nibble
+    cp 0ah              ;Convert low nibble to ASCII char
     jr c,lf413h
     add a,07h
 lf413h:
@@ -2195,15 +2196,15 @@ ieee_talk:
     out (ppi2_pb),a     ;ATN_OUT=low
 
                         ;Send primary address:
-    ld a,40h            ;  High nybble (4) = Talk Address Group
-    or d                ;  Low nybble (D) = primary address
+    ld a,40h            ;  High nibble (4) = Talk Address Group
+    or d                ;  Low nibble (D) = primary address
     call ieee_put_byte
 
     jr c,atn_out_high
 
                         ;Send secondary address if any:
-    ld a,e              ;  Low nybble (E) = secondary address
-    or 60h              ;  High nybble (6) = Secondary Command Group
+    ld a,e              ;  Low nibble (E) = secondary address
+    or 60h              ;  High nibble (6) = Secondary Command Group
     call p,ieee_put_byte
 
     in a,(ppi2_pb)
@@ -2249,15 +2250,15 @@ ieee_listen:
     out (ppi2_pb),a     ;ATN_OUT=low
 
                         ;Send primary address:
-    ld a,20h            ;  High nybble (2) = Listen Address Group
-    or d                ;  Low nybble (D) = primary address
+    ld a,20h            ;  High nibble (2) = Listen Address Group
+    or d                ;  Low nibble (D) = primary address
     call ieee_put_byte
 
     jr c,atn_out_high
 
                         ;Send secondary address if any:
-    ld a,e              ;  Low nybble (E) = secondary address
-    or 60h              ;  High nybble (6) = Secondary Command Group
+    ld a,e              ;  Low nibble (E) = secondary address
+    or 60h              ;  High nibble (6) = Secondary Command Group
     call p,ieee_put_byte
     jr atn_out_high
 
@@ -2291,12 +2292,12 @@ ieee_open:
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
 
-    ld a,d              ;Low nybble (D) = primary address
-    or 20h              ;High nybble (2) = Listen Address Group
+    ld a,d              ;Low nibble (D) = primary address
+    or 20h              ;High nibble (2) = Listen Address Group
     call ieee_put_byte
 
-    ld a,e              ;Low nybble (E)
-    or 0f0h             ;High nybble (0Fh) = Secondary Command Group
+    ld a,e              ;Low nibble (E)
+    or 0f0h             ;High nibble (0Fh) = Secondary Command Group
                         ;                    OPEN"file" and SAVE only
     call ieee_atn_byte
 
@@ -2318,12 +2319,12 @@ ieee_close:
     or 01h
     out (ppi2_pb),a     ;ATN_OUT=low
 
-    ld a,d              ;Low nybble (D) = primary address
-    or 20h              ;High nybble (2) = Listen Address Group
+    ld a,d              ;Low nibble (D) = primary address
+    or 20h              ;High nibble (2) = Listen Address Group
     call ieee_put_byte
 
-    ld a,e              ;Low nybble (E) = file number
-    or 0e0h             ;High nybble (0Eh) = CLOSE
+    ld a,e              ;Low nibble (E) = file number
+    or 0e0h             ;High nibble (0Eh) = CLOSE
     call ieee_put_byte
 
     jr ieee_unlisten    ;Send UNLISTEN
