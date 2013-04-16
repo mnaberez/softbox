@@ -1050,10 +1050,13 @@ lf3d1h:
 
     add hl,de
     adc a,00h
-    add a,a
-    add a,a
-    add a,a
-    add a,a
+
+                        ;Set upper nibble of A to high bits of Corvus sector:
+    add a,a             ;
+    add a,a             ;  Multiply by 16 to shift the
+    add a,a             ;    lower nibble into the upper nibble
+    add a,a             ;
+
                         ;Set lower nibble of A to the Corvus unit ID:
     push hl             ;
     push af             ;
