@@ -205,7 +205,7 @@ lf000h:
     jp peek             ;f06c  Transfer bytes from CBM memory to the SoftBox
     jp set_time         ;f06f  Set the time on the CBM real time clock
     jp get_time         ;f072  Read the CBM clocks (both RTC and jiffies)
-    jp e_f578h          ;f075
+    jp run_cpm          ;f075  Perform system init and then and run CP/M
     jp ieee_init_drv    ;f078  Initialize an IEEE-488 disk drive
     jp ieee_atn_byte    ;f07b  Send byte to IEEE-488 device with ATN asserted
     jp ieee_get_tmo     ;f07e  Read byte from IEEE-488 device with timeout
@@ -1360,7 +1360,7 @@ lf52bh:
     ld (ddevs),a        ;  Drive A: address = 1 (Corvus ID 1)
     ld b,38h            ;  B = 56 sectors to load: D400-EFFF
     call corv_load_cpm  ;  Load CP/M from Corvus drive (A = Corvus error)
-    jr e_f578h
+    jr run_cpm
 
 lf555h:
     call ieee_unlisten  ;Send UNLISTEN.  Device 8 should still be
@@ -1383,8 +1383,11 @@ lf555h:
     ld hl,dos_num2      ;"#2"
     call ieee_open
 
-e_f578h:
-;? Initializes data at 0eb00h (DPH) for each drive ?
+run_cpm:
+;Perform system init and then and run CP/M
+;
+;Initializes data at 0eb00h (DPH), initialize USART, displays
+;the SoftBox banner, then jumps to start the CCP.
 ;
     ld sp,0100h         ;Initialize stack pointer
     xor a
