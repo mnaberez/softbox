@@ -213,7 +213,8 @@ wait_srq_low:
     lda got_srq
     beq wait_srq_low    ;Wait until the 6525 detects a falling edge on SRQ.
 
-    dec got_srq         ;Clear SRQ pending flag (decrement 1 to 0)
+    lda #$0
+    sta got_srq         ;Clear pending SRQ flag
 
 wait_srq_high:
     lda tpi1_pb         ;Wait until SRQ returns high.
@@ -547,13 +548,9 @@ irq_handler:
 ;
     lda tpi1_air        ;Read the active interrupt
 
-check_ieee:
-    cmp #$02            ;IRQ from IEEE-488 SRQ?
-    bne irq_50hz
-    inc got_srq         ;Set SRQ pending flag (increment 0 to 1)
+    cmp #$01            ;IRQ from 50/60 Hz?
+    beq irq_50hz
     jmp irq_done
-
-;IRQ must have been caused by 50/60 Hz
 
 irq_50hz:
 ;Update the jiffy clock
@@ -647,6 +644,19 @@ irq_scan_2:
     inc keycount        ;        and increment the keycount.
 
 irq_done:
+;Always check if an interrupt is latched for IEEE-488 SRQ after
+;servicing any IRQ, then return.
+;
+    lda tpi1_pc         ;TPI1 Interrupt Latch Register
+    tay
+    and #%00000010      ;Interrupt latched for IEEE-488 SRQ?
+    bne irq_pop         ;  No: return normally
+    lda #$01
+    sta got_srq         ;Set SRQ pending flag
+    tya
+    and #%11111101
+    sta tpi1_pc         ;Clear interrupt latch bit for SRQ
+irq_pop:
     sta tpi1_air        ;Pop interrupt off TPI interrupt stack
     pla
     tay                 ;Restore Y
