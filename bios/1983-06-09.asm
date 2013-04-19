@@ -1730,8 +1730,8 @@ lf707h:
 
     ld a,(x_drive)      ;A = CP/M drive number
     call ieee_read_err  ;Read the error channel
-    cp 16h
-    jr nz,lf73fh
+    cp 16h              ;Is it 22 Read Error (no data block)?
+    jr nz,lf73fh        ;  No: jump to handle error
     ex af,af'
     or a
     ret z
