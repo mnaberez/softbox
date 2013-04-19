@@ -7,6 +7,7 @@ usart_st:   equ usart+1 ;  Status Register
 
 warm:       equ  0000h  ;Warm start entry point
 bdos:       equ  0005h  ;BDOS entry point
+fcb:        equ  005ch  ;BDOS default FCB
 const:      equ 0f006h  ;BIOS Console status
 conin:      equ 0f009h  ;BIOS Console input
 
@@ -20,7 +21,7 @@ clrfcb:
     dec c
     jp nz,clrfcb
 
-    ld de,005dh         ;check for file name
+    ld de,fcb+1         ;check for file name
     ld a,(de)
     cp 20h
     ret z               ;none - return
@@ -33,11 +34,11 @@ chkwld:
     ret z
     dec c
     jp nz,chkwld
-    ld de,005ch         ;none - ok to delete file
+    ld de,fcb           ;none - ok to delete file
 
     ld c,13h            ;C = 13h, F_DELETE (Delete File)
     call bdos           ;BDOS System Call
-    ld de,005ch         ;0126 11 5c 00
+    ld de,fcb           ;0126 11 5c 00
 
     ld c,16h            ;C = 16h, F_MAKE (Create File)
     call bdos           ;BDOS System Call
@@ -81,7 +82,7 @@ nxtbyt:
     ld e,'.'
     ld c,02h            ;C = 02h, C_WRITE (Console Output)
     call bdos           ;BDOS System Call
-    ld de,005ch         ;write data block to file
+    ld de,fcb           ;write data block to file
     ld c,15h            ;C = 15h, F_WRITE (Write Next Record)
     call bdos           ;BDOS System Call
     or a
@@ -96,7 +97,7 @@ chkerr:
     ld c,09h            ;C = 09h, C_WRITESTR (Output String)
     call bdos           ;BDOS System Call
 eof:
-    ld de,005ch
+    ld de,fcb
     ld c,10h            ;C = 10h, C_READSTR (Buffered Console Input)
     call bdos           ;BDOS System Call
 exit:
