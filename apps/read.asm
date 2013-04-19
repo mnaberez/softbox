@@ -11,6 +11,13 @@ fcb:        equ  005ch  ;BDOS default FCB
 const:      equ 0f006h  ;BIOS Console status
 conin:      equ 0f009h  ;BIOS Console input
 
+cwrite:     equ 02h     ;Console Output
+cwritestr:  equ 09h     ;Output String
+creadstr:   equ 10h     ;Buffered Console Input
+fdelete:    equ 13h     ;Delete File
+fwrite:     equ 15h     ;Write Next Record
+fmake:      equ 16h     ;Create File
+
     org 0100h
 
     ld hl,5ch+12
@@ -36,18 +43,21 @@ chkwld:
     jp nz,chkwld
     ld de,fcb           ;none - ok to delete file
 
-    ld c,13h            ;C = 13h, F_DELETE (Delete File)
+    ld c,fdelete        ;Delete File
     call bdos           ;BDOS System Call
-    ld de,fcb           ;0126 11 5c 00
 
-    ld c,16h            ;C = 16h, F_MAKE (Create File)
+    ld de,fcb
+    ld c,fmake          ;Create File
     call bdos           ;BDOS System Call
+
     inc a               ;check for directory error
     jp z,error
 
     ld de,ready         ;0132 11 a5 01
-    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
-    call bdos           ;ready to receive
+    ld c,cwritestr      ;Output String
+    call bdos           ;BDOS System Call
+
+                        ;ready to receive
 sync:
     call read           ;synchronize with sender
     cp 7fh              ;RUBOUT - ignore
@@ -79,26 +89,28 @@ nxtbyt:
     pop bc
     add a,b
     jp nz,chkerr        ;checksum error ?
+
     ld e,'.'
-    ld c,02h            ;C = 02h, C_WRITE (Console Output)
+    ld c,cwrite         ;Console Output
     call bdos           ;BDOS System Call
+
     ld de,fcb           ;write data block to file
-    ld c,15h            ;C = 15h, F_WRITE (Write Next Record)
+    ld c,fwrite         ;Write Next Record
     call bdos           ;BDOS System Call
     or a
     jp z,nxtblk         ;disk full ?
 error:
     ld de,errmsg        ;yes - complain to user
-    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    ld c,cwritestr      ;Output String
     call bdos           ;BDOS System Call
     jp exit
 chkerr:
     ld de,chkser
-    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    ld c,cwritestr      ;Output String
     call bdos           ;BDOS System Call
 eof:
     ld de,fcb
-    ld c,10h            ;C = 10h, C_READSTR (Buffered Console Input)
+    ld c,creadstr       ;Buffered Console Input
     call bdos           ;BDOS System Call
 exit:
     ld a,37h

@@ -8,6 +8,10 @@ get_ddev:       equ 0f054h  ;BIOS Get device address for a CP/M drive number
 ieee_read_err:  equ 0f05ah  ;BIOS Read error channel of an IEEE-488 device
 ieee_open:      equ 0f05dh  ;BIOS Open a file on an IEEE-488 device
 
+cread:      equ 01h     ;Console Input
+cwrite:     equ 02h     ;Console Output
+cwritestr:  equ 09h     ;Output String
+
     org 0100h           ;CP/M TPA
 
     ld hl,args          ;HL = command line arguments from CCP: first byte is
@@ -70,7 +74,7 @@ backup:
                         ;Write "Disk on drive " to console out:
     push af             ;
     ld de,disk_on_drive ;  DE = address of "Disk on drive" string
-    ld c,09h            ;  C = 09h, C_WRITESTR (Output String)
+    ld c,cwritestr      ;  Output String
     call bdos           ;  BDOS System Call
     pop af              ;
 
@@ -79,16 +83,16 @@ backup:
                         ;Write drive letter of destination to console out:
     add a,41h           ;  A = drive letter in ASCII
     ld e,a              ;  E = A
-    ld c,02h            ;  C = 02h, C_WRITE (Console Output)
+    ld c,cwrite         ;  Console Output
     call bdos           ;  BDOS System Call
 
                         ;Write "will be erased..." to console out
     ld de,will_be_erasd ;  HL = address of string
-    ld c,09h            ;  C = 09h, C_WRITESTR (Output String)
+    ld c,cwritestr      ;  Output String
     call bdos           ;  BDOS System Call
 
                         ;Get a key from the console:
-    ld c,01h            ;  C = 01h, C_READ (Console Input)
+    ld c,cread          ;  Console Input
     call bdos           ;  BDOS System Call
 
                         ;Check for RETURN to continue, other key aborts:
@@ -122,7 +126,7 @@ send_cmd:
 
                         ;Write success message and exit:
     ld de,copy_complete ;  HL = address of "Copy complete" string
-    ld c,09h            ;  C = 09h, C_WRITESTR (Output String)
+    ld c,cwritestr      ;  Output String
     jp bdos             ;  Jump out to BDOS System Call.
                         ;    It will return to CP/M.
 
@@ -150,7 +154,7 @@ exit_syntax:
 ;Exit to CP/M: Bad arguments
 ;
     ld de,syntax_err    ;DE = address of "Syntax error" string
-    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    ld c,cwritestr      ;Output String
     jp bdos             ;Jump out to BDOS System Call.
                         ;  It will return to CP/M.
 
@@ -164,7 +168,7 @@ exit_units:
 ;Exit to CP/M: Drives are not on the same unit
 ;
     ld de,not_same_unit ;DE = address of "Drives must be same unit" string
-    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    ld c,cwritestr      ;Output String
     jp bdos             ;Jump out to BDOS System Call.
                         ;  It will return to CP/M.
 
@@ -172,7 +176,7 @@ exit_error:
 ;Exit to CP/M: Error reported by CBM DOS
 ;
     ld de,disk_error    ;DE = address of "Drive error: " string
-    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    ld c,cwritestr      ;Output String
     call bdos           ;BDOS System Call
 
     ld hl,dos_msg       ;HL = address of CBM DOS error string
@@ -182,8 +186,8 @@ dos_msg_loop:
     ret z               ;  Yes: end of DOS message, return to CP/M.
 
     push hl
-    ld e,a              ;E = A (pass char to C_WRITE)
-    ld c,02h            ;C = 02h, C_WRITE (Console Output)
+    ld e,a              ;E = A (pass char to cwrite)
+    ld c,cwrite         ;Console Output
     call bdos           ;BDOS System Call
     pop hl
 

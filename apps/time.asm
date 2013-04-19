@@ -7,6 +7,10 @@ args:       equ  0080h  ;Command line arguments passed from CCP
 get_time:   equ 0f072h  ;BIOS Read the CBM clocks (both RTC and jiffies)
 set_time:   equ 0f06fh  ;BIOS Set the time on the CBM real time clock
 
+cread:      equ 01h     ;Console Input
+cwrite:     equ 02h     ;Console Output
+cwritestr:  equ 09h     ;Output String
+
     org 0100h           ;CP/M TPA
 
     ld hl,args          ;HL = command line arguments from CCP: first byte is
@@ -19,7 +23,7 @@ time_output:
 ;Write the current time to the console and exit.
 ;
     ld de,time_is       ;DE = address of "Time is" string
-    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    ld c,cwritestr      ;Output String
     call bdos           ;BDOS System Call
 
     call get_time       ;Read the CBM clocks (both RTC and jiffies):
@@ -37,7 +41,7 @@ time_output:
     push hl             ;
     push de             ;
     ld e,3ah            ;  E = ":" character
-    ld c,02h            ;  C = 02h, C_WRITE (Console Output)
+    ld c,cwrite         ;  Console Output
     call bdos           ;  BDOS System Call
     pop de              ;
     pop hl              ;
@@ -49,7 +53,7 @@ time_output:
                         ;Write a colon after the minute:
     push de             ;
     ld e,3ah            ;  E = ":" character
-    ld c,02h            ;  C = 02h, C_WRITE (Console Output)
+    ld c,cwrite         ;  Console Output
     call bdos           ;  BDOS System Call
     pop hl              ;  XXX
                         ;  TODO: pushes DE but pops HL.  Is this a bug?
@@ -73,9 +77,9 @@ time_input:
 
     push de             ;0145
     ld de,hit_key       ;0146
-    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    ld c,cwritestr      ;Output String
     call bdos           ;BDOS System Call
-    ld c,01h            ;C = 01h, C_READ (Console Input)
+    ld c,cread          ;Console Input
     call bdos           ;BDOS System Call
     cp 03h              ;Control-C pressed?
     jp z,warm           ;0155
@@ -87,7 +91,7 @@ time_input:
 
 bad_syntax:
     ld de,syntax_err    ;015d
-    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    ld c,cwritestr      ;Output String
     call bdos           ;BDOS System Call
     jp warm
 
@@ -137,11 +141,11 @@ l019bh:
     jp p,l019bh         ;019e
     add a,3ah           ;01a1
     push af             ;01a3
-    ld c,02h            ;C = 02h, C_WRITE (Console Output)
+    ld c,cwrite         ;Console Output
     call bdos           ;BDOS System Call
     pop af              ;01a9
     ld e,a              ;01aa
-    ld c,02h            ;C = 02h, C_WRITE (Console Output)
+    ld c,cwrite         ;Console Output
     call bdos           ;BDOS System Call
     pop hl              ;01b0
     pop de              ;01b1

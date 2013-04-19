@@ -15,6 +15,8 @@ ul1_dev:    equ 0ea66h  ;ASCII printer (UL1:) IEEE-488 primary address
 scrtab:     equ 0ea80h  ;64 byte buffer for tab stops
 jp_conout:  equ 0ea0ch  ;Jumps to conout (Console Output) routine in BIOS
 
+cwritestr:  equ 09h     ;Output String
+
     org 0100h           ;CP/M TPA
 
     ld hl,args          ;HL = command line arguments from CCP: first byte is
@@ -39,7 +41,7 @@ bad_syntax:
 ;Write "Syntax error" to console out and return to CP/M.
 ;
     ld de,syntax_err    ;DE = address of "Syntax error" string
-    ld c,09h            ;C = 09h, C_WRITESTR (Output String)
+    ld c,cwritestr      ;Output String
     jp bdos             ;Jump out to BDOS System Call.  It will
                         ;  return to CP/M.
 
