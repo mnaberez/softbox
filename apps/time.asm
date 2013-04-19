@@ -1,6 +1,7 @@
 ;TIME.COM
 ;  Read or set time on the CBM computer clock
 
+warm:       equ  0000h  ;Warm start entry point
 bdos:       equ  0005h  ;BDOS entry point
 args:       equ  0080h  ;Command line arguments passed from CCP
 get_time:   equ 0f072h  ;BIOS Read the CBM clocks (both RTC and jiffies)
@@ -77,7 +78,7 @@ time_input:
     ld c,01h            ;C = 01h, C_READ (Console Input)
     call bdos           ;BDOS System Call
     cp 03h              ;Control-C pressed?
-    jp z,0000h          ;0155
+    jp z,warm           ;0155
     pop de              ;0158
     pop hl              ;0159
 
@@ -88,7 +89,7 @@ bad_syntax:
     ld de,syntax_err    ;015d
     ld c,09h            ;C = 09h, C_WRITESTR (Output String)
     call bdos           ;BDOS System Call
-    jp 0000h
+    jp warm
 
 sub_0168h:
     inc hl              ;0168

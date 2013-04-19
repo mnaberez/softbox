@@ -5,6 +5,7 @@ usart:      equ 08h     ;8251 USART (IC15)
 usart_db:   equ usart+0 ;  Data Buffer
 usart_st:   equ usart+1 ;  Status Register
 
+warm:       equ  0000h  ;Warm start entry point
 bdos:       equ  0005h  ;BDOS entry point
 const:      equ 0f006h  ;BIOS Console status
 conin:      equ 0f009h  ;BIOS Console input
@@ -101,7 +102,7 @@ eof:
 exit:
     ld a,37h
     out (usart_st),a
-    jp 0000h
+    jp warm
 ready:
     db 0dh,0ah,"Ready to receive",0dh,0ah,"$"
 errmsg:

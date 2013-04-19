@@ -1,6 +1,7 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin 256 --address --labels memtest.com
 
+warm:       equ  0000h  ;Warm start entry point
 const:      equ 0f006h  ;BIOS Console status
 conin:      equ 0f009h  ;BIOS Console input
 conout:     equ 0f00ch  ;BIOS Console output
@@ -137,7 +138,7 @@ l01e1h:
 l01f6h:
     ld hl,l02deh        ;01f6  21 00 00
     call sub_02aeh      ;01f9  cd 00 00
-    jp 0000h            ;01fc  c3 00 00
+    jp warm             ;01fc  c3 00 00
 sub_01ffh:
     push bc             ;01ff  c5
     push de             ;0200  d5
