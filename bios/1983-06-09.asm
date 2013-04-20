@@ -163,6 +163,13 @@ dos_msg:  equ 0eac0h    ;Last error message returned from CBM DOS
 dph_base: equ 0eb00h    ;CP/M Disk Parameter Headers (DPH)
 dos_buf:  equ 0ef00h    ;256 byte buffer for CBM DOS sector data
 
+ctrl_c:   equ 03h       ;Control-C
+bell:     equ 07h       ;Bell
+cr:       equ 0dh       ;Carriage Return
+lf:       equ 0ah       ;Line Feed
+cls:      equ 1ah       ;Clear Screen
+esc:      equ 1bh       ;Escape
+
     org 0f000h
 
 lf000h:
@@ -213,9 +220,9 @@ lf000h:
     jp delay            ;f084  Programmable millisecond delay
 
 banner:
-    db 0dh,0ah,"60K SoftBox CP/M vers. 2.2"
-    db 0dh,0ah,"(c) 1982 Keith Frewin"
-    db 0dh,0ah,"Revision 09-June-1983"
+    db cr,lf,"60K SoftBox CP/M vers. 2.2"
+    db cr,lf,"(c) 1982 Keith Frewin"
+    db cr,lf,"Revision 09-June-1983"
     db 00h
 
 wboot:
@@ -1068,7 +1075,7 @@ lf3d1h:
     ret
 
 corv_fault:
-    db 0dh,0ah,07h,"*** HARD DISK ERROR ***  ",00h
+    db cr,lf,bell,"*** HARD DISK ERROR ***  ",00h
 
 puts_hex_byte:
 ;Write the byte in A to console out as a two digit hex number.
@@ -1259,8 +1266,8 @@ test_passed:
     ld bc,03e8h
     call delay          ;Wait 1 second
 
-    ld a,1bh
-    ld (leadin),a       ;Terminal lead-in = 1bh (escape)
+    ld a,esc
+    ld (leadin),a       ;Terminal lead-in = escape
 
     xor a               ;8251 USART initialization sequence
     out (usart_st),a
@@ -1543,7 +1550,7 @@ lf62bh:
     jp start_ccp        ;Start CCP via HL
 
 loading:
-    db 0dh,0ah,"Loading CP/M ...",00h
+    db cr,lf,"Loading CP/M ...",00h
 
 ieee_load_cpm:
 ;Load the CP/M system from an IEEE-488 disk drive.
@@ -1766,7 +1773,7 @@ lf752h:
 lf76dh:
     call conin          ;Wait for a key to be pressed
 
-    cp 03h              ;Control-C pressed?
+    cp ctrl_c           ;Control-C pressed?
     jp z,jp_warm        ;  Yes: Jump to BDOS warm start
 
     cp '?'              ;Question mark pressed?
@@ -1779,7 +1786,7 @@ lf76dh:
                         ;     like "23,READ ERROR,45,27,0",0d
 lf782h:
     ld a,(hl)           ;Get a char from CBM DOS error message
-    cp 0dh
+    cp cr
     jr z,lf76dh         ;Jump if end of CBM DOS error message reached
 
     ld c,a
@@ -1839,7 +1846,7 @@ colon_space:
     db ": ",00h
 
 bdos_err_on:
-    db 0dh,0ah,"BDOS err on ",00h
+    db cr,lf,"BDOS err on ",00h
 
 dos_u1_2:
     db "U1 2 "
@@ -1848,7 +1855,7 @@ dos_u2_2:
     db "U2 2 "
 
 newline:
-    db 0dh,0ah,00h
+    db cr,lf,00h
 
 find_trk_sec:
 ;Find the CBM DOS track and sector for the current CP/M track and sector.
@@ -2009,7 +2016,7 @@ lf9e5h:
     ld (hl),a
     inc hl
 lf9eeh:
-    cp 0dh
+    cp cr
     jr nz,lf9e5h
     call ieee_untalk
     pop af
@@ -2462,7 +2469,7 @@ lfbffh:
     inc hl
     jr nz,lfbffh
 
-    cp 1bh              ;1bh = LSI ADM-3A command to start move-to sequence
+    cp esc              ;LSI ADM-3A command to start move-to sequence
     jr z,move_start     ;Jump to start move-to sequence
 
     ld c,a
@@ -2528,7 +2535,7 @@ move_send:
     ret nz              ;Return if console is not CBM computer (CRT:)
 
     push de
-    ld c,1bh            ;1bh = LSI ADM-3A command to start move-to sequence
+    ld c,esc            ;LSI ADM-3A command to start move-to sequence
     call conout_cbm     ;Send start of move-to
     pop de
 
@@ -2681,12 +2688,12 @@ list_lpt:
     ld hl,list_tmp      ;TODO Where is the initial value of list_tmp set?
     ld a,(hl)
     ld (hl),c
-    cp 0ah
+    cp lf
     jr z,lfcf8h
-    cp 0dh
+    cp cr
     jr nz,lfd04h
     ld a,c
-    cp 0ah
+    cp lf
     jr z,lfd04h
     ld a,b
     or a
@@ -2705,11 +2712,11 @@ lfd04h:
     jr nz,lfd0bh
     ld a,0a4h
 lfd0bh:
-    cp 0dh
+    cp cr
     jr z,lfd20h
-    cp 0ah
+    cp lf
     jr nz,lfd15h
-    ld a,0dh
+    ld a,cr
 lfd15h:
     call sub_fd6bh
     bit 1,b
@@ -2854,7 +2861,7 @@ clear_screen:
     rra
     ret nc              ;Do nothing if console is RS-232 (CRT: = TTY:)
 
-    ld c,1ah            ;1ah = Lear Siegler ADM-3A clear screen code
+    ld c,cls            ;Lear Siegler ADM-3A clear screen code
     jp conout_cbm
 
 execute:
@@ -3168,7 +3175,7 @@ lfef9h:
 ieee_eoi_cr:
 ;Send a carriage return to IEEE-488 device with EOI
 ;
-    ld a,0dh
+    ld a,cr
 
 ieee_eoi_byte:
 ;Send a byte to IEEE-488 device with EOI asserted
