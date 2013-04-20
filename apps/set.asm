@@ -17,6 +17,13 @@ jp_conout:  equ 0ea0ch  ;Jumps to conout (Console Output) routine in BIOS
 
 cwritestr:  equ 09h     ;Output String
 
+ucase:      equ 15h     ;Uppercase Mode
+lcase:      equ 16h     ;Lowercase Mode
+tall:       equ 17h     ;Tall Line Spacing
+short:      equ 18h     ;Short Line Spacing
+esc:        equ 1bh     ;Escape
+tilde:      equ '~'     ;Tilde
+
     org 0100h           ;CP/M TPA
 
     ld hl,args          ;HL = command line arguments from CCP: first byte is
@@ -77,7 +84,7 @@ set_u:
 ;Set uppercase mode
 ;  SET U
 ;
-    ld c,15h            ;15h = Go to uppercase mode
+    ld c,ucase          ;Go to uppercase mode
     jp jp_conout        ;Jump out to conout (in BIOS) through jp_conout.
                         ;  It will return to CP/M.
 
@@ -85,7 +92,7 @@ set_l:
 ;Set lowercase mode
 ;  SET L
 ;
-    ld c,16h            ;16h = Go to lowercase mode
+    ld c,lcase          ;Go to lowercase mode
     jp jp_conout        ;Jump out to conout (in BIOS) through jp_conout.
                         ;  It will return to CP/M.
 
@@ -93,7 +100,7 @@ set_g:
 ;Set line spacing to tall
 ;  SET T
 ;
-    ld c,17h            ;17h = Set line spacing to tall
+    ld c,tall           ;Set line spacing to tall
     jp jp_conout        ;Jump out to conout (in BIOS) through jp_conout.
                         ;  It will return to CP/M.
 
@@ -101,7 +108,7 @@ set_t:
 ;Set line spacing to short
 ;  SET G
 ;
-    ld c,18h            ;18h = Set line spacing to short
+    ld c,short          ;Set line spacing to short
     jp jp_conout        ;Jump out to conout (in BIOS) through jp_conout.
                         ;  It will return to CP/M.
 
@@ -134,11 +141,11 @@ set_e:
     call get_value      ;A = value char
     and 5fh             ;Normalize char to uppercase
     cp 'E'
-    ld b,1bh            ;1bh = ESC
+    ld b,esc            ;Escape
     jp z,l018eh
     cp 'T'
     jp nz,bad_syntax
-    ld b,7eh            ;7eh = Tilde
+    ld b,tilde          ;Tilde
 l018eh:
     ld hl,leadin
     ld (hl),b
@@ -166,13 +173,13 @@ set_v:
     jp z,adm3a_tv912
 
     cp 'H'              ;'H' = Hazeltine 1500 with ~ lead-in
-    ld b,'~'            ;B = ~ lead-in
+    ld b,tilde          ;B = ~ lead-in
     jp z,hz1500
 
     cp 'E'              ;'E' = Hazeltine 1500 with ESC lead-in
     jp nz,bad_syntax    ;Jump to bad syntax if not 'E'
 
-    ld b,1bh            ;B = ESC lead-in
+    ld b,esc            ;B = ESC lead-in
                         ;Fall through into hz1500
 
 hz1500:
@@ -212,7 +219,7 @@ adm3a_tv912:
     ld (xy_order),a     ;  Set X-Y order for cursor move-to sequence
 
                         ;Set lead-in:
-    ld a,1bh            ;  A = ESC character
+    ld a,esc            ;  A = ESC character
     ld (leadin),a       ;  Set terminal lead-in character
 
                         ;Copy tab stop data:
