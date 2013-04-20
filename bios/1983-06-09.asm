@@ -170,6 +170,15 @@ lf:       equ 0ah       ;Line Feed
 cls:      equ 1ah       ;Clear Screen
 esc:      equ 1bh       ;Escape
 
+ifc:      equ 80h       ;IFC
+ren:      equ 40h       ;REN
+srq:      equ 20h       ;SRQ
+eoi:      equ 10h       ;EOI
+nrfd:     equ 08h       ;NRFD
+ndac:     equ 04h       ;NDAC
+dav:      equ 02h       ;DAV
+atn:      equ 01h       ;ATN
+
     org 0f000h
 
 lf000h:
@@ -1251,7 +1260,7 @@ test_passed:
 ;Self-test passed.  Continue normal startup.
 ;
     in a,(ppi2_pb)
-    or 80h
+    or ifc
     out (ppi2_pb),a     ;IFC_OUT=low
 
     xor a               ;A=0
@@ -1314,7 +1323,7 @@ test_passed:
                         ;Detect if a CBM computer is on the IEEE-488 bus:
     in a,(ppi2_pa)      ;  IEEE-488 control lines in
     cpl                 ;  Invert byte
-    and 40h             ;  Mask off all but bit 6 (REN in)
+    and ren             ;  Mask off all but bit 6 (REN in)
     jr nz,try_load_cpm  ;  Jump if REN=high (a CBM holds REN=low)
 
                         ;CBM computer detected.  Set console in IOBYTE:
@@ -1329,7 +1338,7 @@ wait_for_atn:
 ;
     in a,(ppi2_pa)
     cpl
-    and 03h
+    and atn+dav
     in a,(ppi1_pa)
     jr nz,wait_for_atn  ;Wait until ATN_IN=low and DAV_IN=low
 
@@ -1338,13 +1347,13 @@ wait_for_atn:
 
     in a,(ppi2_pa)
     cpl
-    and 02h
+    and dav
     jr nz,wait_for_atn  ;Wait until DAV_IN=low
 
 lf524h:
     in a,(ppi2_pa)
     cpl
-    and 02h
+    and dav
     jr z,lf524h         ;Wait until DAV_IN=high
 
 try_load_cpm:
@@ -1369,7 +1378,7 @@ try_load_cpm:
 
     in a,(ppi2_pa)
     cpl
-    and 04h             ;If NDAC_IN=low, it means device 8 is present.
+    and ndac            ;If NDAC_IN=low, it means device 8 is present.
     jr z,try_load_ieee  ;  Jump to load CP/M from it.
 
 try_load_corvus:
@@ -2218,7 +2227,7 @@ ieee_talk:
 ;E = secondary address (0ffh if none)
 ;
     in a,(ppi2_pb)
-    or 01h
+    or atn
     out (ppi2_pb),a     ;ATN_OUT=low
 
                         ;Send primary address:
@@ -2234,7 +2243,7 @@ ieee_talk:
     call p,ieee_put_byte
 
     in a,(ppi2_pb)
-    or 0ch
+    or ndac+nrfd
     out (ppi2_pb),a     ;NDAC_OUT=low, NRFD_OUT=low
                         ;Fall through into atn_out_high
 
@@ -2243,7 +2252,7 @@ atn_out_high:
 ;
     push af
     in a,(ppi2_pb)
-    and 0feh
+    and 255-atn
     out (ppi2_pb),a     ;ATN_OUT=high
     ld a,19h
 lfb1ch:
@@ -2256,11 +2265,11 @@ ieee_untalk:
 ;Send UNTALK to all IEEE-488 devices.
 ;
     in a,(ppi2_pb)
-    or 01h
+    or atn
     out (ppi2_pb),a     ;ATN_OUT=low
 
     in a,(ppi2_pb)
-    and 0f3h
+    and 255-ndac-nrfd
     out (ppi2_pb),a     ;NDAC_OUT=high, NRFD_OUT=high
 
     ld a,5fh            ;5fh = UNTALK
@@ -2272,7 +2281,7 @@ ieee_listen:
 ;E = secondary address (0ffh if none)
 ;
     in a,(ppi2_pb)
-    or 01h
+    or atn
     out (ppi2_pb),a     ;ATN_OUT=low
 
                         ;Send primary address:
@@ -2300,7 +2309,7 @@ ieee_atn_byte:
 ;
     push af
     in a,(ppi2_pb)
-    or 01h
+    or atn
     out (ppi2_pb),a     ;ATN_OUT=low
     pop af
     call ieee_put_byte
@@ -2315,7 +2324,7 @@ ieee_open:
 ;HL = pointer to filename
 ;
     in a,(ppi2_pb)
-    or 01h
+    or atn
     out (ppi2_pb),a     ;ATN_OUT=low
 
     ld a,d              ;Low nibble (D) = primary address
@@ -2342,7 +2351,7 @@ ieee_close:
 ;E = file number
 ;
     in a,(ppi2_pb)
-    or 01h
+    or atn
     out (ppi2_pb),a     ;ATN_OUT=low
 
     ld a,d              ;Low nibble (D) = primary address
@@ -2386,7 +2395,7 @@ conin:
     jp nc,ser_in        ;Jump out if console is RS-232 port (CON: = TTY:)
 
     in a,(ppi2_pb)
-    or 04h
+    or ndac
     out (ppi2_pb),a     ;NDAC_OUT=low
 
     ld a,02h            ;Command 02h = Wait for a key and send it
@@ -2395,7 +2404,7 @@ conin:
 
     push af
     in a,(ppi2_pb)
-    and 0f3h
+    and 255-ndac-nrfd
     out (ppi2_pb),a     ;NDAC_OUT=high, NRFD_OUT=high
     pop af
     ret
@@ -2617,11 +2626,11 @@ lfc81h:
     out (ppi1_pb),a     ;Write data byte to IEEE data bus
 
     in a,(ppi2_pb)
-    or 20h
+    or srq
     out (ppi2_pb),a     ;SRQ_OUT=low
 
     in a,(ppi2_pb)
-    and 0dfh
+    and 255-srq
     out (ppi2_pb),a     ;SRQ_OUT=high
 
 lfc95h:
@@ -2672,7 +2681,7 @@ list_lpt:
     ld d,a              ;D = IEEE-488 primary address of LPT:
 
     in a,(ppi2_pb)
-    or 01h
+    or atn
     out (ppi2_pb),a     ;ATN_OUT=low
 
     ld a,(lptype)       ;A = lptype
@@ -2724,7 +2733,7 @@ lfd15h:
     call ieee_put_byte
 lfd20h:
     in a,(ppi2_pb)
-    or 01h
+    or atn
     out (ppi2_pb),a     ;ATN_OUT=low
     jp ieee_unlisten
 lfd29h:
@@ -2762,7 +2771,7 @@ listst_ieee:
 
     in a,(ppi2_pa)      ;Read IEEE-488 control lines in
     cpl                 ;Invert byte
-    and 08h             ;Mask off all except bit 3 (NRFD in)
+    and nrfd            ;Mask off all except bit 3 (NRFD in)
 
     push af
     call ieee_unlisten
@@ -2895,7 +2904,7 @@ peek:
     call cbm_put_byte   ;Send high byte
 
     in a,(ppi2_pb)
-    or 04h
+    or ndac
     out (ppi2_pb),a     ;NDAC_OUT=low
 
 peek_loop:
@@ -2908,7 +2917,7 @@ peek_loop:
     jr nz,peek_loop     ;Loop until no bytes are remaining
 
     in a,(ppi2_pb)
-    and 0f3h
+    and 255-nrfd-ndac
     out (ppi2_pb),a     ;NRFD_OUT=high, NDAC_OUT=high
     ret
 
@@ -3010,29 +3019,29 @@ ieee_put_byte:
 lfe63h:
     in a,(ppi2_pa)
     cpl
-    and 08h
+    and nrfd
     jr z,lfe63h         ;Wait until NRFD_IN=high
 
     in a,(ppi2_pa)
     cpl
-    and 04h
+    and ndac
     jr nz,lfe9eh        ;Jump to error if NDAC_IN=high
 
     pop af              ;Push data byte
     out (ppi1_pb),a     ;Write byte to IEEE-488 data lines
 
     in a,(ppi2_pb)
-    or 02h
+    or dav
     out (ppi2_pb),a     ;DAV_OUT=low
 
 lfe7ah:
     in a,(ppi2_pa)
     cpl
-    and 04h
+    and ndac
     jr z,lfe7ah         ;Wait until NDAC_IN=high
 
     in a,(ppi2_pb)
-    and 0fdh
+    and 255-dav
     out (ppi2_pb),a     ;DAV_OUT=high
 
     xor a
@@ -3041,7 +3050,7 @@ lfe7ah:
 lfe8ah:
     in a,(ppi2_pa)
     cpl
-    and 04h
+    and ndac
     jr nz,lfe8ah        ;Wait until NDAC_IN=low
 
     ex (sp),hl          ;Waste time
@@ -3051,7 +3060,7 @@ lfe8ah:
 
     in a,(ppi2_pa)
     cpl
-    and 04h
+    and ndac
     jr nz,lfe8ah        ;Wait until NDAC_IN=low
 
     or a                ;Clear carry flag to indicate OK
@@ -3072,21 +3081,21 @@ cbm_put_byte:
 lfea3h:
     in a,(ppi2_pa)
     cpl
-    and 08h
+    and nrfd
     jr z,lfea3h         ;Wait until NRFD_IN=high
 
     in a,(ppi2_pb)
-    or 02h
+    or dav
     out (ppi2_pb),a     ;DAV_OUT=low
 
 lfeb0h:
     in a,(ppi2_pa)
     cpl
-    and 04h
+    and ndac
     jr z,lfeb0h         ;Wait until NDAC_IN=high
 
     in a,(ppi2_pb)
-    and 0fdh
+    and 255-dav
     out (ppi2_pb),a     ;DAV_OUT=high
 
     xor a
@@ -3102,12 +3111,12 @@ ieee_get_tmo:
 ;Stores ppi2_pa in eoisav so EOI state can be checked later.
 ;
     in a,(ppi2_pb)
-    and 0f7h
+    and 255-nrfd
     out (ppi2_pb),a     ;NRFD_OUT=high
 lfec7h:
     in a,(ppi2_pa)
     cpl
-    and 02h
+    and dav
     jr z,ieee_dav_get   ;Jump out to read the byte if DAV_IN=low
     call delay_1ms
     dec bc              ;Decrement BC
@@ -3125,12 +3134,12 @@ ieee_get_byte:
 ;Stores ppi2_pa in eoisav so EOI state can be checked later.
 ;
     in a,(ppi2_pb)
-    and 0f7h
+    and 255-nrfd
     out (ppi2_pb),a     ;NRFD_OUT=high
 lfedeh:
     in a,(ppi2_pa)
     cpl
-    and 02h
+    and dav
     jr nz,lfedeh        ;Wait until DAV_IN=low
                         ;Fall through to read the byte
 
@@ -3151,21 +3160,21 @@ ieee_dav_get:
     ld (eoisav),a       ;Save it so EOI state can be checked later
 
     in a,(ppi2_pb)
-    or 08h
+    or nrfd
     out (ppi2_pb),a     ;NRFD_OUT=low
 
     in a,(ppi2_pb)
-    and 0fbh
+    and 255-ndac
     out (ppi2_pb),a     ;NDAC_OUT=high
 
 lfef9h:
     in a,(ppi2_pa)
     cpl
-    and 02h
+    and dav
     jr z,lfef9h         ;Wait until DAV_IN=high
 
     in a,(ppi2_pb)
-    or 04h
+    or ndac
     out (ppi2_pb),a     ;NDAC_OUT=low
 
     pop af              ;Pop the IEEE data byte off the stack
@@ -3182,7 +3191,7 @@ ieee_eoi_byte:
 ;
     push af
     in a,(ppi2_pb)
-    or 10h
+    or eoi
     out (ppi2_pb),a     ;EOI_OUT=low
 
     pop af
@@ -3190,7 +3199,7 @@ ieee_eoi_byte:
     push af
 
     in a,(ppi2_pb)
-    and 0efh
+    and 255-eoi
     out (ppi2_pb),a     ;EOI_OUT=high
 
     pop af
