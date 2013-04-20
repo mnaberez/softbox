@@ -165,8 +165,9 @@ dos_buf:  equ 0ef00h    ;256 byte buffer for CBM DOS sector data
 
 ctrl_c:   equ 03h       ;Control-C
 bell:     equ 07h       ;Bell
-cr:       equ 0dh       ;Carriage Return
 lf:       equ 0ah       ;Line Feed
+cr:       equ 0dh       ;Carriage Return
+ucase:    equ 15h       ;Uppercase Mode
 cls:      equ 1ah       ;Clear Screen
 esc:      equ 1bh       ;Escape
 
@@ -1544,7 +1545,7 @@ lf5d5h:
     rla                 ;Rotate uppercase graphics flag into carry
     jr nc,lf62bh        ;Jump if lowercase mode
 
-    ld c,15h            ;15h = Go to uppercase mode
+    ld c,ucase          ;Go to uppercase mode
     call conout
 
 lf62bh:
