@@ -1769,7 +1769,7 @@ lf76dh:
     cp 03h              ;Control-C pressed?
     jp z,jp_warm        ;  Yes: Jump to BDOS warm start
 
-    cp 3fh              ;Question mark ("?") pressed?
+    cp '?'              ;Question mark pressed?
     jr nz,lf790h        ;  No: Jump over printing CBM DOS error msg
 
     ld hl,newline
