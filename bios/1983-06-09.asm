@@ -183,6 +183,8 @@ atn:      equ 01h       ;ATN
     org 0f000h
 
 lf000h:
+;Standard CP/M 2.2 BIOS entry points
+;
     jp boot             ;f000  Cold start
     jp wboot            ;f003  Warm start
     jp const            ;f006  Console status
@@ -200,6 +202,10 @@ lf000h:
     jp write            ;f02a  Write selected sector
     jp listst           ;f02d  List (printer) status
     jp sectran          ;f030  Sector translation for skewing
+
+lf033h:
+;SoftBox-specific entry points
+;
     jp ieee_listen      ;f033  Send LISTEN to an IEEE-488 device
     jp ieee_unlisten    ;f036  Send UNLISTEN to all IEEE-488 devices
     jp ieee_talk        ;f039  Send TALK to an IEEE-488 device
