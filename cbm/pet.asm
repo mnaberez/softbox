@@ -41,6 +41,8 @@ jiffy0      = $1a     ;Jiffy Counter (LSB)
 blink_cnt   = $1b     ;Counts down number of IRQs until cursor reverses
 uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
 ;
+lines       = 25      ;Number of screen lines
+
     *=$0400
 
 bas_header:
@@ -571,7 +573,7 @@ move_to_x_done:
     rts
 
 move_to_y:
-    cmp #$19            ;Requested Y position out of range?
+    cmp #lines          ;Requested Y position out of range?
     bcs move_to_y_done  ;  Yes: Do nothing.
     sta cursor_y        ;  No:  Move cursor to requested Y.
 move_to_y_done:
@@ -783,7 +785,7 @@ ctrl_0a:
 ;Cursor down (Line feed)
 ;
     ldy cursor_y
-    cpy #$18            ;Are we on the bottom line?
+    cpy #lines-1        ;Are we on the bottom line?
     bne ctrl_0a_incy    ;  No:  Increment Y, do not scroll up
     jmp scroll_up       ;  Yes: Y remains unchanged, jump out to scroll
 ctrl_0a_incy:
@@ -865,7 +867,7 @@ ctrl_14:
     ldx cursor_y        ;Get current Y position
 ctrl_14_next:
     inx                 ;Y=Y+1
-    cpx #$19            ;Incremented past last line?
+    cpx #lines          ;Incremented past last line?
     beq ctrl_14_done    ;  Yes: done
     clc                 ;Advance scrline pointer
     lda scrline_lo
@@ -1000,7 +1002,7 @@ ctrl_12:
     lda scrline_hi
     adc #$00
     sta source_hi
-    lda #$18
+    lda #lines-1
     sec
     sbc cursor_y
     tax
@@ -1107,7 +1109,7 @@ scroll_up:
     lda #>screen
     sta scrline_hi
     sta source_hi
-    ldx #$18
+    ldx #lines-1
 scroll:
     ldy x_width
     dey

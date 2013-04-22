@@ -46,6 +46,8 @@ JIFFY2      = $18     ;Jiffy Counter (MSB)       the SoftBox BIOS to support
 JIFFY1      = $19     ;Jiffy Counter             CP/M programs like TIME.COM.
 JIFFY0      = $1A     ;Jiffy Counter (LSB)
 ;
+LINES       = 25      ;Number of screen lines
+
 *=$0400
 
 BAS_HEADER:
@@ -782,7 +784,7 @@ CTRL_0A:
 ;Cursor down (Line feed)
 ;
 $080B: A4 05     LDY CURSOR_Y
-$080D: C0 18     CPY #$18            ;Are we on the bottom line?
+$080D: C0 18     CPY #LINES-1        ;Are we on the bottom line?
 $080F: D0 03     BNE L_0814          ;  No:  Increment Y, do not scroll up
 $0811: 4C 8E 08  JMP SCROLL_UP       ;  Yes: Y remains unchanged, jump out to scroll
 L_0814:
@@ -873,8 +875,8 @@ CTRL_14:
 $086B: 20 5E 08  JSR CTRL_13         ;Clear to the end of the current line
 $086E: A6 05     LDX CURSOR_Y        ;Get the Current line#
 L_0870:
-$0870: E8        INX                 ;Next Row
-$0871: E0 19     CPX #$19            ;Is it 25 (last line of screen?
+$0870: E8        INX                 ;Next line
+$0871: E0 19     CPX #LINES          ;Incremented past last line?
 $0873: F0 18     BEQ L_088D          ;  Yes, we're done
 $0875: 18        CLC                 ;  No, continue
 $0876: A5 02     LDA SCRLINE_LO      ;Current screen position
@@ -904,7 +906,7 @@ $0894: 85 0D     STA TARGET_LO
 $0896: A9 80     LDA #>SCREEN
 $0898: 85 03     STA SCRLINE_HI
 $089A: 85 0E     STA TARGET_HI
-$089C: A2 18     LDX #$18
+$089C: A2 18     LDX #LINES-1
 
 SCROLL:
 $089E: A0 00     LDY #$00
@@ -1030,7 +1032,7 @@ $092A: 85 0D     STA TARGET_LO
 $092C: A5 03     LDA SCRLINE_HI
 $092E: 69 00     ADC #$00
 $0930: 85 0E     STA TARGET_HI
-$0932: A9 18     LDA #$18
+$0932: A9 18     LDA #LINES-1
 $0934: 38        SEC
 $0935: E5 05     SBC CURSOR_Y
 $0937: AA        TAX
@@ -1166,7 +1168,7 @@ $09C5: 4C 8D 07  JMP PROCESS_DONE    ;Done.
 L_09C8:
 $09C8: 38        SEC
 $09C9: E9 20     SBC #$20            ;Y-pos = Y-pos - #$20
-$09CB: C9 19     CMP #$19            ;Requested Y position out of range?
+$09CB: C9 19     CMP #LINES          ;Requested Y position out of range?
 $09CD: B0 F6     BCS L_09C5          ;  Yes: Do nothing.
 $09CF: 85 05     STA CURSOR_Y        ;  No:  Move cursor to requested Y.
 $09D1: 4C 8D 07  JMP PROCESS_DONE    ;Done.
