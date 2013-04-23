@@ -32,7 +32,7 @@ cursor_off  = $06     ;Cursor state: zero = show, nonzero = hide
 scrcode_tmp = $07     ;Temporary storage for the last screen code
 keycount    = $08     ;Number of keys in the buffer at keyd
 columns     = $09     ;Screen width (X) in characters (40 or 80)
-;
+lines       = $0a     ;Screen height (Y) in characters (24 or 25)
 moveto_cnt  = $0b     ;Counts down bytes to consume in a move-to (CTRL_1B) seq
 cursor_tmp  = $0c     ;Pending cursor state used with CURSOR_OFF
 source_lo   = $0d     ;Pointer to source address for memory operations - LO
@@ -54,8 +54,6 @@ uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
 rvs_mask    = $1d     ;Reverse video mask (normal = $00, reverse = $80)
 got_srq     = $1e     ;IEEE-488 SRQ detect: 0=no SRQ, 1=SRQ pending
 hertz       = $1f     ;Constant for powerline frequency: 50 or 60 Hz
-;
-lines       = 25      ;Number of screen lines
 
 ;Configure VICE
 ;  Settings > CBM2 Settings > Memory > Enable Bank 15 $4000-5FFF RAM
@@ -106,8 +104,9 @@ init_scrn:
 ;Initialize VIC-II registers for P500.
 ;Initialize cursor state.
 ;
-    jsr scrorg          ;Returns X=width, Y=height
+    jsr scrorg          ;Returns X=columns, Y=lines
     stx columns
+    sty lines
     cpx #$28            ;40 column screen?
     bne init_scrn_done  ;  No: Skip P500 init
     lda #$00
@@ -773,7 +772,7 @@ move_to_x_done:
     rts
 
 move_to_y:
-    cmp #lines          ;Requested Y position out of range?
+    cmp lines           ;Requested Y position out of range?
     bcs move_to_y_done  ;  Yes: Do nothing.
     sta cursor_y        ;  No:  Move cursor to requested Y.
 move_to_y_done:
@@ -1004,9 +1003,10 @@ ctrl_0a:
 ;Cursor down (Line feed)
 ;
     ldy cursor_y
-    cpy #lines-1        ;Are we on the bottom line?
-    bne ctrl_0a_incy    ;  No:  Increment Y, do not scroll up
-    jmp scroll_up       ;  Yes: Y remains unchanged, jump out to scroll
+    iny
+    cpy lines           ;Are we on the bottom line?
+    bne ctrl_0a_incy    ;  No:  Increment cursor_y, do not scroll up
+    jmp scroll_up       ;  Yes: Do not change cursor_y, jump out to scroll
 ctrl_0a_incy:
     inc cursor_y        ;Increment Y position
     rts
@@ -1090,7 +1090,7 @@ ctrl_14:
     ldx cursor_y        ;Get current Y position
 ctrl_14_next:
     inx                 ;Y=Y+1
-    cpx #lines          ;Incremented past last line?
+    cpx lines           ;Incremented past last line?
     beq ctrl_14_done    ;  Yes: done
     clc                 ;Advance scrline pointer
     lda scrline_lo
@@ -1225,7 +1225,9 @@ ctrl_12:
     lda scrline_hi
     adc #$00
     sta source_hi
-    lda #lines-1
+    ldx lines
+    dex
+    txa
     sec
     sbc cursor_y
     tax
@@ -1332,7 +1334,8 @@ scroll_up:
     lda #>screen
     sta scrline_hi
     sta source_hi
-    ldx #lines-1
+    ldx lines
+    dex
 scroll:
     ldy columns
     dey

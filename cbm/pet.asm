@@ -21,7 +21,7 @@ cursor_off  = $06     ;Cursor state: zero = show, nonzero = hide
 scrcode_tmp = $07     ;Temporary storage for the last screen code
 keycount    = $08     ;Number of keys in the buffer at keyd
 columns     = $09     ;Screen width (X) in characters (40 or 80)
-;
+lines       = $0a     ;Screen height (Y) in characters (24 or 25)
 moveto_cnt  = $0b     ;Counts down bytes to consume in a move-to (CTRL_1B) seq
 cursor_tmp  = $0c     ;Pending cursor state used with CURSOR_OFF
 source_lo   = $0d     ;Pointer to source address for memory operations - LO
@@ -41,8 +41,6 @@ jiffy0      = $1a     ;Jiffy Counter (LSB)
 blink_cnt   = $1b     ;Counts down number of IRQs until cursor reverses
 uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
 rvs_mask    = $1d     ;Reverse video mask (normal = $00, reverse = $80)
-;
-lines       = 25      ;Number of screen lines
 
     *=$0400
 
@@ -94,8 +92,10 @@ init_scrn:
 ;business keyboard (80 columns) or graphics keyboard (40 columns).  This
 ;means the 2001B machines (40-column, business keyboard) are not supported.
 ;
-    lda #$28
-    sta columns         ;columns = 40 characters
+    lda #25
+    sta lines           ;Initialize screen height to 25 lines
+    lda #40
+    sta columns         ;Initialize screen width to 40 columns
     lda #$55
     sta screen          ;Store #$55 in first byte of screen RAM.
     asl ;a
@@ -574,7 +574,7 @@ move_to_x_done:
     rts
 
 move_to_y:
-    cmp #lines          ;Requested Y position out of range?
+    cmp lines           ;Requested Y position out of range?
     bcs move_to_y_done  ;  Yes: Do nothing.
     sta cursor_y        ;  No:  Move cursor to requested Y.
 move_to_y_done:
@@ -786,7 +786,8 @@ ctrl_0a:
 ;Cursor down (Line feed)
 ;
     ldy cursor_y
-    cpy #lines-1        ;Are we on the bottom line?
+    iny
+    cpy lines           ;Are we on the bottom line?
     bne ctrl_0a_incy    ;  No:  Increment Y, do not scroll up
     jmp scroll_up       ;  Yes: Y remains unchanged, jump out to scroll
 ctrl_0a_incy:
@@ -868,7 +869,7 @@ ctrl_14:
     ldx cursor_y        ;Get current Y position
 ctrl_14_next:
     inx                 ;Y=Y+1
-    cpx #lines          ;Incremented past last line?
+    cpx lines           ;Incremented past last line?
     beq ctrl_14_done    ;  Yes: done
     clc                 ;Advance scrline pointer
     lda scrline_lo
@@ -1003,7 +1004,9 @@ ctrl_12:
     lda scrline_hi
     adc #$00
     sta source_hi
-    lda #lines-1
+    ldx lines
+    dex
+    txa
     sec
     sbc cursor_y
     tax
@@ -1110,7 +1113,8 @@ scroll_up:
     lda #>screen
     sta scrline_hi
     sta source_hi
-    ldx #lines-1
+    ldx lines
+    dex
 scroll:
     ldy columns
     dey
