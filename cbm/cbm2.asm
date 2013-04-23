@@ -31,7 +31,7 @@ cursor_y    = $05     ;Current Y position: 0-24
 cursor_off  = $06     ;Cursor state: zero = show, nonzero = hide
 scrcode_tmp = $07     ;Temporary storage for the last screen code
 keycount    = $08     ;Number of keys in the buffer at keyd
-x_width     = $09     ;Width of X in characters (40 or 80)
+columns     = $09     ;Screen width (X) in characters (40 or 80)
 ;
 moveto_cnt  = $0b     ;Counts down bytes to consume in a move-to (CTRL_1B) seq
 cursor_tmp  = $0c     ;Pending cursor state used with CURSOR_OFF
@@ -102,12 +102,12 @@ init:
     sta repeatcount1    ;Number of interrupts between repeats of a key
 
 init_scrn:
-;Detect 40/80 column screen and store in X_WIDTH.
+;Detect 40/80 column screen and store in columns.
 ;Initialize VIC-II registers for P500.
 ;Initialize cursor state.
 ;
     jsr scrorg          ;Returns X=width, Y=height
-    stx x_width
+    stx columns
     cpx #$28            ;40 column screen?
     bne init_scrn_done  ;  No: Skip P500 init
     lda #$00
@@ -284,7 +284,7 @@ send_key_avail:
                         ;hardware is not capable of this, so we must wait:
 
     ldy #$06            ;Delay count for B-series
-    bit x_width         ;80 columns?
+    bit columns         ;80 columns?
     bvs send_k_a_wait   ;  Yes: Keep B-series count
     ldy #$02            ;  No:  Delay count for P-series
 
@@ -766,7 +766,7 @@ move_to:
     beq move_to_y       ;Already got X pos?  Handle this byte as Y.
                         ;Fall through into move_to_x
 move_to_x:
-    cmp x_width         ;Requested X position out of range?
+    cmp columns         ;Requested X position out of range?
     bcs move_to_x_done  ;  Yes: Do nothing.
     sta cursor_x        ;  No:  Move cursor to requested X.
 move_to_x_done:
@@ -871,7 +871,7 @@ ctrl_codes:
 ctrl_07:
 ;Ring bell
 ;
-   bit x_width          ;80 columns?
+   bit columns          ;80 columns?
    bvs ctrl_07_b        ;  Yes: branch to B-series settings
 ctrl_07_p:
    lda #$40             ;P-series settings
@@ -929,7 +929,7 @@ ctrl_15:
 ;
     lda #$80
     sta uppercase       ;Set flag to indicate uppercase = on
-    bit x_width         ;40 columns?
+    bit columns         ;40 columns?
     bvc ctrl_15_1       ;  Yes: branch to P-series routine
     lda tpi1_cr
     ora #%00010000
@@ -945,7 +945,7 @@ ctrl_16:
 ;
     lda #$00
     sta uppercase       ;Set flag to indicate uppercase = off
-    bit x_width         ;40 columns?
+    bit columns         ;40 columns?
     bvc ctrl_16_1       ;  Yes: branch to P-series routine
     lda tpi1_cr
     and #%11101111
@@ -961,7 +961,7 @@ ctrl_08:
 ;
     ldx cursor_x
     bne ctrl_08_decx    ;X > 0? Y will not change.
-    ldx x_width         ;X = max X + 1
+    ldx columns         ;X = max X + 1
     lda cursor_y
     beq ctrl_08_done    ;Y=0? Can't move up.
     dec cursor_y        ;Y=Y-1
@@ -985,7 +985,7 @@ ctrl_0c:
 ;
     inc cursor_x        ;X=X+1
     ldx cursor_x
-    cpx x_width         ;X > max X?
+    cpx columns         ;X > max X?
     beq ctrl_0c_crlf
     rts                 ;  No:  Done, stay on the current line
 ctrl_0c_crlf:
@@ -1031,7 +1031,7 @@ ctrl_1a_1:
     sta screen+$100,x   ;  This is always screen RAM on both B-series
     sta screen+$200,x   ;  and P-series machines.
     sta screen+$300,x
-    bit x_width         ;80 columns?
+    bit columns         ;80 columns?
     bvs ctrl_1a_2       ;  Yes: B-series, continue to fill with space char.
     lda #$0f            ;  No:  P-series, fill second 1K with Light Grey.
 ctrl_1a_2:
@@ -1079,7 +1079,7 @@ ctrl_13:
 l_0863:
     sta (scrline_lo),y  ;Write space to screen RAM
     iny                 ;X=X+1
-    cpy x_width
+    cpy columns
     bne l_0863          ;Loop until end of line
     rts
 
@@ -1094,13 +1094,13 @@ ctrl_14_next:
     beq ctrl_14_done    ;  Yes: done
     clc                 ;Advance scrline pointer
     lda scrline_lo
-    adc x_width
+    adc columns
     sta scrline_lo
     bcc ctrl_14_eraline
     inc scrline_hi
 ctrl_14_eraline:
     lda #$20            ;Space character
-    ldy x_width
+    ldy columns
 ctrl_14_erachar:
     dey
     sta (scrline_lo),y
@@ -1173,7 +1173,7 @@ ctrl_1c:
 ;Insert space at current cursor position
 ;
     jsr calc_scrline
-    ldy x_width         ;number of characters on line
+    ldy columns         ;number of characters on line
     dey
 l_08f4:
     cpy cursor_x
@@ -1195,7 +1195,7 @@ ctrl_1d:
     jsr calc_scrline    ;Leaves cursor_x in Y register
 l_090b:
     iny
-    cpy x_width
+    cpy columns
     beq l_0918
     lda (scrline_lo),y  ;read a character from the line
     dey                 ;position to the left
@@ -1220,7 +1220,7 @@ ctrl_12:
     jsr calc_scrline
     lda scrline_lo
     clc
-    adc x_width
+    adc columns
     sta source_lo
     lda scrline_hi
     adc #$00
@@ -1240,7 +1240,7 @@ ctrl_11:
 ;
     lda #<screen+$0780  ;Start address of last 80 col line
     ldy #>screen+$0780
-    bit x_width         ;80 columns?
+    bit columns         ;80 columns?
     bvs l_0949          ;  Yes: branch to keep address for 80 col
     lda #<screen+$03c0  ;Start address of last 40 col line
     ldy #>screen+$03c0
@@ -1260,13 +1260,13 @@ l_095d:
     lda source_lo
     sta target_lo
     sec
-    sbc x_width
+    sbc columns
     sta source_lo
     lda source_hi
     sta target_hi
     sbc #$00
     sta source_hi
-    ldy x_width
+    ldy columns
     dey
 l_0970:
     lda (source_lo),y
@@ -1276,7 +1276,7 @@ l_0970:
     bmi l_0951
 l_097c:
     lda #$20            ;SPACE
-    ldy x_width
+    ldy columns
 l_0980:
     dey
     sta (scrline_lo),y
@@ -1307,7 +1307,7 @@ calc_scrline:
     rol scrline_hi      ;  Rotate any additional carry into high byte
     sta scrline_lo      ;  Save row number (Y-pos) multiplied by 40
 
-    bit x_width         ;80 columns?
+    bit columns         ;80 columns?
     bvc l_09a8          ;  No: done multiplying
     asl scrline_lo
     rol scrline_hi      ;  Yes: multiply by 2 again
@@ -1327,14 +1327,14 @@ scroll_up:
 ;
     lda #$00
     sta scrline_lo
-    lda x_width
+    lda columns
     sta source_lo
     lda #>screen
     sta scrline_hi
     sta source_hi
     ldx #lines-1
 scroll:
-    ldy x_width
+    ldy columns
     dey
 l_08a0:
     lda (source_lo),y
@@ -1344,7 +1344,7 @@ l_08a0:
     lda source_lo
     sta scrline_lo
     clc
-    adc x_width
+    adc columns
     sta source_lo
     lda source_hi
     sta scrline_hi
@@ -1353,7 +1353,7 @@ l_08a0:
     dex
     bne scroll
     lda #$20            ;SPACE
-    ldy x_width
+    ldy columns
 l_08c1:
     dey
     sta (scrline_lo),y
