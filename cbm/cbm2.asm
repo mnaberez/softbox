@@ -32,7 +32,7 @@ cursor_off  = $06     ;Cursor state: zero = show, nonzero = hide
 scrcode_tmp = $07     ;Temporary storage for the last screen code
 keycount    = $08     ;Number of keys in the buffer at keyd
 x_width     = $09     ;Width of X in characters (40 or 80)
-rvs_mask    = $0a     ;Reverse video mask (normal = $00, reverse = $80)
+;
 moveto_cnt  = $0b     ;Counts down bytes to consume in a move-to (CTRL_1B) seq
 cursor_tmp  = $0c     ;Pending cursor state used with CURSOR_OFF
 source_lo   = $0d     ;Pointer to source address for memory operations - LO
@@ -51,8 +51,9 @@ jiffy1      = $19     ;Jiffy Counter             CP/M programs like TIME.COM.
 jiffy0      = $1a     ;Jiffy Counter (LSB)
 blink_cnt   = $1b     ;Counts down number of IRQs until cursor reverses
 uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
-got_srq     = $1d     ;IEEE-488 SRQ detect: 0=no SRQ, 1=SRQ pending
-hertz       = $1e     ;Constant for powerline frequency: 50 or 60 Hz
+rvs_mask    = $1d     ;Reverse video mask (normal = $00, reverse = $80)
+got_srq     = $1e     ;IEEE-488 SRQ detect: 0=no SRQ, 1=SRQ pending
+hertz       = $1f     ;Constant for powerline frequency: 50 or 60 Hz
 ;
 lines       = 25      ;Number of screen lines
 
