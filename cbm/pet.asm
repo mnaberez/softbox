@@ -788,8 +788,8 @@ ctrl_0a:
     ldy cursor_y
     iny
     cpy lines           ;Are we on the bottom line?
-    bne ctrl_0a_incy    ;  No:  Increment Y, do not scroll up
-    jmp scroll_up       ;  Yes: Y remains unchanged, jump out to scroll
+    bne ctrl_0a_incy    ;  No:  Increment cursor_y, do not scroll up
+    jmp scroll_up       ;  Yes: Do not change cursor_y, jump out to scroll
 ctrl_0a_incy:
     inc cursor_y        ;Increment Y position
     rts

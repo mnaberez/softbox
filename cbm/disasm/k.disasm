@@ -785,8 +785,8 @@ CTRL_0A:
 ;
 $080B: A4 05     LDY CURSOR_Y
 $080D: C0 18     CPY #LINES-1        ;Are we on the bottom line?
-$080F: D0 03     BNE L_0814          ;  No:  Increment Y, do not scroll up
-$0811: 4C 8E 08  JMP SCROLL_UP       ;  Yes: Y remains unchanged, jump out to scroll
+$080F: D0 03     BNE L_0814          ;  No:  Increment CURSOR_Y, do not scroll up
+$0811: 4C 8E 08  JMP SCROLL_UP       ;  Yes: Do not change CURSOR_Y, jump out to scroll
 L_0814:
 $0814: E6 05     INC CURSOR_Y        ;Increment Y position
 $0816: 60        RTS
