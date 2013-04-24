@@ -2734,7 +2734,7 @@ lfd0bh:
     jr nz,lfd15h
     ld a,cr
 lfd15h:
-    call sub_fd6bh
+    call ascii_to_pet
     bit 1,b
     call z,delay_1ms
     call ieee_put_byte
@@ -2745,7 +2745,7 @@ lfd20h:
     jp ieee_unlisten
 lfd29h:
     ld a,c
-    call sub_fd6bh
+    call ascii_to_pet
     call ieee_put_byte
     jp ieee_unlisten
 
@@ -2800,19 +2800,30 @@ ser_tx_status:
     inc a
     ret                 ;Return A=0 if not ready
 
-sub_fd6bh:
-;Called only from list
-    cp 41h
-    ret c
-    cp 60h
-    jr c,lfd78h
-    cp 7bh
-    ret nc
-    xor 20h
-    ret
-lfd78h:
-    xor 80h
-    ret
+ascii_to_pet:
+;Convert an ASCII char to its equivalent PETSCII char.
+;A = ASCII char
+;Returns the PETSCII equivalent in A.
+;
+                        ;00-40h (Numbers, Punctuation, Control Codes)
+    cp 41h              ;  Is A < 41h?
+    ret c               ;    Yes: return with A unchanged
+
+                        ;41h-59h (Uppercase letters)
+    cp 60h              ;  Is A < 60h?
+    jr c,ascii_upper    ;    Yes: jump to convert it
+
+                        ;7bh-ffh (Braces, Pipe, Extended Characters)
+    cp 7bh              ;  Is A >= 7bh?
+    ret nc              ;    Yes: return with A unchanged
+
+                        ;60h-7ah (Backtick, Lowercase Letters)
+    xor 20h             ;  Flip bit 5 to convert to lowercase ASCII char
+    ret                 ;    to PETSCII equivalent and return
+
+ascii_upper:
+    xor 80h             ;Flip bit 7 to convert uppercase ASCII char
+    ret                 ;  to PETSCII equivalent and return
 
 punch:
 ;Punch (paper tape) output
