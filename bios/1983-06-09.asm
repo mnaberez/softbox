@@ -137,7 +137,7 @@ eoisav:   equ 0ea6ch    ;Stores ppi2_pa IEEE-488 control lines after get byte
 lptype:   equ 0ea6dh    ;CBM printer (LPT:) type: 0=3022, 3023, 4022, 4023
                         ;                         1=8026, 8027 (daisywheel)
                         ;                         2=8024
-list_tmp: equ 0ea6eh    ;Temporary storage byte used by LIST routine (2 bytes)
+list_tmp: equ 0ea6eh    ;Stores the last character sent to the LIST routine
 dtypes:   equ 0ea70h    ;Disk drive types:
 dtype_ab: equ dtypes+0  ;  A:, B:    00h = CBM 3040/4040
 dtype_cd: equ dtypes+1  ;  C:, D:    01h = CBM 8050
@@ -2684,6 +2684,9 @@ list_ul1:
 list_lpt:
 ;List to a CBM printer (LST: = LPT:)
 ;
+;Converts ASCII to equivalent PETSCII.  Converts line endings
+;if needed and sets lowercase mode after each new line if needed.
+;
     ld a,(lpt_dev)
     ld d,a              ;D = IEEE-488 primary address of LPT:
 
@@ -2698,19 +2701,26 @@ list_lpt:
 
     call ieee_listen    ;Send LISTEN
 
-    bit 0,b
-    jr nz,list_lpt_8026 ;Jump if lptype = 1 (8026)
+    bit 0,b             ;Is it lptype = 1 (8026)?
+    jr nz,list_lpt_8026 ;  Yes: Jump to handle that printer separately
 
-    ld hl,list_tmp      ;TODO Where is the initial value of list_tmp set?
-    ld a,(hl)
-    ld (hl),c
-    cp lf
-    jr z,lfcf8h
-    cp cr
-    jr nz,lfd04h
-    ld a,c
-    cp lf
-    jr z,lfd04h
+    ld hl,list_tmp      ;HL = address holding the last char sent to LIST
+    ld a,(hl)           ;A = last character
+    ld (hl),c           ;Update the last char for the next time around.
+
+    cp lf               ;Was the last character a Line Feed?
+    jr z,list_lpt_lower ;  Yes: jump to put the printer back to lowercase,
+                        ;       then send this char.
+                        ;   No: continue to check for CR.
+
+    cp cr               ;Was the last character a Carriage Return?
+    jr nz,list_lpt_undr ;   No: jump to send this char as-is.
+                        ;  Yes: continue to check for CR followed by LF.
+
+    ld a,c              ;A = C (this character)
+    cp lf               ;Last char was a CR.  Is this char a Line Feed?
+    jr z,list_lpt_undr  ;  Yes: jump to send the LF as-is.
+                        ;   No: continue to send 8Dh to the printer.
 
     ld a,b              ;A = lptype
     or a                ;Is it lptype = 0 (3022, 4022)?
@@ -2720,56 +2730,64 @@ list_lpt:
                         ;        (Carriage return without line feed)
     call ieee_put_byte  ;Send it to the printer
 
-lfcf8h:
-    bit 1,b
-    jr nz,lfd04h        ;Jump if lptype = 2 (8024)
+list_lpt_lower:
+;Set the printer to lowercase mode if needed.  Commodore printers
+;that have uppercase/lowercase mode will default to uppercase mode
+;and reset back to uppercase mode after every carriage return.
+;
+    bit 1,b             ;Is it lptype = 2 (8024)?
+    jr nz,list_lpt_undr ;  Yes: jump over, do not need to set lowercase
+                        ;                   mode on the 8024.
 
     call delay_1ms      ;Wait 1ms
     ld a,11h            ;11h = PETSCII Cursor Down
                         ;        (Go to lowercase mode)
     call ieee_put_byte  ;Send it to the printer
 
-lfd04h:
+list_lpt_undr:
+;Convert an ASCII underscore to its equivalent PETSCII graphic char.
+;
     ld a,c              ;A = C (ASCII char to print)
+
     cp '_'              ;Is the char an underscore?
-    jr nz,lfd0bh        ;  No:  Leave it alone
+    jr nz,list_lpt_crlf ;  No:  Leave it alone
     ld a,0a4h           ;  Yes: Change it to 0a4h (PETSCII underscore)
-lfd0bh:
+
+list_lpt_crlf:
+;Convert Carriage Return and Line Feed.
+;
     cp cr               ;Is it a Carriage Return?
-    jr z,list_nop       ;  Yes: Jump to list_nop
-                        ;   No: Continue
+    jr z,list_lpt_unlsn ;  Yes: Jump to send nothing, then UNLISTEN
 
     cp lf               ;Is it a Line Feed?
-    jr nz,lfd15h        ;  No:  Leave it alone
+    jr nz,list_lpt_char ;  No:  Jump to send it as-is
     ld a,cr             ;  Yes: Change it to a Carriage Return
 
-lfd15h:
+list_lpt_char:
+;Convert the character from ASCII to PETSCII, send it to the
+;printer, then fall through to send UNLISTEN and return.
+;
     call ascii_to_pet   ;A = equivalent char in PETSCII
 
     bit 1,b             ;Is it lptype = 0 (3022)?
     call z,delay_1ms    ;  Yes: Wait 1ms before sending the char
 
     call ieee_put_byte  ;Send the PETSCII char to the printer
-                        ;Fall through into list_nop
+                        ;Fall through into list_lpt_unlsn
 
-list_nop:
+list_lpt_unlsn:
+;Send UNLISTEN to the printer and return.
+;
     in a,(ppi2_pb)
     or atn
     out (ppi2_pb),a     ;ATN_OUT=low
     jp ieee_unlisten    ;Jump out to send UNLISTEN,
                         ;  it will return to the caller.
 
-list_char:
-    ld a,c              ;A = char to print in ASCII
-    call ascii_to_pet   ;A = its equivalent in PETSCII
-    call ieee_put_byte  ;Send the PETSCII char to the printer
-    jp ieee_unlisten    ;Jump out to send UNLISTEN,
-                        ;  it will return to the caller.
-
 list_lpt_8026:
 ;List routine for Commodore 8026 (Olympia ESW 103) only.  This
 ;printer is unlike the others because it accepts PETSCII characters
-;but no line ending conversion is required.
+;with CRLF line endings.
 ;
     ld a,c              ;A = char to print in ASCII
     call ascii_to_pet   ;A = its equivalent in PETSCII
