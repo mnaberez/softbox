@@ -134,7 +134,7 @@ x_offset: equ 0ea6bh    ;Offset added to X when sending move-to sequence
 eoisav:   equ 0ea6ch    ;Stores ppi2_pa IEEE-488 control lines after get byte
                         ;  This allows a program to check for EOI after it
                         ;  calls ieee_get_byte or ieee_get_tmo.
-lptype:   equ 0ea6dh    ;CBM printer (LPT:) type: 0=3022, 3032, 4022, 4023
+lptype:   equ 0ea6dh    ;CBM printer (LPT:) type: 0=3022, 3023, 4022, 4023
                         ;                         1=8026, 8027 (daisywheel)
                         ;                         2=8024
 list_tmp: equ 0ea6eh    ;Temporary storage byte used by LIST routine (2 bytes)
@@ -2694,7 +2694,7 @@ list_lpt:
     ld a,(lptype)       ;A = lptype
     ld b,a              ;B = lptype
     or a
-    call z,delay_1ms    ;Delay if lptype = 0 (3022, 3032, 4022, 4023)
+    call z,delay_1ms    ;Delay if lptype = 0 (3022, 3023, 4022, 4023)
 
     call ieee_listen    ;Send LISTEN
 
