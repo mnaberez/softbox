@@ -2699,7 +2699,7 @@ list_lpt:
     call ieee_listen    ;Send LISTEN
 
     bit 0,b
-    jr nz,list_char     ;Jump if lptype = 1 (8026)
+    jr nz,list_lpt_8026 ;Jump if lptype = 1 (8026)
 
     ld hl,list_tmp      ;TODO Where is the initial value of list_tmp set?
     ld a,(hl)
@@ -2760,6 +2760,17 @@ list_nop:
                         ;  it will return to the caller.
 
 list_char:
+    ld a,c              ;A = char to print in ASCII
+    call ascii_to_pet   ;A = its equivalent in PETSCII
+    call ieee_put_byte  ;Send the PETSCII char to the printer
+    jp ieee_unlisten    ;Jump out to send UNLISTEN,
+                        ;  it will return to the caller.
+
+list_lpt_8026:
+;List routine for Commodore 8026 (Olympia ESW 103) only.  This
+;printer is unlike the others because it accepts PETSCII characters
+;but no line ending conversion is required.
+;
     ld a,c              ;A = char to print in ASCII
     call ascii_to_pet   ;A = its equivalent in PETSCII
     call ieee_put_byte  ;Send the PETSCII char to the printer
