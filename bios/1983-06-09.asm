@@ -2694,12 +2694,12 @@ list_lpt:
     ld a,(lptype)       ;A = lptype
     ld b,a              ;B = lptype
     or a
-    call z,delay_1ms    ;Delay if lptype = 0 (3022, 3023, 4022, 4023)
+    call z,delay_1ms    ;Wait 1ms if lptype = 0 (3022, 3023, 4022, 4023)
 
     call ieee_listen    ;Send LISTEN
 
     bit 0,b
-    jr nz,list_char     ;Jump if lptype = 0 (3022) or lptype = 2 (8024)
+    jr nz,list_char     ;Jump if lptype = 1 (8026)
 
     ld hl,list_tmp      ;TODO Where is the initial value of list_tmp set?
     ld a,(hl)
@@ -2713,17 +2713,22 @@ list_lpt:
     jr z,lfd04h
 
     ld a,b              ;A = lptype
-    or a                ;Is lptype = 0 (3022)?
+    or a                ;Is it lptype = 0 (3022, 4022)?
     call z,delay_1ms    ;  Yes: Wait 1ms before sending the char
 
-    ld a,8dh            ;8dh = PETSCII Same action as Carriage Return
-    call ieee_put_byte
+    ld a,8dh            ;8dh = PETSCII Shift Carriage Return
+                        ;        (Carriage return without line feed)
+    call ieee_put_byte  ;Send it to the printer
+
 lfcf8h:
     bit 1,b
-    jr nz,lfd04h
-    call delay_1ms
+    jr nz,lfd04h        ;Jump if lptype = 2 (8024)
+
+    call delay_1ms      ;Wait 1ms
     ld a,11h            ;11h = PETSCII Cursor Down
-    call ieee_put_byte
+                        ;        (Go to lowercase mode)
+    call ieee_put_byte  ;Send it to the printer
+
 lfd04h:
     ld a,c              ;A = C (ASCII char to print)
     cp '_'              ;Is the char an underscore?
@@ -2741,23 +2746,24 @@ lfd0bh:
 lfd15h:
     call ascii_to_pet   ;A = equivalent char in PETSCII
 
-    bit 1,b             ;Is lptype = 2 (CBM 8024)?
+    bit 1,b             ;Is it lptype = 0 (3022)?
     call z,delay_1ms    ;  Yes: Wait 1ms before sending the char
 
     call ieee_put_byte  ;Send the PETSCII char to the printer
+                        ;Fall through into list_nop
 
 list_nop:
     in a,(ppi2_pb)
     or atn
     out (ppi2_pb),a     ;ATN_OUT=low
-    jp ieee_unlisten    ;Jump out to ieee_unlisten,
+    jp ieee_unlisten    ;Jump out to send UNLISTEN,
                         ;  it will return to the caller.
 
 list_char:
     ld a,c              ;A = char to print in ASCII
     call ascii_to_pet   ;A = its equivalent in PETSCII
     call ieee_put_byte  ;Send the PETSCII char to the printer
-    jp ieee_unlisten    ;Jump out to ieee_unlisten,
+    jp ieee_unlisten    ;Jump out to send UNLISTEN,
                         ;  it will return to the caller.
 
 listst:
