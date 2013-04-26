@@ -1876,56 +1876,91 @@ newline:
 find_trk_sec:
 ;Find the CBM DOS track and sector for the current CP/M track and sector.
 ;
+;  Inputs:
+;    x_drive:      equ 0044h   CP/M drive number
+;    x_track:      equ 0045h   CP/M track
+;    x_sector:     equ 0047h   CP/M sector
+;
+;  Outputs:
+;    dos_trk:      equ 004dh   CBM track
+;    dos_sec:      equ 004eh   CBM sector
+;
+;  Testing:
+;    Set x_drive = 0
+;    Set dtype for drive 0 (0ea70h): 0=3040/4040, 1=8050, 6=8250
+;    Set x_track and x_sector with CP/M track and sector.
+;    Call find_trk_sec (0f8dah).
+;    Read dos_trk and dos_sec for CBM DOS track and sector.
+;
     ld a,(x_drive)
     call get_dtype      ;C = drive type
     ld a,c              ;A = C
     or a
-    ld ix,0057h
+    ld ix,0057h         ;TODO 0057h?
 
     ld hl,ts_cbm3040    ;HL = table for CBM 3040
-    ld e,10h
+    ld e,10h            ;E = 16
     jr z,lf8f9h         ;Jump if drive type = 0 (CBM 3040/4040)
 
-    ld e,25h
+    ld e,25h            ;E = 37
     ld hl,ts_cbm8050    ;HL = table for CBM 8050
     cp 01h
     jr z,lf8f9h         ;Jump if drive type = 1 (CBM 8050)
 
     ld hl,ts_cbm8250    ;HL = table for CBM 8250
 lf8f9h:
+    ;HL = drive specific table
+    ;E = 16 for 3040/4040
+    ;E = 37 for both 8050 and 8250
+
     push de
     push hl
-    ld (ix+00h),00h
-    ld hl,(x_track)     ;0045h = CP/M track number
-    ld h,00h
+    ld (ix+00h),00h     ;IX = 0
+    ld hl,(x_track)     ;L = CP/M track number
+    ld h,00h            ;H = 0
+
+    add hl,hl           ;HL = CP/M track * 8
     add hl,hl
     add hl,hl
     add hl,hl
-    add hl,hl
-    ld de,(x_sector)    ;0047h = CP/M sector number
-    ld d,00h
-    add hl,de
-    ld b,h
+
+    ld de,(x_sector)    ;E = CP/M sector number
+    ld d,00h            ;D = 0
+    add hl,de           ;HL = HL + DE
+
+    ld b,h              ;BC = HL
     ld c,l
     pop hl
+
 lf912h:
-    ld e,(hl)
-    inc hl
-    ld d,(hl)
+    ;HL = drive specific table
+    ;BC = (CP/M track * 8) + (CP/M sector)
+
+    ld e,(hl)           ;E = value at HL
+    inc hl              ;HL=HL+1
+    ld d,(hl)           ;D = value at HL
+
+    ;DE = value from drive specific table
+
     ex de,hl
     scf
     sbc hl,bc
     ex de,hl
-    jp nc,lf923h
+
+    ;  DE = value from table - ((CP/M track * 8) + (CP/M sector))
+
+    jp nc,lf923h        ;Jump to next routine if no carry
+    inc hl              ;Move forward in table
     inc hl
     inc hl
-    inc hl
-    jp lf912h
+    jp lf912h           ;Do it over with new table position
+
 lf923h:
+    dec hl              ;HL=HL-2
     dec hl
-    dec hl
-    ld a,(hl)
-    ld (ix+00h),a
+    ld a,(hl)           ;A = value from table at HL
+    ld (ix+00h),a       ;0057h = value
+
     dec hl
     ld a,(hl)
     dec hl
