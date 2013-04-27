@@ -18,9 +18,14 @@ fdelete:    equ 13h     ;Delete File
 fwrite:     equ 15h     ;Write Next Record
 fmake:      equ 16h     ;Create File
 
+ctrl_c:     equ 03h     ;Control-C
+lf:         equ 0ah     ;Line Feed
+cr:         equ 0dh     ;Carriage Return
+rubout:     equ 7fh     ;Rubout
+
     org 0100h
 
-    ld hl,5ch+12
+    ld hl,fcb+12
     ld c,15h
 clrfcb:
     ld (hl),00h         ;clear the file control block
@@ -53,19 +58,19 @@ chkwld:
     inc a               ;check for directory error
     jp z,error
 
-    ld de,ready         ;0132 11 a5 01
+    ld de,ready
     ld c,cwritestr      ;Output String
     call bdos           ;BDOS System Call
 
                         ;ready to receive
 sync:
     call read           ;synchronize with sender
-    cp 7fh              ;RUBOUT - ignore
+    cp rubout           ;RUBOUT - ignore
     jp nz,sync
 
 nxtblk:
     call read           ;read a character
-    cp 7fh
+    cp rubout
     jp z,nxtblk         ;rubout - ignore
     cp '#'              ;end of file?
     jp z,eof
@@ -117,11 +122,11 @@ exit:
     out (usart_st),a
     jp warm
 ready:
-    db 0dh,0ah,"Ready to receive",0dh,0ah,"$"
+    db cr,lf,"Ready to receive",cr,lf,"$"
 errmsg:
-    db 0dh,0ah,"Disk write error$"
+    db cr,lf,"Disk write error$"
 chkser:
-    db 0dh,0ah,"Checksum error$"
+    db cr,lf,"Checksum error$"
 rdhex:
     call rdnib          ;read high nibble
     add a,a             ;multiple by 16
@@ -147,7 +152,7 @@ read:
     or a
     jp z,nokey
     call conin          ;key pressed - call conin
-    cp 03h              ;control-c?
+    cp ctrl_c           ;control-c?
     jp z,eof            ;yes - abort
 
 nokey:
