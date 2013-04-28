@@ -42,7 +42,7 @@ time_output:
                         ;Write a colon after the hour:
     push hl             ;
     push de             ;
-    ld e,3ah            ;  E = ":" character
+    ld e,':'            ;  E = colon character
     ld c,cwrite         ;  Console Output
     call bdos           ;  BDOS System Call
     pop de              ;
@@ -54,7 +54,7 @@ time_output:
 
                         ;Write a colon after the minute:
     push de             ;
-    ld e,3ah            ;  E = ":" character
+    ld e,':'            ;  E = colon character
     ld c,cwrite         ;  Console Output
     call bdos           ;  BDOS System Call
     pop hl              ;  XXX
