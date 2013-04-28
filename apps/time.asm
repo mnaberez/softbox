@@ -11,6 +11,8 @@ cread:      equ 01h     ;Console Input
 cwrite:     equ 02h     ;Console Output
 cwritestr:  equ 09h     ;Output String
 
+ctrl_c:     equ 03h     ;Control-C
+
     org 0100h           ;CP/M TPA
 
     ld hl,args          ;HL = command line arguments from CCP: first byte is
@@ -81,8 +83,8 @@ time_input:
     call bdos           ;BDOS System Call
     ld c,cread          ;Console Input
     call bdos           ;BDOS System Call
-    cp 03h              ;Control-C pressed?
-    jp z,warm           ;0155
+    cp ctrl_c           ;Control-C pressed?
+    jp z,warm           ;  Yes: jump to warm start
     pop de              ;0158
     pop hl              ;0159
 
@@ -90,7 +92,7 @@ time_input:
                         ;  it will return to CP/M.
 
 bad_syntax:
-    ld de,syntax_err    ;015d
+    ld de,syntax_err
     ld c,cwritestr      ;Output String
     call bdos           ;BDOS System Call
     jp warm
