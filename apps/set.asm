@@ -338,12 +338,42 @@ syntax_err:
 
 tabs_hz1500:
 ;Tab stop data for Hazeltine 1500
-    db 8bh,0bh,8ch,0ch,8fh,13h,91h,1bh,92h,1eh,93h,12h,97h,14h
-    db 98h,14h,9ah,11h,9ch,1ah,9dh,1ah,99h,00h,9fh,00h,00h
+    db 8bh,0bh
+    db 8ch,0ch
+    db 8fh,13h
+    db 91h,1bh
+    db 92h,1eh
+    db 93h,12h
+    db 97h,14h
+    db 98h,14h
+    db 9ah,11h
+    db 9ch,1ah
+    db 9dh,1ah
+    db 99h,00h
+    db 9fh,00h
+    db 00h              ;End of table
 
 tabs_adm_tv:
 ;Tab stop data for Lear Siegler ADM-3A and TeleVideo 912
-    db 0b1h,04h,0b2h,05h,0b3h,06h,0eah,0eh,0ebh,0fh,0d1h,1ch,0d7h
-    db 1dh,0c5h,11h,0d2h,12h,0d4h,13h,0f4h,13h,0d9h,14h,0f9h,14h
-    db 0abh,1ah,0aah,1ah,0bah,1ah,0bbh,1ah,0dah,1ah,0bdh,1bh,0a8h
-    db 00h,0a9h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+    db 0b1h,04h
+    db 0b2h,05h
+    db 0b3h,06h
+    db 0eah,0eh
+    db 0ebh,0fh
+    db 0d1h,1ch
+    db 0d7h,1dh
+    db 0c5h,11h
+    db 0d2h,12h
+    db 0d4h,13h
+    db 0f4h,13h
+    db 0d9h,14h
+    db 0f9h,14h
+    db 0abh,1ah
+    db 0aah,1ah
+    db 0bah,1ah
+    db 0bbh,1ah
+    db 0dah,1ah
+    db 0bdh,1bh
+    db 0a8h,00h
+    db 0a9h,00h
+    db 00h              ;End of table
