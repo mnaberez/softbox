@@ -12,7 +12,7 @@ xy_order:   equ 0ea69h  ;X,Y order when sending move-to: 0=X first, 1=Y first
 y_offset:   equ 0ea6ah  ;Offset added to Y when sending move-to sequence
 x_offset:   equ 0ea6bh  ;Offset added to X when sending move-to sequence
 ul1_dev:    equ 0ea66h  ;ASCII printer (UL1:) IEEE-488 primary address
-scrtab:     equ 0ea80h  ;64 byte buffer for tab stops
+scrtab:     equ 0ea80h  ;64 byte table for terminal character translation
 jp_conout:  equ 0ea0ch  ;Jumps to conout (Console Output) routine in BIOS
 
 cwritestr:  equ 09h     ;Output String

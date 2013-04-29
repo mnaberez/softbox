@@ -158,7 +158,7 @@ ddev_kl:  equ ddevs+5   ;  L:, K:    is an ID on a Corvus unit.
 ddev_mn:  equ ddevs+6   ;  M:, N:
 ddev_op:  equ ddevs+7   ;  O:, P:
 
-scrtab:   equ 0ea80h    ;64 byte buffer for tab stops
+scrtab:   equ 0ea80h    ;64 byte table for terminal character translation
 dos_msg:  equ 0eac0h    ;Last error message returned from CBM DOS
 dph_base: equ 0eb00h    ;CP/M Disk Parameter Headers (DPH)
 dos_buf:  equ 0ef00h    ;256 byte buffer for CBM DOS sector data
@@ -1275,8 +1275,8 @@ test_passed:
     ld (cdisk),a        ;CDISK=0 (User=0, Drive=A:)
     ld (0054h),a
     ld (leadrcvd),a     ;Last char received was not the lead-in
-    ld (move_cnt),a     ;Not in a move-to sequence
-    ld (scrtab),a
+    ld (move_cnt),a     ;Not in a cursor move-to sequence
+    ld (scrtab),a       ;Disable terminal character translation
     out (ppi2_pc),a     ;Turn on LEDs
 
     ld bc,03e8h
@@ -2494,36 +2494,51 @@ conout:
 conout_char:
     ld a,(leadrcvd)
     or a                ;If the last char received was not the lead-in
-    jp z,lfbf3h         ;  jump
+    jp z,conout_range   ;  jump to check char range
 
     xor a
     ld (leadrcvd),a     ;Clear the lead-in received flag
     set 7,c             ;Set bit 7 of the char
 
-lfbf3h:
+conout_range:
+;Check if the character is in the range the needs translation
+;before sending it to the CBM.
+;
     ld a,c              ;A = C
-    cp 20h
-    jr c,lfbfch
 
-    cp 7bh
-    jr c,conout_cbm
+    cp 20h              ;Is A < 20h?
+    jr c,conout_tr      ;  Yes: jump to conout_tr
 
-lfbfch:
+    cp 7bh              ;Is A < 7bh?
+    jr c,conout_cbm     ;  Yes: jump to conout_cbm
+
+conout_tr:
+;Translate the character before sending it to the CBM.
+;Entered if C < 20h or C >= 7bh.
+;
+;The table at scrtab contains pairs of bytes in the form:
+;  from,to,from,to,from,to,...
+;
+;If the character CP/M sends to the console is a "from" byte, it will
+;be replaced with the corresponding "to" byte before it is sent to
+;the CBM.  A "from" byte of 0 indicates the end of the table.
+;
     ld hl,scrtab        ;HL = scrtab
-lfbffh:
-    ld a,(hl)
-    inc hl
-    or a
-    jr z,conout_cbm
-    cp c
-    ld a,(hl)
-    inc hl
-    jr nz,lfbffh
+conout_tr_loop:
+    ld a,(hl)           ;A = "from" byte
+    inc hl              ;HL=HL+1
+    or a                ;Byte = 0 (end of table)?
+    jr z,conout_cbm     ;  Yes: no change, jump to conout_cbm
 
-    cp esc              ;LSI ADM-3A command to start move-to sequence
-    jr z,move_start     ;Jump to start move-to sequence
+    cp c                ;Found the char in the table?
+    ld a,(hl)           ;A = "to" byte
+    inc hl              ;HL=HL+1 (move to next pair in table)
+    jr nz,conout_tr_loop  ;If char was not found, continue in the table
 
-    ld c,a
+    cp esc              ;Replacement char = ESC (start cursor move-to)?
+    jr z,move_start     ;  Yes: Jump to start move-to sequence
+    ld c,a              ;   No: Replace the char with the one from the table
+                        ;         and fall through to send it to the console
 
 conout_cbm:
 ;Put the character in C on the CBM screen
