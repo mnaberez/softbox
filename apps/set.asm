@@ -183,7 +183,7 @@ set_v:
                         ;Fall through into hz1500
 
 hz1500:
-;Hazeltine 1500
+;Set terminal type to Hazeltine 1500
 ;B = lead-in (escape) character
 ;
                         ;Set lead-in:
@@ -199,7 +199,7 @@ hz1500:
     ld a,01h            ;  A=1 indicates X-first
     ld (xy_order),a     ;  Set X-Y order for cursor move-to sequence
 
-                        ;Copy tab stop data:
+                        ;Copy character translation table:
     ld hl,trans_hz1500  ;  HL = address of Hazeltine 1500 table
     ld de,scrtab        ;  DE = address of BIOS scrtab area
     ld bc,001bh         ;  BC = 27 bytes to copy
@@ -207,7 +207,7 @@ hz1500:
     ret
 
 adm3a_tv912:
-;ADM-3A and TeleVideo 912
+;Set terminal type to ADM-3A and TeleVideo 912
 ;
                         ;Set cursor move-to offsets:
     ld a,20h            ;  20h = offset used by ADM-3A and compatibles
@@ -222,8 +222,8 @@ adm3a_tv912:
     ld a,esc            ;  A = ESC character
     ld (leadin),a       ;  Set terminal lead-in character
 
-                        ;Copy tab stop data:
-    ld hl,trans_adm_tv   ;  HL = address of ADM-3A/TV-912 table
+                        ;Copy character translation table:
+    ld hl,trans_adm_tv  ;  HL = address of ADM-3A/TV-912 table
     ld de,scrtab        ;  DE = address of BIOS scrtab area
     ld bc,002bh         ;  BC = 43 bytes to copy
     ldir                ;  Copy BC bytes from (HL) to (DE)
