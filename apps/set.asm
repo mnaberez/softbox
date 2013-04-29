@@ -161,7 +161,7 @@ set_v:
     call get_value      ;A = value char
     and 5fh             ;Normalize char to uppercase
 
-    ld hl,tabs_adm_tv   ;HL = address of ADM-3A/TV-912 tabs table
+    ld hl,trans_adm_tv  ;HL = address of ADM-3A/TV-912 table
                         ;TODO: This is not needed because HL will
                         ;      be set to the correct tabs table
                         ;      in both adm3a_tv912 and hz1500.
@@ -200,7 +200,7 @@ hz1500:
     ld (xy_order),a     ;  Set X-Y order for cursor move-to sequence
 
                         ;Copy tab stop data:
-    ld hl,tabs_hz1500   ;  HL = address of Hazeltine 1500 tabs table
+    ld hl,trans_hz1500  ;  HL = address of Hazeltine 1500 table
     ld de,scrtab        ;  DE = address of BIOS scrtab area
     ld bc,001bh         ;  BC = 27 bytes to copy
     ldir                ;  Copy BC bytes from (HL) to (DE)
@@ -223,7 +223,7 @@ adm3a_tv912:
     ld (leadin),a       ;  Set terminal lead-in character
 
                         ;Copy tab stop data:
-    ld hl,tabs_adm_tv   ;  HL = address of tabs_adm_tv
+    ld hl,trans_adm_tv   ;  HL = address of ADM-3A/TV-912 table
     ld de,scrtab        ;  DE = address of BIOS scrtab area
     ld bc,002bh         ;  BC = 43 bytes to copy
     ldir                ;  Copy BC bytes from (HL) to (DE)
@@ -336,44 +336,46 @@ l024dh:
 syntax_err:
     db "Syntax error$"
 
-tabs_hz1500:
-;Tab stop data for Hazeltine 1500
-    db 8bh,0bh
-    db 8ch,0ch
-    db 8fh,13h
-    db 91h,1bh
-    db 92h,1eh
-    db 93h,12h
-    db 97h,14h
-    db 98h,14h
-    db 9ah,11h
-    db 9ch,1ah
-    db 9dh,1ah
-    db 99h,00h
-    db 9fh,00h
+trans_hz1500:
+;Character translation table for Hazeltine 1500
+;
+    db 8bh,0bh          ;8Bh -> 0Bh Cursor up
+    db 8ch,0ch          ;8Ch -> 0Ch Cursor right
+    db 8fh,13h          ;8Fh -> 13h Clear to end of line
+    db 91h,1bh          ;91h -> 1Bh Move cursor to X,Y position
+    db 92h,1eh          ;91h -> 1Eh Home cursor
+    db 93h,12h          ;93h -> 12h Scroll up one line
+    db 97h,14h          ;97h -> 14h Clear to end of screen
+    db 98h,14h          ;98h -> 14h Clear to end of screen
+    db 9ah,11h          ;9Ah -> 11h Insert a blank line
+    db 9ch,1ah          ;9Ch -> 1Ah Clear screen
+    db 9dh,1ah          ;9Dh -> 1Ah Clear screen
+    db 99h,00h          ;99h -> 00h Null
+    db 9fh,00h          ;9Fh -> 00h Null
     db 00h              ;End of table
 
-tabs_adm_tv:
-;Tab stop data for Lear Siegler ADM-3A and TeleVideo 912
-    db 0b1h,04h
-    db 0b2h,05h
-    db 0b3h,06h
-    db 0eah,0eh
-    db 0ebh,0fh
-    db 0d1h,1ch
-    db 0d7h,1dh
-    db 0c5h,11h
-    db 0d2h,12h
-    db 0d4h,13h
-    db 0f4h,13h
-    db 0d9h,14h
-    db 0f9h,14h
-    db 0abh,1ah
-    db 0aah,1ah
-    db 0bah,1ah
-    db 0bbh,1ah
-    db 0dah,1ah
-    db 0bdh,1bh
-    db 0a8h,00h
-    db 0a9h,00h
+trans_adm_tv:
+;Character translation table for Lear Siegler ADM-3A and TeleVideo 912
+;
+    db 0b1h,04h         ;0B1h -> 04h Set a TAB stop at current position
+    db 0b2h,05h         ;0B2h -> 05h Clear TAB stop at current position
+    db 0b3h,06h         ;0B3h -> 06h Clear all TAB stops
+    db 0eah,0eh         ;0EAh -> 0Eh Reverse video on
+    db 0ebh,0fh         ;0EBh -> 0Fh Reverse video off
+    db 0d1h,1ch         ;0D1h -> 1Ch Insert a space on current line
+    db 0d7h,1dh         ;0D7h -> 1Dh Delete character at cursor
+    db 0c5h,11h         ;0C5h -> 11h Insert a blank line
+    db 0d2h,12h         ;0D2h -> 12h Scroll up one line
+    db 0d4h,13h         ;0D4h -> 13h Clear to end of line
+    db 0f4h,13h         ;0F4h -> 13h Clear to end of line
+    db 0d9h,14h         ;0D9h -> 14h Clear to end of screen
+    db 0f9h,14h         ;0F9h -> 14h Clear to end of screen
+    db 0abh,1ah         ;0ABh -> 1Ah Clear screen
+    db 0aah,1ah         ;0AAh -> 1Ah Clear screen
+    db 0bah,1ah         ;0Bah -> 1Ah Clear screen
+    db 0bbh,1ah         ;0BBh -> 1Ah Clear screen
+    db 0dah,1ah         ;0DAh -> 1Ah Clear screen
+    db 0bdh,1bh         ;0BDh -> 1Bh Move cursor to X,Y position
+    db 0a8h,00h         ;0A8h -> 00h Null
+    db 0a9h,00h         ;0A9h -> 00h Null
     db 00h              ;End of table
