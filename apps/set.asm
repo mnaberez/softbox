@@ -291,46 +291,75 @@ set_r:
 store_dev:
 ;DE = address to receive device number
 ;
-    call sub_0223h      ;A = device number
+    call get_dec        ;A = device number
     jp c,bad_syntax     ;Jump to syntax error if parsing number failed
     ld (de),a           ;Store device number
     ret
 
-sub_0223h:
-    inc hl
-    ld a,(hl)
-    dec c
-    scf
-    ret m
-    sub 30h
-    jp c,sub_0223h
-    cp 0ah
-    jp nc,sub_0223h
-    ld b,a
-    inc hl
-    dec c
-    jp m,l024dh
-    ld a,(hl)
-    sub 30h
-    jp c,l024dh
-    cp 0ah
-    jp nc,l024dh
-    push af
-    ld a,b
-    add a,a
-    add a,a
-    add a,b
-    add a,a
-    ld b,a
-    pop af
-    add a,b
-    ret
+get_dec:
+;Get a one or two character decimal number from the args buffer,
+;convert it to a binary number, and return it in A.
+;
+;If the current args char at HL is not a digit, HL will be advanced
+;until a digit is reached.
+;
+;On exit, HL will be pointing at the last char of the decimal number
+;in the args buffer.
+;
+;Returns carry flag set on error.
+;
+                        ;Get first char from args:
+    inc hl              ;  Increment HL to point to next char in args
+    ld a,(hl)           ;  A = char from args at HL
+    dec c               ;  Decrement C (number of chars remaining in args)
+    scf                 ;  Set carry flag to indicate error status
+    ret m               ;  Return if sign flag is set (decremented past 0)
 
-l024dh:
-    ld a,b
-    dec hl
-    inc c
-    or a
+                        ;Convert first char from ASCII to binary number:
+    sub 30h             ;  Subtract 30h to convert it (ASCII "0" = 30h)
+    jp c,get_dec        ;  Jump if carry is set, indicating A < 0
+    cp 0ah              ;  Compare to check upper bounds
+    jp nc,get_dec       ;  Jump if A >= 0Ah (ASCII "9" = 39h)
+    ld b,a              ;  Save the valid binary number in B
+
+                        ;Get second char from args:
+    inc hl              ;  Increment HL to point to next char in args
+    dec c               ;  Decrement C (number of chars remaining in args)
+    jp m,get_dec_one    ;  Jump if sign flag is set (decremented past 0)
+    ld a,(hl)           ;  A = char from args at HL
+
+                        ;Convert second char from ASCII to binary number:
+    sub 30h             ;  Subtract 30h to convert it (ASCII "0" = 30h)
+    jp c,get_dec_one    ;  Jump if carry is set, indicating A < 0
+    cp 0ah              ;  Compare to check upper bounds
+    jp nc,get_dec_one   ;  Jump if A >= 0Ah (ASCII "9" = 39h)
+
+                        ;B = first number, A = second number
+
+                        ;Multiply first number (B) by 10:
+    push af             ;  Save A
+    ld a,b              ;  Both A and B contain the first number
+    add a,a             ;  A = A + A
+    add a,a             ;  A = A + A
+    add a,b             ;  A = A + B
+    add a,a             ;  A = A + A
+    ld b,a              ;  Save result in B
+    pop af              ;  Recall A
+
+                        ;B = (first number * 10), A = second number
+
+    add a,b             ;Add them to make the final number
+    ret                 ;Return the number
+
+get_dec_one:
+;Called from get_dec when the decimal number in args was found to have
+;only one digit.  The digit is in B.  HL and C are rolled back because
+;get_dec will advanced past the digit.
+;
+    ld a,b              ;A = B
+    dec hl              ;Roll back HL
+    inc c               ;Roll back C
+    or a                ;Clear carry flag
     ret
 
 syntax_err:
