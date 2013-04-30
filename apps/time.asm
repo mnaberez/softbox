@@ -18,7 +18,7 @@ ctrl_c:     equ 03h     ;Control-C
     ld hl,args          ;HL = command line arguments from CCP: first byte is
                         ;       number of chars, followed by the chars
     ld c,(hl)           ;C = number of chars
-    call sub_0168h      ;0104
+    call get_dec        ;0104
     jp nc,time_input    ;0107
 
 time_output:
@@ -69,11 +69,11 @@ time_input:
 ;Get a new time from the user and set the clock.
 ;
     ld d,a              ;0135
-    call sub_0168h      ;0136
+    call get_dec        ;0136
     jp c,bad_syntax     ;0139
     ld e,a              ;013c
     push de             ;013d
-    call sub_0168h      ;013e
+    call get_dec        ;013e
     jp c,bad_syntax     ;0141
     ld d,a              ;0144
 
@@ -97,41 +97,71 @@ bad_syntax:
     call bdos           ;BDOS System Call
     jp warm
 
-sub_0168h:
-    inc hl              ;0168
-    ld a,(hl)           ;0169
-    dec c               ;016a
-    scf                 ;016b
-    ret m               ;016c
-    sub 30h             ;016d
-    jp c,sub_0168h      ;016f
-    cp 0ah              ;0172
-    jp nc,sub_0168h     ;0174
-    ld b,a              ;0177
-    inc hl              ;0178
-    dec c               ;0179
-    jp m,l0192h         ;017a
-    ld a,(hl)           ;017d
-    sub 30h             ;017e
-    jp c,l0192h         ;0180
-    cp 0ah              ;0183
-    jp nc,l0192h        ;0185
-    push af             ;0188
-    ld a,b              ;0189
-    add a,a             ;018a
-    add a,a             ;018b
-    add a,b             ;018c
-    add a,a             ;018d
-    ld b,a              ;018e
-    pop af              ;018f
-    add a,b             ;0190
-    ret                 ;0191
-l0192h:
-    ld a,b              ;0192
-    dec hl              ;0193
-    inc c               ;0194
-    or a                ;0195
-    ret                 ;0196
+get_dec:
+;Get a one or two character decimal number from the args buffer,
+;convert it to a binary number, and return it in A.
+;
+;If the current args char at HL is not a digit, HL will be advanced
+;until a digit is reached.
+;
+;On exit, HL will be pointing at the last char of the decimal number
+;in the args buffer.
+;
+;Returns carry flag set on error.
+;
+                        ;Get first char from args:
+    inc hl              ;  Increment HL to point to next char in args
+    ld a,(hl)           ;  A = char from args at HL
+    dec c               ;  Decrement C (number of chars remaining in args)
+    scf                 ;  Set carry flag to indicate error status
+    ret m               ;  Return if sign flag is set (decremented past 0)
+
+                        ;Convert first char from ASCII to binary number:
+    sub 30h             ;  Subtract 30h to convert it (ASCII "0" = 30h)
+    jp c,get_dec        ;  Jump if carry is set, indicating A < 0
+    cp 0ah              ;  Compare to check upper bounds
+    jp nc,get_dec       ;  Jump if A >= 0Ah (ASCII "9" = 39h)
+    ld b,a              ;  Save the valid binary number in B
+
+                        ;Get second char from args:
+    inc hl              ;  Increment HL to point to next char in args
+    dec c               ;  Decrement C (number of chars remaining in args)
+    jp m,get_dec_one    ;  Jump if sign flag is set (decremented past 0)
+    ld a,(hl)           ;  A = char from args at HL
+
+                        ;Convert second char from ASCII to binary number:
+    sub 30h             ;  Subtract 30h to convert it (ASCII "0" = 30h)
+    jp c,get_dec_one    ;  Jump if carry is set, indicating A < 0
+    cp 0ah              ;  Compare to check upper bounds
+    jp nc,get_dec_one   ;  Jump if A >= 0Ah (ASCII "9" = 39h)
+
+                        ;B = first number, A = second number
+
+                        ;Multiply first number (B) by 10:
+    push af             ;  Save A
+    ld a,b              ;  Both A and B contain the first number
+    add a,a             ;  A = A + A
+    add a,a             ;  A = A + A
+    add a,b             ;  A = A + B
+    add a,a             ;  A = A + A
+    ld b,a              ;  Save result in B
+    pop af              ;  Recall A
+
+                        ;B = (first number * 10), A = second number
+
+    add a,b             ;Add them to make the final number
+    ret                 ;Return the number
+
+get_dec_one:
+;Called from get_dec when the decimal number in args was found to have
+;only one digit.  The digit is in B.  HL and C are rolled back because
+;get_dec will advanced past the digit.
+;
+    ld a,b              ;A = B
+    dec hl              ;Roll back HL
+    inc c               ;Roll back C
+    or a                ;Clear carry flag
+    ret
 
 put_dec:
     push de             ;0197
