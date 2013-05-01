@@ -73,6 +73,13 @@ for line in lines:
         if len(parts) > 1:
             line += " ; " + parts[1]
 
+    # Text directive
+    if line.startswith(".TEXT"):
+        parts = line.split(";", 1)  # "instruction ;comment"
+        line = "!text" + parts[0].replace(".TEXT", "")
+        if len(parts) > 1:
+            line += " ; " + parts[1]
+
     # Whole line comment without indent
     #   ;Detect 40/80 column screen and store in X_WIDTH
     if line.startswith(";"):
@@ -91,7 +98,11 @@ for line in lines:
         line = re.sub(r"ROR A ?", "ror ;a", line, flags=re.IGNORECASE)
 
         parts = line.split(";", 1)  # "instruction ;comment"
-        line = "    " + parts[0].lower()
+        if "!text" in parts[0]:
+            line = "    " + parts[0]
+        else:
+            line = "    " + parts[0].lower()
+
         if len(parts) > 1:
             line += ";" + parts[1]
 
