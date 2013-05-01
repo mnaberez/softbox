@@ -6,6 +6,9 @@ const:      equ 0f006h  ;BIOS Console status
 conin:      equ 0f009h  ;BIOS Console input
 conout:     equ 0f00ch  ;BIOS Console output
 
+lf:         equ 0ah     ;Line Feed
+cr:         equ 0dh     ;Carriage Return
+
     org 0100h
 
 l0100h:
@@ -277,13 +280,14 @@ sub_02aeh:
     inc hl              ;02b4  23
     jr sub_02aeh        ;02b5  18 f7
 sub_02b7h:
-    ld a,0dh            ;02b7  3e 0d
+    ld a,cr             ;02b7  3e 0d
     call put_char       ;02b9  cd 00 00
-    ld a,0ah            ;02bc  3e 0a
+    ld a,lf             ;02bc  3e 0a
     call put_char       ;02be  cd 00 00
     ret                 ;02c1  c9
+
 l02c2h:
-    db 0dh,0ah,"Testing CP/M Box memory",0dh,0ah,00h
+    db cr,lf,"Testing CP/M Box memory",cr,lf,00h
 l02deh:
     db "Break...",00h
 l02e7h:
