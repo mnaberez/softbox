@@ -62,19 +62,8 @@ $0408:           .BYT 30,33,39,29,00,00,00
 $040F: 4C 66 04  JMP INIT
 
 COPYRIGHT:
-;"  SOFTBOX LOADER (C) COPYRIGHT 1981 KEITH FREWIN   "
-;"----  REVISON :  5 JULY 1981     "
-$0412:           .BYT 20,20,53,4F,46,54,42,4F
-$041A:           .BYT 58,20,4C,4F,41,44,45,52
-$0422:           .BYT 20,28,43,29,20,43,4F,50
-$042A:           .BYT 59,52,49,47,48,54,20,31
-$0432:           .BYT 39,38,31,20,4B,45,49,54
-$043A:           .BYT 48,20,46,52,45,57,49,4E
-$0442:           .BYT 20,20,20,2D,2D,2D,2D,20
-$044A:           .BYT 20,52,45,56,49,53,4F,4E
-$0452:           .BYT 20,3A,20,20,35,20,4A,55
-$045A:           .BYT 4C,59,20,31,39,38,31,20
-$0462:           .BYT 20,20,20,20
+$0412:           .TEXT "  SOFTBOX LOADER (C) COPYRIGHT 1981 KEITH FREWIN   "
+$0445:           .TEXT "----  REVISON :  5 JULY 1981     "
 
 INIT:
 $0466: 78        SEI                 ;Disable interrupts
