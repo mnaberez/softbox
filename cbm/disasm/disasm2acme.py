@@ -98,10 +98,10 @@ for line in lines:
         line = re.sub(r"ROR A ?", "ror ;a", line, flags=re.IGNORECASE)
 
         parts = line.split(";", 1)  # "instruction ;comment"
-        if "!text" in parts[0]:
-            line = "    " + parts[0]
-        else:
-            line = "    " + parts[0].lower()
+
+        line = "    " + parts[0]
+        if "!text" not in line:
+            line = line.lower()
 
         if len(parts) > 1:
             line += ";" + parts[1]
