@@ -285,7 +285,7 @@ sub_02b7h:
 l02c2h:
     db 0dh,0ah,"Testing CP/M Box memory",0dh,0ah,00h
 l02deh:
-    db "Break",02eh,02eh,02eh,00h
+    db "Break...",00h
 l02e7h:
     db "Pass=",00h
 l02edh:
