@@ -113,11 +113,11 @@ l017eh:
     or (ix+03h)         ;01ba  dd b6 03
     jr z,l01e1h         ;01bd  28 00
     ld a,20h            ;01bf  3e 20
-    call sub_030eh      ;01c1  cd 00 00
+    call put_char       ;01c1  cd 00 00
     ld hl,(0026h)       ;01c4  2a 26 00
     call sub_0293h      ;01c7  cd 00 00
     ld a,2dh            ;01ca  3e 2d
-    call sub_030eh      ;01cc  cd 00 00
+    call put_char       ;01cc  cd 00 00
     ld hl,(0028h)       ;01cf  2a 28 00
     call sub_0293h      ;01d2  cd 00 00
     ld hl,l02f3h        ;01d5  21 00 00
@@ -268,19 +268,19 @@ sub_02a1h:
     add a,07h           ;02a7  c6 07
 l02a9h:
     add a,30h           ;02a9  c6 30
-    jp sub_030eh        ;02ab  c3 00 00
+    jp put_char         ;02ab  c3 00 00
 sub_02aeh:
     ld a,(hl)           ;02ae  7e
     or a                ;02af  b7
     ret z               ;02b0  c8
-    call sub_030eh      ;02b1  cd 00 00
+    call put_char       ;02b1  cd 00 00
     inc hl              ;02b4  23
     jr sub_02aeh        ;02b5  18 f7
 sub_02b7h:
     ld a,0dh            ;02b7  3e 0d
-    call sub_030eh      ;02b9  cd 00 00
+    call put_char       ;02b9  cd 00 00
     ld a,0ah            ;02bc  3e 0a
-    call sub_030eh      ;02be  cd 00 00
+    call put_char       ;02be  cd 00 00
     ret                 ;02c1  c9
 l02c2h:
     db 0dh,0ah,"Testing CP/M Box memory",0dh,0ah,00h
@@ -298,6 +298,7 @@ l02f9h:
     or a                ;02fc  b7
     jr z,l02f9h         ;02fd  28 fa
     ret                 ;02ff  c9
+
 sub_0300h:
     push hl             ;0300  e5
     push bc             ;0301  c5
@@ -309,16 +310,18 @@ sub_0300h:
     pop bc              ;030b  c1
     pop hl              ;030c  e1
     ret                 ;030d  c9
-sub_030eh:
-    push bc             ;030e  c5
-    push hl             ;030f  e5
-l0310h:
-    push de             ;0310  d5
-    push af             ;0311  f5
-    ld c,a              ;0312  4f
-    call conout         ;0313  cd 0c f0
-    pop af              ;0316  f1
-    pop de              ;0317  d1
-    pop hl              ;0318  e1
-    pop bc              ;0319  c1
-    ret                 ;031a  c9
+
+put_char:
+;Write the char in A to console out, preserving most registers.
+;
+    push bc
+    push hl
+    push de
+    push af
+    ld c,a              ;C = A
+    call conout         ;Write C to console out
+    pop af
+    pop de
+    pop hl
+    pop bc
+    ret
