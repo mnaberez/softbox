@@ -3,22 +3,59 @@
 
     org 0100h
 
+ppi1:     equ 10h       ;8255 PPI #1 (IC17)
+ppi1_pa:  equ ppi1+0    ;  Port A: IEEE-488 Data In
+ppi1_pb:  equ ppi1+1    ;  Port B: IEEE-488 Data Out
+ppi1_pc:  equ ppi1+2    ;  Port C: DIP Switches
+ppi1_cr:  equ ppi1+3    ;  Control Register
+
+ppi2:     equ 14h       ;8255 PPI #2 (IC16)
+ppi2_pa:  equ ppi2+0    ;  Port A:
+                        ;    PA7 IEEE-488 IFC in
+                        ;    PA6 IEEE-488 REN in
+                        ;    PA5 IEEE-488 SRQ in
+                        ;    PA4 IEEE-488 EOI in
+                        ;    PA3 IEEE-488 NRFD in
+                        ;    PA2 IEEE-488 NDAC in
+                        ;    PA1 IEEE-488 DAV in
+                        ;    PA0 IEEE-488 ATN in
+ppi2_pb:  equ ppi2+1    ;  Port B:
+                        ;    PB7 IEEE-488 IFC out
+                        ;    PB6 IEEE-488 REN out
+                        ;    PB5 IEEE-488 SRQ out
+                        ;    PB4 IEEE-488 EOI out
+                        ;    PB3 IEEE-488 NRFD out
+                        ;    PB2 IEEE-488 NDAC out
+                        ;    PB1 IEEE-488 DAV out
+                        ;    PB0 IEEE-488 ATN out
+ppi2_pc:  equ ppi2+2    ;  Port C:
+                        ;    PC7 Unused
+                        ;    PC6 Unused
+                        ;    PC5 Corvus ACTIVE
+                        ;    PC4 Corvus READY
+                        ;    PC3 Unused
+                        ;    PC2 LED "Ready"
+                        ;    PC1 LED "B"
+                        ;    PC0 LED "A"
+ppi2_cr:  equ ppi2+3    ;  Control Register
+
+
 l0100h:
     nop                 ;0100 00
     nop                 ;0101 00
     nop                 ;0102 00
     ld sp,l0100h        ;0103 31 00 01
     ld a,99h            ;0106 3e 99
-    out (13h),a         ;0108 d3 13
+    out (ppi1_cr),a     ;0108 d3 13
     ld a,98h            ;010a 3e 98
-    out (17h),a         ;010c d3 17
+    out (ppi2_cr),a     ;010c d3 17
     ex (sp),hl          ;010e e3
     rst 38h             ;010f ff
-    out (16h),a         ;0110 d3 16
+    out (ppi2_pc),a     ;0110 d3 16
     xor a               ;0112 af
-    out (11h),a         ;0113 d3 11
+    out (ppi1_pb),a     ;0113 d3 11
     ld a,80h            ;0115 3e 80
-    out (15h),a         ;0117 d3 15
+    out (ppi2_pb),a     ;0117 d3 15
 l0119h:
     call sub_02c7h      ;0119 cd c7 02
     ld hl,0f000h        ;011c 21 00 f0
@@ -46,14 +83,14 @@ l0146h:
     ld b,00h            ;014c 06 00
 l014eh:
     ld a,b              ;014e 78
-    out (11h),a         ;014f d3 11
-    in a,(10h)          ;0151 db 10
+    out (ppi1_pb),a     ;014f d3 11
+    in a,(ppi1_pa)      ;0151 db 10
     cp b                ;0153 b8
     jp nz,l029ah        ;0154 c2 9a 02
     ld a,b              ;0157 78
     and 01eh            ;0158 e6 1e
-    out (15h),a         ;015a d3 15
-    in a,(14h)          ;015c db 14
+    out (ppi2_pb),a     ;015a d3 15
+    in a,(ppi2_pa)      ;015c db 14
     xor b               ;015e a8
     and 1eh             ;015f e6 1e
     jp nz,l029ah        ;0161 c2 9a 02
@@ -397,9 +434,9 @@ l034eh:
     jr nz,l034eh        ;0351 20 fb
     djnz l034eh         ;0353 10 f9
     jr $-43             ;0355 18 d3
-    in a,(16h)          ;0357 db 16
+    in a,(ppi2_pc)      ;0357 db 16
     xor 0ffh            ;0359 ee ff
-    out (16h),a         ;035b d3 16
+    out (ppi2_pc),a     ;035b d3 16
     ret                 ;035d c9
     xor a               ;035e af
 l035fh:
