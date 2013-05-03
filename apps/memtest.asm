@@ -115,11 +115,11 @@ l017eh:
     or (ix+02h)         ;01b7  dd b6 02
     or (ix+03h)         ;01ba  dd b6 03
     jr z,l01e1h         ;01bd  28 00
-    ld a,20h            ;01bf  3e 20
+    ld a,' '            ;01bf  3e 20
     call put_char       ;01c1  cd 00 00
     ld hl,(0026h)       ;01c4  2a 26 00
     call sub_0293h      ;01c7  cd 00 00
-    ld a,2dh            ;01ca  3e 2d
+    ld a,'-'            ;01ca  3e 2d
     call put_char       ;01cc  cd 00 00
     ld hl,(0028h)       ;01cf  2a 28 00
     call sub_0293h      ;01d2  cd 00 00
