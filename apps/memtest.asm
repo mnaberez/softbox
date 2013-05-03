@@ -128,7 +128,7 @@ l017eh:
     ld a,(0024h)        ;01db  3a 24 00
     call sub_0298h      ;01de  cd 00 00
 l01e1h:
-    call sub_02b7h      ;01e1  cd 00 00
+    call newline        ;01e1  cd 00 00
     pop bc              ;01e4  c1
     inc c               ;01e5  0c
     ld a,c              ;01e6  79
@@ -279,12 +279,15 @@ sub_02aeh:
     call put_char       ;02b1  cd 00 00
     inc hl              ;02b4  23
     jr sub_02aeh        ;02b5  18 f7
-sub_02b7h:
-    ld a,cr             ;02b7  3e 0d
-    call put_char       ;02b9  cd 00 00
-    ld a,lf             ;02bc  3e 0a
-    call put_char       ;02be  cd 00 00
-    ret                 ;02c1  c9
+
+newline:
+;Write carriage return and line feed to console out
+;
+    ld a,cr
+    call put_char       ;Write carriage return
+    ld a,lf
+    call put_char       ;Write line feed
+    ret
 
 l02c2h:
     db cr,lf,"Testing CP/M Box memory",cr,lf,00h
