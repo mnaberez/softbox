@@ -25,7 +25,7 @@ l0100h:
     ld hl,0ffffh        ;011b  21 ff ff
     ld (0026h),hl       ;011e  22 26 00
     ld hl,l02c2h        ;0121  21 00 00
-    call sub_02aeh      ;0124  cd 00 00
+    call puts           ;0124  cd 00 00
     ld hl,0600h         ;0127  21 00 06
     ld (002ch),hl       ;012a  22 2c 00
     ld de,0ea00h        ;012d  11 00 ea
@@ -98,13 +98,13 @@ l017eh:
     djnz l0151h         ;0188  10 c7
     push bc             ;018a  c5
     ld hl,l02e7h        ;018b  21 00 00
-    call sub_02aeh      ;018e  cd 00 00
+    call puts           ;018e  cd 00 00
     ld hl,(002ah)       ;0191  2a 2a 00
     inc hl              ;0194  23
     ld (002ah),hl       ;0195  22 2a 00
     call sub_0293h      ;0198  cd 00 00
     ld hl,l02edh        ;019b  21 00 00
-    call sub_02aeh      ;019e  cd 00 00
+    call puts           ;019e  cd 00 00
     ld hl,(0022h)       ;01a1  2a 22 00
     call sub_0293h      ;01a4  cd 00 00
     ld hl,(0020h)       ;01a7  2a 20 00
@@ -124,7 +124,7 @@ l017eh:
     ld hl,(0028h)       ;01cf  2a 28 00
     call sub_0293h      ;01d2  cd 00 00
     ld hl,l02f3h        ;01d5  21 00 00
-    call sub_02aeh      ;01d8  cd 00 00
+    call puts           ;01d8  cd 00 00
     ld a,(0024h)        ;01db  3a 24 00
     call sub_0298h      ;01de  cd 00 00
 l01e1h:
@@ -140,7 +140,7 @@ l01e1h:
     jp l0130h           ;01f3  c3 30 01
 l01f6h:
     ld hl,l02deh        ;01f6  21 00 00
-    call sub_02aeh      ;01f9  cd 00 00
+    call puts           ;01f9  cd 00 00
     jp warm             ;01fc  c3 00 00
 sub_01ffh:
     push bc             ;01ff  c5
@@ -272,13 +272,18 @@ sub_02a1h:
 l02a9h:
     add a,30h           ;02a9  c6 30
     jp put_char         ;02ab  c3 00 00
-sub_02aeh:
-    ld a,(hl)           ;02ae  7e
-    or a                ;02af  b7
-    ret z               ;02b0  c8
-    call put_char       ;02b1  cd 00 00
-    inc hl              ;02b4  23
-    jr sub_02aeh        ;02b5  18 f7
+
+puts:
+;Write a null-terminated string to console out
+;
+;HL = Pointer to the string
+;
+    ld a,(hl)           ;Get the byte at pointer HL
+    or a                ;Set flags
+    ret z               ;Return if byte is 0
+    call put_char       ;Send the char to console out
+    inc hl              ;Increment HL pointer
+    jr puts             ;Loop to handle the next byte
 
 newline:
 ;Write carriage return and line feed to console out
