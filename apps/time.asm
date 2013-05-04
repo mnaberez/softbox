@@ -18,8 +18,10 @@ ctrl_c:     equ 03h     ;Control-C
     ld hl,args          ;HL = command line arguments from CCP: first byte is
                         ;       number of chars, followed by the chars
     ld c,(hl)           ;C = number of chars
-    call get_dec        ;0104
-    jp nc,time_input    ;0107
+
+                        ;Check if args contain a new time to set:
+    call get_dec        ;  A = hours
+    jp nc,time_input    ;  If no error, jump to set time.
 
 time_output:
 ;Write the current time to the console and exit.
