@@ -2460,7 +2460,7 @@ const:
     rra
     jp nc,ser_rx_status ;Jump out if console is RS-232 port (CON: = TTY:)
 
-    ld a,01h            ;Command 01h = Key available?
+    ld a,01h            ;Command 01h = Check if a key has been pressed
     call cbm_srq
     ld a,00h
     ret nc              ;Return with A=0 if no key
@@ -2663,12 +2663,12 @@ cbm_srq:
 ;Send a Service Request (SRQ) to the CBM computer.
 ;
 ;A = command to send, one of:
-;  20h = Transfer bytes from the SoftBox to CBM memory
-;  10h = Transfer bytes from CBM memory to the SoftBox
-;  08h = Jump to a subroutine in CBM memory
-;  04h = Write to the terminal screen
+;  01h = Check if a key has been pressed
 ;  02h = Wait for a key and send it
-;  01h = Key available?
+;  04h = Write to the terminal screen
+;  08h = Jump to a subroutine in CBM memory
+;  10h = Transfer bytes from CBM memory to the SoftBox
+;  20h = Transfer bytes from the SoftBox to CBM memory
 ;
 ;This routine queries the CBM keyboard status each time it is called.
 ;The carry flag will be set if a key is available, clear if not.
