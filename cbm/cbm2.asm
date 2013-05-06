@@ -1596,33 +1596,19 @@ key_table:
 
 
 ;Storage locations used in keyboard scanning routine SCAN_KEYB
-scancode:
-    !byte $aa
-
-lastcode:
-    !byte $aa
-
-rowcount:
-    !byte $aa
-
-shift_flag:
-    !byte $aa
-
-ctrl_flag:
-    !byte $aa
-
-repeatcount0:
-    !byte $aa
-
-repeatcount1:
-    !byte $aa
-
-repeatcode:
-    !byte $aa
-keyoffset:
-    !byte $aa
+;
+scancode:       !byte $aa   ;Holds scancode of the key
+lastcode:       !byte $aa   ;Temporarily holds scancode of previous key
+rowcount:       !byte $aa   ;Row counter for keyboard scan
+shift_flag:     !byte $aa   ;SHIFT key flag
+ctrl_flag:      !byte $aa   ;CONTROL key flag
+repeatcount0:   !byte $aa   ;Number of interrupts until start of key repeats
+repeatcount1:   !byte $aa   ;Number of interrupts until next repeat
+repeatcode:     !byte $aa   ;Scancode of last key; used in repeat handling
+keyoffset:      !byte $aa   ;Pointer into keyboard table
 
 ;Buffer for TAB stop positions (80 bytes: one for each screen column)
+;
 tab_stops:
     !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
     !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa

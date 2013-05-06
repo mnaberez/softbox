@@ -1368,31 +1368,33 @@ $0B27:           .BYT 00,58,20,4D,1E,FF,AF,31  ; RVS   X     SPACE M     HOME  N
 $0B2F:           .BYT 5F,B3,B6,B9,FF,BA,FF,FF  ; BARRW ^3    ^6    ^9    STOP  ^:    NONE  NONE
 
 ;Storage locations used in keyboard scanning routine SCAN_KEYB
+;
 SCANCODE:
-$0B37:           .BYT AA
+$0B37:           .BYT AA             ;Holds scancode of the key
 
 LASTCODE:
-$0B38:           .BYT AA
+$0B38:           .BYT AA             ;Temporarily holds scancode of previous key
 
 ROWCOUNT:
-$0B39:           .BYT AA
+$0B39:           .BYT AA             ;Row counter for keyboard scan
 
 SHIFT_FLAG:
-$0B3A:           .BYT AA
+$0B3A:           .BYT AA             ;SHIFT key flag
 
 CTRL_FLAG:
-$0B3B:           .BYT AA
+$0B3B:           .BYT AA             ;CONTROL key flag
 
 REPEATCOUNT0:
-$0B3C:           .BYT AA
+$0B3C:           .BYT AA             ;Number of interrupts until start of key repeats
 
 REPEATCOUNT1:
-$0B3D:           .BYT AA
+$0B3D:           .BYT AA             ;Number of interrupts until next repeat
 
 REPEATCODE:
-$0B3E:           .BYT AA
+$0B3E:           .BYT AA             ;Scancode of last key; used in repeat handling
 
 ;Buffer for TAB stop positions (80 bytes: one for each screen column)
+;
 TAB_STOPS:
 $0B3F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B47:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
@@ -1406,6 +1408,7 @@ $0B7F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B87:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 
 ;Filler pads the binary to 2048 bytes (2 byte load address + 2046 bytes)
+;
 FILLER:
 $0B8F:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
 $0B97:           .BYT AA,AA,AA,AA,AA,AA,AA,AA
