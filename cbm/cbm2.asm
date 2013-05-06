@@ -1375,19 +1375,19 @@ scan_keyb:
 ; TPI2_PC     = $DF02   ;6525 TPI #1 Port C - Keyboard Col read
 
 ;
-; USES: SCANCODE  - Code of Pressed KEY ($FF=NONE)
-;       LASTCODE  - Code of Previous KEY
-;       ROWCOUNT  - Keyboard ROW counter
-;       SHIFTFLAG - Shift Flag
-;       KEYFLAG   - Regular Key Flag
-;       KEYOFFSET - Pointer into keyboard table
+; USES: scancode   - Code of Pressed KEY ($FF=NONE)
+;       lastcode   - Code of Previous KEY
+;       rowcount   - Keyboard ROW counter
+;       shift_flag - SHIFT key flag
+;       ctrl_flag  - CTRL key flag
+;       keyoffset  - Pointer into keyboard table
 
     lda scancode        ;Old SCANCODE
     sta lastcode        ;Save It
     ldx #$00            ;X=0 Index into Keyboard Scan Table
     stx keyoffset       ;Reset index into table
-    stx shiftflag       ;Reset Shift Flag
-    stx keyflag         ;Reset Key Flag
+    stx shift_flag      ;Reset SHIFT key flag
+    stx ctrl_flag       ;Reset CTRL key flag
     lda #$ff            ;$FF = no key
     sta scancode        ;Set it
     lda #$0             ;Keyboard has 16 ROWS
@@ -1433,11 +1433,12 @@ scan_col:
     bcs nextcol
 
 key_shift:
-    inc shiftflag       ;Increment SHIFT Flag
+    inc shift_flag      ;Increment SHIFT Flag
     bne nextcol         ; Is it >0? Yes, loop back for another key
 
 key_reg:
-    inc keyflag         ;Increment KEY flag
+    inc ctrl_flag       ;Increment CTRL key flag
+                        ;Fall through to nextcol
 
 nextcol:
     pla                 ;pull the original scan value from stack
@@ -1470,7 +1471,7 @@ key_check1:
 ;---- CTRL KEY not pressed
 key_hi:
     and #$7f            ;Clear bit 7
-    ldy shiftflag       ;Shift key pressed?
+    ldy shift_flag      ;SHIFT key pressed?
     beq key_low         ;  No: skip translation to symbol
 
     ldx #$22            ;Change to $22 ( " )
@@ -1514,8 +1515,8 @@ key_low:
     cmp #$60            ;Compare to upper ascii limit?
     bcs key_check2      ;Is it above the A-Z range? Yes, skip
 
-;----  Check KEY Flag
-    ldy keyflag         ;Check KEY Flag
+;---- Check CTRL key flag
+    ldy ctrl_flag       ;Check CTRL key flag
     beq key_atoz        ;Is it zero? Yes, skip
     and #$1f            ;RETURN CTRL-A to Z - Use only the lower 5 BITS (0 to 31)
 
@@ -1529,7 +1530,7 @@ key_atoz:
     cmp #$5b            ;Compare to "[" symbol?
     bcs key_check2
 
-    ldy shiftflag       ;Is SHIFT Flag set?
+    ldy shift_flag      ;Is SHIFT Flag set?
     bne key_check2      ; No,skip to next test
 
 ;---- Handle regular A-Z
@@ -1540,7 +1541,7 @@ key_atoz:
 
 ;---- Check SHIFT flag
 key_check2:
-    ldy shiftflag       ;Check SHIFT flag for zero
+    ldy shift_flag      ;Check SHIFT flag for zero
     beq key_set         ;  Yes, skip out
 
 ;---- Translate SHIFTED 0-31 codes to terminal control codes
@@ -1604,10 +1605,10 @@ lastcode:
 rowcount:
     !byte $aa
 
-shiftflag:
+shift_flag:
     !byte $aa
 
-keyflag:
+ctrl_flag:
     !byte $aa
 
 repeatcount0:
