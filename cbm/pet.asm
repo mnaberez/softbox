@@ -50,8 +50,15 @@ bas_header:
 ;  configuration utility NEWSYS to either 50 or 60.  This tells the program
 ;  the frequency (in Hertz) at which the CBM system interrupt occurs.
 ;
-    !byte $00,$0d,$04,$32,$00,$9e,$28,$31
-    !byte $30,$33,$39,$29,$00,$00,$00
+    !byte $00         ;Null byte at start of BASIC program
+    !word bas_eol+1   ;Pointer to the next BASIC line
+bas_line:
+    !word $0032       ;Line number (50 or 60)
+    !byte $9e         ;Token for SYS command
+    !text "(1039)"    ;Arguments for SYS
+bas_eol:
+    !byte $00         ;End of BASIC line
+    !byte $00,$00     ;End of BASIC program
 ;
     jmp init
 
@@ -427,7 +434,7 @@ irq_clock:
 ;Update the jiffy clock
     inc rtc_jiffies     ;Increment Jiffies
     lda rtc_jiffies
-    cmp bas_header+3    ;50 or 60 (Hz).  See note in BAS_HEADER.
+    cmp bas_line        ;50 or 60 (Hz).  See note in BAS_HEADER.
     bne irq_blink
     lda #$00            ;Reset RTC_JIFFIES counter
     sta rtc_jiffies
