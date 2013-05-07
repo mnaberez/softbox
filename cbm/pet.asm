@@ -45,7 +45,7 @@ rvs_mask    = $1d     ;Reverse video mask (normal = $00, reverse = $80)
     *=$0400
 
 bas_header:
-;"50 sys1039"
+;"50 sys1037"
 ;  Note: The line number is used in a clever way.  It is changed by the
 ;  configuration utility NEWSYS to either 50 or 60.  This tells the program
 ;  the frequency (in Hertz) at which the CBM system interrupt occurs.
@@ -55,7 +55,7 @@ bas_header:
 bas_line:
     !word $0032       ;Line number (50 or 60)
     !byte $9e         ;Token for SYS command
-    !text "1039"      ;Arguments for SYS
+    !text "1037"      ;Arguments for SYS
 bas_eol:
     !byte $00         ;End of BASIC line
     !byte $00,$00     ;End of BASIC program
