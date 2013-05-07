@@ -1080,7 +1080,7 @@ calc_scrline:
 ;Preserves A and X.
 ;Returns cursor_x in Y.
 ;
-    tay
+    tay                 ;Save A in Y
     lda #$00
     sta scrline_hi      ;Initialize high byte to zero
     lda cursor_y
@@ -1108,8 +1108,8 @@ l_09a8:
     adc #>screen
     sta scrline_hi
 
-    tya                 ;Return with column (X-pos) in Y register
-    ldy cursor_x
+    tya                 ;Restore A from Y
+    ldy cursor_x        ;Return with column (X-pos) in Y register
     rts
 
 scroll_up:
