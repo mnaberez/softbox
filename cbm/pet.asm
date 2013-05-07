@@ -1069,30 +1069,28 @@ l_0980:
 init_scrlines:
 ;Build the screen line pointer tables.
 ;
-    ldx #$00            ;Start at line 0
+    ldy #$00            ;Start at line 0
 init_scrl_loop:
-    stx cursor_y        ;Store line index
     jsr calc_scrline    ;Calculate pointer
     lda scrline_lo
-    sta scrline_los,x   ;Save pointer low byte
+    sta scrline_los,y   ;Save pointer low byte
     lda scrline_hi
-    sta scrline_his,x   ;Save pointer high byte
-    inx                 ;Increment to next line index
-    cpx lines
+    sta scrline_his,y   ;Save pointer high byte
+    iny                 ;Increment to next line index
+    cpy lines
     bne init_scrl_loop  ;Loop until all pointers are calculated
     rts
 
 calc_scrline:
-;Calculate a new pointer (scrline) to the first byte of the current
-;line in screen RAM by multiplying cursor_y by 40 or 80.
+;Calculate a pointer to the first byte of a line in screen RAM by
+;multiplying the line number in Y by the screen width (40 or 80).
 ;
-;Preserves A and X.
-;Returns cursor_x in Y.
+;Preserves X and Y.
+;Stores the pointer in scrline.
 ;
-    tay
     lda #$00
     sta scrline_hi      ;Initialize high byte to zero
-    lda cursor_y
+    tya
     sta scrline_lo      ;Initialize low byte to row number (Y-pos)
 
                         ;Multiply by ( 2 * 2 + 1 ) * 2 * 2 * 2 = 40
@@ -1116,29 +1114,23 @@ l_09a8:
     clc
     adc #>screen
     sta scrline_hi
-
-    tya                 ;Return with column (X-pos) in Y register
-    ldy cursor_x
     rts
 
 get_scrline:
-;Calculate a new pointer (scrline) to the first byte of the current
-;line in screen RAM.
+;Get a pointer to the first byte of the current line (cursor_y)
+;in screen RAM.
 ;
 ;Preserves A and X.
 ;Returns cursor_x in Y.
+;Stores the pointer in scrline.
 ;
     pha                 ;Save A
-    txa
-    pha                 ;Save X
-    ldx cursor_y        ;Get cursor Y position (line)
-    lda scrline_los,x   ;Look up low byte of pointer
+    ldy cursor_y        ;Get cursor Y position (line)
+    lda scrline_los,y   ;Look up low byte of pointer
     sta scrline_lo      ;Store it
-    lda scrline_his,x   ;Look up high byte of pointer
+    lda scrline_his,y   ;Look up high byte of pointer
     sta scrline_hi      ;Store it
     ldy cursor_x        ;Load cursor X position in Y
-    pla
-    tax                 ;Restore X
     pla                 ;Restore A
     rts
 
