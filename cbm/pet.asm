@@ -110,6 +110,7 @@ init_scrn:
     bne init_scrn_done  ;  No: incomplete decoding, columns = 40
     asl columns         ;  Yes: columns = 80 characters
 init_scrn_done:
+    jsr init_scrlines   ;Initialize screen line pointers
     lda #$14
     sta blink_cnt       ;Initialize cursor blink countdown
     lda #$00
@@ -461,7 +462,7 @@ irq_blink:
     bne irq_repeat          ;Not time to blink? Done.
     lda #$14
     sta blink_cnt       ;Reset cursor blink countdown
-    jsr calc_scrline
+    jsr get_scrline
     lda (scrline_lo),y  ;Read character at cursor
     eor #$80            ;Flip the REVERSE bit
     sta (scrline_lo),y  ;Write it back
@@ -525,7 +526,7 @@ process_byte:
     sta cursor_tmp      ;  Remember it
     lda #$ff
     sta cursor_off      ;Hide the cursor
-    jsr calc_scrline    ;Calculate screen RAM pointer
+    jsr get_scrline     ;Get screen RAM pointer
     lda scrcode_tmp     ;Get the screen code previously saved
     sta (scrline_lo),y  ;  Put it on the screen
     pla
@@ -551,7 +552,7 @@ process_move:
 process_char:
     jsr put_char        ;JSR to put a character on the screen
 process_done:
-    jsr calc_scrline    ;Calculate screen RAM pointer
+    jsr get_scrline     ;Get screen RAM pointer
     lda (scrline_lo),y  ;Get the current character on the screen
     sta scrcode_tmp     ;  Remember it
     lda cursor_tmp      ;Get the previous state of the cursor
@@ -629,7 +630,7 @@ l_07ca:
     ora #$40            ;Turn on bit 6
 put_scrcode:
     eor rvs_mask        ;Reverse the screen code if needed
-    jsr calc_scrline    ;Calculate screen RAM pointer
+    jsr get_scrline     ;Get screen RAM pointer
     sta (scrline_lo),y  ;Write the screen code to screen RAM
     jmp ctrl_0c         ;Jump out to advance the cursor and return
 
@@ -856,7 +857,7 @@ ctrl_0f:
 ctrl_13:
 ;Clear to end of line
 ;
-    jsr calc_scrline    ;Leaves CURSOR_X in Y register
+    jsr get_scrline     ;Leaves CURSOR_X in Y register
     lda #$20            ;Space character
 l_0863:
     sta (scrline_lo),y  ;Write space to screen RAM
@@ -954,7 +955,7 @@ ctrl_1b:
 ctrl_1c:
 ;Insert space at current cursor position
 ;
-    jsr calc_scrline
+    jsr get_scrline
     ldy columns         ;number of characters on line
     dey
 l_08f4:
@@ -974,7 +975,7 @@ l_0901:
 ctrl_1d:
 ;Delete a character
 ;
-    jsr calc_scrline    ;Leaves cursor_x in Y register
+    jsr get_scrline     ;Leaves cursor_x in Y register
 l_090b:
     iny
     cpy columns
@@ -999,7 +1000,7 @@ ctrl_12:
 ;
     lda #$00
     sta cursor_x
-    jsr calc_scrline
+    jsr get_scrline
     lda scrline_lo
     clc
     adc columns
@@ -1073,6 +1074,22 @@ l_0980:
     bne l_0980
     rts
 
+init_scrlines:
+;Build the screen line pointer tables.
+;
+    ldx #$00            ;Start at line 0
+init_scrl_loop:
+    stx cursor_y        ;Store line index
+    jsr calc_scrline    ;Calculate pointer
+    lda scrline_lo
+    sta scrline_los,x   ;Save pointer low byte
+    lda scrline_hi
+    sta scrline_his,x   ;Save pointer high byte
+    inx                 ;Increment to next line index
+    cpx lines
+    bne init_scrl_loop  ;Loop until all pointers are calculated
+    rts
+
 calc_scrline:
 ;Calculate a new pointer (scrline) to the first byte of the current
 ;line in screen RAM by multiplying cursor_y by 40 or 80.
@@ -1080,7 +1097,7 @@ calc_scrline:
 ;Preserves A and X.
 ;Returns cursor_x in Y.
 ;
-    tay                 ;Save A in Y
+    tay
     lda #$00
     sta scrline_hi      ;Initialize high byte to zero
     lda cursor_y
@@ -1108,8 +1125,29 @@ l_09a8:
     adc #>screen
     sta scrline_hi
 
-    tya                 ;Restore A from Y
-    ldy cursor_x        ;Return with column (X-pos) in Y register
+    tya                 ;Return with column (X-pos) in Y register
+    ldy cursor_x
+    rts
+
+get_scrline:
+;Calculate a new pointer (scrline) to the first byte of the current
+;line in screen RAM.
+;
+;Preserves A and X.
+;Returns cursor_x in Y.
+;
+    pha                 ;Save A
+    txa
+    pha                 ;Save X
+    ldx cursor_y        ;Get cursor Y position (line)
+    lda scrline_los,x   ;Look up low byte of pointer
+    sta scrline_lo      ;Store it
+    lda scrline_his,x   ;Look up high byte of pointer
+    sta scrline_hi      ;Store it
+    ldy cursor_x        ;Load cursor X position in Y
+    pla
+    tax                 ;Restore X
+    pla                 ;Restore A
     rts
 
 scroll_up:
@@ -1378,3 +1416,11 @@ tab_stops:
     !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
     !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
     !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
+
+;Screen line pointer low bytes (50 bytes: one for each screen line)
+;
+scrline_los = *
+
+;Screen line pointer high bytes (50 bytes: one for each screen line)
+;
+scrline_his = *+50
