@@ -99,10 +99,11 @@ init_scrn:
 ;business keyboard (80 columns) or graphics keyboard (40 columns).  This
 ;means the 2001B machines (40-column, business keyboard) are not supported.
 ;
-    lda #25
-    sta lines           ;Initialize screen height to 25 lines
     lda #40
     sta columns         ;Initialize screen width to 40 columns
+    lda #24
+    sta lines           ;Initialize screen height to 24 lines
+
     lda #$55
     sta screen          ;Store #$55 in first byte of screen RAM.
     asl ;a

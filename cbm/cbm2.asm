@@ -105,9 +105,11 @@ init_scrn:
 ;Initialize cursor state.
 ;
     jsr scrorg          ;Returns X=columns, Y=lines
-    stx columns
-    sty lines
-    cpx #$28            ;40 column screen?
+    stx columns         ;Initialize screen width to 40 or 80 columns
+    dey
+    sty lines           ;Initialize screen height to 24 lines
+
+    cpx #40             ;40 column screen?
     bne init_scrn_done  ;  No: Skip P500 init
     lda #$00
     sta vic+$20         ;VIC-II Border color = Black
