@@ -1031,7 +1031,7 @@ ctrl_11:
     ldy #>screen+$0780
     bit columns         ;80 columns?
     bvs l_0949          ;  Yes: branch to keep address for 80 col
-    lda #<screen+$03c0  ;Start address of last line on 40x25 line screen
+    lda #<screen+$03c0  ;Start address of last line on 40x25 screen
     ldy #>screen+$03c0
 l_0949:
     ldx lines

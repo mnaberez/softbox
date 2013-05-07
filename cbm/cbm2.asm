@@ -53,7 +53,7 @@ blink_cnt   = $1b     ;Counts down number of IRQs until cursor reverses
 uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
 rvs_mask    = $1d     ;Reverse video mask (normal = $00, reverse = $80)
 got_srq     = $1e     ;IEEE-488 SRQ detect: 0=no SRQ, 1=SRQ pending
-hertz       = $1f     ;Constant for powerline frequency: 50 or 60 Hz
+hertz       = $1f     ;Stores the system interrupt frequency: 50 or 60 Hz
 
 ;Configure VICE
 ;  Settings > CBM2 Settings > Memory > Enable Bank 15 $4000-5FFF RAM
@@ -1246,7 +1246,7 @@ ctrl_11:
     ldy #>screen+$0780
     bit columns         ;80 columns?
     bvs l_0949          ;  Yes: branch to keep address for 80 col
-    lda #<screen+$03c0  ;Start address of last line on 40x25 line screen
+    lda #<screen+$03c0  ;Start address of last line on 40x25 screen
     ldy #>screen+$03c0
 l_0949:
     ldx lines
