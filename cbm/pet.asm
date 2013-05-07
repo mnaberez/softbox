@@ -50,15 +50,15 @@ bas_header:
 ;  configuration utility NEWSYS to either 50 or 60.  This tells the program
 ;  the frequency (in Hertz) at which the CBM system interrupt occurs.
 ;
-    !byte $00         ;Null byte at start of BASIC program
-    !word bas_eol+1   ;Pointer to the next BASIC line
+    !byte $00           ;Null byte at start of BASIC program
+    !word bas_eol+1     ;Pointer to the next BASIC line
 bas_line:
-    !word $0032       ;Line number (50 or 60)
-    !byte $9e         ;Token for SYS command
-    !text "1037"      ;Arguments for SYS
+    !word $0032         ;Line number (50 or 60)
+    !byte $9e           ;Token for SYS command
+    !text "1037"        ;Arguments for SYS
 bas_eol:
-    !byte $00         ;End of BASIC line
-    !byte $00,$00     ;End of BASIC program
+    !byte $00           ;End of BASIC line
+    !byte $00,$00       ;End of BASIC program
 ;
     jmp init
 
