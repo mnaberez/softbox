@@ -59,11 +59,6 @@ bas_line:
 bas_eol:
     !byte $00           ;End of BASIC line
     !byte $00,$00       ;End of BASIC program
-;
-    jmp init
-
-copyright:
-    !text "  SOFTBOX LOADER (C) COPYRIGHT 1981 KEITH FREWIN  "
 
 init:
     sei                 ;Disable interrupts
