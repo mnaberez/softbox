@@ -1393,18 +1393,10 @@ repeatcount1:   !byte $aa   ;Number of interrupts until next repeat
 repeatcode:     !byte $aa   ;Scancode of last key; used in repeat handling
 
 ;Buffer for TAB stop positions (80 bytes: one for each screen column)
-;
-tab_stops:
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
+tab_stops = *
 
 ;Screen line pointer low bytes (50 bytes: one for each screen line)
-;
-scrline_los = *
+scrline_los = tab_stops + 80
 
 ;Screen line pointer high bytes (50 bytes: one for each screen line)
-;
-scrline_his = *+50
+scrline_his = scrline_los + 50
