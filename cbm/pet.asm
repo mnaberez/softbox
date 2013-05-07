@@ -550,7 +550,12 @@ process_move:
     jsr move_to         ;JSR to move-to sequence handler
     jmp process_done
 process_char:
-    jsr put_char        ;JSR to put a character on the screen
+    tax
+    lda asc_trans,x     ;Get CBM screen code for the character
+    eor rvs_mask        ;Reverse the screen code if needed
+    jsr get_scrline     ;Get screen RAM pointer
+    sta (scrline_lo),y  ;Write the screen code to screen RAM
+    jsr ctrl_0c         ;Advance the cursor
 process_done:
     jsr get_scrline     ;Get screen RAM pointer
     lda (scrline_lo),y  ;Get the current character on the screen
@@ -584,11 +589,21 @@ move_to_y:
 move_to_y_done:
     rts
 
-put_char:
-;Puts an ASCII (not PETSCII) character in the accumulator on the screen
-;at the current CURSOR_X and CURSOR_Y position.  This routine converts the
-;character to its equivalent CBM screen code, puts it on the screen, then
-;advances the cursor and returns to the caller.
+init_asc_trans:
+;Build the ASCII to CBM screen code translation table
+;
+    ldy #$00            ;Start at ASCII code 0
+init_ct_loop:
+    tya
+    jsr trans_char      ;Translate to a CBM screen code
+    sta asc_trans,y     ;Store it in the table
+    iny
+    bne init_ct_loop    ;Loop until 256 codes are translated
+    rts
+
+trans_char:
+;Convert an ASCII (not PETSCII) character in the accumulator to its
+;equivalent CBM screen code.
 ;
 ;Bytes $00-7F (bit 7 off) always correspond to the 7-bit standard
 ;ASCII character set and are converted to the equivalent CBM screen code.
@@ -601,7 +616,7 @@ put_char:
 ;  $C0-FF -> $40-7F
 ;
     cmp #$40            ;Is it < 64?
-    bcc put_scrcode     ;  Yes: done, put it on the screen
+    bcc trans_done      ;  Yes: done, no translation
     cmp #$60            ;Is it >= 96?
     bcs l_07a6          ;  Yes: branch to L_07A6
     and #$3f            ;Turn off bits 6 and 7
@@ -619,20 +634,17 @@ l_07ac:
     txa
     eor #$40            ;Flip bit 6
     bit uppercase
-    bpl put_scrcode     ;Branch if lowercase mode
+    bpl trans_done      ;Branch if lowercase mode
     and #$1f
-    jmp put_scrcode
+    jmp trans_done
 l_07c6:
     txa
-    jmp put_scrcode
+    jmp trans_done
 l_07ca:
     and #$7f            ;Turn off bit 7
     ora #$40            ;Turn on bit 6
-put_scrcode:
-    eor rvs_mask        ;Reverse the screen code if needed
-    jsr get_scrline     ;Get screen RAM pointer
-    sta (scrline_lo),y  ;Write the screen code to screen RAM
-    jmp ctrl_0c         ;Jump out to advance the cursor and return
+trans_done:
+    rts
 
 ctrl_codes:
 ;Terminal control code dispatch table.  These control codes are based
@@ -705,7 +717,7 @@ ctrl_17:
 
 ctrl_01:
 ;Go to 8-bit character mode
-;See PUT_CHAR for how this mode is used to display CBM graphics.
+;See trans_char for how this mode is used to display CBM graphics.
 ;
     lda #$ff
     sta char_mask
@@ -731,6 +743,7 @@ ctrl_15:
     sta uppercase
     lda #$0c
     sta via_pcr         ;Graphic mode = uppercase
+    jsr init_asc_trans  ;Rebuild character translation table
     rts
 
 ctrl_16:
@@ -740,6 +753,7 @@ ctrl_16:
     sta uppercase
     lda #$0e
     sta via_pcr         ;Graphic mode = lowercase
+    jsr init_asc_trans  ;Rebuild character translation table
     rts
 
 ctrl_08:
@@ -1400,3 +1414,6 @@ scrline_los = tab_stops + 80
 
 ;Screen line pointer high bytes (50 bytes: one for each screen line)
 scrline_his = scrline_los + 50
+
+;ASCII to CBM screen code translation table (256 bytes)
+asc_trans = scrline_his + 50
