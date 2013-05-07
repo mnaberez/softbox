@@ -1023,21 +1023,13 @@ ctrl_11:
 ;The line at the current position will be erased (filled with spaces).
 ;The current cursor position will not be changed.
 ;
-    lda #<screen+$0780  ;Start address of last line on 80x25 screen
-    ldy #>screen+$0780
-    bit columns         ;80 columns?
-    bvs l_0949          ;  Yes: branch to keep address for 80 col
-    lda #<screen+$03c0  ;Start address of last line on 40x25 screen
-    ldy #>screen+$03c0
-l_0949:
     ldx lines
-    cpx #25             ;25 line screen?
-    beq l_094a          ;  Yes: keep address of last line
-    sec                 ;   No: assume 24 line screen and adjust the address
-    sbc columns
-l_094a:
-    sta source_lo
-    sty source_hi
+    dex                 ;X = index of last line
+    lda scrline_los,x
+    sta source_lo       ;Pointer to last line, low byte
+    lda scrline_his,x
+    sta source_hi       ;Pointer to last line, high byte
+
     lda #$00
     sta cursor_x
 l_0951:
