@@ -1032,7 +1032,7 @@ CTRL_11:
 ;
 ;The screen is shifted downward so that each line Y is copied into Y+1.
 ;The line at the current position will be erased (filled with spaces).
-;The current cursor position will not be changed.
+;The Y position will not change, but the X position will be zeroed.
 ;
 $093B: A9 C0     LDA #<SCREEN+$03C0  ;A->TARGET_LO, Y->TARGET_HI
 $093D: A0 83     LDY #>SCREEN+$03C0  ;Start address of last 40 col line
@@ -1045,7 +1045,7 @@ L_0949:
 $0949: 85 0D     STA TARGET_LO
 $094B: 84 0E     STY TARGET_HI
 $094D: A9 00     LDA #$00
-$094F: 85 04     STA CURSOR_X
+$094F: 85 04     STA CURSOR_X        ;Move cursor to beginning of line
 L_0951:
 $0951: A5 0D     LDA TARGET_LO
 $0953: C5 02     CMP SCRLINE_LO
