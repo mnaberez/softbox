@@ -741,9 +741,9 @@ ctrl_15:
 ;
     lda #$80
     sta uppercase
+    jsr init_asc_trans  ;Rebuild translation table for uppercase
     lda #$0c
     sta via_pcr         ;Graphic mode = uppercase
-    jsr init_asc_trans  ;Rebuild character translation table
     rts
 
 ctrl_16:
@@ -751,9 +751,9 @@ ctrl_16:
 ;
     lda #$00
     sta uppercase
+    jsr init_asc_trans  ;Rebuild translation table for lowercase
     lda #$0e
     sta via_pcr         ;Graphic mode = lowercase
-    jsr init_asc_trans  ;Rebuild character translation table
     rts
 
 ctrl_08:
