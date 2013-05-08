@@ -859,7 +859,8 @@ $0868: D0 F9     BNE L_0863          ;Loop until end of line
 $086A: 60        RTS
 
 CTRL_14:
-;Clear from Current line to end of screen
+;Clear to end of screen.  All lines below the current line will be
+;erased.  The current line and cursor position are not changed.
 ;
 $086B: 20 5E 08  JSR CTRL_13         ;Clear to the end of the current line
 $086E: A6 05     LDX CURSOR_Y        ;Get the Current line#

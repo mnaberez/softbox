@@ -1105,7 +1105,8 @@ l_0863:
     rts
 
 ctrl_14:
-;Clear from current line to end of screen
+;Clear to end of screen.  All lines below the current line will be
+;erased.  The current line and cursor position are not changed.
 ;
     jsr ctrl_13         ;Clear to the end of the current line
     ldx cursor_y        ;Get current Y position
