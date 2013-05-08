@@ -1237,22 +1237,10 @@ ctrl_12:
 ;cleared.  The cursor is moved to the first column of the current line.
 ;
     lda #$00
-    sta cursor_x        ;Move cursor to beginning of line
-    jsr get_scrline
-    lda scrline_lo
-    clc
-    adc columns
-    sta source_lo
-    lda scrline_hi
-    adc #$00
-    sta source_hi
-    ldx lines
-    dex
-    txa
-    sec
-    sbc cursor_y
-    tax
-    jmp scroll
+    sta cursor_x       ;Move cursor to beginning of line
+
+    ldx cursor_y       ;Scroll from current line to bottom of screen
+    jmp scroll         ;Jump out to scroll
 
 ctrl_11:
 ;Insert a blank line
@@ -1368,44 +1356,49 @@ get_scrline:
     rts
 
 scroll_up:
-;Scroll the screen up one line
+;Scroll the entire screen up one line.
 ;
-    lda #$00
-    sta scrline_lo
-    lda columns
-    sta source_lo
-    lda #>screen
-    sta scrline_hi
-    sta source_hi
-    ldx lines
-    dex
-scroll:
-    ldy columns
-    dey
-l_08a0:
-    lda (source_lo),y
-    sta (scrline_lo),y
-    dey
-    bpl l_08a0
-    lda source_lo
-    sta scrline_lo
-    clc
-    adc columns
-    sta source_lo
-    lda source_hi
-    sta scrline_hi
-    adc #$00
-    sta source_hi
-    dex
-    bne scroll
-    lda #$20            ;SPACE
-    ldy columns
-l_08c1:
-    dey
-    sta (scrline_lo),y
-    bne l_08c1
-    rts
+    ldx #$00            ;Start scrolling from the top line
+                        ;Fall through to scroll.
 
+scroll:
+;Scroll the screen up one line starting at the Y-position given in X.
+;Any lines above the starting line will not be changed.
+;The cursor position will not be changed.
+;
+    lda scrline_los+1,x ;Get source line pointer
+    sta source_lo
+    lda scrline_his+1,x
+    sta source_hi
+
+    lda scrline_los,x   ;Get target line pointer
+    sta target_lo
+    lda scrline_his,x
+    sta target_hi
+
+    inx                 ;Increment the index to move down one
+                        ;  screen line for the next time around
+
+    cpx lines           ;Current line = last line on screen?
+    beq scroll_erase    ;  Yes: do not copy, branch to finish up
+
+    ldy columns         ;Copy source line into target line
+    dey
+scroll_cp_loop:
+    lda (source_lo),y
+    sta (target_lo),y
+    dey
+    bpl scroll_cp_loop  ;Loop until this line is copied
+    bmi scroll          ;Loop to do the next line
+
+scroll_erase:           ;Erase the bottom line
+    lda #$20
+    ldy columns
+scroll_era_loop:
+    dey
+    sta (target_lo),y
+    bne scroll_era_loop ;Loop until line is erased
+    rts
 
 scan_keyb:
 ;Scan the keyboard.
