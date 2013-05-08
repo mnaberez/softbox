@@ -115,6 +115,7 @@ init_scrn:
     sta vic+$20         ;VIC-II Border color = Black
     sta vic+$21         ;VIC-II Background color = Black
 init_scrn_done:
+    jsr init_scrlines   ;Initialize screen line pointers
     lda #$14
     sta blink_cnt       ;Initialize cursor blink countdown
     lda #$00
@@ -599,7 +600,7 @@ irq_blink:
     bne irq_repeat      ;Not time to blink? Done.
     lda #$14
     sta blink_cnt       ;Reset cursor blink countdown
-    jsr calc_scrline
+    jsr get_scrline
     lda (scrline_lo),y  ;Read character at cursor
     eor #$80            ;Flip the REVERSE bit
     sta (scrline_lo),y  ;Write it back
@@ -722,7 +723,7 @@ process_byte:
     sta cursor_tmp      ;  Remember it
     lda #$ff
     sta cursor_off      ;Hide the cursor
-    jsr calc_scrline    ;Calculate screen RAM pointer
+    jsr get_scrline     ;Get screen RAM pointer
     lda scrcode_tmp     ;Get the screen code previously saved
     sta (scrline_lo),y  ;  Put it on the screen
     pla
@@ -746,9 +747,14 @@ process_move:
     jsr move_to         ;JSR to move-to sequence handler
     jmp process_done
 process_char:
-    jsr put_char        ;JSR to put a character on the screen
+    tax
+    lda asc_trans,x     ;Get CBM screen code for the character
+    eor rvs_mask        ;Reverse the screen code if needed
+    jsr get_scrline     ;Get screen RAM pointer
+    sta (scrline_lo),y  ;Write the screen code to screen RAM
+    jsr ctrl_0c         ;Advance the cursor
 process_done:
-    jsr calc_scrline    ;Calculate screen RAM pointer
+    jsr get_scrline     ;Get screen RAM pointer
     lda (scrline_lo),y  ;Get the current character on the screen
     sta scrcode_tmp     ;  Remember it
     lda cursor_tmp      ;Get the previous state of the cursor
@@ -780,11 +786,21 @@ move_to_y:
 move_to_y_done:
     rts
 
-put_char:
-;Puts an ASCII (not PETSCII) character in the accumulator on the screen
-;at the current CURSOR_X and CURSOR_Y position.  This routine converts the
-;character to its equivalent CBM screen code, puts it on the screen, then
-;advances the cursor and returns to the caller.
+init_asc_trans:
+;Build the ASCII to CBM screen code translation table
+;
+    ldy #$00            ;Start at ASCII code 0
+init_ct_loop:
+    tya
+    jsr trans_char      ;Translate to a CBM screen code
+    sta asc_trans,y     ;Store it in the table
+    iny
+    bne init_ct_loop    ;Loop until 256 codes are translated
+    rts
+
+trans_char:
+;Convert an ASCII (not PETSCII) character in the accumulator to its
+;equivalent CBM screen code.
 ;
 ;Bytes $00-7F (bit 7 off) always correspond to the 7-bit standard
 ;ASCII character set and are converted to the equivalent CBM screen code.
@@ -797,7 +813,7 @@ put_char:
 ;  $C0-FF -> $40-7F
 ;
     cmp #$40            ;Is it < 64?
-    bcc put_scrcode     ;  Yes: done, put it on the screen
+    bcc trans_done      ;  Yes: done, no translation
     cmp #$60            ;Is it >= 96?
     bcs l_07a6          ;  Yes: branch to L_07A6
     and #$3f            ;Turn off bits 6 and 7
@@ -815,20 +831,17 @@ l_07ac:
     txa
     eor #$40            ;Flip bit 6
     bit uppercase
-    bpl put_scrcode     ;Branch if lowercase mode
+    bpl trans_done      ;Branch if lowercase mode
     and #$1f
-    jmp put_scrcode
+    jmp trans_done
 l_07c6:
     txa
-    jmp put_scrcode
+    jmp trans_done
 l_07ca:
     and #$7f            ;Turn off bit 7
     ora #$40            ;Turn on bit 6
-put_scrcode:
-    eor rvs_mask        ;Reverse the screen code if needed
-    jsr calc_scrline    ;Calculate screen RAM pointer
-    sta (scrline_lo),y  ;Write the screen code to screen RAM
-    jmp ctrl_0c         ;Jump out to advance the cursor and return
+trans_done:
+    rts
 
 ctrl_codes:
 ;Terminal control code dispatch table.  These control codes are based
@@ -906,7 +919,7 @@ ctrl_17:
 
 ctrl_01:
 ;Go to 8-bit character mode
-;See PUT_CHAR for how this mode is used to display CBM graphics.
+;See trans_char for how this mode is used to display CBM graphics.
 ;
     lda #$ff
     sta char_mask
@@ -930,6 +943,7 @@ ctrl_15:
 ;
     lda #$80
     sta uppercase       ;Set flag to indicate uppercase = on
+    jsr init_asc_trans  ;Rebuild character translation table
     bit columns         ;40 columns?
     bvc ctrl_15_1       ;  Yes: branch to P-series routine
     lda tpi1_cr
@@ -946,6 +960,7 @@ ctrl_16:
 ;
     lda #$00
     sta uppercase       ;Set flag to indicate uppercase = off
+    jsr init_asc_trans  ;Rebuild character translation table
     bit columns         ;40 columns?
     bvc ctrl_16_1       ;  Yes: branch to P-series routine
     lda tpi1_cr
@@ -1076,7 +1091,7 @@ ctrl_0f:
 ctrl_13:
 ;Clear to end of line
 ;
-    jsr calc_scrline    ;Leaves CURSOR_X in Y register
+    jsr get_scrline     ;Leaves CURSOR_X in Y register
     lda #$20            ;Space character
 l_0863:
     sta (scrline_lo),y  ;Write space to screen RAM
@@ -1174,7 +1189,7 @@ ctrl_1b:
 ctrl_1c:
 ;Insert space at current cursor position
 ;
-    jsr calc_scrline
+    jsr get_scrline
     ldy columns         ;number of characters on line
     dey
 l_08f4:
@@ -1194,7 +1209,7 @@ l_0901:
 ctrl_1d:
 ;Delete a character
 ;
-    jsr calc_scrline    ;Leaves cursor_x in Y register
+    jsr get_scrline     ;Leaves cursor_x in Y register
 l_090b:
     iny
     cpy columns
@@ -1219,7 +1234,7 @@ ctrl_12:
 ;
     lda #$00
     sta cursor_x
-    jsr calc_scrline
+    jsr get_scrline
     lda scrline_lo
     clc
     adc columns
@@ -1242,21 +1257,13 @@ ctrl_11:
 ;The line at the current position will be erased (filled with spaces).
 ;The current cursor position will not be changed.
 ;
-    lda #<screen+$0780  ;Start address of last line on 80x25 screen
-    ldy #>screen+$0780
-    bit columns         ;80 columns?
-    bvs l_0949          ;  Yes: branch to keep address for 80 col
-    lda #<screen+$03c0  ;Start address of last line on 40x25 screen
-    ldy #>screen+$03c0
-l_0949:
     ldx lines
-    cpx #25             ;25 line screen?
-    beq l_094a          ;  Yes: keep address of last line
-    sec                 ;   No: assume 24 line screen and adjust the address
-    sbc columns
-l_094a:
-    sta source_lo
-    sty source_hi
+    dex                 ;X = index of last line
+    lda scrline_los,x
+    sta source_lo       ;Pointer to last line, low byte
+    lda scrline_his,x
+    sta source_hi       ;Pointer to last line, high byte
+
     lda #$00
     sta cursor_x
 l_0951:
@@ -1293,17 +1300,31 @@ l_0980:
     bne l_0980
     rts
 
+init_scrlines:
+;Build the screen line pointer tables.
+;
+    ldy #$00            ;Start at line 0
+init_scrl_loop:
+    jsr calc_scrline    ;Calculate pointer
+    lda scrline_lo
+    sta scrline_los,y   ;Save pointer low byte
+    lda scrline_hi
+    sta scrline_his,y   ;Save pointer high byte
+    iny                 ;Increment to next line index
+    cpy lines
+    bne init_scrl_loop  ;Loop until all pointers are calculated
+    rts
+
 calc_scrline:
-;Calculate a new pointer (scrline) to the first byte of the current
-;line in screen RAM by multiplying cursor_y by 40 or 80.
+;Calculate a pointer to the first byte of a line in screen RAM by
+;multiplying the line number in Y by the screen width (40 or 80).
 ;
-;Preserves A and X.
-;Returns cursor_x in Y.
+;Preserves X and Y.
+;Stores the pointer in scrline.
 ;
-    tay                 ;Save A in Y
     lda #$00
     sta scrline_hi      ;Initialize high byte to zero
-    lda cursor_y
+    tya
     sta scrline_lo      ;Initialize low byte to row number (Y-pos)
 
                         ;Multiply by ( 2 * 2 + 1 ) * 2 * 2 * 2 = 40
@@ -1327,9 +1348,24 @@ l_09a8:
     clc
     adc #>screen
     sta scrline_hi
+    rts
 
-    tya                 ;Restore A from Y
-    ldy cursor_x        ;Return with column (X-pos) in Y register
+get_scrline:
+;Get a pointer to the first byte of the current line (cursor_y)
+;in screen RAM.
+;
+;Preserves A and X.
+;Returns cursor_x in Y.
+;Stores the pointer in scrline.
+;
+    pha                 ;Save A
+    ldy cursor_y        ;Get cursor Y position (line)
+    lda scrline_los,y   ;Look up low byte of pointer
+    sta scrline_lo      ;Store it
+    lda scrline_his,y   ;Look up high byte of pointer
+    sta scrline_hi      ;Store it
+    ldy cursor_x        ;Load cursor X position in Y
+    pla                 ;Restore A
     rts
 
 scroll_up:
@@ -1616,10 +1652,13 @@ repeatcode:     !byte $aa   ;Scancode of last key; used in repeat handling
 keyoffset:      !byte $aa   ;Pointer into keyboard table
 
 ;Buffer for TAB stop positions (80 bytes: one for each screen column)
-;
-tab_stops:
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
-    !byte $aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa,$aa
+tab_stops = *
+
+;Screen line pointer low bytes (50 bytes: one for each screen line)
+scrline_los = tab_stops + 80
+
+;Screen line pointer high bytes (50 bytes: one for each screen line)
+scrline_his = scrline_los + 50
+
+;ASCII to CBM screen code translation table (256 bytes)
+asc_trans = scrline_his + 50
