@@ -1232,12 +1232,12 @@ l_0918:
 ctrl_12:
 ;Scroll up one line
 ;
-;The screen is shifted upward so that each line Y+1 is copied into Y.  Screen
-;contents are preserved except for the bottommost line, which is erased
-;(filled with spaces).  The current cursor position will not be changed.
+;The current line is replaced by the one below it, and each successive
+;line is replaced by the one below it.  The bottommost screen line is
+;cleared.  The cursor is moved to the first column of the current line.
 ;
     lda #$00
-    sta cursor_x
+    sta cursor_x        ;Move cursor to beginning of line
     jsr get_scrline
     lda scrline_lo
     clc

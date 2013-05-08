@@ -1008,12 +1008,12 @@ $091D: 60        RTS
 CTRL_12:
 ;Scroll up one line
 ;
-;The screen is shifted upward so that each line Y+1 is copied into Y.  Screen
-;contents are preserved except for the bottommost line, which is erased
-;(filled with spaces).  The current cursor position will not be changed.
+;The current line is replaced by the one below it, and each successive
+;line is replaced by the one below it.  The bottommost screen line is
+;cleared.  The cursor is moved to the first column of the current line.
 ;
 $091E: A9 00     LDA #$00
-$0920: 85 04     STA CURSOR_X
+$0920: 85 04     STA CURSOR_X        ;Move cursor to beginning of line
 $0922: 20 88 09  JSR CALC_SCRLINE
 $0925: A5 02     LDA SCRLINE_LO
 $0927: 18        CLC
