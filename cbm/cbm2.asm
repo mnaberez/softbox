@@ -1114,12 +1114,11 @@ ctrl_14_next:
     inx                 ;Y=Y+1
     cpx lines           ;Incremented past last line?
     beq ctrl_14_done    ;  Yes: done
-    clc                 ;Advance scrline pointer
-    lda scrline_lo
-    adc columns
+
+    lda scrline_los,x   ;Get scrline pointer
     sta scrline_lo
-    bcc ctrl_14_eraline
-    inc scrline_hi
+    lda scrline_his,x
+    sta scrline_hi
 ctrl_14_eraline:
     lda #$20            ;Space character
     ldy columns
@@ -1127,7 +1126,7 @@ ctrl_14_erachar:
     dey
     sta (scrline_lo),y
     bne ctrl_14_erachar ;Loop until entire line is erased
-    beq ctrl_14_next    ;Continue to the next line
+    beq ctrl_14_next    ;Loop to do next line
 ctrl_14_done:
     rts
 
