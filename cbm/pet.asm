@@ -615,6 +615,10 @@ trans_char:
 ;  $80-BF -> $40-7F
 ;  $C0-FF -> $40-7F
 ;
+    ldx #$5d            ;Change to PETSCII vertical line
+    cmp #$7c            ;  from ASCII pipe ("|") character
+    beq l_07c6
+
     cmp #$40            ;Is it < 64?
     bcc trans_done      ;  Yes: done, no translation
     cmp #$60            ;Is it >= 96?
