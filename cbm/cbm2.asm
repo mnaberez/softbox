@@ -1255,49 +1255,44 @@ ctrl_11:
 ;
 ;The screen is shifted downward so that each line Y is copied into Y+1.
 ;The line at the current position will be erased (filled with spaces).
-;The current cursor position will not be changed.
+;The Y position will not change, but the X position will be zeroed.
 ;
     ldx lines
-    dex                 ;X = index of last line
-    lda scrline_los,x
-    sta source_lo       ;Pointer to last line, low byte
-    lda scrline_his,x
-    sta source_hi       ;Pointer to last line, high byte
-
-    lda #$00
-    sta cursor_x
+    dex                 ;Index of last line on the screen
 l_0951:
-    lda source_lo
-    cmp scrline_lo
-    bne l_095d
-    lda source_hi
-    cmp scrline_hi
-    beq l_097c
-l_095d:
-    lda source_lo
-    sta target_lo
-    sec
-    sbc columns
+    cpx cursor_y        ;Source line index = current line index?
+    beq l_097c          ;  Yes: done copying lines
+    dex                 ;Decrement source line index
+
+    lda scrline_los,x   ;Get source line pointer
     sta source_lo
-    lda source_hi
-    sta target_hi
-    sbc #$00
+    lda scrline_his,x
     sta source_hi
-    ldy columns
+
+    lda scrline_los+1,x ;Get target line pointer
+    sta target_lo
+    lda scrline_his+1,x
+    sta target_hi
+
+    ldy columns         ;Copy source line into target line
     dey
 l_0970:
     lda (source_lo),y
     sta (target_lo),y
     dey
-    bpl l_0970
-    bmi l_0951
-l_097c:
-    lda #$20            ;SPACE
+    bpl l_0970          ;Loop until this line is copied
+    bmi l_0951          ;Loop to do the next line
+
+l_097c:                 ;Erase current line with spaces
+    lda #$20
     ldy columns
 l_0980:
     dey
     sta (scrline_lo),y
     bne l_0980
+
+    lda #$00            ;Move cursor to beginning of line
+    sta cursor_x
     rts
 
 init_scrlines:
