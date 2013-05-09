@@ -1359,7 +1359,15 @@ scroll_up:
 ;Scroll the entire screen up one line.
 ;
     ldx #$00            ;Start scrolling from the top line
-                        ;Fall through to scroll.
+
+    ldy columns
+    cpy #80             ;80 columns?
+    bne scroll          ;  No: use normal scrolling
+    ldy lines
+    cpy #24             ;24 lines?
+    bne scroll          ;  No: use normal scrolling
+
+    jmp fast_scroll_up  ;For 80x24, use fast scroll.
 
 scroll:
 ;Scroll the screen up one line starting at the Y-position given in X.
@@ -1398,6 +1406,69 @@ scroll_era_loop:
     dey
     sta (target_lo),y
     bne scroll_era_loop ;Loop until line is erased
+    rts
+
+fast_scroll_up:
+;Fast scroll of the entire screen for 80x24 only.
+;
+;The 25th line must be clear because it will be copied into the 24th
+;line.  This erases the 24th line and speeds up scrolling by not
+;having a separate erase step for the 24th line.
+;
+    ldx #79
+fast_scr_loop:
+    lda screen+$0050,x  ;from line 1
+    sta screen+$0000,x  ;       to line 0
+    lda screen+$00a0,x  ;from line 2
+    sta screen+$0050,x  ;       to line 1
+    lda screen+$00f0,x  ;from line 3
+    sta screen+$00a0,x  ;       to line 2
+    lda screen+$0140,x  ;from line 4
+    sta screen+$00f0,x  ;       to line 3
+    lda screen+$0190,x  ;from line 5
+    sta screen+$0140,x  ;       to line 4
+    lda screen+$01e0,x  ;from line 6
+    sta screen+$0190,x  ;       to line 5
+    lda screen+$0230,x  ;from line 7
+    sta screen+$01e0,x  ;       to line 6
+    lda screen+$0280,x  ;from line 8
+    sta screen+$0230,x  ;       to line 7
+    lda screen+$02d0,x  ;from line 9
+    sta screen+$0280,x  ;       to line 8
+    lda screen+$0320,x  ;from line 10
+    sta screen+$02d0,x  ;       to line 9
+    lda screen+$0370,x  ;from line 11
+    sta screen+$0320,x  ;       to line 10
+    lda screen+$03c0,x  ;from line 12
+    sta screen+$0370,x  ;       to line 11
+    lda screen+$0410,x  ;from line 13
+    sta screen+$03c0,x  ;       to line 12
+    lda screen+$0460,x  ;from line 14
+    sta screen+$0410,x  ;       to line 13
+    lda screen+$04b0,x  ;from line 15
+    sta screen+$0460,x  ;       to line 14
+    lda screen+$0500,x  ;from line 16
+    sta screen+$04b0,x  ;       to line 15
+    lda screen+$0550,x  ;from line 17
+    sta screen+$0500,x  ;       to line 16
+    lda screen+$05a0,x  ;from line 18
+    sta screen+$0550,x  ;       to line 17
+    lda screen+$05f0,x  ;from line 19
+    sta screen+$05a0,x  ;       to line 18
+    lda screen+$0640,x  ;from line 20
+    sta screen+$05f0,x  ;       to line 19
+    lda screen+$0690,x  ;from line 21
+    sta screen+$0640,x  ;       to line 20
+    lda screen+$06e0,x  ;from line 22
+    sta screen+$0690,x  ;       to line 21
+    lda screen+$0730,x  ;from line 23
+    sta screen+$06e0,x  ;       to line 22
+    lda screen+$0780,x  ;from line 24
+    sta screen+$0730,x  ;       to line 23
+    dex
+    bmi fast_scr_done
+    jmp fast_scr_loop
+fast_scr_done:
     rts
 
 scan_keyb:
