@@ -1195,125 +1195,125 @@ gen_scroll_up:
 ;      jmp L1
 ;  L2: rts
 ;
-  ldx #$00              ;Index into generated code
+    ldx #$00            ;Index into generated code
 
-  ;Generate: LDX #79  (index of last column)
+    ;Generate: LDX #79  (index of last column)
 
-  lda #$a2              ;$a2 = LDX immediate
-  sta scroll_up,x       ;Write opcode
-  inx
-  ldy columns           ;Get number of columns
-  dey                   ;Decrement to get index of last column
-  tya
-  sta scroll_up,x       ;Write immediate value for LDX
-  inx
+    lda #$a2            ;$a2 = LDX immediate
+    sta scroll_up,x     ;Write opcode
+    inx
+    ldy columns         ;Get number of columns
+    dey                 ;Decrement to get index of last column
+    tya
+    sta scroll_up,x     ;Write immediate value for LDX
+    inx
 
-  ldy #$00              ;Index of current screen line number
+    ldy #$00            ;Index of current screen line number
 
 gen_scr_loop:
-  iny                   ;Source line number (current line + 1)
-  sty cursor_y
-  jsr get_scrline       ;Get pointer to screen line
-  ldy cursor_y          ;Reload because Y is destroyed by get_scrline
+    iny                 ;Source line number (current line + 1)
+    sty cursor_y
+    jsr get_scrline     ;Get pointer to screen line
+    ldy cursor_y        ;Reload because Y is destroyed by get_scrline
 
-  ;Generate: LDA scrline+1,x  (load from next line)
+    ;Generate: LDA scrline+1,x  (load from next line)
 
-  lda #$bd              ;$bd = LDA abs,x
-  sta scroll_up,x       ;Write opcode
-  inx
-  lda scrline_lo
-  sta scroll_up,x       ;Write low byte for LDA address
-  inx
-  lda scrline_hi
-  sta scroll_up,x       ;Write high byte for LDA address
-  inx
+    lda #$bd            ;$bd = LDA abs,x
+    sta scroll_up,x     ;Write opcode
+    inx
+    lda scrline_lo
+    sta scroll_up,x     ;Write low byte for LDA address
+    inx
+    lda scrline_hi
+    sta scroll_up,x     ;Write high byte for LDA address
+    inx
 
-  dey                   ;Destination line number (current line)
-  sty cursor_y
-  jsr get_scrline       ;Get pointer to screen line
-  ldy cursor_y          ;Reload because Y is destroyed by get_scrline
+    dey                 ;Destination line number (current line)
+    sty cursor_y
+    jsr get_scrline     ;Get pointer to screen line
+    ldy cursor_y        ;Reload because Y is destroyed by get_scrline
 
-  ;Generate: STA scrline,x  (store on this line)
+    ;Generate: STA scrline,x  (store on this line)
 
-  lda #$9d              ;$9d = STA abs,x
-  sta scroll_up,x       ;Write opcode
-  inx
-  lda scrline_lo        ;Write low byte for LDA address
-  sta scroll_up,x
-  inx
-  lda scrline_hi        ;Write high byte for LDA address
-  sta scroll_up,x
-  inx
+    lda #$9d            ;$9d = STA abs,x
+    sta scroll_up,x     ;Write opcode
+    inx
+    lda scrline_lo      ;Write low byte for LDA address
+    sta scroll_up,x
+    inx
+    lda scrline_hi      ;Write high byte for LDA address
+    sta scroll_up,x
+    inx
 
-  iny                   ;Increment to next line down the screen
+    iny                 ;Increment to next line down the screen
 
-  lda lines
-  sec
-  sbc #$01
-  sta cursor_y          ;Set cursor_y to number of screen lines - 1
+    lda lines
+    sec
+    sbc #$01
+    sta cursor_y        ;Set cursor_y to number of screen lines - 1
                         ;  (index of the bottom screen line)
 
-  cpy cursor_y          ;Reached the bottom line?
-  bne gen_scr_loop      ;  No: loop to generate code for remaining lines
+    cpy cursor_y        ;Reached the bottom line?
+    bne gen_scr_loop    ;  No: loop to generate code for remaining lines
 
-  ;Generate: LDA #$20  (load space character)
+    ;Generate: LDA #$20  (load space character)
 
-  lda #$a9              ;$a9 = LDA imm
-  sta scroll_up,x
-  inx
-  lda #$20              ;Immediate value for LDA (space character)
-  sta scroll_up,x
-  inx
+    lda #$a9            ;$a9 = LDA imm
+    sta scroll_up,x
+    inx
+    lda #$20            ;Immediate value for LDA (space character)
+    sta scroll_up,x
+    inx
 
-  ;Generate: STA scrline,x  (store on this line)
+    ;Generate: STA scrline,x  (store on this line)
 
-  sty cursor_y
-  jsr get_scrline       ;Get pointer to screen line
-  ldy cursor_y          ;Reload because Y is destroyed by get_scrline
+    sty cursor_y
+    jsr get_scrline     ;Get pointer to screen line
+    ldy cursor_y        ;Reload because Y is destroyed by get_scrline
 
-  lda #$9d              ;$9d = STA abs,x
-  sta scroll_up,x       ;Write opcode
-  inx
-  lda scrline_lo        ;Write low byte for LDA address
-  sta scroll_up,x
-  inx
-  lda scrline_hi        ;Write high byte for LDA address
-  sta scroll_up,x
-  inx
+    lda #$9d            ;$9d = STA abs,x
+    sta scroll_up,x     ;Write opcode
+    inx
+    lda scrline_lo      ;Write low byte for LDA address
+    sta scroll_up,x
+    inx
+    lda scrline_hi      ;Write high byte for LDA address
+    sta scroll_up,x
+    inx
 
-  ;Generate: DEX
+    ;Generate: DEX
 
-  lda #$ca              ;$ca = DEX
-  sta scroll_up,x
-  inx
+    lda #$ca              ;$ca = DEX
+    sta scroll_up,x
+    inx
 
-  ;Generate: BMI +3 (skip over next JMP)
+    ;Generate: BMI +3 (skip over next JMP)
 
-  lda #$30              ;$30 = BMI
-  sta scroll_up,x       ;Write opcode
-  inx
-  lda #$03              ;Write displacement for BMI
-  sta scroll_up,x
-  inx
+    lda #$30            ;$30 = BMI
+    sta scroll_up,x     ;Write opcode
+    inx
+    lda #$03            ;Write displacement for BMI
+    sta scroll_up,x
+    inx
 
-  ;Generate: JMP scroll_up+2
+    ;Generate: JMP scroll_up+2
 
-  lda #$4c              ;$ca = JMP abs
-  sta scroll_up,x       ;Write opcode
-  inx
-  lda #<scroll_up+2
-  sta scroll_up,x       ;Write low byte for JMP address
-  inx
-  lda #>scroll_up+2     ;Write high byte for JMP address
-  sta scroll_up,x
-  inx
+    lda #$4c            ;$ca = JMP abs
+    sta scroll_up,x     ;Write opcode
+    inx
+    lda #<scroll_up+2
+    sta scroll_up,x     ;Write low byte for JMP address
+    inx
+    lda #>scroll_up+2   ;Write high byte for JMP address
+    sta scroll_up,x
+    inx
 
-  ;Generate: RTS
+    ;Generate: RTS
 
-  lda #$60              ;$60 = RTS
-  sta scroll_up,x       ;Write opcode
+    lda #$60            ;$60 = RTS
+    sta scroll_up,x     ;Write opcode
 
-  rts
+    rts
 
 
 scan_keyb:
