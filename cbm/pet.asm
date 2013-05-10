@@ -1182,8 +1182,7 @@ gen_scroll_up:
 ;that quickly scrolls the entire screen up one line.
 ;
 ;  scroll_up:
-;      ldx columns
-;      dex
+;      ldx #79      ;index of last column
 ;  L1: lda $8050,x  ;from line 1
 ;      sta $8000,x  ;       to line 0
 ;      lda $80a0,x  ;from line 2
@@ -1197,22 +1196,19 @@ gen_scroll_up:
 ;  L2: rts
 ;
   ldx #$00              ;Index into generated code
-  ldy #$00              ;Index of current screen line number
 
-  ;Generate: LDX columns
+  ;Generate: LDX #79  (index of last column)
 
-  lda #$a6              ;$a5 = LDA zp
+  lda #$a2              ;$a2 = LDX immediate
   sta scroll_up,x       ;Write opcode
   inx
-  lda #columns
-  sta scroll_up,x       ;Write ZP address for LDA
+  ldy columns           ;Get number of columns
+  dey                   ;Decrement to get index of last column
+  tya
+  sta scroll_up,x       ;Write immediate value for LDX
   inx
 
-  ;Generate: DEX
-
-  lda #$ca              ;$ca = DEX
-  sta scroll_up,x
-  inx
+  ldy #$00              ;Index of current screen line number
 
 gen_scr_loop:
   iny                   ;Source line number (current line + 1)
@@ -1300,15 +1296,15 @@ gen_scr_loop:
   sta scroll_up,x
   inx
 
-  ;Generate: JMP scroll_up+3
+  ;Generate: JMP scroll_up+2
 
   lda #$4c              ;$ca = JMP abs
   sta scroll_up,x       ;Write opcode
   inx
-  lda #<scroll_up+3
+  lda #<scroll_up+2
   sta scroll_up,x       ;Write low byte for JMP address
   inx
-  lda #>scroll_up+3     ;Write high byte for JMP address
+  lda #>scroll_up+2     ;Write high byte for JMP address
   sta scroll_up,x
   inx
 
