@@ -1411,10 +1411,6 @@ scroll_era_loop:
 fast_scroll_up:
 ;Fast scroll of the entire screen for 80x24 only.
 ;
-;The 25th line must be clear because it will be copied into the 24th
-;line.  This erases the 24th line and speeds up scrolling by not
-;having a separate erase step for the 24th line.
-;
     ldx #79
 fast_scr_loop:
     lda screen+$0050,x  ;from line 1
@@ -1463,7 +1459,7 @@ fast_scr_loop:
     sta screen+$0690,x  ;       to line 21
     lda screen+$0730,x  ;from line 23
     sta screen+$06e0,x  ;       to line 22
-    lda screen+$0780,x  ;from line 24
+    lda #$20            ;space character
     sta screen+$0730,x  ;       to line 23
     dex
     bmi fast_scr_done
