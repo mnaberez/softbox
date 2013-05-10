@@ -1360,14 +1360,15 @@ scroll_up:
 ;
     ldx #$00            ;Start scrolling from the top line
 
-    ldy columns
-    cpy #80             ;80 columns?
-    bne scroll          ;  No: use normal scrolling
-    ldy lines
-    cpy #24             ;24 lines?
-    bne scroll          ;  No: use normal scrolling
+    clc
+    lda columns
+    adc lines
+    cmp #80+24          ;80x24 screen?
+    beq fast_scroll_up  ;  Yes: use fast scroll
+    cmp #80+25          ;80x25 screen?
+    beq fast_scroll_up  ;  Yes: use fast scroll
 
-    jmp fast_scroll_up  ;For 80x24, use fast scroll.
+                        ;Fall through to normal scroll
 
 scroll:
 ;Scroll the screen up one line starting at the Y-position given in X.
@@ -1409,8 +1410,11 @@ scroll_era_loop:
     rts
 
 fast_scroll_up:
-;Fast scroll of the entire screen for 80x24 only.
+;Fast scroll of the entire screen for 80x24 or 80x25 only.
 ;
+    lda lines
+    cmp #25             ;Carry flag = set if 25 lines, clear if 24
+
     ldx #79
 fast_scr_loop:
     lda screen+$0050,x  ;from line 1
@@ -1459,8 +1463,21 @@ fast_scr_loop:
     sta screen+$0690,x  ;       to line 21
     lda screen+$0730,x  ;from line 23
     sta screen+$06e0,x  ;       to line 22
+
+    bcs fast_scr_25     ;Branch if 25 line screen
+
+fast_scr_24:
     lda #$20            ;space character
     sta screen+$0730,x  ;       to line 23
+    bcc fast_scr_next
+
+fast_scr_25:
+    lda screen+$0780,x  ;from line 24
+    sta screen+$0730,x  ;       to line 23
+    lda #$20            ;space character
+    sta screen+$0780,x  ;       to line 24
+
+fast_scr_next:
     dex
     bmi fast_scr_done
     jmp fast_scr_loop
