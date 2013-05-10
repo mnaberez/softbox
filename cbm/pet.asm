@@ -111,6 +111,8 @@ init_scrn:
     asl columns         ;  Yes: columns = 80 characters
 init_scrn_done:
     jsr init_scrlines   ;Initialize screen line pointers
+    jsr gen_scroll_up   ;Generate fast scroll code
+
     lda #$14
     sta blink_cnt       ;Initialize cursor blink countdown
     lda #$00
@@ -1135,21 +1137,6 @@ get_scrline:
     pla                 ;Restore A
     rts
 
-scroll_up:
-;Scroll the entire screen up one line.
-;
-    ldx #$00            ;Start scrolling from the top line
-
-    clc
-    lda columns
-    adc lines
-    cmp #80+24          ;80x24 screen?
-    beq fast_scroll_up  ;  Yes: use fast scroll
-    cmp #80+25          ;80x25 screen?
-    beq fast_scroll_up  ;  Yes: use fast scroll
-
-                        ;Fall through to normal scroll
-
 scroll:
 ;Scroll the screen up one line starting at the Y-position given in X.
 ;Any lines above the starting line will not be changed.
@@ -1189,80 +1176,149 @@ scroll_era_loop:
     bne scroll_era_loop ;Loop until line is erased
     rts
 
-fast_scroll_up:
-;Fast scroll of the entire screen for 80x24 or 80x25 only.
+
+gen_scroll_up:
+;Generate the code for the scroll_up routine, an unrolled loop
+;that quickly scrolls the entire screen up one line.
 ;
-    lda lines
-    cmp #25             ;Carry flag = set if 25 lines, clear if 24
+;  scroll_up:
+;      ldx columns
+;      dex
+;  L1: lda $8050,x  ;from line 1
+;      sta $8000,x  ;       to line 0
+;      lda $80a0,x  ;from line 2
+;      sta $8050,x  ;       to line 1
+;      ...
+;      lda #$20     ;space character
+;      sta $8780,x  ;       to last line
+;      dex
+;      bmi L2       ;branch if done with all columns
+;      jmp L1
+;  L2: rts
+;
+  ldx #$00              ;Index into generated code
+  ldy #$00              ;Index of current screen line number
 
-    ldx #79
-fast_scr_loop:
-    lda screen+$0050,x  ;from line 1
-    sta screen+$0000,x  ;       to line 0
-    lda screen+$00a0,x  ;from line 2
-    sta screen+$0050,x  ;       to line 1
-    lda screen+$00f0,x  ;from line 3
-    sta screen+$00a0,x  ;       to line 2
-    lda screen+$0140,x  ;from line 4
-    sta screen+$00f0,x  ;       to line 3
-    lda screen+$0190,x  ;from line 5
-    sta screen+$0140,x  ;       to line 4
-    lda screen+$01e0,x  ;from line 6
-    sta screen+$0190,x  ;       to line 5
-    lda screen+$0230,x  ;from line 7
-    sta screen+$01e0,x  ;       to line 6
-    lda screen+$0280,x  ;from line 8
-    sta screen+$0230,x  ;       to line 7
-    lda screen+$02d0,x  ;from line 9
-    sta screen+$0280,x  ;       to line 8
-    lda screen+$0320,x  ;from line 10
-    sta screen+$02d0,x  ;       to line 9
-    lda screen+$0370,x  ;from line 11
-    sta screen+$0320,x  ;       to line 10
-    lda screen+$03c0,x  ;from line 12
-    sta screen+$0370,x  ;       to line 11
-    lda screen+$0410,x  ;from line 13
-    sta screen+$03c0,x  ;       to line 12
-    lda screen+$0460,x  ;from line 14
-    sta screen+$0410,x  ;       to line 13
-    lda screen+$04b0,x  ;from line 15
-    sta screen+$0460,x  ;       to line 14
-    lda screen+$0500,x  ;from line 16
-    sta screen+$04b0,x  ;       to line 15
-    lda screen+$0550,x  ;from line 17
-    sta screen+$0500,x  ;       to line 16
-    lda screen+$05a0,x  ;from line 18
-    sta screen+$0550,x  ;       to line 17
-    lda screen+$05f0,x  ;from line 19
-    sta screen+$05a0,x  ;       to line 18
-    lda screen+$0640,x  ;from line 20
-    sta screen+$05f0,x  ;       to line 19
-    lda screen+$0690,x  ;from line 21
-    sta screen+$0640,x  ;       to line 20
-    lda screen+$06e0,x  ;from line 22
-    sta screen+$0690,x  ;       to line 21
-    lda screen+$0730,x  ;from line 23
-    sta screen+$06e0,x  ;       to line 22
+  ;Generate: LDX columns
 
-    bcs fast_scr_25     ;Branch if 25 line screen
+  lda #$a6              ;$a5 = LDA zp
+  sta scroll_up,x       ;Write opcode
+  inx
+  lda #columns
+  sta scroll_up,x       ;Write ZP address for LDA
+  inx
 
-fast_scr_24:
-    lda #$20            ;space character
-    sta screen+$0730,x  ;       to line 23
-    bcc fast_scr_next
+  ;Generate: DEX
 
-fast_scr_25:
-    lda screen+$0780,x  ;from line 24
-    sta screen+$0730,x  ;       to line 23
-    lda #$20            ;space character
-    sta screen+$0780,x  ;       to line 24
+  lda #$ca              ;$ca = DEX
+  sta scroll_up,x
+  inx
 
-fast_scr_next:
-    dex
-    bmi fast_scr_done
-    jmp fast_scr_loop
-fast_scr_done:
-    rts
+gen_scr_loop:
+  iny                   ;Source line number (current line + 1)
+  sty cursor_y
+  jsr get_scrline       ;Get pointer to screen line
+  ldy cursor_y          ;Reload because Y is destroyed by get_scrline
+
+  ;Generate: LDA scrline+1,x  (load from next line)
+
+  lda #$bd              ;$bd = LDA abs,x
+  sta scroll_up,x       ;Write opcode
+  inx
+  lda scrline_lo
+  sta scroll_up,x       ;Write low byte for LDA address
+  inx
+  lda scrline_hi
+  sta scroll_up,x       ;Write high byte for LDA address
+  inx
+
+  dey                   ;Destination line number (current line)
+  sty cursor_y
+  jsr get_scrline       ;Get pointer to screen line
+  ldy cursor_y          ;Reload because Y is destroyed by get_scrline
+
+  ;Generate: STA scrline,x  (store on this line)
+
+  lda #$9d              ;$9d = STA abs,x
+  sta scroll_up,x       ;Write opcode
+  inx
+  lda scrline_lo        ;Write low byte for LDA address
+  sta scroll_up,x
+  inx
+  lda scrline_hi        ;Write high byte for LDA address
+  sta scroll_up,x
+  inx
+
+  iny                   ;Increment to next line down the screen
+
+  lda lines
+  sec
+  sbc #$01
+  sta cursor_y          ;Set cursor_y to number of screen lines - 1
+                        ;  (index of the bottom screen line)
+
+  cpy cursor_y          ;Reached the bottom line?
+  bne gen_scr_loop      ;  No: loop to generate code for remaining lines
+
+  ;Generate: LDA #$20  (load space character)
+
+  lda #$a9              ;$a9 = LDA imm
+  sta scroll_up,x
+  inx
+  lda #$20              ;Immediate value for LDA (space character)
+  sta scroll_up,x
+  inx
+
+  ;Generate: STA scrline,x  (store on this line)
+
+  sty cursor_y
+  jsr get_scrline       ;Get pointer to screen line
+  ldy cursor_y          ;Reload because Y is destroyed by get_scrline
+
+  lda #$9d              ;$9d = STA abs,x
+  sta scroll_up,x       ;Write opcode
+  inx
+  lda scrline_lo        ;Write low byte for LDA address
+  sta scroll_up,x
+  inx
+  lda scrline_hi        ;Write high byte for LDA address
+  sta scroll_up,x
+  inx
+
+  ;Generate: DEX
+
+  lda #$ca              ;$ca = DEX
+  sta scroll_up,x
+  inx
+
+  ;Generate: BMI +3 (skip over next JMP)
+
+  lda #$30              ;$30 = BMI
+  sta scroll_up,x       ;Write opcode
+  inx
+  lda #$03              ;Write displacement for BMI
+  sta scroll_up,x
+  inx
+
+  ;Generate: JMP scroll_up+3
+
+  lda #$4c              ;$ca = JMP abs
+  sta scroll_up,x       ;Write opcode
+  inx
+  lda #<scroll_up+3
+  sta scroll_up,x       ;Write low byte for JMP address
+  inx
+  lda #>scroll_up+3     ;Write high byte for JMP address
+  sta scroll_up,x
+  inx
+
+  ;Generate: RTS
+
+  lda #$60              ;$60 = RTS
+  sta scroll_up,x       ;Write opcode
+
+  rts
+
 
 scan_keyb:
 ;Scan the keyboard.
@@ -1486,11 +1542,14 @@ repeatcode:     !byte $aa   ;Scancode of last key; used in repeat handling
 ;Buffer for TAB stop positions (80 bytes: one for each screen column)
 tab_stops = *
 
-;Screen line pointer low bytes (50 bytes: one for each screen line)
+;Screen line pointer low bytes (25 bytes: one for each screen line)
 scrline_los = tab_stops + 80
 
-;Screen line pointer high bytes (50 bytes: one for each screen line)
-scrline_his = scrline_los + 50
+;Screen line pointer high bytes (25 bytes: one for each screen line)
+scrline_his = scrline_los + 25
 
 ;ASCII to CBM screen code translation table (256 bytes)
-asc_trans = scrline_his + 50
+asc_trans = scrline_his + 25
+
+;Generated code for fast screen scroll up (256 bytes, see gen_scroll_up)
+scroll_up = asc_trans + 256
