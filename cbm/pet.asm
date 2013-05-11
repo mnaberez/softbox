@@ -41,6 +41,7 @@ jiffy0      = $1a     ;Jiffy Counter (LSB)
 blink_cnt   = $1b     ;Counts down number of IRQs until cursor reverses
 uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
 rvs_mask    = $1d     ;Reverse video mask (normal = $00, reverse = $80)
+scroll_up_y = $1e     ;Top Y position in the generated scroll up code
 
     *=$0400
 
@@ -111,8 +112,8 @@ init_scrn:
     asl columns         ;  Yes: columns = 80 characters
 init_scrn_done:
     jsr init_scrlines   ;Initialize screen line pointers
+    ldy #$00
     jsr gen_scroll_up   ;Generate fast scroll code
-
     lda #$14
     sta blink_cnt       ;Initialize cursor blink countdown
     lda #$00
@@ -813,7 +814,8 @@ ctrl_0a:
     iny
     cpy lines           ;Are we on the bottom line?
     bne ctrl_0a_incy    ;  No:  Increment cursor_y, do not scroll up
-    jmp scroll_up       ;  Yes: Do not change cursor_y, jump out to scroll
+    ldy #$00            ;Start scrolling from the top line
+    jmp scroll_up       ;Jump out to scroll up
 ctrl_0a_incy:
     inc cursor_y        ;Increment Y position
     rts
@@ -1021,8 +1023,8 @@ ctrl_12:
     lda #$00
     sta cursor_x       ;Move cursor to beginning of line
 
-    ldx cursor_y       ;Scroll from current line to bottom of screen
-    jmp scroll         ;Jump out to scroll
+    ldy cursor_y       ;Scroll from current line to bottom of screen
+    jmp scroll_up      ;Jump out to scroll up
 
 ctrl_11:
 ;Insert a blank line
@@ -1137,51 +1139,22 @@ get_scrline:
     pla                 ;Restore A
     rts
 
-scroll:
-;Scroll the screen up one line starting at the Y-position given in X.
-;Any lines above the starting line will not be changed.
-;The cursor position will not be changed.
+scroll_up:
+;Scroll the screen up.  Pass a screen line index in Y, and that line
+;and below will be scrolled up.
 ;
-    lda scrline_los+1,x ;Get source line pointer
-    sta source_lo
-    lda scrline_his+1,x
-    sta source_hi
-
-    lda scrline_los,x   ;Get target line pointer
-    sta target_lo
-    lda scrline_his,x
-    sta target_hi
-
-    inx                 ;Increment the index to move down one
-                        ;  screen line for the next time around
-
-    cpx lines           ;Current line = last line on screen?
-    beq scroll_erase    ;  Yes: do not copy, branch to finish up
-
-    ldy columns         ;Copy source line into target line
-    dey
-scroll_cp_loop:
-    lda (source_lo),y
-    sta (target_lo),y
-    dey
-    bpl scroll_cp_loop  ;Loop until this line is copied
-    bmi scroll          ;Loop to do the next line
-
-scroll_erase:           ;Erase the bottom line
-    lda #$20
-    ldy columns
-scroll_era_loop:
-    dey
-    sta (target_lo),y
-    bne scroll_era_loop ;Loop until line is erased
-    rts
-
+    cpy scroll_up_y     ;Is the scroll code for this Y-position?
+    beq scroll_up_call  ;  Yes: skip code generation
+    jsr gen_scroll_up   ;   No: generate new scroll code first
+scroll_up_call:
+    jmp _scroll_up      ;Jump out to the generated code
 
 gen_scroll_up:
-;Generate the code for the scroll_up routine, an unrolled loop
-;that quickly scrolls the entire screen up one line.
+;Code generator used by scroll_up.  This generates the _scroll_up routine,
+;an unrolled loop that quickly scrolls the screen up.  The generated code
+;will start scrolling at the line index passed in Y.
 ;
-;  scroll_up:
+;  _scroll_up:
 ;      ldx #79      ;index of last column
 ;  L1: lda $8050,x  ;from line 1
 ;      sta $8000,x  ;       to line 0
@@ -1195,20 +1168,24 @@ gen_scroll_up:
 ;      jmp L1
 ;  L2: rts
 ;
+    sty scroll_up_y     ;Save top screen line index passed in Y
     ldx #$00            ;Index into generated code
 
     ;Generate: LDX #79  (index of last column)
 
     lda #$a2            ;$a2 = LDX immediate
-    sta scroll_up,x     ;Write opcode
+    sta _scroll_up,x    ;Write opcode
     inx
     ldy columns         ;Get number of columns
     dey                 ;Decrement to get index of last column
     tya
-    sta scroll_up,x     ;Write immediate value for LDX
+    sta _scroll_up,x    ;Write immediate value for LDX
     inx
 
-    ldy #$00            ;Index of current screen line number
+    lda cursor_y        ;Preserve cursor_y
+    pha
+
+    ldy scroll_up_y     ;Y = Index of current screen line number
 
 gen_scr_loop:
     iny                 ;Source line number (current line + 1)
@@ -1219,13 +1196,13 @@ gen_scr_loop:
     ;Generate: LDA scrline+1,x  (load from next line)
 
     lda #$bd            ;$bd = LDA abs,x
-    sta scroll_up,x     ;Write opcode
+    sta _scroll_up,x    ;Write opcode
     inx
     lda scrline_lo
-    sta scroll_up,x     ;Write low byte for LDA address
+    sta _scroll_up,x    ;Write low byte for LDA address
     inx
     lda scrline_hi
-    sta scroll_up,x     ;Write high byte for LDA address
+    sta _scroll_up,x    ;Write high byte for LDA address
     inx
 
     dey                 ;Destination line number (current line)
@@ -1236,13 +1213,13 @@ gen_scr_loop:
     ;Generate: STA scrline,x  (store on this line)
 
     lda #$9d            ;$9d = STA abs,x
-    sta scroll_up,x     ;Write opcode
+    sta _scroll_up,x    ;Write opcode
     inx
     lda scrline_lo      ;Write low byte for LDA address
-    sta scroll_up,x
+    sta _scroll_up,x
     inx
     lda scrline_hi      ;Write high byte for LDA address
-    sta scroll_up,x
+    sta _scroll_up,x
     inx
 
     iny                 ;Increment to next line down the screen
@@ -1259,10 +1236,10 @@ gen_scr_loop:
     ;Generate: LDA #$20  (load space character)
 
     lda #$a9            ;$a9 = LDA imm
-    sta scroll_up,x
+    sta _scroll_up,x
     inx
     lda #$20            ;Immediate value for LDA (space character)
-    sta scroll_up,x
+    sta _scroll_up,x
     inx
 
     ;Generate: STA scrline,x  (store on this line)
@@ -1272,47 +1249,49 @@ gen_scr_loop:
     ldy cursor_y        ;Reload because Y is destroyed by get_scrline
 
     lda #$9d            ;$9d = STA abs,x
-    sta scroll_up,x     ;Write opcode
+    sta _scroll_up,x    ;Write opcode
     inx
     lda scrline_lo      ;Write low byte for LDA address
-    sta scroll_up,x
+    sta _scroll_up,x
     inx
     lda scrline_hi      ;Write high byte for LDA address
-    sta scroll_up,x
+    sta _scroll_up,x
     inx
 
     ;Generate: DEX
 
-    lda #$ca              ;$ca = DEX
-    sta scroll_up,x
+    lda #$ca            ;$ca = DEX
+    sta _scroll_up,x
     inx
 
     ;Generate: BMI +3 (skip over next JMP)
 
     lda #$30            ;$30 = BMI
-    sta scroll_up,x     ;Write opcode
+    sta _scroll_up,x    ;Write opcode
     inx
     lda #$03            ;Write displacement for BMI
-    sta scroll_up,x
+    sta _scroll_up,x
     inx
 
-    ;Generate: JMP scroll_up+2
+    ;Generate: JMP _scroll_up+2
 
     lda #$4c            ;$ca = JMP abs
-    sta scroll_up,x     ;Write opcode
+    sta _scroll_up,x    ;Write opcode
     inx
-    lda #<scroll_up+2
-    sta scroll_up,x     ;Write low byte for JMP address
+    lda #<_scroll_up+2
+    sta _scroll_up,x    ;Write low byte for JMP address
     inx
-    lda #>scroll_up+2   ;Write high byte for JMP address
-    sta scroll_up,x
+    lda #>_scroll_up+2  ;Write high byte for JMP address
+    sta _scroll_up,x
     inx
 
     ;Generate: RTS
 
     lda #$60            ;$60 = RTS
-    sta scroll_up,x     ;Write opcode
+    sta _scroll_up,x    ;Write opcode
 
+    pla                 ;Restore original cursor_y
+    sta cursor_y
     rts
 
 
@@ -1548,4 +1527,4 @@ scrline_his = scrline_los + 25
 asc_trans = scrline_his + 25
 
 ;Generated code for fast screen scroll up (256 bytes, see gen_scroll_up)
-scroll_up = asc_trans + 256
+_scroll_up = asc_trans + 256
