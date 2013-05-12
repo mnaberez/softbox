@@ -1033,6 +1033,9 @@ ctrl_11:
 ;line below it.  Each successive line is moved to one below it.  The
 ;cursor is moved to the first column of the current line.
 ;
+    lda #$00
+    sta cursor_x        ;Move cursor to beginning of line
+
     ldx lines
     dex                 ;Index of last line on the screen
 l_0951:
@@ -1066,9 +1069,6 @@ l_0980:
     dey
     sta (scrline_lo),y
     bne l_0980
-
-    lda #$00            ;Move cursor to beginning of line
-    sta cursor_x
     rts
 
 init_scrlines:
