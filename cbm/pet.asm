@@ -1029,9 +1029,9 @@ ctrl_12:
 ctrl_11:
 ;Insert a blank line
 ;
-;The screen is shifted downward so that each line Y is copied into Y+1.
-;The line at the current position will be erased (filled with spaces).
-;The Y position will not change, but the X position will be zeroed.
+;The current line is cleared and its original contents moved to the
+;line below it.  Each successive line is moved to one below it.  The
+;cursor is moved to the first column of the current line.
 ;
     ldx lines
     dex                 ;Index of last line on the screen

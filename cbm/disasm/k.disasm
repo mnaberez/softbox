@@ -1031,9 +1031,9 @@ $0938: 4C 9E 08  JMP SCROLL
 CTRL_11:
 ;Insert a blank line
 ;
-;The screen is shifted downward so that each line Y is copied into Y+1.
-;The line at the current position will be erased (filled with spaces).
-;The Y position will not change, but the X position will be zeroed.
+;The current line is cleared and its original contents moved to the
+;line below it.  Each successive line is moved to one below it.  The
+;cursor is moved to the first column of the current line.
 ;
 $093B: A9 C0     LDA #<SCREEN+$03C0  ;A->TARGET_LO, Y->TARGET_HI
 $093D: A0 83     LDY #>SCREEN+$03C0  ;Start address of last 40 col line
