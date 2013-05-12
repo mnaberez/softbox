@@ -101,13 +101,13 @@ init_scrn:
     sta lines           ;Initialize screen height to 24 lines
 
     lda #$55
-    sta screen          ;Store #$55 in first byte of screen RAM.
+    sta screen          ;Store $55 in first byte of screen RAM.
     asl ;a
-    sta screen+$400     ;Store #$AA in first byte of 80 col page.
+    sta screen+$400     ;Store $AA in first byte of 80 col page.
     cmp screen+$400     ;Does it read back correctly?
     bne init_scrn_done  ;  No: we're done, columns = 40.
     lsr ;a
-    cmp screen          ;Is the #$55 still intact?
+    cmp screen          ;Is the $55 still intact?
     bne init_scrn_done  ;  No: incomplete decoding, columns = 40
     asl columns         ;  Yes: columns = 80 characters
 init_scrn_done:
@@ -126,7 +126,7 @@ init_term:
     jsr ctrl_06         ;Clear all tab stops
     lda #$00
     sta moveto_cnt      ;Move-to counter = not in a move-to seq
-    lda #$1a            ;Load #$1A = CTRL_1A Clear Screen
+    lda #$1a            ;Load $1A = CTRL_1A Clear Screen
     jsr process_byte    ;Call into terminal to execute clear screen
 
 init_ieee:
@@ -148,12 +148,12 @@ init_ieee:
     sta pia2_dav        ;DAV_OUT=low
 
     lda #$c6
-    sta pia2_iout       ;Put #$39 on IEEE data lines
+    sta pia2_iout       ;Put $39 on IEEE data lines
 
     ldy #$00
 l_04d4:
     dey
-    bne l_04d4          ;Let #$39 sit on the lines so the SoftBox sees it
+    bne l_04d4          ;Let $39 sit on the lines so the SoftBox sees it
 
     lda #$ff
     sta pia2_iout       ;Release IEEE data lines
@@ -573,7 +573,7 @@ move_to:
 ;has been consumed, MOVETO_CNT = 0, exiting the move-to sequence.
 ;
     sec
-    sbc #$20            ;Pos = Pos - #$20 (ADM-3A compatibility)
+    sbc #$20            ;Pos = Pos - $20 (ADM-3A compatibility)
 
     dec moveto_cnt      ;Decrement bytes remaining to consume
     beq move_to_y       ;Already got X pos?  Handle this byte as Y.

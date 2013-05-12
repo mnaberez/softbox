@@ -140,7 +140,7 @@ init_term:
     jsr ctrl_06         ;Clear all tab stops
     lda #$00
     sta moveto_cnt      ;Move-to counter = not in a move-to seq
-    lda #$1a            ;Load #$1A = CTRL_1A Clear Screen
+    lda #$1a            ;Load $1A = CTRL_1A Clear Screen
     jsr process_byte    ;Call into terminal to execute clear screen
 
 init_ieee:
@@ -165,7 +165,7 @@ init_ieee:
     sta got_srq         ;Initialize SRQ pending flag
 
     lda #$c6            ;Data byte must be inverted
-    sta cia2_pa         ;Put #$39 on IEEE data lines
+    sta cia2_pa         ;Put $39 on IEEE data lines
 
     lda #$ff
     sta cia2_ddra       ;Data lines all outputs
@@ -188,7 +188,7 @@ atn_wait:
     ldy #$00
 atn_wait_1:
     dey
-    bne atn_wait_1      ;Let #$39 sit on the lines so the SoftBox sees it
+    bne atn_wait_1      ;Let $39 sit on the lines so the SoftBox sees it
     dex
     bne atn_wait
 
@@ -767,7 +767,7 @@ move_to:
 ;has been consumed, MOVETO_CNT = 0, exiting the move-to sequence.
 ;
     sec
-    sbc #$20            ;Pos = Pos - #$20 (ADM-3A compatibility)
+    sbc #$20            ;Pos = Pos - $20 (ADM-3A compatibility)
 
     dec moveto_cnt      ;Decrement bytes remaining to consume
     beq move_to_y       ;Already got X pos?  Handle this byte as Y.

@@ -108,18 +108,18 @@ INIT_4080:
 $049B: A9 28     LDA #$28
 $049D: 85 09     STA COLUMNS         ;COLUMNS = 40 characters
 $049F: A9 55     LDA #$55
-$04A1: 8D 00 80  STA SCREEN          ;Store #$55 in first byte of screen RAM.
+$04A1: 8D 00 80  STA SCREEN          ;Store $55 in first byte of screen RAM.
 $04A4: 0A        ASL A
-$04A5: 8D 00 84  STA SCREEN+$400     ;Store #$AA in first byte of 80 col page.
+$04A5: 8D 00 84  STA SCREEN+$400     ;Store $AA in first byte of 80 col page.
 $04A8: CD 00 84  CMP SCREEN+$400     ;Does it read back correctly?
 $04AB: D0 08     BNE INIT_TERM       ;  No: we're done, COLUMNS = 40.
 $04AD: 4A        LSR A
-$04AE: CD 00 80  CMP SCREEN          ;Is the #$55 still intact?
+$04AE: CD 00 80  CMP SCREEN          ;Is the $55 still intact?
 $04B1: D0 02     BNE INIT_TERM       ;  No: incomplete decoding, COLUMNS = 40
 $04B3: 06 09     ASL COLUMNS         ;  Yes: COLUMNS = 80 characters
 
 INIT_TERM:
-$04B5: A9 1A     LDA #$1A            ;Load #$1A = CTRL_1A Clear Screen
+$04B5: A9 1A     LDA #$1A            ;Load $1A = CTRL_1A Clear Screen
 $04B7: 20 E8 06  JSR PROCESS_BYTE    ;Call into terminal to execute clear screen
 $04BA: 20 D4 08  JSR CTRL_06         ;Clear all tab stops
 
@@ -142,12 +142,12 @@ $04C8: A9 34     LDA #%00110100
 $04CA: 8D 23 E8  STA PIA2_DAV        ;DAV_OUT=low
 
 $04CD: A9 C6     LDA #$C6
-$04CF: 8D 22 E8  STA PIA2_IOUT       ;Put #$39 on IEEE data lines
+$04CF: 8D 22 E8  STA PIA2_IOUT       ;Put $39 on IEEE data lines
 
 $04D2: A0 00     LDY #$00
 L_04D4:
 $04D4: 88        DEY
-$04D5: D0 FD     BNE L_04D4          ;Let #$39 sit on the lines so the SoftBox sees it
+$04D5: D0 FD     BNE L_04D4          ;Let $39 sit on the lines so the SoftBox sees it
 
 $04D7: A9 FF     LDA #$FF
 $04D9: 8D 22 E8  STA PIA2_IOUT       ;Release IEEE data lines
@@ -1149,7 +1149,7 @@ MOVE_TO:
 $09B8: C6 0B     DEC MOVETO_CNT      ;Decrement bytes remaining to consume
 $09BA: F0 0C     BEQ L_09C8          ;Already got X pos?  Handle this byte as Y.
 $09BC: 38        SEC
-$09BD: E9 20     SBC #$20            ;X-pos = X-pos - #$20
+$09BD: E9 20     SBC #$20            ;X-pos = X-pos - $20
 $09BF: C5 09     CMP COLUMNS         ;Requested X position out of range?
 $09C1: B0 02     BCS L_09C5          ;  Yes: Do nothing.
 $09C3: 85 04     STA CURSOR_X        ;  No:  Move cursor to requested X.
@@ -1157,7 +1157,7 @@ L_09C5:
 $09C5: 4C 8D 07  JMP PROCESS_DONE    ;Done.
 L_09C8:
 $09C8: 38        SEC
-$09C9: E9 20     SBC #$20            ;Y-pos = Y-pos - #$20
+$09C9: E9 20     SBC #$20            ;Y-pos = Y-pos - $20
 $09CB: C9 19     CMP #LINES          ;Requested Y position out of range?
 $09CD: B0 F6     BCS L_09C5          ;  Yes: Do nothing.
 $09CF: 85 05     STA CURSOR_Y        ;  No:  Move cursor to requested Y.
