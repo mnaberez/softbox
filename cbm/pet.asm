@@ -1028,40 +1028,8 @@ ctrl_11:
     lda #$00
     sta cursor_x        ;Move cursor to beginning of line
 
-    ldx lines
-    dex                 ;Index of last line on the screen
-l_0951:
-    cpx cursor_y        ;Source line index = current line index?
-    beq l_097c          ;  Yes: done copying lines
-    dex                 ;Decrement source line index
-
-    lda scrline_los,x   ;Get source line pointer
-    sta source_lo
-    lda scrline_his,x
-    sta source_hi
-
-    lda scrline_los+1,x ;Get target line pointer
-    sta target_lo
-    lda scrline_his+1,x
-    sta target_hi
-
-    ldy columns         ;Copy source line into target line
-    dey
-l_0970:
-    lda (source_lo),y
-    sta (target_lo),y
-    dey
-    bpl l_0970          ;Loop until this line is copied
-    bmi l_0951          ;Loop to do the next line
-
-l_097c:                 ;Erase current line with spaces
-    lda #$20
-    ldy columns
-l_0980:
-    dey
-    sta (scrline_lo),y
-    bne l_0980
-    rts
+    ldy cursor_y        ;Scroll from current line to bottom of screen
+    jmp scroll_down     ;Jump out to scroll down
 
 init_scrlines:
 ;Build the screen line pointer tables.
@@ -1396,6 +1364,55 @@ gen_scr_loop:
 
     pla                 ;Restore original cursor_y
     sta cursor_y
+    rts
+
+
+scroll_down:
+;Scroll the screen down.  Pass a screen line index in Y, and that line
+;line will be moved to the one below it.  Each successive line will
+;be moved to the one below it.  The line in Y will be cleared.
+;
+    lda cursor_y
+    pha                 ;Preserve cursor_y
+
+    sty cursor_y
+
+    ldx lines
+    dex                 ;Index of last line on the screen
+l_0951:
+    cpx cursor_y        ;Source line index = current line index?
+    beq l_097c          ;  Yes: done copying lines
+    dex                 ;Decrement source line index
+
+    lda scrline_los,x   ;Get source line pointer
+    sta source_lo
+    lda scrline_his,x
+    sta source_hi
+
+    lda scrline_los+1,x ;Get target line pointer
+    sta target_lo
+    lda scrline_his+1,x
+    sta target_hi
+
+    ldy columns         ;Copy source line into target line
+    dey
+l_0970:
+    lda (source_lo),y
+    sta (target_lo),y
+    dey
+    bpl l_0970          ;Loop until this line is copied
+    bmi l_0951          ;Loop to do the next line
+
+l_097c:                 ;Erase current line with spaces
+    lda #$20
+    ldy columns
+l_0980:
+    dey
+    sta (scrline_lo),y
+    bne l_0980
+
+    pla
+    sta cursor_y        ;Restore original cursor_y
     rts
 
 
