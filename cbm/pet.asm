@@ -42,6 +42,7 @@ blink_cnt   = $1b     ;Counts down number of IRQs until cursor reverses
 uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
 rvs_mask    = $1d     ;Reverse video mask (normal = $00, reverse = $80)
 scroll_up_y = $1e     ;Top Y position in the generated scroll up code
+clear_eos_y = $1f     ;Top Y position in the generated clear to eos code
 
     *=$0400
 
@@ -114,6 +115,7 @@ init_scrn_done:
     jsr init_scrlines   ;Initialize screen line pointers
     ldy #$00
     jsr gen_scroll_up   ;Generate fast scroll code
+    jsr gen_clear_eos   ;Generate fast clear to end of screen code
     lda #$14
     sta blink_cnt       ;Initialize cursor blink countdown
     lda #$00
@@ -889,28 +891,18 @@ l_0863:
     rts
 
 ctrl_14:
-;Clear to end of screen.  All lines below the current line will be
-;erased.  The current line and cursor position are not changed.
+;Clear to end of screen.
+;
+;All lines below the current line will be erased.
+;The current line and cursor position are not changed.
 ;
     jsr ctrl_13         ;Clear to the end of the current line
-    ldx cursor_y        ;Get current Y position
+    ldy cursor_y        ;Get current Y position
 ctrl_14_next:
-    inx                 ;Y=Y+1
-    cpx lines           ;Incremented past last line?
+    iny                 ;Y=Y+1
+    cpy lines           ;Incremented past last line?
     beq ctrl_14_done    ;  Yes: done
-
-    lda scrline_los,x   ;Get scrline pointer
-    sta scrline_lo
-    lda scrline_his,x
-    sta scrline_hi
-ctrl_14_eraline:
-    lda #$20            ;Space character
-    ldy columns
-ctrl_14_erachar:
-    dey
-    sta (scrline_lo),y
-    bne ctrl_14_erachar ;Loop until entire line is erased
-    beq ctrl_14_next    ;Loop to do next line
+    jmp clear_eos       ;   No: jump out to clear to end of screen
 ctrl_14_done:
     rts
 
@@ -1137,6 +1129,118 @@ get_scrline:
     sta scrline_hi      ;Store it
     ldy cursor_x        ;Load cursor X position in Y
     pla                 ;Restore A
+    rts
+
+clear_eos:
+;Clear to end of screen.  Pass a screen line index in Y, and that line
+;and below will be cleared.
+;
+    cpy clear_eos_y     ;Is the clearing code for this Y-position?
+    beq clear_eos_call  ;  Yes: skip code generation
+    jsr gen_clear_eos   ;   No: generate new clearing code first
+clear_eos_call:
+    jmp _clear_eos      ;Jump out to the generated code
+
+gen_clear_eos:
+;Code generator used by clear_eos.  This generates the _clear_eos routine,
+;an unrolled loop that quickly clears the screen from the line index
+;passed in Y to the bottom of the screen.
+;
+;  _clear_eos:
+;      lda #$20     ;space character
+;      ldx #79      ;index of last column
+;  L1: sta $8000,x  ;clear line 0
+;      sta $8050,x  ;clear line 1
+;      ...
+;      dex
+;      bmi L2
+;      jmp L1
+;      rts
+;
+    sty clear_eos_y     ;Save top screen line index passed in Y
+    ldx #$00            ;Index into generated code
+
+    ;Generate: LDA #$20  (load space character)
+
+    lda #$a9            ;$a9 = LDA imm
+    sta _clear_eos,x
+    inx
+    lda #$20            ;Immediate value for LDA (space character)
+    sta _clear_eos,x
+    inx
+
+    ;Generate: LDX #79  (index of last column)
+
+    lda #$a2            ;$a2 = LDX immediate
+    sta _clear_eos,x    ;Write opcode
+    inx
+    ldy columns         ;Get number of columns
+    dey                 ;Decrement to get index of last column
+    tya
+    sta _clear_eos,x    ;Write immediate value for LDX
+    inx
+
+    lda cursor_y        ;Preserve cursor_y
+    pha
+
+    ldy clear_eos_y     ;Y = Index of current screen line number
+
+gen_clreos_loop:
+    sty cursor_y
+    jsr get_scrline     ;Get pointer to screen line
+    ldy cursor_y        ;Reload because Y is destroyed by get_scrline
+
+    ;Generate: STA scrline,x  (store on this line)
+
+    lda #$9d            ;$9d = STA abs,x
+    sta _clear_eos,x    ;Write opcode
+    inx
+    lda scrline_lo      ;Write low byte for LDA address
+    sta _clear_eos,x
+    inx
+    lda scrline_hi      ;Write high byte for LDA address
+    sta _clear_eos,x
+    inx
+
+    iny                 ;Increment to next line down the screen
+
+    cpy lines           ;Reached end of screen?
+    bne gen_clreos_loop ;  No: loop to generate code for remaining lines
+
+    ;Generate: DEX
+
+    lda #$ca            ;$ca = DEX
+    sta _clear_eos,x
+    inx
+
+    ;Generate: BMI +3 (skip over next JMP)
+
+    lda #$30            ;$30 = BMI
+    sta _clear_eos,x    ;Write opcode
+    inx
+    lda #$03            ;Write displacement for BMI
+    sta _clear_eos,x
+    inx
+
+    ;Generate: JMP _clear_eos+4
+
+    lda #$4c            ;$ca = JMP abs
+    sta _clear_eos,x    ;Write opcode
+    inx
+    lda #<_clear_eos+4
+    sta _clear_eos,x    ;Write low byte for JMP address
+    inx
+    lda #>_clear_eos+4  ;Write high byte for JMP address
+    sta _clear_eos,x
+    inx
+
+    ;Generate: RTS
+
+    lda #$60            ;$60 = RTS
+    sta _clear_eos,x    ;Write opcode
+
+    pla                 ;Restore original cursor_y
+    sta cursor_y
     rts
 
 scroll_up:
@@ -1526,5 +1630,8 @@ scrline_his = scrline_los + 25
 ;ASCII to CBM screen code translation table (256 bytes)
 asc_trans = scrline_his + 25
 
-;Generated code for fast screen scroll up (256 bytes, see gen_scroll_up)
+;Generated code for fast screen scroll up (175 bytes, see gen_scroll_up)
 _scroll_up = asc_trans + 256
+
+;Generated code for fast clear to end of screen (175 bytes, see gen_clear_eos)
+_clear_eos = _scroll_up + 175
