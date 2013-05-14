@@ -1493,7 +1493,6 @@ scan_keyb:
 ; TPI2_PA     = $DF00   ;6525 TPI #1 Port A - Keyboard Row select LO
 ; TPI2_PB     = $DF01   ;6525 TPI #1 Port B - Keyboard Row select HI
 ; TPI2_PC     = $DF02   ;6525 TPI #1 Port C - Keyboard Col read
-
 ;
 ; USES: scancode   - Code of Pressed KEY ($FF=NONE)
 ;       lastcode   - Code of Previous KEY
@@ -1501,7 +1500,7 @@ scan_keyb:
 ;       shift_flag - SHIFT key flag
 ;       ctrl_flag  - CTRL key flag
 ;       keyoffset  - Pointer into keyboard table
-
+;
     lda scancode        ;Old SCANCODE
     sta lastcode        ;Save It
     ldx #$00            ;X=0 Index into Keyboard Scan Table
