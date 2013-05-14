@@ -1720,7 +1720,7 @@ scancode:       !byte $aa   ;Holds scancode of the key
 lastcode:       !byte $aa   ;Temporarily holds scancode of previous key
 rowcount:       !byte $aa   ;Row counter for keyboard scan
 shift_flag:     !byte $aa   ;SHIFT key flag
-ctrl_flag:      !byte $aa   ;CONTROL key flag
+ctrl_flag:      !byte $aa   ;CTRL key flag
 repeatcount0:   !byte $aa   ;Number of interrupts until start of key repeats
 repeatcount1:   !byte $aa   ;Number of interrupts until next repeat
 repeatcode:     !byte $aa   ;Scancode of last key; used in repeat handling

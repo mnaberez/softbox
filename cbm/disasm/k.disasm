@@ -1181,6 +1181,9 @@ SCAN_KEYB:
 ;      SHIFT_FLAG - SHIFT key flag
 ;      CTRL_FLAG  - CTRL key flag
 ;
+;Note: the PET/CBM machines do not have a key labeled CTRL.  The OFF/RVS
+;      key is used as the CTRL key.
+;
 $09D4: AD 37 0B  LDA SCANCODE        ;Old SCANCODE
 $09D7: 8D 38 0B  STA LASTCODE        ;Save It
 $09DA: A2 00     LDX #$00            ;X=0 Index into Keyboard Scan Table
@@ -1383,7 +1386,7 @@ SHIFT_FLAG:
 $0B3A:           .BYT AA             ;SHIFT key flag
 
 CTRL_FLAG:
-$0B3B:           .BYT AA             ;CONTROL key flag
+$0B3B:           .BYT AA             ;CTRL key flag
 
 REPEATCOUNT0:
 $0B3C:           .BYT AA             ;Number of interrupts until start of key repeats
