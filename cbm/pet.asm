@@ -1125,7 +1125,7 @@ gen_clear_eos:
 ;      dex
 ;      bmi L2
 ;      jmp L1
-;      rts
+;  L2: rts
 ;
     sty clear_eos_y     ;Save top screen line index passed in Y
     ldx #$00            ;Index into generated code
