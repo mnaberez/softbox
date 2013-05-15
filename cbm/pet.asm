@@ -560,7 +560,6 @@ process_char:
     tax
     lda asc_trans,x     ;Get CBM screen code for the character
     eor rvs_mask        ;Reverse the screen code if needed
-    jsr get_scrline     ;Get screen RAM pointer
     sta (scrline_lo),y  ;Write the screen code to screen RAM
     jsr ctrl_0c         ;Advance the cursor
 process_done:
