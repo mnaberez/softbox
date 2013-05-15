@@ -464,9 +464,9 @@ irq_clock:
 irq_blink:
 ;Blink the cursor
     lda cursor_off      ;Is the cursor off?
-    bne irq_repeat          ;  Yes: skip cursor blink
+    bne irq_repeat      ;  Yes: skip cursor blink
     dec blink_cnt       ;Decrement cursor blink countdown
-    bne irq_repeat          ;Not time to blink? Done.
+    bne irq_repeat      ;Not time to blink? Done.
     lda #$14
     sta blink_cnt       ;Reset cursor blink countdown
     jsr get_scrline
