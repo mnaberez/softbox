@@ -12,6 +12,9 @@ cread:      equ 01h     ;Console Input
 cwrite:     equ 02h     ;Console Output
 cwritestr:  equ 09h     ;Output String
 
+lf:         equ 0ah     ;Line Feed
+cr:         equ 0dh     ;Carriage Return
+
     org 0100h           ;CP/M TPA
 
     ld hl,args          ;HL = command line arguments from CCP: first byte is
@@ -96,7 +99,7 @@ backup:
     call bdos           ;  BDOS System Call
 
                         ;Check for RETURN to continue, other key aborts:
-    cp 0dh              ;  Key pressed = RETURN?
+    cp cr               ;  Key pressed = RETURN?
     jp nz,exit_abort    ;    No: jump to abort
 
     pop af              ;Pop destination CP/M drive number
@@ -131,18 +134,18 @@ send_cmd:
                         ;    It will return to CP/M.
 
 copy_complete:
-    db 0dh,0ah,"Copy complete$"
+    db cr,lf,"Copy complete$"
 syntax_err:
-    db 0dh,0ah,"Syntax error$"
+    db cr,lf,"Syntax error$"
 not_same_unit:
-    db 0dh,0ah,"Drives must be on the same unit !$"
+    db cr,lf,"Drives must be on the same unit !$"
 disk_error:
-    db 0dh,0ah,"Disk error : $"
+    db cr,lf,"Disk error : $"
 disk_on_drive:
-    db 0dh,0ah,"Disk on drive $"
+    db cr,lf,"Disk on drive $"
 will_be_erasd:
-    db ": will be erased.",0dh,0ah
-    db "Press RETURN to continue,",0dh,0ah
+    db ": will be erased.",cr,lf
+    db "Press RETURN to continue,",cr,lf
     db "Press the SPACE BAR to abort : $"
 
 dos_d1_to_d0:
@@ -182,7 +185,7 @@ exit_error:
     ld hl,dos_msg       ;HL = address of CBM DOS error string
 dos_msg_loop:
     ld a,(hl)           ;A = next char in string
-    cp 0dh              ;Is it a carriage return?
+    cp cr               ;Is it a carriage return?
     ret z               ;  Yes: end of DOS message, return to CP/M.
 
     push hl
