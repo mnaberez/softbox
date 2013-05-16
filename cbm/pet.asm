@@ -115,18 +115,22 @@ init_scrn_done:
     lda #$93            ;CHR$(147) = Clear Screen
     jsr chrout          ;Perform an initial clear of the entire screen
 
-    jsr init_scrlines   ;Initialize screen line pointers
-    lda #$ff            ;Clear caches of generated code
-    sta scroll_up_y
-    sta scroll_dn_y
-    sta clear_eos_y
-    lda #$14
-    sta blink_cnt       ;Initialize cursor blink countdown
     lda #$00
     sta cursor_off      ;Cursor state = show the cursor
     sta cursor_x        ;Initialize cursor position
     sta cursor_y
-    jsr get_scrline     ;Initialize screen line pointer
+    jsr init_scrlines   ;Initialize screen line pointer table
+    jsr get_scrline     ;Initialize current screen line pointer
+
+    lda #$20            ;Screen code for space, also initial value for blink
+    sta scrcode         ;Initialize screen code under the cursor
+    sta blink_cnt       ;Initialize cursor blink countdown
+
+    lda #$ff            ;Clear caches of generated code
+    sta scroll_up_y
+    sta scroll_dn_y
+    sta clear_eos_y
+
     cli                 ;Enable interrupts again
                         ;Fall through into init_term
 

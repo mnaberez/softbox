@@ -115,14 +115,17 @@ init_scrn:
     sta vic+$20         ;VIC-II Border color = Black
     sta vic+$21         ;VIC-II Background color = Black
 init_scrn_done:
-    jsr init_scrlines   ;Initialize screen line pointers
-    lda #$14
-    sta blink_cnt       ;Initialize cursor blink countdown
     lda #$00
     sta cursor_off      ;Cursor state = show the cursor
     sta cursor_x        ;Initialize cursor position
     sta cursor_y
-    jsr get_scrline     ;Initialize screen line pointer
+    jsr init_scrlines   ;Initialize screen line pointer table
+    jsr get_scrline     ;Initialize current screen line pointer
+
+    lda #$20            ;Screen code for space, also initial value for blink
+    sta scrcode         ;Initialize screen code under the cursor
+    sta blink_cnt       ;Initialize cursor blink countdown
+
                         ;Fall through to init_hertz
 
 init_hertz:
