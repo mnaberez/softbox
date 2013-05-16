@@ -18,7 +18,7 @@ scrline_hi  = $03     ;Pointer to start of current line in screen RAM - HI
 cursor_x    = $04     ;Current X position: 0-79
 cursor_y    = $05     ;Current Y position: 0-24
 cursor_off  = $06     ;Cursor state: zero = show, nonzero = hide
-scrcode_tmp = $07     ;Screen code under the cursor
+scrcode     = $07     ;Screen code under the cursor
 keycount    = $08     ;Number of keys in the buffer at keyd
 columns     = $09     ;Screen width (X) in characters (40 or 80)
 lines       = $0a     ;Screen height (Y) in characters (24 or 25)
@@ -536,7 +536,7 @@ process_byte:
     sta cursor_tmp      ;  Remember it
     lda #$ff
     sta cursor_off      ;Hide the cursor
-    lda scrcode_tmp     ;Get the screen code under the cursor
+    lda scrcode         ;Get the screen code under the cursor
     ldy cursor_x
     sta (scrline_lo),y  ;Put it on the screen to erase the cursor
     txa                 ;Restore A
@@ -568,7 +568,7 @@ process_char:
 process_done:
     jsr get_scrline     ;Update screen RAM pointer
     lda (scrline_lo),y  ;Get the screen code under the cursor
-    sta scrcode_tmp     ;  Remember it
+    sta scrcode         ;  Remember it
     lda cursor_tmp      ;Get the previous state of the cursor
     sta cursor_off      ;  Restore it
     rts
