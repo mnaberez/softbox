@@ -29,7 +29,7 @@ scrline_hi  = $03     ;Pointer to start of current line in screen RAM - HI
 cursor_x    = $04     ;Current X position: 0-79
 cursor_y    = $05     ;Current Y position: 0-24
 cursor_off  = $06     ;Cursor state: zero = show, nonzero = hide
-scrcode_tmp = $07     ;Temporary storage for the last screen code
+scrcode_tmp = $07     ;Screen code under the cursor
 keycount    = $08     ;Number of keys in the buffer at keyd
 columns     = $09     ;Screen width (X) in characters (40 or 80)
 lines       = $0a     ;Screen height (Y) in characters (24 or 25)
@@ -120,6 +120,9 @@ init_scrn_done:
     sta blink_cnt       ;Initialize cursor blink countdown
     lda #$00
     sta cursor_off      ;Cursor state = show the cursor
+    sta cursor_x        ;Initialize cursor position
+    sta cursor_y
+    jsr get_scrline     ;Initialize screen line pointer
                         ;Fall through to init_hertz
 
 init_hertz:
@@ -600,7 +603,7 @@ irq_blink:
     bne irq_repeat      ;Not time to blink? Done.
     lda #$14
     sta blink_cnt       ;Reset cursor blink countdown
-    jsr get_scrline
+    ldy cursor_x
     lda (scrline_lo),y  ;Read character at cursor
     eor #$80            ;Flip the REVERSE bit
     sta (scrline_lo),y  ;Write it back
@@ -718,15 +721,15 @@ process_byte:
 ;the accumulator, determines if it is a control code or character
 ;to display, and handles it accordingly.
 ;
-    pha
+    tax                 ;Save A in X
     lda cursor_off      ;Get the current cursor state
     sta cursor_tmp      ;  Remember it
     lda #$ff
     sta cursor_off      ;Hide the cursor
-    jsr get_scrline     ;Get screen RAM pointer
-    lda scrcode_tmp     ;Get the screen code previously saved
-    sta (scrline_lo),y  ;  Put it on the screen
-    pla
+    lda scrcode_tmp     ;Get the screen code under the cursor
+    ldy cursor_x
+    sta (scrline_lo),y  ;Put it on the screen to erase the cursor
+    txa                 ;Restore A
     and char_mask       ;Mask off bits depending on char mode
     ldx moveto_cnt      ;More bytes to consume for a move-to sequence?
     bne process_move    ;  Yes: branch to jump to move-to handler
@@ -753,8 +756,8 @@ process_char:
     sta (scrline_lo),y  ;Write the screen code to screen RAM
     jsr ctrl_0c         ;Advance the cursor
 process_done:
-    jsr get_scrline     ;Get screen RAM pointer
-    lda (scrline_lo),y  ;Get the current character on the screen
+    jsr get_scrline     ;Update screen RAM pointer
+    lda (scrline_lo),y  ;Get the screen code under the cursor
     sta scrcode_tmp     ;  Remember it
     lda cursor_tmp      ;Get the previous state of the cursor
     sta cursor_off      ;  Restore it
@@ -1094,7 +1097,7 @@ ctrl_0f:
 ctrl_13:
 ;Clear to end of line
 ;
-    jsr get_scrline     ;Leaves CURSOR_X in Y register
+    ldy cursor_x
     lda #$20            ;Space character
 l_0863:
     sta (scrline_lo),y  ;Write space to screen RAM
@@ -1192,7 +1195,6 @@ ctrl_1b:
 ctrl_1c:
 ;Insert space at current cursor position
 ;
-    jsr get_scrline
     ldy columns         ;number of characters on line
     dey
 l_08f4:
@@ -1212,7 +1214,7 @@ l_0901:
 ctrl_1d:
 ;Delete a character
 ;
-    jsr get_scrline     ;Leaves cursor_x in Y register
+    ldy cursor_x
 l_090b:
     iny
     cpy columns
