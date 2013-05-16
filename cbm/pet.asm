@@ -66,7 +66,7 @@ bas_eol:
 init:
     sei                 ;Disable interrupts
     ldx #$ff
-    tsx                 ;Initialize stack pointer
+    txs                 ;Initialize stack pointer
     lda #<irq_handler
     sta cinv_lo
     lda #>irq_handler
