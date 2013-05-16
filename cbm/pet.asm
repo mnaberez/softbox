@@ -96,9 +96,6 @@ init_scrn:
 ;business keyboard (80 columns) or graphics keyboard (40 columns).  This
 ;means the 2001B machines (40-column, business keyboard) are not supported.
 ;
-    lda #$93            ;CHR$(147) = Clear Screen
-    jsr chrout          ;Perform an initial clear of the entire screen
-
     lda #40
     sta columns         ;Initialize screen width to 40 columns
     lda #24
@@ -115,6 +112,9 @@ init_scrn:
     bne init_scrn_done  ;  No: incomplete decoding, columns = 40
     asl columns         ;  Yes: columns = 80 characters
 init_scrn_done:
+    lda #$93            ;CHR$(147) = Clear Screen
+    jsr chrout          ;Perform an initial clear of the entire screen
+
     jsr init_scrlines   ;Initialize screen line pointers
     lda #$ff            ;Clear caches of generated code
     sta scroll_up_y
