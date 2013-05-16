@@ -96,6 +96,9 @@ init_scrn:
 ;business keyboard (80 columns) or graphics keyboard (40 columns).  This
 ;means the 2001B machines (40-column, business keyboard) are not supported.
 ;
+    lda #$93            ;CHR$(147) = Clear Screen
+    jsr chrout          ;Perform an initial clear of the entire screen
+
     lda #40
     sta columns         ;Initialize screen width to 40 columns
     lda #24
@@ -839,20 +842,8 @@ ctrl_1a:
 ;
     jsr ctrl_0f         ;Reverse video off
     jsr ctrl_1e         ;Home cursor
-    lda #$20            ;Space character
-    ldx #$00
-l_0829:
-    sta screen,x
-    sta screen+$100,x
-    sta screen+$200,x
-    sta screen+$300,x
-    sta screen+$400,x
-    sta screen+$500,x
-    sta screen+$600,x
-    sta screen+$700,x
-    inx
-    bne l_0829
-    rts
+    ldy #$00            ;Start clearing from the top line
+    jmp clear_eos       ;Jump out to clear to end of screen
 
 ctrl_10:
 ;Cursor on
