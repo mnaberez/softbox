@@ -25,7 +25,7 @@ SCRLINE_HI  = $03     ;Pointer to start of current line in screen RAM - HI
 CURSOR_X    = $04     ;Current X position: 0-79
 CURSOR_Y    = $05     ;Current Y position: 0-24
 CURSOR_OFF  = $06     ;Cursor state: zero = show, nonzero = hide
-SCRCODE_TMP = $07     ;Temporary storage for the last screen code
+SCRCODE     = $07     ;Screen code under the cursor
 KEYCOUNT    = $08     ;Number of keys in the buffer at KEYD
 COLUMNS     = $09     ;Screen width (X) in characters (40 or 80)
 REVERSE     = $0A     ;Reverse video flag (reverse on = 1)
@@ -532,8 +532,8 @@ $06EB: 85 0C     STA CURSOR_TMP      ;  Remember it
 $06ED: A9 FF     LDA #$FF
 $06EF: 85 06     STA CURSOR_OFF      ;Hide the cursor
 $06F1: 20 88 09  JSR CALC_SCRLINE    ;Calculate screen RAM pointer
-$06F4: A5 07     LDA SCRCODE_TMP     ;Get the screen code previously saved
-$06F6: 91 02     STA (SCRLINE_LO),Y  ;Put it on the screen
+$06F4: A5 07     LDA SCRCODE         ;Get the screen code under the cursor
+$06F6: 91 02     STA (SCRLINE_LO),Y  ;Put it on the screen to erase the cursor
 $06F8: 68        PLA
 $06F9: 25 13     AND CHAR_MASK       ;Mask off bits depending on char mode
 $06FB: A6 0B     LDX MOVETO_CNT      ;More bytes to consume for a move-to seq?
@@ -655,8 +655,8 @@ PROCESS_DONE:
 ;This routine always returns to DO_TERMINAL except during init.
 ;
 $078D: 20 88 09  JSR CALC_SCRLINE    ;Calculate screen RAM pointer
-$0790: B1 02     LDA (SCRLINE_LO),Y  ;Get the current character on the screen
-$0792: 85 07     STA SCRCODE_TMP     ;  Remember it
+$0790: B1 02     LDA (SCRLINE_LO),Y  ;Get the screen code under the cursor
+$0792: 85 07     STA SCRCODE         ;  Remember it
 $0794: A5 0C     LDA CURSOR_TMP      ;Get the previous state of the cursor
 $0796: 85 06     STA CURSOR_OFF      ;  Restore it
 $0798: 60        RTS
