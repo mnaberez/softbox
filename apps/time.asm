@@ -1,5 +1,10 @@
 ;TIME.COM
-;  Read or set time on the CBM computer clock
+;  Read or set the time on the CBM computer clock
+;
+;Usage:
+;  "TIME"           Read the clock
+;  "TIME 12:34:56"  Set the clock
+;
 
 warm:       equ  0000h  ;Warm start entry point
 bdos:       equ  0005h  ;BDOS entry point

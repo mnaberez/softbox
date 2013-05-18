@@ -1,5 +1,13 @@
-; z80dasm 1.1.3
-; command line: z80dasm --origin 256 --address --labels memtest.com
+;MEMTEST.COM
+;  Perform a RAM test on the SoftBox's internal memory
+;
+;The test will run continuously, printing one line to the
+;console on each iteration.  Pressing any key will end
+;the test and return to the CP/M prompt.
+;
+;Usage:
+;  "MEMTEST"
+;
 
 warm:       equ  0000h  ;Warm start entry point
 const:      equ 0f006h  ;BIOS Console status

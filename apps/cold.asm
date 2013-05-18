@@ -1,6 +1,13 @@
 ;COLD.COM
 ;  Cold start the SoftBox and CBM computer
 ;
+;The "UJ" command will be sent to IEEE-488 device 8, the CBM
+;computer instructed to jump to its reset vector, and then
+;the SoftBox will cold start.
+;
+;Usage:
+;  "COLD"
+;
 
 boot:          equ 0f000h ;BIOS Cold start
 ieee_listen:   equ 0f033h ;BIOS Send LISTEN to an IEEE-488 device

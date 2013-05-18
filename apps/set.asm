@@ -1,5 +1,36 @@
-; z80dasm 1.1.3
-; command line: z80dasm --origin=256 --address --labels set.com
+;SET.COM
+;  Change SoftBox settings
+;
+;The settings are changed for the current session only.  To make
+;permanent changes, use the NEWSYS utility.
+;
+;CBM screen settings:
+;  "SET U"    Go to uppercase mode
+;  "SET L"    Go to lowercase mode
+;  "SET T"    Set the line spacing to tall
+;  "SET G"    Set the line spacing to short
+;
+;CBM terminal emulation:
+;  "SET V=A"  Lear Siegler ADM-3A
+;  "SET V=T"  TeleVideo 912
+;  "SET V=H"  Hazeltine 1500 with tilde lead-in
+;  "SET V=E"  Hazeltine 1500 with ESC lead-in
+;
+;CBM terminal emulation lead-in:
+;  "SET E=E"  Escape
+;  "SET E=T"  Tilde
+;
+;IEEE-488 primary addresses:
+;  "SET P=#"  LPT:
+;  "SET A=#"  UL1:
+;  "SET R=#"  PTR:
+;  "SET N=#"  PTP:
+;
+;Directory width:
+;  "SET D=1"  1 column
+;  "SET D=2"  2 columns
+;  "SET D=4"  4 columns
+;
 
 bdos:       equ  0005h  ;BDOS entry point
 args:       equ  0080h  ;Command line arguments passed from CCP
@@ -269,21 +300,21 @@ set_a:
 
 set_p:
 ;Set IEEE-488 primary address of LPT:
-;  SET P=?
+;  SET P=#
 ;
     ld de,lpt_dev       ;DE = address of LPT: device number
     jp store_dev
 
 set_n:
 ;Set IEEE-488 primary address of PTP:
-;  SET N=?
+;  SET N=#
 ;
     ld de,ptp_dev       ;DE = address of PTP: device number
     jp store_dev
 
 set_r:
 ;Set IEEE-488 primary address of PTR:
-;  SET R=?
+;  SET R=#
 ;
     ld de,ptr_dev       ;DE = address of PTR: device number
                         ;Fall through to store_dev

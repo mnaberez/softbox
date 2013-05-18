@@ -1,5 +1,12 @@
 ;BACKUP.COM
 ;  Duplicate a floppy disk in a CBM dual drive unit
+;
+;Usage:
+;  "BACKUP B=A"  Duplicate the disk in drive A to drive B.  Note that the
+;                destination letter goes first ("destination=source").
+;                Only Commodore dual floppy drives are supported and both
+;                letters must be on the same unit.
+;
 
 bdos:           equ  0005h  ;BDOS entry point
 args:           equ  0080h  ;Command line arguments passed from CCP
