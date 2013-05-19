@@ -7,8 +7,8 @@
 ;CBM screen settings:
 ;  "SET U"    Go to uppercase mode
 ;  "SET L"    Go to lowercase mode
-;  "SET T"    Set the line spacing to tall
-;  "SET G"    Set the line spacing to short
+;  "SET T"    Set line spacing for text
+;  "SET G"    Set line spacing for graphics
 ;
 ;CBM terminal emulation:
 ;  "SET V=A"  Lear Siegler ADM-3A
@@ -91,9 +91,9 @@ dispatch:
     jp z,set_u
     cp 'L'              ;'L' = Set lowercase mode
     jp z,set_l
-    cp 'T'              ;'T' = Set line spacing to tall
+    cp 'T'              ;'T' = Set line spacing for text
     jp z,set_t
-    cp 'G'              ;'G' = Set line spacing to short
+    cp 'G'              ;'G' = Set line spacing for graphics
     jp z,set_g
     cp 'V'              ;'V' = Set video terminal type
     jp z,set_v
@@ -128,7 +128,7 @@ set_l:
                         ;  It will return to CP/M.
 
 set_g:
-;Set line spacing to tall
+;Set line spacing for text
 ;  SET T
 ;
     ld c,tall           ;Set line spacing to tall
@@ -136,7 +136,7 @@ set_g:
                         ;  It will return to CP/M.
 
 set_t:
-;Set line spacing to short
+;Set line spacing for graphics
 ;  SET G
 ;
     ld c,short          ;Set line spacing to short

@@ -881,8 +881,8 @@ ctrl_codes:
     !word ctrl_14   ;14   CTRL-T    Clear to end of screen
     !word ctrl_15   ;15   CTRL-U    Go to uppercase mode
     !word ctrl_16   ;16   CTRL-V    Go to lowercase mode
-    !word ctrl_17   ;17   CTRL-W    Set line spacing to tall
-    !word ctrl_18   ;18   CTRL-X    Set line spacing to short
+    !word ctrl_17   ;17   CTRL-W    Set line spacing for text
+    !word ctrl_18   ;18   CTRL-X    Set line spacing for graphics
     !word ctrl_19   ;19   CTRL-Y    Cursor on
     !word ctrl_1a   ;1A   CTRL-Z    Clear screen
     !word ctrl_1b   ;1B   ESC       Move cursor to X,Y position
@@ -914,14 +914,14 @@ ctrl_07_bell:
    rts
 
 ctrl_18:
-;Set line spacing to tall (the default spacing for lowercase graphic mode).
+;Set line spacing for text (the default spacing for lowercase mode).
 ;The current graphic mode will not be changed.
 ;
     rts                 ;No effect on CBM-II.
 
 
 ctrl_17:
-;Set line spacing to short (the default spacing for uppercase graphic mode).
+;Set line spacing for graphics (the default spacing for uppercase mode).
 ;The current graphic mode will not be changed.
 ;
     rts                 ;No effect on CBM-II.

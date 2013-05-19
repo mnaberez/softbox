@@ -584,8 +584,8 @@ $0744:           .WORD CTRL_13  ;13   CTRL-S    Clear to end of line
 $0746:           .WORD CTRL_14  ;14   CTRL-T    Clear to end of screen
 $0748:           .WORD CTRL_15  ;15   CTRL-U    Go to uppercase mode
 $074A:           .WORD CTRL_16  ;16   CTRL-V    Go to lowercase mode
-$074C:           .WORD CTRL_17  ;17   CTRL-W    Set line spacing to tall
-$074E:           .WORD CTRL_18  ;18   CTRL-X    Set line spacing to short
+$074C:           .WORD CTRL_17  ;17   CTRL-W    Set line spacing for text
+$074E:           .WORD CTRL_18  ;18   CTRL-X    Set line spacing for graphics
 $0750:           .WORD CTRL_19  ;19   CTRL-Y    Cursor on
 $0752:           .WORD CTRL_1A  ;1A   CTRL-Z    Clear screen
 $0754:           .WORD CTRL_1B  ;1B   ESC       Move cursor to X,Y position
@@ -601,7 +601,7 @@ $075E: A9 07     LDA #$07            ;CHR$(7) = Bell
 $0760: 4C D2 FF  JMP CHROUT
 
 CTRL_18:
-;Set line spacing to tall (the default spacing for lowercase graphic mode).
+;Set line spacing for text (the default spacing for lowercase mode).
 ;The current graphic mode will not be changed.
 ;
 $0763: AD 4C E8  LDA VIA_PCR         ;Remember current upper/lower graphic mode
@@ -613,7 +613,7 @@ $076D: 8D 4C E8  STA VIA_PCR         ;Restore graphic mode
 $0770: 60        RTS
 
 CTRL_17:
-;Set line spacing to short (the default spacing for uppercase graphic mode).
+;Set line spacing for graphics (the default spacing for uppercase mode).
 ;The current graphic mode will not be changed.
 ;
 $0771: AD 4C E8  LDA VIA_PCR         ;Remember current upper/lower graphic mode
