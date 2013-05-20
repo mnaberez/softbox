@@ -1,5 +1,14 @@
-; z80dasm 1.1.3
-; command line: z80dasm --labels --address read.com
+;READ.COM
+;  Receive a file in Intel Hex format from the serial port.
+;
+;The serial port must already be configured for the correct
+;communication parameters.  Use the NEWSYS utility to configure
+;the serial port.  If a file already exists with the specified
+;filename, it will be deleted before the transfer starts.
+;
+;Usage:
+;  "READ NEWFILE.COM"
+;
 
 usart:      equ 08h     ;8251 USART (IC15)
 usart_db:   equ usart+0 ;  Data Buffer
