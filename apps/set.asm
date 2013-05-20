@@ -48,10 +48,10 @@ jp_conout:  equ 0ea0ch  ;Jumps to conout (Console Output) routine in BIOS
 
 cwritestr:  equ 09h     ;Output String
 
-ucase:      equ 15h     ;Uppercase Mode
-lcase:      equ 16h     ;Lowercase Mode
-tall:       equ 17h     ;Tall Line Spacing
-short:      equ 18h     ;Short Line Spacing
+ucase:      equ 15h     ;Uppercase mode
+lcase:      equ 16h     ;Lowercase mode
+sptxt:      equ 17h     ;Line spacing for text
+spgfx:      equ 18h     ;Line spacing for graphics
 esc:        equ 1bh     ;Escape
 tilde:      equ '~'     ;Tilde
 
@@ -131,7 +131,7 @@ set_g:
 ;Set line spacing for text
 ;  SET T
 ;
-    ld c,tall           ;Set line spacing to tall
+    ld c,sptxt          ;Set line spacing for text
     jp jp_conout        ;Jump out to conout (in BIOS) through jp_conout.
                         ;  It will return to CP/M.
 
@@ -139,7 +139,7 @@ set_t:
 ;Set line spacing for graphics
 ;  SET G
 ;
-    ld c,short          ;Set line spacing to short
+    ld c,spgfx          ;Set line spacing to graphics
     jp jp_conout        ;Jump out to conout (in BIOS) through jp_conout.
                         ;  It will return to CP/M.
 
