@@ -44,7 +44,7 @@ clrfcb:
 
     ld de,fcb+1         ;check for file name
     ld a,(de)
-    cp 20h
+    cp ' '
     ret z               ;none - return
 
     ld c,0bh
