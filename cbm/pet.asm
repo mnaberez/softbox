@@ -39,11 +39,12 @@ jiffy2      = $18     ;Jiffy Counter (MSB)       the SoftBox BIOS to support
 jiffy1      = $19     ;Jiffy Counter             CP/M programs like TIME.COM.
 jiffy0      = $1a     ;Jiffy Counter (LSB)
 blink_cnt   = $1b     ;Counts down number of IRQs until cursor reverses
-uppercase   = $1c     ;Uppercase graphics flag (lower = $00, upper = $80)
-rvs_mask    = $1d     ;Reverse video mask (normal = $00, reverse = $80)
-scroll_up_y = $1e     ;Top Y position in the generated scroll up code
-scroll_dn_y = $1f     ;Top Y position in the generated scroll down code
-clear_eos_y = $20     ;Top Y position in the generated clear to EOS code
+blink_off   = $1c     ;Cursor blink flag (blink on = $00, blink off = $80)
+uppercase   = $1d     ;Uppercase graphics flag (lower = $00, upper = $80)
+rvs_mask    = $1e     ;Reverse video mask (normal = $00, reverse = $80)
+scroll_up_y = $1f     ;Top Y position in the generated scroll up code
+scroll_dn_y = $20     ;Top Y position in the generated scroll down code
+clear_eos_y = $21     ;Top Y position in the generated clear to EOS code
 
     *=$0400
 
@@ -117,6 +118,7 @@ init_scrn_done:
 
     lda #$00
     sta cursor_off      ;Cursor state = show the cursor
+    sta blink_off       ;Cursor blink = blinking on
     sta cursor_x        ;Initialize cursor position
     sta cursor_y
     jsr init_scrlines   ;Initialize screen line pointer table
@@ -475,14 +477,25 @@ irq_blink:
 ;Blink the cursor
     lda cursor_off      ;Is the cursor off?
     bne irq_repeat      ;  Yes: skip cursor blink
-    dec blink_cnt       ;Decrement cursor blink countdown
-    bne irq_repeat      ;Not time to blink? Done.
-    lda #$14
-    sta blink_cnt       ;Reset cursor blink countdown
+
     ldy cursor_x
     lda (scrline_lo),y  ;Read character at cursor
-    eor #$80            ;Flip the REVERSE bit
-    sta (scrline_lo),y  ;Write it back
+
+    bit blink_off       ;Cursor blink disabled?
+    bpl irq_blink_on    ;  No: branch to blink the cursor
+
+    ora #$80            ;Set reverse bit for steady cursor
+    bmi irq_blink_store
+
+irq_blink_on:
+    dec blink_cnt       ;Decrement cursor blink countdown
+    bne irq_repeat      ;Not time to blink? Done.
+    ldx #$14
+    stx blink_cnt       ;Reset cursor blink countdown
+
+    eor #$80            ;Flip reverse bit to blink cursor
+irq_blink_store:
+    sta (scrline_lo),y
 
 irq_repeat:
 ;Repeat key handling
