@@ -135,10 +135,10 @@ init_hertz:
 ;On power up, the KERNAL routine IOINIT on both B-series and P-series will
 ;detect 50 or 60 Hz and set the TODIN bit in CIA 2's Control Register A.
 ;
-    lda #$32
+    lda #50
     bit cia2_cra        ;CRA Bit 7 (TODIN): off = 60 Hz, on = 50 Hz
     bmi store_hertz     ;Did the KERNAL set TODIN for 50 Hz?
-    lda #$3c            ;  No: hertz = 60
+    lda #60             ;  No: hertz = 60
 store_hertz:
     sta hertz           ;  Yes: hertz = 50
 
