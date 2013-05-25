@@ -926,15 +926,14 @@ ctrl_07_bell:
    sta sid+$04          ;Voice 1 = Triangle waveform, Gate on
    rts
 
-ctrl_18:
-;Set line spacing for text (the default spacing for lowercase mode).
+ctrl_17:
+;Set line spacing for graphics (the default spacing for uppercase mode).
 ;The current graphic mode will not be changed.
 ;
     rts                 ;No effect on CBM-II.
 
-
-ctrl_17:
-;Set line spacing for graphics (the default spacing for uppercase mode).
+ctrl_18:
+;Set line spacing for text (the default spacing for lowercase mode).
 ;The current graphic mode will not be changed.
 ;
     rts                 ;No effect on CBM-II.

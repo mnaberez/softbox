@@ -724,18 +724,6 @@ ctrl_07:
     lda #$07            ;CHR$(7) = Bell
     jmp chrout
 
-ctrl_18:
-;Set line spacing for text (the default spacing for lowercase mode).
-;The current graphic mode will not be changed.
-;
-    lda via_pcr         ;Remember current upper/lower graphic mode
-    pha
-    lda #$0e            ;CHR$(14) = Switch to lowercase mode
-    jsr chrout          ;  and set more vertical space between chars
-    pla
-    sta via_pcr         ;Restore graphic mode
-    rts
-
 ctrl_17:
 ;Set line spacing for graphics (the default spacing for uppercase mode).
 ;The current graphic mode will not be changed.
@@ -744,6 +732,18 @@ ctrl_17:
     pha
     lda #$8e            ;CHR$(142) = Switch to uppercase mode
     jsr chrout          ;  and set less vertical space between chars
+    pla
+    sta via_pcr         ;Restore graphic mode
+    rts
+
+ctrl_18:
+;Set line spacing for text (the default spacing for lowercase mode).
+;The current graphic mode will not be changed.
+;
+    lda via_pcr         ;Remember current upper/lower graphic mode
+    pha
+    lda #$0e            ;CHR$(14) = Switch to lowercase mode
+    jsr chrout          ;  and set more vertical space between chars
     pla
     sta via_pcr         ;Restore graphic mode
     rts
