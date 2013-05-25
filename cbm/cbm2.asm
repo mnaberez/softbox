@@ -894,8 +894,8 @@ ctrl_codes:
     !word ctrl_14   ;14   CTRL-T    Clear to end of screen
     !word ctrl_15   ;15   CTRL-U    Go to uppercase mode
     !word ctrl_16   ;16   CTRL-V    Go to lowercase mode
-    !word ctrl_17   ;17   CTRL-W    Set line spacing for text
-    !word ctrl_18   ;18   CTRL-X    Set line spacing for graphics
+    !word ctrl_17   ;17   CTRL-W    Set line spacing for graphics
+    !word ctrl_18   ;18   CTRL-X    Set line spacing for text
     !word ctrl_19   ;19   CTRL-Y    Cursor off
     !word ctrl_1a   ;1A   CTRL-Z    Clear screen
     !word ctrl_1b   ;1B   ESC       Move cursor to X,Y position

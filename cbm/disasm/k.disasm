@@ -584,8 +584,8 @@ $0744:           .WORD CTRL_13  ;13   CTRL-S    Clear to end of line
 $0746:           .WORD CTRL_14  ;14   CTRL-T    Clear to end of screen
 $0748:           .WORD CTRL_15  ;15   CTRL-U    Go to uppercase mode
 $074A:           .WORD CTRL_16  ;16   CTRL-V    Go to lowercase mode
-$074C:           .WORD CTRL_17  ;17   CTRL-W    Set line spacing for text
-$074E:           .WORD CTRL_18  ;18   CTRL-X    Set line spacing for graphics
+$074C:           .WORD CTRL_17  ;17   CTRL-W    Set line spacing for graphics
+$074E:           .WORD CTRL_18  ;18   CTRL-X    Set line spacing for text
 $0750:           .WORD CTRL_19  ;19   CTRL-Y    Cursor off
 $0752:           .WORD CTRL_1A  ;1A   CTRL-Z    Clear screen
 $0754:           .WORD CTRL_1B  ;1B   ESC       Move cursor to X,Y position
