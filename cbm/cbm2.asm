@@ -742,8 +742,7 @@ process_byte:
     tax                 ;Save A in X
     lda cursor_on       ;Get the current cursor state
     sta cursor_tmp      ;  Remember it
-    lda #$00
-    sta cursor_on       ;Hide the cursor
+    lsr cursor_on       ;Hide the cursor
     lda scrcode         ;Get the screen code under the cursor
     ldy cursor_x
     sta (scrline_lo),y  ;Put it on the screen to erase the cursor
