@@ -30,7 +30,7 @@ KEYCOUNT    = $08     ;Number of keys in the buffer at KEYD
 COLUMNS     = $09     ;Screen width (X) in characters (40 or 80)
 REVERSE     = $0A     ;Reverse video flag (reverse on = 1)
 MOVETO_CNT  = $0B     ;Counts down bytes to consume in a move-to (CTRL_1B) seq
-CURSOR_TMP  = $0C     ;Pending cursor state used with CURSOR_OFF
+CURSOR_TMP  = $0C     ;Saves original CURSOR_OFF value during screen updates
 TARGET_LO   = $0D     ;Target address for mem xfers, ind jump, & CTRL_11 - LO
 TARGET_HI   = $0E     ;Target address for mem xfers, ind jump, & CTRL_11 - HI
 INSERT_LO   = $0F     ;Insert line (CTRL_11) destination screen address - LO
