@@ -701,7 +701,7 @@ ctrl_codes:
     !word ctrl_0d   ;0D   CTRL-M    Carriage return
     !word ctrl_0e   ;0E   CTRL-N    Reverse video on
     !word ctrl_0f   ;0F   CTRL-O    Reverse video off
-    !word ctrl_10   ;10   CTRL-P    Cursor off
+    !word ctrl_10   ;10   CTRL-P    Cursor on
     !word ctrl_11   ;11   CTRL-Q    Insert a blank line
     !word ctrl_12   ;12   CTRL-R    Scroll up one line
     !word ctrl_13   ;13   CTRL-S    Clear to end of line
@@ -710,7 +710,7 @@ ctrl_codes:
     !word ctrl_16   ;16   CTRL-V    Go to lowercase mode
     !word ctrl_17   ;17   CTRL-W    Set line spacing for text
     !word ctrl_18   ;18   CTRL-X    Set line spacing for graphics
-    !word ctrl_19   ;19   CTRL-Y    Cursor on
+    !word ctrl_19   ;19   CTRL-Y    Cursor off
     !word ctrl_1a   ;1A   CTRL-Z    Clear screen
     !word ctrl_1b   ;1B   ESC       Move cursor to X,Y position
     !word ctrl_1c   ;1C   CTRL-/    Insert a space on current line
