@@ -28,8 +28,8 @@ scrline_lo  = $02     ;Pointer to start of current line in screen RAM - LO
 scrline_hi  = $03     ;Pointer to start of current line in screen RAM - HI
 cursor_x    = $04     ;Current X position: 0-79
 cursor_y    = $05     ;Current Y position: 0-24
-cursor_off  = $06     ;Cursor state: zero = show, nonzero = hide
-cursor_tmp  = $07     ;Saves original cursor_off value during screen updates
+cursor_on   = $06     ;Cursor visible flag (hide = $00, show = $80)
+cursor_tmp  = $07     ;Saves original cursor_on value during screen updates
 scrcode     = $08     ;Screen code under the cursor
 keycount    = $09     ;Number of keys in the buffer at keyd
 columns     = $0a     ;Screen width (X) in characters (40 or 80)
@@ -50,7 +50,7 @@ jiffy2      = $18     ;Jiffy Counter (MSB)       the SoftBox BIOS to support
 jiffy1      = $19     ;Jiffy Counter             CP/M programs like TIME.COM.
 jiffy0      = $1a     ;Jiffy Counter (LSB)
 blink_cnt   = $1b     ;Counts down number of IRQs until cursor reverses
-blink_off   = $1c     ;Cursor blink flag (blink on = $00, blink off = $80)
+blink_on    = $1c     ;Cursor blink flag (blink off = $00, blink on = $80)
 uppercase   = $1d     ;Uppercase graphics flag (lower = $00, upper = $80)
 rvs_mask    = $1e     ;Reverse video mask (normal = $00, reverse = $80)
 got_srq     = $1f     ;IEEE-488 SRQ detect: 0=no SRQ, 1=SRQ pending
@@ -117,12 +117,14 @@ init_scrn:
     sta vic+$21         ;VIC-II Background color = Black
 init_scrn_done:
     lda #$00
-    sta cursor_off      ;Cursor state = show the cursor
-    sta blink_off       ;Cursor blink = blinking on
     sta cursor_x        ;Initialize cursor position
     sta cursor_y
     jsr init_scrlines   ;Initialize screen line pointer table
     jsr get_scrline     ;Initialize current screen line pointer
+
+    lda #$80
+    sta cursor_on       ;Cursor state = show the cursor
+    sta blink_on        ;Cursor blink = blinking on
 
     lda #$20            ;Screen code for space, also initial value for blink
     sta scrcode         ;Initialize screen code under the cursor
@@ -602,14 +604,14 @@ irq_clock:
 
 irq_blink:
 ;Blink the cursor
-    lda cursor_off      ;Is the cursor off?
-    bne irq_repeat      ;  Yes: skip cursor blink
+    bit cursor_on       ;Is the cursor off?
+    bpl irq_repeat      ;  No: skip cursor blink
 
     ldy cursor_x
     lda (scrline_lo),y  ;Read character at cursor
 
-    bit blink_off       ;Cursor blink disabled?
-    bpl irq_blink_on    ;  No: branch to blink the cursor
+    bit blink_on        ;Is cursor blink on?
+    bmi irq_blink_on    ;  Yes: branch to blink the cursor
 
     ora #$80            ;Set reverse bit for steady cursor
     bmi irq_blink_store
@@ -712,9 +714,9 @@ reset_softbox:
     and #$fe
     sta tpi1_pb         ;IFC=low
 
-    ldx #$00
+    ldx #$80
     stx cursor_tmp      ;Turn cursor on
-    stx cursor_off
+    stx cursor_on
     stx rtc_jiffies     ;Reset jiffy counter
     ldx #$0d
 reset_ifc:
@@ -738,10 +740,10 @@ process_byte:
 ;to display, and handles it accordingly.
 ;
     tax                 ;Save A in X
-    lda cursor_off      ;Get the current cursor state
+    lda cursor_on       ;Get the current cursor state
     sta cursor_tmp      ;  Remember it
-    lda #$ff
-    sta cursor_off      ;Hide the cursor
+    lda #$00
+    sta cursor_on       ;Hide the cursor
     lda scrcode         ;Get the screen code under the cursor
     ldy cursor_x
     sta (scrline_lo),y  ;Put it on the screen to erase the cursor
@@ -776,7 +778,7 @@ process_done:
     lda (scrline_lo),y  ;Get the screen code under the cursor
     sta scrcode         ;  Remember it
     lda cursor_tmp      ;Get the previous state of the cursor
-    sta cursor_off      ;  Restore it
+    sta cursor_on       ;  Restore it
     rts
 
 move_to:
@@ -1084,14 +1086,14 @@ ctrl_1a_2:
 ctrl_10:
 ;Cursor on
 ;
-    lda #$00
+    lda #$80
     sta cursor_tmp
     rts
 
 ctrl_19:
 ;Cursor off
 ;
-    lda #$ff
+    lda #$00
     sta cursor_tmp
     rts
 
