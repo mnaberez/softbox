@@ -523,7 +523,7 @@ l_06bf:
     lda #$00            ;Clear the SCANCODE and allow the key to be processed
     sta scancode        ;Store it
     lda #$02
-    sta blink_cnt       ;Fast cursor blink(?)
+    sta blink_cnt       ;Blink cursor faster when key is repeating
 
 irq_scan:
 ;Scan the keyboard

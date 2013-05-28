@@ -495,7 +495,7 @@ $06C6: 8D 3D 0B  STA REPEATCOUNT1    ;Store it
 $06C9: A9 00     LDA #$00            ;Clear the SCANCODE and allow the key to be processed
 $06CB: 8D 37 0B  STA SCANCODE        ;Store it
 $06CE: A9 02     LDA #$02
-$06D0: 85 01     STA BLINK_CNT       ;Fast cursor blink(?)
+$06D0: 85 01     STA BLINK_CNT       ;Blink cursor faster when key is repeating
 
 IRQ_SCAN:
 ;Scan the keyboard
