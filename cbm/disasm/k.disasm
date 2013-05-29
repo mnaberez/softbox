@@ -219,7 +219,7 @@ $0526: 6A        ROR A               ;$02 = Wait for a key and send it
 $0527: 90 0C     BCC JMP_DO_GET_KEY
 $0529: 6A        ROR A               ;$04 = Write to the terminal screen
 $052A: 90 0C     BCC DO_TERMINAL
-$052C: 6A        ROR A               ;$08 = Jump to a subroutine in CBM memory
+$052C: 6A        ROR A               ;$08 = Execute a subroutine in CBM memory
 $052D: 90 17     BCC DO_EXECUTE
 $052F: 6A        ROR A               ;$10 = Transfer from CBM memory to the SoftBox
 $0530: 90 5D     BCC DO_PEEK

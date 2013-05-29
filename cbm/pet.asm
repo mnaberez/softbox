@@ -238,7 +238,7 @@ dispatch_command:
     beq do_get_key
     cpx #$04            ;$04 = Write to the terminal screen
     beq do_terminal
-    cpx #$08            ;$08 = Jump to a subroutine in CBM memory
+    cpx #$08            ;$08 = Execute a subroutine in CBM memory
     beq do_execute
     cpx #$10            ;$10 = Transfer from CBM memory to the SoftBox
     beq do_peek
