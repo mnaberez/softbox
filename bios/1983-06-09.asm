@@ -37,7 +37,7 @@ ppi2_pb:  equ ppi2+1    ;  Port B:
 ppi2_pc:  equ ppi2+2    ;  Port C:
                         ;    PC7 Unused
                         ;    PC6 Unused
-                        ;    PC5 Corvus ACTIVE
+                        ;    PC5 Corvus DIRC
                         ;    PC4 Corvus READY
                         ;    PC3 Unused
                         ;    PC2 LED "Ready"
@@ -843,7 +843,7 @@ lf305h:
 
     in a,(ppi2_pc)
     and 20h
-    jr nz,corv_init     ;Loop until Corvus ACTIVE=low
+    jr nz,corv_init     ;Loop until Corvus DIRC=low
     call corv_wait_read ;Wait until Corvus READY=high, then read byte
 
     cp 8fh              ;Response should be 8fh (Illegal Command)
