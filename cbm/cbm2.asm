@@ -1698,7 +1698,7 @@ key_in_x:
     rts                 ;Return with the key in A
 
 key_set:
-    cmp #$00            ;Set CARRY if non-zero character?
+    cmp #$00
     rts
 
 ;---- This is a table of values to write to keyboard ROW select ports

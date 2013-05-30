@@ -1341,7 +1341,7 @@ $0A92: 8A        TXA
 $0A93: 60        RTS                 ;Return with the key in A
 
 KEY_SET:
-$0A94: C9 00     CMP #$00            ;Set CARRY if non-zero character?
+$0A94: C9 00     CMP #$00
 $0A96: 60        RTS
 
 

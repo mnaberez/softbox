@@ -1718,7 +1718,7 @@ key_in_x:
     rts                 ;Return with control code in A
 
 key_set:
-    cmp #$00            ;Set CARRY if non-zero character?
+    cmp #$00
     rts
 
 
