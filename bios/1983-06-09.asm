@@ -1220,7 +1220,7 @@ lf498h:
     jr nz,lf498h        ;Delay loop
 
     ld a,04h
-    out (ppi2_pc),a     ;Turn on "Ready" LED
+    out (ppi2_pc),a     ;Turn off "Ready" LED, turn on "A" and "B" LEDs
 
     ld de,0ffffh
 lf4a4h:
@@ -1277,7 +1277,7 @@ test_passed:
     ld (leadrcvd),a     ;Last char received was not the lead-in
     ld (move_cnt),a     ;Not in a cursor move-to sequence
     ld (scrtab),a       ;Disable terminal character translation
-    out (ppi2_pc),a     ;Turn on LEDs
+    out (ppi2_pc),a     ;Turn on all LEDs
 
     ld bc,03e8h
     call delay          ;Wait 1 second
