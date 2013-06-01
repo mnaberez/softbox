@@ -174,8 +174,8 @@ init_ieee:
     lda #$00
     sta got_srq         ;Initialize SRQ pending flag
 
-    lda #$c6            ;Data byte must be inverted
-    sta cia2_pa         ;Put $39 on IEEE data lines
+    lda #$c6
+    sta cia2_pa         ;Put $39 (SoftBox address) on IEEE data lines
 
     lda #$ff
     sta cia2_ddra       ;Data lines all outputs

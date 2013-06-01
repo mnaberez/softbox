@@ -166,7 +166,7 @@ init_ieee:
     sta pia2_dav        ;DAV_OUT=low
 
     lda #$c6
-    sta pia2_iout       ;Put $39 on IEEE data lines
+    sta pia2_iout       ;Put $39 (SoftBox address) on IEEE data lines
 
     ldy #$00
 l_04d4:
