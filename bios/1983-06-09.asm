@@ -12,7 +12,7 @@ baud_gen: equ 0ch       ;COM8116 Baud Rate Generator (IC14)
 ppi1:     equ 10h       ;8255 PPI #1 (IC17)
 ppi1_pa:  equ ppi1+0    ;  Port A: IEEE-488 Data In
 ppi1_pb:  equ ppi1+1    ;  Port B: IEEE-488 Data Out
-ppi1_pc:  equ ppi1+2    ;  Port C: DIP Switches
+ppi1_pc:  equ ppi1+2    ;  Port C: DIP Switches (Unused)
 ppi1_cr:  equ ppi1+3    ;  Control Register
 
 ppi2:     equ 14h       ;8255 PPI #2 (IC16)
