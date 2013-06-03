@@ -1,5 +1,14 @@
-; z80dasm 1.1.3
-; command line: z80dasm --labels --origin=61440 1983-06-09.bin
+;SoftBox CP/M 2.2 BIOS
+;Revision 09-June-1983
+;
+;This is a disassembly of two original EPROMs for the SoftBox from
+;Small Systems Engineering Ltd.  The EPROMs were labeled "389"
+;and "390" by SSE.  The BIOS is 4K total, stored in two 2K EPROMs:
+;
+;  Socket  Memory     EPROM  Label
+;  IC3     F000-F7FF  2716   "389"
+;  IC4     F800-FFFF  2716   "390"
+;
 
 usart:    equ 08h       ;8251 USART (IC15)
 usart_db: equ usart+0   ;  Data Buffer
