@@ -2018,10 +2018,10 @@ ieee_put_itoa:
 ;Send a number as decimal string to IEEE-488 device
 ;A = number (e.g. A=2ah sends " 42")
 ;
-    push af
-    ld a,20h
-    call ieee_put_byte
-    pop af
+    push af             
+    ld a,' '
+    call ieee_put_byte  ;Send space character
+    pop af              
     ld e,2fh
 lf9ach:
     sub 0ah
