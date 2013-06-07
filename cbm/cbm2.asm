@@ -556,10 +556,10 @@ l_0649:
     rts                 ;  Got key: done.  Key is now in A.
 
 irq_handler:
-;On the PET/CBM, an IRQ occurs at 50 or 60 Hz depending on the power line
-;frequency.  The 6502 calls the main IRQ entry point ($E442 on BASIC 4.0)
-;which pushes A, X, and Y onto the stack and then executes JMP (cinv_lo).
-;We install this routine, IRQ_HANDLER, into cinv_lo during init.
+;On the CBM-II machines, an IRQ occurs at 50 or 60 Hz depending on the
+;power line frequency.  The 6502 calls the main IRQ entry point which
+;pushes A, X, and Y onto the stack and then executes JMP (cinv_lo).
+;We install this routine, irq_handler, into cinv_lo during init.
 ;
     lda tpi1_air        ;Read the active interrupt
 
