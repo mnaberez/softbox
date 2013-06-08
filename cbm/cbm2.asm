@@ -1724,7 +1724,7 @@ key_table:
     !byte $06,$b9,$4f,$4c,$bb,$af ; F9    ^9    NONE  L     ^;    ^/
     !byte $05,$b0,$2d,$50,$5b,$a7 ; F10   ^0    -     P     [     ^'
     !byte $0a,$bd,$5f,$5d,$0d,$de ; DOWN  ^=    BARRW ]     RETRN PI
-    !byte $0b,$08,$0c,$7f,$02,$ff ; UP    LEFT  RIGHT DEL   CBM   NONE
+    !byte $0b,$08,$0c,$7f,$02,$ff ; UARRW LEFT  RIGHT DEL   CBM   NONE
     !byte $1e,$3f,$37,$34,$31,$30 ; HOME  ?     7     4     1     0
     !byte $12,$04,$38,$35,$32,$2e ; RVS   CE    8     5     2     .
     !byte $8e,$2a,$39,$36,$33,$30 ; GRAPH *     9     6     3     00
