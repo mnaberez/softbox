@@ -1,5 +1,9 @@
-; z80dasm 1.1.3
-; command line: z80dasm --origin=256 --address --labels --output=softsoak.asm softsoak.com
+;SOFTSOAK.COM
+;  Perform a soak (burn-in) test on the SoftBox.
+;
+;Usage:
+;  "SOFTSOAK"
+;
 
     org 0100h
 
