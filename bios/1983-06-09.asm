@@ -1130,10 +1130,29 @@ boot:
 ;Cold start
 ;
     ld sp,0100h         ;Initialize stack pointer
-    ld a,99h
+
+    ld a,99h            ;Set PPI #1 control
+                        ;  Bit 7: IO   1 = I/O mode (not BSR)
+                        ;  Bit 6: GA1  0 = Group A as Mode 1 (Simple I/O)
+                        ;  Bit 5: GA0  0
+                        ;  Bit 4: PA   1 = Group A, Port A as Input
+                        ;  Bit 3: PCu  1 = Group A, Port C upper as Input
+                        ;  Bit 2: GB   0 = Group B as Mode 1 (Simple I/O)
+                        ;  Bit 1: PB   0 = Group B, Port B as Output
+                        ;  Bit 0: PCl  1 = Group B, Port C lower as Input
     out (ppi1_cr),a
-    ld a,98h
+
+    ld a,98h            ;Set PPI #2 control
+                        ;  Bit 7: IO   1 = I/O mode (not BSR)
+                        ;  Bit 6: GA1  0 = Group A as Mode 1 (Simple I/O)
+                        ;  Bit 5: GA0  0
+                        ;  Bit 4: PA   1 = Group A, Port A as Input
+                        ;  Bit 3: PCu  1 = Group A, Port C upper as Input
+                        ;  Bit 2: GB   0 = Group B as Mode 1 (Simple I/O)
+                        ;  Bit 1: PB   0 = Group B, Port B as Output
+                        ;  Bit 0: PCl  0 = Group B, Port C lower as Output
     out (ppi2_cr),a
+
     xor a               ;A=0
     out (ppi1_pb),a     ;Clear IEEE data out
     out (ppi2_pb),a     ;Clear IEEE control out
