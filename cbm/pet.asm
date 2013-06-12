@@ -719,11 +719,46 @@ ctrl_codes:
     !word ctrl_1e   ;1E   CTRL-^    Home cursor
     !word ctrl_1f   ;1F             Do nothing
 
-ctrl_07:
-;Ring bell
+ctrl_00:
+ctrl_03:
+ctrl_1f:
+;Do nothing
+    rts
+
+ctrl_01:
+;Go to 8-bit character mode
+;See trans_char for how this mode is used to display CBM graphics.
 ;
-    lda #$07            ;CHR$(7) = Bell
-    jmp chrout
+    lda #$ff
+    sta char_mask
+    rts
+
+ctrl_02:
+;Go to 7-bit character mode
+;
+    lda #$7f
+    sta char_mask
+    rts
+
+ctrl_15:
+;Go to uppercase mode
+;
+    lda #$80
+    sta uppercase
+    jsr init_asc_trans  ;Rebuild translation table for uppercase
+    lda #$0c
+    sta via_pcr         ;Graphic mode = uppercase
+    rts
+
+ctrl_16:
+;Go to lowercase mode
+;
+    lda #$00
+    sta uppercase
+    jsr init_asc_trans  ;Rebuild translation table for lowercase
+    lda #$0e
+    sta via_pcr         ;Graphic mode = lowercase
+    rts
 
 ctrl_17:
 ;Set line spacing for graphics (the default spacing for uppercase mode).
@@ -749,46 +784,11 @@ ctrl_18:
     sta via_pcr         ;Restore graphic mode
     rts
 
-ctrl_01:
-;Go to 8-bit character mode
-;See trans_char for how this mode is used to display CBM graphics.
+ctrl_07:
+;Ring bell
 ;
-    lda #$ff
-    sta char_mask
-    rts
-
-ctrl_02:
-;Go to 7-bit character mode
-;
-    lda #$7f
-    sta char_mask
-    rts
-
-ctrl_00:
-ctrl_03:
-ctrl_1f:
-;Do nothing
-    rts
-
-ctrl_15:
-;Go to uppercase mode
-;
-    lda #$80
-    sta uppercase
-    jsr init_asc_trans  ;Rebuild translation table for uppercase
-    lda #$0c
-    sta via_pcr         ;Graphic mode = uppercase
-    rts
-
-ctrl_16:
-;Go to lowercase mode
-;
-    lda #$00
-    sta uppercase
-    jsr init_asc_trans  ;Rebuild translation table for lowercase
-    lda #$0e
-    sta via_pcr         ;Graphic mode = lowercase
-    rts
+    lda #$07            ;CHR$(7) = Bell
+    jmp chrout
 
 ctrl_08:
 ;Cursor left

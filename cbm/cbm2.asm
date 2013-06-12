@@ -905,39 +905,11 @@ ctrl_codes:
     !word ctrl_1e   ;1E   CTRL-^    Home cursor
     !word ctrl_1f   ;1F             Do nothing
 
-ctrl_07:
-;Ring bell
-;
-   bit columns          ;80 columns?
-   bvs ctrl_07_b        ;  Yes: branch to B-series settings
-ctrl_07_p:
-   lda #$40             ;P-series settings
-   ldx #$09
-   jmp ctrl_07_bell
-ctrl_07_b:
-   lda #$20             ;B-series settings
-   ldx #$0a
-ctrl_07_bell:
-   sta sid+$01          ;Voice 1 Freq Hi
-   stx sid+$05          ;Voice 1 Attack/Decay
-   lda #$00
-   sta sid+$06          ;Voice 1 Sustain/Release
-   sta sid+$04          ;Voice 1 = No waveform, Gate off
-   lda #$11
-   sta sid+$04          ;Voice 1 = Triangle waveform, Gate on
-   rts
-
-ctrl_17:
-;Set line spacing for graphics (the default spacing for uppercase mode).
-;The current graphic mode will not be changed.
-;
-    rts                 ;No effect on CBM-II.
-
-ctrl_18:
-;Set line spacing for text (the default spacing for lowercase mode).
-;The current graphic mode will not be changed.
-;
-    rts                 ;No effect on CBM-II.
+ctrl_00:
+ctrl_03:
+ctrl_1f:
+;Do nothing
+    rts
 
 ctrl_01:
 ;Go to 8-bit character mode
@@ -952,12 +924,6 @@ ctrl_02:
 ;
     lda #$7f
     sta char_mask
-    rts
-
-ctrl_00:
-ctrl_03:
-ctrl_1f:
-;Do nothing
     rts
 
 ctrl_15:
@@ -993,6 +959,40 @@ ctrl_16_1:
     lda #$43
     sta vic+$18         ;P-series graphic mode = lowercase
     rts
+
+ctrl_17:
+;Set line spacing for graphics (the default spacing for uppercase mode).
+;The current graphic mode will not be changed.
+;
+    rts                 ;No effect on CBM-II.
+
+ctrl_18:
+;Set line spacing for text (the default spacing for lowercase mode).
+;The current graphic mode will not be changed.
+;
+    rts                 ;No effect on CBM-II.
+
+ctrl_07:
+;Ring bell
+;
+   bit columns          ;80 columns?
+   bvs ctrl_07_b        ;  Yes: branch to B-series settings
+ctrl_07_p:
+   lda #$40             ;P-series settings
+   ldx #$09
+   jmp ctrl_07_bell
+ctrl_07_b:
+   lda #$20             ;B-series settings
+   ldx #$0a
+ctrl_07_bell:
+   sta sid+$01          ;Voice 1 Freq Hi
+   stx sid+$05          ;Voice 1 Attack/Decay
+   lda #$00
+   sta sid+$06          ;Voice 1 Sustain/Release
+   sta sid+$04          ;Voice 1 = No waveform, Gate off
+   lda #$11
+   sta sid+$04          ;Voice 1 = Triangle waveform, Gate on
+   rts
 
 ctrl_08:
 ;Cursor left
