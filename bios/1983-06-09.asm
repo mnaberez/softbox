@@ -1157,7 +1157,7 @@ boot:
     out (ppi1_pb),a     ;Clear IEEE data out
     out (ppi2_pb),a     ;Clear IEEE control out
 
-    ld c,02h
+    ld c,02h            ;C = 2 blinks for RAM failure
     ld hl,0000h         ;RAM start address
     ld de,lf000h        ;RAM end address + 1
 lf431h:
@@ -1227,7 +1227,7 @@ lf47ah:
     ld bc,0ffdh         ;Number of code bytes in the ROM
     call calc_checksum  ;Calculate ROM checksum
 
-    ld c,03h
+    ld c,03h            ;C = 3 blinks for ROM failure
     ld hl,checksum      ;HL = address of checksum byte in ROM
     cp (hl)             ;Any difference from the calculated value?
     jp z,test_passed    ;  No: ROM check passed
@@ -1235,7 +1235,10 @@ lf47ah:
 test_failed:
 ;Self-test failed.  Blink the LED forever.
 ;
+;C = Number of blinks (2=RAM failed, 3=ROM failed)
+;
     ld b,c
+
 lf492h:
     xor a
     out (ppi2_pc),a     ;Invert "Ready" LED
@@ -1257,7 +1260,7 @@ lf4a4h:
     or d
     jr nz,lf4a4h        ;Delay loop
 
-    djnz lf492h
+    djnz lf492h         ;Decrement B, loop until B=0
 
     ld b,03h
     ld de,0ffffh
@@ -1266,8 +1269,8 @@ lf4b0h:
     ld a,e
     or d
     jr nz,lf4b0h        ;Delay loop
+    djnz lf4b0h         ;Decrement B, loop until B=0
 
-    djnz lf4b0h
     jr test_failed
 
 calc_checksum:
