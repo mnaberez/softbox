@@ -1,13 +1,18 @@
 ;SoftBox CP/M 2.2 BIOS
 ;Revision 09-June-1983
 ;
-;This is a disassembly of two original EPROMs for the SoftBox from
-;Small Systems Engineering Ltd.  The EPROMs were labeled "389"
-;and "390" by SSE.  The BIOS is 4K total, stored in two 2K EPROMs:
+;This is a disassembly of two original 2716 EPROMs from a SoftBox,
+;labeled "389" (IC3) and "390" (IC4).
 ;
-;  Socket  Memory     EPROM  Label
-;  IC3     F000-F7FF  2716   "389"
-;  IC4     F800-FFFF  2716   "390"
+;SoftBox Memory Map:
+;  F800-FFFF  BIOS ROM High (IC4)   2048
+;  F000-F7FF  BIOS ROM Low (IC3)    2048
+;  EA80-EFFF  BIOS Working Storage  1408
+;  EA00-EA7F  BIOS Configuration     128
+;  DC00-E9FF  BDOS                  3584
+;  D400-DBFF  CCP                   2048
+;  0100-D3FF  TPA                  54016
+;  0000-00FF  Low Storage            256
 ;
 
 usart:    equ 08h       ;8251 USART (IC15)
@@ -1602,25 +1607,15 @@ loading:
 ieee_load_cpm:
 ;Load the CP/M system from an IEEE-488 disk drive.
 ;
-;D = IEEE-488 primary address of CBM disk drive
-;C = number of 256-byte pages to load from the image file
-;
-;Returns the CBM DOS error code in A (0=OK)
-;
-;SoftBox Memory Map:
-;  F800-FFFF  BIOS ROM High (IC4)   2048
-;  F000-F7FF  BIOS ROM Low (IC3)    2048
-;  EA80-EFFF  BIOS Working Storage  1408 -+
-;  EA00-EA7F  BIOS Configuration     128  | CP/M
-;  DC00-E9FF  BDOS                  3584  | image file
-;  D400-DBFF  CCP                   2048 -+
-;  0100-D3FF  TPA                  54016
-;  0000-00FF  Low Storage            256
-;
 ;The CP/M image is a CBM DOS program file called "CP/M" on the SoftBox
 ;boot disk.  The file is 7168 bytes total.  During cold start, the entire
 ;file is loaded into memory from D400-EFFF (28 pages).  During warm start,
 ;only D400-E9FF (22 pages) is reloaded from the file.
+;
+;D = IEEE-488 primary address of CBM disk drive
+;C = number of 256-byte pages to load from the image file
+;
+;Returns the CBM DOS error code in A (0=OK)
 ;
     push bc
     push de
