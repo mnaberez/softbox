@@ -43,7 +43,7 @@ l0132h:
     ld b,01h            ;0132  06 01
 l0134h:
     ld hl,(002ch)       ;0134  2a 2c 00
-    call sub_0300h      ;0137  cd 00 00
+    call check_key      ;0137  cd 00 00
     or a                ;013a  b7
     jp nz,exit          ;013b  c2 00 00
     push bc             ;013e  c5
@@ -62,7 +62,7 @@ l013fh:
     ld b,01h            ;014f  06 01
 l0151h:
     ld hl,(002ch)       ;0151  2a 2c 00
-    call sub_0300h      ;0154  cd 00 00
+    call check_key      ;0154  cd 00 00
     or a                ;0157  b7
     jp nz,exit          ;0158  c2 00 00
     push bc             ;015b  c5
@@ -317,22 +317,25 @@ bit_msg:
     db " Bit ",00h
 
 l02f9h:
-    call sub_0300h      ;02f9  cd 00 00
+    call check_key      ;02f9  cd 00 00
     or a                ;02fc  b7
     jr z,l02f9h         ;02fd  28 fa
     ret                 ;02ff  c9
 
-sub_0300h:
-    push hl             ;0300  e5
-    push bc             ;0301  c5
-    push de             ;0302  d5
-    call const          ;0303  cd 06 f0
-    or a                ;0306  b7
-    call nz,conin       ;0307  c4 09 f0
-    pop de              ;030a  d1
-    pop bc              ;030b  c1
-    pop hl              ;030c  e1
-    ret                 ;030d  c9
+check_key:
+;Non-blocking keyboard input.  Check if a key has been pressed
+;and return it in A.  If no has been pressed, returns A=0.
+;
+    push hl
+    push bc
+    push de
+    call const          ;Get console status
+    or a                ;Key pressed?
+    call nz,conin       ;  Yes: read the key
+    pop de
+    pop bc
+    pop hl
+    ret
 
 put_char:
 ;Write the char in A to console out, preserving most registers.
