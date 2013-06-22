@@ -123,13 +123,13 @@ l017eh:
     ld hl,(002ah)       ;0191  2a 2a 00
     inc hl              ;0194  23
     ld (002ah),hl       ;0195  22 2a 00
-    call sub_0293h      ;0198  cd 00 00
+    call puts_hex_word  ;0198  cd 00 00
     ld hl,err_msg       ;019b  21 00 00
     call puts           ;019e  cd 00 00
     ld hl,(0022h)       ;01a1  2a 22 00
-    call sub_0293h      ;01a4  cd 00 00
+    call puts_hex_word  ;01a4  cd 00 00
     ld hl,(0020h)       ;01a7  2a 20 00
-    call sub_0293h      ;01aa  cd 00 00
+    call puts_hex_word  ;01aa  cd 00 00
     ld ix,0020h         ;01ad  dd 21 20 00
     ld a,(ix+00h)       ;01b1  dd 7e 00
     or (ix+01h)         ;01b4  dd b6 01
@@ -139,11 +139,11 @@ l017eh:
     ld a,' '            ;01bf  3e 20
     call put_char       ;01c1  cd 00 00
     ld hl,(0026h)       ;01c4  2a 26 00
-    call sub_0293h      ;01c7  cd 00 00
+    call puts_hex_word  ;01c7  cd 00 00
     ld a,'-'            ;01ca  3e 2d
     call put_char       ;01cc  cd 00 00
     ld hl,(0028h)       ;01cf  2a 28 00
-    call sub_0293h      ;01d2  cd 00 00
+    call puts_hex_word  ;01d2  cd 00 00
     ld hl,bit_msg       ;01d5  21 00 00
     call puts           ;01d8  cd 00 00
     ld a,(0024h)        ;01db  3a 24 00
@@ -278,10 +278,14 @@ l028bh:
     jr nc,l0286h        ;028d  30 f7
     ld a,(0025h)        ;028f  3a 25 00
     ret                 ;0292  c9
-sub_0293h:
-    ld a,h              ;0293  7c
-    call puts_hex_byte  ;0294  cd 00 00
-    ld a,l              ;0297  7d
+
+puts_hex_word:
+;Write the word in HL to console out as a four digit hex number.
+;
+    ld a,h              ;A = H
+    call puts_hex_byte  ;Write byte to console out
+    ld a,l              ;A = L
+                        ;Fall through to puts_hex_byte
 
 puts_hex_byte:
 ;Write the byte in A to console out as a two digit hex number.
