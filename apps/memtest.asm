@@ -45,7 +45,7 @@ l0134h:
     ld hl,(002ch)       ;0134  2a 2c 00
     call sub_0300h      ;0137  cd 00 00
     or a                ;013a  b7
-    jp nz,l01f6h        ;013b  c2 00 00
+    jp nz,exit          ;013b  c2 00 00
     push bc             ;013e  c5
 l013fh:
     call sub_023ch      ;013f  cd 00 00
@@ -64,7 +64,7 @@ l0151h:
     ld hl,(002ch)       ;0151  2a 2c 00
     call sub_0300h      ;0154  cd 00 00
     or a                ;0157  b7
-    jp nz,l01f6h        ;0158  c2 00 00
+    jp nz,exit          ;0158  c2 00 00
     push bc             ;015b  c5
 l015ch:
     call sub_023ch      ;015c  cd 00 00
@@ -146,10 +146,13 @@ l01e1h:
     rrca                ;01ef  0f
     ld (0025h),a        ;01f0  32 25 00
     jp l0130h           ;01f3  c3 30 01
-l01f6h:
-    ld hl,break_msg     ;01f6  21 00 00
-    call puts           ;01f9  cd 00 00
-    jp warm             ;01fc  c3 00 00
+
+exit:
+;Return to CP/M
+    ld hl,break_msg     ;HL = address of "Break..."
+    call puts           ;Write string to console out
+    jp warm             ;Warm start
+
 sub_01ffh:
     push bc             ;01ff  c5
     push de             ;0200  d5
