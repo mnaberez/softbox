@@ -316,11 +316,14 @@ err_msg:
 bit_msg:
     db " Bit ",00h
 
-l02f9h:
-    call check_key      ;02f9  cd 00 00
-    or a                ;02fc  b7
-    jr z,l02f9h         ;02fd  28 fa
-    ret                 ;02ff  c9
+get_key:
+;Blocking keyboard input.  Wait for a key to be pressed
+;and then return it in A.
+;
+    call check_key      ;Check for a key
+    or a                ;Key pressed?
+    jr z,get_key        ;  No: loop
+    ret                 ;Return with the key in A
 
 check_key:
 ;Non-blocking keyboard input.  Check if a key has been pressed
