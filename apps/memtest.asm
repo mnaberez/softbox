@@ -147,7 +147,7 @@ l017eh:
     ld hl,bit_msg       ;01d5  21 00 00
     call puts           ;01d8  cd 00 00
     ld a,(0024h)        ;01db  3a 24 00
-    call sub_0298h      ;01de  cd 00 00
+    call puts_hex_byte  ;01de  cd 00 00
 
 l01e1h:
     call newline        ;01e1  cd 00 00
@@ -280,24 +280,31 @@ l028bh:
     ret                 ;0292  c9
 sub_0293h:
     ld a,h              ;0293  7c
-    call sub_0298h      ;0294  cd 00 00
+    call puts_hex_byte  ;0294  cd 00 00
     ld a,l              ;0297  7d
-sub_0298h:
-    push af             ;0298  f5
-    rrca                ;0299  0f
-    rrca                ;029a  0f
-    rrca                ;029b  0f
-    rrca                ;029c  0f
-    call sub_02a1h      ;029d  cd 00 00
-    pop af              ;02a0  f1
-sub_02a1h:
-    and 0fh             ;02a1  e6 0f
-    cp 0ah              ;02a3  fe 0a
-    jr c,l02a9h         ;02a5  38 00
-    add a,07h           ;02a7  c6 07
+
+puts_hex_byte:
+;Write the byte in A to console out as a two digit hex number.
+;
+    push af             ;Preserve A
+    rrca                ;Rotate high nibble into low
+    rrca
+    rrca
+    rrca
+    call puts_hex_nib   ;Write it to console out
+    pop af              ;Recall A for the low nibble
+                        ;Fall through to write it to console out
+
+puts_hex_nib:
+;Write the low nibble in A to console out as a one digit hex number.
+;
+    and 0fh             ;Mask off high nibble
+    cp 0ah              ;Convert low nibble to ASCII char
+    jr c,l02a9h
+    add a,07h
 l02a9h:
-    add a,30h           ;02a9  c6 30
-    jp put_char         ;02ab  c3 00 00
+    add a,30h
+    jp put_char         ;Write char to console out and return.
 
 puts:
 ;Write a null-terminated string to console out
