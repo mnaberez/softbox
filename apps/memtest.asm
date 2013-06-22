@@ -14,7 +14,8 @@ const:      equ 0f006h  ;BIOS Console status
 conin:      equ 0f009h  ;BIOS Console input
 conout:     equ 0f00ch  ;BIOS Console output
 
-cur_addr:   equ  002ch  ;Current address of RAM under test
+passes:     equ  002ah  ;Number of iterations run (2 bytes)
+cur_addr:   equ  002ch  ;Current address of RAM under test (2 bytes)
 
 lf:         equ 0ah     ;Line Feed
 cr:         equ 0dh     ;Carriage Return
@@ -25,7 +26,7 @@ l0100h:
     ld sp,l0100h        ;Initialize stack pointer
 
     ld hl,0000h
-    ld (002ah),hl
+    ld (passes),hl
     ld (0020h),hl
     ld (0022h),hl
     ld (0028h),hl
@@ -118,18 +119,24 @@ l017eh:
     pop bc              ;0187  c1
     djnz l0151h         ;0188  10 c7
     push bc             ;018a  c5
-    ld hl,pass_msg      ;018b  21 00 00
-    call puts           ;018e  cd 00 00
-    ld hl,(002ah)       ;0191  2a 2a 00
-    inc hl              ;0194  23
-    ld (002ah),hl       ;0195  22 2a 00
-    call puts_hex_word  ;0198  cd 00 00
-    ld hl,err_msg       ;019b  21 00 00
-    call puts           ;019e  cd 00 00
-    ld hl,(0022h)       ;01a1  2a 22 00
-    call puts_hex_word  ;01a4  cd 00 00
-    ld hl,(0020h)       ;01a7  2a 20 00
-    call puts_hex_word  ;01aa  cd 00 00
+
+    ld hl,pass_msg      ;HL = address of "Pass=" string
+    call puts           ;Write string to console out
+
+    ld hl,(passes)      ;HL = number of passes run
+    inc hl              ;Increment to next pass
+    ld (passes),hl      ;Store passes
+    call puts_hex_word  ;Write number of passes to console out
+
+    ld hl,err_msg
+    call puts
+
+    ld hl,(0022h)
+    call puts_hex_word
+
+    ld hl,(0020h)
+    call puts_hex_word
+
     ld ix,0020h         ;01ad  dd 21 20 00
     ld a,(ix+00h)       ;01b1  dd 7e 00
     or (ix+01h)         ;01b4  dd b6 01
