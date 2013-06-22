@@ -32,7 +32,7 @@ l0100h:
     ld (0025h),a        ;0118  32 25 00
     ld hl,0ffffh        ;011b  21 ff ff
     ld (0026h),hl       ;011e  22 26 00
-    ld hl,l02c2h        ;0121  21 00 00
+    ld hl,testing_msg   ;0121  21 00 00
     call puts           ;0124  cd 00 00
     ld hl,0600h         ;0127  21 00 06
     ld (002ch),hl       ;012a  22 2c 00
@@ -105,13 +105,13 @@ l017eh:
     pop bc              ;0187  c1
     djnz l0151h         ;0188  10 c7
     push bc             ;018a  c5
-    ld hl,l02e7h        ;018b  21 00 00
+    ld hl,pass_msg      ;018b  21 00 00
     call puts           ;018e  cd 00 00
     ld hl,(002ah)       ;0191  2a 2a 00
     inc hl              ;0194  23
     ld (002ah),hl       ;0195  22 2a 00
     call sub_0293h      ;0198  cd 00 00
-    ld hl,l02edh        ;019b  21 00 00
+    ld hl,err_msg       ;019b  21 00 00
     call puts           ;019e  cd 00 00
     ld hl,(0022h)       ;01a1  2a 22 00
     call sub_0293h      ;01a4  cd 00 00
@@ -131,7 +131,7 @@ l017eh:
     call put_char       ;01cc  cd 00 00
     ld hl,(0028h)       ;01cf  2a 28 00
     call sub_0293h      ;01d2  cd 00 00
-    ld hl,l02f3h        ;01d5  21 00 00
+    ld hl,bit_msg       ;01d5  21 00 00
     call puts           ;01d8  cd 00 00
     ld a,(0024h)        ;01db  3a 24 00
     call sub_0298h      ;01de  cd 00 00
@@ -147,7 +147,7 @@ l01e1h:
     ld (0025h),a        ;01f0  32 25 00
     jp l0130h           ;01f3  c3 30 01
 l01f6h:
-    ld hl,l02deh        ;01f6  21 00 00
+    ld hl,break_msg     ;01f6  21 00 00
     call puts           ;01f9  cd 00 00
     jp warm             ;01fc  c3 00 00
 sub_01ffh:
@@ -302,15 +302,15 @@ newline:
     call put_char       ;Write line feed
     ret
 
-l02c2h:
+testing_msg:
     db cr,lf,"Testing CP/M Box memory",cr,lf,00h
-l02deh:
+break_msg:
     db "Break...",00h
-l02e7h:
+pass_msg:
     db "Pass=",00h
-l02edh:
+err_msg:
     db " Err=",00h
-l02f3h:
+bit_msg:
     db " Bit ",00h
 
 l02f9h:
