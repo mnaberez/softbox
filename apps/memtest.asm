@@ -14,39 +14,50 @@ const:      equ 0f006h  ;BIOS Console status
 conin:      equ 0f009h  ;BIOS Console input
 conout:     equ 0f00ch  ;BIOS Console output
 
+cur_addr:   equ  002ch  ;Current address of RAM under test
+
 lf:         equ 0ah     ;Line Feed
 cr:         equ 0dh     ;Carriage Return
 
     org 0100h
 
 l0100h:
-    ld sp,l0100h        ;0100  31 00 01
-    ld hl,0000h         ;0103  21 00 00
-    ld (002ah),hl       ;0106  22 2a 00
-    ld (0020h),hl       ;0109  22 20 00
-    ld (0022h),hl       ;010c  22 22 00
-    ld (0028h),hl       ;010f  22 28 00
-    xor a               ;0112  af
-    ld (0024h),a        ;0113  32 24 00
-    ld a,0feh           ;0116  3e fe
-    ld (0025h),a        ;0118  32 25 00
-    ld hl,0ffffh        ;011b  21 ff ff
-    ld (0026h),hl       ;011e  22 26 00
-    ld hl,testing_msg   ;0121  21 00 00
-    call puts           ;0124  cd 00 00
-    ld hl,0600h         ;0127  21 00 06
-    ld (002ch),hl       ;012a  22 2c 00
-    ld de,0ea00h        ;012d  11 00 ea
+    ld sp,l0100h        ;Initialize stack pointer
+
+    ld hl,0000h
+    ld (002ah),hl
+    ld (0020h),hl
+    ld (0022h),hl
+    ld (0028h),hl
+
+    xor a
+    ld (0024h),a
+
+    ld a,0feh
+    ld (0025h),a
+
+    ld hl,0ffffh
+    ld (0026h),hl
+
+    ld hl,testing_msg   ;HL = address of "Testing CP/M Box memory..."
+    call puts           ;Write string to console out
+
+    ld hl,0600h         ;HL = start address of RAM to test
+    ld (cur_addr),hl    ;Store it as current address
+
+    ld de,0ea00h        ;DE = end of RAM + 1 (?)
+
 l0130h:
-    ld c,01h            ;0130  0e 01
+    ld c,01h
 l0132h:
-    ld b,01h            ;0132  06 01
+    ld b,01h
 l0134h:
-    ld hl,(002ch)       ;0134  2a 2c 00
-    call check_key      ;0137  cd 00 00
-    or a                ;013a  b7
-    jp nz,exit          ;013b  c2 00 00
-    push bc             ;013e  c5
+    ld hl,(cur_addr)    ;HL = current address to test
+    call check_key      ;Check if a key has been pressed
+    or a                ;Key pressed?
+    jp nz,exit          ;  Yes: return to CP/M
+    push bc
+
 l013fh:
     call sub_023ch      ;013f  cd 00 00
     ld (hl),a           ;0142  77
@@ -60,12 +71,14 @@ l013fh:
     pop bc              ;014c  c1
     djnz l0134h         ;014d  10 e5
     ld b,01h            ;014f  06 01
+
 l0151h:
-    ld hl,(002ch)       ;0151  2a 2c 00
-    call check_key      ;0154  cd 00 00
-    or a                ;0157  b7
-    jp nz,exit          ;0158  c2 00 00
-    push bc             ;015b  c5
+    ld hl,(cur_addr)    ;HL = current address to test
+    call check_key      ;Check if a key has been pressed
+    or a                ;Key pressed?
+    jp nz,exit          ;  Yes: return to CP/M
+    push bc
+
 l015ch:
     call sub_023ch      ;015c  cd 00 00
     ld b,a              ;015f  47
@@ -135,6 +148,7 @@ l017eh:
     call puts           ;01d8  cd 00 00
     ld a,(0024h)        ;01db  3a 24 00
     call sub_0298h      ;01de  cd 00 00
+
 l01e1h:
     call newline        ;01e1  cd 00 00
     pop bc              ;01e4  c1
@@ -191,6 +205,7 @@ l0238h:
     pop de              ;0239  d1
     pop bc              ;023a  c1
     ret                 ;023b  c9
+
 sub_023ch:
     push hl             ;023c  e5
     ld b,00h            ;023d  06 00
