@@ -35,13 +35,13 @@ cr:            equ 0dh    ;Carriage Return
     nop                 ;0102 00
     ld sp,(0006h)       ;0103 ed 7b 06 00
     ld a,(005dh)        ;0107 3a 5d 00
-    cp 20h              ;010a fe 20
+    cp ' '              ;010a fe 20
     jp z,l03e1h         ;010c ca e1 03
     ld hl,005dh         ;010f 21 5d 00
     ld b,0bh            ;0112 06 0b
 l0114h:
     ld a,(hl)           ;0114 7e
-    cp 3fh              ;0115 fe 3f
+    cp '?'              ;0115 fe 3f
     jp z,l03e1h         ;0117 ca e1 03
     inc hl              ;011a 23
     djnz l0114h         ;011b 10 f7
@@ -54,14 +54,14 @@ l011dh:
     ld a,(l075dh+2)     ;012b 3a 5f 07
     ld hl,07e2h         ;012e 21 e2 07
     ld (hl),00h         ;0131 36 00
-    cp 31h              ;0133 fe 31
+    cp '1'              ;0133 fe 31
     jp z,l02dfh         ;0135 ca df 02
-    cp 32h              ;0138 fe 32
+    cp '2'              ;0138 fe 32
     jp z,l0152h         ;013a ca 52 01
-    cp 33h              ;013d fe 33
+    cp '3'              ;013d fe 33
     jp z,l019fh         ;013f ca 9f 01
     inc (hl)            ;0142 34
-    cp 34h              ;0143 fe 34
+    cp '4'              ;0143 fe 34
     jp z,l0152h         ;0145 ca 52 01
     ld de,l05a3h        ;0148 11 a3 05
     ld c,cwritestr      ;014b 0e 09
