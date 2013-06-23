@@ -49,7 +49,7 @@ l0114h:
     djnz l0114h         ;011b 10 f7
 l011dh:
     call sub_0408h      ;011d cd 08 04
-    ld de,l0416h        ;0120 11 16 04
+    ld de,menu          ;0120 11 16 04
     ld c,cwritestr      ;0123 0e 09
     call bdos           ;0125 cd 05 00
     call sub_03b8h      ;0128 cd b8 03
@@ -65,7 +65,7 @@ l011dh:
     inc (hl)            ;0142 34
     cp '4'              ;0143 fe 34
     jp z,l0152h         ;0145 ca 52 01
-    ld de,l05a3h        ;0148 11 a3 05
+    ld de,bad_command   ;0148 11 a3 05
     ld c,cwritestr      ;014b 0e 09
     call bdos           ;014d cd 05 00
     jr l011dh           ;0150 18 cb
@@ -104,7 +104,7 @@ l0183h:
     ld de,005ch         ;018c 11 5c 00
     ld c,creadstr       ;018f 0e 10
     call bdos           ;0191 cd 05 00
-    ld de,l05ddh        ;0194 11 dd 05
+    ld de,complete      ;0194 11 dd 05
     ld c,cwritestr      ;0197 0e 09
     call bdos           ;0199 cd 05 00
     jp warm             ;019c c3 00 00
@@ -208,7 +208,7 @@ sub_0234h:
 sub_0247h:
     push af             ;0247 f5
 l0248h:
-    ld de,l0513h        ;0248 11 13 05
+    ld de,src_drive     ;0248 11 13 05
     ld c,cwritestr      ;024b 0e 09
     call bdos           ;024d cd 05 00
     call sub_03b8h      ;0250 cd b8 03
@@ -217,12 +217,12 @@ l0248h:
     ld (l07dfh),a       ;0258 32 df 07
     call get_dtype      ;025b cd 51 f0
     jr c,l026ah         ;025e 38 0a
-    ld de,l0592h        ;0260 11 92 05
+    ld de,bad_drive     ;0260 11 92 05
     ld c,cwritestr      ;0263 0e 09
     call bdos           ;0265 cd 05 00
     jr l0248h           ;0268 18 de
 l026ah:
-    ld de,l0531h        ;026a 11 31 05
+    ld de,src_filename  ;026a 11 31 05
     ld c,cwritestr      ;026d 0e 09
     call bdos           ;026f cd 05 00
     call sub_03b8h      ;0272 cd b8 03
@@ -262,19 +262,19 @@ l026ah:
     ld c,fdelete        ;02be 0e 13
     call bdos           ;02c0 cd 05 00
     ld de,005ch         ;02c3 11 5c 00
-    ld c,fmake            ;02c6 0e 16
+    ld c,fmake          ;02c6 0e 16
     call bdos           ;02c8 cd 05 00
     inc a               ;02cb 3c
     ret nz              ;02cc c0
     ld de,(l07e0h)      ;02cd ed 5b e0 07
     call ieee_close     ;02d1 cd 60 f0
 l02d4h:
-    ld de,l05c4h        ;02d4 11 c4 05
+    ld de,disk_full     ;02d4 11 c4 05
     ld c,cwritestr      ;02d7 0e 09
     call bdos           ;02d9 cd 05 00
     jp warm             ;02dc c3 00 00
 l02dfh:
-    ld de,l0548h        ;02df 11 48 05
+    ld de,dest_drive    ;02df 11 48 05
     ld c,cwritestr      ;02e2 0e 09
     call bdos           ;02e4 cd 05 00
     call sub_03b8h      ;02e7 cd b8 03
@@ -283,12 +283,12 @@ l02dfh:
     ld (l07dfh),a       ;02ef 32 df 07
     call get_dtype      ;02f2 cd 51 f0
     jr c,l0301h         ;02f5 38 0a
-    ld de,l0592h        ;02f7 11 92 05
+    ld de,bad_drive     ;02f7 11 92 05
     ld c,cwritestr      ;02fa 0e 09
     call bdos           ;02fc cd 05 00
     jr l02dfh           ;02ff 18 de
 l0301h:
-    ld de,l056bh        ;0301 11 6b 05
+    ld de,dest_filename ;0301 11 6b 05
     ld c,cwritestr      ;0304 0e 09
     call bdos           ;0306 cd 05 00
     call sub_03b8h      ;0309 cd b8 03
@@ -350,12 +350,12 @@ l037bh:
 l0389h:
     ld de,(l07e0h)      ;0389 ed 5b e0 07
     call ieee_close     ;038d cd 60 f0
-    ld de,l05ddh        ;0390 11 dd 05
+    ld de,complete      ;0390 11 dd 05
     ld c,cwritestr      ;0393 0e 09
     call bdos           ;0395 cd 05 00
     jp warm             ;0398 c3 00 00
 l039bh:
-    ld de,l05f1h        ;039b 11 f1 05
+    ld de,not_found     ;039b 11 f1 05
     ld c,cwritestr      ;039e 0e 09
     call bdos           ;03a0 cd 05 00
     jp warm             ;03a3 c3 00 00
@@ -395,12 +395,12 @@ l03dah:
     ld (hl),cr          ;03de 36 0d
     ret                 ;03e0 c9
 l03e1h:
-    ld de,l0582h        ;03e1 11 82 05
+    ld de,bad_filename  ;03e1 11 82 05
     ld c,cwritestr      ;03e4 0e 09
     call bdos           ;03e6 cd 05 00
     jp warm             ;03e9 c3 00 00
 l03ech:
-    ld de,l05b3h        ;03ec 11 b3 05
+    ld de,disk_error    ;03ec 11 b3 05
     ld c,cwritestr      ;03ef 0e 09
     call bdos           ;03f1 cd 05 00
     ld hl,dos_msg       ;03f4 21 c0 ea
@@ -423,7 +423,7 @@ sub_0408h:
     ld c,cwrite         ;0411 0e 02
     jp bdos             ;0413 c3 05 00
 
-l0416h:
+menu:
     db "CP/M <--> Pet DOS file transfer",cr,lf
     db "----      --- --- ---- --------",cr,lf
 
@@ -432,27 +432,27 @@ l0416h:
     db lf,"3.  Copy BASIC program from PET DOS",cr,lf
     db lf,"4.  As 2.  but insert line feeds",cr,lf
     db lf,"Which type of transfer (1 to 4) ? $"
-l0513h:
+src_drive:
     db "PET DOS source drive (A-P) ? $"
-l0531h:
+src_filename:
     db "PET DOS source file ? $"
-l0548h:
+dest_drive:
     db "PET DOS destination drive (A-P) ? $"
-l056bh:
+dest_filename:
     db "PET DOS destn. file ? $"
-l0582h:
+bad_filename:
     db cr,lf,"Bad file name$"
-l0592h:
+bad_drive:
     db cr,lf,"Bad drive name$"
-l05a3h:
+bad_command:
     db cr,lf,"Bad command",cr,lf,"$"
-l05b3h:
+disk_error:
     db cr,lf,"Disk error :",cr,lf,"$"
-l05c4h:
+disk_full:
     db cr,lf,"Disk or directory full$"
-l05ddh:
+complete:
     db cr,lf,"Transfer complete$"
-l05f1h:
+not_found:
     db cr,lf,"File not found$"
 
 l0602h:
