@@ -54,7 +54,7 @@ l011dh:
     ld c,cwritestr      ;0123 0e 09
     call bdos           ;0125 cd 05 00
     call sub_03b8h      ;0128 cd b8 03
-    ld a,(l075dh+2)     ;012b 3a 5f 07
+    ld a,(table_0+2)    ;012b 3a 5f 07
     ld hl,07e2h         ;012e 21 e2 07
     ld (hl),00h         ;0131 36 00
     cp '1'              ;0133 fe 31
@@ -93,7 +93,7 @@ l0174h:
     pop af              ;0177 f1
     jr z,l015ah         ;0178 28 e0
 l017ah:
-    ld de,(l07e0h)      ;017a ed 5b e0 07
+    ld de,(table_1+1)   ;017a ed 5b e0 07
     call ieee_close     ;017e cd 60 f0
     ld b,7fh            ;0181 06 7f
 l0183h:
@@ -213,9 +213,9 @@ l0248h:
     ld c,cwritestr      ;024b 0e 09
     call bdos           ;024d cd 05 00
     call sub_03b8h      ;0250 cd b8 03
-    ld a,(l075dh+2)     ;0253 3a 5f 07
+    ld a,(table_0+2)    ;0253 3a 5f 07
     sub 41h             ;0256 d6 41
-    ld (l07dfh),a       ;0258 32 df 07
+    ld (table_1),a      ;0258 32 df 07
     call get_dtype      ;025b cd 51 f0
     jr c,l026ah         ;025e 38 0a
     ld de,bad_drive     ;0260 11 92 05
@@ -227,15 +227,15 @@ l026ah:
     ld c,cwritestr      ;026d 0e 09
     call bdos           ;026f cd 05 00
     call sub_03b8h      ;0272 cd b8 03
-    ld a,(l07dfh)       ;0275 3a df 07
+    ld a,(table_1)      ;0275 3a df 07
     call ieee_init_drv  ;0278 cd 78 f0
-    ld a,(l07dfh)       ;027b 3a df 07
+    ld a,(table_1)      ;027b 3a df 07
     and 01h             ;027e e6 01
     add a,30h           ;0280 c6 30
-    ld (l075dh),a       ;0282 32 5d 07
-    ld a,(l07dfh)       ;0285 3a df 07
+    ld (table_0),a      ;0282 32 5d 07
+    ld a,(table_1)      ;0285 3a df 07
     call get_ddev       ;0288 cd 54 f0
-    ld hl,l075dh+1      ;028b 21 5e 07
+    ld hl,table_0+1     ;028b 21 5e 07
     ld a,(hl)           ;028e 7e
     add a,06h           ;028f c6 06
     ld c,a              ;0291 4f
@@ -251,11 +251,11 @@ l026ah:
     ld (hl),2ch         ;02a0 36 2c
     inc hl              ;02a2 23
     ld (hl),52h         ;02a3 36 52
-    ld hl,l075dh        ;02a5 21 5d 07
+    ld hl,table_0       ;02a5 21 5d 07
     ld e,03h            ;02a8 1e 03
-    ld (l07e0h),de      ;02aa ed 53 e0 07
+    ld (table_1+1),de   ;02aa ed 53 e0 07
     call ieee_open      ;02ae cd 5d f0
-    ld a,(l07dfh)       ;02b1 3a df 07
+    ld a,(table_1)      ;02b1 3a df 07
     call ieee_read_err  ;02b4 cd 5a f0
     or a                ;02b7 b7
     jp nz,l03ech        ;02b8 c2 ec 03
@@ -267,7 +267,7 @@ l026ah:
     call bdos           ;02c8 cd 05 00
     inc a               ;02cb 3c
     ret nz              ;02cc c0
-    ld de,(l07e0h)      ;02cd ed 5b e0 07
+    ld de,(table_1+1)   ;02cd ed 5b e0 07
     call ieee_close     ;02d1 cd 60 f0
 l02d4h:
     ld de,disk_full     ;02d4 11 c4 05
@@ -279,9 +279,9 @@ l02dfh:
     ld c,cwritestr      ;02e2 0e 09
     call bdos           ;02e4 cd 05 00
     call sub_03b8h      ;02e7 cd b8 03
-    ld a,(l075dh+2)     ;02ea 3a 5f 07
+    ld a,(table_0+2)    ;02ea 3a 5f 07
     sub 41h             ;02ed d6 41
-    ld (l07dfh),a       ;02ef 32 df 07
+    ld (table_1),a      ;02ef 32 df 07
     call get_dtype      ;02f2 cd 51 f0
     jr c,l0301h         ;02f5 38 0a
     ld de,bad_drive     ;02f7 11 92 05
@@ -293,18 +293,18 @@ l0301h:
     ld c,cwritestr      ;0304 0e 09
     call bdos           ;0306 cd 05 00
     call sub_03b8h      ;0309 cd b8 03
-    ld a,(l07dfh)       ;030c 3a df 07
+    ld a,(table_1)      ;030c 3a df 07
     call ieee_init_drv  ;030f cd 78 f0
-    ld a,(l07dfh)       ;0312 3a df 07
+    ld a,(table_1)      ;0312 3a df 07
     and 01h             ;0315 e6 01
     add a,30h           ;0317 c6 30
-    ld (l075dh),a       ;0319 32 5d 07
-    ld a,(l07dfh)       ;031c 3a df 07
+    ld (table_0),a      ;0319 32 5d 07
+    ld a,(table_1)      ;031c 3a df 07
     call get_ddev       ;031f cd 54 f0
-    ld hl,l075dh+1      ;0322 21 5e 07
+    ld hl,table_0+1     ;0322 21 5e 07
     ld c,(hl)           ;0325 4e
     ld b,00h            ;0326 06 00
-    ld ix,l075dh+2      ;0328 dd 21 5f 07
+    ld ix,table_0+2     ;0328 dd 21 5f 07
     add ix,bc           ;032c dd 09
     ld (ix+00h),02ch    ;032e dd 36 00 2c
     ld (ix+01h),053h    ;0332 dd 36 01 53
@@ -319,9 +319,9 @@ l0301h:
     ld (hl),3ah         ;0344 36 3a
     dec hl              ;0346 2b
     ld e,03h            ;0347 1e 03
-    ld (l07e0h),de      ;0349 ed 53 e0 07
+    ld (table_1+1),de   ;0349 ed 53 e0 07
     call ieee_open      ;034d cd 5d f0
-    ld a,(l07dfh)       ;0350 3a df 07
+    ld a,(table_1)      ;0350 3a df 07
     call ieee_read_err  ;0353 cd 5a f0
     or a                ;0356 b7
     jp nz,l03ech        ;0357 c2 ec 03
@@ -336,7 +336,7 @@ l0366h:
     call bdos           ;036b cd 05 00
     or a                ;036e b7
     jr nz,l0389h        ;036f 20 18
-    ld de,(l07e0h)      ;0371 ed 5b e0 07
+    ld de,(table_1+1)   ;0371 ed 5b e0 07
     call ieee_listen    ;0375 cd 33 f0
     ld hl,0080h         ;0378 21 80 00
 l037bh:
@@ -349,7 +349,7 @@ l037bh:
     call ieee_unlisten  ;0384 cd 36 f0
     jr l0366h           ;0387 18 dd
 l0389h:
-    ld de,(l07e0h)      ;0389 ed 5b e0 07
+    ld de,(table_1+1)   ;0389 ed 5b e0 07
     call ieee_close     ;038d cd 60 f0
     ld de,complete      ;0390 11 dd 05
     ld c,cwritestr      ;0393 0e 09
@@ -362,7 +362,7 @@ l039bh:
     jp warm             ;03a3 c3 00 00
 sub_03a6h:
     push hl             ;03a6 e5
-    ld de,(l07e0h)      ;03a7 ed 5b e0 07
+    ld de,(table_1+1)   ;03a7 ed 5b e0 07
     call ieee_talk      ;03ab cd 39 f0
     call ieee_get_byte  ;03ae cd 3f f0
     push af             ;03b1 f5
@@ -371,14 +371,14 @@ sub_03a6h:
     pop hl              ;03b6 e1
     ret                 ;03b7 c9
 sub_03b8h:
-    ld de,l075dh        ;03b8 11 5d 07
+    ld de,table_0       ;03b8 11 5d 07
     ld a,50h            ;03bb 3e 50
     ld (de),a           ;03bd 12
     ld c,lf             ;03be 0e 0a
     call bdos           ;03c0 cd 05 00
     call newline        ;03c3 cd 08 04
-    ld a,(l075dh+1)     ;03c6 3a 5e 07
-    ld hl,l075dh+2      ;03c9 21 5f 07
+    ld a,(table_0+1)    ;03c6 3a 5e 07
+    ld hl,table_0+2     ;03c9 21 5f 07
     ld b,a              ;03cc 47
     inc b               ;03cd 04
 l03ceh:
@@ -553,113 +553,18 @@ l0602h:
     db "DIRECTOR",0d9h  ;DIRECTORY
     db 0ffh             ;End of table
 
-l075dh:
-    ld hl,(3ca0h)       ;075d 2a a0 3c
-    add hl,de           ;0760 19
-    inc (hl)            ;0761 34
-    pop de              ;0762 d1
-    pop af              ;0763 f1
-    and 7fh             ;0764 e6 7f
-    push af             ;0766 f5
-    add a,a             ;0767 87
-    jp m,2f92h          ;0768 fa 92 2f
-    ld hl,(3c8eh)       ;076b 2a 8e 3c
-    ld a,(hl)           ;076e 7e
-    or a                ;076f b7
-    jp z,2f81h          ;0770 ca 81 2f
-    pop af              ;0773 f1
-    push bc             ;0774 c5
-    ld b,a              ;0775 47
-    inc b               ;0776 04
-    dec hl              ;0777 2b
-    dec b               ;0778 05
-    jp z,2f6ch          ;0779 ca 6c 2f
-    ld a,(hl)           ;077c 7e
-    push de             ;077d d5
-    cpl                 ;077e 2f
-    ld e,a              ;077f 5f
-    ld d,0ffh           ;0780 16 ff
-    add hl,de           ;0782 19
-    pop de              ;0783 d1
-    jp 2f5dh            ;0784 c3 5d 2f
-    ld a,(hl)           ;0787 7e
-    or a                ;0788 b7
-    jp z,2f8fh          ;0789 ca 8f 2f
-    dec a               ;078c 3d
-    ld b,a              ;078d 47
-    dec hl              ;078e 2b
-    ld a,(hl)           ;078f 7e
-    inc b               ;0790 04
-    dec b               ;0791 05
-    jp z,2f8fh          ;0792 ca 8f 2f
-    call 3121h          ;0795 cd 21 31
-    dec b               ;0798 05
-    jp 2f73h            ;0799 c3 73 2f
-    pop af              ;079c f1
-    dec hl              ;079d 2b
-    inc a               ;079e 3c
-    dec a               ;079f 3d
-    jp z,2f8ch          ;07a0 ca 8c 2f
-    dec hl              ;07a3 2b
-    jp 2f84h            ;07a4 c3 84 2f
-    ld a,(hl)           ;07a7 7e
-    pop hl              ;07a8 e1
-    ret                 ;07a9 c9
-    pop bc              ;07aa c1
-    pop hl              ;07ab e1
-    ret                 ;07ac c9
-    ld a,2eh            ;07ad 3e 2e
-    call 3121h          ;07af cd 21 31
-    call 3121h          ;07b2 cd 21 31
-    pop af              ;07b5 f1
-    and 3fh             ;07b6 e6 3f
-    push bc             ;07b8 c5
-    ld hl,(3c9bh)       ;07b9 2a 9b 3c
-    ld c,a              ;07bc 4f
-    ld b,00h            ;07bd 06 00
-    add hl,bc           ;07bf 09
-    ld b,h              ;07c0 44
-    call 17b6h          ;07c1 cd b6 17
-    ld b,l              ;07c4 45
-    call 17b6h          ;07c5 cd b6 17
-    pop bc              ;07c8 c1
-    pop hl              ;07c9 e1
-    dec de              ;07ca 1b
-    ld a,(de)           ;07cb 1a
-    ret                 ;07cc c9
-    push hl             ;07cd e5
-    call 0b54h          ;07ce cd 54 0b
-    pop hl              ;07d1 e1
-    call nz,2fcbh       ;07d2 c4 cb 2f
-    push af             ;07d5 f5
-    ld de,3b16h         ;07d6 11 16 3b
-    ld a,(de)           ;07d9 1a
-    inc a               ;07da 3c
-    ld c,a              ;07db 4f
-    ld a,(de)           ;07dc 1a
-    ld (hl),a           ;07dd 77
-    inc de              ;07de 13
-l07dfh:
-    dec hl              ;07df 2b
-l07e0h:
-    dec c               ;07e0 0d
-    jp nz,0f1c1h        ;07e1 c2 c1 f1
-    and 7fh             ;07e4 e6 7f
-    push af             ;07e6 f5
-    add a,a             ;07e7 87
-    jp m,2f92h          ;07e8 fa 92 2f
-    ld hl,(3c8eh)       ;07eb 2a 8e 3c
-    ld a,(hl)           ;07ee 7e
-    or a                ;07ef b7
-    jp z,2f81h          ;07f0 ca 81 2f
-    pop af              ;07f3 f1
-    push bc             ;07f4 c5
-    ld b,a              ;07f5 47
-    inc b               ;07f6 04
-    dec hl              ;07f7 2b
-    dec b               ;07f8 05
-    jp z,2f6ch          ;07f9 ca 6c 2f
-    ld a,(hl)           ;07fc 7e
-    push de             ;07fd d5
-    cpl                 ;07fe 2f
-    ld e,a              ;07ff 5f
+table_0:
+    db 2ah,0a0h,3ch,19h,34h,0d1h,0f1h,0e6h,7fh,0f5h,87h,0fah,92h,2fh,2ah
+    db 8eh,3ch,7eh,0b7h,0cah,81h,2fh,0f1h,0c5h,47h,04h,2bh,05h,0cah,6ch,2fh
+    db 7eh,0d5h,2fh,5fh,16h,0ffh,19h,0d1h,0c3h,5dh,2fh,7eh,0b7h,0cah,8fh,2fh
+    db 3dh,47h,2bh,7eh,04h,05h,0cah,8fh,2fh,0cdh,21h,31h,05h,0c3h,73h,2fh
+    db 0f1h,2bh,3ch,3dh,0cah,8ch,2fh,2bh,0c3h,84h,2fh,7eh,0e1h,0c9h,0c1h,0e1h
+    db 0c9h,3eh,2eh,0cdh,21h,31h,0cdh,21h,31h,0f1h,0e6h,3fh,0c5h,2ah,9bh,3ch
+    db 4fh,06h,00h,09h,44h,0cdh,0b6h,17h,45h,0cdh,0b6h,17h,0c1h,0e1h,1bh,1ah
+    db 0c9h,0e5h,0cdh,54h,0bh,0e1h,0c4h,0cbh,2fh,0f5h,11h,16h,3bh,1ah,3ch,4fh
+    db 1ah,77h,13h
+
+table_1:
+    db 2bh,0dh,0c2h,0c1h,0f1h,0e6h,7fh,0f5h,87h,0fah,92h,2fh,2ah
+    db 8eh,3ch,7eh,0b7h,0cah,81h,2fh,0f1h,0c5h,47h,04h,2bh,05h,0cah,6ch,2fh
+    db 7eh,0d5h,2fh,5fh
