@@ -1,6 +1,7 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin 256 --labels --address xfer.com
 
+bdos:          equ  0005h ;BDOS entry point
 ieee_listen:   equ 0f033h ;Send LISTEN to an IEEE-488 device
 ieee_unlisten: equ 0f036h ;Send UNLISTEN to all IEEE-488 devices
 ieee_talk:     equ 0f039h ;Send TALK to an IEEE-488 device
@@ -13,6 +14,15 @@ ieee_read_err: equ 0f05ah ;Read the error channel of an IEEE-488 device
 ieee_open:     equ 0f05dh ;Open a file on an IEEE-488 device
 ieee_close:    equ 0f060h ;Close an open file on an IEEE-488 device
 ieee_init_drv: equ 0f078h ;Initialize an IEEE-488 disk drive
+
+cwrite:        equ 02h    ;Console Output
+cwritestr:     equ 09h    ;Output String
+fopen:         equ 0fh    ;Open File
+creadstr:      equ 10h    ;Buffered Console Input
+fdelete:       equ 13h    ;Delete File
+fread:         equ 14h    ;Read Next Record
+fwrite:        equ 15h    ;Write Next Record
+fmake:         equ 16h    ;Create File
 
 lf:            equ 0ah    ;Line Feed
 cr:            equ 0dh    ;Carriage Return
@@ -37,8 +47,8 @@ l0114h:
 l011dh:
     call sub_0408h      ;011d cd 08 04
     ld de,l0416h        ;0120 11 16 04
-    ld c,09h            ;0123 0e 09
-    call 0005h          ;0125 cd 05 00
+    ld c,cwritestr      ;0123 0e 09
+    call bdos           ;0125 cd 05 00
     call sub_03b8h      ;0128 cd b8 03
     ld a,(l075dh+2)     ;012b 3a 5f 07
     ld hl,07e2h         ;012e 21 e2 07
@@ -53,8 +63,8 @@ l011dh:
     cp 34h              ;0143 fe 34
     jp z,l0152h         ;0145 ca 52 01
     ld de,l05a3h        ;0148 11 a3 05
-    ld c,09h            ;014b 0e 09
-    call 0005h          ;014d cd 05 00
+    ld c,cwritestr      ;014b 0e 09
+    call bdos           ;014d cd 05 00
     jr l011dh           ;0150 18 cb
 l0152h:
     ld a,53h            ;0152 3e 53
@@ -89,11 +99,11 @@ l0183h:
     pop bc              ;0189 c1
     djnz l0183h         ;018a 10 f7
     ld de,005ch         ;018c 11 5c 00
-    ld c,10h            ;018f 0e 10
-    call 0005h          ;0191 cd 05 00
+    ld c,creadstr       ;018f 0e 10
+    call bdos           ;0191 cd 05 00
     ld de,l05ddh        ;0194 11 dd 05
-    ld c,09h            ;0197 0e 09
-    call 0005h          ;0199 cd 05 00
+    ld c,cwritestr      ;0197 0e 09
+    call bdos           ;0199 cd 05 00
     jp 0000h            ;019c c3 00 00
 l019fh:
     ld a,50h            ;019f 3e 50
@@ -186,8 +196,8 @@ sub_0234h:
     inc l               ;0235 2c
     ret nz              ;0236 c0
     ld de,005ch         ;0237 11 5c 00
-    ld c,15h            ;023a 0e 15
-    call 0005h          ;023c cd 05 00
+    ld c,fwrite         ;023a 0e 15
+    call bdos           ;023c cd 05 00
     or a                ;023f b7
     jp nz,l02d4h        ;0240 c2 d4 02
     ld hl,0080h         ;0243 21 80 00
@@ -196,8 +206,8 @@ sub_0247h:
     push af             ;0247 f5
 l0248h:
     ld de,l0513h        ;0248 11 13 05
-    ld c,09h            ;024b 0e 09
-    call 0005h          ;024d cd 05 00
+    ld c,cwritestr      ;024b 0e 09
+    call bdos           ;024d cd 05 00
     call sub_03b8h      ;0250 cd b8 03
     ld a,(l075dh+2)     ;0253 3a 5f 07
     sub 41h             ;0256 d6 41
@@ -205,13 +215,13 @@ l0248h:
     call get_dtype      ;025b cd 51 f0
     jr c,l026ah         ;025e 38 0a
     ld de,l0592h        ;0260 11 92 05
-    ld c,09h            ;0263 0e 09
-    call 0005h          ;0265 cd 05 00
+    ld c,cwritestr      ;0263 0e 09
+    call bdos           ;0265 cd 05 00
     jr l0248h           ;0268 18 de
 l026ah:
     ld de,l0531h        ;026a 11 31 05
-    ld c,09h            ;026d 0e 09
-    call 0005h          ;026f cd 05 00
+    ld c,cwritestr      ;026d 0e 09
+    call bdos           ;026f cd 05 00
     call sub_03b8h      ;0272 cd b8 03
     ld a,(l07dfh)       ;0275 3a df 07
     call ieee_init_drv  ;0278 cd 78 f0
@@ -246,24 +256,24 @@ l026ah:
     or a                ;02b7 b7
     jp nz,l03ech        ;02b8 c2 ec 03
     ld de,005ch         ;02bb 11 5c 00
-    ld c,13h            ;02be 0e 13
-    call 0005h          ;02c0 cd 05 00
+    ld c,fdelete        ;02be 0e 13
+    call bdos           ;02c0 cd 05 00
     ld de,005ch         ;02c3 11 5c 00
-    ld c,16h            ;02c6 0e 16
-    call 0005h          ;02c8 cd 05 00
+    ld c,fmake            ;02c6 0e 16
+    call bdos           ;02c8 cd 05 00
     inc a               ;02cb 3c
     ret nz              ;02cc c0
     ld de,(l07e0h)      ;02cd ed 5b e0 07
     call ieee_close     ;02d1 cd 60 f0
 l02d4h:
     ld de,l05c4h        ;02d4 11 c4 05
-    ld c,09h            ;02d7 0e 09
-    call 0005h          ;02d9 cd 05 00
+    ld c,cwritestr      ;02d7 0e 09
+    call bdos           ;02d9 cd 05 00
     jp 0000h            ;02dc c3 00 00
 l02dfh:
     ld de,l0548h        ;02df 11 48 05
-    ld c,09h            ;02e2 0e 09
-    call 0005h          ;02e4 cd 05 00
+    ld c,cwritestr      ;02e2 0e 09
+    call bdos           ;02e4 cd 05 00
     call sub_03b8h      ;02e7 cd b8 03
     ld a,(l075dh+2)     ;02ea 3a 5f 07
     sub 41h             ;02ed d6 41
@@ -271,13 +281,13 @@ l02dfh:
     call get_dtype      ;02f2 cd 51 f0
     jr c,l0301h         ;02f5 38 0a
     ld de,l0592h        ;02f7 11 92 05
-    ld c,09h            ;02fa 0e 09
-    call 0005h          ;02fc cd 05 00
+    ld c,cwritestr      ;02fa 0e 09
+    call bdos           ;02fc cd 05 00
     jr l02dfh           ;02ff 18 de
 l0301h:
     ld de,l056bh        ;0301 11 6b 05
-    ld c,09h            ;0304 0e 09
-    call 0005h          ;0306 cd 05 00
+    ld c,cwritestr      ;0304 0e 09
+    call bdos           ;0306 cd 05 00
     call sub_03b8h      ;0309 cd b8 03
     ld a,(l07dfh)       ;030c 3a df 07
     call ieee_init_drv  ;030f cd 78 f0
@@ -312,14 +322,14 @@ l0301h:
     or a                ;0356 b7
     jp nz,l03ech        ;0357 c2 ec 03
     ld de,005ch         ;035a 11 5c 00
-    ld c,0fh            ;035d 0e 0f
-    call 0005h          ;035f cd 05 00
+    ld c,fopen          ;035d 0e 0f
+    call bdos           ;035f cd 05 00
     inc a               ;0362 3c
     jp z,l039bh         ;0363 ca 9b 03
 l0366h:
     ld de,005ch         ;0366 11 5c 00
-    ld c,14h            ;0369 0e 14
-    call 0005h          ;036b cd 05 00
+    ld c,fread          ;0369 0e 14
+    call bdos           ;036b cd 05 00
     or a                ;036e b7
     jr nz,l0389h        ;036f 20 18
     ld de,(l07e0h)      ;0371 ed 5b e0 07
@@ -338,13 +348,13 @@ l0389h:
     ld de,(l07e0h)      ;0389 ed 5b e0 07
     call ieee_close     ;038d cd 60 f0
     ld de,l05ddh        ;0390 11 dd 05
-    ld c,09h            ;0393 0e 09
-    call 0005h          ;0395 cd 05 00
+    ld c,cwritestr      ;0393 0e 09
+    call bdos           ;0395 cd 05 00
     jp 0000h            ;0398 c3 00 00
 l039bh:
     ld de,l05f1h        ;039b 11 f1 05
-    ld c,09h            ;039e 0e 09
-    call 0005h          ;03a0 cd 05 00
+    ld c,cwritestr      ;039e 0e 09
+    call bdos           ;03a0 cd 05 00
     jp 0000h            ;03a3 c3 00 00
 sub_03a6h:
     push hl             ;03a6 e5
@@ -361,7 +371,7 @@ sub_03b8h:
     ld a,50h            ;03bb 3e 50
     ld (de),a           ;03bd 12
     ld c,lf             ;03be 0e 0a
-    call 0005h          ;03c0 cd 05 00
+    call bdos           ;03c0 cd 05 00
     call sub_0408h      ;03c3 cd 08 04
     ld a,(l075dh+1)     ;03c6 3a 5e 07
     ld hl,l075dh+2      ;03c9 21 5f 07
@@ -383,19 +393,19 @@ l03dah:
     ret                 ;03e0 c9
 l03e1h:
     ld de,l0582h        ;03e1 11 82 05
-    ld c,09h            ;03e4 0e 09
-    call 0005h          ;03e6 cd 05 00
+    ld c,cwritestr      ;03e4 0e 09
+    call bdos           ;03e6 cd 05 00
     jp 0000h            ;03e9 c3 00 00
 l03ech:
     ld de,l05b3h        ;03ec 11 b3 05
-    ld c,09h            ;03ef 0e 09
-    call 0005h          ;03f1 cd 05 00
+    ld c,cwritestr      ;03ef 0e 09
+    call bdos           ;03f1 cd 05 00
     ld hl,0eac0h        ;03f4 21 c0 ea
 l03f7h:
     push hl             ;03f7 e5
     ld e,(hl)           ;03f8 5e
-    ld c,02h            ;03f9 0e 02
-    call 0005h          ;03fb cd 05 00
+    ld c,cwrite         ;03f9 0e 02
+    call bdos           ;03fb cd 05 00
     pop hl              ;03fe e1
     ld a,(hl)           ;03ff 7e
     inc hl              ;0400 23
@@ -404,10 +414,10 @@ l03f7h:
     jp 0000h            ;0405 c3 00 00
 sub_0408h:
     ld e,cr             ;0408 1e 0d
-    ld c,02h            ;040a 0e 02
-    call 0005h          ;040c cd 05 00
+    ld c,cwrite         ;040a 0e 02
+    call bdos           ;040c cd 05 00
     ld e,lf             ;040f 1e 0a
-    ld c,02h            ;0411 0e 02
+    ld c,cwrite         ;0411 0e 02
     jp 0005h            ;0413 c3 05 00
 
 l0416h:
