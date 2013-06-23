@@ -3,6 +3,7 @@
 
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
+fcb:           equ  005ch ;BDOS default FCB
 eoisav:        equ 0ea6ch ;Stores ppi2_pa IEEE-488 ctrl lines after get byte
 dos_msg:       equ 0eac0h ;Last error message returned from CBM DOS
 ieee_listen:   equ 0f033h ;Send LISTEN to an IEEE-488 device
@@ -36,10 +37,10 @@ cr:            equ 0dh    ;Carriage Return
     nop                 ;0101 00
     nop                 ;0102 00
     ld sp,(0006h)       ;0103 ed 7b 06 00
-    ld a,(005dh)        ;0107 3a 5d 00
+    ld a,(fcb+1)        ;0107 3a 5d 00
     cp ' '              ;010a fe 20
     jp z,l03e1h         ;010c ca e1 03
-    ld hl,005dh         ;010f 21 5d 00
+    ld hl,fcb+1         ;010f 21 5d 00
     ld b,0bh            ;0112 06 0b
 l0114h:
     ld a,(hl)           ;0114 7e
@@ -101,7 +102,7 @@ l0183h:
     call sub_0234h      ;0186 cd 34 02
     pop bc              ;0189 c1
     djnz l0183h         ;018a 10 f7
-    ld de,005ch         ;018c 11 5c 00
+    ld de,fcb           ;018c 11 5c 00
     ld c,creadstr       ;018f 0e 10
     call bdos           ;0191 cd 05 00
     ld de,complete      ;0194 11 dd 05
@@ -198,7 +199,7 @@ sub_0234h:
     ld (hl),a           ;0234 77
     inc l               ;0235 2c
     ret nz              ;0236 c0
-    ld de,005ch         ;0237 11 5c 00
+    ld de,fcb           ;0237 11 5c 00
     ld c,fwrite         ;023a 0e 15
     call bdos           ;023c cd 05 00
     or a                ;023f b7
@@ -258,10 +259,10 @@ l026ah:
     call ieee_read_err  ;02b4 cd 5a f0
     or a                ;02b7 b7
     jp nz,l03ech        ;02b8 c2 ec 03
-    ld de,005ch         ;02bb 11 5c 00
+    ld de,fcb           ;02bb 11 5c 00
     ld c,fdelete        ;02be 0e 13
     call bdos           ;02c0 cd 05 00
-    ld de,005ch         ;02c3 11 5c 00
+    ld de,fcb           ;02c3 11 5c 00
     ld c,fmake          ;02c6 0e 16
     call bdos           ;02c8 cd 05 00
     inc a               ;02cb 3c
@@ -324,13 +325,13 @@ l0301h:
     call ieee_read_err  ;0353 cd 5a f0
     or a                ;0356 b7
     jp nz,l03ech        ;0357 c2 ec 03
-    ld de,005ch         ;035a 11 5c 00
+    ld de,fcb           ;035a 11 5c 00
     ld c,fopen          ;035d 0e 0f
     call bdos           ;035f cd 05 00
     inc a               ;0362 3c
     jp z,l039bh         ;0363 ca 9b 03
 l0366h:
-    ld de,005ch         ;0366 11 5c 00
+    ld de,fcb           ;0366 11 5c 00
     ld c,fread          ;0369 0e 14
     call bdos           ;036b cd 05 00
     or a                ;036e b7
