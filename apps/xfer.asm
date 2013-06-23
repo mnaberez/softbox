@@ -1,8 +1,21 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin 256 --labels --address xfer.com
 
-lf:         equ 0ah     ;Line Feed
-cr:         equ 0dh     ;Carriage Return
+ieee_listen:   equ 0f033h ;Send LISTEN to an IEEE-488 device
+ieee_unlisten: equ 0f036h ;Send UNLISTEN to all IEEE-488 devices
+ieee_talk:     equ 0f039h ;Send TALK to an IEEE-488 device
+ieee_untalk:   equ 0f03ch ;Send UNTALK to all IEEE-488 devices
+ieee_get_byte: equ 0f03fh ;Read byte from an IEEE-488 device
+ieee_put_byte: equ 0f042h ;Send byte to an IEEE-488 device
+get_dtype:     equ 0f051h ;Get drive type for a CP/M drive number
+get_ddev:      equ 0f054h ;Get device address for a CP/M drive number
+ieee_read_err: equ 0f05ah ;Read the error channel of an IEEE-488 device
+ieee_open:     equ 0f05dh ;Open a file on an IEEE-488 device
+ieee_close:    equ 0f060h ;Close an open file on an IEEE-488 device
+ieee_init_drv: equ 0f078h ;Initialize an IEEE-488 disk drive
+
+lf:            equ 0ah    ;Line Feed
+cr:            equ 0dh    ;Carriage Return
 
     org 0100h
 
@@ -67,7 +80,7 @@ l0174h:
     jr z,l015ah         ;0178 28 e0
 l017ah:
     ld de,(l07e0h)      ;017a ed 5b e0 07
-    call 0f060h         ;017e cd 60 f0
+    call ieee_close     ;017e cd 60 f0
     ld b,7fh            ;0181 06 7f
 l0183h:
     push bc             ;0183 c5
@@ -189,7 +202,7 @@ l0248h:
     ld a,(l075dh+2)     ;0253 3a 5f 07
     sub 41h             ;0256 d6 41
     ld (l07dfh),a       ;0258 32 df 07
-    call 0f051h         ;025b cd 51 f0
+    call get_dtype      ;025b cd 51 f0
     jr c,l026ah         ;025e 38 0a
     ld de,l0592h        ;0260 11 92 05
     ld c,09h            ;0263 0e 09
@@ -201,13 +214,13 @@ l026ah:
     call 0005h          ;026f cd 05 00
     call sub_03b8h      ;0272 cd b8 03
     ld a,(l07dfh)       ;0275 3a df 07
-    call 0f078h         ;0278 cd 78 f0
+    call ieee_init_drv  ;0278 cd 78 f0
     ld a,(l07dfh)       ;027b 3a df 07
     and 01h             ;027e e6 01
     add a,30h           ;0280 c6 30
     ld (l075dh),a       ;0282 32 5d 07
     ld a,(l07dfh)       ;0285 3a df 07
-    call 0f054h         ;0288 cd 54 f0
+    call get_ddev       ;0288 cd 54 f0
     ld hl,l075dh+1      ;028b 21 5e 07
     ld a,(hl)           ;028e 7e
     add a,06h           ;028f c6 06
@@ -227,9 +240,9 @@ l026ah:
     ld hl,l075dh        ;02a5 21 5d 07
     ld e,03h            ;02a8 1e 03
     ld (l07e0h),de      ;02aa ed 53 e0 07
-    call 0f05dh         ;02ae cd 5d f0
+    call ieee_open      ;02ae cd 5d f0
     ld a,(l07dfh)       ;02b1 3a df 07
-    call 0f05ah         ;02b4 cd 5a f0
+    call ieee_read_err  ;02b4 cd 5a f0
     or a                ;02b7 b7
     jp nz,l03ech        ;02b8 c2 ec 03
     ld de,005ch         ;02bb 11 5c 00
@@ -241,7 +254,7 @@ l026ah:
     inc a               ;02cb 3c
     ret nz              ;02cc c0
     ld de,(l07e0h)      ;02cd ed 5b e0 07
-    call 0f060h         ;02d1 cd 60 f0
+    call ieee_close     ;02d1 cd 60 f0
 l02d4h:
     ld de,l05c4h        ;02d4 11 c4 05
     ld c,09h            ;02d7 0e 09
@@ -255,7 +268,7 @@ l02dfh:
     ld a,(l075dh+2)     ;02ea 3a 5f 07
     sub 41h             ;02ed d6 41
     ld (l07dfh),a       ;02ef 32 df 07
-    call 0f051h         ;02f2 cd 51 f0
+    call get_dtype      ;02f2 cd 51 f0
     jr c,l0301h         ;02f5 38 0a
     ld de,l0592h        ;02f7 11 92 05
     ld c,09h            ;02fa 0e 09
@@ -267,13 +280,13 @@ l0301h:
     call 0005h          ;0306 cd 05 00
     call sub_03b8h      ;0309 cd b8 03
     ld a,(l07dfh)       ;030c 3a df 07
-    call 0f078h         ;030f cd 78 f0
+    call ieee_init_drv  ;030f cd 78 f0
     ld a,(l07dfh)       ;0312 3a df 07
     and 01h             ;0315 e6 01
     add a,30h           ;0317 c6 30
     ld (l075dh),a       ;0319 32 5d 07
     ld a,(l07dfh)       ;031c 3a df 07
-    call 0f054h         ;031f cd 54 f0
+    call get_ddev       ;031f cd 54 f0
     ld hl,l075dh+1      ;0322 21 5e 07
     ld c,(hl)           ;0325 4e
     ld b,00h            ;0326 06 00
@@ -293,9 +306,9 @@ l0301h:
     dec hl              ;0346 2b
     ld e,03h            ;0347 1e 03
     ld (l07e0h),de      ;0349 ed 53 e0 07
-    call 0f05dh         ;034d cd 5d f0
+    call ieee_open      ;034d cd 5d f0
     ld a,(l07dfh)       ;0350 3a df 07
-    call 0f05ah         ;0353 cd 5a f0
+    call ieee_read_err  ;0353 cd 5a f0
     or a                ;0356 b7
     jp nz,l03ech        ;0357 c2 ec 03
     ld de,005ch         ;035a 11 5c 00
@@ -310,20 +323,20 @@ l0366h:
     or a                ;036e b7
     jr nz,l0389h        ;036f 20 18
     ld de,(l07e0h)      ;0371 ed 5b e0 07
-    call 0f033h         ;0375 cd 33 f0
+    call ieee_listen    ;0375 cd 33 f0
     ld hl,0080h         ;0378 21 80 00
 l037bh:
     ld a,(hl)           ;037b 7e
     push hl             ;037c e5
-    call 0f042h         ;037d cd 42 f0
+    call ieee_put_byte  ;037d cd 42 f0
     pop hl              ;0380 e1
     inc l               ;0381 2c
     jr nz,l037bh        ;0382 20 f7
-    call 0f036h         ;0384 cd 36 f0
+    call ieee_unlisten  ;0384 cd 36 f0
     jr l0366h           ;0387 18 dd
 l0389h:
     ld de,(l07e0h)      ;0389 ed 5b e0 07
-    call 0f060h         ;038d cd 60 f0
+    call ieee_close     ;038d cd 60 f0
     ld de,l05ddh        ;0390 11 dd 05
     ld c,09h            ;0393 0e 09
     call 0005h          ;0395 cd 05 00
@@ -336,10 +349,10 @@ l039bh:
 sub_03a6h:
     push hl             ;03a6 e5
     ld de,(l07e0h)      ;03a7 ed 5b e0 07
-    call 0f039h         ;03ab cd 39 f0
-    call 0f03fh         ;03ae cd 3f f0
+    call ieee_talk      ;03ab cd 39 f0
+    call ieee_get_byte  ;03ae cd 3f f0
     push af             ;03b1 f5
-    call 0f03ch         ;03b2 cd 3c f0
+    call ieee_untalk    ;03b2 cd 3c f0
     pop af              ;03b5 f1
     pop hl              ;03b6 e1
     ret                 ;03b7 c9
