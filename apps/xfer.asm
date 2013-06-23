@@ -1,6 +1,9 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin 256 --labels --address xfer.com
 
+lf:         equ 0ah     ;Line Feed
+cr:         equ 0dh     ;Carriage Return
+
     org 0100h
 
     nop                 ;0100 00
@@ -54,10 +57,10 @@ l015ah:
     or a                ;0167 b7
     ld a,d              ;0168 7a
     jr z,l0174h         ;0169 28 09
-    cp 0dh              ;016b fe 0d
+    cp cr               ;016b fe 0d
     jr nz,l0174h        ;016d 20 05
     call sub_0234h      ;016f cd 34 02
-    ld a,0ah            ;0172 3e 0a
+    ld a,lf             ;0172 3e 0a
 l0174h:
     call sub_0234h      ;0174 cd 34 02
     pop af              ;0177 f1
@@ -120,9 +123,9 @@ l01e6h:
     call sub_0234h      ;01ef cd 34 02
     jr l01e6h           ;01f2 18 f2
 l01f4h:
-    ld a,0dh            ;01f4 3e 0d
+    ld a,cr             ;01f4 3e 0d
     call sub_0234h      ;01f6 cd 34 02
-    ld a,0ah            ;01f9 3e 0a
+    ld a,lf             ;01f9 3e 0a
     call sub_0234h      ;01fb cd 34 02
     jr l01adh           ;01fe 18 ad
 l0200h:
@@ -344,7 +347,7 @@ sub_03b8h:
     ld de,l075dh        ;03b8 11 5d 07
     ld a,50h            ;03bb 3e 50
     ld (de),a           ;03bd 12
-    ld c,0ah            ;03be 0e 0a
+    ld c,lf             ;03be 0e 0a
     call 0005h          ;03c0 cd 05 00
     call sub_0408h      ;03c3 cd 08 04
     ld a,(l075dh+1)     ;03c6 3a 5e 07
@@ -363,7 +366,7 @@ l03dah:
     inc hl              ;03da 23
     djnz l03ceh         ;03db 10 f1
     dec hl              ;03dd 2b
-    ld (hl),0dh         ;03de 36 0d
+    ld (hl),cr          ;03de 36 0d
     ret                 ;03e0 c9
 l03e1h:
     ld de,l0582h        ;03e1 11 82 05
@@ -383,26 +386,26 @@ l03f7h:
     pop hl              ;03fe e1
     ld a,(hl)           ;03ff 7e
     inc hl              ;0400 23
-    cp 0dh              ;0401 fe 0d
+    cp cr               ;0401 fe 0d
     jr nz,l03f7h        ;0403 20 f2
     jp 0000h            ;0405 c3 00 00
 sub_0408h:
-    ld e,0dh            ;0408 1e 0d
+    ld e,cr             ;0408 1e 0d
     ld c,02h            ;040a 0e 02
     call 0005h          ;040c cd 05 00
-    ld e,0ah            ;040f 1e 0a
+    ld e,lf             ;040f 1e 0a
     ld c,02h            ;0411 0e 02
     jp 0005h            ;0413 c3 05 00
 
 l0416h:
-    db "CP/M <--> Pet DOS file transfer",0dh,0ah
-    db "----      --- --- ---- --------",0dh,0ah
+    db "CP/M <--> Pet DOS file transfer",cr,lf
+    db "----      --- --- ---- --------",cr,lf
 
-    db 0ah,"1.  Copy sequential file to PET DOS",0dh,0ah
-    db 0ah,"2.  Copy sequential file from PET DOS",0dh,0ah
-    db 0ah,"3.  Copy BASIC program from PET DOS",0dh,0ah
-    db 0ah,"4.  As 2.  but insert line feeds",0dh,0ah
-    db 0ah,"Which type of transfer (1 to 4) ? $"
+    db lf,"1.  Copy sequential file to PET DOS",cr,lf
+    db lf,"2.  Copy sequential file from PET DOS",cr,lf
+    db lf,"3.  Copy BASIC program from PET DOS",cr,lf
+    db lf,"4.  As 2.  but insert line feeds",cr,lf
+    db lf,"Which type of transfer (1 to 4) ? $"
 l0513h:
     db "PET DOS source drive (A-P) ? $"
 l0531h:
@@ -412,19 +415,19 @@ l0548h:
 l056bh:
     db "PET DOS destn. file ? $"
 l0582h:
-    db 0dh,0ah,"Bad file name$"
+    db cr,lf,"Bad file name$"
 l0592h:
-    db 0dh,0ah,"Bad drive name$"
+    db cr,lf,"Bad drive name$"
 l05a3h:
-    db 0dh,0ah,"Bad command",0dh,0ah,"$"
+    db cr,lf,"Bad command",cr,lf,"$"
 l05b3h:
-    db 0dh,0ah,"Disk error :",0dh,0ah,"$"
+    db cr,lf,"Disk error :",cr,lf,"$"
 l05c4h:
-    db 0dh,0ah,"Disk or directory full$"
+    db cr,lf,"Disk or directory full$"
 l05ddh:
-    db 0dh,0ah,"Transfer complete$"
+    db cr,lf,"Transfer complete$"
 l05f1h:
-    db 0dh,0ah,"File not found$"
+    db cr,lf,"File not found$"
 
 l0602h:
 ;Last character of each command has bit 7 set
