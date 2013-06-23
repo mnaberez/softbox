@@ -1,6 +1,7 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin 256 --labels --address xfer.com
 
+warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
 ieee_listen:   equ 0f033h ;Send LISTEN to an IEEE-488 device
 ieee_unlisten: equ 0f036h ;Send UNLISTEN to all IEEE-488 devices
@@ -104,7 +105,7 @@ l0183h:
     ld de,l05ddh        ;0194 11 dd 05
     ld c,cwritestr      ;0197 0e 09
     call bdos           ;0199 cd 05 00
-    jp 0000h            ;019c c3 00 00
+    jp warm             ;019c c3 00 00
 l019fh:
     ld a,50h            ;019f 3e 50
     call sub_0247h      ;01a1 cd 47 02
@@ -269,7 +270,7 @@ l02d4h:
     ld de,l05c4h        ;02d4 11 c4 05
     ld c,cwritestr      ;02d7 0e 09
     call bdos           ;02d9 cd 05 00
-    jp 0000h            ;02dc c3 00 00
+    jp warm             ;02dc c3 00 00
 l02dfh:
     ld de,l0548h        ;02df 11 48 05
     ld c,cwritestr      ;02e2 0e 09
@@ -350,12 +351,12 @@ l0389h:
     ld de,l05ddh        ;0390 11 dd 05
     ld c,cwritestr      ;0393 0e 09
     call bdos           ;0395 cd 05 00
-    jp 0000h            ;0398 c3 00 00
+    jp warm             ;0398 c3 00 00
 l039bh:
     ld de,l05f1h        ;039b 11 f1 05
     ld c,cwritestr      ;039e 0e 09
     call bdos           ;03a0 cd 05 00
-    jp 0000h            ;03a3 c3 00 00
+    jp warm             ;03a3 c3 00 00
 sub_03a6h:
     push hl             ;03a6 e5
     ld de,(l07e0h)      ;03a7 ed 5b e0 07
@@ -395,7 +396,7 @@ l03e1h:
     ld de,l0582h        ;03e1 11 82 05
     ld c,cwritestr      ;03e4 0e 09
     call bdos           ;03e6 cd 05 00
-    jp 0000h            ;03e9 c3 00 00
+    jp warm             ;03e9 c3 00 00
 l03ech:
     ld de,l05b3h        ;03ec 11 b3 05
     ld c,cwritestr      ;03ef 0e 09
@@ -411,14 +412,14 @@ l03f7h:
     inc hl              ;0400 23
     cp cr               ;0401 fe 0d
     jr nz,l03f7h        ;0403 20 f2
-    jp 0000h            ;0405 c3 00 00
+    jp warm             ;0405 c3 00 00
 sub_0408h:
     ld e,cr             ;0408 1e 0d
     ld c,cwrite         ;040a 0e 02
     call bdos           ;040c cd 05 00
     ld e,lf             ;040f 1e 0a
     ld c,cwrite         ;0411 0e 02
-    jp 0005h            ;0413 c3 05 00
+    jp bdos             ;0413 c3 05 00
 
 l0416h:
     db "CP/M <--> Pet DOS file transfer",cr,lf
