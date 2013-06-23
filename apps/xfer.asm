@@ -210,7 +210,7 @@ l026ah:
     add a,06h           ;028f c6 06
     ld c,a              ;0291 4f
     ld (hl),3ah         ;0292 36 3a
-    ld hl,l0759h        ;0294 21 59 07
+    ld hl,0759h         ;0294 21 59 07
     ld b,00h            ;0297 06 00
     add hl,bc           ;0299 09
     ld (hl),2ch         ;029a 36 2c
@@ -427,278 +427,101 @@ l05f1h:
     db 0dh,0ah,"File not found$"
 
 l0602h:
-    ld b,l              ;0602 45
-    ld c,(hl)           ;0603 4e
-    call nz,4f46h       ;0604 c4 46 4f
-    jp nc,454eh         ;0607 d2 4e 45
-    ld e,b              ;060a 58
-    call nc,4144h       ;060b d4 44 41
-    ld d,h              ;060e 54
-    pop bc              ;060f c1
-    ld c,c              ;0610 49
-    ld c,(hl)           ;0611 4e
-    ld d,b              ;0612 50
-    ld d,l              ;0613 55
-    ld d,h              ;0614 54
-    and e               ;0615 a3
-    ld c,c              ;0616 49
-    ld c,(hl)           ;0617 4e
-    ld d,b              ;0618 50
-    ld d,l              ;0619 55
-    call nc,4944h       ;061a d4 44 49
-    call 4552h          ;061d cd 52 45
-l0620h:
-    ld b,c              ;0620 41
-    call nz,454ch       ;0621 c4 4c 45
-    call nc,4f47h       ;0624 d4 47 4f
-    ld d,h              ;0627 54
-    rst 8               ;0628 cf
-    ld d,d              ;0629 52
-    ld d,l              ;062a 55
-    adc a,49h           ;062b ce 49
-    add a,52h           ;062d c6 52
-    ld b,l              ;062f 45
-    ld d,e              ;0630 53
-    ld d,h              ;0631 54
-    ld c,a              ;0632 4f
-l0633h:
-    ld d,d              ;0633 52
-    push bc             ;0634 c5
-    ld b,a              ;0635 47
-    ld c,a              ;0636 4f
-    ld d,e              ;0637 53
-    ld d,l              ;0638 55
-    jp nz,4552h         ;0639 c2 52 45
-    ld d,h              ;063c 54
-    ld d,l              ;063d 55
-    ld d,d              ;063e 52
-l063fh:
-    adc a,52h           ;063f ce 52
-    ld b,l              ;0641 45
-    call 5453h          ;0642 cd 53 54
-    ld c,a              ;0645 4f
-    ret nc              ;0646 d0
-    ld c,a              ;0647 4f
-    adc a,57h           ;0648 ce 57
-    ld b,c              ;064a 41
-    ld c,c              ;064b 49
-l064ch:
-    call nc,4f4ch       ;064c d4 4c 4f
-    ld b,c              ;064f 41
-    call nz,4153h       ;0650 c4 53 41
-    ld d,(hl)           ;0653 56
-    push bc             ;0654 c5
-    ld d,(hl)           ;0655 56
-    ld b,l              ;0656 45
-    ld d,d              ;0657 52
-    ld c,c              ;0658 49
-    ld b,(hl)           ;0659 46
-    exx                 ;065a d9
-    ld b,h              ;065b 44
-    ld b,l              ;065c 45
-    add a,50h           ;065d c6 50
-    ld c,a              ;065f 4f
-    ld c,e              ;0660 4b
-    push bc             ;0661 c5
-    ld d,b              ;0662 50
-l0663h:
-    ld d,d              ;0663 52
-    ld c,c              ;0664 49
-    ld c,(hl)           ;0665 4e
-    ld d,h              ;0666 54
-l0667h:
-    and e               ;0667 a3
-    ld d,b              ;0668 50
-    ld d,d              ;0669 52
-    ld c,c              ;066a 49
-    ld c,(hl)           ;066b 4e
-    call nc,4f43h       ;066c d4 43 4f
-    ld c,(hl)           ;066f 4e
-    call nc,494ch       ;0670 d4 4c 49
-    ld d,e              ;0673 53
-    call nc,4c43h       ;0674 d4 43 4c
-    jp nc,4d43h         ;0677 d2 43 4d
-    call nz,5953h       ;067a c4 53 59
-    out (4fh),a         ;067d d3 4f
-    ld d,b              ;067f 50
-    ld b,l              ;0680 45
-    adc a,43h           ;0681 ce 43
-    ld c,h              ;0683 4c
-    ld c,a              ;0684 4f
-    ld d,e              ;0685 53
-    push bc             ;0686 c5
-    ld b,a              ;0687 47
-    ld b,l              ;0688 45
-    call nc,454eh       ;0689 d4 4e 45
-    rst 10h             ;068c d7
-    ld d,h              ;068d 54
-    ld b,c              ;068e 41
-    ld b,d              ;068f 42
-    xor b               ;0690 a8
-    ld d,h              ;0691 54
-    rst 8               ;0692 cf
-    ld b,(hl)           ;0693 46
-    adc a,53h           ;0694 ce 53
-    ld d,b              ;0696 50
-    ld b,e              ;0697 43
-    xor b               ;0698 a8
-    ld d,h              ;0699 54
-    ld c,b              ;069a 48
-    ld b,l              ;069b 45
-    adc a,4eh           ;069c ce 4e
-    ld c,a              ;069e 4f
-    call nc,5453h       ;069f d4 53 54
-    ld b,l              ;06a2 45
-    ret nc              ;06a3 d0
-    xor e               ;06a4 ab
-    xor l               ;06a5 ad
-    xor d               ;06a6 aa
-    xor a               ;06a7 af
-    sbc a,41h           ;06a8 de 41
-    ld c,(hl)           ;06aa 4e
-    call nz,0d24fh      ;06ab c4 4f d2
-    cp (hl)             ;06ae be
-    cp l                ;06af bd
-    cp h                ;06b0 bc
-    ld d,e              ;06b1 53
-    ld b,a              ;06b2 47
-    adc a,49h           ;06b3 ce 49
-    ld c,(hl)           ;06b5 4e
-    call nc,4241h       ;06b6 d4 41 42
-    out (55h),a         ;06b9 d3 55
-    ld d,e              ;06bb 53
-    jp nc,5246h         ;06bc d2 46 52
-    push bc             ;06bf c5
-    ld d,b              ;06c0 50
-    ld c,a              ;06c1 4f
-    out (53h),a         ;06c2 d3 53
-    ld d,c              ;06c4 51
-    jp nc,4e52h         ;06c5 d2 52 4e
-    call nz,4f4ch       ;06c8 c4 4c 4f
-    rst 0               ;06cb c7
-    ld b,l              ;06cc 45
-    ld e,b              ;06cd 58
-    ret nc              ;06ce d0
-    ld b,e              ;06cf 43
-    ld c,a              ;06d0 4f
-    out (53h),a         ;06d1 d3 53
-    ld c,c              ;06d3 49
-    adc a,54h           ;06d4 ce 54
-    ld b,c              ;06d6 41
-    adc a,41h           ;06d7 ce 41
-    ld d,h              ;06d9 54
-    adc a,50h           ;06da ce 50
-    ld b,l              ;06dc 45
-    ld b,l              ;06dd 45
-    bit 1,h             ;06de cb 4c
-    ld b,l              ;06e0 45
-    adc a,53h           ;06e1 ce 53
-    ld d,h              ;06e3 54
-    ld d,d              ;06e4 52
-    and h               ;06e5 a4
-    ld d,(hl)           ;06e6 56
-    ld b,c              ;06e7 41
-    call z,5341h        ;06e8 cc 41 53
-    jp 4843h            ;06eb c3 43 48
-    ld d,d              ;06ee 52
-    and h               ;06ef a4
-    ld c,h              ;06f0 4c
-    ld b,l              ;06f1 45
-    ld b,(hl)           ;06f2 46
-    ld d,h              ;06f3 54
-    and h               ;06f4 a4
-    ld d,d              ;06f5 52
-    ld c,c              ;06f6 49
-    ld b,a              ;06f7 47
-    ld c,b              ;06f8 48
-    ld d,h              ;06f9 54
-    and h               ;06fa a4
-    ld c,l              ;06fb 4d
-    ld c,c              ;06fc 49
-    ld b,h              ;06fd 44
-    and h               ;06fe a4
-    ld b,a              ;06ff 47
-    rst 8               ;0700 cf
-    ld b,e              ;0701 43
-    ld c,a              ;0702 4f
-    ld c,(hl)           ;0703 4e
-    ld b,e              ;0704 43
-    ld b,c              ;0705 41
-    call nc,4f44h       ;0706 d4 44 4f
-    ld d,b              ;0709 50
-    ld b,l              ;070a 45
-    adc a,44h           ;070b ce 44
-    ld b,e              ;070d 43
-    ld c,h              ;070e 4c
-    ld c,a              ;070f 4f
-    ld d,e              ;0710 53
-    push bc             ;0711 c5
-    ld d,d              ;0712 52
-    ld b,l              ;0713 45
-    ld b,e              ;0714 43
-    ld c,a              ;0715 4f
-    ld d,d              ;0716 52
-    call nz,4548h       ;0717 c4 48 45
-    ld b,c              ;071a 41
-    ld b,h              ;071b 44
-    ld b,l              ;071c 45
-    jp nc,4f43h         ;071d d2 43 4f
-    ld c,h              ;0720 4c
-    ld c,h              ;0721 4c
-    ld b,l              ;0722 45
-    ld b,e              ;0723 43
-    call nc,4142h       ;0724 d4 42 41
-    ld b,e              ;0727 43
-    ld c,e              ;0728 4b
-    ld d,l              ;0729 55
-    ret nc              ;072a d0
-    ld b,e              ;072b 43
-    ld c,a              ;072c 4f
-    ld d,b              ;072d 50
-    exx                 ;072e d9
-    ld b,c              ;072f 41
-    ld d,b              ;0730 50
-    ld d,b              ;0731 50
-    ld b,l              ;0732 45
-    ld c,(hl)           ;0733 4e
-    call nz,5344h       ;0734 c4 44 53
-    ld b,c              ;0737 41
-    ld d,(hl)           ;0738 56
-    push bc             ;0739 c5
-    ld b,h              ;073a 44
-    ld c,h              ;073b 4c
-    ld c,a              ;073c 4f
-    ld b,c              ;073d 41
-    call nz,4143h       ;073e c4 43 41
-    ld d,h              ;0741 54
-    ld b,c              ;0742 41
-    ld c,h              ;0743 4c
-    ld c,a              ;0744 4f
-    rst 0               ;0745 c7
-    ld d,d              ;0746 52
-    ld b,l              ;0747 45
-    ld c,(hl)           ;0748 4e
-    ld b,c              ;0749 41
-    ld c,l              ;074a 4d
-    push bc             ;074b c5
-    ld d,e              ;074c 53
-    ld b,e              ;074d 43
-    ld d,d              ;074e 52
-    ld b,c              ;074f 41
-    ld d,h              ;0750 54
-    ld b,e              ;0751 43
-    ret z               ;0752 c8
-    ld b,h              ;0753 44
-    ld c,c              ;0754 49
-    ld d,d              ;0755 52
-    ld b,l              ;0756 45
-    ld b,e              ;0757 43
-    ld d,h              ;0758 54
-l0759h:
-    ld c,a              ;0759 4f
-    ld d,d              ;075a 52
-    exx                 ;075b d9
-    rst 38h             ;075c ff
+;Last character of each command has bit 7 set
+;
+    db "EN",0c4h        ;END
+    db "FO",0d2h        ;FOR
+    db "NEX",0d4h       ;NEXT
+    db "DAT",0c1h       ;DATA
+    db "INPUT",0a3h     ;INPUT#
+    db "INPU",0d4h      ;INPUT
+    db "DI",0cdh        ;DIM
+    db "REA",0c4h       ;READ
+    db "LE",0d4h        ;LET
+    db "GOT",0cfh       ;GOTO
+    db "RU",0ceh        ;RUN
+    db "I",0c6h         ;IF
+    db "RESTOR",0c5h    ;RESTORE
+    db "GOSU",0c2h      ;GOSUB
+    db "RETUR",0ceh     ;RETURN
+    db "RE",0cdh        ;REM
+    db "STO",0d0h       ;STOP
+    db "O",0ceh         ;ON
+    db "WAI",0d4h       ;WAIT
+    db "LOA",0c4h       ;LOAD
+    db "SAV",0c5h       ;SAVE
+    db "VERIF",0d9h     ;VERIFY
+    db "DE",0c6h        ;DEF
+    db "POK",0c5h       ;POKE
+    db "PRINT",0a3h     ;PRINT#
+    db "PRIN",0d4h      ;PRINT
+    db "CON",0d4h       ;CONT
+    db "LIS",0d4h       ;LIST
+    db "CL",0d2h        ;CLR
+    db "CM",0c4h        ;CMD
+    db "SY",0d3h        ;SYS
+    db "OPE",0ceh       ;OPEN
+    db "CLOS",0c5h      ;CLOSE
+    db "GE",0d4h        ;GET
+    db "NE",0d7h        ;NEW
+    db "TAB",0a8h       ;TAB(
+    db "T",0cfh         ;TO
+    db "F",0ceh         ;FN
+    db "SPC",0a8h       ;SPC(
+    db "THE",0ceh       ;THEN
+    db "NO",0d4h        ;NOT
+    db "STE",0d0h       ;STEP
+    db 0abh             ;+
+    db 0adh             ;-
+    db 0aah             ;*
+    db 0afh             ;/
+    db 0deh             ;^
+    db "AN",0c4h        ;AND
+    db "O",0d2h         ;OR
+    db 0beh             ;>
+    db 0bdh             ;=
+    db 0bch             ;<
+    db "SG",0ceh        ;SGN
+    db "IN",0d4h        ;INT
+    db "AB",0d3h        ;ABS
+    db "US",0d2h        ;USR
+    db "FR",0c5h        ;FRE
+    db "PO",0d3h        ;POS
+    db "SQ",0d2h        ;SQR
+    db "RN",0c4h        ;RND
+    db "LO",0c7h        ;LOG
+    db "EX",0d0h        ;EXP
+    db "CO",0d3h        ;COS
+    db "SI",0ceh        ;SIN
+    db "TA",0ceh        ;TAN
+    db "AT",0ceh        ;ATN
+    db "PEE",0cbh       ;PEEK
+    db "LE",0ceh        ;LEN
+    db "STR",0a4h       ;STR$
+    db "VA",0cch        ;VAL
+    db "AS",0c3h        ;ASC
+    db "CHR",0a4h       ;CHR$
+    db "LEFT",0a4h      ;LEFT$
+    db "RIGHT",0a4h     ;RIGHT$
+    db "MID",0a4h       ;MID$
+    db "G",0cfh         ;GO
+    db "CONCA",0d4h     ;CONCAT
+    db "DOPE",0ceh      ;DOPEN
+    db "DCLOS",0c5h     ;DCLOSE
+    db "RECOR",0c4h     ;RECORD
+    db "HEADE",0d2h     ;HEADER
+    db "COLLEC",0d4h    ;COLLECT
+    db "BACKU",0d0h     ;BACKUP
+    db "COP",0d9h       ;COPY
+    db "APPEN",0c4h     ;APPEND
+    db "DSAV",0c5h      ;DSAVE
+    db "DLOA",0c4h      ;DLOAD
+    db "CATALO",0c7h    ;CATALOG
+    db "RENAM",0c5h     ;RENAME
+    db "SCRATC",0c8h    ;SCRATCH
+    db "DIRECTOR",0d9h  ;DIRECTORY
+    db 0ffh             ;End of table
+
 l075dh:
     ld hl,(3ca0h)       ;075d 2a a0 3c
     add hl,de           ;0760 19
