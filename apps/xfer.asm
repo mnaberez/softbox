@@ -49,7 +49,7 @@ l0114h:
     inc hl              ;011a 23
     djnz l0114h         ;011b 10 f7
 l011dh:
-    call sub_0408h      ;011d cd 08 04
+    call newline        ;011d cd 08 04
     ld de,menu          ;0120 11 16 04
     ld c,cwritestr      ;0123 0e 09
     call bdos           ;0125 cd 05 00
@@ -376,7 +376,7 @@ sub_03b8h:
     ld (de),a           ;03bd 12
     ld c,lf             ;03be 0e 0a
     call bdos           ;03c0 cd 05 00
-    call sub_0408h      ;03c3 cd 08 04
+    call newline        ;03c3 cd 08 04
     ld a,(l075dh+1)     ;03c6 3a 5e 07
     ld hl,l075dh+2      ;03c9 21 5f 07
     ld b,a              ;03cc 47
@@ -416,13 +416,14 @@ l03f7h:
     cp cr               ;0401 fe 0d
     jr nz,l03f7h        ;0403 20 f2
     jp warm             ;0405 c3 00 00
-sub_0408h:
-    ld e,cr             ;0408 1e 0d
-    ld c,cwrite         ;040a 0e 02
-    call bdos           ;040c cd 05 00
-    ld e,lf             ;040f 1e 0a
-    ld c,cwrite         ;0411 0e 02
-    jp bdos             ;0413 c3 05 00
+
+newline:
+    ld e,cr             ;E = carriage return
+    ld c,cwrite         ;C = write char to console out
+    call bdos           ;BDOS system call
+    ld e,lf             ;E = line feed
+    ld c,cwrite         ;C = write char to console out
+    jp bdos             ;Jump out to BDOS, it will return to caller
 
 menu:
     db "CP/M <--> Pet DOS file transfer",cr,lf
