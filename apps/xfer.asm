@@ -3,6 +3,8 @@
 
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
+eoisav:        equ 0ea6ch ;Stores ppi2_pa IEEE-488 ctrl lines after get byte
+dos_msg:       equ 0eac0h ;Last error message returned from CBM DOS
 ieee_listen:   equ 0f033h ;Send LISTEN to an IEEE-488 device
 ieee_unlisten: equ 0f036h ;Send UNLISTEN to all IEEE-488 devices
 ieee_talk:     equ 0f039h ;Send TALK to an IEEE-488 device
@@ -74,7 +76,7 @@ l0152h:
 l015ah:
     call sub_03a6h      ;015a cd a6 03
     ld d,a              ;015d 57
-    ld a,(0ea6ch)       ;015e 3a 6c ea
+    ld a,(eoisav)       ;015e 3a 6c ea
     and 10h             ;0161 e6 10
     push af             ;0163 f5
     ld a,(07e2h)        ;0164 3a e2 07
@@ -401,7 +403,7 @@ l03ech:
     ld de,l05b3h        ;03ec 11 b3 05
     ld c,cwritestr      ;03ef 0e 09
     call bdos           ;03f1 cd 05 00
-    ld hl,0eac0h        ;03f4 21 c0 ea
+    ld hl,dos_msg       ;03f4 21 c0 ea
 l03f7h:
     push hl             ;03f7 e5
     ld e,(hl)           ;03f8 5e
