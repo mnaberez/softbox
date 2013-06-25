@@ -50,28 +50,32 @@ l0114h:
     inc hl
     djnz l0114h
 l011dh:
-    call newline        ;011d cd 08 04
-    ld de,menu          ;0120 11 16 04
-    ld c,cwritestr      ;0123 0e 09
-    call bdos           ;0125 cd 05 00
-    call sub_03b8h      ;0128 cd b8 03
-    ld a,(table_0+2)    ;012b 3a 5f 07
-    ld hl,07e2h         ;012e 21 e2 07
-    ld (hl),00h         ;0131 36 00
-    cp '1'              ;0133 fe 31
-    jp z,l02dfh         ;0135 ca df 02
-    cp '2'              ;0138 fe 32
-    jp z,l0152h         ;013a ca 52 01
-    cp '3'              ;013d fe 33
-    jp z,l019fh         ;013f ca 9f 01
-    inc (hl)            ;0142 34
-    cp '4'              ;0143 fe 34
-    jp z,l0152h         ;0145 ca 52 01
-    ld de,bad_command   ;0148 11 a3 05
-    ld c,cwritestr      ;014b 0e 09
-    call bdos           ;014d cd 05 00
-    jr l011dh           ;0150 18 cb
-l0152h:
+    call newline
+    ld de,menu
+    ld c,cwritestr
+    call bdos
+
+    call sub_03b8h
+    ld a,(table_0+2)
+    ld hl,07e2h
+    ld (hl),00h
+    cp '1'              ;1 = Copy sequential file to PET DOS
+    jp z,seq_to_pet
+    cp '2'              ;2 = Copy sequential file from PET DOS
+    jp z,seq_from_pet
+    cp '3'              ;3 = Copy BASIC program from PET DOS
+    jp z,bas_from_pet
+    inc (hl)
+    cp '4'              ;4 = As 2. but insert line feeds
+    jp z,seq_from_pet
+    ld de,bad_command
+    ld c,cwritestr
+    call bdos
+    jr l011dh
+
+seq_from_pet:
+;Copy sequential file from PET DOS
+;
     ld a,53h            ;0152 3e 53
     call sub_0247h      ;0154 cd 47 02
     ld hl,0080h         ;0157 21 80 00
@@ -110,7 +114,10 @@ l0183h:
     ld c,cwritestr      ;0197 0e 09
     call bdos           ;0199 cd 05 00
     jp warm             ;019c c3 00 00
-l019fh:
+
+bas_from_pet:
+;Copy BASIC program from PET DOS
+;
     ld a,50h            ;019f 3e 50
     call sub_0247h      ;01a1 cd 47 02
     ld hl,0080h         ;01a4 21 80 00
@@ -279,7 +286,9 @@ exit_full:
     call bdos
     jp warm
 
-l02dfh:
+seq_to_pet:
+;Copy sequential file to PET DOS
+;
     ld de,dest_drive    ;02df 11 48 05
     ld c,cwritestr      ;02e2 0e 09
     call bdos           ;02e4 cd 05 00
@@ -292,7 +301,7 @@ l02dfh:
     ld de,bad_drive     ;02f7 11 92 05
     ld c,cwritestr      ;02fa 0e 09
     call bdos           ;02fc cd 05 00
-    jr l02dfh           ;02ff 18 de
+    jr seq_to_pet       ;02ff 18 de
 l0301h:
     ld de,dest_filename ;0301 11 6b 05
     ld c,cwritestr      ;0304 0e 09
