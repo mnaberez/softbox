@@ -33,21 +33,21 @@ cr:            equ 0dh    ;Carriage Return
 
     org 0100h
 
-    nop                 ;0100 00
-    nop                 ;0101 00
-    nop                 ;0102 00
-    ld sp,(0006h)       ;0103 ed 7b 06 00
-    ld a,(fcb+1)        ;0107 3a 5d 00
-    cp ' '              ;010a fe 20
-    jp z,l03e1h         ;010c ca e1 03
-    ld hl,fcb+1         ;010f 21 5d 00
-    ld b,0bh            ;0112 06 0b
+    nop
+    nop
+    nop
+    ld sp,(0006h)
+    ld a,(fcb+1)
+    cp ' '
+    jp z,exit_bad_file
+    ld hl,fcb+1
+    ld b,0bh
 l0114h:
-    ld a,(hl)           ;0114 7e
-    cp '?'              ;0115 fe 3f
-    jp z,l03e1h         ;0117 ca e1 03
-    inc hl              ;011a 23
-    djnz l0114h         ;011b 10 f7
+    ld a,(hl)
+    cp '?'
+    jp z,exit_bad_file
+    inc hl
+    djnz l0114h
 l011dh:
     call newline        ;011d cd 08 04
     ld de,menu          ;0120 11 16 04
@@ -203,7 +203,7 @@ sub_0234h:
     ld c,fwrite         ;023a 0e 15
     call bdos           ;023c cd 05 00
     or a                ;023f b7
-    jp nz,l02d4h        ;0240 c2 d4 02
+    jp nz,exit_full     ;0240 c2 d4 02
     ld hl,0080h         ;0243 21 80 00
     ret                 ;0246 c9
 sub_0247h:
@@ -258,7 +258,7 @@ l026ah:
     ld a,(table_1)      ;02b1 3a df 07
     call ieee_read_err  ;02b4 cd 5a f0
     or a                ;02b7 b7
-    jp nz,l03ech        ;02b8 c2 ec 03
+    jp nz,exit_dos_err  ;02b8 c2 ec 03
     ld de,fcb           ;02bb 11 5c 00
     ld c,fdelete        ;02be 0e 13
     call bdos           ;02c0 cd 05 00
@@ -269,11 +269,15 @@ l026ah:
     ret nz              ;02cc c0
     ld de,(table_1+1)   ;02cd ed 5b e0 07
     call ieee_close     ;02d1 cd 60 f0
-l02d4h:
-    ld de,disk_full     ;02d4 11 c4 05
-    ld c,cwritestr      ;02d7 0e 09
-    call bdos           ;02d9 cd 05 00
-    jp warm             ;02dc c3 00 00
+
+exit_full:
+;Print disk full error and return to CP/M
+;
+    ld de,disk_full
+    ld c,cwritestr
+    call bdos
+    jp warm
+
 l02dfh:
     ld de,dest_drive    ;02df 11 48 05
     ld c,cwritestr      ;02e2 0e 09
@@ -324,12 +328,12 @@ l0301h:
     ld a,(table_1)      ;0350 3a df 07
     call ieee_read_err  ;0353 cd 5a f0
     or a                ;0356 b7
-    jp nz,l03ech        ;0357 c2 ec 03
+    jp nz,exit_dos_err  ;0357 c2 ec 03
     ld de,fcb           ;035a 11 5c 00
     ld c,fopen          ;035d 0e 0f
     call bdos           ;035f cd 05 00
     inc a               ;0362 3c
-    jp z,l039bh         ;0363 ca 9b 03
+    jp z,exit_no_file   ;0363 ca 9b 03
 l0366h:
     ld de,fcb           ;0366 11 5c 00
     ld c,fread          ;0369 0e 14
@@ -355,11 +359,15 @@ l0389h:
     ld c,cwritestr      ;0393 0e 09
     call bdos           ;0395 cd 05 00
     jp warm             ;0398 c3 00 00
-l039bh:
-    ld de,not_found     ;039b 11 f1 05
-    ld c,cwritestr      ;039e 0e 09
-    call bdos           ;03a0 cd 05 00
-    jp warm             ;03a3 c3 00 00
+
+exit_no_file:
+;Print file not found message and return to CP/M
+;
+    ld de,not_found
+    ld c,cwritestr
+    call bdos
+    jp warm
+
 sub_03a6h:
     push hl             ;03a6 e5
     ld de,(table_1+1)   ;03a7 ed 5b e0 07
@@ -395,29 +403,37 @@ l03dah:
     dec hl              ;03dd 2b
     ld (hl),cr          ;03de 36 0d
     ret                 ;03e0 c9
-l03e1h:
-    ld de,bad_filename  ;03e1 11 82 05
-    ld c,cwritestr      ;03e4 0e 09
-    call bdos           ;03e6 cd 05 00
-    jp warm             ;03e9 c3 00 00
-l03ech:
-    ld de,disk_error    ;03ec 11 b3 05
-    ld c,cwritestr      ;03ef 0e 09
-    call bdos           ;03f1 cd 05 00
-    ld hl,dos_msg       ;03f4 21 c0 ea
+
+exit_bad_file:
+;Print bad filename message and return to CP/M.
+;
+    ld de,bad_filename
+    ld c,cwritestr
+    call bdos
+    jp warm
+
+exit_dos_err:
+;Print CBM DOS error message and return to CP/M
+;
+    ld de,disk_error
+    ld c,cwritestr
+    call bdos
+    ld hl,dos_msg
 l03f7h:
-    push hl             ;03f7 e5
-    ld e,(hl)           ;03f8 5e
-    ld c,cwrite         ;03f9 0e 02
-    call bdos           ;03fb cd 05 00
-    pop hl              ;03fe e1
-    ld a,(hl)           ;03ff 7e
-    inc hl              ;0400 23
-    cp cr               ;0401 fe 0d
-    jr nz,l03f7h        ;0403 20 f2
-    jp warm             ;0405 c3 00 00
+    push hl
+    ld e,(hl)
+    ld c,cwrite
+    call bdos
+    pop hl
+    ld a,(hl)
+    inc hl
+    cp cr
+    jr nz,l03f7h
+    jp warm
 
 newline:
+;Print a newline (CR+LF)
+;
     ld e,cr             ;E = carriage return
     ld c,cwrite         ;C = write char to console out
     call bdos           ;BDOS system call
