@@ -21,8 +21,9 @@ ieee_init_drv: equ 0f078h ;Initialize an IEEE-488 disk drive
 
 cwrite:        equ 02h    ;Console Output
 cwritestr:     equ 09h    ;Output String
+creadstr:      equ 0ah    ;Buffered Console Input
 fopen:         equ 0fh    ;Open File
-creadstr:      equ 10h    ;Buffered Console Input
+fclose:        equ 10h    ;Close File
 fdelete:       equ 13h    ;Delete File
 fread:         equ 14h    ;Read Next Record
 fwrite:        equ 15h    ;Write Next Record
@@ -103,7 +104,7 @@ l0183h:
     pop bc              ;0189 c1
     djnz l0183h         ;018a 10 f7
     ld de,fcb           ;018c 11 5c 00
-    ld c,creadstr       ;018f 0e 10
+    ld c,fclose         ;018f 0e 10
     call bdos           ;0191 cd 05 00
     ld de,complete      ;0194 11 dd 05
     ld c,cwritestr      ;0197 0e 09
@@ -382,7 +383,7 @@ sub_03b8h:
     ld de,table_0       ;03b8 11 5d 07
     ld a,50h            ;03bb 3e 50
     ld (de),a           ;03bd 12
-    ld c,lf             ;03be 0e 0a
+    ld c,creadstr       ;03be 0e 0a
     call bdos           ;03c0 cd 05 00
     call newline        ;03c3 cd 08 04
     ld a,(table_0+1)    ;03c6 3a 5e 07
