@@ -164,7 +164,7 @@ l01f4h:
     call sub_0234h      ;01fb cd 34 02
     jr l01adh           ;01fe 18 ad
 l0200h:
-    ld de,l0602h        ;0200 11 02 06
+    ld de,basic4_cmds   ;0200 11 02 06
     and 7fh             ;0203 e6 7f
     ld b,a              ;0205 47
     inc b               ;0206 04
@@ -483,7 +483,8 @@ complete:
 not_found:
     db cr,lf,"File not found$"
 
-l0602h:
+basic4_cmds:
+;CBM BASIC 4.0 commands ordered by token
 ;Last character of each command has bit 7 set
 ;
     db "EN",0c4h        ;END
