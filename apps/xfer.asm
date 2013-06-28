@@ -80,7 +80,7 @@ seq_from_pet:
     call sub_0247h
     ld hl,0080h
 l015ah:
-    call sub_03a6h
+    call cbm_get_byte
     ld d,a
     ld a,(eoisav)
     and 10h
@@ -121,19 +121,19 @@ bas_from_pet:
     ld a,50h
     call sub_0247h
     ld hl,0080h
-    call sub_03a6h
-    call sub_03a6h
+    call cbm_get_byte
+    call cbm_get_byte
 l01adh:
-    call sub_03a6h
+    call cbm_get_byte
     push af
-    call sub_03a6h
+    call cbm_get_byte
     pop bc
     or b
     jr z,l017ah
     push hl
-    call sub_03a6h
+    call cbm_get_byte
     push af
-    call sub_03a6h
+    call cbm_get_byte
     ld d,a
     pop af
     ld e,a
@@ -151,7 +151,7 @@ l01adh:
     ld a,20h
     call sub_0234h
 l01e6h:
-    call sub_03a6h
+    call cbm_get_byte
     or a
     jr z,l01f4h
     jp m,l0200h
@@ -378,16 +378,20 @@ exit_no_file:
     call bdos
     jp warm
 
-sub_03a6h:
+cbm_get_byte:
+;Get the next byte from the CBM drive
+;Returns the byte in A.
+;
     push hl
-    ld de,(table_1+1)
-    call ieee_talk
-    call ieee_get_byte
+    ld de,(table_1+1)   ;D = IEEE-488 primary address, E = secondary
+    call ieee_talk      ;Send TALK
+    call ieee_get_byte  ;Get byte
     push af
-    call ieee_untalk
+    call ieee_untalk    ;Send UNTALK
     pop af
     pop hl
     ret
+
 sub_03b8h:
     ld de,table_0
     ld a,50h
