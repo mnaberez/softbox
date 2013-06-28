@@ -2035,6 +2035,10 @@ ieee_put_itoa:
 ;Send a number as decimal string to IEEE-488 device
 ;A = number (e.g. A=2ah sends " 42")
 ;
+;TODO: This routine is used to send track numbers for CBM DOS commands but
+;      it can only send 2 digits.  It needs to be fixed to send 3 digits
+;      because the 8250 has 154 tracks.
+;
     push af
     ld a,' '
     call ieee_put_byte  ;Send space character
@@ -2047,9 +2051,10 @@ lf9ach:
     add a,3ah
     push af
     ld a,e
-    call ieee_put_byte
+    call ieee_put_byte  ;Send first the digit
     pop af
-    jp ieee_put_byte
+    jp ieee_put_byte    ;Jump out to send the second digit
+                        ;  and it will return to the caller.
 
 ieee_read_err:
 ;Read the error channel of an IEEE-488 device
