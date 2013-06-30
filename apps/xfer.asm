@@ -55,7 +55,7 @@ l011dh:
     ld c,cwritestr
     call bdos
 
-    call sub_03b8h
+    call input
     ld a,(table_0+2)
     ld hl,07e2h
     ld (hl),00h
@@ -203,6 +203,7 @@ l0227h:
     call sub_0234h
     pop de
     ret
+
 sub_0234h:
     ld (hl),a
     inc l
@@ -214,13 +215,14 @@ sub_0234h:
     jp nz,exit_full
     ld hl,0080h
     ret
+
 sub_0247h:
     push af
 l0248h:
     ld de,src_drive
     ld c,cwritestr
     call bdos
-    call sub_03b8h
+    call input
     ld a,(table_0+2)
     sub 41h
     ld (table_1),a
@@ -234,7 +236,7 @@ l026ah:
     ld de,src_filename
     ld c,cwritestr
     call bdos
-    call sub_03b8h
+    call input
     ld a,(table_1)
     call ieee_init_drv
     ld a,(table_1)
@@ -292,7 +294,7 @@ seq_to_pet:
     ld de,dest_drive
     ld c,cwritestr
     call bdos
-    call sub_03b8h
+    call input
     ld a,(table_0+2)
     sub 41h
     ld (table_1),a
@@ -306,7 +308,7 @@ l0301h:
     ld de,dest_filename
     ld c,cwritestr
     call bdos
-    call sub_03b8h
+    call input
     ld a,(table_1)
     call ieee_init_drv
     ld a,(table_1)
@@ -392,7 +394,10 @@ cbm_get_byte:
     pop hl
     ret
 
-sub_03b8h:
+input:
+;Read a line of input from the user and store it in
+;the buffer at table_0.
+;
     ld de,table_0
     ld a,50h
     ld (de),a
