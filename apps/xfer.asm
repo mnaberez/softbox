@@ -41,14 +41,16 @@ cr:            equ 0dh    ;Carriage Return
     ld a,(fcb+1)
     cp ' '
     jp z,exit_bad_file
-    ld hl,fcb+1
-    ld b,0bh
-l0114h:
-    ld a,(hl)
-    cp '?'
-    jp z,exit_bad_file
-    inc hl
-    djnz l0114h
+
+    ld hl,fcb+1         ;HL = first char of filename
+    ld b,0bh            ;B = 11 chars in filename (8 chars + 3 chars ext)
+check_wild:
+    ld a,(hl)           ;A = char in filename
+    cp '?'              ;Is it a wildcard?
+    jp z,exit_bad_file  ;  Yes: exit with bad filename error
+    inc hl              ;Increment HL to point to next char in filename
+    djnz check_wild     ;Decrement B, loop until all chars are checked
+
 l011dh:
     call newline
     ld de,menu
