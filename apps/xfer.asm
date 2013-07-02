@@ -122,10 +122,10 @@ l0183h:
     ld de,fcb
     ld c,fclose
     call bdos
-    ld de,complete
-    ld c,cwritestr
-    call bdos
-    jp warm
+    ld de,complete      ;DE = address of "Transfer complete"
+    ld c,cwritestr      ;C = Output String
+    call bdos           ;BDOS system call
+    jp warm             ;Warm start
 
 bas_from_pet:
 ;Copy BASIC program from PET DOS
@@ -231,24 +231,29 @@ sub_0234h:
 sub_0247h:
     push af
 l0248h:
-    ld de,src_drive
-    ld c,cwritestr
-    call bdos
-    call input
+    ld de,src_drive     ;DE = address of "PET DOS source drive (A-P)?"
+    ld c,cwritestr      ;C = Output String
+    call bdos           ;BDOS system call
+
+    call input          ;Get a line of input from the user
     ld a,(table_0+2)
     sub 41h
     ld (table_1),a
     call get_dtype
     jr c,l026ah
-    ld de,bad_drive
-    ld c,cwritestr
-    call bdos
-    jr l0248h
+
+    ld de,bad_drive     ;DE = address of "Bad drive"
+    ld c,cwritestr      ;C = Output String
+    call bdos           ;BDOS system call
+
+    jr l0248h           ;Try again
+
 l026ah:
-    ld de,src_filename
-    ld c,cwritestr
-    call bdos
-    call input
+    ld de,src_filename  ;DE = address of "PET DOS source file? "
+    ld c,cwritestr      ;C = Output String
+    call bdos           ;BDOS system call
+
+    call input          ;Get a line of input from the user
     ld a,(table_1)
     call ieee_init_drv
     ld a,(table_1)
@@ -295,32 +300,37 @@ l026ah:
 exit_full:
 ;Print disk full error and return to CP/M
 ;
-    ld de,disk_full
-    ld c,cwritestr
-    call bdos
-    jp warm
+    ld de,disk_full     ;DE = address of "Disk or directory full"
+    ld c,cwritestr      ;C = Output String
+    call bdos           ;BDOS system call
+    jp warm             ;Warm start
 
 seq_to_pet:
 ;Copy sequential file to PET DOS
 ;
-    ld de,dest_drive
-    ld c,cwritestr
-    call bdos
-    call input
+    ld de,dest_drive    ;DE = address of "PET DOS destination drive?"
+    ld c,cwritestr      ;C = Ouput String
+    call bdos           ;BDOS system call
+
+    call input          ;Get a line of input from the user
     ld a,(table_0+2)
     sub 41h
     ld (table_1),a
     call get_dtype
     jr c,l0301h
-    ld de,bad_drive
-    ld c,cwritestr
-    call bdos
-    jr seq_to_pet
+
+    ld de,bad_drive     ;DE = address of "Bad drive"
+    ld c,cwritestr      ;C = Output String
+    call bdos           ;BDOS system call
+
+    jr seq_to_pet       ;Try again
+
 l0301h:
-    ld de,dest_filename
-    ld c,cwritestr
-    call bdos
-    call input
+    ld de,dest_filename ;DE = address of "PET DOS destination file?"
+    ld c,cwritestr      ;C = Output String
+    call bdos           ;BDOS system call
+
+    call input          ;Get a line of input from the user
     ld a,(table_1)
     call ieee_init_drv
     ld a,(table_1)
@@ -379,18 +389,19 @@ l037bh:
 l0389h:
     ld de,(table_1+1)
     call ieee_close
-    ld de,complete
-    ld c,cwritestr
-    call bdos
-    jp warm
+
+    ld de,complete      ;DE = address of "Transfer complete"
+    ld c,cwritestr      ;C = Output String
+    call bdos           ;BDOS system call
+    jp warm             ;Warm start
 
 exit_no_file:
 ;Print file not found message and return to CP/M
 ;
-    ld de,not_found
-    ld c,cwritestr
-    call bdos
-    jp warm
+    ld de,not_found     ;DE = address of "File not found"
+    ld c,cwritestr      ;C = Output String
+    call bdos           ;BDOS system call
+    jp warm             ;Warm start
 
 cbm_get_byte:
 ;Get the next byte from the CBM drive
@@ -438,17 +449,18 @@ l03dah:
 exit_bad_file:
 ;Print bad filename message and return to CP/M.
 ;
-    ld de,bad_filename
-    ld c,cwritestr
-    call bdos
-    jp warm
+    ld de,bad_filename  ;DE = address of "Bad filename"
+    ld c,cwritestr      ;C = Output String
+    call bdos           ;BDOS system call
+    jp warm             ;Warm start
 
 exit_dos_err:
 ;Print CBM DOS error message and return to CP/M
 ;
-    ld de,disk_error
-    ld c,cwritestr
-    call bdos
+    ld de,disk_error    ;DE = address of "Disk error:"
+    ld c,cwritestr      ;C = Output String
+    call bdos           ;BDOS system call
+
     ld hl,dos_msg
 l03f7h:
     push hl
@@ -460,7 +472,7 @@ l03f7h:
     inc hl
     cp cr
     jr nz,l03f7h
-    jp warm
+    jp warm             ;Warm start
 
 newline:
 ;Print a newline (CR+LF)
