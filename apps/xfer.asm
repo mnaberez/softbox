@@ -32,15 +32,16 @@ fmake:         equ 16h    ;Create File
 lf:            equ 0ah    ;Line Feed
 cr:            equ 0dh    ;Carriage Return
 
-    org 0100h
+    org 0100h           ;CP/M TPA
 
     nop
     nop
     nop
     ld sp,(0006h)
-    ld a,(fcb+1)
-    cp ' '
-    jp z,exit_bad_file
+
+    ld a,(fcb+1)        ;A = first char in filename
+    cp ' '              ;Is it a space?
+    jp z,exit_bad_file  ;  Yes: exit with missing filename erro
 
     ld hl,fcb+1         ;HL = first char of filename
     ld b,0bh            ;B = 11 chars in filename (8 chars + 3 chars ext)
@@ -51,29 +52,38 @@ check_wild:
     inc hl              ;Increment HL to point to next char in filename
     djnz check_wild     ;Decrement B, loop until all chars are checked
 
-l011dh:
-    call newline
-    ld de,menu
-    ld c,cwritestr
-    call bdos
+get_selection:
+;Show the menu options and get a selection
+;
+    call newline        ;Write newline to console out
 
-    call input
-    ld a,(table_0+2)
+    ld de,menu          ;DE = address of main menu string
+    ld c,cwritestr      ;C = Output String
+    call bdos           ;BDOS system call
+
+    call input          ;Get a line of user input
+    ld a,(table_0+2)    ;A = first char from input
+
     ld hl,07e2h
     ld (hl),00h
+
     cp '1'              ;1 = Copy sequential file to PET DOS
     jp z,seq_to_pet
+
     cp '2'              ;2 = Copy sequential file from PET DOS
     jp z,seq_from_pet
+
     cp '3'              ;3 = Copy BASIC program from PET DOS
     jp z,bas_from_pet
+
     inc (hl)
     cp '4'              ;4 = As 2. but insert line feeds
     jp z,seq_from_pet
-    ld de,bad_command
-    ld c,cwritestr
-    call bdos
-    jr l011dh
+
+    ld de,bad_command   ;DE = address of bad command string
+    ld c,cwritestr      ;C = Output String
+    call bdos           ;BDOS system call
+    jr get_selection    ;Try again
 
 seq_from_pet:
 ;Copy sequential file from PET DOS
