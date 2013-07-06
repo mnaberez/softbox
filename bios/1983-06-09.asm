@@ -944,7 +944,7 @@ corv_ret_err:
     push af
     call puts           ;Write fault message to console out
     pop af
-    call puts_hex_byte  ;Write Corvus error code to console out
+    call put_hex_byte   ;Write Corvus error code to console out
     and 0ffh            ;A=0FFh (Error)
     ret
 
@@ -1107,7 +1107,7 @@ lf3d1h:
 corv_fault:
     db cr,lf,bell,"*** HARD DISK ERROR ***  ",00h
 
-puts_hex_byte:
+put_hex_byte:
 ;Write the byte in A to console out as a two digit hex number.
 ;
     push af             ;Preserve A
@@ -1115,11 +1115,11 @@ puts_hex_byte:
     rra
     rra
     rra
-    call puts_hex_nib   ;Write it to console out
+    call put_hex_nib    ;Write it to console out
     pop af              ;Recall A for the low nibble
                         ;Fall through to write it to console out
 
-puts_hex_nib:
+put_hex_nib:
 ;Write the low nibble in A to console out as a one digit hex number.
 ;
     and 0fh             ;Mask off high nibble
@@ -1811,7 +1811,7 @@ lf752h:
     call puts           ;Write ": " to console out
 
     ld hl,cbm_dos_errs  ;HL = pointer to CBM DOS error table
-    call puts_dos_error ;Display an error message
+    call put_dos_error ;Display an error message
 lf76dh:
     call conin          ;Wait for a key to be pressed
 
@@ -1849,7 +1849,7 @@ lf790h:
     ld a,00h
     ret
 
-puts_dos_error:
+put_dos_error:
 ;Write a description of a CBM DOS error to console out.
 ;HL = pointer to cbm_dos_errs table
 ;
@@ -1865,7 +1865,7 @@ lf7b3h:
     inc hl
     or a
     jr nz,lf7b3h
-    jr puts_dos_error
+    jr put_dos_error
 
 cbm_dos_errs:
 ;      Hex SoftBox Error Message          Dec  CBM DOS Error Description

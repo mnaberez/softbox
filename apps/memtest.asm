@@ -126,16 +126,16 @@ l017eh:
     ld hl,(passes)      ;HL = number of passes run
     inc hl              ;Increment to next pass
     ld (passes),hl      ;Store passes
-    call puts_hex_word  ;Write number of passes to console out
+    call put_hex_word   ;Write number of passes to console out
 
     ld hl,err_msg
     call puts
 
     ld hl,(0022h)
-    call puts_hex_word
+    call put_hex_word
 
     ld hl,(0020h)
-    call puts_hex_word
+    call put_hex_word
 
     ld ix,0020h         ;01ad  dd 21 20 00
     ld a,(ix+00h)       ;01b1  dd 7e 00
@@ -144,17 +144,17 @@ l017eh:
     or (ix+03h)         ;01ba  dd b6 03
     jr z,l01e1h         ;01bd  28 00
     ld a,' '            ;01bf  3e 20
-    call put_char       ;01c1  cd 00 00
+    call putc           ;01c1  cd 00 00
     ld hl,(0026h)       ;01c4  2a 26 00
-    call puts_hex_word  ;01c7  cd 00 00
+    call put_hex_word   ;01c7  cd 00 00
     ld a,'-'            ;01ca  3e 2d
-    call put_char       ;01cc  cd 00 00
+    call putc           ;01cc  cd 00 00
     ld hl,(0028h)       ;01cf  2a 28 00
-    call puts_hex_word  ;01d2  cd 00 00
+    call put_hex_word   ;01d2  cd 00 00
     ld hl,bit_msg       ;01d5  21 00 00
     call puts           ;01d8  cd 00 00
     ld a,(0024h)        ;01db  3a 24 00
-    call puts_hex_byte  ;01de  cd 00 00
+    call put_hex_byte   ;01de  cd 00 00
 
 l01e1h:
     call newline        ;01e1  cd 00 00
@@ -286,15 +286,15 @@ l028bh:
     ld a,(0025h)        ;028f  3a 25 00
     ret                 ;0292  c9
 
-puts_hex_word:
+put_hex_word:
 ;Write the word in HL to console out as a four digit hex number.
 ;
     ld a,h              ;A = H
-    call puts_hex_byte  ;Write byte to console out
+    call put_hex_byte   ;Write byte to console out
     ld a,l              ;A = L
-                        ;Fall through to puts_hex_byte
+                        ;Fall through to put_hex_byte
 
-puts_hex_byte:
+put_hex_byte:
 ;Write the byte in A to console out as a two digit hex number.
 ;
     push af             ;Preserve A
@@ -302,11 +302,11 @@ puts_hex_byte:
     rrca
     rrca
     rrca
-    call puts_hex_nib   ;Write it to console out
+    call put_hex_nib    ;Write it to console out
     pop af              ;Recall A for the low nibble
                         ;Fall through to write it to console out
 
-puts_hex_nib:
+put_hex_nib:
 ;Write the low nibble in A to console out as a one digit hex number.
 ;
     and 0fh             ;Mask off high nibble
@@ -315,7 +315,7 @@ puts_hex_nib:
     add a,07h
 l02a9h:
     add a,30h
-    jp put_char         ;Write char to console out and return.
+    jp putc             ;Write char to console out and return.
 
 puts:
 ;Write a null-terminated string to console out
@@ -325,7 +325,7 @@ puts:
     ld a,(hl)           ;Get the byte at pointer HL
     or a                ;Set flags
     ret z               ;Return if byte is 0
-    call put_char       ;Send the char to console out
+    call putc           ;Send the char to console out
     inc hl              ;Increment HL pointer
     jr puts             ;Loop to handle the next byte
 
@@ -333,9 +333,9 @@ newline:
 ;Write carriage return and line feed to console out
 ;
     ld a,cr
-    call put_char       ;Write carriage return
+    call putc           ;Write carriage return
     ld a,lf
-    call put_char       ;Write line feed
+    call putc           ;Write line feed
     ret
 
 testing_msg:
@@ -373,7 +373,7 @@ check_key:
     pop hl
     ret
 
-put_char:
+putc:
 ;Write the char in A to console out, preserving most registers.
 ;
     push bc
