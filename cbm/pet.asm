@@ -1728,9 +1728,9 @@ graphics_keys:
     !byte $22,$24,$27,$5c,$29,$ff,$0a,$7f ;  "     $     '     \     )     NONE  CSRDN DEL      BARRW = Back Arrow
     !byte $51,$45,$54,$55,$4f,$5e,$37,$39 ;  Q     E     T     U     O     UARRW 7     9        NONE  = No key
     !byte $57,$52,$59,$49,$50,$ff,$38,$2f ;  W     R     Y     I     P     NONE  8     /
-    !byte $41,$44,$47,$4a,$4c,$ff,$34,$36 ;  A     D     G     J     L     NONE  4     6
-    !byte $53,$46,$48,$4b,$3a,$ff,$35,$2a ;  S     F     H     K     :     NONE  5     *
-    !byte $5a,$43,$42,$4d,$3b,$0d,$31,$33 ;  Z     C     B     M     ;     RETRN 1     3
+    !byte $41,$44,$47,$4a,$4c,$ff,$34,$36 ;  A     D     G     J     L     NONE  4     6        STOP key is used as
+    !byte $53,$46,$48,$4b,$3a,$ff,$35,$2a ;  S     F     H     K     :     NONE  5     *        ESC since graphics
+    !byte $5a,$43,$42,$4d,$3b,$0d,$31,$33 ;  Z     C     B     M     ;     RETRN 1     3        keyboard has no ESC.
     !byte $58,$56,$4e,$2c,$3f,$ff,$32,$2b ;  X     V     N     ,     ?     NONE  2     +
     !byte $01,$40,$5d,$ff,$3e,$01,$30,$2d ;  SHIFT @     ]     NONE  >     SHIFT 0     -        SHIFT = $01
     !byte $00,$5b,$20,$3c,$1b,$ff,$2e,$3d ;  RVS   [     SPACE >     STOP  NONE  .     =        RVS   = $00 (CTRL key)
@@ -1742,8 +1742,8 @@ business_keys:
     !byte $1b,$53,$46,$48,$5d,$4b,$bb,$35 ;  ESC   S     F     H     ]     K     ;     5            key shifts to a
     !byte $41,$44,$47,$4a,$0d,$4c,$40,$36 ;  A     D     G     J     RTRN  L     @     6            special character
     !byte $09,$57,$52,$59,$5c,$49,$50,$7f ;  TAB   W     R     Y     \     I     P     DEL
-    !byte $51,$45,$54,$55,$0a,$4f,$5b,$34 ;  Q     E     T     U     CSRDN O     [     4
-    !byte $01,$43,$42,$ae,$2e,$ff,$01,$33 ;  SHIFT C     B     ^.    .     NONE  SHIFT 3
+    !byte $51,$45,$54,$55,$0a,$4f,$5b,$34 ;  Q     E     T     U     CSRDN O     [     4        STOP has no function
+    !byte $01,$43,$42,$ae,$2e,$ff,$01,$33 ;  SHIFT C     B     ^.    .     NONE  SHIFT 3        on business keyboard.
     !byte $5a,$56,$4e,$ac,$30,$ff,$ff,$32 ;  Z     V     N     ,     0     NONE  NONE  2
     !byte $00,$58,$20,$4d,$1e,$ff,$af,$31 ;  RVS   X     SPACE M     HOME  NONE  ^/    1
     !byte $5f,$b3,$b6,$b9,$ff,$ba,$ff,$ff ;  BARRW ^3    ^6    ^9    STOP  ^:    NONE  NONE
