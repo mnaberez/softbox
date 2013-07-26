@@ -703,8 +703,8 @@ ctrl_codes:
     !word ctrl_0e   ;0E   CTRL-N    Reverse video on
     !word ctrl_0f   ;0F   CTRL-O    Reverse video off
     !word ctrl_10   ;10   CTRL-P    Cursor on
-    !word ctrl_11   ;11   CTRL-Q    Insert a blank line
-    !word ctrl_12   ;12   CTRL-R    Scroll up one line
+    !word ctrl_11   ;11   CTRL-Q    Insert line
+    !word ctrl_12   ;12   CTRL-R    Delete line
     !word ctrl_13   ;13   CTRL-S    Clear to end of line
     !word ctrl_14   ;14   CTRL-T    Clear to end of screen
     !word ctrl_15   ;15   CTRL-U    Go to uppercase mode
@@ -714,8 +714,8 @@ ctrl_codes:
     !word ctrl_19   ;19   CTRL-Y    Cursor off
     !word ctrl_1a   ;1A   CTRL-Z    Clear screen
     !word ctrl_1b   ;1B   ESC       Move cursor to X,Y position
-    !word ctrl_1c   ;1C   CTRL-/    Insert a space on current line
-    !word ctrl_1d   ;1D   CTRL-]    Delete character at cursor
+    !word ctrl_1c   ;1C   CTRL-/    Insert character
+    !word ctrl_1d   ;1D   CTRL-]    Delete character
     !word ctrl_1e   ;1E   CTRL-^    Home cursor
     !word ctrl_1f   ;1F             Do nothing
 
@@ -980,7 +980,7 @@ ctrl_1b:
     rts
 
 ctrl_1c:
-;Insert space at current cursor position
+;Insert character
 ;
     ldy columns         ;number of characters on line
     dey
@@ -999,7 +999,7 @@ l_0901:
     rts
 
 ctrl_1d:
-;Delete a character
+;Delete character
 ;
     ldy cursor_x
 l_090b:
@@ -1018,7 +1018,7 @@ l_0918:
     rts
 
 ctrl_12:
-;Scroll up one line
+;Delete line
 ;
 ;The current line is replaced by the one below it, and each successive
 ;line is replaced by the one below it.  The bottommost screen line is
@@ -1031,7 +1031,7 @@ ctrl_12:
     jmp scroll_up      ;Jump out to scroll up
 
 ctrl_11:
-;Insert a blank line
+;Insert line
 ;
 ;The current line is cleared and its original contents moved to the
 ;line below it.  Each successive line is moved to one below it.  The
