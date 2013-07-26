@@ -578,8 +578,8 @@ $0738:           .WORD CTRL_0D  ;0D   CTRL-M    Carriage return
 $073A:           .WORD CTRL_0E  ;0E   CTRL-N    Reverse video on
 $073C:           .WORD CTRL_0F  ;0F   CTRL-O    Reverse video off
 $073E:           .WORD CTRL_10  ;10   CTRL-P    Cursor on
-$0740:           .WORD CTRL_11  ;11   CTRL-Q    Insert a blank line
-$0742:           .WORD CTRL_12  ;12   CTRL-R    Scroll up one line
+$0740:           .WORD CTRL_11  ;11   CTRL-Q    Insert line
+$0742:           .WORD CTRL_12  ;12   CTRL-R    Delete line
 $0744:           .WORD CTRL_13  ;13   CTRL-S    Clear to end of line
 $0746:           .WORD CTRL_14  ;14   CTRL-T    Clear to end of screen
 $0748:           .WORD CTRL_15  ;15   CTRL-U    Go to uppercase mode
@@ -589,8 +589,8 @@ $074E:           .WORD CTRL_18  ;18   CTRL-X    Set line spacing for text
 $0750:           .WORD CTRL_19  ;19   CTRL-Y    Cursor off
 $0752:           .WORD CTRL_1A  ;1A   CTRL-Z    Clear screen
 $0754:           .WORD CTRL_1B  ;1B   ESC       Move cursor to X,Y position
-$0756:           .WORD CTRL_1C  ;1C   CTRL-/    Insert a space on current line
-$0758:           .WORD CTRL_1D  ;1D   CTRL-]    Delete character at cursor
+$0756:           .WORD CTRL_1C  ;1C   CTRL-/    Insert character
+$0758:           .WORD CTRL_1D  ;1D   CTRL-]    Delete character
 $075A:           .WORD CTRL_1E  ;1E   CTRL-^    Home cursor
 $075C:           .WORD CTRL_1F  ;1F             Do nothing
 
@@ -966,7 +966,7 @@ L_08ED:
 $08ED: 60        RTS
 
 CTRL_1C:
-;Insert space at current cursor position
+;Insert character
 ;
 $08EE: 20 88 09  JSR CALC_SCRLINE
 $08F1: A4 09     LDY COLUMNS         ;number of characters on line
@@ -986,7 +986,7 @@ $0903: 91 02     STA (SCRLINE_LO),Y  ;Write it to current character position
 $0905: 60        RTS
 
 CTRL_1D:
-;Delete a character
+;Delete character
 ;
 $0906: 20 88 09  JSR CALC_SCRLINE
 $0909: A4 04     LDY CURSOR_X
@@ -1006,7 +1006,7 @@ $091B: 91 02     STA (SCRLINE_LO),Y  ;write it to the current character position
 $091D: 60        RTS
 
 CTRL_12:
-;Scroll up one line
+;Delete line
 ;
 ;The current line is replaced by the one below it, and each successive
 ;line is replaced by the one below it.  The bottommost screen line is
@@ -1029,7 +1029,7 @@ $0937: AA        TAX
 $0938: 4C 9E 08  JMP SCROLL
 
 CTRL_11:
-;Insert a blank line
+;Insert line
 ;
 ;The current line is cleared and its original contents moved to the
 ;line below it.  Each successive line is moved to one below it.  The
