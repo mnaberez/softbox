@@ -39,7 +39,7 @@ lpt_dev:    equ 0ea61h  ;CBM printer (LPT:) IEEE-488 primary address
 ptr_dev:    equ 0ea62h  ;Paper Tape Reader (PTR:) IEEE-488 primary address
 ptp_dev:    equ 0ea63h  ;Paper Tape Punch (PTP:) IEEE-488 primary address
 leadin:     equ 0ea68h  ;Terminal command lead-in: 1bh=escape, 7eh=tilde
-xy_order:   equ 0ea69h  ;X,Y order when sending move-to: 0=X first, 1=Y first
+xy_order:   equ 0ea69h  ;X,Y order when sending move-to: 0=Y first, 1=X first
 y_offset:   equ 0ea6ah  ;Offset added to Y when sending move-to sequence
 x_offset:   equ 0ea6bh  ;Offset added to X when sending move-to sequence
 ul1_dev:    equ 0ea66h  ;ASCII printer (UL1:) IEEE-488 primary address

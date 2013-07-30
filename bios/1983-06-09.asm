@@ -142,7 +142,7 @@ termtype: equ 0ea67h    ;Terminal type:
                         ;  0=ADM3A, 1=HZ1500, 2=TV912
                         ;  Bit 7 is set if uppercase graphics mode
 leadin:   equ 0ea68h    ;Terminal command lead-in: 1bh=escape, 7eh=tilde
-xy_order: equ 0ea69h    ;X,Y order when sending move-to: 0=X first, 1=Y first
+xy_order: equ 0ea69h    ;X,Y order when sending move-to: 0=Y first, 1=X first
 y_offset: equ 0ea6ah    ;Offset added to Y when sending move-to sequence
 x_offset: equ 0ea6bh    ;Offset added to X when sending move-to sequence
 eoisav:   equ 0ea6ch    ;Stores ppi2_pa IEEE-488 control lines after get byte
