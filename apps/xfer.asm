@@ -32,7 +32,7 @@ fmake:         equ 16h    ;Create File
 lf:            equ 0ah    ;Line Feed
 cr:            equ 0dh    ;Carriage Return
 
-    org 0100h           ;CP/M TPA
+    org 0100h             ;CP/M TPA
 
     nop
     nop
