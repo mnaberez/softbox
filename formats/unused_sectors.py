@@ -6,7 +6,7 @@ with open("8050.csv") as f:
 # pet sector: # of CP/M sectors
 counts = {}
 for line in lines:
-    parts = [ int(x) for x in line.split(",") ]
+    parts = [ int(x, 16) for x in line.split(",") ]
     cpm_track, cpm_sector, pet_track, pet_sector = parts
 
     k = "%02d_%02d" % (pet_track, pet_sector)
