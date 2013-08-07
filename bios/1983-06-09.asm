@@ -1698,14 +1698,14 @@ sub_f6b9h:
     ld a,(drive)        ;A = CP/M drive number
 
     ld hl,x_drive       ;HL = address of x_drive
-    xor (hl)            ;x_drive = 0
+    xor (hl)
 
     ld b,a
 
     ld a,(track)        ;A = CP/M track number
 
     ld hl,x_track       ;HL = address of x_track
-    xor (hl)            ;x_track = 0
+    xor (hl)
 
     or b
 
@@ -1719,8 +1719,8 @@ sub_f6b9h:
     ld a,(sector)
     rra
 
-    ld hl,x_sector      ;HL = addresses of x_sector, 0048h (TODO 0048h?)
-    xor (hl)            ;x_sector = 0, (0048h)=0
+    ld hl,x_sector      ;HL = addresses of x_sector
+    xor (hl)
 
     or b
     ret z
