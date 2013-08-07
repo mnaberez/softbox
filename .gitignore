@@ -1,3 +1,4 @@
 bios/*.bin
 cbm/disasm/*.prg
 *.prg
+*.pyc
