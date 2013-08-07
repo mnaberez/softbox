@@ -401,7 +401,7 @@ setdma:
 seldsk:
 ;Select the disk drive in C (0=A:, 1=B:, ...).
 ;
-;Called with E=0 or 0FFFFh:
+;Called with DE=0 or 0FFFFh:
 ;  If bit 0 of E is 0, the disk will be logged in as new.
 ;  If bit 0 of E is 1, the disk has already been logged in.
 ;
