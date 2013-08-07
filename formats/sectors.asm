@@ -72,10 +72,10 @@ loop:
     ld c,','            ;comma character
     call conout         ;print comma
     ld a,(dos_sec)      ;cbm sector
+    call put_hex_byte
 
     ;print newline
 
-    call put_hex_byte
     ld c,cr
     call conout
     ld c,lf
