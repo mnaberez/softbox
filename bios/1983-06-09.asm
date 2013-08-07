@@ -1792,7 +1792,7 @@ lf73fh:
 
     ld hl,tries
     dec (hl)            ;Decrement tries
-    jr z,lf752h         ;Give up number of tries exceeded
+    jr z,lf752h         ;Give up if number of tries exceeded
 
     ld a,(x_drive)      ;A = CP/M drive number
     call ieee_init_drv  ;Initialize the disk drive
