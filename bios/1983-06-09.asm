@@ -1925,10 +1925,10 @@ find_trk_sec:
     ld ix,0057h         ;TODO 0057h?
 
     ld hl,ts_cbm3040    ;HL = table for CBM 3040
-    ld e,10h            ;E = 16
+    ld e,10h            ;E = 16 (first reserved track on CBM 3040/4040)
     jr z,lf8f9h         ;Jump if drive type = 0 (CBM 3040/4040)
 
-    ld e,25h            ;E = 37
+    ld e,25h            ;E = 37 (first reserved track on CBM 8050)
     ld hl,ts_cbm8050    ;HL = table for CBM 8050
     cp 01h
     jr z,lf8f9h         ;Jump if drive type = 1 (CBM 8050)
