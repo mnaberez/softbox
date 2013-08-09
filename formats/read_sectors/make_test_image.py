@@ -1,3 +1,17 @@
+import sys
+
+def is_valid_4040_ts(track, sector):
+    valid = False
+    if track >= 1 and track <= 17:
+        valid = sector >= 0 and sector <= 20
+    elif track >= 18 and track <= 24:
+        valid = sector >= 0 and sector <= 18
+    elif track >= 25 and track <= 30:
+        valid = sector >= 0 and sector <= 17
+    elif track >= 31 and track <= 35:
+        valid = sector >= 0 and sector <= 16
+    return valid
+
 def is_valid_8050_ts(track, sector):
     valid = False
     if track >= 1 and track <= 39:
@@ -15,8 +29,21 @@ if __name__ == '__main__':
     i = 0
     end_of_disk = False
 
-    with open("test.d80", "wb") as image:
-        with open("8050_pet_sectors.csv", "w") as csv:
+    if len(sys.argv) != 2 or sys.argv[1] not in ['d64', 'd80']:
+        sys.stderr.write("Usage: python make_test_image.py d64|d80\n")
+        sys.exit(1)
+
+    if sys.argv[1] == "d64":
+        image_filename = "test.d64"
+        csv_filename = "4040_pet_sectors.csv"
+        is_valid_ts = is_valid_4040_ts
+    elif sys.argv[1] == "d80":
+        image_filename = "test.d80"
+        csv_filename = "8050_pet_sectors.csv"
+        is_valid_ts = is_valid_8050_ts
+
+    with open(image_filename, "wb") as image:
+        with open(csv_filename, "w") as csv:
             while not end_of_disk:
                 first_half = ("%04X" % i).ljust(128, chr(0))
                 csv.write("%02X,%02X,0,%04X\n" % (pet_track, pet_sector, i))
@@ -30,9 +57,9 @@ if __name__ == '__main__':
                 image.write(sector_data)
 
                 pet_sector += 1
-                if not is_valid_8050_ts(pet_track, pet_sector):
+                if not is_valid_ts(pet_track, pet_sector):
                     pet_sector = 0
                     pet_track += 1
 
-                if not is_valid_8050_ts(pet_track, pet_sector):
+                if not is_valid_ts(pet_track, pet_sector):
                     end_of_disk = True
