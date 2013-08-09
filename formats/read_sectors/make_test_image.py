@@ -15,20 +15,24 @@ if __name__ == '__main__':
     i = 0
     end_of_disk = False
 
-    with open("test.d80", "wb") as f:
-        while not end_of_disk:
-            first_half = ("%04X" % i).ljust(128, chr(0))
-            i += 1
-            second_half = ("%04X" % i).ljust(128, chr(0))
-            i += 1
+    with open("test.d80", "wb") as image:
+        with open("8050_pet_sectors.csv", "w") as csv:
+            while not end_of_disk:
+                first_half = ("%04X" % i).ljust(128, chr(0))
+                i += 1
+                csv.write("%02X,%02X,0,%04X\n" % (pet_track, pet_sector, i))
 
-            sector_data = first_half + second_half
-            f.write(sector_data)
+                second_half = ("%04X" % i).ljust(128, chr(0))
+                i += 1
+                csv.write("%02X,%02X,1,%04X\n" % (pet_track, pet_sector, i))
 
-            pet_sector += 1
-            if not is_valid_8050_ts(pet_track, pet_sector):
-                pet_sector = 0
-                pet_track += 1
+                sector_data = first_half + second_half
+                image.write(sector_data)
 
-            if not is_valid_8050_ts(pet_track, pet_sector):
-                end_of_disk = True
+                pet_sector += 1
+                if not is_valid_8050_ts(pet_track, pet_sector):
+                    pet_sector = 0
+                    pet_track += 1
+
+                if not is_valid_8050_ts(pet_track, pet_sector):
+                    end_of_disk = True
