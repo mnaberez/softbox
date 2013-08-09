@@ -14,6 +14,7 @@
 
 warm:           equ  0000h  ;Warm start
 const:          equ 0f006h  ;Console status
+conin:          equ 0f009h  ;Console input
 seldsk:         equ 0f01bh  ;Select disk drive
 settrk:         equ 0f01eh  ;Set track number
 setsec:         equ 0f021h  ;Set sector number
@@ -36,7 +37,7 @@ loop:
     ;check for user abort
 
     call const          ;0=no key, 0ffh=key
-    jp nz,error         ;abort if key pressed
+    jp nz,abort         ;abort if key pressed
 
     ;read sector
 
@@ -114,6 +115,9 @@ loop:
 done:
     jp warm             ;all done
 
+abort:
+    call conin          ;consume the key pressed
+                        ;fall through into error
 error:
     ld c,'!'
     call conout
