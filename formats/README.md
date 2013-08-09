@@ -17,4 +17,4 @@ the SoftBox stores CP/M data on Commodore floppy disks.
 
  - ``convert/`` contains programs to convert between the CP/M disk
    images used by [cpmtools](http://www.moria.de/~michael/cpmtools/)
-   and Commodore disk iamges.
+   and Commodore disk images.
