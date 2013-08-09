@@ -19,12 +19,12 @@ if __name__ == '__main__':
         with open("8050_pet_sectors.csv", "w") as csv:
             while not end_of_disk:
                 first_half = ("%04X" % i).ljust(128, chr(0))
-                i += 1
                 csv.write("%02X,%02X,0,%04X\n" % (pet_track, pet_sector, i))
+                i += 1
 
                 second_half = ("%04X" % i).ljust(128, chr(0))
-                i += 1
                 csv.write("%02X,%02X,1,%04X\n" % (pet_track, pet_sector, i))
+                i += 1
 
                 sector_data = first_half + second_half
                 image.write(sector_data)
