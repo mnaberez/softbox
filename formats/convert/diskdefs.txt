@@ -1,4 +1,16 @@
 
+# SoftBox disk for Commodore 4040 (D64 image)
+diskdef softbox-d64
+  seclen 128
+  tracks 39
+  sectrk 32
+  blocksize 2048
+  maxdir 64
+  skew 0
+  boottrk 0
+  os 2.2
+end
+
 # SoftBox disk for Commodore 8050 (D80 image)
 diskdef softbox-d80
   seclen 128
