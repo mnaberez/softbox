@@ -1,6 +1,17 @@
 ;Prints a table of sector mappings:
 ;  CP/M track, CP/M sector, first four bytes of sector
 ;
+;CBM 4040:
+;
+;  1232: 128 Byte Record Capacity
+;   154: Kilobyte Drive  Capacity
+;    64: 32  Byte Directory Entries
+;    64: Checked  Directory Entries
+;   256: Records/ Extent
+;    16: Records/ Block
+;    32: Sectors/ Track
+;     0: Reserved Tracks
+;
 ;CBM 8050:
 ;
 ;  3984: 128 Byte Record Capacity
@@ -9,6 +20,17 @@
 ;    64: Checked  Directory Entries
 ;   256: Records/ Extent
 ;    16: Records/ Block
+;    32: Sectors/ Track
+;     0: Reserved Tracks
+;
+;CBM 8250:
+;
+;  8096: 128 Byte Record Capacity
+;  1012: Kilobyte Drive  Capacity
+;   128: 32  Byte Directory Entries
+;   128: Checked  Directory Entries
+;   512: Records/ Extent
+;    32: Records/ Block
 ;    32: Sectors/ Track
 ;     0: Reserved Tracks
 
@@ -26,6 +48,9 @@ put_hex_byte:   equ 0f402h  ;Print byte in A as hex
 lf:             equ 0ah     ;Line Feed
 cr:             equ 0dh     ;Carriage Return
 
+drive_num:      equ 02h     ;Drive number of disk to read (2 = C:)
+last_track:     equ 7dh     ;Last CP/M track (4040=27h, 8050=7Dh, 8250=0FDh)
+
     org 0100h   ;CP/M TPA
 
 init:
@@ -42,8 +67,8 @@ loop:
     ;read sector
 
     ld de,0             ;log disk in as new
-    ld c,1              ;drive 1 (b:)
-    call seldsk         ;select drive b:
+    ld c,drive_num
+    call seldsk         ;select disk
 
     ld bc,0080h         ;usual cp/m dma area
     call setdma         ;set dma address
@@ -109,7 +134,7 @@ loop:
     ld a,(cur_track)    ;track
     inc a               ;increment to next track
     ld (cur_track),a    ;save it
-    cp 7eh              ;past last track?
+    cp last_track+1     ;past last track?
     jp nz,loop          ;  no: loop to do next track
 
 done:
