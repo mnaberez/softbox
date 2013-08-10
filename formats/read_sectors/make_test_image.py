@@ -24,13 +24,29 @@ def is_valid_8050_ts(track, sector):
         valid = sector >= 0 and sector <= 22
     return valid
 
-if __name__ == '__main__':
-    pet_track, pet_sector = 1, 0
-    i = 0
-    end_of_disk = False
+def is_valid_8250_ts(track, sector):
+    valid = False
+    if track >= 1 and track <= 39:
+        valid = sector >= 0 and sector <= 28
+    elif track >= 40 and track <= 53:
+        valid = sector >= 0 and sector <= 26
+    elif track >= 54 and track <= 64:
+        valid = sector >= 0 and sector <= 24
+    elif track >= 65 and track <= 77:
+        valid = sector >= 0 and sector <= 22
+    elif track >= 78 and track <= 116:
+        valid = sector >= 0 and sector <= 28
+    elif track >= 117 and track <= 130:
+        valid = sector >= 0 and sector <= 26
+    elif track >= 131 and track <= 141:
+        valid = sector >= 0 and sector <= 24
+    elif track >= 142 and track <= 154:
+        valid = sector >= 0 and sector <= 22
+    return valid
 
-    if len(sys.argv) != 2 or sys.argv[1] not in ['d64', 'd80']:
-        sys.stderr.write("Usage: python make_test_image.py d64|d80\n")
+if __name__ == '__main__':
+    if len(sys.argv) != 2 or sys.argv[1] not in ['d64', 'd80', 'd82']:
+        sys.stderr.write("Usage: python make_test_image.py d64|d80|d82\n")
         sys.exit(1)
 
     if sys.argv[1] == "d64":
@@ -41,6 +57,14 @@ if __name__ == '__main__':
         image_filename = "test.d80"
         csv_filename = "8050_pet_sectors.csv"
         is_valid_ts = is_valid_8050_ts
+    elif sys.argv[1] == "d82":
+        image_filename = "test.d82"
+        csv_filename = "8250_pet_sectors.csv"
+        is_valid_ts = is_valid_8250_ts
+
+    pet_track, pet_sector = 1, 0
+    i = 0
+    end_of_disk = False
 
     with open(image_filename, "wb") as image:
         with open(csv_filename, "w") as csv:
