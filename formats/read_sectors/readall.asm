@@ -1,38 +1,5 @@
 ;Prints a table of sector mappings:
 ;  CP/M track, CP/M sector, first four bytes of sector
-;
-;CBM 4040:
-;
-;  1232: 128 Byte Record Capacity
-;   154: Kilobyte Drive  Capacity
-;    64: 32  Byte Directory Entries
-;    64: Checked  Directory Entries
-;   256: Records/ Extent
-;    16: Records/ Block
-;    32: Sectors/ Track
-;     0: Reserved Tracks
-;
-;CBM 8050:
-;
-;  3984: 128 Byte Record Capacity
-;   498: Kilobyte Drive  Capacity
-;    64: 32  Byte Directory Entries
-;    64: Checked  Directory Entries
-;   256: Records/ Extent
-;    16: Records/ Block
-;    32: Sectors/ Track
-;     0: Reserved Tracks
-;
-;CBM 8250:
-;
-;  8096: 128 Byte Record Capacity
-;  1012: Kilobyte Drive  Capacity
-;   128: 32  Byte Directory Entries
-;   128: Checked  Directory Entries
-;   512: Records/ Extent
-;    32: Records/ Block
-;    32: Sectors/ Track
-;     0: Reserved Tracks
 
 warm:           equ  0000h  ;Warm start
 const:          equ 0f006h  ;Console status
