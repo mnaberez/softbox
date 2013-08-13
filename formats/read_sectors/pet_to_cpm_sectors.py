@@ -25,23 +25,30 @@ for line in lines:
 
 # Build dict of {pet ts: [cp/m ts, cp/m ts]}
 pet_to_cpm = {}
+crossed_sectors = []
 for line in cpm_lines:
     parts = [ int(x, 16) for x in line.split(",") ]
     cpm_track, cpm_sector, identifier = parts
 
     pet_track, pet_sector, pet_half = ids_to_pet_info[identifier]
-    k = "%03d_%03d" % (pet_track, pet_sector)
+    pet_ts = "%03d_%03d" % (pet_track, pet_sector)
     v = "%03d_%03d" % (cpm_track, cpm_sector)
-    if not k in pet_to_cpm:
-        pet_to_cpm[k] = [None, None]
+    if not pet_ts in pet_to_cpm:
+        pet_to_cpm[pet_ts] = [None, None]
 
-    if pet_to_cpm[k][pet_half] is None:
-        pet_to_cpm[k][pet_half] = v
+    if pet_to_cpm[pet_ts][pet_half] is None:
+        pet_to_cpm[pet_ts][pet_half] = v
     else:
-        sys.stderr.write("Multiple CP/M sectors map to PET sector %d" % k)
-        sys.exit(1)
+        upper_lower = ("upper", "lower")[pet_half]
+        crossed_sectors.append("%s (%s half)" % (pet_ts, upper_lower))
 
 # Print mapping of PET track/sectors to CP/M track/sectors
-for k in sorted(pet_to_cpm.keys()):
-    v = pet_to_cpm[k]
-    print("%s: [%s, %s]" % (k, v[0], v[1]))
+for pet_ts in sorted(pet_to_cpm.keys()):
+    v = map(str, pet_to_cpm[pet_ts])
+    sys.stdout.write("%s: [%s]\n" % (pet_ts, ", ".join(v)))
+
+# Print crossed sectors
+if crossed_sectors:
+    msg = "\nMultiple CP/M sectors map to these PET sectors:\n  %s\n" % (
+        "\n  ".join(crossed_sectors))
+    sys.stderr.write(msg)
