@@ -52,3 +52,28 @@ if crossed_sectors:
     msg = "\nMultiple CP/M sectors map to these PET sectors:\n  %s\n" % (
         "\n  ".join(crossed_sectors))
     sys.stderr.write(msg)
+
+# Print PET sectors with unused space
+#   (any PET sector with less than 2 CP/M sectors mapped to it)
+unused_sectors = []
+for pet_ts, cpm_ts_list in pet_to_cpm.items():
+    if None in cpm_ts_list:
+        pet_half = cpm_ts_list.index(None)
+        upper_lower = ("upper", "lower")[pet_half]
+        unused_sectors.append("%s (%s half)" % (pet_ts, upper_lower))
+if unused_sectors:
+    msg = "\nPET sectors with unused space: \n  %s\n" % (
+        "\n  ".join(sorted(unused_sectors)))
+    sys.stderr.write(msg)
+
+# Print unused PET tracks
+used_tracks = set()
+for pet_ts in pet_to_cpm.keys():
+    pet_track, pet_sector = map(int, pet_ts.split("_"))
+    used_tracks.add(pet_track)
+all_tracks = set(range(1, max(used_tracks)+1))
+unused_tracks = all_tracks - used_tracks
+if unused_tracks:
+    msg = "\nPET tracks that are completely unused: \n  %s\n" % (
+        "\n  ".join(["%03d" % t for t in unused_tracks]))
+    sys.stderr.write(msg)
