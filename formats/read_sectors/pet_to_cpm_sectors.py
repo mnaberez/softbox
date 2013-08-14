@@ -30,7 +30,7 @@ for line in lines:
 
 # Build dict of {pet ts: [cp/m ts, cp/m ts]}
 pet_to_cpm = {}
-crossed_sectors = []
+crossed_sectors = set()
 for line in cpm_lines:
     parts = [ int(x, 16) for x in line.split(",") ]
     cpm_track, cpm_sector, identifier = parts
@@ -45,7 +45,7 @@ for line in cpm_lines:
         pet_to_cpm[pet_ts][pet_half] = v
     else:
         upper_lower = ("upper", "lower")[pet_half]
-        crossed_sectors.append("%s (%s half)" % (pet_ts, upper_lower))
+        crossed_sectors.add("%s (%s half)" % (pet_ts, upper_lower))
 
 # Print mapping of PET track/sectors to CP/M track/sectors
 for pet_ts in sorted(pet_to_cpm.keys()):
