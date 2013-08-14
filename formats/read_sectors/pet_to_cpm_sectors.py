@@ -36,8 +36,8 @@ for line in cpm_lines:
     cpm_track, cpm_sector, identifier = parts
 
     pet_track, pet_sector, pet_half = ids_to_pet_info[identifier]
-    pet_ts = "%03d_%03d" % (pet_track, pet_sector)
-    v = "%03d_%03d" % (cpm_track, cpm_sector)
+    pet_ts = "%03d_%02d" % (pet_track, pet_sector)
+    v = "%03d_%02d" % (cpm_track, cpm_sector)
     if not pet_ts in pet_to_cpm:
         pet_to_cpm[pet_ts] = [None, None]
 
