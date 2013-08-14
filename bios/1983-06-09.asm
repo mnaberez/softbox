@@ -1922,13 +1922,13 @@ find_trk_sec:
     call get_dtype      ;C = drive type
     ld a,c              ;A = C
     or a
-    ld ix,0057h         ;TODO 0057h?
+    ld ix,0057h         ;IX = 0057h (TODO what is 0057h?)
 
     ld hl,ts_cbm3040    ;HL = table for CBM 3040
     ld e,10h            ;E = 16 (first reserved track on CBM 3040/4040)
     jr z,lf8f9h         ;Jump if drive type = 0 (CBM 3040/4040)
 
-    ld e,25h            ;E = 37 (first reserved track on CBM 8050)
+    ld e,25h            ;E = 37 (first reserved track on CBM 8050 and 8250)
     ld hl,ts_cbm8050    ;HL = table for CBM 8050
     cp 01h
     jr z,lf8f9h         ;Jump if drive type = 1 (CBM 8050)
@@ -1941,7 +1941,7 @@ lf8f9h:
 
     push de
     push hl
-    ld (ix+00h),00h     ;IX = 0
+    ld (ix+00h),00h     ;0057h = 0
     ld hl,(x_track)     ;L = CP/M track number
     ld h,00h            ;H = 0
 
@@ -2005,17 +2005,21 @@ lf938h:
     or a
     sbc hl,bc
     jp c,lf945h
-    inc (ix+00h)
+    inc (ix+00h)        ;Increment 0057h
     jp lf938h
 lf945h:
-    ld (dos_sec),a
-    ld a,(ix+00h)
-    ld (dos_trk),a
-    pop de
-    cp e
-    ret c
-    add a,03h
-    ld (dos_trk),a
+    ld (dos_sec),a      ;Save A as the sector
+
+    ld a,(ix+00h)       ;A = value at 0057h
+    ld (dos_trk),a      ;Save it as the track
+
+    pop de              ;Recall DE.  E contains the first reserved track:
+                        ;  E = 16 for 3040/4040
+                        ;  E = 37 for both 8050 and 8250
+    cp e                ;If computed track is < the first reserved track,
+    ret c               ;  return with the track as-is.
+    add a,03h           ;Increment to skip over the 3 reserved tracks
+    ld (dos_trk),a      ;Save the updated track number
     ret
 
 ts_cbm3040:
