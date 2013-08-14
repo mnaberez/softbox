@@ -17,11 +17,14 @@ find_trk_sec:   equ 0f8dah
 lf:             equ 0ah     ;Line Feed
 cr:             equ 0dh     ;Carriage Return
 
+drive_num:      equ 02h     ;Drive number of disk to read (2 = C:)
+last_track:     equ 7dh     ;Last CP/M track (4040=27h, 8050=7Dh, 8250=0FDh)
+
     org 0100h   ;CP/M TPA
 
 init:
     ld de,0             ;log disk in as new
-    ld c,2              ;drive 2 (c:)
+    ld c,drive_num      ;drive 2 (c:)
     call seldsk         ;select disk
 
     xor a
@@ -88,7 +91,7 @@ loop:
     ld a,(cur_track)    ;track
     inc a               ;increment to next track
     ld (cur_track),a    ;save it
-    cp 7eh              ;past last track?
+    cp last_track+1     ;past last track?
     jp nz,loop          ;  no: loop to do next track
 
     ret                 ;all done
