@@ -1698,21 +1698,23 @@ sub_f6b9h:
     ld a,(drive)        ;A = CP/M drive number
 
     ld hl,x_drive       ;HL = address of x_drive
-    xor (hl)
+    xor (hl)            ;x_drive = 0
 
-    ld b,a
+    ld b,a              ;B = CP/M drive number
 
-    ld a,(track)        ;A = CP/M track number
+    ld a,(track)        ;A = CP/M track number low byte
 
     ld hl,x_track       ;HL = address of x_track
-    xor (hl)
+    xor (hl)            ;x_track = 0
 
     or b
 
-    ld b,a
-    ld a,(track+1)
-    inc hl
-    xor (hl)
+    ld b,a              ;B = CP/M track number low byte
+    ld a,(track+1)      ;A = CP/M track number high byte
+
+    inc hl              ;HL = x_track+1
+    xor (hl)            ;x_track+1 = 0
+
     or b
     ld b,a
 
@@ -1720,7 +1722,7 @@ sub_f6b9h:
     rra
 
     ld hl,x_sector      ;HL = addresses of x_sector
-    xor (hl)
+    xor (hl)            ;x_sector = 0
 
     or b
     ret z
@@ -1942,7 +1944,7 @@ lf8f9h:
     push de
     push hl
     ld (ix+00h),00h     ;0057h = 0
-    ld hl,(x_track)     ;L = CP/M track number
+    ld hl,(x_track)     ;HL = CP/M track number
     ld h,00h            ;H = 0
 
     add hl,hl           ;HL = CP/M track * 8
@@ -1950,7 +1952,7 @@ lf8f9h:
     add hl,hl
     add hl,hl
 
-    ld de,(x_sector)    ;E = CP/M sector number
+    ld de,(x_sector)    ;DE = CP/M sector number
     ld d,00h            ;D = 0
     add hl,de           ;HL = HL + DE
 
