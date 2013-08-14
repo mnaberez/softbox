@@ -45,8 +45,11 @@ def is_valid_8250_ts(track, sector):
     return valid
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2 or sys.argv[1] not in ['d64', 'd80', 'd82']:
-        sys.stderr.write("Usage: python make_test_image.py d64|d80|d82\n")
+    formats = {"d64":"4040", "d80":"8050", "d82":"8250"}
+    if len(sys.argv) != 2 or sys.argv[1] not in formats:
+        msg = "Usage: python make_test_image.py %s\n" % (
+            "|".join(sorted(formats)))
+        sys.stderr.write(msg)
         sys.exit(1)
 
     if sys.argv[1] == "d64":
