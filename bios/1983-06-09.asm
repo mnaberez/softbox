@@ -1813,7 +1813,8 @@ lf752h:
     call puts           ;Write ": " to console out
 
     ld hl,cbm_dos_errs  ;HL = pointer to CBM DOS error table
-    call put_dos_error ;Display an error message
+    call put_dos_error  ;Display an error message
+
 lf76dh:
     call conin          ;Wait for a key to be pressed
 
