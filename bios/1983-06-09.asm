@@ -791,15 +791,15 @@ lf2d1h:
 ieee_read_sec:
 ;Read a sector from CBM DOS into the dos_buf buffer.
 ;
-    ld hl,dos_buf
-    ex af,af'
-    jp ieee_read_sec_hl
+    ld hl,dos_buf       ;HL = address of CBM DOS buffer area
+    ex af,af'           ;TODO why are these exchanged?
+    jp ieee_read_sec_hl ;Read a CBM sector into buffer at HL
 
 ieee_writ_sec:
 ;Write a sector from the dos_buf out to CBM DOS.
 ;
-    ld hl,dos_buf
-    jp ieee_writ_sec_hl
+    ld hl,dos_buf       ;HL = address of CBM DOS buffer area
+    jp ieee_writ_sec_hl ;Read a CBM sector into buffer at HL
 
 copy_to_dma:
 ;Copy from dos_buf to dma_buf
