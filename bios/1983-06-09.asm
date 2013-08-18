@@ -110,7 +110,7 @@ y_sector: equ  004ch    ;  Sector number
 
 dos_trk:  equ  004dh    ;CBM DOS track number
 dos_sec:  equ  004eh    ;CBM DOS sector number
-dos_err:  equ  004fh    ;Last error code returned from CBM DOS
+dos_err:  equ  004fh    ;Last CBM DOS error code saved by ieee_u1_or_u2
 tries:    equ  0050h    ;Counter used to retry drive faults in ieee_u1_or_u2
 wrt_pend: equ  0051h    ;CBM DOS buffer state (1=write is pending, 0=none)
 dma:      equ  0052h    ;DMA buffer area address
@@ -1783,12 +1783,14 @@ lf707h:
     call ieee_read_err  ;Read the error channel
     cp 16h              ;Is it 22 Read Error (no data block)?
     jr nz,lf73fh        ;  No: jump to handle error
+
     ex af,af'
     or a
     ret z
     ex af,af'
+
 lf73fh:
-    ld (dos_err),a      ;A=last error code returned from CBM DOS
+    ld (dos_err),a      ;Save A as last error code returned from CBM DOS
     or a                ;Set flags
     ret z               ;Return if error code = 0 (OK)
 
@@ -2067,12 +2069,16 @@ ieee_read_err:
 ;Read the error channel of an IEEE-488 device
 ;A = CP/M drive number
 ;
+;Returns the CBM DOS error code in A (0=OK)
+;
     call get_ddev       ;D = IEEE-488 primary address
                         ;Fall through into ieee_rd_err_d
 
 ieee_rd_err_d:
 ;Read the error channel of an IEEE-488 device
 ;D = IEEE-488 primary address
+;
+;Returns the CBM DOS error code in A (0=OK)
 ;
     ld e,0fh
     call ieee_talk
