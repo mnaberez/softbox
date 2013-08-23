@@ -15,7 +15,7 @@ def d80_to_cpm(input_filename, output_filename):
     pet_track, pet_sector = 1, 0
     cpm_track, cpm_sector = 0, 0
 
-    for i in range(0, 3984):
+    for i in range(0, 3992):
         # each 256-byte pet sector holds two 128-byte cp/m sectors
         if i & 1 == 0:
             pet_sector_data = inp.read(256)

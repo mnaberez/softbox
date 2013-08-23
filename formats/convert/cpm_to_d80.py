@@ -517,8 +517,7 @@ def cpm_to_d80(input_filename, output_filename):
     pet_track, pet_sector = 1, 0
     cpm_track, cpm_sector = 0, 0
 
-    # TODO: why is +8 needed?
-    for i in range(0, 3984 + 8):
+    for i in range(0, 3992):
         # each 256-byte pet sector holds two 128-byte cp/m sectors
         cpm_sector_data = inp.read(128)
         if len(cpm_sector_data) != 128:
