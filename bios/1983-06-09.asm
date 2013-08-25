@@ -2319,14 +2319,15 @@ ieee_talk:
                         ;Send primary address:
     ld a,40h            ;  High nibble (4) = Talk Address Group
     or d                ;  Low nibble (D) = primary address
-    call ieee_put_byte
+    call ieee_put_byte  ;Send the byte
 
-    jr c,release_atn
+    jr c,release_atn    ;If an error occurred during ieee_put_byte,
+                        ;  jump out to release ATN.
 
                         ;Send secondary address if any:
     ld a,e              ;  Low nibble (E) = secondary address
     or 60h              ;  High nibble (6) = Secondary Command Group
-    call p,ieee_put_byte
+    call p,ieee_put_byte ;Send the byte only if bit 7 is clear
 
     in a,(ppi2_pb)
     or ndac+nrfd
@@ -2334,7 +2335,7 @@ ieee_talk:
                         ;Fall through into release_atn
 
 release_atn:
-;ATN_OUT=high then wait a short time
+;Set ATN_OUT=high then wait a short time
 ;
     push af
     in a,(ppi2_pb)
@@ -2375,13 +2376,15 @@ ieee_listen:
     or d                ;  Low nibble (D) = primary address
     call ieee_put_byte
 
-    jr c,release_atn
+    jr c,release_atn    ;If an error occurred during ieee_put_byte,
+                        ;  jump out to release ATN_OUT.
 
                         ;Send secondary address if any:
     ld a,e              ;  Low nibble (E) = secondary address
     or 60h              ;  High nibble (6) = Secondary Command Group
-    call p,ieee_put_byte
-    jr release_atn
+    call p,ieee_put_byte ;Send the byte only if bit 7 is clear
+
+    jr release_atn      ;Jump out to release ATN
 
 ieee_unlisten:
 ;Send UNLISTEN to all IEEE-488 devices.
@@ -2394,12 +2397,14 @@ ieee_atn_byte:
 ;ATN_OUT=low, put byte, ATN_OUT=high, wait
 ;
     push af
+
     in a,(ppi2_pb)
     or atn
     out (ppi2_pb),a     ;ATN_OUT=low
+
     pop af
-    call ieee_put_byte
-    jr release_atn
+    call ieee_put_byte  ;Send the byte
+    jr release_atn      ;Jump out to release ATN
 
 ieee_open:
 ;Open a file on an IEEE-488 device.
@@ -3342,10 +3347,11 @@ lfef9h:
 ieee_eoi_cr:
 ;Send a carriage return to IEEE-488 device with EOI
 ;
-    ld a,cr
+    ld a,cr             ;A = carriage return
+                        ;Fall through into ieee_eoi_byte
 
 ieee_eoi_byte:
-;Send a byte to IEEE-488 device with EOI asserted
+;Send the byte in A to IEEE-488 device with EOI asserted
 ;
     push af
     in a,(ppi2_pb)
@@ -3353,7 +3359,7 @@ ieee_eoi_byte:
     out (ppi2_pb),a     ;EOI_OUT=low
 
     pop af
-    call ieee_put_byte
+    call ieee_put_byte  ;Send the byte
     push af
 
     in a,(ppi2_pb)
