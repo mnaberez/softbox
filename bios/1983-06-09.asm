@@ -534,7 +534,7 @@ dpb_4_corvus_5mb_1:
     db 00h              ;     Unused
 
 dbp_5_corvus_5mb_2:
-;Corvus 5MB hard drive (as 1 CP/M drive)
+;Corvus 5MB hard drive (as 2 CP/M drives)
 ;
     dw 0040h            ;SPT  Number of 128-byte records per track
     db 06h              ;BSH  Block shift
