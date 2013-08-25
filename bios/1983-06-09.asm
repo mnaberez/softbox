@@ -2321,7 +2321,7 @@ ieee_talk:
     or d                ;  Low nibble (D) = primary address
     call ieee_put_byte
 
-    jr c,atn_out_high
+    jr c,release_atn
 
                         ;Send secondary address if any:
     ld a,e              ;  Low nibble (E) = secondary address
@@ -2331,9 +2331,9 @@ ieee_talk:
     in a,(ppi2_pb)
     or ndac+nrfd
     out (ppi2_pb),a     ;NDAC_OUT=low, NRFD_OUT=low
-                        ;Fall through into atn_out_high
+                        ;Fall through into release_atn
 
-atn_out_high:
+release_atn:
 ;ATN_OUT=high then wait a short time
 ;
     push af
@@ -2375,13 +2375,13 @@ ieee_listen:
     or d                ;  Low nibble (D) = primary address
     call ieee_put_byte
 
-    jr c,atn_out_high
+    jr c,release_atn
 
                         ;Send secondary address if any:
     ld a,e              ;  Low nibble (E) = secondary address
     or 60h              ;  High nibble (6) = Secondary Command Group
     call p,ieee_put_byte
-    jr atn_out_high
+    jr release_atn
 
 ieee_unlisten:
 ;Send UNLISTEN to all IEEE-488 devices.
@@ -2399,7 +2399,7 @@ ieee_atn_byte:
     out (ppi2_pb),a     ;ATN_OUT=low
     pop af
     call ieee_put_byte
-    jr atn_out_high
+    jr release_atn
 
 ieee_open:
 ;Open a file on an IEEE-488 device.
