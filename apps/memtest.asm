@@ -22,8 +22,7 @@ cr:         equ 0dh     ;Carriage Return
 
     org 0100h
 
-l0100h:
-    ld sp,l0100h        ;Initialize stack pointer
+    ld sp,0100h         ;Initialize stack pointer
 
     ld hl,0000h
     ld (passes),hl
