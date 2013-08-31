@@ -509,17 +509,17 @@ irq_repeat:
     sta repeatcount0    ;save to counter
     bne irq_scan
 l_06b1:
-    cmp #$ff            ; NO KEY?
-    beq irq_scan        ; Yes, jump to scan for another
-    lda repeatcount0    ; No, there was a key, so get the counter
-    beq l_06bf          ; Is it zero?
-    dec repeatcount0    ; Count Down
-    bne irq_scan        ; Is it Zero
+    cmp #$ff            ;NO KEY?
+    beq irq_scan        ;Yes, jump to scan for another
+    lda repeatcount0    ;No, there was a key, so get the counter
+    beq l_06bf          ;Is it zero?
+    dec repeatcount0    ;Count Down
+    bne irq_scan        ;Is it Zero
 l_06bf:
-    dec repeatcount1    ; Count Down
-    bne irq_scan        ; Is it zero? No, scan for another
-    lda #$04            ; Yes, Reset it to 4
-    sta repeatcount1    ; Store it
+    dec repeatcount1    ;Count Down
+    bne irq_scan        ;Is it zero? No, scan for another
+    lda #$04            ;Yes, Reset it to 4
+    sta repeatcount1    ;Store it
     lda #$00            ;Clear the SCANCODE and allow the key to be processed
     sta scancode        ;Store it
     lda #$02
