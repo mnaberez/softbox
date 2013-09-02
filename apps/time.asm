@@ -75,25 +75,37 @@ time_output:
 time_input:
 ;Get a new time from the user and set the clock.
 ;
-    ld d,a              ;0135
-    call get_dec        ;0136
-    jp c,bad_syntax     ;0139
-    ld e,a              ;013c
-    push de             ;013d
-    call get_dec        ;013e
-    jp c,bad_syntax     ;0141
-    ld d,a              ;0144
+                        ;Get hours:
+    ld d,a              ;  D = hours (already parsed)
 
-    push de             ;0145
-    ld de,hit_key       ;0146
-    ld c,cwritestr      ;Output String
-    call bdos           ;BDOS System Call
-    ld c,cread          ;Console Input
-    call bdos           ;BDOS System Call
-    cp ctrl_c           ;Control-C pressed?
-    jp z,warm           ;  Yes: jump to warm start
-    pop de              ;0158
-    pop hl              ;0159
+                        ;Get minutes:
+    call get_dec        ;  Parse minutes
+    jp c,bad_syntax     ;  Abort if parse error
+    ld e,a              ;  E = minutes
+
+    push de             ;Push hours and minutes onto stack
+
+                        ;Get seconds:
+    call get_dec        ;  Parse seconds
+    jp c,bad_syntax     ;  Abort if parse error
+    ld d,a              ;  D = seconds
+
+    push de             ;Push seconds onto stack
+
+                        ;Print "Hit key to start clock":
+    ld de,hit_key       ;  DE = address of "hit key" string
+    ld c,cwritestr      ;  Output String
+    call bdos           ;  BDOS System Call
+
+                        ;Wait for the key:
+    ld c,cread          ;  Console Input
+    call bdos           ;  BDOS System Call
+    cp ctrl_c           ;  Control-C pressed?
+    jp z,warm           ;    Yes: jump to warm start
+
+                        ;Pop time from stack:
+    pop de              ;  D=seconds, E=jiffies
+    pop hl              ;  H=hours, L=minutes
 
     jp set_time         ;Jump out to set time on the CBM computer,
                         ;  it will return to CP/M.
