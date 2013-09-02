@@ -461,17 +461,18 @@ exit_dos_err:
     ld c,cwritestr      ;C = Output String
     call bdos           ;BDOS system call
 
-    ld hl,dos_msg
+    ld hl,dos_msg       ;HL = address of last CBM DOS error message
 l03f7h:
-    push hl
-    ld e,(hl)
-    ld c,cwrite
-    call bdos
-    pop hl
-    ld a,(hl)
-    inc hl
-    cp cr
-    jr nz,l03f7h
+    push hl             ;Save HL
+    ld e,(hl)           ;E = char from CBM DOS error message
+    ld c,cwrite         ;C = write char to console out
+    call bdos           ;BDOS system call
+    pop hl              ;Restore HL
+
+    ld a,(hl)           ;A = char from CBM DOS error message
+    inc hl              ;Increment to next char in the message
+    cp cr               ;Is this char a carriage return?
+    jr nz,l03f7h        ;  No: loop to handle next char
     jp warm             ;Warm start
 
 newline:
@@ -480,6 +481,7 @@ newline:
     ld e,cr             ;E = carriage return
     ld c,cwrite         ;C = write char to console out
     call bdos           ;BDOS system call
+
     ld e,lf             ;E = line feed
     ld c,cwrite         ;C = write char to console out
     jp bdos             ;Jump out to BDOS, it will return to caller
