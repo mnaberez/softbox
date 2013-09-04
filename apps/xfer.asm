@@ -243,16 +243,16 @@ write_to_file:
 sub_0247h:
     push af
 l0248h:
-    ld de,src_drive     ;DE = address of "PET DOS source drive (A-P)?"
+    ld de,ask_src_drive ;DE = address of "PET DOS source drive (A-P)?"
     ld c,cwritestr      ;C = Output String
     call bdos           ;BDOS system call
 
     call input          ;Get a line of input from the user
-    ld a,(table_0+2)
-    sub 41h
-    ld (table_1),a
-    call get_dtype
-    jr c,l026ah
+    ld a,(table_0+2)    ;Take the first character from that input
+    sub 41h             ;Convert drive letter to number (A=0, B=1, C=2, ...)
+    ld (src_drive),a    ;Save the source drive number
+    call get_dtype      ;Check if drive is valid (carry set = valid)
+    jr c,l026ah         ;Jump if drive is valid
 
     ld de,bad_drive     ;DE = address of "Bad drive"
     ld c,cwritestr      ;C = Output String
@@ -261,19 +261,25 @@ l0248h:
     jr l0248h           ;Try again
 
 l026ah:
-    ld de,src_filename  ;DE = address of "PET DOS source file? "
+    ld de,ask_src_file  ;DE = address of "PET DOS source file? "
     ld c,cwritestr      ;C = Output String
     call bdos           ;BDOS system call
 
     call input          ;Get a line of input from the user
-    ld a,(table_1)
-    call ieee_init_drv
-    ld a,(table_1)
-    and 01h
-    add a,30h
-    ld (table_0),a
-    ld a,(table_1)
+
+    ld a,(table_1)      ;A = CP/M source drive number
+    call ieee_init_drv  ;Initialize the CBM disk drive
+
+    ld a,(table_1)      ;A = CP/M source drive number
+    and 01h             ;Mask off all except bit one.  Bit 0 of the CP/M
+                        ;  drive number indicates which drive in a
+                        ;  CBM dual drive unit.
+    add a,30h           ;Convert it to ASCII (0="0", 1="1")
+    ld (table_0),a      ;Save the CBM drive number
+
+    ld a,(table_1)      ;A = CP/M drive number
     call get_ddev
+
     ld hl,table_0+1
     ld a,(hl)
     add a,06h
@@ -320,16 +326,16 @@ exit_full:
 seq_to_pet:
 ;Copy sequential file to PET DOS
 ;
-    ld de,dest_drive    ;DE = address of "PET DOS destination drive?"
+    ld de,ask_dest_drv  ;DE = address of "PET DOS destination drive?"
     ld c,cwritestr      ;C = Ouput String
     call bdos           ;BDOS system call
 
     call input          ;Get a line of input from the user
-    ld a,(table_0+2)
-    sub 41h
-    ld (table_1),a
-    call get_dtype
-    jr c,l0301h
+    ld a,(table_0+2)    ;Take the first character from that input
+    sub 41h             ;Convert drive letter to number (A=0, B=1, C=2, ...)
+    ld (src_drive),a    ;Save the source drive number
+    call get_dtype      ;Check if drive is valid (carry set = valid)
+    jr c,l0301h         ;Jump if drive is valid
 
     ld de,bad_drive     ;DE = address of "Bad drive"
     ld c,cwritestr      ;C = Output String
@@ -338,7 +344,7 @@ seq_to_pet:
     jr seq_to_pet       ;Try again
 
 l0301h:
-    ld de,dest_filename ;DE = address of "PET DOS destination file?"
+    ld de,ask_dest_file ;DE = address of "PET DOS destination file?"
     ld c,cwritestr      ;C = Output String
     call bdos           ;BDOS system call
 
@@ -507,13 +513,13 @@ menu:
     db lf,"3.  Copy BASIC program from PET DOS",cr,lf
     db lf,"4.  As 2.  but insert line feeds",cr,lf
     db lf,"Which type of transfer (1 to 4) ? $"
-src_drive:
+ask_src_drive:
     db "PET DOS source drive (A-P) ? $"
-src_filename:
+ask_src_file:
     db "PET DOS source file ? $"
-dest_drive:
+ask_dest_drv:
     db "PET DOS destination drive (A-P) ? $"
-dest_filename:
+ask_dest_file:
     db "PET DOS destn. file ? $"
 bad_filename:
     db cr,lf,"Bad file name$"
@@ -639,6 +645,8 @@ table_0:
     db 1ah,77h,13h
 
 table_1:
-    db 2bh,0dh,0c2h,0c1h,0f1h,0e6h,7fh,0f5h,87h,0fah,92h,2fh,2ah
+src_drive:
+    db 2bh
+    db 0dh,0c2h,0c1h,0f1h,0e6h,7fh,0f5h,87h,0fah,92h,2fh,2ah
     db 8eh,3ch,7eh,0b7h,0cah,81h,2fh,0f1h,0c5h,47h,04h,2bh,05h,0cah,6ch,2fh
     db 7eh,0d5h,2fh,5fh
