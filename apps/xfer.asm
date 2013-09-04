@@ -94,23 +94,29 @@ seq_from_pet:
     call sub_0247h
     ld hl,dma_buf
 l015ah:
-    call cbm_get_byte
-    ld d,a
-    ld a,(eoisav)
-    and 10h
-    push af
+    call cbm_get_byte   ;Read a data byte from the CBM drive
+    ld d,a              ;Save the byte in D
+
+    ld a,(eoisav)       ;A = ppi2_pa after get byte (IEEE-488 ctrl lines in)
+    and 10h             ;Mask off all except bit 4 (EOI in)
+    push af             ;Push EOI state onto the stack
+
     ld a,(07e2h)
     or a
-    ld a,d
+    ld a,d              ;Recall data byte
     jr z,l0174h
+
     cp cr
     jr nz,l0174h
     call write_to_file
     ld a,lf
 l0174h:
     call write_to_file
-    pop af
-    jr z,l015ah
+
+    pop af              ;Pop EOI state from the stack
+    jr z,l015ah         ;Loop for next byte if EOI=high indicating more data
+                        ;  (IEEE-488 line states are inverted)
+
 l017ah:
     ld de,(table_1+1)
     call ieee_close
