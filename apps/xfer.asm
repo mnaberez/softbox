@@ -301,15 +301,19 @@ l026ah:
     ld (table_1+1),de
     call ieee_open
     ld a,(table_1)
-    call ieee_read_err
-    or a
-    jp nz,exit_dos_err
-    ld de,fcb
-    ld c,fdelete
-    call bdos
-    ld de,fcb
-    ld c,fmake
-    call bdos
+
+    call ieee_read_err  ;Read the CBM DOS error channel
+    or a                ;Set flags (0=OK)
+    jp nz,exit_dos_err  ;Jump if the status is not OK
+
+    ld de,fcb           ;DE = address of FCB
+    ld c,fdelete        ;C = Delete File
+    call bdos           ;BDOS system call
+
+    ld de,fcb           ;DE = address of FCB
+    ld c,fmake          ;C = Create File
+    call bdos           ;BDOS system call
+
     inc a
     ret nz
     ld de,(table_1+1)
@@ -381,17 +385,22 @@ l0301h:
     call ieee_read_err
     or a
     jp nz,exit_dos_err
-    ld de,fcb
-    ld c,fopen
-    call bdos
-    inc a
-    jp z,exit_no_file
+
+    ld de,fcb           ;DE = address of FCB
+    ld c,fopen          ;C = Open File
+    call bdos           ;BDOS system call
+
+    inc a               ;Increment to check error from fopen
+                        ;  (fopen returns A=0FFh if an error occurred)
+    jp z,exit_no_file   ;Jump if an error occurred in fopen
+
 l0366h:
-    ld de,fcb
-    ld c,fread
-    call bdos
-    or a
-    jr nz,l0389h
+    ld de,fcb           ;DE = address of FCB
+    ld c,fread          ;C = Read Next Record
+    call bdos           ;BDOS system call
+    or a                ;Set flags (fread returns A=0 if OK)
+    jr nz,l0389h        ;Jump if an error occurred in fread
+
     ld de,(table_1+1)
     call ieee_listen
     ld hl,dma_buf
@@ -439,12 +448,14 @@ input:
 ;Read a line of input from the user and store it in
 ;the buffer at table_0.
 ;
-    ld de,table_0
-    ld a,50h
-    ld (de),a
-    ld c,creadstr
-    call bdos
-    call newline
+    ld de,table_0       ;DE = address of buffer to receive user input
+    ld a,50h            ;A = 50 bytes available in the buffer
+    ld (de),a           ;Store bytes available where BDOS reads it
+    ld c,creadstr       ;C = Buffered Console Input
+    call bdos           ;BDOS system call
+
+    call newline        ;Print a newline
+
     ld a,(table_0+1)
     ld hl,table_0+2
     ld b,a
