@@ -4,6 +4,7 @@
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
 fcb:           equ  005ch ;BDOS default FCB
+dma_buf:       equ  0080h ;Default DMA buffer area (128 bytes) for disk I/O
 eoisav:        equ 0ea6ch ;Stores ppi2_pa IEEE-488 ctrl lines after get byte
 dos_msg:       equ 0eac0h ;Last error message returned from CBM DOS
 ieee_listen:   equ 0f033h ;Send LISTEN to an IEEE-488 device
@@ -31,6 +32,7 @@ fmake:         equ 16h    ;Create File
 
 lf:            equ 0ah    ;Line Feed
 cr:            equ 0dh    ;Carriage Return
+eof:           equ 1ah    ;End of File marker (CTRL-Z)
 
     org 0100h             ;CP/M TPA
 
@@ -90,7 +92,7 @@ seq_from_pet:
 ;
     ld a,53h
     call sub_0247h
-    ld hl,0080h
+    ld hl,dma_buf
 l015ah:
     call cbm_get_byte
     ld d,a
@@ -103,28 +105,32 @@ l015ah:
     jr z,l0174h
     cp cr
     jr nz,l0174h
-    call sub_0234h
+    call write_to_file
     ld a,lf
 l0174h:
-    call sub_0234h
+    call write_to_file
     pop af
     jr z,l015ah
 l017ah:
     ld de,(table_1+1)
     call ieee_close
+
     ld b,7fh
 l0183h:
     push bc
-    ld a,1ah
-    call sub_0234h
+    ld a,eof
+    call write_to_file
     pop bc
     djnz l0183h
-    ld de,fcb
-    ld c,fclose
-    call bdos
+
+    ld de,fcb           ;DE = address of FCB
+    ld c,fclose         ;C = Close File
+    call bdos           ;BDOS system call
+
     ld de,complete      ;DE = address of "Transfer complete"
     ld c,cwritestr      ;C = Output String
     call bdos           ;BDOS system call
+
     jp warm             ;Warm start
 
 bas_from_pet:
@@ -132,7 +138,7 @@ bas_from_pet:
 ;
     ld a,50h
     call sub_0247h
-    ld hl,0080h
+    ld hl,dma_buf
     call cbm_get_byte
     call cbm_get_byte
 l01adh:
@@ -159,21 +165,21 @@ l01adh:
     call sub_0223h
     ld a,e
     add a,30h
-    call sub_0234h
+    call write_to_file
     ld a,20h
-    call sub_0234h
+    call write_to_file
 l01e6h:
     call cbm_get_byte
     or a
     jr z,l01f4h
     jp m,l0200h
-    call sub_0234h
+    call write_to_file
     jr l01e6h
 l01f4h:
     ld a,cr
-    call sub_0234h
+    call write_to_file
     ld a,lf
-    call sub_0234h
+    call write_to_file
     jr l01adh
 l0200h:
     ld de,basic4_cmds
@@ -186,7 +192,7 @@ l0209h:
     ld a,(de)
     and 7fh
     push de
-    call sub_0234h
+    call write_to_file
     pop de
     ld a,(de)
     rla
@@ -212,20 +218,26 @@ l0227h:
     jr nc,l0227h
     add hl,bc
     ex (sp),hl
-    call sub_0234h
+    call write_to_file
     pop de
     ret
 
-sub_0234h:
-    ld (hl),a
-    inc l
-    ret nz
-    ld de,fcb
-    ld c,fwrite
-    call bdos
-    or a
-    jp nz,exit_full
-    ld hl,0080h
+write_to_file:
+;Write the byte in A to the DMA buffer via the pointer in HL
+;and advance the pointer.  When the DMA buffer is full, write it
+;to the current CP/M file and then reset the pointer.
+;
+    ld (hl),a           ;Store byte in DMA buffer
+    inc l               ;Increment DMA buffer pointer
+    ret nz              ;Return if the buffer is not full
+
+    ld de,fcb           ;DE = address of FCB
+    ld c,fwrite         ;C = Close File
+    call bdos           ;BDOS system call
+    or a                ;Set flags (A=0 means no error)
+    jp nz,exit_full     ;Exit with "disk full" message if error
+
+    ld hl,dma_buf       ;Reset the pointer to the DMA pointer
     ret
 
 sub_0247h:
@@ -376,7 +388,7 @@ l0366h:
     jr nz,l0389h
     ld de,(table_1+1)
     call ieee_listen
-    ld hl,0080h
+    ld hl,dma_buf
 l037bh:
     ld a,(hl)
     push hl
