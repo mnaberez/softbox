@@ -66,8 +66,8 @@ get_selection:
     call input          ;Get a line of user input
     ld a,(table_0+2)    ;A = first char from input
 
-    ld hl,07e2h
-    ld (hl),00h
+    ld hl,insert_lf     ;HL = address of insert linefeeds flag
+    ld (hl),00h         ;Insert linefeeds flag = off
 
     cp '1'              ;1 = Copy sequential file to PET DOS
     jp z,seq_to_pet
@@ -78,7 +78,8 @@ get_selection:
     cp '3'              ;3 = Copy BASIC program from PET DOS
     jp z,bas_from_pet
 
-    inc (hl)
+    inc (hl)            ;Insert linefeeds flag = on
+
     cp '4'              ;4 = As 2. but insert line feeds
     jp z,seq_from_pet
 
@@ -101,17 +102,20 @@ l015ah:
     and 10h             ;Mask off all except bit 4 (EOI in)
     push af             ;Push EOI state onto the stack
 
-    ld a,(07e2h)
-    or a
+    ld a,(insert_lf)    ;A = insert linefeeds flag
+    or a                ;Set flags
     ld a,d              ;Recall data byte
-    jr z,l0174h
+    jr z,l0174h         ;Jump if insert linefeeds = off
 
-    cp cr
-    jr nz,l0174h
-    call write_to_file
-    ld a,lf
+    cp cr               ;Is the byte a carriage return?
+    jr nz,l0174h        ;  No: jump over skip over LF insertion
+
+    call write_to_file  ;Write CR to file
+    ld a,lf             ;A = linefeed
+                        ;Fall through to write LF to file
+
 l0174h:
-    call write_to_file
+    call write_to_file  ;Write byte to file
 
     pop af              ;Pop EOI state from the stack
     jr z,l015ah         ;Loop for next byte if EOI=high indicating more data
@@ -664,6 +668,10 @@ table_0:
 table_1:
 src_drive:
     db 2bh
-    db 0dh,0c2h,0c1h,0f1h,0e6h,7fh,0f5h,87h,0fah,92h,2fh,2ah
-    db 8eh,3ch,7eh,0b7h,0cah,81h,2fh,0f1h,0c5h,47h,04h,2bh,05h,0cah,6ch,2fh
+    db 0dh
+    db 0c2h
+insert_lf:
+    db 0c1h
+    db 0f1h,0e6h,7fh,0f5h,87h,0fah,92h,2fh,2ah,8eh,3ch
+    db 7eh,0b7h,0cah,81h,2fh,0f1h,0c5h,47h,04h,2bh,05h,0cah,6ch,2fh
     db 7eh,0d5h,2fh,5fh
