@@ -122,8 +122,8 @@ l0174h:
                         ;  (IEEE-488 line states are inverted)
 
 l017ah:
-    ld de,(table_1+1)
-    call ieee_close
+    ld de,(table_1+1)   ;D = IEEE-488 primary address, E = file number
+    call ieee_close     ;Close open file on IEEE-488 device
 
     ld b,7fh
 l0183h:
@@ -277,17 +277,17 @@ l026ah:
 
     call input          ;Get a line of input from the user
 
-    ld a,(table_1)      ;A = CP/M source drive number
+    ld a,(src_drive)    ;A = CP/M source drive number
     call ieee_init_drv  ;Initialize the CBM disk drive
 
-    ld a,(table_1)      ;A = CP/M source drive number
+    ld a,(src_drive)    ;A = CP/M source drive number
     and 01h             ;Mask off all except bit one.  Bit 0 of the CP/M
                         ;  drive number indicates which drive in a
                         ;  CBM dual drive unit.
     add a,30h           ;Convert it to ASCII (0="0", 1="1")
     ld (table_0),a      ;Save the CBM drive number
 
-    ld a,(table_1)      ;A = CP/M drive number
+    ld a,(src_drive)    ;A = CP/M drive number
     call get_ddev
 
     ld hl,table_0+1
@@ -308,10 +308,11 @@ l026ah:
     ld (hl),52h
     ld hl,table_0
     ld e,03h
-    ld (table_1+1),de
-    call ieee_open
-    ld a,(table_1)
 
+    ld (table_1+1),de   ;D = IEEE-488 primary address, E = file number
+    call ieee_open      ;Open a file on an IEEE-488 device
+
+    ld a,(src_drive)    ;A = CP/M source drive
     call ieee_read_err  ;Read the CBM DOS error channel
     or a                ;Set flags (0=OK)
     jp nz,exit_dos_err  ;Jump if the status is not OK
@@ -323,11 +324,12 @@ l026ah:
     ld de,fcb           ;DE = address of FCB
     ld c,fmake          ;C = Create File
     call bdos           ;BDOS system call
+    inc a               ;Increment to check error from fmake
+                        ;  (fmake returns A=0FFh if an error occurred)
+    ret nz              ;Return if an error occurred
 
-    inc a
-    ret nz
-    ld de,(table_1+1)
-    call ieee_close
+    ld de,(table_1+1)   ;D = IEEE-488 primary address, E = file number
+    call ieee_close     ;Close open file on IEEE-488 device
 
 exit_full:
 ;Print disk full error and return to CP/M
@@ -363,13 +365,15 @@ l0301h:
     call bdos           ;BDOS system call
 
     call input          ;Get a line of input from the user
-    ld a,(table_1)
-    call ieee_init_drv
-    ld a,(table_1)
+
+    ld a,(src_drive)    ;A = CP/M source drive
+    call ieee_init_drv  ;Initialize an IEEE-488 disk drive
+
+    ld a,(src_drive)
     and 01h
     add a,30h
     ld (table_0),a
-    ld a,(table_1)
+    ld a,(src_drive)
     call get_ddev
     ld hl,table_0+1
     ld c,(hl)
@@ -389,17 +393,18 @@ l0301h:
     ld (hl),3ah
     dec hl
     ld e,03h
-    ld (table_1+1),de
-    call ieee_open
-    ld a,(table_1)
-    call ieee_read_err
-    or a
-    jp nz,exit_dos_err
+
+    ld (table_1+1),de   ;D = IEEE-488 primary address, E = file number
+    call ieee_open      ;Open a file on an IEEE-488 device
+
+    ld a,(src_drive)    ;A = CP/M source drive
+    call ieee_read_err  ;Read the CBM DOS error channel
+    or a                ;Set flags (0=OK)
+    jp nz,exit_dos_err  ;Jump if the status is not OK
 
     ld de,fcb           ;DE = address of FCB
     ld c,fopen          ;C = Open File
     call bdos           ;BDOS system call
-
     inc a               ;Increment to check error from fopen
                         ;  (fopen returns A=0FFh if an error occurred)
     jp z,exit_no_file   ;Jump if an error occurred in fopen
@@ -411,21 +416,24 @@ l0366h:
     or a                ;Set flags (fread returns A=0 if OK)
     jr nz,l0389h        ;Jump if an error occurred in fread
 
-    ld de,(table_1+1)
-    call ieee_listen
+    ld de,(table_1+1)   ;D = IEEE-488 primary address, E = file number
+    call ieee_listen    ;Send LISTEN
+
     ld hl,dma_buf
 l037bh:
     ld a,(hl)
     push hl
-    call ieee_put_byte
+    call ieee_put_byte  ;Send byte
     pop hl
     inc l
     jr nz,l037bh
-    call ieee_unlisten
+
+    call ieee_unlisten  ;Send UNLISTEN
     jr l0366h
+
 l0389h:
-    ld de,(table_1+1)
-    call ieee_close
+    ld de,(table_1+1)   ;D = IEEE-488 primary address, E = file number
+    call ieee_close     ;Close open file on IEEE-488 device
 
     ld de,complete      ;DE = address of "Transfer complete"
     ld c,cwritestr      ;C = Output String
@@ -445,7 +453,7 @@ cbm_get_byte:
 ;Returns the byte in A.
 ;
     push hl
-    ld de,(table_1+1)   ;D = IEEE-488 primary address, E = secondary
+    ld de,(table_1+1)   ;D = IEEE-488 primary address, E = file number
     call ieee_talk      ;Send TALK
     call ieee_get_byte  ;Get byte
     push af
