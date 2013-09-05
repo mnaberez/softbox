@@ -150,77 +150,121 @@ bas_from_pet:
     ld a,'P'            ;A = 'P' for CBM DOS program file
     call sub_0247h
 
-    ld hl,dma_buf
-    call cbm_get_byte
-    call cbm_get_byte
-l01adh:
-    call cbm_get_byte
-    push af
-    call cbm_get_byte
-    pop bc
-    or b
-    jr z,l017ah
-    push hl
-    call cbm_get_byte
-    push af
-    call cbm_get_byte
-    ld d,a
-    pop af
-    ld e,a
-    ld bc,2710h
-    call sub_0223h
-    ld bc,03e8h
-    call sub_0223h
-    ld bc,0064h
-    call sub_0223h
-    ld bc,000ah
-    call sub_0223h
-    ld a,e
-    add a,30h
-    call write_to_file
-    ld a,20h
-    call write_to_file
-l01e6h:
-    call cbm_get_byte
-    or a
-    jr z,l01f4h
-    jp m,l0200h
-    call write_to_file
-    jr l01e6h
-l01f4h:
-    ld a,cr
-    call write_to_file
-    ld a,lf
-    call write_to_file
-    jr l01adh
-l0200h:
-    ld de,basic4_cmds
-    and 7fh
-    ld b,a
-    inc b
-l0207h:
-    djnz l0218h
-l0209h:
-    ld a,(de)
-    and 7fh
-    push de
-    call write_to_file
-    pop de
-    ld a,(de)
-    rla
-    inc de
-    jr nc,l0209h
-    jr l01e6h
-l0218h:
-    ld a,(de)
-    inc de
-    cp 0ffh
-    jr z,l01e6h
-    rla
-    jr nc,l0218h
-    jr l0207h
+    ld hl,dma_buf       ;HL = address of DMA buffer
 
-sub_0223h:
+    call cbm_get_byte   ;Read start address low byte (discarded)
+    call cbm_get_byte   ;Read high byte (discarded)
+
+bas_line:
+;Process a tokenized line in the BASIC program.
+;
+                        ;Read pointer to next BASIC line:
+    call cbm_get_byte   ;  A = Read pointer to next BASIC line low byte
+    push af             ;  Push it onto the stack
+    call cbm_get_byte   ;  A = Read pointer to next BASIC line high byte
+    pop bc              ;  B = pop pointer low byte from stack
+
+                        ;Detect end of BASIC program:
+    or b                ;  Perform logical OR between the pointer bytes
+    jr z,l017ah         ;  Jump to finish up if the pointer is zero.
+                        ;    (End of BASIC program reached)
+
+    push hl             ;Push DMA address onto stack
+
+                        ;Read BASIC line number:
+    call cbm_get_byte   ;  A = read low byte of BASIC line number
+    push af             ;  Save line number low byte on stack
+    call cbm_get_byte   ;  A = read high byte of BASIC line number
+    ld d,a              ;  Move it into D
+    pop af              ;  Pop line number high byte from stack
+    ld e,a              ;  Move it into E
+                        ;  BASIC line number is now in DE
+
+    ld bc,10000         ;Write the line number as decimal in ASCII
+    call bas_num        ;  TODO: comment these
+    ld bc,1000
+    call bas_num
+    ld bc,100
+    call bas_num
+    ld bc,10
+    call bas_num
+    ld a,e
+    add a,30h           ;Convert it to ASCII
+    call write_to_file  ;Write it out
+
+    ld a,' '
+    call write_to_file  ;Write space after BASIC line number
+
+bas_char:
+;Get the next byte in the BASIC line and handle it.  The byte may
+;be a token, end of line marker (null byte), or other character.
+;
+    call cbm_get_byte   ;Read next byte in BASIC line
+    or a                ;Set flags
+    jr z,bas_eol        ;Jump if zero (indicates end of current BASIC line)
+    jp m,bas_token      ;Jump if bit 7 is set (indicates a BASIC token)
+
+    call write_to_file  ;Byte is not a token, so write it out as-is
+    jr bas_char         ;Loop to get the next byte on this line
+
+bas_eol:
+;End of current BASIC line has been reached.  Write CRLF to the output
+;file and then loop to do the next line
+;
+    ld a,cr
+    call write_to_file  ;Write carriage return
+    ld a,lf
+    call write_to_file  ;Write line feed
+    jr bas_line         ;Loop to do the next line
+
+bas_token:
+;The current byte in the line is a BASIC token.  Find the ASCII
+;command text for the token in the basic4_cmds table and write
+;it to the output file.
+;
+    ld de,basic4_cmds   ;DE = address of BASIC commands table
+    and 7fh             ;Strip high bit from the token
+    ld b,a              ;Move it into B
+    inc b               ;Add one
+
+bas_find_tok:
+;Loop until the BASIC command text for the token is found in the
+;basic4_cmds table.
+;
+    djnz bas_next_tok   ;Decrement B, loop until B=0
+
+bas_found_tok:
+;The text for the current BASIC token has been found.  On entry,
+;DE will be pointing at the first char of the command text.
+;Write the command text to the output file.
+;
+    ld a,(de)           ;A = char from BASIC commands table
+    and 7fh             ;Strip high bit
+    push de
+    call write_to_file  ;Write char from the command to file
+    pop de
+    ld a,(de)           ;A = same char from BASIC commands table
+    rla                 ;Rotate bit 7 of command text into carry
+    inc de              ;Increment pointer to commands table
+    jr nc,bas_found_tok ;Loop for next if more chars in command text
+    jr bas_char         ;Otherwise, this token is done, continue on
+                        ;  to the next byte in the line.
+
+bas_next_tok:
+;Advance the pointer in DE to the next command in the
+;basic4_cmds table.
+;
+    ld a,(de)           ;A = char from commands table
+    inc de              ;Increment pointer to next char in command
+    cp 0ffh             ;End of commands table reached?
+    jr z,bas_char       ;  Yes: forget this char, jump to read next byte
+    rla                 ;Rotate to test bit 7
+    jr nc,bas_next_tok  ;Jump if bit 7 is not set (more chars in command)
+    jr bas_find_tok
+
+bas_num:
+;DE = BASIC line number
+;
     push hl
     ex de,hl
     ld a,2fh
