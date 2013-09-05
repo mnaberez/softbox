@@ -91,8 +91,9 @@ get_selection:
 seq_from_pet:
 ;Copy sequential file from PET DOS
 ;
-    ld a,53h
+    ld a,'S'            ;A = 'S' for CBM DOS sequential file
     call sub_0247h
+
     ld hl,dma_buf
 l015ah:
     call cbm_get_byte   ;Read a data byte from the CBM drive
@@ -146,8 +147,9 @@ l0183h:
 bas_from_pet:
 ;Copy BASIC program from PET DOS
 ;
-    ld a,50h
+    ld a,'P'            ;A = 'P' for CBM DOS program file
     call sub_0247h
+
     ld hl,dma_buf
     call cbm_get_byte
     call cbm_get_byte
@@ -217,6 +219,7 @@ l0218h:
     rla
     jr nc,l0218h
     jr l0207h
+
 sub_0223h:
     push hl
     ex de,hl
@@ -251,7 +254,9 @@ write_to_file:
     ret
 
 sub_0247h:
-    push af
+;A = CBM DOS file type ('P'=program, 'S'=sequential)
+;
+    push af             ;Push file type char onto stack
 l0248h:
     ld de,ask_src_drive ;DE = address of "PET DOS source drive (A-P)?"
     ld c,cwritestr      ;C = Output String
@@ -288,28 +293,32 @@ l026ah:
     ld (table_0),a      ;Save the CBM drive number
 
     ld a,(src_drive)    ;A = CP/M drive number
-    call get_ddev
+    call get_ddev       ;D = IEEE-488 primary address for the drive
+                        ;  (D will be used below)
 
-    ld hl,table_0+1
+    ld hl,table_0+1     ;HL = address of table_0+1
     ld a,(hl)
     add a,06h
     ld c,a
-    ld (hl),3ah
+    ld (hl),':'
     ld hl,0759h
     ld b,00h
     add hl,bc
-    ld (hl),2ch
-    inc hl
-    pop af
-    ld (hl),a
-    inc hl
-    ld (hl),2ch
-    inc hl
-    ld (hl),52h
-    ld hl,table_0
-    ld e,03h
 
-    ld (table_1+1),de   ;D = IEEE-488 primary address, E = file number
+    ld (hl),','         ;Append ','
+    inc hl
+    pop af              ;Pop file type char off stack
+    ld (hl),a           ;Append file type ('P' or 'S')
+    inc hl
+    ld (hl),','         ;Append ','
+    inc hl
+    ld (hl),'R'         ;Append 'R' (Read mode)
+
+    ld hl,table_0
+
+    ld e,03h            ;E = file number
+                        ;D = primary address set in get_ddev call above
+    ld (table_1+1),de   ;Store primary address and file number
     call ieee_open      ;Open a file on an IEEE-488 device
 
     ld a,(src_drive)    ;A = CP/M source drive
@@ -373,17 +382,20 @@ l0301h:
     and 01h
     add a,30h
     ld (table_0),a
-    ld a,(src_drive)
-    call get_ddev
+
+    ld a,(src_drive)    ;A = CP/M source drive
+    call get_ddev       ;D = IEEE-488 primary address for the drive
+                        ;  (D will be used below)
+
     ld hl,table_0+1
     ld c,(hl)
     ld b,00h
     ld ix,table_0+2
     add ix,bc
-    ld (ix+00h),02ch
-    ld (ix+01h),053h
-    ld (ix+02h),02ch
-    ld (ix+03h),057h
+    ld (ix+00h),','     ;Append ','
+    ld (ix+01h),'S'     ;Append 'S' (for Sequential file)
+    ld (ix+02h),','     ;Append ','
+    ld (ix+03h),'W'     ;Append 'W' (for Write mode)
     inc bc
     inc bc
     inc bc
@@ -392,9 +404,10 @@ l0301h:
     inc bc
     ld (hl),3ah
     dec hl
-    ld e,03h
 
-    ld (table_1+1),de   ;D = IEEE-488 primary address, E = file number
+    ld e,03h            ;E = file number
+                        ;D = primary address set in get_ddev call above
+    ld (table_1+1),de   ;Store primary address and file number
     call ieee_open      ;Open a file on an IEEE-488 device
 
     ld a,(src_drive)    ;A = CP/M source drive
