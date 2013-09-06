@@ -459,36 +459,40 @@ l0301h:
     or a                ;Set flags (0=OK)
     jp nz,exit_dos_err  ;Jump if the status is not OK
 
-    ld de,fcb           ;DE = address of FCB
-    ld c,fopen          ;C = Open File
-    call bdos           ;BDOS system call
-    inc a               ;Increment to check error from fopen
-                        ;  (fopen returns A=0FFh if an error occurred)
-    jp z,exit_no_file   ;Jump if an error occurred in fopen
+                        ;Open the CP/M input file:
+    ld de,fcb           ;  DE = address of FCB
+    ld c,fopen          ;  C = Open File
+    call bdos           ;  BDOS system call
+    inc a               ;  Increment to check error from fopen
+                        ;    (fopen returns A=0FFh if an error occurred)
+    jp z,exit_no_file   ;  Jump if an error occurred in fopen
 
-l0366h:
-    ld de,fcb           ;DE = address of FCB
-    ld c,fread          ;C = Read Next Record
-    call bdos           ;BDOS system call
-    or a                ;Set flags (fread returns A=0 if OK)
-    jr nz,l0389h        ;Jump if an error occurred in fread
+seq_next_record:
+                        ;Read the next record from the CP/M input file:
+    ld de,fcb           ;  DE = address of FCB
+    ld c,fread          ;  C = Read Next Record
+    call bdos           ;  BDOS system call
+    or a                ;  Set flags (fread returns A=0 if OK)
+    jr nz,seq_done      ;  Jump if an error occurred in fread
 
     ld de,(table_1+1)   ;D = IEEE-488 primary address, E = file number
     call ieee_listen    ;Send LISTEN
 
-    ld hl,dma_buf
-l037bh:
-    ld a,(hl)
-    push hl
-    call ieee_put_byte  ;Send byte
-    pop hl
-    inc l
-    jr nz,l037bh
+                        ;Send all bytes in the DMA buffer to CBM DOS:
+    ld hl,dma_buf       ;  HL = address of DMA buffer
+seq_dma_loop:           ;
+    ld a,(hl)           ;  A = get byte from the DMA buffer
+    push hl             ;
+    call ieee_put_byte  ;  Send it to the drive
+    pop hl              ;
+    inc l               ;  Increment low byte of DMA buffer pointer
+    jr nz,seq_dma_loop  ;  Loop until L rolls over to 0, indicating that
+                        ;    all 128 bytes in the DMA buffer have been sent
 
     call ieee_unlisten  ;Send UNLISTEN
-    jr l0366h
+    jr seq_next_record  ;Loop to do the next record
 
-l0389h:
+seq_done:
     ld de,(table_1+1)   ;D = IEEE-488 primary address, E = file number
     call ieee_close     ;Close open file on IEEE-488 device
 
