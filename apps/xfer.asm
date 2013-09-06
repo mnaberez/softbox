@@ -298,6 +298,8 @@ write_to_file:
     ret
 
 sub_0247h:
+;Called from seq_from_pet, bas_from_pet
+;
 ;A = CBM DOS file type ('P'=program, 'S'=sequential)
 ;
     push af             ;Push file type char onto stack
