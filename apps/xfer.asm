@@ -126,13 +126,13 @@ l017ah:
     ld de,(table_1+1)   ;D = IEEE-488 primary address, E = file number
     call ieee_close     ;Close open file on IEEE-488 device
 
-    ld b,7fh
+    ld b,7fh            ;B = number EOF filler bytes to write
 l0183h:
     push bc
-    ld a,eof
-    call write_to_file
+    ld a,eof            ;A = End of File marker (CTRL-Z)
+    call write_to_file  ;Write EOF char to file
     pop bc
-    djnz l0183h
+    djnz l0183h         ;Decrement B, loop until B=0
 
     ld de,fcb           ;DE = address of FCB
     ld c,fclose         ;C = Close File
