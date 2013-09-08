@@ -537,21 +537,30 @@ input:
 
     call newline        ;Print a newline
 
-    ld a,(table_0+1)
-    ld hl,table_0+2
-    ld b,a
-    inc b
+    ld a,(table_0+1)    ;A = number of characters in the buffer
+    ld hl,table_0+2     ;HL = address of first char in the buffer
+
+    ld b,a              ;Move number of chars in buffer to B
+    inc b               ;Increment B
+
 l03ceh:
-    ld a,(hl)
-    cp 61h
-    jr c,l03dah
-    cp 7bh
-    jr nc,l03dah
-    sub 20h
-    ld (hl),a
+    ld a,(hl)           ;Get a char from the buffer
+
+    cp 61h              ;Set carry if A < 97, clear carry if A >= 97
+    jr c,l03dah         ;Jump if A < 97 (ASCII "a")
+
+    cp 7bh              ;Set carry if A < 123, clear carry if A >= 123
+    jr nc,l03dah        ;Jump if A >= 123 (ASCII "z" + 1)
+
+                        ;Char is in the range of 97 ("a") and 123 ("z").
+
+    sub 20h             ;Convert ASCII lowercase to uppercase
+    ld (hl),a           ;Save it back to the buffer
+
 l03dah:
-    inc hl
-    djnz l03ceh
+    inc hl              ;Increment pointer to next char in the buffer
+    djnz l03ceh         ;Decrement B, loop until B=0
+
     dec hl
     ld (hl),cr
     ret
