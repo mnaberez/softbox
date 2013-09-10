@@ -424,10 +424,12 @@ l0301h:
     ld a,(src_drive)    ;A = CP/M source drive
     call ieee_init_drv  ;Initialize an IEEE-488 disk drive
 
-    ld a,(src_drive)
-    and 01h
-    add a,30h
-    ld (table_0),a
+    ld a,(src_drive)    ;A = CP/M source drive number
+    and 01h             ;Mask off all except bit one.  Bit 0 of the CP/M
+                        ;  drive number indicates which drive in a
+                        ;  CBM dual drive unit.
+    add a,30h           ;Convert it to ASCII (0="0", 1="1")
+    ld (table_0),a      ;Save the CBM drive number
 
     ld a,(src_drive)    ;A = CP/M source drive
     call get_ddev       ;D = IEEE-488 primary address for the drive
