@@ -123,7 +123,7 @@ l0174h:
                         ;  (IEEE-488 line states are inverted)
 
 l017ah:
-    ld de,(table_1+1)   ;D = IEEE-488 primary address, E = file number
+    ld de,(cbm_device)  ;D = IEEE-488 primary address, E = file number
     call ieee_close     ;Close open file on IEEE-488 device
 
     ld b,7fh            ;B = number EOF filler bytes to write
@@ -364,7 +364,7 @@ l026ah:
 
     ld e,03h            ;E = file number
                         ;D = primary address set in get_ddev call above
-    ld (table_1+1),de   ;Store primary address and file number
+    ld (cbm_device),de  ;Store primary address and file number
     call ieee_open      ;Open a file on an IEEE-488 device
 
     ld a,(src_drive)    ;A = CP/M source drive
@@ -383,7 +383,7 @@ l026ah:
                         ;  (fmake returns A=0FFh if an error occurred)
     ret nz              ;Return if an error occurred
 
-    ld de,(table_1+1)   ;D = IEEE-488 primary address, E = file number
+    ld de,(cbm_device)  ;D = IEEE-488 primary address, E = file number
     call ieee_close     ;Close open file on IEEE-488 device
 
 exit_full:
@@ -455,7 +455,7 @@ l0301h:
 
     ld e,03h            ;E = file number
                         ;D = primary address set in get_ddev call above
-    ld (table_1+1),de   ;Store primary address and file number
+    ld (cbm_device),de  ;Store primary address and file number
     call ieee_open      ;Open a file on an IEEE-488 device
 
     ld a,(src_drive)    ;A = CP/M source drive
@@ -479,7 +479,7 @@ seq_next_record:
     or a                ;  Set flags (fread returns A=0 if OK)
     jr nz,seq_done      ;  Jump if an error occurred in fread
 
-    ld de,(table_1+1)   ;D = IEEE-488 primary address, E = file number
+    ld de,(cbm_device)  ;D = IEEE-488 primary address, E = file number
     call ieee_listen    ;Send LISTEN
 
                         ;Send all bytes in the DMA buffer to CBM DOS:
@@ -497,7 +497,7 @@ seq_dma_loop:           ;
     jr seq_next_record  ;Loop to do the next record
 
 seq_done:
-    ld de,(table_1+1)   ;D = IEEE-488 primary address, E = file number
+    ld de,(cbm_device)  ;D = IEEE-488 primary address, E = file number
     call ieee_close     ;Close open file on IEEE-488 device
 
     ld de,complete      ;DE = address of "Transfer complete"
@@ -518,7 +518,7 @@ cbm_get_byte:
 ;Returns the byte in A.
 ;
     push hl
-    ld de,(table_1+1)   ;D = IEEE-488 primary address, E = file number
+    ld de,(cbm_device)  ;D = IEEE-488 primary address, E = file number
     call ieee_talk      ;Send TALK
     call ieee_get_byte  ;Get byte
     push af
@@ -747,13 +747,16 @@ table_0:
     db 0c9h,0e5h,0cdh,54h,0bh,0e1h,0c4h,0cbh,2fh,0f5h,11h,16h,3bh,1ah,3ch,4fh
     db 1ah,77h,13h
 
-table_1:
 src_drive:
-    db 2bh
-    db 0dh
-    db 0c2h
+    db 2bh      ;CP/M source drive number (0=A:, 1=B:, ...)
+cbm_device:
+    db 0dh      ;IEEE-488 primary address of CBM drive
+cbm_file:
+    db 0c2h     ;File number on CBM drive
 insert_lf:
-    db 0c1h
+    db 0c1h     ;Insert linefeeds flag (0=off, 1=on)
+
+unknown:
     db 0f1h,0e6h,7fh,0f5h,87h,0fah,92h,2fh,2ah,8eh,3ch
     db 7eh,0b7h,0cah,81h,2fh,0f1h,0c5h,47h,04h,2bh,05h,0cah,6ch,2fh
     db 7eh,0d5h,2fh,5fh
