@@ -1,5 +1,34 @@
-; z80dasm 1.1.3
-; command line: z80dasm --origin 256 --labels --address xfer.com
+;XFER.COM
+;  Transfer files between CP/M and CBM DOS.
+;
+;Usage:
+;  "XFER <filename>"
+;
+;A menu will be displayed with four different options.  The <filename>
+;argument is always a CP/M filename.  It may be the source or destination
+;file, depending on which option is selected:
+;
+;  1. Copy a sequential file from CP/M to CBM DOS
+;      <filename> is the CP/M source filename
+;
+;  2. Copy a sequential file from CBM DOS to CP/M (do not insert linefeeds)
+;      <filename> is the CP/M destination filename
+;
+;  3. Copy a BASIC program file from CBM DOS to CP/M
+;      <filename> is the CP/M destination filename
+;
+;  4. Copy a sequential file from CBM DOS to CP/M (insert linefeeds)
+;      <filename> is the CP/M destination filename
+;
+;After an option is selected, the program will prompt for additional
+;information such as drive letters and the second filename.
+;
+;Options #2 and #4 are the same function, the only difference being
+;whether or not a linefeed will be inserted after each carriage return.
+;
+;When a BASIC program is copied (#3), the program will be detokenized
+;and stored on the CP/M filesystem as an ASCII file.
+;
 
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
