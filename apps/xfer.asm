@@ -371,9 +371,10 @@ l026ah:
     call get_ddev       ;D = IEEE-488 primary address for the drive
                         ;  (D will be used below)
 
-    ld hl,table_0+1     ;HL = address of table_0+1
-    ld a,(hl)
-    add a,06h
+    ld hl,table_0+1     ;HL = address of buffer character count
+    ld a,(hl)           ;A = number of characters in buffer
+    add a,06h           ;Add 6 characters to the count ("0:" + ",S,R")
+
     ld c,a
     ld (hl),':'
     ld hl,0759h
