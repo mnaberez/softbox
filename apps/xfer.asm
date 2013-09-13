@@ -785,8 +785,3 @@ cbm_file:
     db 0c2h     ;File number on CBM drive
 insert_lf:
     db 0c1h     ;Insert linefeeds flag (0=off, 1=on)
-
-unknown:
-    db 0f1h,0e6h,7fh,0f5h,87h,0fah,92h,2fh,2ah,8eh,3ch
-    db 7eh,0b7h,0cah,81h,2fh,0f1h,0c5h,47h,04h,2bh,05h,0cah,6ch,2fh
-    db 7eh,0d5h,2fh,5fh
