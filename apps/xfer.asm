@@ -384,7 +384,7 @@ l026ah:
     ld c,a              ;Move character count into C
     ld (hl),':'         ;Store CBM drive number separator at buffer+1
 
-    ld hl,buffer
+    ld hl,0759h
     ld b,00h            ;BC now holds number of chars in filename
     add hl,bc
 
