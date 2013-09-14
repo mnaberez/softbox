@@ -401,6 +401,7 @@ l026ah:
                         ;Find buffer position to receive type and mode:
     ld hl,buffer-4      ;  HL = start address of buffer - 4 for ",S,R"
     ld b,00h            ;  BC now holds final number of chars in "0:FOO,S,R"
+                        ;    and will be used in ieee_open below
     add hl,bc           ;  HL = position where ",S,R" needs to be written
 
                         ;Append type and mode:
@@ -421,6 +422,7 @@ l026ah:
 
                         ;Open the file in CBM DOS:
     ld hl,buffer        ;  HL = address of filename for ieee_open
+                        ;  BC = number of chars in filename (see above)
     ld e,03h            ;  E = file number
                         ;  D = primary address set in get_ddev call above
     ld (cbm_device),de  ;  Store primary address and file number
@@ -480,7 +482,7 @@ seq_to_pet:
     ld c,cwritestr      ;C = Output String
     call bdos           ;BDOS system call
 
-    jr seq_to_pet       ;Try again
+    jr seq_to_pet       ;Prompt for drive letter again.
 
 l0301h:
     ld de,ask_dest_file ;DE = address of "PET DOS destination file?"
@@ -492,39 +494,62 @@ l0301h:
     ld a,(src_drive)    ;A = CP/M source drive
     call ieee_init_drv  ;Initialize an IEEE-488 disk drive
 
+                        ;The buffer area now contains a CBM DOS filename.
+                        ;The first two bytes of the buffer area are the total
+                        ;buffer size (buffer+0) and bytes used (buffer+1).
+                        ;These two bytes will be overwritten with a CBM drive
+                        ;prefix ("0:" or "1:").
+
     ld a,(src_drive)    ;A = CP/M source drive number
     and 01h             ;Mask off all except bit one.  Bit 0 of the CP/M
                         ;  drive number indicates which drive in a
                         ;  CBM dual drive unit.
     add a,30h           ;Convert it to ASCII (0="0", 1="1")
-    ld (buffer),a       ;Save the CBM drive number
+    ld (buffer),a       ;Store the CBM drive number at buffer+0
 
     ld a,(src_drive)    ;A = CP/M source drive
     call get_ddev       ;D = IEEE-488 primary address for the drive
                         ;  (D will be used below)
 
-    ld hl,buffer+1
-    ld c,(hl)
-    ld b,00h
-    ld ix,buffer+2
-    add ix,bc
-    ld (ix+00h),','     ;Append ','
-    ld (ix+01h),'S'     ;Append 'S' (for Sequential file)
-    ld (ix+02h),','     ;Append ','
-    ld (ix+03h),'W'     ;Append 'W' (for Write mode)
-    inc bc
-    inc bc
-    inc bc
-    inc bc
-    inc bc
-    inc bc
-    ld (hl),':'
-    dec hl
+    ld hl,buffer+1      ;HL = address that holds number of chars in buffer
+    ld c,(hl)           ;C = number of characters in buffer
+    ld b,00h            ;B = 0
 
-    ld e,03h            ;E = file number
-                        ;D = primary address set in get_ddev call above
-    ld (cbm_device),de  ;Store primary address and file number
-    call ieee_open      ;Open a file on an IEEE-488 device
+                        ;BC now contains number of chars in buffer
+
+                        ;Find buffer position to receive type and mode:
+    ld ix,buffer+2      ;  IX = address of buffer data
+    add ix,bc           ;  Add number of chars in buffer so that IX now
+                        ;    points to the next char after filename
+
+                        ;Append type and mode to end of filename:
+    ld (ix+00h),','     ;  Store ','
+    ld (ix+01h),'S'     ;  Store 'S' (for Sequential file)
+    ld (ix+02h),','     ;  Store ','
+    ld (ix+03h),'W'     ;  Store 'W' (for Write mode)
+
+                        ;Add 6 characters to the count ("0:" + ",S,W"):
+    inc bc              ;  +1 for CBM drive number
+    inc bc              ;  +1 for ":" separator
+    inc bc              ;  +1 for ","
+    inc bc              ;  +1 for "S"
+    inc bc              ;  +1 for ","
+    inc bc              ;  +1 for "W"
+
+                        ;HL still contains the address of buffer+1
+    ld (hl),':'         ;Store the drive separator at buffer+0
+    dec hl              ;Decrement HL down to buffer+0
+
+                        ;The buffer now contains the filename with drive,
+                        ;type, and mode like "0:FOO,S,W".
+
+                        ;Open CBM DOS file:
+                        ;  HL = address of the filename
+                        ;  BC = number of chars in filename
+    ld e,03h            ;  E = file number
+                        ;  D = primary address set in get_ddev call above
+    ld (cbm_device),de  ;  Store primary address and file number
+    call ieee_open      ;  Open a file on an IEEE-488 device
 
     ld a,(src_drive)    ;A = CP/M source drive
     call ieee_read_err  ;Read the CBM DOS error channel
