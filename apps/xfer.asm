@@ -93,7 +93,7 @@ get_selection:
     call bdos           ;BDOS system call
 
     call input          ;Get a line of user input
-    ld a,(table_0+2)    ;A = first char from input
+    ld a,(buffer+2)     ;A = first char from input
 
     ld hl,insert_lf     ;HL = address of insert linefeeds flag
     ld (hl),00h         ;Insert linefeeds flag = off
@@ -338,7 +338,7 @@ l0248h:
     call bdos           ;BDOS system call
 
     call input          ;Get a line of input from the user
-    ld a,(table_0+2)    ;Take the first character from that input
+    ld a,(buffer+2)     ;Take the first character from that input
     sub 41h             ;Convert drive letter to number (A=0, B=1, C=2, ...)
     ld (src_drive),a    ;Save the source drive number
     call get_dtype      ;Check if drive is valid (carry set = valid)
@@ -360,25 +360,32 @@ l026ah:
     ld a,(src_drive)    ;A = CP/M source drive number
     call ieee_init_drv  ;Initialize the CBM disk drive
 
+                        ;The buffer area now contains a CBM DOS filename.
+                        ;The first two bytes of the buffer area are the total
+                        ;buffer size (buffer+0) and bytes used (buffer+1).
+                        ;These two bytes will be overwritten with a CBM drive
+                        ;prefix ("0:" or "1:").
+
     ld a,(src_drive)    ;A = CP/M source drive number
     and 01h             ;Mask off all except bit one.  Bit 0 of the CP/M
                         ;  drive number indicates which drive in a
                         ;  CBM dual drive unit.
     add a,30h           ;Convert it to ASCII (0="0", 1="1")
-    ld (table_0),a      ;Save the CBM drive number
+    ld (buffer),a       ;Store the CBM drive number at buffer+0
 
     ld a,(src_drive)    ;A = CP/M drive number
     call get_ddev       ;D = IEEE-488 primary address for the drive
                         ;  (D will be used below)
 
-    ld hl,table_0+1     ;HL = address of buffer character count
+    ld hl,buffer+1      ;HL = address of buffer character count
     ld a,(hl)           ;A = number of characters in buffer
     add a,06h           ;Add 6 characters to the count ("0:" + ",S,R")
 
-    ld c,a
-    ld (hl),':'
+    ld c,a              ;Move character count into C
+    ld (hl),':'         ;Store CBM drive number separator at buffer+1
+
     ld hl,0759h
-    ld b,00h
+    ld b,00h            ;BC now holds number of chars in filename
     add hl,bc
 
     ld (hl),','         ;Append ','
@@ -390,7 +397,7 @@ l026ah:
     inc hl
     ld (hl),'R'         ;Append 'R' (Read mode)
 
-    ld hl,table_0
+    ld hl,buffer
 
     ld e,03h            ;E = file number
                         ;D = primary address set in get_ddev call above
@@ -432,7 +439,7 @@ seq_to_pet:
     call bdos           ;BDOS system call
 
     call input          ;Get a line of input from the user
-    ld a,(table_0+2)    ;Take the first character from that input
+    ld a,(buffer+2)     ;Take the first character from that input
     sub 41h             ;Convert drive letter to number (A=0, B=1, C=2, ...)
     ld (src_drive),a    ;Save the source drive number
     call get_dtype      ;Check if drive is valid (carry set = valid)
@@ -459,16 +466,16 @@ l0301h:
                         ;  drive number indicates which drive in a
                         ;  CBM dual drive unit.
     add a,30h           ;Convert it to ASCII (0="0", 1="1")
-    ld (table_0),a      ;Save the CBM drive number
+    ld (buffer),a       ;Save the CBM drive number
 
     ld a,(src_drive)    ;A = CP/M source drive
     call get_ddev       ;D = IEEE-488 primary address for the drive
                         ;  (D will be used below)
 
-    ld hl,table_0+1
+    ld hl,buffer+1
     ld c,(hl)
     ld b,00h
-    ld ix,table_0+2
+    ld ix,buffer+2
     add ix,bc
     ld (ix+00h),','     ;Append ','
     ld (ix+01h),'S'     ;Append 'S' (for Sequential file)
@@ -558,19 +565,18 @@ cbm_get_byte:
     ret
 
 input:
-;Read a line of input from the user and store it in
-;the buffer at table_0.
+;Read a line of input from the user and store it in the buffer.
 ;
-    ld de,table_0       ;DE = address of buffer to receive user input
-    ld a,50h            ;A = 50 bytes available in the buffer
+    ld de,buffer        ;DE = address of buffer to receive user input
+    ld a,50h            ;A = 80 bytes available in the buffer
     ld (de),a           ;Store bytes available where BDOS reads it
     ld c,creadstr       ;C = Buffered Console Input
     call bdos           ;BDOS system call
 
     call newline        ;Print a newline
 
-    ld a,(table_0+1)    ;A = number of characters in the buffer
-    ld hl,table_0+2     ;HL = address of first char in the buffer
+    ld a,(buffer+1)     ;A = number of characters in the buffer
+    ld hl,buffer+2      ;HL = address of first char in the buffer
 
     ld b,a              ;Move number of chars in buffer to B
     inc b               ;Increment B
@@ -766,7 +772,18 @@ basic4_cmds:
     db "DIRECTOR",0d9h  ;DIRECTORY
     db 0ffh             ;End of table
 
-table_0:
+buffer:
+;Buffer area used with the BDOS system call CREADSTR (0ah):
+;
+;  - buffer+0 is the total number of bytes available in the buffer
+;    area.  The default value (2ah) is invalid.  Our code will load
+;    it with 50h (80 bytes) before calling CREADSTR.
+;
+;  - buffer+1 is the number of valid data bytes in the buffer.  It
+;    will be set by CREADSTR.
+;
+;  - buffer+2 is the start of the buffer data.
+;
     db 2ah,0a0h,3ch,19h,34h,0d1h,0f1h,0e6h,7fh,0f5h,87h,0fah,92h,2fh,2ah
     db 8eh,3ch,7eh,0b7h,0cah,81h,2fh,0f1h,0c5h,47h,04h,2bh,05h,0cah,6ch,2fh
     db 7eh,0d5h,2fh,5fh,16h,0ffh,19h,0d1h,0c3h,5dh,2fh,7eh,0b7h,0cah,8fh,2fh
