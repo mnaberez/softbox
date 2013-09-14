@@ -121,7 +121,8 @@ seq_from_pet:
 ;Copy sequential file from PET DOS
 ;
     ld a,'S'            ;A = 'S' for CBM DOS sequential file
-    call sub_0247h
+    call open_cbm_src   ;Ask for CBM source drive and filename, open the CBM
+                        ;  source file, create the CP/M destination file
 
     ld hl,dma_buf
 l015ah:
@@ -177,7 +178,8 @@ bas_from_pet:
 ;Copy BASIC program from PET DOS
 ;
     ld a,'P'            ;A = 'P' for CBM DOS program file
-    call sub_0247h
+    call open_cbm_src   ;Ask for CBM source drive and filename, open the CBM
+                        ;  source file, create the CP/M destination file
 
     ld hl,dma_buf       ;HL = address of DMA buffer
 
@@ -326,10 +328,17 @@ write_to_file:
     ld hl,dma_buf       ;Reset the pointer to the DMA pointer
     ret
 
-sub_0247h:
-;Called from seq_from_pet, bas_from_pet
+open_cbm_src:
+;Performs the following actions:
 ;
-;A = CBM DOS file type ('P'=program, 'S'=sequential)
+; - Prompts user for CBM DOS source drive and filename
+; - Opens the CBM DOS source file
+; - Erases CP/M destination file if it already exists
+; - Creates CP/M destination file
+;
+;Call with type of CBM DOS source file in A ('P'=program, 'S'=sequential)
+;
+;Exits back to CP/M if any error occurs.
 ;
     push af             ;Push file type char onto stack
 l0248h:
@@ -344,11 +353,13 @@ l0248h:
     call get_dtype      ;Check if drive is valid (carry set = valid)
     jr c,l026ah         ;Jump if drive is valid
 
+                        ;The drive letter entered is not valid.
+
     ld de,bad_drive     ;DE = address of "Bad drive"
     ld c,cwritestr      ;C = Output String
     call bdos           ;BDOS system call
 
-    jr l0248h           ;Try again
+    jr l0248h           ;Prompt for drive letter again.
 
 l026ah:
     ld de,ask_src_file  ;DE = address of "PET DOS source file? "
@@ -381,47 +392,67 @@ l026ah:
     ld a,(hl)           ;A = number of characters in buffer
     add a,06h           ;Add 6 characters to the count ("0:" + ",S,R")
 
-    ld c,a              ;Move character count into C
+    ld c,a              ;Move character count into C (used as BC below)
     ld (hl),':'         ;Store CBM drive number separator at buffer+1
 
-    ld hl,0759h
-    ld b,00h            ;BC now holds number of chars in filename
-    add hl,bc
+                        ;The buffer now contains the CBM drive and filename
+                        ;"0:FOO".  Now, append the type and mode (",S,R").
 
-    ld (hl),','         ;Append ','
-    inc hl
-    pop af              ;Pop file type char off stack
-    ld (hl),a           ;Append file type ('P' or 'S')
-    inc hl
-    ld (hl),','         ;Append ','
-    inc hl
-    ld (hl),'R'         ;Append 'R' (Read mode)
+                        ;Find buffer position to receive type and mode:
+    ld hl,buffer-4      ;  HL = start address of buffer - 4 for ",S,R"
+    ld b,00h            ;  BC now holds final number of chars in "0:FOO,S,R"
+    add hl,bc           ;  HL = position where ",S,R" needs to be written
 
-    ld hl,buffer
+                        ;Append type and mode:
+    ld (hl),','         ;  Store ','
+                        ;
+    inc hl              ;  Move to next position in buffer
+    pop af              ;  Pop file type char off stack
+    ld (hl),a           ;  Store file type ('P' or 'S')
+                        ;
+    inc hl              ;  Move to next position in buffer
+    ld (hl),','         ;  Store ','
+                        ;
+    inc hl              ;  Move to next position in buffer
+    ld (hl),'R'         ;  Store 'R' (Read mode)
 
-    ld e,03h            ;E = file number
-                        ;D = primary address set in get_ddev call above
-    ld (cbm_device),de  ;Store primary address and file number
-    call ieee_open      ;Open a file on an IEEE-488 device
+                        ;The buffer now contains the filename with drive,
+                        ;type, and mode like "0:FOO,S,R".
 
-    ld a,(src_drive)    ;A = CP/M source drive
-    call ieee_read_err  ;Read the CBM DOS error channel
-    or a                ;Set flags (0=OK)
-    jp nz,exit_dos_err  ;Jump if the status is not OK
+                        ;Open the file in CBM DOS:
+    ld hl,buffer        ;  HL = address of filename for ieee_open
+    ld e,03h            ;  E = file number
+                        ;  D = primary address set in get_ddev call above
+    ld (cbm_device),de  ;  Store primary address and file number
+    call ieee_open      ;  Open a file on an IEEE-488 device
 
-    ld de,fcb           ;DE = address of FCB
-    ld c,fdelete        ;C = Delete File
-    call bdos           ;BDOS system call
+                        ;Check for CBM DOS error and jump out if not OK:
+    ld a,(src_drive)    ;  A = CP/M source drive
+    call ieee_read_err  ;  Read the CBM DOS error channel
+    or a                ;  Set flags (0=OK)
+    jp nz,exit_dos_err  ;  Jump if the status is not OK
 
-    ld de,fcb           ;DE = address of FCB
-    ld c,fmake          ;C = Create File
-    call bdos           ;BDOS system call
-    inc a               ;Increment to check error from fmake
-                        ;  (fmake returns A=0FFh if an error occurred)
-    ret nz              ;Return if an error occurred
+                        ;Delete the CP/M destination file in case it exists:
+    ld de,fcb           ;  DE = address of FCB
+    ld c,fdelete        ;  C = Delete File
+    call bdos           ;  BDOS system call
 
-    ld de,(cbm_device)  ;D = IEEE-488 primary address, E = file number
-    call ieee_close     ;Close open file on IEEE-488 device
+                        ;Create the CP/M destination file and return if OK:
+    ld de,fcb           ;  DE = address of FCB
+    ld c,fmake          ;  C = Create File
+    call bdos           ;  BDOS system call
+    inc a               ;  Increment to check error from fmake
+                        ;    (fmake returns A=0FFh if an error occurred)
+    ret nz              ;  Return if OK
+
+                        ;The call to fmake failed with A=0FFh indicating
+                        ;that the directory is full.
+
+                        ;Close file in CBM DOS:
+    ld de,(cbm_device)  ;  D = IEEE-488 primary address, E = file number
+    call ieee_close     ;  Close open file on IEEE-488 device
+
+                        ;Fall through into exit_full
 
 exit_full:
 ;Print disk full error and return to CP/M
