@@ -655,8 +655,10 @@ l03dah:
     inc hl              ;Increment pointer to next char in the buffer
     djnz l03ceh         ;Decrement B, loop until B=0
 
-    dec hl
-    ld (hl),cr
+    dec hl              ;Decrement HL.  It is now pointing at the
+                        ;  at the next byte after data.
+    ld (hl),cr          ;Store a carriage return after the data.  This CR is
+                        ;  not included in the character count at buffer+1.
     ret
 
 exit_bad_file:
