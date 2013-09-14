@@ -518,7 +518,7 @@ l0301h:
     inc bc
     inc bc
     inc bc
-    ld (hl),3ah
+    ld (hl),':'
     dec hl
 
     ld e,03h            ;E = file number
