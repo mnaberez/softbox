@@ -88,9 +88,10 @@ get_selection:
 ;
     call newline        ;Write newline to console out
 
-    ld de,menu          ;DE = address of main menu string
-    ld c,cwritestr      ;C = Output String
-    call bdos           ;BDOS system call
+                        ;Show the menu:
+    ld de,menu          ;  DE = address of main menu string
+    ld c,cwritestr      ;  C = Output String
+    call bdos           ;  BDOS system call
 
     call input          ;Get a line of user input
     ld a,(buffer+2)     ;A = first char from input
@@ -98,27 +99,34 @@ get_selection:
     ld hl,insert_lf     ;HL = address of insert linefeeds flag
     ld (hl),00h         ;Insert linefeeds flag = off
 
-    cp '1'              ;1 = Copy sequential file to PET DOS
-    jp z,seq_to_pet
+    cp '1'              ;1 = "Copy sequential file to PET DOS"
+    jp z,seq_to_pet     ;Jump if user selected option 1
 
-    cp '2'              ;2 = Copy sequential file from PET DOS
-    jp z,seq_from_pet
+    cp '2'              ;2 = "Copy sequential file from PET DOS"
+    jp z,seq_from_pet   ;Jump if user selected option 2
 
-    cp '3'              ;3 = Copy BASIC program from PET DOS
-    jp z,bas_from_pet
+    cp '3'              ;3 = "Copy BASIC program from PET DOS"
+    jp z,bas_from_pet   ;Jump if user selected option 3
 
     inc (hl)            ;Insert linefeeds flag = on
 
-    cp '4'              ;4 = As 2. but insert line feeds
-    jp z,seq_from_pet
+    cp '4'              ;4 = "As 2. but insert line feeds"
+    jp z,seq_from_pet   ;Jump if user selected option 4
 
-    ld de,bad_command   ;DE = address of bad command string
-    ld c,cwritestr      ;C = Output String
-    call bdos           ;BDOS system call
-    jr get_selection    ;Try again
+                        ;The number entered is not valid.
+
+                        ;Print error message and try again:
+    ld de,bad_command   ;  DE = address of bad command string
+    ld c,cwritestr      ;  C = Output String
+    call bdos           ;  BDOS system call
+    jr get_selection    ;  Jump to start over
 
 seq_from_pet:
+;Entry point for menu options 2 and 4
 ;Copy sequential file from PET DOS
+;
+;The value of insert_lf determines if it is option 2 (do not
+;add linefeeds) or option 4 (add linefeeds).
 ;
     ld a,'S'            ;A = 'S' for CBM DOS sequential file
     call open_cbm_src   ;Ask for CBM source drive and filename, open the CBM
@@ -140,6 +148,9 @@ l015ah:
 
     cp cr               ;Is the byte a carriage return?
     jr nz,l0174h        ;  No: jump over skip over LF insertion
+
+                        ;The value is a carriage return and insert linefeed
+                        ;mode is on.  Send CR+LF.
 
     call dma_write      ;Write CR to DMA buffer, advance DMA pointer in HL
     ld a,lf             ;A = linefeed
@@ -175,6 +186,7 @@ l0183h:
     jp warm             ;Warm start
 
 bas_from_pet:
+;Entry point for menu option 3
 ;Copy BASIC program from PET DOS
 ;
     ld a,'P'            ;A = 'P' for CBM DOS program file
@@ -227,7 +239,7 @@ bas_line:
     call bas_num        ;  Tens place
 
                         ;Write ones place of line number:
-    ld a,e              ;  Move E in to A
+    ld a,e              ;  Move E into A
     add a,30h           ;  Convert it to an ASCII digit
     call dma_write      ;  Write it to DMA buffer, advance DMA pointer in HL
 
@@ -498,6 +510,7 @@ exit_full:
     jp warm             ;Warm start
 
 seq_to_pet:
+;Entry point for menu option 1
 ;Copy sequential file to PET DOS
 ;
     ld de,ask_dest_drv  ;DE = address of "PET DOS destination drive?"
