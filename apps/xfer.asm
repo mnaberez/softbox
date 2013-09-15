@@ -210,19 +210,26 @@ bas_line:
     pop af              ;  Pop line number high byte from stack
     ld e,a              ;  Move it into E
 
-                        ;BASIC line number is now in DE
+                        ;DE = BASIC line number
+                        ;HL = DMA buffer pointer
 
-    ld bc,10000         ;Write the line number as decimal in ASCII
-    call bas_num        ;  TODO: comment these
-    ld bc,1000
-    call bas_num
-    ld bc,100
-    call bas_num
-    ld bc,10
-    call bas_num
-    ld a,e
-    add a,30h           ;Convert it to an ASCII digit
-    call dma_write      ;Write it to DMA buffer, advance DMA pointer in HL
+                        ;The BASIC line number is a 16-bit number so it
+                        ;may be in the range of 0-65535 decimal.
+
+                        ;Write the line number as decimal in ASCII:
+    ld bc,10000         ;
+    call bas_num        ;  Ten thousands place
+    ld bc,1000          ;
+    call bas_num        ;  Thousands place
+    ld bc,100           ;
+    call bas_num        ;  Hundreds place
+    ld bc,10            ;
+    call bas_num        ;  Tens place
+
+                        ;Write ones place of line number:
+    ld a,e              ;  Move E in to A
+    add a,30h           ;  Convert it to an ASCII digit
+    call dma_write      ;  Write it to DMA buffer, advance DMA pointer in HL
 
     ld a,' '
     call dma_write      ;Write space after BASIC line number to DMA buffer,
@@ -298,24 +305,40 @@ bas_next_tok:
     jr bas_find_tok
 
 bas_num:
-;DE = BASIC line number
+;Write one digit of the BASIC line number to the DMA buffer
+;as a decimal number in ASCII.
 ;
-    push hl             ;Push HL onto stack
-    ex de,hl            ;DE=HL, HL=DE
+;DE = BASIC line number
+;BC = place value (10000, 1000, 100, 10)
+;
+;Counts number of times value BC occurs in DE by successive
+;subtraction.  Writes the number of times (0-9) as an ASCII
+;digit into the DMA buffer via dma_write.  DE will contain
+;the reduced value on return.
+;
+    push hl             ;Push DMA pointer in HL onto stack
 
-    ld a,2fh            ;2Fh = ASCII "0" - 1
-l0227h:
-    inc a               ;Increment to next ASCII digit (e.g. "0" to "1")
-    or a                ;Set flags
-    sbc hl,bc           ;HL = HL - (BC + carry)
-    jr nc,l0227h
+    ex de,hl            ;HL is now the BASIC line number
+                        ;Don't care about DE
 
-    add hl,bc           ;HL = HL + BC
-    ex (sp),hl          ;Exchange HL with value on top of stack
+    ld a,2fh            ;Seed A with 2Fh = ASCII "0" - 1
 
-    call dma_write      ;Write ASCII digit to DMA buffer,
-                        ;  advance DMA pointer in HL
-    pop de
+l0227h:                 ;Subtract BC from HL until HL goes negative:
+    inc a               ;  Increment to next ASCII digit (e.g. "0" to "1")
+    or a                ;  Set flags
+    sbc hl,bc           ;  HL = HL - (BC + carry)
+    jr nc,l0227h        ;  Loop until carry flag is set (borrow)
+
+    add hl,bc           ;Roll back HL to before borrow: HL = HL + BC
+
+                        ;Write ASCII digit to DMA buffer:
+    ex (sp),hl          ;  Swap HL with value on the top of the stack.
+                        ;    HL is now the DMA pointer
+                        ;    Value on top of stack is now BASIC line number.
+    call dma_write      ;  Write ASCII digit to DMA buffer,
+                        ;    advance DMA pointer in HL
+
+    pop de              ;Pop BASIC line number
     ret
 
 dma_write:
