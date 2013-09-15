@@ -325,7 +325,7 @@ write_to_file:
     or a                ;Set flags (A=0 means no error)
     jp nz,exit_full     ;Exit with "disk full" message if error
 
-    ld hl,dma_buf       ;Reset the pointer to the DMA pointer
+    ld hl,dma_buf       ;Reset the pointer to the DMA buffer
     ret
 
 open_cbm_src:
