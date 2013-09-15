@@ -141,12 +141,12 @@ l015ah:
     cp cr               ;Is the byte a carriage return?
     jr nz,l0174h        ;  No: jump over skip over LF insertion
 
-    call write_to_file  ;Write CR to file
+    call dma_write      ;Write CR to DMA buffer, advance DMA pointer in HL
     ld a,lf             ;A = linefeed
                         ;Fall through to write LF to file
 
 l0174h:
-    call write_to_file  ;Write byte to file
+    call dma_write      ;Write byte to DMA buffer, advance DMA pointer in HL
 
     pop af              ;Pop EOI state from the stack
     jr z,l015ah         ;Loop for next byte if EOI=high indicating more data
@@ -160,7 +160,7 @@ l017ah:
 l0183h:
     push bc
     ld a,eof            ;A = End of File marker (CTRL-Z)
-    call write_to_file  ;Write EOF char to file
+    call dma_write      ;Write EOF to DMA buffer, advance DMA pointer in HL
     pop bc
     djnz l0183h         ;Decrement B, loop until B=0
 
@@ -193,7 +193,7 @@ bas_line:
     call cbm_get_byte   ;  A = Read pointer to next BASIC line low byte
     push af             ;  Push it onto the stack
     call cbm_get_byte   ;  A = Read pointer to next BASIC line high byte
-    pop bc              ;  B = pop pointer low byte from stack
+    pop bc              ;  B = Pop pointer low byte from stack
 
                         ;Detect end of BASIC program:
     or b                ;  Perform logical OR between the pointer bytes
@@ -209,7 +209,8 @@ bas_line:
     ld d,a              ;  Move it into D
     pop af              ;  Pop line number high byte from stack
     ld e,a              ;  Move it into E
-                        ;  BASIC line number is now in DE
+
+                        ;BASIC line number is now in DE
 
     ld bc,10000         ;Write the line number as decimal in ASCII
     call bas_num        ;  TODO: comment these
@@ -220,11 +221,12 @@ bas_line:
     ld bc,10
     call bas_num
     ld a,e
-    add a,30h           ;Convert it to ASCII
-    call write_to_file  ;Write it out
+    add a,30h           ;Convert it to an ASCII digit
+    call dma_write      ;Write it to DMA buffer, advance DMA pointer in HL
 
     ld a,' '
-    call write_to_file  ;Write space after BASIC line number
+    call dma_write      ;Write space after BASIC line number to DMA buffer,
+                        ;  advance DMA pointer in HL
 
 bas_char:
 ;Get the next byte in the BASIC line and handle it.  The byte may
@@ -235,7 +237,8 @@ bas_char:
     jr z,bas_eol        ;Jump if zero (indicates end of current BASIC line)
     jp m,bas_token      ;Jump if bit 7 is set (indicates a BASIC token)
 
-    call write_to_file  ;Byte is not a token, so write it out as-is
+    call dma_write      ;Byte is not a token, so write it out as-is
+                        ;  to the DMA buffer, advance DMA pointer in HL
     jr bas_char         ;Loop to get the next byte on this line
 
 bas_eol:
@@ -243,9 +246,9 @@ bas_eol:
 ;file and then loop to do the next line
 ;
     ld a,cr
-    call write_to_file  ;Write carriage return
+    call dma_write      ;Write CR to DMA buffer, advance DMA pointer in HL
     ld a,lf
-    call write_to_file  ;Write line feed
+    call dma_write      ;Write LF to DMA buffer, advance DMA pointer in HL
     jr bas_line         ;Loop to do the next line
 
 bas_token:
@@ -272,7 +275,8 @@ bas_found_tok:
     ld a,(de)           ;A = char from BASIC commands table
     and 7fh             ;Strip high bit
     push de
-    call write_to_file  ;Write char from the command to file
+    call dma_write      ;Write the char from the BASIC command to the
+                        ;  DMA buffer, advance DMA pointer in HL
     pop de
     ld a,(de)           ;A = same char from BASIC commands table
     rla                 ;Rotate bit 7 of command text into carry
@@ -296,24 +300,30 @@ bas_next_tok:
 bas_num:
 ;DE = BASIC line number
 ;
-    push hl
-    ex de,hl
-    ld a,2fh
+    push hl             ;Push HL onto stack
+    ex de,hl            ;DE=HL, HL=DE
+
+    ld a,2fh            ;2Fh = ASCII "0" - 1
 l0227h:
-    inc a
-    or a
-    sbc hl,bc
+    inc a               ;Increment to next ASCII digit (e.g. "0" to "1")
+    or a                ;Set flags
+    sbc hl,bc           ;HL = HL - (BC + carry)
     jr nc,l0227h
-    add hl,bc
-    ex (sp),hl
-    call write_to_file
+
+    add hl,bc           ;HL = HL + BC
+    ex (sp),hl          ;Exchange HL with value on top of stack
+
+    call dma_write      ;Write ASCII digit to DMA buffer,
+                        ;  advance DMA pointer in HL
     pop de
     ret
 
-write_to_file:
+dma_write:
 ;Write the byte in A to the DMA buffer via the pointer in HL
-;and advance the pointer.  When the DMA buffer is full, write it
-;to the current CP/M file and then reset the pointer.
+;and advance the pointer.
+;
+;When the DMA buffer is full, it will be written out to the
+;current CP/M file and the pointer in HL is reset.
 ;
     ld (hl),a           ;Store byte in DMA buffer
     inc l               ;Increment DMA buffer pointer
