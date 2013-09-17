@@ -163,25 +163,49 @@ l0174h:
     jr z,l015ah         ;Loop for next byte if EOI=high indicating more data
                         ;  (IEEE-488 line states are inverted)
 
-l017ah:
-    ld de,(cbm_device)  ;D = IEEE-488 primary address, E = file number
-    call ieee_close     ;Close open file on IEEE-488 device
+                        ;Fall through into from_pet_done
 
-    ld b,7fh            ;B = number EOF filler bytes to write
-l0183h:
-    push bc
-    ld a,eof            ;A = End of File marker (CTRL-Z)
-    call dma_write      ;Write EOF to DMA buffer, advance DMA pointer in HL
-    pop bc
-    djnz l0183h         ;Decrement B, loop until B=0
+from_pet_done:
+;Finish a CBM DOS to CP/M file transfer and exit.
+;
+;Performs the following actions:
+;
+; - Closes the CBM DOS source file
+; - Flushes any data in the DMA buffer to the CP/M destination file
+; - Closes the CP/M destination file
+; - Prints "Transfer complete"
+; - Exits to CP/M
+;
+                        ;Close CBM DOS source file:
+    ld de,(cbm_device)  ;  D = IEEE-488 primary address, E = file number
+    call ieee_close     ;  Close open file on IEEE-488 device
 
-    ld de,fcb           ;DE = address of FCB
-    ld c,fclose         ;C = Close File
-    call bdos           ;BDOS system call
+                        ;The dma_write routine automatically flushes the DMA
+                        ;buffer to the CP/M file when it is full.  At the
+                        ;end of the transfer, there will most likely be some
+                        ;data left in the DMA buffer that needs to be written
+                        ;to the CP/M file.  Here we call dma_write repeatedly
+                        ;with the EOF marker to be sure any remaining data
+                        ;in the DMA buffer is flushed.
 
-    ld de,complete      ;DE = address of "Transfer complete"
-    ld c,cwritestr      ;C = Output String
-    call bdos           ;BDOS system call
+                        ;Flush anything left in the DMA buffer:
+    ld b,7fh            ;  B = num EOF bytes to write (CP/M sector size - 1)
+l0183h:                 ;
+    push bc             ;
+    ld a,eof            ;  A = End of File marker (CTRL-Z)
+    call dma_write      ;  Write EOF to DMA buffer, advance DMA pointer in HL
+    pop bc              ;
+    djnz l0183h         ;  Decrement B, loop until B=0
+
+                        ;Close CP/M file:
+    ld de,fcb           ;  DE = address of FCB
+    ld c,fclose         ;  C = Close File
+    call bdos           ;  BDOS system call
+
+                        ;Print "Transfer complete" message:
+    ld de,complete      ;  DE = address of "Transfer complete"
+    ld c,cwritestr      ;  C = Output String
+    call bdos           ;  BDOS system call
 
     jp warm             ;Warm start
 
@@ -209,7 +233,7 @@ bas_line:
 
                         ;Detect end of BASIC program:
     or b                ;  Perform logical OR between the pointer bytes
-    jr z,l017ah         ;  Jump to finish up if the pointer is zero.
+    jr z,from_pet_done  ;  Jump to finish up if the pointer is zero.
                         ;    (End of BASIC program reached)
 
     push hl             ;Push DMA address onto stack
