@@ -68,7 +68,9 @@ eof:           equ 1ah    ;End of File marker (CTRL-Z)
     nop
     nop
     nop
-    ld sp,(0006h)
+    ld sp,(bdos+1)      ;Set top of stack to just below the BDOS
+                        ;  "bdos" is the BDOS entry point, which is a jump
+                        ;  instruction.  "bdos+1" is the BDOS address.
 
     ld a,(fcb+1)        ;A = first char in filename
     cp ' '              ;Is it a space?
