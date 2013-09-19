@@ -290,10 +290,11 @@ SAVESY:
         CALL    0F05AH
         LD      (@L2),A
         RET                     ;I      0C9H
+
 FORMAT:
-        LD      A,(HL)          ;~      07EH
+        LD      A,(HL)
         LD      (@L0),A
-        CALL    0F054H
+        CALL    0F054H          ;BIOS Get device address for a CP/M drive num
         LD      A,(@L0)
         AND     01H
         ADD     A,030H
@@ -301,14 +302,14 @@ FORMAT:
         LD      E,0FH
         LD      C,014H
         LD      HL,@L14
-        CALL    0F05DH
+        CALL    0F05DH          ;BIOS Open a file on an IEEE-488 device
         LD      A,(@L0)
-        CALL    0F05AH
+        CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A
-        OR      A               ;7      0B7H
-        RET     NZ              ;@      0C0H
+        OR      A
+        RET     NZ
         LD      A,(@L0)
-        CALL    0F078H
+        CALL    0F078H          ;BIOS Initialize an IEEE-488 disk drive
         LD      HL,04000H
         LD      DE,04001H
         LD      BC,0FFH
@@ -321,78 +322,79 @@ FORMAT:
 @L18:
         CALL    @L17
         LD      A,(@L0)
-        CALL    0F05AH
+        CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A
-        OR      A               ;7      0B7H
-        RET     NZ              ;@      0C0H
+        OR      A
+        RET     NZ
         LD      HL,@L15
-        DEC     (HL)            ;5      035H
+        DEC     (HL)
         JP      P,@L18
-        RET                     ;I      0C9H
+        RET
 @L17:
         LD      HL,@L19
         LD      C,06H
         LD      A,(@L0)
-        CALL    0F057H
-        CALL    0F04BH
+        CALL    0F057H          ;BIOS Open the command channel on IEEE-488 device
+        CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
         LD      A,(04000H)
-        CALL    0F045H
-        CALL    0F036H
+        CALL    0F045H          ;BIOS Send byte to IEEE-488 device with EOI asserted
+        CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
         LD      HL,@L20
         LD      C,07H
         LD      A,(@L0)
-        CALL    0F057H
-        CALL    0F04BH
-        CALL    0F048H
-        CALL    0F036H
+        CALL    0F057H          ;BIOS Open the command channel on IEEE-488 device
+        CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
+        CALL    0F048H          ;BIOS Send carriage return to IEEE-488 dev with EOI
+        CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
         LD      A,(@L0)
-        CALL    0F054H
+        CALL    0F054H          ;BIOS Get device address for a CP/M drive number
         LD      E,02H
-        CALL    0F033H
+        CALL    0F033H          ;BIOS Send LISTEN to an IEEE-488 device
         LD      HL,04001H
         LD      C,0FFH
-        CALL    0F04BH
-        CALL    0F036H
+        CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
+        CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
         LD      A,(@L0)
-        CALL    0F057H
+        CALL    0F057H          ;BIOS Open the command channel on IEEE-488 device
         LD      HL,@L21
         LD      C,05H
-        CALL    0F04BH
+        CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
         LD      A,(@L0)
         AND     01H
         ADD     A,030H
-        CALL    0F042H
+        CALL    0F042H          ;BIOS Send byte to an IEEE-488 device
         LD      A,(@L16)
-        CALL    0F04EH
+        CALL    0F04EH          ;BIOS Send number as decimal string to IEEE dev
         LD      A,(@L15)
-        CALL    0F04EH
-        CALL    0F048H
-        JP      0F036H
+        CALL    0F04EH          ;BIOS Send number as decimal string to IEEE-488 dev
+        CALL    0F048H          ;BIOS Send carriage return to IEEE-488 dev with EOI
+        JP      0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
+
 CFORM:
-        LD      C,(HL)          ;N      04EH
-        CALL    0F01BH
+        LD      C,(HL)
+        CALL    0F01BH          ;BIOS Select disk drive
         LD      HL,080H
         LD      (HL),0E5H
-        INC     L               ;,      02CH
+        INC     L
         JR      NZ,BUFFIN+02B8H
         LD      BC,02H
-        CALL    0F01EH
+        CALL    0F01EH          ;BIOS Set track number
         LD      BC,00H
-        PUSH    BC              ;E      0C5H
-        CALL    0F021H
-        CALL    0F02AH
-        POP     BC              ;A      0C1H
-        OR      A               ;7      0B7H
+        PUSH    BC
+        CALL    0F021H          ;BIOS Set sector number
+        CALL    0F02AH          ;BIOS Write selected sector
+        POP     BC
+        OR      A
         JP      NZ,@L4
-        INC     BC              ;03H    03H
-        LD      A,C             ;y      079H
+        INC     BC
+        LD      A,C
         CP      040H
         JR      NZ,BUFFIN+02C6H
-        RET                     ;I      0C9H
+        RET
 @L4:
         LD      DE,@L22
         LD      C,09H
-        CALL    05H
+        CALL    05H             ;BDOS system call
         LD      C,01H
         JP      05H
 @L22:
