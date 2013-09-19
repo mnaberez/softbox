@@ -1,0 +1,97 @@
+;KLIB.REL
+
+        .Z80                    ;set mode for M80
+        NAME    ('XSTRIN')
+        CSEG
+        ORG     0
+@CODE:
+;
+        DSEG
+        ORG     0
+@DATA:
+        CSEG
+        GLOBAL  $CHR
+        GLOBAL  $PV0D
+        GLOBAL  $PV1D
+        GLOBAL  $PV2D
+        GLOBAL  $HEX
+        LD      A,020H
+        CALL    CONOUT
+        RET                     ;I      0C9H
+@L8:
+        LD      A,0AH
+        CALL    CONOUT
+        LD      A,0DH
+        CALL    CONOUT
+        RET                     ;I      0C9H
+$HEX:
+        LD      A,02H
+        LD      (@DATA),A
+        LD      A,L             ;}      07DH
+        CALL    @L3
+        LD      (@L4),A
+        LD      A,L             ;}      07DH
+        CALL    @L5
+        LD      (@L6),A
+        LD      HL,@DATA
+        RET                     ;I      0C9H
+@L3:
+        RRCA                    ;0FH    0FH
+        RRCA                    ;0FH    0FH
+        RRCA                    ;0FH    0FH
+        RRCA                    ;0FH    0FH
+@L5:
+        AND     0FH
+        CP      0AH
+        JP      M,@L7
+        ADD     A,07H
+@L7:
+        ADD     A,030H
+        RET                     ;I      0C9H
+$CHR:
+        LD      A,01H
+        LD      (@DATA),A
+        LD      A,L             ;}      07DH
+        LD      (@L4),A
+        LD      HL,@DATA
+        RET                     ;I      0C9H
+$PV2D:
+        LD      A,(HL)          ;~      07EH
+        OR      A               ;7      0B7H
+        JP      Z,@L8
+        CALL    @L9
+        JP      @L8
+$PV1D:
+        LD      A,(HL)          ;~      07EH
+        OR      A               ;7      0B7H
+        RET     Z               ;H      0C8H
+        CALL    @L9
+        RET                     ;I      0C9H
+$PV0D:
+        LD      A,(HL)          ;~      07EH
+        OR      A               ;7      0B7H
+        JP      Z,@CODE
+        CALL    @L9
+        JP      @CODE
+@L9:
+        LD      B,A             ;G      047H
+        INC     HL              ;#      023H
+        INC     HL              ;#      023H
+        INC     HL              ;#      023H
+@L12:
+        LD      A,(HL)          ;~      07EH
+        CALL    CONOUT
+        DEC     B               ;05H    05H
+        INC     HL              ;#      023H
+        JP      NZ,@L12
+        RET                     ;I      0C9H
+;
+        DSEG
+        ORG     05H
+        EXTERNAL CONOUT
+;
+        CSEG
+@L6     EQU     @DATA+04H
+@L4     EQU     @DATA+03H
+;
+        END

@@ -1,0 +1,481 @@
+;LOADSAVE.REL
+
+        .Z80                    ;set mode for M80
+        NAME    ('LOADSA')
+        GLOBAL  EXSYS
+        GLOBAL  SAVESY
+        GLOBAL  RDSYS
+        GLOBAL  BUFFIN
+        GLOBAL  IDISK
+        GLOBAL  DSKERR
+        GLOBAL  FORMAT
+        GLOBAL  CREAD
+        GLOBAL  CWRITE
+        GLOBAL  CFORM
+        GLOBAL  DTYPE
+        GLOBAL  CREAD2
+        GLOBAL  CREAD1
+        GLOBAL  CWRIT3
+        GLOBAL  CWRIT2
+        GLOBAL  CWRIT1
+BUFFIN:
+        LD      C,0AH
+        LD      DE,080H
+        JP      05H
+EXSYS:
+        LD      BC,01C00H
+        LD      HL,04000H
+        LD      DE,0D400H
+        LDIR
+        JP      0F075H
+RDSYS:
+        LD      A,(HL)          ;~      07EH
+        LD      (@L0),A
+        CALL    0F054H
+        LD      E,00H
+        PUSH    DE              ;U      0D5H
+        CALL    @L1
+        LD      A,(@L0)
+        CALL    0F05AH
+        LD      (@L2),A
+        LD      HL,04000H
+        LD      BC,01C00H
+        POP     DE              ;Q      0D1H
+        OR      A               ;7      0B7H
+        RET     NZ              ;@      0C0H
+        PUSH    DE              ;U      0D5H
+        CALL    0F039H
+        CALL    0F03FH
+        LD      (HL),A          ;w      077H
+        INC     HL              ;#      023H
+        DEC     BC              ;0BH    0BH
+        LD      A,B             ;x      078H
+        OR      C               ;1      0B1H
+        JR      NZ,BUFFIN+039H
+        CALL    0F03CH
+        POP     DE              ;Q      0D1H
+        PUSH    DE              ;U      0D5H
+        CALL    0F060H
+        POP     DE              ;Q      0D1H
+        PUSH    DE              ;U      0D5H
+        CALL    @L3
+        LD      A,(@L0)
+        CALL    0F05AH
+        LD      (@L2),A
+        LD      HL,06000H
+        LD      BC,0800H
+        POP     DE              ;Q      0D1H
+        OR      A               ;7      0B7H
+        RET     NZ              ;@      0C0H
+        PUSH    DE              ;U      0D5H
+        CALL    0F039H
+        CALL    0F03FH
+        LD      (HL),A          ;w      077H
+        INC     HL              ;#      023H
+        DEC     BC              ;0BH    0BH
+        LD      A,B             ;x      078H
+        OR      C               ;1      0B1H
+        JR      NZ,BUFFIN+066H
+        CALL    0F03CH
+        POP     DE              ;Q      0D1H
+        CALL    0F060H
+        LD      A,(@L0)
+        CALL    0F05AH
+        LD      (@L2),A
+        RET                     ;I      0C9H
+CREAD:
+        LD      C,(HL)          ;N      04EH
+        CALL    0F01BH
+        LD      DE,04000H
+        LD      BC,00H
+CREAD2:
+        CALL    0F01EH
+        PUSH    BC              ;E      0C5H
+        LD      BC,00H
+CREAD1:
+        CALL    0F021H
+        PUSH    BC              ;E      0C5H
+        PUSH    DE              ;U      0D5H
+        CALL    0F027H
+        OR      A               ;7      0B7H
+        JR      NZ,CWRIT3
+        POP     DE              ;Q      0D1H
+        LD      BC,080H
+        LD      HL,080H
+        LDIR
+        POP     BC              ;A      0C1H
+        INC     C               ;0CH    0CH
+        LD      A,C             ;y      079H
+        CP      040H
+        JR      NZ,CREAD1
+        POP     BC              ;A      0C1H
+        INC     C               ;0CH    0CH
+        LD      A,C             ;y      079H
+        CP      02H
+        JR      NZ,CREAD2
+        RET                     ;I      0C9H
+CWRITE:
+        LD      C,(HL)          ;N      04EH
+        CALL    0F01BH
+        LD      HL,04000H
+        LD      BC,00H
+CWRIT2:
+        CALL    0F01EH
+        PUSH    BC              ;E      0C5H
+        LD      BC,00H
+CWRIT1:
+        CALL    0F021H
+        PUSH    BC              ;E      0C5H
+        LD      BC,080H
+        LD      DE,080H
+        LDIR
+        PUSH    HL              ;e      0E5H
+        CALL    0F02AH
+        OR      A               ;7      0B7H
+        JR      NZ,CWRIT3
+        POP     HL              ;a      0E1H
+        POP     BC              ;A      0C1H
+        INC     C               ;0CH    0CH
+        LD      A,C             ;y      079H
+        CP      040H
+        JR      NZ,CWRIT1
+        POP     BC              ;A      0C1H
+        INC     C               ;0CH    0CH
+        LD      A,C             ;y      079H
+        CP      02H
+        JR      NZ,CWRIT2
+        RET                     ;I      0C9H
+CWRIT3:
+        POP     HL              ;a      0E1H
+        POP     HL              ;a      0E1H
+        POP     HL              ;a      0E1H
+        JP      @L4
+DTYPE:
+        LD      A,(HL)          ;~      07EH
+        CALL    0F051H
+        LD      (HL),C          ;q      071H
+        INC     HL              ;#      023H
+        LD      (HL),00H
+        RET                     ;I      0C9H
+IDISK:
+        LD      A,(HL)          ;~      07EH
+        JP      0F078H
+DSKERR:
+        LD      A,(@L2)
+        LD      (HL),A          ;w      077H
+        INC     HL              ;#      023H
+        XOR     A               ;/      0AFH
+        LD      (HL),A          ;w      077H
+        LD      A,(@L2)
+        OR      A               ;7      0B7H
+        RET     Z               ;H      0C8H
+        LD      DE,@L5
+        LD      C,09H
+        CALL    05H
+        LD      HL,0EAC0H
+        LD      E,(HL)          ;^      05EH
+        PUSH    HL              ;e      0E5H
+        LD      C,02H
+        CALL    05H
+        POP     HL              ;a      0E1H
+        INC     HL              ;#      023H
+        LD      A,(HL)          ;~      07EH
+        CP      0DH
+        JR      NZ,BUFFIN+0113H
+        LD      DE,@L6
+        LD      C,09H
+        CALL    05H
+        RET                     ;I      0C9H
+@L5:
+        DEC     C               ;CR     0DH
+        LD      A,(BC)          ;LF     0AH
+        LD      B,H             ;D      044H
+        LD      L,C             ;i      069H
+        LD      (HL),E          ;s      073H
+        LD      L,E             ;k      06BH
+        JR      NZ,BUFFIN+0197H
+        LD      (HL),D          ;r      072H
+        LD      (HL),D          ;r      072H
+        LD      L,A             ;o      06FH
+        LD      (HL),D          ;r      072H
+        JR      NZ,BUFFIN+0172H
+        JR      NZ,BUFFIN+015EH
+@L6:
+        DEC     C               ;CR     0DH
+        LD      A,(BC)          ;LF     0AH
+        INC     H               ;$      024H
+@L1:
+        LD      C,06H
+        LD      HL,@L7
+        LD      A,(@L0)
+        RRA                     ;01FH   01FH
+        JP      NC,0F05DH
+        LD      HL,@L8
+        JP      0F05DH
+@L3:
+        LD      C,03H
+        LD      HL,@L9
+        LD      A,(@L0)
+        RRA                     ;01FH   01FH
+        JP      NC,0F05DH
+        LD      HL,@L10
+        JP      0F05DH
+SAVESY:
+        LD      A,(HL)          ;~      07EH
+        LD      (@L0),A
+        CALL    0F054H
+        PUSH    DE              ;U      0D5H
+        LD      E,0FH
+        LD      HL,@L11
+        LD      A,(@L0)
+        RRA                     ;01FH   01FH
+        JR      NC,BUFFIN+0177H
+        LD      HL,@L12
+        LD      C,04H
+        CALL    0F05DH
+        LD      A,(@L0)
+        CALL    0F05AH
+        LD      (@L2),A
+        POP     DE              ;Q      0D1H
+        CP      01H
+        RET     NZ              ;@      0C0H
+        LD      E,01H
+        PUSH    DE              ;U      0D5H
+        CALL    @L3
+        LD      A,(@L0)
+        CALL    0F05AH
+        LD      (@L2),A
+        POP     DE              ;Q      0D1H
+        OR      A               ;7      0B7H
+        RET     NZ              ;@      0C0H
+        PUSH    DE              ;U      0D5H
+        CALL    0F033H
+        LD      HL,06000H
+        LD      BC,0800H
+        LD      A,(HL)          ;~      07EH
+        CALL    0F042H
+        INC     HL              ;#      023H
+        DEC     BC              ;0BH    0BH
+        LD      A,B             ;x      078H
+        OR      C               ;1      0B1H
+        JR      NZ,BUFFIN+01A5H
+        CALL    0F036H
+        POP     DE              ;Q      0D1H
+        PUSH    DE              ;U      0D5H
+        CALL    0F060H
+        POP     DE              ;Q      0D1H
+        PUSH    DE              ;U      0D5H
+        CALL    @L1
+        LD      A,(@L0)
+        CALL    0F05AH
+        LD      (@L2),A
+        POP     DE              ;Q      0D1H
+        OR      A               ;7      0B7H
+        RET     NZ              ;@      0C0H
+        PUSH    DE              ;U      0D5H
+        CALL    0F033H
+        LD      HL,04000H
+        LD      BC,01C00H
+        LD      A,(HL)          ;~      07EH
+        CALL    0F042H
+        INC     HL              ;#      023H
+        DEC     BC              ;0BH    0BH
+        LD      A,B             ;x      078H
+        OR      C               ;1      0B1H
+        JR      NZ,BUFFIN+01D2H
+        CALL    0F036H
+        POP     DE              ;Q      0D1H
+        CALL    0F060H
+        LD      A,(@L0)
+        CALL    0F05AH
+        LD      (@L2),A
+        RET                     ;I      0C9H
+FORMAT:
+        LD      A,(HL)          ;~      07EH
+        LD      (@L0),A
+        CALL    0F054H
+        LD      A,(@L0)
+        AND     01H
+        ADD     A,030H
+        LD      (@L13),A
+        LD      E,0FH
+        LD      C,014H
+        LD      HL,@L14
+        CALL    0F05DH
+        LD      A,(@L0)
+        CALL    0F05AH
+        LD      (@L2),A
+        OR      A               ;7      0B7H
+        RET     NZ              ;@      0C0H
+        LD      A,(@L0)
+        CALL    0F078H
+        LD      HL,04000H
+        LD      DE,04001H
+        LD      BC,0FFH
+        LD      (HL),0E5H
+        LDIR
+        LD      A,07H
+        LD      (@L15),A
+        LD      A,01H
+        LD      (@L16),A
+@L18:
+        CALL    @L17
+        LD      A,(@L0)
+        CALL    0F05AH
+        LD      (@L2),A
+        OR      A               ;7      0B7H
+        RET     NZ              ;@      0C0H
+        LD      HL,@L15
+        DEC     (HL)            ;5      035H
+        JP      P,@L18
+        RET                     ;I      0C9H
+@L17:
+        LD      HL,@L19
+        LD      C,06H
+        LD      A,(@L0)
+        CALL    0F057H
+        CALL    0F04BH
+        LD      A,(04000H)
+        CALL    0F045H
+        CALL    0F036H
+        LD      HL,@L20
+        LD      C,07H
+        LD      A,(@L0)
+        CALL    0F057H
+        CALL    0F04BH
+        CALL    0F048H
+        CALL    0F036H
+        LD      A,(@L0)
+        CALL    0F054H
+        LD      E,02H
+        CALL    0F033H
+        LD      HL,04001H
+        LD      C,0FFH
+        CALL    0F04BH
+        CALL    0F036H
+        LD      A,(@L0)
+        CALL    0F057H
+        LD      HL,@L21
+        LD      C,05H
+        CALL    0F04BH
+        LD      A,(@L0)
+        AND     01H
+        ADD     A,030H
+        CALL    0F042H
+        LD      A,(@L16)
+        CALL    0F04EH
+        LD      A,(@L15)
+        CALL    0F04EH
+        CALL    0F048H
+        JP      0F036H
+CFORM:
+        LD      C,(HL)          ;N      04EH
+        CALL    0F01BH
+        LD      HL,080H
+        LD      (HL),0E5H
+        INC     L               ;,      02CH
+        JR      NZ,BUFFIN+02B8H
+        LD      BC,02H
+        CALL    0F01EH
+        LD      BC,00H
+        PUSH    BC              ;E      0C5H
+        CALL    0F021H
+        CALL    0F02AH
+        POP     BC              ;A      0C1H
+        OR      A               ;7      0B7H
+        JP      NZ,@L4
+        INC     BC              ;03H    03H
+        LD      A,C             ;y      079H
+        CP      040H
+        JR      NZ,BUFFIN+02C6H
+        RET                     ;I      0C9H
+@L4:
+        LD      DE,@L22
+        LD      C,09H
+        CALL    05H
+        LD      C,01H
+        JP      05H
+@L22:
+        DEC     C               ;CR     0DH
+        LD      A,(BC)          ;LF     0AH
+        LD      C,B             ;H      048H
+        LD      L,C             ;i      069H
+        LD      (HL),H          ;t      074H
+        JR      NZ,BUFFIN+034EH
+        LD      L,(HL)          ;n      06EH
+        LD      A,C             ;y      079H
+        JR      NZ,BUFFIN+035CH
+        LD      H,L             ;e      065H
+        LD      A,C             ;y      079H
+        JR      NZ,BUFFIN+0369H
+        LD      L,A             ;o      06FH
+        JR      NZ,BUFFIN+0359H
+        LD      H,D             ;b      062H
+        LD      L,A             ;o      06FH
+        LD      (HL),D          ;r      072H
+        LD      (HL),H          ;t      074H
+        JR      NZ,@L8
+        JR      NZ,BUFFIN+0324H
+@L21:
+        LD      D,L             ;U      055H
+        LD      (03220H),A
+        JR      NZ,BUFFIN+0354H
+@L13:
+        JR      NC,BUFFIN+0342H
+        LD      B,E             ;C      043H
+        LD      D,B             ;P      050H
+        CPL                     ;/      02FH
+        LD      C,L             ;M      04DH
+        JR      NZ,BUFFIN+0364H
+        LD      (0322EH),A
+        JR      NZ,BUFFIN+0357H
+        LD      C,C             ;I      049H
+        LD      D,E             ;S      053H
+        LD      C,E             ;K      04BH
+        INC     L               ;,      02CH
+        LD      E,B             ;X      058H
+        LD      E,B             ;X      058H
+@L20:
+        LD      B,D             ;B      042H
+        DEC     L               ;-      02DH
+        LD      D,B             ;P      050H
+        JR      NZ,BUFFIN+0350H
+        JR      NZ,BUFFIN+0351H
+@L19:
+        LD      C,L             ;M      04DH
+        DEC     L               ;-      02DH
+        LD      D,A             ;W      057H
+        NOP                     ;NUL    00H
+        INC     DE              ;013H   013H
+        LD      BC,03223H
+@L16:
+        ORG     0329H
+@L15:
+        ORG     032AH
+@L11:
+        LD      D,E             ;S      053H
+        JR      NC,BUFFIN+0367H
+        LD      HL,(03153H)
+        LD      A,(0302AH)
+        LD      A,(05043H)
+        CPL                     ;/      02FH
+        LD      C,L             ;M      04DH
+@L8:
+        LD      SP,0433AH
+        LD      D,B             ;P      050H
+        CPL                     ;/      02FH
+        LD      C,L             ;M      04DH
+@L9:
+        JR      NC,BUFFIN+037AH
+        LD      C,E             ;K      04BH
+@L10:
+        LD      SP,04B3AH
+@L0:
+        ORG     0345H
+@L2:
+        ORG     0346H
+@L14    EQU     BUFFIN+0305H
+@L12    EQU     BUFFIN+032EH
+@L7     EQU     BUFFIN+0332H
+;
+        END
