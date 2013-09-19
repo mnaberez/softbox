@@ -111,10 +111,10 @@ time_input:
                         ;  it will return to CP/M.
 
 bad_syntax:
-    ld de,syntax_err
+    ld de,syntax_err    ;DE = address of "Syntax error" string
     ld c,cwritestr      ;Output String
     call bdos           ;BDOS System Call
-    jp warm
+    jp warm             ;Warm start
 
 get_dec:
 ;Get a one or two character decimal number from the args buffer,
@@ -183,24 +183,37 @@ get_dec_one:
     ret
 
 put_dec:
-    push de             ;0197
-    push hl             ;0198
-    ld e,2fh            ;0199
-l019bh:
-    inc e               ;019b
-    sub 0ah             ;019c
-    jp p,l019bh         ;019e
-    add a,3ah           ;01a1
-    push af             ;01a3
-    ld c,cwrite         ;Console Output
-    call bdos           ;BDOS System Call
-    pop af              ;01a9
-    ld e,a              ;01aa
-    ld c,cwrite         ;Console Output
-    call bdos           ;BDOS System Call
-    pop hl              ;01b0
-    pop de              ;01b1
-    ret                 ;01b2
+;Print A as a decimal number
+;Only two digits are supported, so the range is 0-99 decimal.
+;
+    push de             ;Save DE
+    push hl             ;Save HL
+
+                        ;Find ASCII digit for tens place, store in E:
+    ld e,2fh            ;  E = 2Fh, which is ASCII "0" - 1
+put_dec_loop:           ;
+    inc e               ;  Increment E to next ASCII digit
+    sub 0ah             ;  Subtract 10 from A
+    jp p,put_dec_loop   ;  Loop until A goes negative
+
+                        ;Find ASCII digit for ones place, store in A:
+    add a,0ah+30h       ;  Add 10 to undo the last subtraction
+                        ;  Add 30h to convert it to ASCII
+
+                        ;Print the digit in E (tens place):
+    push af             ;  Save A
+    ld c,cwrite         ;  Console Output
+    call bdos           ;  BDOS System Call
+    pop af              ;  Recall A
+
+                        ;Print the digit in A (ones place):
+    ld e,a              ;  E = A
+    ld c,cwrite         ;  Console Output
+    call bdos           ;  BDOS System Call
+
+    pop hl              ;Recall HL
+    pop de              ;Recall DE
+    ret
 
 time_is:
     db "Time is  $"
