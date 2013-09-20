@@ -267,7 +267,7 @@ SAVESY:
 ;
         LD      A,(HL)
         LD      (@L0),A
-        CALL    0F054H
+        CALL    0F054H          ;BIOS Get device address for a CP/M drive number
         PUSH    DE
         LD      E,0FH
         LD      HL,@L11
@@ -276,9 +276,9 @@ SAVESY:
         JR      NC,BUFFIN+0177H
         LD      HL,@L12
         LD      C,04H
-        CALL    0F05DH
+        CALL    0F05DH          ;BIOS Open a file on an IEEE-488 device
         LD      A,(@L0)
-        CALL    0F05AH
+        CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A
         POP     DE
         CP      01H
@@ -287,51 +287,51 @@ SAVESY:
         PUSH    DE
         CALL    @L3
         LD      A,(@L0)
-        CALL    0F05AH
+        CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A
         POP     DE
         OR      A
         RET     NZ
         PUSH    DE
-        CALL    0F033H
+        CALL    0F033H          ;BIOS Send LISTEN to an IEEE-488 device
         LD      HL,06000H
         LD      BC,0800H
         LD      A,(HL)
-        CALL    0F042H
+        CALL    0F042H          ;BIOS Send byte to an IEEE-488 device
         INC     HL
         DEC     BC
         LD      A,B
         OR      C
         JR      NZ,BUFFIN+01A5H
-        CALL    0F036H
+        CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
         POP     DE
         PUSH    DE
-        CALL    0F060H
+        CALL    0F060H          ;BIOS Close an open file on an IEEE-488 device
         POP     DE
         PUSH    DE
         CALL    @L1
         LD      A,(@L0)
-        CALL    0F05AH
+        CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A
         POP     DE
         OR      A
         RET     NZ
         PUSH    DE
-        CALL    0F033H
+        CALL    0F033H          ;BIOS Send LISTEN to an IEEE-488 device
         LD      HL,04000H
         LD      BC,01C00H
         LD      A,(HL)
-        CALL    0F042H
+        CALL    0F042H          ;BIOS Send byte to an IEEE-488 device
         INC     HL
         DEC     BC
         LD      A,B
         OR      C
         JR      NZ,BUFFIN+01D2H
-        CALL    0F036H
+        CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
         POP     DE
-        CALL    0F060H
+        CALL    0F060H          ;BIOS Close an open file on an IEEE-488 device
         LD      A,(@L0)
-        CALL    0F05AH
+        CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A
         RET
 
