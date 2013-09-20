@@ -495,9 +495,8 @@ CFORM:
         DB 0DH,0AH,'Hit any key to abort : $'
 
 @L21:
-        LD      D,L             ;U      055H
-        LD      (03220H),A
-        JR      NZ,BUFFIN+0354H ;N
+        DB 'U2 2 '
+        DB 'N'
 
 @L13:
         JR      NC,BUFFIN+0342H ;0:
