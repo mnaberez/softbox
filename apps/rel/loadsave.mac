@@ -48,9 +48,9 @@ RDSYS:
         LD      E,00H
         PUSH    DE
         CALL    @L1
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
-        LD      (@L2),A
+        LD      (@L2),A         ;Store CBM DOS error code in @L2
         LD      HL,04000H
         LD      BC,01C00H
         POP     DE
@@ -72,9 +72,9 @@ RDSYS:
         POP     DE
         PUSH    DE
         CALL    @L3
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
-        LD      (@L2),A
+        LD      (@L2),A         ;Store CBM DOS error code in @L2
         LD      HL,06000H
         LD      BC,0800H
         POP     DE
@@ -92,9 +92,9 @@ RDSYS:
         CALL    0F03CH          ;BIOS Send UNTALK to all IEEE-488 devices
         POP     DE
         CALL    0F060H          ;BIOS Close an open file on an IEEE-488 device
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
-        LD      (@L2),A
+        LD      (@L2),A         ;Store CBM DOS error code in @L2
         RET
 
 CREAD:
@@ -118,7 +118,7 @@ CREAD1:
         POP     DE
         LD      BC,080H
         LD      HL,080H
-        LDIR
+        LDIR                    ;Copy BC bytes from (HL) to (DE)
         POP     BC
         INC     C
         LD      A,C
@@ -147,7 +147,7 @@ CWRIT1:
         PUSH    BC
         LD      BC,080H
         LD      DE,080H
-        LDIR
+        LDIR                    ;Copy BC bytes from (HL) to (DE)
         PUSH    HL
         CALL    0F02AH          ;BIOS Write selected sector
         OR      A
@@ -248,7 +248,7 @@ DSKERR:
 @L1:
         LD      C,06H
         LD      HL,@L7
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         RRA                     ;01FH   01FH
         JP      NC,0F05DH       ;BIOS Open a file on an IEEE-488 device
         LD      HL,@L8
@@ -256,7 +256,7 @@ DSKERR:
 @L3:
         LD      C,03H
         LD      HL,@L9
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         RRA                     ;01FH   01FH
         JP      NC,0F05DH       ;BIOS Open a file on an IEEE-488 device
         LD      HL,@L10
@@ -271,24 +271,24 @@ SAVESY:
         PUSH    DE
         LD      E,0FH
         LD      HL,@L11
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         RRA
         JR      NC,BUFFIN+0177H
         LD      HL,@L12
         LD      C,04H
         CALL    0F05DH          ;BIOS Open a file on an IEEE-488 device
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
-        LD      (@L2),A
+        LD      (@L2),A         ;Store CBM DOS error code in @L2
         POP     DE
         CP      01H
         RET     NZ
         LD      E,01H
         PUSH    DE
         CALL    @L3
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
-        LD      (@L2),A
+        LD      (@L2),A         ;Store CBM DOS error code in @L2
         POP     DE
         OR      A
         RET     NZ
@@ -310,9 +310,9 @@ SAVESY:
         POP     DE
         PUSH    DE
         CALL    @L1
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
-        LD      (@L2),A
+        LD      (@L2),A         ;Store CBM DOS error code in @L2
         POP     DE
         OR      A
         RET     NZ
@@ -330,9 +330,9 @@ SAVESY:
         CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
         POP     DE
         CALL    0F060H          ;BIOS Close an open file on an IEEE-488 device
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
-        LD      (@L2),A
+        LD      (@L2),A         ;Store CBM DOS error code in @L2
         RET
 
 FORMAT:
@@ -341,7 +341,7 @@ FORMAT:
         LD      A,(HL)
         LD      (@L0),A
         CALL    0F054H          ;BIOS Get device address for a CP/M drive num
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         AND     01H
         ADD     A,030H
         LD      (@L13),A
@@ -352,29 +352,30 @@ FORMAT:
         LD      HL,@L14         ;HL = address of string containing ??? (TODO)
         CALL    0F05DH          ;BIOS Open a file on an IEEE-488 device
 
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
-        LD      (@L2),A
+        LD      (@L2),A         ;Store CBM DOS error code in @L2
         OR      A
         RET     NZ
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F078H          ;BIOS Initialize an IEEE-488 disk drive
         LD      HL,04000H
         LD      DE,04001H
         LD      BC,0FFH
         LD      (HL),0E5H
-        LDIR
+        LDIR                    ;Copy BC bytes from (HL) to (DE)
         LD      A,07H
         LD      (@L15),A
         LD      A,01H
         LD      (@L16),A
 @L18:
         CALL    @L17
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
-        LD      (@L2),A
-        OR      A
-        RET     NZ
+                                ;  Returns CBM DOS error code in A (0=OK)
+        LD      (@L2),A         ;Store CBM DOS error code in @L2
+        OR      A               ;Set flags
+        RET     NZ              ;Return if an error occurred
         LD      HL,@L15
         DEC     (HL)
         JP      P,@L18
@@ -382,7 +383,7 @@ FORMAT:
 @L17:
         LD      HL,@L19
         LD      C,06H
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F057H          ;BIOS Open the command channel on IEEE-488 device
         CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
         LD      A,(04000H)
@@ -390,12 +391,12 @@ FORMAT:
         CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
         LD      HL,@L20
         LD      C,07H
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F057H          ;BIOS Open the command channel on IEEE-488 device
         CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
         CALL    0F048H          ;BIOS Send carriage return to IEEE-488 dev with EOI
         CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F054H          ;BIOS Get device address for a CP/M drive number
         LD      E,02H
         CALL    0F033H          ;BIOS Send LISTEN to an IEEE-488 device
@@ -403,12 +404,12 @@ FORMAT:
         LD      C,0FFH
         CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
         CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F057H          ;BIOS Open the command channel on IEEE-488 device
         LD      HL,@L21
         LD      C,05H
         CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
-        LD      A,(@L0)
+        LD      A,(@L0)         ;Get current CP/M drive number from @L0
         AND     01H
         ADD     A,030H
         CALL    0F042H          ;BIOS Send byte to an IEEE-488 device
@@ -525,10 +526,15 @@ CFORM:
         LD      C,E             ;K      04BH
 @L10:
         LD      SP,04B3AH
+
 @L0:
+;Current CP/M drive number
         ORG     0345H
+
 @L2:
+;Last CBM DOS error code
         ORG     0346H
+
 @L14    EQU     BUFFIN+0305H
 @L12    EQU     BUFFIN+032EH
 @L7     EQU     BUFFIN+0332H
