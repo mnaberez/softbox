@@ -227,7 +227,7 @@ DSKERR:
         CALL    05H             ;BDOS System Call
 
         LD      HL,0EAC0H       ;HL = address of last CBM DOS error message
-;Loop:                          ;TODO: label here
+;BUFFIN+0113H (???)
         LD      E,(HL)          ;E = read char from error message
         PUSH    HL              ;Save HL
         LD      C,02H           ;C = Console Output
@@ -372,29 +372,37 @@ FORMAT:
         LD      A,(HL)
         LD      (@L0),A
         CALL    0F054H          ;D = BIOS Get device address for a CP/M drive num
-        LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        AND     01H
-        ADD     A,030H
-        LD      (@L13),A
 
-                                ;D contains IEEE-488 primary address
-        LD      E,0FH           ;E = file number (15 = command)
-        LD      C,014H          ;C = 20 characters in string at HL
-        LD      HL,@L14         ;HL = address of string containing ??? (TODO)
-        CALL    0F05DH          ;BIOS Open a file on an IEEE-488 device
+                                ;Set CBM drive number in format command:
+        LD      A,(@L0)         ;  Get current CP/M drive number from @L0
+        AND     01H             ;  Mask off all except bit 1 (CBM drive num)
+        ADD     A,030H          ;  Convert it to ASCII
+        LD      (@L13),A        ;  Save it into format command ("N0:CP/M...")
 
-        LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
-        LD      (@L2),A         ;Store CBM DOS error code in @L2
-        OR      A
-        RET     NZ
-        LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        CALL    0F078H          ;BIOS Initialize an IEEE-488 disk drive
+                                ;Send format command:
+                                ;  D contains IEEE-488 primary address
+        LD      E,0FH           ;  E = file number (15 = command channel)
+        LD      C,014H          ;  C = 20 characters in string
+        LD      HL,@L14         ;  HL = address of "N0:CP/M V2.2 DISK,XX"
+        CALL    0F05DH          ;  BIOS Open a file on an IEEE-488 device
+
+                                ;Check result of format command:
+        LD      A,(@L0)         ;  Get current CP/M drive number from @L0
+        CALL    0F05AH          ;  BIOS Read the error channel of an IEEE-488 device
+        LD      (@L2),A         ;  Store CBM DOS error code in @L2
+        OR      A               ;  Set flags to check error (0=OK)
+        RET     NZ              ;  Return if not OK
+
+                                ;Initialize the drive:
+        LD      A,(@L0)         ;  Get current CP/M drive number from @L0
+        CALL    0F078H          ;  BIOS Initialize an IEEE-488 disk drive
+
         LD      HL,04000H
         LD      DE,04001H
         LD      BC,0FFH
         LD      (HL),0E5H
         LDIR                    ;Copy BC bytes from (HL) to (DE)
+
         LD      A,07H
         LD      (@L15),A
         LD      A,01H
@@ -407,6 +415,7 @@ FORMAT:
         LD      (@L2),A         ;Store CBM DOS error code in @L2
         OR      A               ;Set flags
         RET     NZ              ;Return if an error occurred
+
         LD      HL,@L15
         DEC     (HL)
         JP      P,@L18
@@ -506,9 +515,10 @@ CFORM:
 @L21:
         LD      D,L             ;U      055H
         LD      (03220H),A
-        JR      NZ,BUFFIN+0354H
+        JR      NZ,BUFFIN+0354H ;N
+
 @L13:
-        JR      NC,BUFFIN+0342H
+        JR      NC,BUFFIN+0342H ;0:
         LD      B,E             ;C      043H
         LD      D,B             ;P      050H
         CPL                     ;/      02FH
@@ -529,6 +539,7 @@ CFORM:
         JR      NZ,BUFFIN+0350H
         JR      NZ,BUFFIN+0351H
 @L19:
+;"M-W"
         LD      C,L             ;M      04DH
         DEC     L               ;-      02DH
         LD      D,A             ;W      057H
