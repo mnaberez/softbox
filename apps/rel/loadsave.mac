@@ -550,28 +550,19 @@ CFORM:
         ORG     0329H
 @L15:
         ORG     032AH
+
 @L11:
-        LD      D,E             ;S      053H
-        JR      NC,BUFFIN+0367H
-        LD      HL,(03153H)
-        LD      A,(0302AH)
-        LD      A,(05043H)
-        CPL                     ;/      02FH
-        LD      C,L             ;M      04DH
+        DB 'S0:*'
+        DB 'S1:*'
+        DB '0:CP/M'
 @L8:
-        LD      SP,0433AH
-        LD      D,B             ;P      050H
-        CPL                     ;/      02FH
-        LD      C,L             ;M      04DH
+        DB '1:CP/M'
 
 @L9:
-;"0:K"
-        JR      NC,BUFFIN+037AH ;0:
-        LD      C,E             ;K      04BH
+        DB '0:K'
 
 @L10:
-;"1:K"
-        LD      SP,04B3AH       ;1:K
+        DB '1:K'
 
 @L0:
 ;Current CP/M drive number
