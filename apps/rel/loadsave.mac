@@ -5,7 +5,7 @@
         GLOBAL  EXSYS           ;Execute a new CP/M system
         GLOBAL  SAVESY
         GLOBAL  RDSYS
-        GLOBAL  BUFFIN          ;Buffered Console
+        GLOBAL  BUFFIN          ;Buffered Console Input
         GLOBAL  IDISK           ;Initialize an IEEE-488 disk drive
         GLOBAL  DSKERR          ;Check CBM DOS error and print message(?)
         GLOBAL  FORMAT
@@ -40,122 +40,125 @@ EXSYS:
         JP      0F075H          ;Perform system init and then run CP/M
 
 RDSYS:
-        LD      A,(HL)          ;~      07EH
+        LD      A,(HL)
         LD      (@L0),A
         CALL    0F054H
         LD      E,00H
-        PUSH    DE              ;U      0D5H
+        PUSH    DE
         CALL    @L1
         LD      A,(@L0)
         CALL    0F05AH
         LD      (@L2),A
         LD      HL,04000H
         LD      BC,01C00H
-        POP     DE              ;Q      0D1H
-        OR      A               ;7      0B7H
-        RET     NZ              ;@      0C0H
-        PUSH    DE              ;U      0D5H
+        POP     DE
+        OR      A
+        RET     NZ
+        PUSH    DE
         CALL    0F039H
         CALL    0F03FH
-        LD      (HL),A          ;w      077H
-        INC     HL              ;#      023H
-        DEC     BC              ;0BH    0BH
-        LD      A,B             ;x      078H
-        OR      C               ;1      0B1H
+        LD      (HL),A
+        INC     HL
+        DEC     BC
+        LD      A,B
+        OR      C
         JR      NZ,BUFFIN+039H
         CALL    0F03CH
-        POP     DE              ;Q      0D1H
-        PUSH    DE              ;U      0D5H
+        POP     DE
+        PUSH    DE
         CALL    0F060H
-        POP     DE              ;Q      0D1H
-        PUSH    DE              ;U      0D5H
+        POP     DE
+        PUSH    DE
         CALL    @L3
         LD      A,(@L0)
         CALL    0F05AH
         LD      (@L2),A
         LD      HL,06000H
         LD      BC,0800H
-        POP     DE              ;Q      0D1H
-        OR      A               ;7      0B7H
-        RET     NZ              ;@      0C0H
-        PUSH    DE              ;U      0D5H
+        POP     DE
+        OR      A
+        RET     NZ
+        PUSH    DE
         CALL    0F039H
         CALL    0F03FH
-        LD      (HL),A          ;w      077H
-        INC     HL              ;#      023H
-        DEC     BC              ;0BH    0BH
-        LD      A,B             ;x      078H
-        OR      C               ;1      0B1H
+        LD      (HL),A
+        INC     HL
+        DEC     BC
+        LD      A,B
+        OR      C
         JR      NZ,BUFFIN+066H
         CALL    0F03CH
-        POP     DE              ;Q      0D1H
+        POP     DE
         CALL    0F060H
         LD      A,(@L0)
         CALL    0F05AH
         LD      (@L2),A
-        RET                     ;I      0C9H
+        RET
+
 CREAD:
-        LD      C,(HL)          ;N      04EH
+        LD      C,(HL)
         CALL    0F01BH
         LD      DE,04000H
         LD      BC,00H
 CREAD2:
         CALL    0F01EH
-        PUSH    BC              ;E      0C5H
+        PUSH    BC
         LD      BC,00H
 CREAD1:
         CALL    0F021H
-        PUSH    BC              ;E      0C5H
-        PUSH    DE              ;U      0D5H
+        PUSH    BC
+        PUSH    DE
         CALL    0F027H
-        OR      A               ;7      0B7H
+        OR      A
         JR      NZ,CWRIT3
-        POP     DE              ;Q      0D1H
+        POP     DE
         LD      BC,080H
         LD      HL,080H
         LDIR
-        POP     BC              ;A      0C1H
-        INC     C               ;0CH    0CH
-        LD      A,C             ;y      079H
+        POP     BC
+        INC     C
+        LD      A,C
         CP      040H
         JR      NZ,CREAD1
-        POP     BC              ;A      0C1H
-        INC     C               ;0CH    0CH
-        LD      A,C             ;y      079H
+        POP     BC
+        INC     C
+        LD      A,C
         CP      02H
         JR      NZ,CREAD2
-        RET                     ;I      0C9H
+        RET
+
 CWRITE:
-        LD      C,(HL)          ;N      04EH
+        LD      C,(HL)
         CALL    0F01BH
         LD      HL,04000H
         LD      BC,00H
 CWRIT2:
         CALL    0F01EH
-        PUSH    BC              ;E      0C5H
+        PUSH    BC
         LD      BC,00H
 CWRIT1:
         CALL    0F021H
-        PUSH    BC              ;E      0C5H
+        PUSH    BC
         LD      BC,080H
         LD      DE,080H
         LDIR
-        PUSH    HL              ;e      0E5H
+        PUSH    HL
         CALL    0F02AH
-        OR      A               ;7      0B7H
+        OR      A
         JR      NZ,CWRIT3
-        POP     HL              ;a      0E1H
-        POP     BC              ;A      0C1H
-        INC     C               ;0CH    0CH
-        LD      A,C             ;y      079H
+        POP     HL
+        POP     BC
+        INC     C
+        LD      A,C
         CP      040H
         JR      NZ,CWRIT1
-        POP     BC              ;A      0C1H
-        INC     C               ;0CH    0CH
-        LD      A,C             ;y      079H
+        POP     BC
+        INC     C
+        LD      A,C
         CP      02H
         JR      NZ,CWRIT2
-        RET                     ;I      0C9H
+        RET
+
 CWRIT3:
         POP     HL              ;a      0E1H
         POP     HL              ;a      0E1H
