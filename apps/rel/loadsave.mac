@@ -492,26 +492,8 @@ CFORM:
         JP      05H             ;BDOS System Call
 
 @L22:
-        DEC     C               ;CR     0DH
-        LD      A,(BC)          ;LF     0AH
-        LD      C,B             ;H      048H
-        LD      L,C             ;i      069H
-        LD      (HL),H          ;t      074H
-        JR      NZ,BUFFIN+034EH
-        LD      L,(HL)          ;n      06EH
-        LD      A,C             ;y      079H
-        JR      NZ,BUFFIN+035CH
-        LD      H,L             ;e      065H
-        LD      A,C             ;y      079H
-        JR      NZ,BUFFIN+0369H
-        LD      L,A             ;o      06FH
-        JR      NZ,BUFFIN+0359H
-        LD      H,D             ;b      062H
-        LD      L,A             ;o      06FH
-        LD      (HL),D          ;r      072H
-        LD      (HL),H          ;t      074H
-        JR      NZ,@L8
-        JR      NZ,BUFFIN+0324H
+        DB 0DH,0AH,'Hit any key to abort : $'
+
 @L21:
         LD      D,L             ;U      055H
         LD      (03220H),A
