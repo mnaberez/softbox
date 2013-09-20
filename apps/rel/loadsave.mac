@@ -3,15 +3,15 @@
         .Z80                    ;set mode for M80
         NAME    ('LOADSA')
         GLOBAL  EXSYS           ;Execute a new CP/M system
-        GLOBAL  SAVESY
-        GLOBAL  RDSYS
+        GLOBAL  SAVESY          ;Write CP/M image to an IEEE-488 drive
+        GLOBAL  RDSYS           ;Read CP/M image from an IEEE-488 drive
         GLOBAL  BUFFIN          ;Buffered Console Input
         GLOBAL  IDISK           ;Initialize an IEEE-488 disk drive
         GLOBAL  DSKERR          ;Check CBM DOS error and print message(?)
-        GLOBAL  FORMAT
-        GLOBAL  CREAD
-        GLOBAL  CWRITE
-        GLOBAL  CFORM
+        GLOBAL  FORMAT          ;Format an IEEE-488 drive for SoftBox use
+        GLOBAL  CREAD           ;Read CP/M image from a Corvus drive
+        GLOBAL  CWRITE          ;Write CP/M image to a Corvus drive
+        GLOBAL  CFORM           ;Format a Corvus drive for Softbox use
         GLOBAL  DTYPE
         GLOBAL  CREAD2
         GLOBAL  CREAD1
@@ -40,14 +40,16 @@ EXSYS:
         JP      0F075H          ;Perform system init and then run CP/M
 
 RDSYS:
+;Read the CP/M system image from an IEEE-488 drive.
+;
         LD      A,(HL)
         LD      (@L0),A
-        CALL    0F054H
+        CALL    0F054H          ;BIOS Get device address for a CP/M drive number
         LD      E,00H
         PUSH    DE
         CALL    @L1
         LD      A,(@L0)
-        CALL    0F05AH
+        CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A
         LD      HL,04000H
         LD      BC,01C00H
@@ -55,23 +57,23 @@ RDSYS:
         OR      A
         RET     NZ
         PUSH    DE
-        CALL    0F039H
-        CALL    0F03FH
+        CALL    0F039H          ;BIOS Send TALK to an IEEE-488 device
+        CALL    0F03FH          ;BIOS Read byte from an IEEE-488 device
         LD      (HL),A
         INC     HL
         DEC     BC
         LD      A,B
         OR      C
         JR      NZ,BUFFIN+039H
-        CALL    0F03CH
+        CALL    0F03CH          ;BIOS Send UNTALK to all IEEE-488 devices
         POP     DE
         PUSH    DE
-        CALL    0F060H
+        CALL    0F060H          ;BIOS Close an open file on an IEEE-488 device
         POP     DE
         PUSH    DE
         CALL    @L3
         LD      A,(@L0)
-        CALL    0F05AH
+        CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A
         LD      HL,06000H
         LD      BC,0800H
@@ -79,36 +81,37 @@ RDSYS:
         OR      A
         RET     NZ
         PUSH    DE
-        CALL    0F039H
-        CALL    0F03FH
+        CALL    0F039H          ;BIOS Send TALK to an IEEE-488 device
+        CALL    0F03FH          ;BIOS Read byte from an IEEE-488 device
         LD      (HL),A
         INC     HL
         DEC     BC
         LD      A,B
         OR      C
         JR      NZ,BUFFIN+066H
-        CALL    0F03CH
+        CALL    0F03CH          ;BIOS Send UNTALK to all IEEE-488 devices
         POP     DE
-        CALL    0F060H
+        CALL    0F060H          ;BIOS Close an open file on an IEEE-488 device
         LD      A,(@L0)
-        CALL    0F05AH
+        CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A
         RET
 
 CREAD:
+;Read CP/M image from a Corvus drive.
         LD      C,(HL)
-        CALL    0F01BH
+        CALL    0F01BH          ;BIOS Select disk drive
         LD      DE,04000H
         LD      BC,00H
 CREAD2:
-        CALL    0F01EH
+        CALL    0F01EH          ;BIOS Set track number
         PUSH    BC
         LD      BC,00H
 CREAD1:
-        CALL    0F021H
+        CALL    0F021H          ;BIOS Set sector number
         PUSH    BC
         PUSH    DE
-        CALL    0F027H
+        CALL    0F027H          ;BIOS Read selected sector
         OR      A
         JR      NZ,CWRIT3
         POP     DE
@@ -128,22 +131,24 @@ CREAD1:
         RET
 
 CWRITE:
+;Write CP/M image to a Corvus drive.
+;
         LD      C,(HL)
-        CALL    0F01BH
+        CALL    0F01BH          ;BIOS Select disk drive
         LD      HL,04000H
         LD      BC,00H
 CWRIT2:
-        CALL    0F01EH
+        CALL    0F01EH          ;BIOS Set track number
         PUSH    BC
         LD      BC,00H
 CWRIT1:
-        CALL    0F021H
+        CALL    0F021H          ;BIOS Set sector number
         PUSH    BC
         LD      BC,080H
         LD      DE,080H
         LDIR
         PUSH    HL
-        CALL    0F02AH
+        CALL    0F02AH          ;BIOS Write selected sector
         OR      A
         JR      NZ,CWRIT3
         POP     HL
@@ -244,7 +249,7 @@ DSKERR:
         LD      HL,@L7
         LD      A,(@L0)
         RRA                     ;01FH   01FH
-        JP      NC,0F05DH
+        JP      NC,0F05DH       ;BIOS Open a file on an IEEE-488 device
         LD      HL,@L8
         JP      0F05DH
 @L3:
@@ -252,11 +257,13 @@ DSKERR:
         LD      HL,@L9
         LD      A,(@L0)
         RRA                     ;01FH   01FH
-        JP      NC,0F05DH
+        JP      NC,0F05DH       ;BIOS Open a file on an IEEE-488 device
         LD      HL,@L10
-        JP      0F05DH
+        JP      0F05DH          ;BIOS Open a file on an IEEE-488 device
 
 SAVESY:
+;Read the CP/M system image from an IEEE-488 drive.
+;
         LD      A,(HL)          ;~      07EH
         LD      (@L0),A
         CALL    0F054H
@@ -328,6 +335,8 @@ SAVESY:
         RET                     ;I      0C9H
 
 FORMAT:
+;Format an IEEE-488 drive for SoftBox use.
+;
         LD      A,(HL)
         LD      (@L0),A
         CALL    0F054H          ;BIOS Get device address for a CP/M drive num
@@ -410,6 +419,8 @@ FORMAT:
         JP      0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
 
 CFORM:
+;Format a Corvus drive for Softbox use.
+;
         LD      C,(HL)
         CALL    0F01BH          ;BIOS Select disk drive
         LD      HL,080H
@@ -431,11 +442,13 @@ CFORM:
         JR      NZ,BUFFIN+02C6H
         RET
 @L4:
-        LD      DE,@L22
-        LD      C,09H
-        CALL    05H             ;BDOS system call
-        LD      C,01H
-        JP      05H
+        LD      DE,@L22         ;DE = address of "Hit any key to"
+        LD      C,09H           ;C = Output String
+        CALL    05H             ;BDOS System Call
+
+        LD      C,01H           ;C = Console Input
+        JP      05H             ;BDOS System Call
+
 @L22:
         DEC     C               ;CR     0DH
         LD      A,(BC)          ;LF     0AH
