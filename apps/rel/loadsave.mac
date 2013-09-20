@@ -22,12 +22,18 @@ BUFFIN:
         LD      C,0AH
         LD      DE,080H
         JP      05H
+
 EXSYS:
-        LD      BC,01C00H
-        LD      HL,04000H
-        LD      DE,0D400H
-        LDIR
-        JP      0F075H
+;Execute a new CP/M system.  The buffer at 4000h contains a new
+;CP/M system image (7168 bytes = CCP + BDOS + BIOS config + BIOS storage).
+;Copy the new system into place and then jump to the BIOS to start it.
+;
+        LD      BC,01C00H       ;BC = 7168 bytes to copy
+        LD      HL,04000H       ;HL = address of new CP/M system image
+        LD      DE,0D400H       ;DE = base address of CP/M system image
+        LDIR                    ;Copy BC bytes from (HL) to (DE)
+        JP      0F075H          ;Perform system init and then run CP/M
+
 RDSYS:
         LD      A,(HL)          ;~      07EH
         LD      (@L0),A
@@ -299,10 +305,13 @@ FORMAT:
         AND     01H
         ADD     A,030H
         LD      (@L13),A
-        LD      E,0FH
-        LD      C,014H
-        LD      HL,@L14
+
+                                ;D contains IEEE-488 primary address
+        LD      E,0FH           ;E = file number (15 = command)
+        LD      C,014H          ;C = 20 characters in string at HL
+        LD      HL,@L14         ;HL = address of string containing ??? (TODO)
         CALL    0F05DH          ;BIOS Open a file on an IEEE-488 device
+
         LD      A,(@L0)
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A
