@@ -2,10 +2,10 @@
 
         .Z80                    ;set mode for M80
         NAME    ('LOADSA')
-        GLOBAL  EXSYS
+        GLOBAL  EXSYS           ;Execute a new CP/M system
         GLOBAL  SAVESY
         GLOBAL  RDSYS
-        GLOBAL  BUFFIN
+        GLOBAL  BUFFIN          ;Buffered Console
         GLOBAL  IDISK
         GLOBAL  DSKERR
         GLOBAL  FORMAT
@@ -18,10 +18,15 @@
         GLOBAL  CWRIT3
         GLOBAL  CWRIT2
         GLOBAL  CWRIT1
+
 BUFFIN:
-        LD      C,0AH
-        LD      DE,080H
-        JP      05H
+;Buffered Console Input.  Caller must store buffer size at 80h.  On
+;return, 81h will contain the number of data bytes and the data
+;will start at 82h.
+;
+        LD      C,0AH           ;C = Buffered Console Input
+        LD      DE,080H         ;DE = Default DMA buffer area (128 bytes)
+        JP      05H             ;BDOS System Call
 
 EXSYS:
 ;Execute a new CP/M system.  The buffer at 4000h contains a new
@@ -163,9 +168,11 @@ DTYPE:
         INC     HL              ;#      023H
         LD      (HL),00H
         RET                     ;I      0C9H
+
 IDISK:
         LD      A,(HL)          ;~      07EH
         JP      0F078H
+
 DSKERR:
         LD      A,(@L2)
         LD      (HL),A          ;w      077H
