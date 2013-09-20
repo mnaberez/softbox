@@ -99,6 +99,7 @@ RDSYS:
 
 CREAD:
 ;Read CP/M image from a Corvus drive.
+;
         LD      C,(HL)
         CALL    0F01BH          ;BIOS Select disk drive
         LD      DE,04000H
@@ -251,7 +252,7 @@ DSKERR:
         RRA                     ;01FH   01FH
         JP      NC,0F05DH       ;BIOS Open a file on an IEEE-488 device
         LD      HL,@L8
-        JP      0F05DH
+        JP      0F05DH          ;BIOS Open a file on an IEEE-488 device
 @L3:
         LD      C,03H
         LD      HL,@L9
@@ -264,14 +265,14 @@ DSKERR:
 SAVESY:
 ;Read the CP/M system image from an IEEE-488 drive.
 ;
-        LD      A,(HL)          ;~      07EH
+        LD      A,(HL)
         LD      (@L0),A
         CALL    0F054H
-        PUSH    DE              ;U      0D5H
+        PUSH    DE
         LD      E,0FH
         LD      HL,@L11
         LD      A,(@L0)
-        RRA                     ;01FH   01FH
+        RRA
         JR      NC,BUFFIN+0177H
         LD      HL,@L12
         LD      C,04H
@@ -279,60 +280,60 @@ SAVESY:
         LD      A,(@L0)
         CALL    0F05AH
         LD      (@L2),A
-        POP     DE              ;Q      0D1H
+        POP     DE
         CP      01H
-        RET     NZ              ;@      0C0H
+        RET     NZ
         LD      E,01H
-        PUSH    DE              ;U      0D5H
+        PUSH    DE
         CALL    @L3
         LD      A,(@L0)
         CALL    0F05AH
         LD      (@L2),A
-        POP     DE              ;Q      0D1H
-        OR      A               ;7      0B7H
-        RET     NZ              ;@      0C0H
-        PUSH    DE              ;U      0D5H
+        POP     DE
+        OR      A
+        RET     NZ
+        PUSH    DE
         CALL    0F033H
         LD      HL,06000H
         LD      BC,0800H
-        LD      A,(HL)          ;~      07EH
+        LD      A,(HL)
         CALL    0F042H
-        INC     HL              ;#      023H
-        DEC     BC              ;0BH    0BH
-        LD      A,B             ;x      078H
-        OR      C               ;1      0B1H
+        INC     HL
+        DEC     BC
+        LD      A,B
+        OR      C
         JR      NZ,BUFFIN+01A5H
         CALL    0F036H
-        POP     DE              ;Q      0D1H
-        PUSH    DE              ;U      0D5H
+        POP     DE
+        PUSH    DE
         CALL    0F060H
-        POP     DE              ;Q      0D1H
-        PUSH    DE              ;U      0D5H
+        POP     DE
+        PUSH    DE
         CALL    @L1
         LD      A,(@L0)
         CALL    0F05AH
         LD      (@L2),A
-        POP     DE              ;Q      0D1H
-        OR      A               ;7      0B7H
-        RET     NZ              ;@      0C0H
-        PUSH    DE              ;U      0D5H
+        POP     DE
+        OR      A
+        RET     NZ
+        PUSH    DE
         CALL    0F033H
         LD      HL,04000H
         LD      BC,01C00H
-        LD      A,(HL)          ;~      07EH
+        LD      A,(HL)
         CALL    0F042H
-        INC     HL              ;#      023H
-        DEC     BC              ;0BH    0BH
-        LD      A,B             ;x      078H
-        OR      C               ;1      0B1H
+        INC     HL
+        DEC     BC
+        LD      A,B
+        OR      C
         JR      NZ,BUFFIN+01D2H
         CALL    0F036H
-        POP     DE              ;Q      0D1H
+        POP     DE
         CALL    0F060H
         LD      A,(@L0)
         CALL    0F05AH
         LD      (@L2),A
-        RET                     ;I      0C9H
+        RET
 
 FORMAT:
 ;Format an IEEE-488 drive for SoftBox use.
