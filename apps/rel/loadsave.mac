@@ -6,7 +6,7 @@
         GLOBAL  SAVESY
         GLOBAL  RDSYS
         GLOBAL  BUFFIN          ;Buffered Console
-        GLOBAL  IDISK
+        GLOBAL  IDISK           ;Initialize an IEEE-488 disk drive
         GLOBAL  DSKERR
         GLOBAL  FORMAT
         GLOBAL  CREAD
@@ -170,8 +170,11 @@ DTYPE:
         RET                     ;I      0C9H
 
 IDISK:
-        LD      A,(HL)          ;~      07EH
-        JP      0F078H
+;Initialize an IEEE-488 disk drive.  HL must be loaded with an
+;address that contains a CP/M drive number.
+;
+        LD      A,(HL)          ;A = CP/M drive number
+        JP      0F078H          ;Initialize an IEEE-488 disk drive
 
 DSKERR:
         LD      A,(@L2)
@@ -233,6 +236,7 @@ DSKERR:
         JP      NC,0F05DH
         LD      HL,@L10
         JP      0F05DH
+
 SAVESY:
         LD      A,(HL)          ;~      07EH
         LD      (@L0),A
