@@ -47,11 +47,11 @@ RDSYS:
 ;
         LD      A,(HL)
         LD      (@L0),A
-        CALL    0F054H          ;BIOS Get device address for a CP/M drive number
-        LD      E,00H
+        CALL    0F054H          ;D = BIOS Get device address for a CP/M drive number
+        LD      E,00H           ;E = Secondary address 0
+        PUSH    DE              ;Push IEEE-488 primary & secondary addrs
 
-        PUSH    DE
-                                ;Open "CP/M" file with CP/M system image:
+                                ;Open "CP/M" file (CP/M image):
         CALL    @L1             ;  Open "CP/M" file
         LD      A,(@L0)         ;  Get current CP/M drive number from @L0
         CALL    0F05AH          ;  BIOS Read the error channel of an IEEE-488 device
@@ -60,10 +60,13 @@ RDSYS:
                                 ;Read "CP/M" file into buffer at 4000h:
         LD      HL,04000H       ;  HL = base address of buffer for CP/M image
         LD      BC,01C00H       ;  BC = 7168 bytes in CP/M image
-        POP     DE
-        OR      A
-        RET     NZ
-        PUSH    DE
+
+;BUFFIN+039H: (???)
+        POP     DE              ;  Pop IEEE-488 primary & secondary addrs
+        OR      A               ;  Set flags to check CBM DOS error (0=OK)
+        RET     NZ              ;  Return if not OK
+
+        PUSH    DE              ;  Push IEEE-488 primary & secondary addrs
         CALL    0F039H          ;  BIOS Send TALK to an IEEE-488 device
         CALL    0F03FH          ;  BIOS Read byte from an IEEE-488 device
         LD      (HL),A          ;  Save byte read into buffer
@@ -73,14 +76,15 @@ RDSYS:
         OR      C               ;  OR with C to check if BC=0
         JR      NZ,BUFFIN+039H  ;  Loop until all bytes are read
 
+                                ;Close "CP/M" file:
         CALL    0F03CH          ;  BIOS Send UNTALK to all IEEE-488 devices
-        POP     DE
-        PUSH    DE
+        POP     DE              ;  Pop IEEE-488 primary & secondary addrs
+        PUSH    DE              ;  Push IEEE-488 primary & secondary addrs
         CALL    0F060H          ;  BIOS Close an open file on an IEEE-488 device
-        POP     DE
+        POP     DE              ;  Pop IEEE-488 primary & secondary addrs
 
-        PUSH    DE
-                                ;Open the "K" file with CBM terminal code:
+                                ;Open the "K" file (CBM terminal):
+        PUSH    DE              ;  Push IEEE-488 primary & secondary addrs
         CALL    @L3             ;  Open "K" file
         LD      A,(@L0)         ;  Get current CP/M drive number from @L0
         CALL    0F05AH          ;  BIOS Read the error channel of an IEEE-488 device
@@ -89,10 +93,13 @@ RDSYS:
                                 ;Read the "K" file into buffer at 6000h:
         LD      HL,06000H       ;  HL = base address of buffer for term
         LD      BC,0800H        ;  BC = 2048 bytes in terminal program
-        POP     DE
-        OR      A
-        RET     NZ
-        PUSH    DE
+
+;BUFFIN+066h: (???)
+        POP     DE              ;  Pop IEEE-488 primary & secondary addrs
+        OR      A               ;  Set flags to check CBM DOS error (0=OK)
+        RET     NZ              ;  Return if not OK
+
+        PUSH    DE              ;  Push IEEE-488 primary & secondary addrs
         CALL    0F039H          ;  BIOS Send TALK to an IEEE-488 device
         CALL    0F03FH          ;  BIOS Read byte from an IEEE-488 device
         LD      (HL),A          ;  Save byte read into buffer
@@ -102,12 +109,13 @@ RDSYS:
         OR      C               ;  OR with C to check if BC=0
         JR      NZ,BUFFIN+066H  ;  Loop until all bytes are read
 
-        CALL    0F03CH          ;BIOS Send UNTALK to all IEEE-488 devices
-        POP     DE
-        CALL    0F060H          ;BIOS Close an open file on an IEEE-488 device
-        LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
-        LD      (@L2),A         ;Store CBM DOS error code in @L2
+                                ;Close "K" file:
+        CALL    0F03CH          ;  BIOS Send UNTALK to all IEEE-488 devices
+        POP     DE              ;  Pop IEEE-488 primary & secondary addrs
+        CALL    0F060H          ;  BIOS Close an open file on an IEEE-488 device
+        LD      A,(@L0)         ;  Get current CP/M drive number from @L0
+        CALL    0F05AH          ;  BIOS Read the error channel of an IEEE-488 device
+        LD      (@L2),A         ;  Store CBM DOS error code in @L2
         RET
 
 CREAD:
@@ -290,7 +298,7 @@ SAVESY:
 ;
         LD      A,(HL)
         LD      (@L0),A
-        CALL    0F054H          ;BIOS Get device address for a CP/M drive number
+        CALL    0F054H          ;D = BIOS Get device address for a CP/M drive number
         PUSH    DE
         LD      E,0FH
         LD      HL,@L11
@@ -363,7 +371,7 @@ FORMAT:
 ;
         LD      A,(HL)
         LD      (@L0),A
-        CALL    0F054H          ;BIOS Get device address for a CP/M drive num
+        CALL    0F054H          ;D = BIOS Get device address for a CP/M drive num
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         AND     01H
         ADD     A,030H
@@ -420,8 +428,8 @@ FORMAT:
         CALL    0F048H          ;BIOS Send carriage return to IEEE-488 dev with EOI
         CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        CALL    0F054H          ;BIOS Get device address for a CP/M drive number
-        LD      E,02H
+        CALL    0F054H          ;D = BIOS Get device address for a CP/M drive number
+        LD      E,02H           ;E = secondary address 2
         CALL    0F033H          ;BIOS Send LISTEN to an IEEE-488 device
         LD      HL,04001H
         LD      C,0FFH
