@@ -40,55 +40,68 @@ EXSYS:
         JP      0F075H          ;Perform system init and then run CP/M
 
 RDSYS:
-;Read the CP/M system image from an IEEE-488 drive.
+;Read the "CP/M" and "K" files from an IEEE-488 drive into memory.
+;
+;4000-5BFF  "CP/M"  CCP + BDOS + BIOS Config + BIOS Working Storage
+;6000-67FF  "K"     Terminal program that runs on the CBM computer
 ;
         LD      A,(HL)
         LD      (@L0),A
         CALL    0F054H          ;BIOS Get device address for a CP/M drive number
         LD      E,00H
+
         PUSH    DE
-        CALL    @L1
-        LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
-        LD      (@L2),A         ;Store CBM DOS error code in @L2
-        LD      HL,04000H
-        LD      BC,01C00H
+                                ;Open "CP/M" file with CP/M system image:
+        CALL    @L1             ;  Open "CP/M" file
+        LD      A,(@L0)         ;  Get current CP/M drive number from @L0
+        CALL    0F05AH          ;  BIOS Read the error channel of an IEEE-488 device
+        LD      (@L2),A         ;  Store CBM DOS error code in @L2
+
+                                ;Read "CP/M" file into buffer at 4000h:
+        LD      HL,04000H       ;  HL = base address of buffer for CP/M image
+        LD      BC,01C00H       ;  BC = 7168 bytes in CP/M image
         POP     DE
         OR      A
         RET     NZ
         PUSH    DE
-        CALL    0F039H          ;BIOS Send TALK to an IEEE-488 device
-        CALL    0F03FH          ;BIOS Read byte from an IEEE-488 device
-        LD      (HL),A
-        INC     HL
-        DEC     BC
-        LD      A,B
-        OR      C
-        JR      NZ,BUFFIN+039H
-        CALL    0F03CH          ;BIOS Send UNTALK to all IEEE-488 devices
+        CALL    0F039H          ;  BIOS Send TALK to an IEEE-488 device
+        CALL    0F03FH          ;  BIOS Read byte from an IEEE-488 device
+        LD      (HL),A          ;  Save byte read into buffer
+        INC     HL              ;  Increment buffer pointer
+        DEC     BC              ;  Decrement bytes remaining to read
+        LD      A,B             ;  A = B
+        OR      C               ;  OR with C to check if BC=0
+        JR      NZ,BUFFIN+039H  ;  Loop until all bytes are read
+
+        CALL    0F03CH          ;  BIOS Send UNTALK to all IEEE-488 devices
         POP     DE
         PUSH    DE
-        CALL    0F060H          ;BIOS Close an open file on an IEEE-488 device
+        CALL    0F060H          ;  BIOS Close an open file on an IEEE-488 device
         POP     DE
+
         PUSH    DE
-        CALL    @L3
-        LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
-        LD      (@L2),A         ;Store CBM DOS error code in @L2
-        LD      HL,06000H
-        LD      BC,0800H
+                                ;Open the "K" file with CBM terminal code:
+        CALL    @L3             ;  Open "K" file
+        LD      A,(@L0)         ;  Get current CP/M drive number from @L0
+        CALL    0F05AH          ;  BIOS Read the error channel of an IEEE-488 device
+        LD      (@L2),A         ;  Store CBM DOS error code in @L2
+
+                                ;Read the "K" file into buffer at 6000h:
+        LD      HL,06000H       ;  HL = base address of buffer for term
+        LD      BC,0800H        ;  BC = 2048 bytes in terminal program
         POP     DE
         OR      A
         RET     NZ
         PUSH    DE
-        CALL    0F039H          ;BIOS Send TALK to an IEEE-488 device
-        CALL    0F03FH          ;BIOS Read byte from an IEEE-488 device
-        LD      (HL),A
-        INC     HL
-        DEC     BC
-        LD      A,B
-        OR      C
-        JR      NZ,BUFFIN+066H
+        CALL    0F039H          ;  BIOS Send TALK to an IEEE-488 device
+        CALL    0F03FH          ;  BIOS Read byte from an IEEE-488 device
+        LD      (HL),A          ;  Save byte read into buffer
+        INC     HL              ;  Increment buffer pointer
+        DEC     BC              ;  Decrement bytes remaining to read
+        LD      A,B             ;  A = B
+        OR      C               ;  OR with C to check if BC=0
+        JR      NZ,BUFFIN+066H  ;  Loop until all bytes are read
+
         CALL    0F03CH          ;BIOS Send UNTALK to all IEEE-488 devices
         POP     DE
         CALL    0F060H          ;BIOS Close an open file on an IEEE-488 device
@@ -246,21 +259,31 @@ DSKERR:
 
 
 @L1:
-        LD      C,06H
-        LD      HL,@L7
+;Open "CP/M" file on an IEEE-488 drive
+;
+        LD      C,06H           ;C = 6 chars in string
+        LD      HL,@L7          ;HL = address of "0:CP/M" string
+
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        RRA                     ;01FH   01FH
-        JP      NC,0F05DH       ;BIOS Open a file on an IEEE-488 device
-        LD      HL,@L8
-        JP      0F05DH          ;BIOS Open a file on an IEEE-488 device
+        RRA                     ;Rotate bit 0 (CBM drive number) into carry
+                                ;If CBM drive number 0:
+        JP      NC,0F05DH       ;  BIOS Open a file on an IEEE-488 device
+                                ;If CBM drive number 1:
+        LD      HL,@L8          ;  HL = address of "1:CP/M" string
+        JP      0F05DH          ;  BIOS Open a file on an IEEE-488 device
+
 @L3:
-        LD      C,03H
-        LD      HL,@L9
+;Open "K" file on an IEEE-488 drive
+;
+        LD      C,03H           ;C = 3 chars in string
+        LD      HL,@L9          ;HL = address of "0:K" string
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        RRA                     ;01FH   01FH
-        JP      NC,0F05DH       ;BIOS Open a file on an IEEE-488 device
-        LD      HL,@L10
-        JP      0F05DH          ;BIOS Open a file on an IEEE-488 device
+        RRA                     ;Rotate bit 0 (CBM drive number) into carry
+                                ;If CBM drive number 0:
+        JP      NC,0F05DH       ;  BIOS Open a file on an IEEE-488 device
+                                ;If CBM drive number 1:
+        LD      HL,@L10         ;  HL = address of "1:K" string
+        JP      0F05DH          ;  BIOS Open a file on an IEEE-488 device
 
 SAVESY:
 ;Read the CP/M system image from an IEEE-488 drive.
@@ -285,7 +308,7 @@ SAVESY:
         RET     NZ
         LD      E,01H
         PUSH    DE
-        CALL    @L3
+        CALL    @L3             ;Open "K" file
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A         ;Store CBM DOS error code in @L2
@@ -309,7 +332,7 @@ SAVESY:
         CALL    0F060H          ;BIOS Close an open file on an IEEE-488 device
         POP     DE
         PUSH    DE
-        CALL    @L1
+        CALL    @L1             ;Open "CP/M" file
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A         ;Store CBM DOS error code in @L2
@@ -521,11 +544,15 @@ CFORM:
         LD      D,B             ;P      050H
         CPL                     ;/      02FH
         LD      C,L             ;M      04DH
+
 @L9:
-        JR      NC,BUFFIN+037AH
+;"0:K"
+        JR      NC,BUFFIN+037AH ;0:
         LD      C,E             ;K      04BH
+
 @L10:
-        LD      SP,04B3AH
+;"1:K"
+        LD      SP,04B3AH       ;1:K
 
 @L0:
 ;Current CP/M drive number
