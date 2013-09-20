@@ -7,7 +7,7 @@
         GLOBAL  RDSYS
         GLOBAL  BUFFIN          ;Buffered Console
         GLOBAL  IDISK           ;Initialize an IEEE-488 disk drive
-        GLOBAL  DSKERR
+        GLOBAL  DSKERR          ;Check CBM DOS error and print message(?)
         GLOBAL  FORMAT
         GLOBAL  CREAD
         GLOBAL  CWRITE
@@ -161,48 +161,61 @@ CWRIT3:
         POP     HL              ;a      0E1H
         POP     HL              ;a      0E1H
         JP      @L4
+
 DTYPE:
         LD      A,(HL)          ;~      07EH
-        CALL    0F051H
+        CALL    0F051H          ;BIOS Get drive type for a CP/M drive number
         LD      (HL),C          ;q      071H
         INC     HL              ;#      023H
         LD      (HL),00H
         RET                     ;I      0C9H
 
 IDISK:
-;Initialize an IEEE-488 disk drive.  HL must be loaded with an
-;address that contains a CP/M drive number.
+;Initialize an IEEE-488 disk drive.
+;
+;HL = pointer to a CP/M drive number
 ;
         LD      A,(HL)          ;A = CP/M drive number
         JP      0F078H          ;Initialize an IEEE-488 disk drive
 
 DSKERR:
+;Check CBM DOS error and print message(?)
+;
         LD      A,(@L2)
-        LD      (HL),A          ;w      077H
-        INC     HL              ;#      023H
-        XOR     A               ;/      0AFH
-        LD      (HL),A          ;w      077H
+        LD      (HL),A
+        INC     HL
+
+        XOR     A               ;A = 0
+        LD      (HL),A
+
         LD      A,(@L2)
-        OR      A               ;7      0B7H
-        RET     Z               ;H      0C8H
-        LD      DE,@L5
-        LD      C,09H
-        CALL    05H
-        LD      HL,0EAC0H
-        LD      E,(HL)          ;^      05EH
-        PUSH    HL              ;e      0E5H
-        LD      C,02H
-        CALL    05H
-        POP     HL              ;a      0E1H
-        INC     HL              ;#      023H
-        LD      A,(HL)          ;~      07EH
-        CP      0DH
-        JR      NZ,BUFFIN+0113H
-        LD      DE,@L6
-        LD      C,09H
-        CALL    05H
-        RET                     ;I      0C9H
+        OR      A               ;Set flags
+        RET     Z               ;Return if no error (0=OK)
+
+        LD      DE,@L5          ;DE = address of "Disk Error" string
+        LD      C,09H           ;C = Output String
+        CALL    05H             ;BDOS System Call
+
+        LD      HL,0EAC0H       ;HL = address of last CBM DOS error message
+;Loop:                          ;TODO: label here
+        LD      E,(HL)          ;E = read char from error message
+        PUSH    HL              ;Save HL
+        LD      C,02H           ;C = Console Output
+        CALL    05H             ;BDOS System Call
+        POP     HL              ;Recall HL
+
+        INC     HL              ;Move to next char in error message
+        LD      A,(HL)          ;A = read char from error message
+        CP      0DH             ;Is it a carriage return?
+        JR      NZ,BUFFIN+0113H ;  No: Loop to continue printing the msg
+
+        LD      DE,@L6          ;DE = address of CR+LF+"$"
+        LD      C,09H           ;C = Output String
+        CALL    05H             ;BDOS System Call
+        RET
+
 @L5:
+;CR,LF,"Disk Error: ",CR,LF,"$"
         DEC     C               ;CR     0DH
         LD      A,(BC)          ;LF     0AH
         LD      B,H             ;D      044H
@@ -217,9 +230,12 @@ DSKERR:
         JR      NZ,BUFFIN+0172H
         JR      NZ,BUFFIN+015EH
 @L6:
+;CR,LF,"$"
         DEC     C               ;CR     0DH
         LD      A,(BC)          ;LF     0AH
         INC     H               ;$      024H
+
+
 @L1:
         LD      C,06H
         LD      HL,@L7
