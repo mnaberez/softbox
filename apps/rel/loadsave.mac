@@ -245,26 +245,10 @@ DSKERR:
         RET
 
 @L5:
-;0DH,LF,"Disk Error: ",CR,LF,"$"
-        DEC     C               ;CR     0DH
-        LD      A,(BC)          ;LF     0AH
-        LD      B,H             ;D      044H
-        LD      L,C             ;i      069H
-        LD      (HL),E          ;s      073H
-        LD      L,E             ;k      06BH
-        JR      NZ,BUFFIN+0197H
-        LD      (HL),D          ;r      072H
-        LD      (HL),D          ;r      072H
-        LD      L,A             ;o      06FH
-        LD      (HL),D          ;r      072H
-        JR      NZ,BUFFIN+0172H
-        JR      NZ,BUFFIN+015EH
-@L6:
-;CR,LF,"$"
-        DEC     C               ;CR     0DH
-        LD      A,(BC)          ;LF     0AH
-        INC     H               ;$      024H
+        DB 0DH,0AH,"Disk error : $"
 
+@L6:
+        DB 0DH,0AH,"$"
 
 @L1:
 ;Open "CP/M" file on an IEEE-488 drive
