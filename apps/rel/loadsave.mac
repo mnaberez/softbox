@@ -383,7 +383,7 @@ FORMAT:
                                 ;  D contains IEEE-488 primary address
         LD      E,0FH           ;  E = file number (15 = command channel)
         LD      C,014H          ;  C = 20 characters in string
-        LD      HL,@L14         ;  HL = address of "N0:CP/M V2.2 DISK,XX"
+        LD      HL,@L13         ;  HL = address of "N0:CP/M V2.2 DISK,XX"
         CALL    0F05DH          ;  BIOS Open a file on an IEEE-488 device
 
                                 ;Check result of format command:
@@ -514,7 +514,10 @@ CFORM:
 
 @L11:
         DB 'S0:*'
+@L12:
         DB 'S1:*'
+
+@L7:
         DB '0:CP/M'
 @L8:
         DB '1:CP/M'
@@ -532,9 +535,5 @@ CFORM:
 @L2:
 ;Last CBM DOS error code
         ORG     0346H
-
-@L14    EQU     BUFFIN+0305H
-@L12    EQU     BUFFIN+032EH
-@L7     EQU     BUFFIN+0332H
 ;
         END
