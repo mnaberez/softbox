@@ -61,20 +61,20 @@ RDSYS:
         LD      HL,04000H       ;  HL = base address of buffer for CP/M image
         LD      BC,01C00H       ;  BC = 7168 bytes in CP/M image
 
-;BUFFIN+039H: (???)
         POP     DE              ;  Pop IEEE-488 primary & secondary addrs
         OR      A               ;  Set flags to check CBM DOS error (0=OK)
         RET     NZ              ;  Return if not OK
 
         PUSH    DE              ;  Push IEEE-488 primary & secondary addrs
         CALL    0F039H          ;  BIOS Send TALK to an IEEE-488 device
+@L23:
         CALL    0F03FH          ;  BIOS Read byte from an IEEE-488 device
         LD      (HL),A          ;  Save byte read into buffer
         INC     HL              ;  Increment buffer pointer
         DEC     BC              ;  Decrement bytes remaining to read
         LD      A,B             ;  A = B
         OR      C               ;  OR with C to check if BC=0
-        JR      NZ,BUFFIN+039H  ;  Loop until all bytes are read
+        JR      NZ,@L23         ;  Loop until all bytes are read
 
                                 ;Close "CP/M" file:
         CALL    0F03CH          ;  BIOS Send UNTALK to all IEEE-488 devices
@@ -94,20 +94,20 @@ RDSYS:
         LD      HL,06000H       ;  HL = base address of buffer for term
         LD      BC,0800H        ;  BC = 2048 bytes in terminal program
 
-;BUFFIN+066h: (???)
         POP     DE              ;  Pop IEEE-488 primary & secondary addrs
         OR      A               ;  Set flags to check CBM DOS error (0=OK)
         RET     NZ              ;  Return if not OK
 
         PUSH    DE              ;  Push IEEE-488 primary & secondary addrs
         CALL    0F039H          ;  BIOS Send TALK to an IEEE-488 device
+@L24:
         CALL    0F03FH          ;  BIOS Read byte from an IEEE-488 device
         LD      (HL),A          ;  Save byte read into buffer
         INC     HL              ;  Increment buffer pointer
         DEC     BC              ;  Decrement bytes remaining to read
         LD      A,B             ;  A = B
         OR      C               ;  OR with C to check if BC=0
-        JR      NZ,BUFFIN+066H  ;  Loop until all bytes are read
+        JR      NZ,@L24         ;  Loop until all bytes are read
 
                                 ;Close "K" file:
         CALL    0F03CH          ;  BIOS Send UNTALK to all IEEE-488 devices
@@ -227,7 +227,7 @@ DSKERR:
         CALL    05H             ;BDOS System Call
 
         LD      HL,0EAC0H       ;HL = address of last CBM DOS error message
-;BUFFIN+0113H (???)
+@L25:
         LD      E,(HL)          ;E = read char from error message
         PUSH    HL              ;Save HL
         LD      C,02H           ;C = Console Output
@@ -237,7 +237,7 @@ DSKERR:
         INC     HL              ;Move to next char in error message
         LD      A,(HL)          ;A = read char from error message
         CP      0DH             ;Is it a carriage return?
-        JR      NZ,BUFFIN+0113H ;  No: Loop to continue printing the msg
+        JR      NZ,@L25         ;  No: Loop to continue printing the msg
 
         LD      DE,@L6          ;DE = address of CR+LF+"$"
         LD      C,09H           ;C = Output String
@@ -288,8 +288,9 @@ SAVESY:
         LD      HL,@L11         ;HL = address of "S0:*" string
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         RRA
-        JR      NC,BUFFIN+0177H
+        JR      NC,@L26
         LD      HL,@L12         ;HL = address of "S1:*" string
+@L26:
         LD      C,04H           ;C = 4 chars in string
         CALL    0F05DH          ;BIOS Open a file on an IEEE-488 device
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
@@ -311,13 +312,14 @@ SAVESY:
         CALL    0F033H          ;BIOS Send LISTEN to an IEEE-488 device
         LD      HL,06000H
         LD      BC,0800H
+@L27:
         LD      A,(HL)
         CALL    0F042H          ;BIOS Send byte to an IEEE-488 device
         INC     HL
         DEC     BC
         LD      A,B
         OR      C
-        JR      NZ,BUFFIN+01A5H
+        JR      NZ,@L27
         CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
         POP     DE
         PUSH    DE
@@ -335,13 +337,14 @@ SAVESY:
         CALL    0F033H          ;BIOS Send LISTEN to an IEEE-488 device
         LD      HL,04000H
         LD      BC,01C00H
+@L28:
         LD      A,(HL)
         CALL    0F042H          ;BIOS Send byte to an IEEE-488 device
         INC     HL
         DEC     BC
         LD      A,B
         OR      C
-        JR      NZ,BUFFIN+01D2H
+        JR      NZ,@L28
         CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
         POP     DE
         CALL    0F060H          ;BIOS Close an open file on an IEEE-488 device
@@ -450,12 +453,14 @@ CFORM:
         LD      C,(HL)
         CALL    0F01BH          ;BIOS Select disk drive
         LD      HL,080H
+@L29:
         LD      (HL),0E5H
         INC     L
-        JR      NZ,BUFFIN+02B8H
+        JR      NZ,@L29
         LD      BC,02H
         CALL    0F01EH          ;BIOS Set track number
         LD      BC,00H
+@L30:
         PUSH    BC
         CALL    0F021H          ;BIOS Set sector number
         CALL    0F02AH          ;BIOS Write selected sector
@@ -465,7 +470,7 @@ CFORM:
         INC     BC
         LD      A,C
         CP      040H
-        JR      NZ,BUFFIN+02C6H
+        JR      NZ,@L30
         RET
 @L4:
         LD      DE,@L22         ;DE = address of "Hit any key to"
