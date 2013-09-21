@@ -377,7 +377,7 @@ FORMAT:
         LD      A,(@L0)         ;  Get current CP/M drive number from @L0
         AND     01H             ;  Mask off all except bit 1 (CBM drive num)
         ADD     A,030H          ;  Convert it to ASCII
-        LD      (@L13),A        ;  Save it into format command ("N0:CP/M...")
+        LD      (@L13+1),A      ;  Save it into format command ("N0:CP/M...")
 
                                 ;Send format command:
                                 ;  D contains IEEE-488 primary address
@@ -496,10 +496,9 @@ CFORM:
 
 @L21:
         DB 'U2 2 '
-        DB 'N'
 
 @L13:
-        DB '0:CP/M V2.2 DISK,XX'
+        DB 'N0:CP/M V2.2 DISK,XX'
 
 @L20:
         DB 'B-P 2 1'
