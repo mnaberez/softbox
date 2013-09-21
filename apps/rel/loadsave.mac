@@ -502,14 +502,12 @@ CFORM:
         DB '0:CP/M V2.2 DISK,XX'
 
 @L20:
-        DB 'B-P'
-        JR      NZ,BUFFIN+0350H
-        JR      NZ,BUFFIN+0351H
+        DB 'B-P 2 1'
+
 @L19:
-        DB 'M-W'
-        NOP                     ;NUL    00H
-        INC     DE              ;013H   013H
-        LD      BC,03223H
+        DB 'M-W',00,13H,01
+        DB '#2'
+
 @L16:
         ORG     0329H
 @L15:
