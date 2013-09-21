@@ -245,7 +245,7 @@ DSKERR:
         RET
 
 @L5:
-;CR,LF,"Disk Error: ",CR,LF,"$"
+;0DH,LF,"Disk Error: ",CR,LF,"$"
         DEC     C               ;CR     0DH
         LD      A,(BC)          ;LF     0AH
         LD      B,H             ;D      044H
@@ -301,12 +301,12 @@ SAVESY:
         CALL    0F054H          ;D = BIOS Get device address for a CP/M drive number
         PUSH    DE
         LD      E,0FH
-        LD      HL,@L11
+        LD      HL,@L11         ;HL = address of "S0:*" string
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         RRA
         JR      NC,BUFFIN+0177H
-        LD      HL,@L12
-        LD      C,04H
+        LD      HL,@L12         ;HL = address of "S1:*" string
+        LD      C,04H           ;C = 4 chars in string
         CALL    0F05DH          ;BIOS Open a file on an IEEE-488 device
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
@@ -382,7 +382,7 @@ FORMAT:
                                 ;Send format command:
                                 ;  D contains IEEE-488 primary address
         LD      E,0FH           ;  E = file number (15 = command channel)
-        LD      C,014H          ;  C = 20 characters in string
+        LD      C,014H          ;  C = 20 chars in string
         LD      HL,@L13         ;  HL = address of "N0:CP/M V2.2 DISK,XX"
         CALL    0F05DH          ;  BIOS Open a file on an IEEE-488 device
 
@@ -421,16 +421,16 @@ FORMAT:
         JP      P,@L18
         RET
 @L17:
-        LD      HL,@L19
-        LD      C,06H
+        LD      HL,@L19         ;HL = address of "M-W..." string
+        LD      C,06H           ;C = 6 chars in string
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F057H          ;BIOS Open the command channel on IEEE-488 device
         CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
         LD      A,(04000H)
         CALL    0F045H          ;BIOS Send byte to IEEE-488 device with EOI asserted
         CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
-        LD      HL,@L20
-        LD      C,07H
+        LD      HL,@L20         ;HL = address of "B-P 2 1" string
+        LD      C,07H           ;C = 7 chars in string
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F057H          ;BIOS Open the command channel on IEEE-488 device
         CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
@@ -446,8 +446,8 @@ FORMAT:
         CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F057H          ;BIOS Open the command channel on IEEE-488 device
-        LD      HL,@L21
-        LD      C,05H
+        LD      HL,@L21         ;HL = address of "U2 2 " string
+        LD      C,05H           ;C = 5 chars in string
         CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         AND     01H
