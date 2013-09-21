@@ -499,31 +499,14 @@ CFORM:
         DB 'N'
 
 @L13:
-        JR      NC,BUFFIN+0342H ;0:
-        LD      B,E             ;C      043H
-        LD      D,B             ;P      050H
-        CPL                     ;/      02FH
-        LD      C,L             ;M      04DH
-        JR      NZ,BUFFIN+0364H
-        LD      (0322EH),A
-        JR      NZ,BUFFIN+0357H
-        LD      C,C             ;I      049H
-        LD      D,E             ;S      053H
-        LD      C,E             ;K      04BH
-        INC     L               ;,      02CH
-        LD      E,B             ;X      058H
-        LD      E,B             ;X      058H
+        DB '0:CP/M V2.2 DISK,XX'
+
 @L20:
-        LD      B,D             ;B      042H
-        DEC     L               ;-      02DH
-        LD      D,B             ;P      050H
+        DB 'B-P'
         JR      NZ,BUFFIN+0350H
         JR      NZ,BUFFIN+0351H
 @L19:
-;"M-W"
-        LD      C,L             ;M      04DH
-        DEC     L               ;-      02DH
-        LD      D,A             ;W      057H
+        DB 'M-W'
         NOP                     ;NUL    00H
         INC     DE              ;013H   013H
         LD      BC,03223H
