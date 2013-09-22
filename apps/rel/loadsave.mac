@@ -213,8 +213,8 @@ DSKERR:
 ;
         LD      A,(@L2)
         LD      (HL),A
-        INC     HL
 
+        INC     HL
         XOR     A               ;A = 0
         LD      (HL),A
 
@@ -287,9 +287,11 @@ SAVESY:
         LD      E,0FH
         LD      HL,@L11         ;HL = address of "S0:*" string
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        RRA
-        JR      NC,@L26
-        LD      HL,@L12         ;HL = address of "S1:*" string
+        RRA                     ;Rotate bit 0 (CBM drive number) into carry
+                                ;If CBM drive number 0:
+        JR      NC,@L26         ;  Jump to keep "S0:*" string
+                                ;If CBM drive number 1:
+        LD      HL,@L12         ;  HL = address of "S1:*" string
 @L26:
         LD      C,04H           ;C = 4 chars in string
         CALL    0F05DH          ;BIOS Open a file on an IEEE-488 device
@@ -437,8 +439,8 @@ FORMAT:
         LD      C,05H           ;C = 5 chars in string
         CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        AND     01H
-        ADD     A,030H
+        AND     01H             ;Mask off all except bit 1 (CBM drive num)
+        ADD     A,030H          ;Convert it to ASCII
         CALL    0F042H          ;BIOS Send byte to an IEEE-488 device
         LD      A,(@L16)
         CALL    0F04EH          ;BIOS Send number as decimal string to IEEE dev
