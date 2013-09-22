@@ -134,8 +134,8 @@ CREAD1:
         PUSH    BC
         PUSH    DE
         CALL    0F027H          ;BIOS Read selected sector
-        OR      A
-        JR      NZ,CWRIT3
+        OR      A               ;Set flags to check CP/M error (0=OK)
+        JR      NZ,CWRIT3       ;Jump if not OK
         POP     DE
         LD      BC,080H
         LD      HL,080H
@@ -171,8 +171,8 @@ CWRIT1:
         LDIR                    ;Copy BC bytes from (HL) to (DE)
         PUSH    HL
         CALL    0F02AH          ;BIOS Write selected sector
-        OR      A
-        JR      NZ,CWRIT3
+        OR      A               ;Set flags to check CP/M error (0=OK)
+        JR      NZ,CWRIT3       ;Jump if not OK
         POP     HL
         POP     BC
         INC     C
@@ -467,8 +467,8 @@ CFORM:
         CALL    0F021H          ;BIOS Set sector number
         CALL    0F02AH          ;BIOS Write selected sector
         POP     BC
-        OR      A
-        JP      NZ,@L4
+        OR      A               ;Set flags to check CP/M error (0=OK)
+        JP      NZ,@L4          ;Jump if not OK
         INC     BC
         LD      A,C
         CP      040H
