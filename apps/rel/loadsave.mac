@@ -155,35 +155,48 @@ CREAD1:
 CWRITE:
 ;Write CP/M image to a Corvus drive.
 ;
-        LD      C,(HL)
+        LD      C,(HL)          ;C = CP/M drive number
         CALL    0F01BH          ;BIOS Select disk drive
-        LD      HL,04000H
-        LD      BC,00H
+        LD      HL,04000H       ;HL = start address of CP/M image buffer
+        LD      BC,00H          ;BC = track 0
+
 CWRIT2:
+;Track loop
         CALL    0F01EH          ;BIOS Set track number
-        PUSH    BC
-        LD      BC,00H
+        PUSH    BC              ;Push track number
+        LD      BC,00H          ;BC = sector 0
+
 CWRIT1:
+;Sector loop
         CALL    0F021H          ;BIOS Set sector number
-        PUSH    BC
-        LD      BC,080H
-        LD      DE,080H
-        LDIR                    ;Copy BC bytes from (HL) to (DE)
-        PUSH    HL
-        CALL    0F02AH          ;BIOS Write selected sector
-        OR      A               ;Set flags to check CP/M error (0=OK)
-        JR      NZ,CWRIT3       ;Jump if not OK
-        POP     HL
-        POP     BC
-        INC     C
-        LD      A,C
-        CP      040H
-        JR      NZ,CWRIT1
-        POP     BC
-        INC     C
-        LD      A,C
-        CP      02H
-        JR      NZ,CWRIT2
+        PUSH    BC              ;Push sector number
+
+                                ;Copy data for oen sector into DMA buffer:
+                                ;  HL contains pointer to CP/M image
+        LD      BC,080H         ;  BC = 128 bytes to copy (one sector)
+        LD      DE,080H         ;  DE = CP/M standard DMA buffer area
+        LDIR                    ;  Copy BC bytes from (HL) to (DE)
+
+                                ;Write the sector to the Corvus:
+        PUSH    HL              ;  Push buffer pointer
+        CALL    0F02AH          ;  BIOS Write selected sector
+        OR      A               ;  Set flags to check CP/M error (0=OK)
+        JR      NZ,CWRIT3       ;  Jump if not OK
+        POP     HL              ;  Pop buffer pointer
+
+                                ;Increment to next sector:
+        POP     BC              ;  Pop sector number
+        INC     C               ;  Increment to next sector
+        LD      A,C             ;  A = sector number
+        CP      040H            ;  Wrote all 64 sectors on the track?
+        JR      NZ,CWRIT1       ;    No: loop to do next sector
+
+                                ;Increment to next track:
+        POP     BC              ;  Pop track number
+        INC     C               ;  Increment to next track number
+        LD      A,C             ;  A = track number
+        CP      02H             ;  Wrote 2 tracks?
+        JR      NZ,CWRIT2       ;    No: loop to do next track
         RET
 
 CWRIT3:
