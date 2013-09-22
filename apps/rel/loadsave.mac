@@ -62,7 +62,7 @@ RDSYS:
         LD      BC,01C00H       ;  BC = 7168 bytes in CP/M image
 
         POP     DE              ;  Pop IEEE-488 primary & secondary addrs
-        OR      A               ;  Set flags to check CBM DOS error (0=OK)
+        OR      A               ;  Set flags to check error (0=OK)
         RET     NZ              ;  Return if not OK
 
         PUSH    DE              ;  Push IEEE-488 primary & secondary addrs
@@ -219,8 +219,8 @@ DSKERR:
         LD      (HL),A
 
         LD      A,(@L2)
-        OR      A               ;Set flags
-        RET     Z               ;Return if no error (0=OK)
+        OR      A               ;Set flags to check CBM DOS error (0=OK)
+        RET     Z               ;Return if OK
 
         LD      DE,@L5          ;DE = address of "Disk Error" string
         LD      C,09H           ;C = Output String
@@ -299,8 +299,8 @@ SAVESY:
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A         ;Store CBM DOS error code in @L2
         POP     DE
-        CP      01H
-        RET     NZ
+        CP      01H             ;CBM DOS error code = 1 file scratched?
+        RET     NZ              ;  No: something went wrong, return on error.
         LD      E,01H
         PUSH    DE
         CALL    @L3             ;Open "K" file
@@ -308,8 +308,8 @@ SAVESY:
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A         ;Store CBM DOS error code in @L2
         POP     DE
-        OR      A
-        RET     NZ
+        OR      A               ;Set flags to check CBM DOS error (0=OK)
+        RET     NZ              ;Return if not OK
         PUSH    DE
         CALL    0F033H          ;BIOS Send LISTEN to an IEEE-488 device
         LD      HL,06000H
@@ -379,7 +379,7 @@ FORMAT:
         LD      A,(@L0)         ;  Get current CP/M drive number from @L0
         CALL    0F05AH          ;  BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A         ;  Store CBM DOS error code in @L2
-        OR      A               ;  Set flags to check error (0=OK)
+        OR      A               ;  Set flags to check CBM DOS error (0=OK)
         RET     NZ              ;  Return if not OK
 
                                 ;Initialize the drive:
@@ -402,8 +402,8 @@ FORMAT:
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
                                 ;  Returns CBM DOS error code in A (0=OK)
         LD      (@L2),A         ;Store CBM DOS error code in @L2
-        OR      A               ;Set flags
-        RET     NZ              ;Return if an error occurred
+        OR      A               ;Set flags to CBM DOS check error (0=OK)
+        RET     NZ              ;Return if not OK
 
         LD      HL,@L15
         DEC     (HL)
