@@ -485,28 +485,43 @@ FORMAT:
 CFORM:
 ;Format a Corvus drive for Softbox use.
 ;
-        LD      C,(HL)
+;This routine affects only track 2.  The first two tracks (0 and 1) are
+;reserved for the SoftBox boot data.  Track 2 is the first usable track
+;and holds the CP/M directory.  It will be filled with E5.
+;
+;HL = pointer to CP/M drive number of Corvus
+;
+        LD      C,(HL)          ;C = CP/M drive number
         CALL    0F01BH          ;BIOS Select disk drive
-        LD      HL,080H
-@L29:
-        LD      (HL),0E5H
-        INC     L
-        JR      NZ,@L29
-        LD      BC,02H
-        CALL    0F01EH          ;BIOS Set track number
-        LD      BC,00H
-@L30:
-        PUSH    BC
-        CALL    0F021H          ;BIOS Set sector number
-        CALL    0F02AH          ;BIOS Write selected sector
-        POP     BC
-        OR      A               ;Set flags to check CP/M error (0=OK)
-        JP      NZ,@L4          ;Jump if not OK
-        INC     BC
-        LD      A,C
-        CP      040H
-        JR      NZ,@L30
+
+                                ;Fill DMA buffer with E5 ("unused"):
+        LD      HL,080H         ;  HL = CP/M standard DMA buffer area
+@L29:                           ;
+        LD      (HL),0E5H       ;  Store E5 ("unused") in DMA
+        INC     L               ;  Increment DMA pointer
+        JR      NZ,@L29         ;  Loop until DMA is filled (0080-00FF)
+
+                                ;Set track 2 (first track after reserved):
+        LD      BC,02H          ;  BC = track 2
+        CALL    0F01EH          ;  BIOS Set track number
+
+                                ;Fill all sectors on track 2 with E5:
+        LD      BC,00H          ;  BC = sector number
+@L30:                           ;
+        PUSH    BC              ;  Push sector number
+        CALL    0F021H          ;  BIOS Set sector number
+        CALL    0F02AH          ;  BIOS Write selected sector
+        POP     BC              ;  Pop sector number
+                                ;
+        OR      A               ;  Set flags to check CP/M error (0=OK)
+        JP      NZ,@L4          ;  Jump if not OK
+                                ;
+        INC     BC              ;  Increment to next sector
+        LD      A,C             ;  A = sector number
+        CP      040H            ;  All 64 sectors filled?
+        JR      NZ,@L30         ;    No: loop to do next sector
         RET
+
 @L4:
 ;Display "Hit any key to abort" message, wait for a key, and then return.
 ;
