@@ -15,7 +15,7 @@
         GLOBAL  DTYPE
         GLOBAL  CREAD2
         GLOBAL  CREAD1
-        GLOBAL  CWRIT3
+        GLOBAL  CWRIT3          ;Error handler for CREAD and CWRITE
         GLOBAL  CWRIT2
         GLOBAL  CWRIT1
 
@@ -121,21 +121,23 @@ RDSYS:
 CREAD:
 ;Read CP/M image from a Corvus drive.
 ;
+;HL = pointer to CP/M drive number of Corvus
+;
         LD      C,(HL)
         CALL    0F01BH          ;BIOS Select disk drive
         LD      DE,04000H
         LD      BC,00H
 CREAD2:
         CALL    0F01EH          ;BIOS Set track number
-        PUSH    BC
+        PUSH    BC              ;Push track number
         LD      BC,00H
 CREAD1:
         CALL    0F021H          ;BIOS Set sector number
-        PUSH    BC
-        PUSH    DE
+        PUSH    BC              ;Push sector number
+        PUSH    DE              ;Push buffer pointer
         CALL    0F027H          ;BIOS Read selected sector
         OR      A               ;Set flags to check CP/M error (0=OK)
-        JR      NZ,CWRIT3       ;Jump if not OK
+        JR      NZ,CWRIT3       ;Jump to unrecoverable error if not OK
         POP     DE
         LD      BC,080H
         LD      HL,080H
@@ -154,6 +156,8 @@ CREAD1:
 
 CWRITE:
 ;Write CP/M image to a Corvus drive.
+;
+;HL = pointer to CP/M drive number of Corvus
 ;
         LD      C,(HL)          ;C = CP/M drive number
         CALL    0F01BH          ;BIOS Select disk drive
@@ -181,7 +185,7 @@ CWRIT1:
         PUSH    HL              ;  Push buffer pointer
         CALL    0F02AH          ;  BIOS Write selected sector
         OR      A               ;  Set flags to check CP/M error (0=OK)
-        JR      NZ,CWRIT3       ;  Jump if not OK
+        JR      NZ,CWRIT3       ;  Jump to unrecoverable error if not OK
         POP     HL              ;  Pop buffer pointer
 
                                 ;Increment to next sector:
@@ -200,10 +204,14 @@ CWRIT1:
         RET
 
 CWRIT3:
-        POP     HL              ;a      0E1H
-        POP     HL              ;a      0E1H
-        POP     HL              ;a      0E1H
-        JP      @L4
+;An error occurred during CREAD or CWRITE.  Clean up the stack,
+;then jump to the "Hit any key to abort" message (the message is
+;not a choice, it will always abort).
+;
+        POP     HL              ;Pop buffer pointer
+        POP     HL              ;Pop sector number
+        POP     HL              ;Pop track number
+        JP      @L4             ;Jump to "Hit any key to abort"
 
 DTYPE:
         LD      A,(HL)          ;~      07EH
@@ -488,12 +496,14 @@ CFORM:
         JR      NZ,@L30
         RET
 @L4:
+;Display "Hit any key to abort" message, wait for a key, and then return.
+;
         LD      DE,@L22         ;DE = address of "Hit any key to"
         LD      C,09H           ;C = Output String
         CALL    05H             ;BDOS System Call
 
         LD      C,01H           ;C = Console Input
-        JP      05H             ;BDOS System Call
+        JP      05H             ;Jump out to BDOS System Call.
 
 @L22:
         DB 0DH,0AH,'Hit any key to abort : $'
