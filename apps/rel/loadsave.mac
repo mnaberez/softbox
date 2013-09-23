@@ -426,9 +426,9 @@ FORMAT:
         LDIR                    ;Copy BC bytes from (HL) to (DE)
 
         LD      A,07H
-        LD      (@L15),A
+        LD      (@L15),A        ;CBM DOS sector
         LD      A,01H
-        LD      (@L16),A
+        LD      (@L16),A        ;CBM DOS track
 @L18:
         CALL    @L17
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
@@ -438,7 +438,7 @@ FORMAT:
         OR      A               ;Set flags to CBM DOS check error (0=OK)
         RET     NZ              ;Return if not OK
 
-        LD      HL,@L15
+        LD      HL,@L15         ;CBM DOS sector
         DEC     (HL)
         JP      P,@L18
         RET
@@ -451,6 +451,7 @@ FORMAT:
         LD      A,(04000H)
         CALL    0F045H          ;BIOS Send byte to IEEE-488 device with EOI asserted
         CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
+
         LD      HL,@L20         ;HL = address of "B-P 2 1" string
         LD      C,07H           ;C = 7 chars in string
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
@@ -462,6 +463,7 @@ FORMAT:
         CALL    0F054H          ;D = BIOS Get device address for a CP/M drive number
         LD      E,02H           ;E = secondary address 2
         CALL    0F033H          ;BIOS Send LISTEN to an IEEE-488 device
+
         LD      HL,04001H
         LD      C,0FFH
         CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
@@ -471,14 +473,18 @@ FORMAT:
         LD      HL,@L21         ;HL = address of "U2 2 " string
         LD      C,05H           ;C = 5 chars in string
         CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
+
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         AND     01H             ;Mask off all except bit 1 (CBM drive num)
         ADD     A,030H          ;Convert it to ASCII
         CALL    0F042H          ;BIOS Send byte to an IEEE-488 device
-        LD      A,(@L16)
+
+        LD      A,(@L16)        ;CBM DOS track
         CALL    0F04EH          ;BIOS Send number as decimal string to IEEE dev
-        LD      A,(@L15)
+
+        LD      A,(@L15)        ;CBM DOS sector
         CALL    0F04EH          ;BIOS Send number as decimal string to IEEE-488 dev
+
         CALL    0F048H          ;BIOS Send carriage return to IEEE-488 dev with EOI
         JP      0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
 
@@ -549,8 +555,11 @@ CFORM:
         DB '#2'
 
 @L16:
+;CBM DOS track
         ORG     0329H
+
 @L15:
+;CBM DOS sector
         ORG     032AH
 
 @L11:
