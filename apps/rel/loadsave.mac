@@ -13,11 +13,11 @@
         GLOBAL  CWRITE          ;Write CP/M image to a Corvus drive
         GLOBAL  CFORM           ;Format a Corvus drive for Softbox use
         GLOBAL  DTYPE
-        GLOBAL  CREAD2
-        GLOBAL  CREAD1
+        GLOBAL  CREAD2          ;Track loop for CREAD
+        GLOBAL  CREAD1          ;Sector loop for CREAD
         GLOBAL  CWRIT3          ;Error handler for CREAD and CWRITE
-        GLOBAL  CWRIT2
-        GLOBAL  CWRIT1
+        GLOBAL  CWRIT2          ;Track loop for CWRITE
+        GLOBAL  CWRIT1          ;Sector loop for CWRITE
 
 BUFFIN:
 ;Buffered Console Input.  Caller must store buffer size at 80h.  On
@@ -127,11 +127,15 @@ CREAD:
         CALL    0F01BH          ;BIOS Select disk drive
         LD      DE,04000H
         LD      BC,00H
+
 CREAD2:
+;Track loop
         CALL    0F01EH          ;BIOS Set track number
         PUSH    BC              ;Push track number
         LD      BC,00H
+
 CREAD1:
+;Sector loop
         CALL    0F021H          ;BIOS Set sector number
         PUSH    BC              ;Push sector number
         PUSH    DE              ;Push buffer pointer
