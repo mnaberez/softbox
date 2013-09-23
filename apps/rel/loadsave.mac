@@ -556,11 +556,11 @@ CFORM:
 
 @L16:
 ;CBM DOS track
-        ORG     0329H
+        DS 1
 
 @L15:
 ;CBM DOS sector
-        ORG     032AH
+        DS 1
 
 @L11:
         DB 'S0:*'
@@ -580,10 +580,10 @@ CFORM:
 
 @L0:
 ;Current CP/M drive number
-        ORG     0345H
+        DS 1
 
 @L2:
 ;Last CBM DOS error code
-        ORG     0346H
+        DS 1
 ;
         END
