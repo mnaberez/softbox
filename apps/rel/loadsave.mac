@@ -391,6 +391,16 @@ SAVESY:
 FORMAT:
 ;Format an IEEE-488 drive for SoftBox use.
 ;
+;This routine first formats the disk with the CBM DOS.  It then fills the
+;first 8 CBM DOS sectors with E5, which erases the CP/M directory.
+;
+;There are 64 directory entries * 32 bytes/entry = 2048 bytes.  Each CBM
+;DOS sector is 256 bytes, so the CP/M directory occupies 8 CBM DOS sectors.
+;
+;TODO: The 4040 and 8050 drives have 64 directory entries in their DPHs but
+;      the 8250 has 128 entries.  We should write E5 to the first 16 CBM DOS
+;      sectors instead so the 8250 directory is cleared.
+;
         LD      A,(HL)
         LD      (@L0),A
         CALL    0F054H          ;D = BIOS Get device address for a CP/M drive num
