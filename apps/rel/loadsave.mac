@@ -491,11 +491,15 @@ FORMAT:
 CFORM:
 ;Format a Corvus drive for Softbox use.
 ;
-;This routine affects only track 2.  The first two tracks (0 and 1) are
-;reserved for the SoftBox boot data.  Track 2 is the first usable track
-;and holds the CP/M directory.  It will be filled with E5.
-;
 ;HL = pointer to CP/M drive number of Corvus
+;
+;This routine fills all of track 2 with E5, which erases the CP/M directory.
+;No other areas of the disk are affected.
+;
+;The first two tracks (tracks 0 and 1) are reserved for SoftBox boot data.
+;Track 2 is dedicated to the CP/M directory.  There are 256 directory
+;entries * 32 bytes/entry = 8192 bytes, which is the exact size of the
+;track (64 sectors * 128 bytes/sector = 8192 bytes).
 ;
         LD      C,(HL)          ;C = CP/M drive number
         CALL    0F01BH          ;BIOS Select disk drive
