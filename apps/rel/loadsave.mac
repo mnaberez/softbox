@@ -7,12 +7,12 @@
         GLOBAL  RDSYS           ;Read CP/M image from an IEEE-488 drive
         GLOBAL  BUFFIN          ;Buffered Console Input
         GLOBAL  IDISK           ;Initialize an IEEE-488 disk drive
-        GLOBAL  DSKERR          ;Check CBM DOS error and print message(?)
+        GLOBAL  DSKERR          ;Check CBM DOS error, print error if not OK
         GLOBAL  FORMAT          ;Format an IEEE-488 drive for SoftBox use
         GLOBAL  CREAD           ;Read CP/M image from a Corvus drive
         GLOBAL  CWRITE          ;Write CP/M image to a Corvus drive
-        GLOBAL  CFORM           ;Format a Corvus drive for Softbox use
-        GLOBAL  DTYPE
+        GLOBAL  CFORM           ;Format a Corvus drive for SoftBox use
+        GLOBAL  DTYPE           ;Get the drive type for a CP/M drive number
         GLOBAL  CREAD2          ;Track loop for CREAD
         GLOBAL  CREAD1          ;Sector loop for CREAD
         GLOBAL  CWRIT3          ;Error handler for CREAD and CWRITE
@@ -226,12 +226,21 @@ CWRIT3:
         JP      @L4             ;Jump to "Hit any key to abort"
 
 DTYPE:
-        LD      A,(HL)          ;~      07EH
+;Get the drive type for a CP/M drive number.
+;
+;HL = pointer to a CP/M drive number.  The location will be overwritten
+;with the drive type.
+;
+;TODO: The BIOS routine at 0f051h (get_dtype) uses the carry to indicate
+;if the drive is valid but this code does not check the carry.  Is
+;this a bug?
+;
+        LD      A,(HL)          ;A = CP/M drive number
         CALL    0F051H          ;BIOS Get drive type for a CP/M drive number
-        LD      (HL),C          ;q      071H
-        INC     HL              ;#      023H
-        LD      (HL),00H
-        RET                     ;I      0C9H
+        LD      (HL),C          ;Store drive type at address in HL
+        INC     HL
+        LD      (HL),00H        ;TODO: Why is zero stored in HL+1 here?
+        RET
 
 IDISK:
 ;Initialize an IEEE-488 disk drive.
@@ -242,16 +251,24 @@ IDISK:
         JP      0F078H          ;Initialize an IEEE-488 disk drive
 
 DSKERR:
-;Check CBM DOS error and print message(?)
+;Check the last CBM DOS error.  The drive is not queried; this
+;only reads the last error code saved in @L2.  The error code is
+;returned to the caller by storing at in the address at HL.
 ;
-        LD      A,(@L2)
-        LD      (HL),A
+;If an error occurred, "Disk error : " will be printed followed
+;by the CBM DOS error message.  If no error occurred, nothing
+;will be printed.
+;
+;HL = pointer to location that will receive the error code
+;
+        LD      A,(@L2)         ;A = last CBM DOS error code
+        LD      (HL),A          ;Store error code at address in HL
 
         INC     HL
         XOR     A               ;A = 0
-        LD      (HL),A
+        LD      (HL),A          ;TODO: Why is zero stored in HL+1 here?
 
-        LD      A,(@L2)
+        LD      A,(@L2)         ;A = last CBM DOS error code
         OR      A               ;Set flags to check CBM DOS error (0=OK)
         RET     Z               ;Return if OK
 
