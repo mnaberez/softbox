@@ -5,8 +5,6 @@
 ;  "SOFTSOAK"
 ;
 
-    org 0100h
-
 ppi1:     equ 10h       ;8255 PPI #1 (IC17)
 ppi1_pa:  equ ppi1+0    ;  Port A: IEEE-488 Data In
 ppi1_pb:  equ ppi1+1    ;  Port B: IEEE-488 Data Out
@@ -43,6 +41,7 @@ ppi2_pc:  equ ppi2+2    ;  Port C:
                         ;    PC0 LED "A"
 ppi2_cr:  equ ppi2+3    ;  Control Register
 
+    org 0100h
 
 l0100h:
     nop                 ;0100 00
