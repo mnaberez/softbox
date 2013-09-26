@@ -706,7 +706,7 @@ input:
 ;
 ;  - CBM DOS filenames.  These filenames are in PETSCII, where upper and
 ;    lowercase are inverted from ASCII.  By converting all input here to
-;    ASCII uppercase, it will PETSCII lowercase.  Since no other ASCII
+;    ASCII uppercase, it will be PETSCII lowercase.  Since no other ASCII
 ;    to PETSCII conversion is done, some valid CBM DOS filenames (such
 ;    as those with PETSCII uppercase characters) are not supported.
 ;
