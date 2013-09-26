@@ -138,7 +138,7 @@ chkser:
     db cr,lf,"Checksum error$"
 rdhex:
     call rdnib          ;read high nibble
-    add a,a             ;multiple by 16
+    add a,a             ;multiply by 16
     add a,a
     add a,a
     add a,a
