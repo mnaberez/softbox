@@ -695,6 +695,21 @@ cbm_get_byte:
 input:
 ;Read a line of input from the user and store it in the buffer.
 ;
+;Lowercase characters are converted to uppercase.  This conversion is
+;needed for three different types of input:
+;
+;  - CP/M drive letters.  Returning only uppercase letters allows the
+;    the caller to easily convert a drive letter to a drive number with
+;    a single subtraction.
+;
+;  - CP/M filenames.  These filenames are always in ASCII uppercase.
+;
+;  - CBM DOS filenames.  These filenames are in PETSCII, where upper and
+;    lowercase are inverted from ASCII.  By converting all input here to
+;    ASCII uppercase, it will PETSCII lowercase.  Since no other ASCII
+;    to PETSCII conversion is done, some valid CBM DOS filenames (such
+;    as those with PETSCII uppercase characters) are not supported.
+;
     ld de,buffer        ;DE = address of buffer to receive user input
     ld a,50h            ;A = 80 bytes available in the buffer
     ld (de),a           ;Store bytes available where BDOS reads it
