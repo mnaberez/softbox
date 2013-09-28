@@ -446,11 +446,12 @@ FORMAT:
         LD      A,(@L0)         ;  Get current CP/M drive number from @L0
         CALL    0F078H          ;  BIOS Initialize an IEEE-488 disk drive
 
-        LD      HL,04000H
-        LD      DE,04001H
-        LD      BC,0FFH
-        LD      (HL),0E5H
-        LDIR                    ;Copy BC bytes from (HL) to (DE)
+                                ;Fill 4000-40FF with E5 ("unused"):
+        LD      HL,04000H       ;  HL = source start address
+        LD      DE,04001H       ;  DE = destination start address
+        LD      BC,0FFH         ;  BC = 255 bytes to copy
+        LD      (HL),0E5H       ;  Store E5 ("unused") in 4000h
+        LDIR                    ;  Copy BC bytes from (HL) to (DE)
 
         LD      A,07H
         LD      (@L15),A        ;CBM DOS sector
