@@ -333,8 +333,9 @@ SAVESY:
         LD      A,(HL)
         LD      (@L0),A
         CALL    0F054H          ;D = BIOS Get device address for a CP/M drive number
-        PUSH    DE
-        LD      E,0FH
+        PUSH    DE              ;Push DE (D = IEEE-488 primary address)
+        LD      E,0FH           ;E = IEEE-488 secondary address 15(command channel)
+
         LD      HL,@L11         ;HL = address of "S0:*" string
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         RRA                     ;Rotate bit 0 (CBM drive number) into carry
@@ -382,7 +383,7 @@ SAVESY:
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
         LD      (@L2),A         ;Store CBM DOS error code in @L2
-        POP     DE
+        POP     DE              ;Pop DE (D = IEEE-488 primary address)
         OR      A
         RET     NZ
         PUSH    DE
