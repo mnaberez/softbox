@@ -42,11 +42,14 @@ EXSYS:
 RDSYS:
 ;Read the "CP/M" and "K" files from an IEEE-488 drive into memory.
 ;
+;HL = pointer to CP/M drive number of an IEEE-488 drive
+;
 ;4000-5BFF  "CP/M"  CCP + BDOS + BIOS Config + BIOS Working Storage
 ;6000-67FF  "K"     Terminal program that runs on the CBM computer
 ;
-        LD      A,(HL)
-        LD      (@L0),A
+        LD      A,(HL)          ;A = CP/M drive number
+        LD      (@L0),A         ;Store drive number in @L0
+
         CALL    0F054H          ;D = BIOS Get device address for a CP/M drive number
         LD      E,00H           ;E = Secondary address 0
         PUSH    DE              ;Push IEEE-488 primary & secondary addrs
@@ -330,8 +333,11 @@ DSKERR:
 SAVESY:
 ;Read the CP/M system image from an IEEE-488 drive.
 ;
-        LD      A,(HL)
-        LD      (@L0),A
+;HL = pointer to CP/M drive number of an IEEE-488 drive
+;
+        LD      A,(HL)          ;A = CP/M drive number
+        LD      (@L0),A         ;Store drive number in @L0
+
         CALL    0F054H          ;D = BIOS Get device address for a CP/M drive number
         PUSH    DE              ;Push DE (D = IEEE-488 primary address)
         LD      E,0FH           ;E = IEEE-488 secondary address 15(command channel)
@@ -419,8 +425,11 @@ FORMAT:
 ;      the 8250 has 128 entries.  We should write E5 to the first 16 CBM DOS
 ;      sectors instead so the 8250 directory is cleared.
 ;
-        LD      A,(HL)
-        LD      (@L0),A
+;HL = pointer to CP/M drive number of an IEEE-488 drive
+;
+        LD      A,(HL)          ;A = CP/M drive number
+        LD      (@L0),A         ;Store drive number in @L0
+
         CALL    0F054H          ;D = BIOS Get device address for a CP/M drive num
 
                                 ;Set CBM drive number in format command:
