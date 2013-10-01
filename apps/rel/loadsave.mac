@@ -231,18 +231,23 @@ CWRIT3:
 DTYPE:
 ;Get the drive type for a CP/M drive number.
 ;
-;HL = pointer to a CP/M drive number.  The location will be overwritten
-;with the drive type.
+;HL = pointer to a two-byte signed integer that contains a CP/M
+;     drive number.  It will be overwritten with the drive's type.
 ;
 ;TODO: The BIOS routine at 0f051h (get_dtype) uses the carry to indicate
 ;if the drive is valid but this code does not check the carry.  Is
 ;this a bug?
 ;
-        LD      A,(HL)          ;A = CP/M drive number
+                                ;Read drive number from two-byte signed int:
+        LD      A,(HL)          ;  A = CP/M drive number from low byte
+                                ;  (the high byte is ignored)
+
         CALL    0F051H          ;BIOS Get drive type for a CP/M drive number
-        LD      (HL),C          ;Store drive type at address in HL
-        INC     HL
-        LD      (HL),00H        ;TODO: Why is zero stored in HL+1 here?
+
+                                ;Store drive type in two-byte signed int:
+        LD      (HL),C          ;  Store drive type in low byte
+        INC     HL              ;  Increment pointer to high byte
+        LD      (HL),00H        ;  Store zero in high byte
         RET
 
 IDISK:
@@ -262,14 +267,16 @@ DSKERR:
 ;by the CBM DOS error message.  If no error occurred, nothing
 ;will be printed.
 ;
-;HL = pointer to location that will receive the error code
+;HL = pointer to a two-byte signed integer that will receive
+;     the error code
 ;
         LD      A,(@L2)         ;A = last CBM DOS error code
-        LD      (HL),A          ;Store error code at address in HL
 
-        INC     HL
-        XOR     A               ;A = 0
-        LD      (HL),A          ;TODO: Why is zero stored in HL+1 here?
+                                ;Store error in two-byte signed int at HL:
+        LD      (HL),A          ;  Store error code in low byte
+        INC     HL              ;  Increment pointer to high byte
+        XOR     A               ;  A = 0
+        LD      (HL),A          ;  Store zero in high byte
 
         LD      A,(@L2)         ;A = last CBM DOS error code
         OR      A               ;Set flags to check CBM DOS error (0=OK)
