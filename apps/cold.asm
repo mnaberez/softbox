@@ -10,10 +10,10 @@
 ;
 
 boot:          equ 0f000h ;BIOS Cold start
-ieee_listen:   equ 0f033h ;BIOS Send LISTEN to an IEEE-488 device
-ieee_unlisten: equ 0f036h ;BIOS Send UNLISTEN to all IEEE-488 devices
-ieee_eoi_cr:   equ 0f048h ;BIOS Send carriage return to IEEE-488 dev with EOI
-ieee_put_str:  equ 0f04bh ;BIOS Send string to the current IEEE-488 device
+listen:        equ 0f033h ;BIOS Send LISTEN to an IEEE-488 device
+unlisten:      equ 0f036h ;BIOS Send UNLISTEN to all IEEE-488 devices
+creoi:         equ 0f048h ;BIOS Send carriage return to IEEE-488 dev with EOI
+ieeemsg:       equ 0f04bh ;BIOS Send string to the current IEEE-488 device
 execute:       equ 0f066h ;BIOS Execute a subroutine in CBM memory
 peek:          equ 0f06ch ;BIOS Transfer bytes from CBM memory to the SoftBox
 
@@ -28,12 +28,12 @@ peek:          equ 0f06ch ;BIOS Transfer bytes from CBM memory to the SoftBox
                         ;Send reset command to drive 8:
     ld de,080fh         ;  D = IEEE-488 primary address 8
                         ;  E = IEEE-488 secondary address 15 (command)
-    call ieee_listen    ;  Send LISTEN
+    call listen         ;  Send LISTEN
     ld hl,dos_uj        ;  HL = address of "UJ" string
     ld c,02h            ;  C = 2 bytes in string
-    call ieee_put_str   ;  Send the string
-    call ieee_eoi_cr    ;  Send carriage return with EOI
-    call ieee_unlisten  ;  Send UNLISTEN
+    call ieeemsg        ;  Send the string
+    call creoi          ;  Send carriage return with EOI
+    call unlisten       ;  Send UNLISTEN
 
                         ;Reset CBM computer and SoftBox:
     ld hl,(cbm_cold)    ;  HL = address of CBM cold start routine

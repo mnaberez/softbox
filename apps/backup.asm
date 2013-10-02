@@ -10,10 +10,10 @@
 
 bdos:           equ  0005h  ;BDOS entry point
 args:           equ  0080h  ;Command line arguments passed from CCP
-dos_msg:        equ 0eac0h  ;Last error message returned from CBM DOS
-get_ddev:       equ 0f054h  ;BIOS Get device address for a CP/M drive number
-ieee_read_err:  equ 0f05ah  ;BIOS Read error channel of an IEEE-488 device
-ieee_open:      equ 0f05dh  ;BIOS Open a file on an IEEE-488 device
+errbuf:         equ 0eac0h  ;Last error message returned from CBM DOS
+dskdev:         equ 0f054h  ;BIOS Get device address for a CP/M drive number
+disksta:        equ 0f05ah  ;BIOS Read error channel of an IEEE-488 device
+open:           equ 0f05dh  ;BIOS Open a file on an IEEE-488 device
 
 cread:      equ 01h     ;Console Input
 cwrite:     equ 02h     ;Console Output
@@ -113,7 +113,7 @@ backup:
 
                         ;Get IEEE-488 primary address from CP/M drive number:
     push af             ;
-    call get_ddev       ;  D = IEEE-488 primary address
+    call dskdev         ;  D = IEEE-488 primary address
     ld e,0fh            ;  E = IEEE-488 secondary address 15 (command)
     pop af              ;
 
@@ -126,11 +126,11 @@ backup:
     ld hl,dos_d0_to_d1  ;  HL = address of "D0=1" (from drive 1 to drive 0)
 send_cmd:
     ld c,04h            ;  C = 4 bytes in string
-    call ieee_open      ;  Send OPEN with the backup command
+    call open           ;  Send OPEN with the backup command
     pop af              ;
 
                         ;Wait for backup to finish, check for error:
-    call ieee_read_err  ;  A = error code from CBM DOS
+    call disksta        ;  A = error code from CBM DOS
                         ;      (blocks until the backup has finished)
     jp nz,exit_error    ;  Jump to exit if error code != 0 (OK)
 
@@ -189,8 +189,8 @@ exit_error:
     ld c,cwritestr      ;Output String
     call bdos           ;BDOS System Call
 
-    ld hl,dos_msg       ;HL = address of CBM DOS error string
-dos_msg_loop:
+    ld hl,errbuf        ;HL = address of CBM DOS error string
+errbuf_loop:
     ld a,(hl)           ;A = next char in string
     cp cr               ;Is it a carriage return?
     ret z               ;  Yes: end of DOS message, return to CP/M.
@@ -202,4 +202,4 @@ dos_msg_loop:
     pop hl
 
     inc hl              ;Move to next char in string
-    jp dos_msg_loop     ;Loop to handle next char
+    jp errbuf_loop     ;Loop to handle next char

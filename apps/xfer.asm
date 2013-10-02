@@ -36,18 +36,18 @@ fcb:           equ  005ch ;BDOS default FCB
 dma_buf:       equ  0080h ;Default DMA buffer area (128 bytes) for disk I/O
 eoisav:        equ 0ea6ch ;Stores ppi2_pa IEEE-488 ctrl lines after get byte
 dos_msg:       equ 0eac0h ;Last error message returned from CBM DOS
-ieee_listen:   equ 0f033h ;Send LISTEN to an IEEE-488 device
-ieee_unlisten: equ 0f036h ;Send UNLISTEN to all IEEE-488 devices
-ieee_talk:     equ 0f039h ;Send TALK to an IEEE-488 device
-ieee_untalk:   equ 0f03ch ;Send UNTALK to all IEEE-488 devices
-ieee_get_byte: equ 0f03fh ;Read byte from an IEEE-488 device
-ieee_put_byte: equ 0f042h ;Send byte to an IEEE-488 device
-get_dtype:     equ 0f051h ;Get drive type for a CP/M drive number
-get_ddev:      equ 0f054h ;Get device address for a CP/M drive number
-ieee_read_err: equ 0f05ah ;Read the error channel of an IEEE-488 device
-ieee_open:     equ 0f05dh ;Open a file on an IEEE-488 device
-ieee_close:    equ 0f060h ;Close an open file on an IEEE-488 device
-ieee_init_drv: equ 0f078h ;Initialize an IEEE-488 disk drive
+listen:        equ 0f033h ;Send LISTEN to an IEEE-488 device
+unlisten:      equ 0f036h ;Send UNLISTEN to all IEEE-488 devices
+talk:          equ 0f039h ;Send TALK to an IEEE-488 device
+untalk:        equ 0f03ch ;Send UNTALK to all IEEE-488 devices
+rdieee:        equ 0f03fh ;Read byte from an IEEE-488 device
+wrieee:        equ 0f042h ;Send byte to an IEEE-488 device
+tdtdrv:        equ 0f051h ;Get drive type for a CP/M drive number
+dskdev:        equ 0f054h ;Get device address for a CP/M drive number
+dsksta:        equ 0f05ah ;Read the error channel of an IEEE-488 device
+open:          equ 0f05dh ;Open a file on an IEEE-488 device
+close:         equ 0f060h ;Close an open file on an IEEE-488 device
+idrive:        equ 0f078h ;Initialize an IEEE-488 disk drive
 
 cwrite:        equ 02h    ;Console Output
 cwritestr:     equ 09h    ;Output String
@@ -180,7 +180,7 @@ from_pet_done:
 ;
                         ;Close CBM DOS source file:
     ld de,(cbm_device)  ;  D = IEEE-488 primary address, E = file number
-    call ieee_close     ;  Close open file on IEEE-488 device
+    call close          ;  Close open file on IEEE-488 device
 
                         ;The dma_write routine automatically flushes the DMA
                         ;buffer to the CP/M file when it is full.  At the
@@ -421,7 +421,7 @@ l0248h:
     ld a,(buffer+2)     ;Take the first character from that input
     sub 41h             ;Convert drive letter to number (A=0, B=1, C=2, ...)
     ld (src_drive),a    ;Save the source drive number
-    call get_dtype      ;Check if drive is valid (carry set = valid)
+    call tdtdrv         ;Check if drive is valid (carry set = valid)
     jr c,l026ah         ;Jump if drive is valid
 
                         ;The drive letter entered is not valid.
@@ -440,7 +440,7 @@ l026ah:
     call input          ;Get a line of input from the user
 
     ld a,(src_drive)    ;A = CP/M source drive number
-    call ieee_init_drv  ;Initialize the CBM disk drive
+    call idrive         ;Initialize the CBM disk drive
 
                         ;The buffer area now contains a CBM DOS filename.
                         ;The first two bytes of the buffer area are the total
@@ -456,7 +456,7 @@ l026ah:
     ld (buffer),a       ;Store the CBM drive number at buffer+0
 
     ld a,(src_drive)    ;A = CP/M drive number
-    call get_ddev       ;D = IEEE-488 primary address for the drive
+    call dskdev         ;D = IEEE-488 primary address for the drive
                         ;  (D will be used below)
 
     ld hl,buffer+1      ;HL = address of buffer character count
@@ -472,7 +472,7 @@ l026ah:
                         ;Find buffer position to receive type and mode:
     ld hl,buffer-4      ;  HL = start address of buffer - 4 for ",S,R"
     ld b,00h            ;  BC now holds final number of chars in "0:FOO,S,R"
-                        ;    and will be used in ieee_open below
+                        ;    and will be used in open below
     add hl,bc           ;  HL = position where ",S,R" needs to be written
 
                         ;Append type and mode:
@@ -492,16 +492,16 @@ l026ah:
                         ;type, and mode like "0:FOO,S,R".
 
                         ;Open the file in CBM DOS:
-    ld hl,buffer        ;  HL = address of filename for ieee_open
+    ld hl,buffer        ;  HL = address of filename for open
                         ;  BC = number of chars in filename (see above)
     ld e,03h            ;  E = file number
-                        ;  D = primary address set in get_ddev call above
+                        ;  D = primary address set in dskdev call above
     ld (cbm_device),de  ;  Store primary address and file number
-    call ieee_open      ;  Open a file on an IEEE-488 device
+    call open           ;  Open a file on an IEEE-488 device
 
                         ;Check for CBM DOS error and jump out if not OK:
     ld a,(src_drive)    ;  A = CP/M source drive
-    call ieee_read_err  ;  Read the CBM DOS error channel
+    call dsksta         ;  Read the CBM DOS error channel
     or a                ;  Set flags (0=OK)
     jp nz,exit_dos_err  ;  Jump if the status is not OK
 
@@ -523,7 +523,7 @@ l026ah:
 
                         ;Close file in CBM DOS:
     ld de,(cbm_device)  ;  D = IEEE-488 primary address, E = file number
-    call ieee_close     ;  Close open file on IEEE-488 device
+    call close          ;  Close open file on IEEE-488 device
 
                         ;Fall through into exit_full
 
@@ -547,7 +547,7 @@ seq_to_pet:
     ld a,(buffer+2)     ;Take the first character from that input
     sub 41h             ;Convert drive letter to number (A=0, B=1, C=2, ...)
     ld (src_drive),a    ;Save the source drive number
-    call get_dtype      ;Check if drive is valid (carry set = valid)
+    call tdtdrv         ;Check if drive is valid (carry set = valid)
     jr c,l0301h         ;Jump if drive is valid
 
     ld de,bad_drive     ;DE = address of "Bad drive"
@@ -564,7 +564,7 @@ l0301h:
     call input          ;Get a line of input from the user
 
     ld a,(src_drive)    ;A = CP/M source drive
-    call ieee_init_drv  ;Initialize an IEEE-488 disk drive
+    call idrive         ;Initialize an IEEE-488 disk drive
 
                         ;The buffer area now contains a CBM DOS filename.
                         ;The first two bytes of the buffer area are the total
@@ -580,7 +580,7 @@ l0301h:
     ld (buffer),a       ;Store the CBM drive number at buffer+0
 
     ld a,(src_drive)    ;A = CP/M source drive
-    call get_ddev       ;D = IEEE-488 primary address for the drive
+    call dskdev         ;D = IEEE-488 primary address for the drive
                         ;  (D will be used below)
 
     ld hl,buffer+1      ;HL = address that holds number of chars in buffer
@@ -619,12 +619,12 @@ l0301h:
                         ;  HL = address of the filename
                         ;  BC = number of chars in filename
     ld e,03h            ;  E = file number
-                        ;  D = primary address set in get_ddev call above
+                        ;  D = primary address set in dskdev call above
     ld (cbm_device),de  ;  Store primary address and file number
-    call ieee_open      ;  Open a file on an IEEE-488 device
+    call open           ;  Open a file on an IEEE-488 device
 
     ld a,(src_drive)    ;A = CP/M source drive
-    call ieee_read_err  ;Read the CBM DOS error channel
+    call dsksta         ;Read the CBM DOS error channel
     or a                ;Set flags (0=OK)
     jp nz,exit_dos_err  ;Jump if the status is not OK
 
@@ -645,25 +645,25 @@ seq_next_record:
     jr nz,seq_done      ;  Jump if an error occurred in fread
 
     ld de,(cbm_device)  ;D = IEEE-488 primary address, E = file number
-    call ieee_listen    ;Send LISTEN
+    call listen         ;Send LISTEN
 
                         ;Send all bytes in the DMA buffer to CBM DOS:
     ld hl,dma_buf       ;  HL = address of DMA buffer
 seq_dma_loop:           ;
     ld a,(hl)           ;  A = get byte from the DMA buffer
     push hl             ;
-    call ieee_put_byte  ;  Send it to the drive
+    call wrieee         ;  Send it to the drive
     pop hl              ;
     inc l               ;  Increment low byte of DMA buffer pointer
     jr nz,seq_dma_loop  ;  Loop until L rolls over to 0, indicating that
                         ;    all 128 bytes in the DMA buffer have been sent
 
-    call ieee_unlisten  ;Send UNLISTEN
+    call unlisten       ;Send UNLISTEN
     jr seq_next_record  ;Loop to do the next record
 
 seq_done:
     ld de,(cbm_device)  ;D = IEEE-488 primary address, E = file number
-    call ieee_close     ;Close open file on IEEE-488 device
+    call close          ;Close open file on IEEE-488 device
 
     ld de,complete      ;DE = address of "Transfer complete"
     ld c,cwritestr      ;C = Output String
@@ -684,10 +684,10 @@ cbm_get_byte:
 ;
     push hl
     ld de,(cbm_device)  ;D = IEEE-488 primary address, E = file number
-    call ieee_talk      ;Send TALK
-    call ieee_get_byte  ;Get byte
+    call talk           ;Send TALK
+    call rdieee         ;Get byte
     push af
-    call ieee_untalk    ;Send UNTALK
+    call untalk         ;Send UNTALK
     pop af
     pop hl
     ret

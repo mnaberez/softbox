@@ -9,8 +9,8 @@
 warm:       equ  0000h  ;Warm start entry point
 bdos:       equ  0005h  ;BDOS entry point
 args:       equ  0080h  ;Command line arguments passed from CCP
-get_time:   equ 0f072h  ;BIOS Read the CBM clocks (both RTC and jiffies)
-set_time:   equ 0f06fh  ;BIOS Set the time on the CBM real time clock
+gettime:    equ 0f072h  ;BIOS Read the CBM clocks (both RTC and jiffies)
+settime:    equ 0f06fh  ;BIOS Set the time on the CBM real time clock
 
 cread:      equ 01h     ;Console Input
 cwrite:     equ 02h     ;Console Output
@@ -35,7 +35,7 @@ time_output:
     ld c,cwritestr      ;Output String
     call bdos           ;BDOS System Call
 
-    call get_time       ;Read the CBM clocks (both RTC and jiffies):
+    call gettime        ;Read the CBM clocks (both RTC and jiffies):
                         ;  Real Time Clock:
                         ;    H = Hours, L = Minutes, D = Seconds
                         ;    E = Jiffies (counts up to 50 or 60)
@@ -107,7 +107,7 @@ time_input:
     pop de              ;  D=seconds, E=jiffies
     pop hl              ;  H=hours, L=minutes
 
-    jp set_time         ;Jump out to set time on the CBM computer,
+    jp settime          ;Jump out to set time on the CBM computer,
                         ;  it will return to CP/M.
 
 bad_syntax:
