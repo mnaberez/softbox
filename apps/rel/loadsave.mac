@@ -470,68 +470,92 @@ FORMAT:
         LD      (HL),0E5H       ;  Store E5 ("unused") in 4000h
         LDIR                    ;  Copy BC bytes from (HL) to (DE)
 
-        LD      A,07H
-        LD      (@L15),A        ;CBM DOS sector
-        LD      A,01H
-        LD      (@L16),A        ;CBM DOS track
+                                ;Initialize CBM DOS track and sector numbers:
+        LD      A,07H           ;
+        LD      (@L15),A        ;  CBM DOS sector = 7
+        LD      A,01H           ;
+        LD      (@L16),A        ;  CBM DOS track = 1
+
 @L18:
-        CALL    @L17
-        LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        CALL    0F05AH          ;BIOS Read the error channel of an IEEE-488 device
-                                ;  Returns CBM DOS error code in A (0=OK)
-        LD      (@L2),A         ;Store CBM DOS error code in @L2
-        OR      A               ;Set flags to CBM DOS check error (0=OK)
-        RET     NZ              ;Return if not OK
+;Clear the CP/M directory by filling it with E5 ("unused").
+;
+        CALL    @L17            ;Write the CBM DOS sector
 
-        LD      HL,@L15         ;CBM DOS sector
-        DEC     (HL)
-        JP      P,@L18
+                                ;Check CBM DOS error:
+        LD      A,(@L0)         ;  Get current CP/M drive number from @L0
+        CALL    0F05AH          ;  BIOS Read the error channel of an IEEE-488 device
+                                ;    Returns CBM DOS error code in A (0=OK)
+        LD      (@L2),A         ;  Store CBM DOS error code in @L2
+        OR      A               ;  Set flags to CBM DOS check error (0=OK)
+        RET     NZ              ;  Return if not OK
+
+        LD      HL,@L15         ;HL = pointer to CBM DOS sector
+        DEC     (HL)            ;Decrement sector
+        JP      P,@L18          ;Loop until sector goes negative
         RET
+
 @L17:
-        LD      HL,@L19         ;HL = address of "M-W..." string
-        LD      C,06H           ;C = 6 chars in string
-        LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        CALL    0F057H          ;BIOS Open the command channel on IEEE-488 device
-        CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
-        LD      A,(04000H)
-        CALL    0F045H          ;BIOS Send byte to IEEE-488 device with EOI asserted
-        CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
+;Write a sector to an IEEE-488 drive.
+;
+;The following locations must be set up:
+;
+;  4000-40FF: 256 bytes data to write into the sector
+;  @L0:   IEEE-488 primary address
+;  @L16:  CBM DOS track
+;  @L15:  CBM DOS sector
+;
+                                ;Put first byte into sector buffer using M-W:
+        LD      HL,@L19         ;  HL = address of "M-W..." string
+        LD      C,06H           ;  C = 6 chars in string
+        LD      A,(@L0)         ;  Get current CP/M drive number from @L0
+        CALL    0F057H          ;  BIOS Open the command channel on IEEE-488 device
+        CALL    0F04BH          ;  BIOS Send string to the current IEEE-488 device
+        LD      A,(04000H)      ;  A = first byte
+        CALL    0F045H          ;  BIOS Send byte to IEEE-488 device with EOI asserted
+        CALL    0F036H          ;  BIOS Send UNLISTEN to all IEEE-488 devices
 
-        LD      HL,@L20         ;HL = address of "B-P 2 1" string
-        LD      C,07H           ;C = 7 chars in string
-        LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        CALL    0F057H          ;BIOS Open the command channel on IEEE-488 device
-        CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
-        CALL    0F048H          ;BIOS Send carriage return to IEEE-488 dev with EOI
-        CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
-        LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        CALL    0F054H          ;D = BIOS Get device address for a CP/M drive number
-        LD      E,02H           ;E = secondary address 2
-        CALL    0F033H          ;BIOS Send LISTEN to an IEEE-488 device
+                                ;Send "B-P 2 1" to move buffer pointer to byte 1:
+        LD      HL,@L20         ;  HL = address of "B-P 2 1" string
+        LD      C,07H           ;  C = 7 chars in string
+        LD      A,(@L0)         ;  Get current CP/M drive number from @L0
+        CALL    0F057H          ;  BIOS Open the command channel on IEEE-488 device
+        CALL    0F04BH          ;  BIOS Send string to the current IEEE-488 device
+        CALL    0F048H          ;  BIOS Send carriage return to IEEE-488 dev with EOI
+        CALL    0F036H          ;  BIOS Send UNLISTEN to all IEEE-488 devices
 
-        LD      HL,04001H
-        LD      C,0FFH
-        CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
-        CALL    0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
-        LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        CALL    0F057H          ;BIOS Open the command channel on IEEE-488 device
-        LD      HL,@L21         ;HL = address of "U2 2 " string
-        LD      C,05H           ;C = 5 chars in string
-        CALL    0F04BH          ;BIOS Send string to the current IEEE-488 device
+                                ;Put remaining 255 bytes into sector buffer:
+        LD      A,(@L0)         ;  Get current CP/M drive number from @L0
+        CALL    0F054H          ;  D = BIOS Get device address for a CP/M drive number
+        LD      E,02H           ;  E = secondary address 2
+        CALL    0F033H          ;  BIOS Send LISTEN to an IEEE-488 device
+        LD      HL,04001H       ;  HL = start address
+        LD      C,0FFH          ;  C = 255 bytes to send
+        CALL    0F04BH          ;  BIOS Send string to the current IEEE-488 device
+        CALL    0F036H          ;  BIOS Send UNLISTEN to all IEEE-488 devices
 
-        LD      A,(@L0)         ;Get current CP/M drive number from @L0
-        AND     01H             ;Mask off all except bit 1 (CBM drive num)
-        ADD     A,030H          ;Convert it to ASCII
-        CALL    0F042H          ;BIOS Send byte to an IEEE-488 device
+                                ;The drive's sector buffer now contains the
+                                ;256 bytes from 4000-40FF.
 
-        LD      A,(@L16)        ;CBM DOS track
-        CALL    0F04EH          ;BIOS Send number as decimal string to IEEE dev
-
-        LD      A,(@L15)        ;CBM DOS sector
-        CALL    0F04EH          ;BIOS Send number as decimal string to IEEE-488 dev
-
-        CALL    0F048H          ;BIOS Send carriage return to IEEE-488 dev with EOI
-        JP      0F036H          ;BIOS Send UNLISTEN to all IEEE-488 devices
+                                ;Send "U2 2 <trk> <sec>" to write the sector:
+        LD      A,(@L0)         ;  Get current CP/M drive number from @L0
+        CALL    0F057H          ;  BIOS Open the command channel on IEEE-488 device
+        LD      HL,@L21         ;  HL = address of "U2 2 " string
+        LD      C,05H           ;  C = 5 chars in string
+        CALL    0F04BH          ;  BIOS Send string to the current IEEE-488 device
+                                ;
+        LD      A,(@L0)         ;  Get current CP/M drive number from @L0
+        AND     01H             ;  Mask off all except bit 1 (CBM drive num)
+        ADD     A,030H          ;  Convert it to ASCII
+        CALL    0F042H          ;  BIOS Send byte to an IEEE-488 device
+                                ;
+        LD      A,(@L16)        ;  CBM DOS track
+        CALL    0F04EH          ;  BIOS Send number as decimal string to IEEE dev
+                                ;
+        LD      A,(@L15)        ;  CBM DOS sector
+        CALL    0F04EH          ;  BIOS Send number as decimal string to IEEE-488 dev
+                                ;
+        CALL    0F048H          ;  BIOS Send carriage return to IEEE-488 dev with EOI
+        JP      0F036H          ;  BIOS Send UNLISTEN to all IEEE-488 devices
 
 CFORM:
 ;Format a Corvus drive for Softbox use.
