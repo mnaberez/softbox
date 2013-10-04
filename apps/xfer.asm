@@ -35,7 +35,7 @@ bdos:          equ  0005h ;BDOS entry point
 fcb:           equ  005ch ;BDOS default FCB
 dma_buf:       equ  0080h ;Default DMA buffer area (128 bytes) for disk I/O
 eoisav:        equ 0ea6ch ;Stores ppi2_pa IEEE-488 ctrl lines after get byte
-dos_msg:       equ 0eac0h ;Last error message returned from CBM DOS
+errbuf:        equ 0eac0h ;Last error message returned from CBM DOS
 listen:        equ 0f033h ;Send LISTEN to an IEEE-488 device
 unlisten:      equ 0f036h ;Send UNLISTEN to all IEEE-488 devices
 talk:          equ 0f039h ;Send TALK to an IEEE-488 device
@@ -763,7 +763,7 @@ exit_dos_err:
     ld c,cwritestr      ;C = Output String
     call bdos           ;BDOS system call
 
-    ld hl,dos_msg       ;HL = address of last CBM DOS error message
+    ld hl,errbuf        ;HL = address of last CBM DOS error message
 l03f7h:
     push hl             ;Save HL
     ld e,(hl)           ;E = char from CBM DOS error message
