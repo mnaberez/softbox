@@ -834,6 +834,9 @@ trans_char:
     ldx #$5d            ;Change to PETSCII vertical line
     cmp #$7c            ;  from ASCII pipe ("|") character
     beq l_07c6
+    ldx #$64            ;Change to PETSCII underscore
+    cmp #$5f            ;  from ASCII underscore ("_") character
+    beq l_07c6
 
     cmp #$40            ;Is it < 64?
     bcc trans_done      ;  Yes: done, no translation
