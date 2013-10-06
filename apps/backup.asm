@@ -202,4 +202,4 @@ errbuf_loop:
     pop hl
 
     inc hl              ;Move to next char in string
-    jp errbuf_loop     ;Loop to handle next char
+    jp errbuf_loop      ;Loop to handle next char
