@@ -1515,7 +1515,7 @@ key_check1:
 
 ;---- CTRL KEY not pressed
 key_hi:
-    and #$7f            ;Clear bit 7
+    and #%01111111      ;Clear bit 7
     ldy shift_flag      ;SHIFT key pressed?
     beq key_low         ;  No: skip translation to symbol
 
