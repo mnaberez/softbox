@@ -362,11 +362,13 @@ SAVESY:
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read error channel of IEEE-488 device
         LD      (@L2),A         ;Store CBM DOS error code in @L2
+
         POP     DE
         CP      01H             ;CBM DOS error code = 1 file scratched?
         RET     NZ              ;  No: something went wrong, return on error.
         LD      E,01H
         PUSH    DE
+
         CALL    @L3             ;Open "K" file
         LD      A,(@L0)         ;Get current CP/M drive number from @L0
         CALL    0F05AH          ;BIOS Read error channel of IEEE-488 device
@@ -374,10 +376,11 @@ SAVESY:
         POP     DE
         OR      A               ;Set flags to check CBM DOS error (0=OK)
         RET     NZ              ;Return if not OK
+
         PUSH    DE
         CALL    0F033H          ;BIOS Send LISTEN to an IEEE-488 device
-        LD      HL,06000H
-        LD      BC,0800H
+        LD      HL,06000H       ;HL = base address of buffer for term
+        LD      BC,0800H        ;BC = 2048 bytes in terminal program
 @L27:
         LD      A,(HL)
         CALL    0F042H          ;BIOS Send byte to an IEEE-488 device
@@ -401,8 +404,9 @@ SAVESY:
         RET     NZ
         PUSH    DE
         CALL    0F033H          ;BIOS Send LISTEN to an IEEE-488 device
-        LD      HL,04000H
-        LD      BC,01C00H
+
+        LD      HL,04000H       ;HL = base address of buffer for CP/M image
+        LD      BC,01C00H       ;BC = 7168 bytes in CP/M image
 @L28:
         LD      A,(HL)
         CALL    0F042H          ;BIOS Send byte to an IEEE-488 device
