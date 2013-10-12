@@ -124,7 +124,16 @@ RDSYS:
 CREAD:
 ;Read CP/M image from a Corvus drive.
 ;
+;This routine reads the first two tracks (0 and 1) from the Corvus, which
+;are reserved for SoftBox boot data.  There are 16384 bytes of data
+;(2 tracks * 64 sectors/track * 128 bytes/sector) read into the buffer
+;at 4000h.  Only the first 7168 bytes are loaded by the BIOS for the
+;CP/M system, the rest of the space is unused.
+;
 ;HL = pointer to CP/M drive number of Corvus
+;
+;4000-5BFF  CCP + BDOS + BIOS Config + BIOS Working Storage
+;5C00-7FFF  Unused
 ;
         LD      C,(HL)          ;C = CP/M drive number
         CALL    0F01BH          ;BIOS Select disk drive
@@ -173,6 +182,15 @@ CWRITE:
 ;Write CP/M image to a Corvus drive.
 ;
 ;HL = pointer to CP/M drive number of Corvus
+;
+;This routine writes the first two tracks (0 and 1) on the Corvus, which
+;are reserved for SoftBox boot data.  There are 16384 bytes of data
+;(2 tracks * 64 sectors/track * 128 bytes/sector) in the buffer at 4000h.
+;Only the first 7168 bytes are loaded by the BIOS for the CP/M system,
+;the rest of the space is unused.
+;
+;4000-5BFF  CCP + BDOS + BIOS Config + BIOS Working Storage
+;5C00-7FFF  Unused
 ;
         LD      C,(HL)          ;C = CP/M drive number
         CALL    0F01BH          ;BIOS Select disk drive
