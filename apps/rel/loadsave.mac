@@ -49,7 +49,7 @@ BUFFIN:
 ;will start at 82h.
 ;
         LD      C,0AH           ;C = Buffered Console Input
-        LD      DE,080H         ;DE = Default DMA buffer area (128 bytes)
+        LD      DE,080H         ;DE = address of DMA buffer area
         JP      05H             ;BDOS System Call
 
 EXSYS:
