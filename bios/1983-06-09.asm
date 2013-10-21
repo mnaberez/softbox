@@ -3374,11 +3374,12 @@ ieeemsg:
 ;HL = pointer to string
 ;C = number of bytes in string
 ;
-    ld a,(hl)
-    inc hl
-    call wrieee
-    dec c
-    jr nz,ieeemsg
+    ld a,(hl)           ;A = get first char from string
+    inc hl              ;Increment pointer to next char in string
+    call wrieee         ;Send byte in A to IEEE-488 device
+    dec c               ;Decrement number of chars remaining to send
+    jr nz,ieeemsg       ;If any chars remain, jump out to ieeemsg to
+                        ;  send them.  It will return to the caller.
     ret
 
 filler:
