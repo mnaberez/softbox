@@ -426,11 +426,12 @@ SAVESY:
 @L27:
         LD      A,(HL)
         CALL    WRIEEE          ;Send byte to an IEEE-488 device
-        INC     HL
-        DEC     BC
-        LD      A,B
-        OR      C
-        JR      NZ,@L27
+        INC     HL              ;Increment buffer pointer
+        DEC     BC              ;Decrement bytes remaining to send
+        LD      A,B             ;A = B
+        OR      C               ;OR with C to check if BC=0
+        JR      NZ,@L27         ;Loop until all bytes are sent
+
         CALL    UNLISTEN        ;Send UNLISTEN to all IEEE-488 devices
         POP     DE
         PUSH    DE
