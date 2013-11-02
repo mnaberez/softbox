@@ -609,24 +609,20 @@ tst2:
     ret                 ;  and return
 
 tstdrv_corv:
-;Get the drive type for a CP/M drive number from the dtypes table
-;and check if it is a Corvus hard drive.
+;Check if the drive type in A is a Corvus hard drive.
 ;
-;A = CP/M drive number
-;
-;Returns the drive type in C and A.
+;A = CP/M drive type
 ;
 ;Sets the carry flag if the CP/M drive number is valid and if
 ;it corresponds to a Corvus hard drive.  Clears it otherwise.
 ;
+                        ;Check if drive type is >= 6:
+    cp 06h              ;  Set carry if A < 6, clear carry if A >= 6
+    ret nc              ;  Return if no carry
 
-                        ;  Check if drive type is >= 6:
-    cp 06h              ;    Set carry if A < 6, clear carry if A >= 6
-    ret nc              ;    Return if no carry
-                        ;
-                        ;  Check if drive type is < 2:
-    cp 02h              ;    Set carry if A < 2, clear carry if A >= 2
-    ccf                 ;    Invert the carry flag
+                        ;Check if drive type is < 2:
+    cp 02h              ;  Set carry if A < 2, clear carry if A >= 2
+    ccf                 ;  Invert the carry flag
     ret
 
 read:
