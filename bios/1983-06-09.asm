@@ -1602,7 +1602,7 @@ run5:
     jp start_ccp        ;Start CCP via HL
 
 loading:
-    db cr,lf,"Loading CP/M ...",00h
+    db cr,lf,"Loading CP/M ...",0
 
 ieee_load_cpm:
 ;Load the CP/M system from an IEEE-488 disk drive.
@@ -1830,7 +1830,7 @@ blk5:
     call puts           ;Write a newline to console out
 
     ld hl,errbuf        ;HL = pointer to CBM DOS error message
-                        ;     like "23,READ ERROR,45,27,0",0d
+                        ;     like "23,READ ERROR,45,27,0",0Dh
 blk6:
     ld a,(hl)           ;Get a char from CBM DOS error message
     cp cr
@@ -1875,25 +1875,25 @@ err1:
 cbm_dos_errs:
 ;      Hex SoftBox Error Message          Dec  CBM DOS Error Description
 ;      --- ---------------------          ---  -------------------------
-    db 1ah,"Disk write protected",00h     ;26  Write Protect On
-    db 19h,"Write verify error",00h       ;25  Write Error (write-verify)
-    db 1ch,"Long data block",00h          ;28  Write Error (long data block)
-    db 14h,"Missing header",00h           ;20  Read Error (no block header)
-    db 15h,"Disk not ready",00h           ;21  Read Error (no sync char)
-    db 4ah,"Disk not ready",00h           ;74  Drive Not Ready
-    db 16h,"Missing data block",00h       ;22  Read Error (no data block)
-    db 17h,"Checksum error in data",00h   ;23  Read Error (data checksum)
-    db 1bh,"Checksum error in header",00h ;27  Read Error (header checksum)
-    db 18h,"Byte decoding error",00h      ;24  Read Error (byte decoding)
-    db 46h,"Commodore DOS bug !",00h      ;70  No Channel
-    db 49h,"Wrong DOS format",00h         ;73  DOS Mismatch
-    db 0ffh,"Unknown error code",00h
+    db 1ah,"Disk write protected",0       ;26  Write Protect On
+    db 19h,"Write verify error",0         ;25  Write Error (write-verify)
+    db 1ch,"Long data block",0            ;28  Write Error (long data block)
+    db 14h,"Missing header",0             ;20  Read Error (no block header)
+    db 15h,"Disk not ready",0             ;21  Read Error (no sync char)
+    db 4ah,"Disk not ready",0             ;74  Drive Not Ready
+    db 16h,"Missing data block",0         ;22  Read Error (no data block)
+    db 17h,"Checksum error in data",0     ;23  Read Error (data checksum)
+    db 1bh,"Checksum error in header",0   ;27  Read Error (header checksum)
+    db 18h,"Byte decoding error",0        ;24  Read Error (byte decoding)
+    db 46h,"Commodore DOS bug !",0        ;70  No Channel
+    db 49h,"Wrong DOS format",0           ;73  DOS Mismatch
+    db 0ffh,"Unknown error code",0
 
 colon_space:
-    db ": ",00h
+    db ": ",0
 
 bdos_err_on:
-    db cr,lf,"BDOS err on ",00h
+    db cr,lf,"BDOS err on ",0
 
 dos_u1_2:
     db "U1 2 "
@@ -1902,7 +1902,7 @@ dos_u2_2:
     db "U2 2 "
 
 newline:
-    db cr,lf,00h
+    db cr,lf,0
 
 find_trk_sec:
 ;Find the CBM DOS track and sector for the current CP/M track and sector.

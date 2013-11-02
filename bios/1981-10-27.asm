@@ -1529,7 +1529,7 @@ run4:
     jp start_ccp        ;Start CCP via HL
 
 loading:
-    db cr,lf,"Loading CP/M ...",00h
+    db cr,lf,"Loading CP/M ...",0
 
 ieee_load_cpm:
 ;Load the CP/M system from an IEEE-488 disk drive.
@@ -1785,7 +1785,7 @@ lf753h:
     call puts           ;Write a newline to console out
 
     ld hl,errbuf        ;HL = pointer to CBM DOS error message
-                        ;     like "23,READ ERROR,45,27,0",0d
+                        ;     like "23,READ ERROR,45,27,0",0Dh
 lf768h:
     ld a,(hl)           ;Get a char from CBM DOS error message
     cp cr
