@@ -2017,7 +2017,7 @@ lf9dch:
     add a,3ah
     push af
     ld a,e
-    call wrieee         ;Send first the digit
+    call wrieee         ;Send the first digit
     pop af
     jp wrieee           ;Jump out to send the second digit
                         ;  and it will return to the caller.
