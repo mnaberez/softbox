@@ -1717,43 +1717,56 @@ lf6e4h:
     ld hl,colon_space
     call puts           ;Write ": " to console out
 
-    ld a,(dos_err)       ;A=last error code returned from CBM DOS
-    ld hl,lf78ch
-    cp 1ah
+    ld a,(dos_err)      ;A=last error code returned from CBM DOS
+
+    ld hl,cbm_err_26
+    cp 26
     jr z,lf750h
-    ld hl,lf7a1h
-    cp 19h
+
+    ld hl,cbm_err_25
+    cp 25
     jr z,lf750h
-    ld hl,lf7b4h
-    cp 1ch
+
+    ld hl,cbm_err_28
+    cp 28
     jr z,lf750h
-    ld hl,lf7c4h
-    cp 014h
+
+    ld hl,cbm_err_20
+    cp 20
     jr z,lf750h
-    ld hl,lf7d3h
-    cp 15h
+
+    ld hl,cbm_err_21
+    cp 21
     jr z,lf750h
-    cp 04ah
+
+    cp 74
     jr z,lf750h
-    ld hl,lf7e2h
-    cp 16h
+
+    ld hl,cbm_err_22
+    cp 22
     jr z,lf750h
-    ld hl,lf7f5h
-    cp 17h
+
+    ld hl,cbm_err_23
+    cp 23
     jr z,lf750h
-    ld hl,lf80ch
-    cp 1bh
+
+    ld hl,cbm_err_27
+    cp 27
     jr z,lf750h
-    ld hl,lf825h
-    cp 18h
+
+    ld hl,cbm_err_24
+    cp 24
     jr z,lf750h
-    ld hl,lf84ch
-    cp 46h
+
+    ld hl,cbm_err_70
+    cp 70
     jr z,lf750h
-    ld hl,lf860h
-    cp 49h
+
+    ld hl,cbm_err_73
+    cp 73
     jr z,lf750h
-    ld hl,lf839h
+
+    ld hl,cbm_err_xx
 lf750h:
     call puts
 
@@ -1794,40 +1807,40 @@ lf776h:
     ld a,00h
     ret
 
-lf78ch:
+cbm_err_26:
     db "Disk write protected",0
 
-lf7a1h:
+cbm_err_25:
     db "Write verify error",0
 
-lf7b4h:
+cbm_err_28:
     db "Long data block",0
 
-lf7c4h:
+cbm_err_20:
     db "Missing header",0
 
-lf7d3h:
+cbm_err_21:
     db "Disk not ready",0
 
-lf7e2h:
+cbm_err_22:
     db "Missing data block",0
 
-lf7f5h:
+cbm_err_23:
     db "Checksum error in data",0
 
-lf80ch:
+cbm_err_27:
     db "Checksum error in header",0
 
-lf825h:
+cbm_err_24:
     db "Byte decoding error",0
 
-lf839h:
+cbm_err_xx:
     db "Unknown error code",0
 
-lf84ch:
+cbm_err_70:
     db "Commodore DOS bug !",0
 
-lf860h:
+cbm_err_73:
     db "Wrong DOS format",0
 
 colon_space:
