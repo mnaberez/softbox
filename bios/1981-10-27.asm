@@ -97,6 +97,7 @@ jp_sysc:  equ  0005h    ;Jump to BDOS system call (3 byte instruction)
 drive:    equ  0040h    ;  Drive number (0=A, 1=B, 2=C, etc.)
 track:    equ  0041h    ;  Track number (2 bytes)
 sector:   equ  0043h    ;  Sector number
+drvtype:  equ  0044h    ;  Drive type (from dtypes table)
 
                         ;Alternate copy of disk position (??):
 x_drive:  equ  0045h    ;  Drive number (0=A, 1=B, 2=C, etc.)
@@ -420,9 +421,11 @@ seldsk:
     add hl,de           ;  HL = dph_base + HL
     push hl
 
+                        ;Save the drive type:
+    ld a,c              ;  A = drive type (returned by tstdrv in C)
+    ld (drvtype),a      ;  Save it in drvtype
+
                         ;Calculate pointer to a Disk Parameter Block (DPB):
-    ld a,c
-    ld (0044h),a
     ld l,c              ;  C = requested drive number
     ld h,00h            ;  HL = C * 8
     add hl,hl
@@ -444,7 +447,7 @@ seldsk:
     ld (hl),d
 
                         ;Special handling if requested drive is a Corvus:
-    ld a,(0044h)        ;  A = CP/M drive number
+    ld a,(drvtype)      ;  A = CP/M drive type
     call tstdrv_corv    ;  Is it a Corvus hard drive?
     call c,corv_init    ;    Yes: initialize the Corvus controller
 
@@ -629,7 +632,7 @@ read:
 ;Read the currently set track and sector at the current DMA address.
 ;Returns A=0 for OK, 1 for unrecoverable error, 0FFh if media changed.
 ;
-    ld a,(0044h)        ;A = CP/M drive number
+    ld a,(drvtype)      ;A = CP/M drive type
     call tstdrv_corv    ;Is it a Corvus hard drive?
     jp c,corv_read_sec  ;  Yes: jump to Corvus read sector
 
@@ -655,7 +658,7 @@ write:
 ;Returns A=0 for OK, 1 for unrecoverable error,
 ;  2 if disc is readonly, 0FFh if media changed.
 ;
-    ld a,(0044h)        ;A = CP/M drive number
+    ld a,(drvtype)      ;A = CP/M drive type
     call tstdrv_corv    ;Is it a Corvus hard drive?
     jp c,corv_writ_sec  ;  Yes: jump to Corvus write sector
 
