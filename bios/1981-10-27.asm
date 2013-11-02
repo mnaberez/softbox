@@ -260,9 +260,9 @@ signon:
 wboot:
 ;Warm start
 ;
-    ld c,16h            ;  C = 22 pages to load: D400-E9FF
+    ld c,16h            ;C = 22 pages to load: D400-E9FF
     ld sp,0100h         ;Initialize stack pointer
-    ld a,(dtypes)
+    ld a,(dtypes)       ;A = drive type of CP/M drive number 0 (A:)
     call tstdrv_corv    ;Is it a Corvus hard drive?
     jr c,wboot_corvus   ;  Yes: jump to warm boot from Corvus
 
