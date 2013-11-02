@@ -422,7 +422,7 @@ seldsk:
 
                         ;Calculate pointer to a Disk Parameter Block (DPB):
     ld a,c
-    ld (00044h),a
+    ld (0044h),a
     ld l,c              ;  C = requested drive number
     ld h,00h            ;  HL = C * 8
     add hl,hl
@@ -444,7 +444,7 @@ seldsk:
     ld (hl),d
 
                         ;Special handling if requested drive is a Corvus:
-    ld a,(00044h)        ;  A = CP/M drive number
+    ld a,(0044h)        ;  A = CP/M drive number
     call tstdrv_corv    ;  Is it a Corvus hard drive?
     call c,corv_init    ;    Yes: initialize the Corvus controller
 
@@ -550,7 +550,7 @@ tstdrv:
 ;
 ;Sets carry flag is drive is valid, clears it otherwise.
 ;
-    cp 10h              ;Valid drives are 0 (A:) through 00fh (P:)
+    cp 10h              ;Valid drives are 0 (A:) through 0Fh (P:)
     ret nc              ;Return with carry clear if drive is greater than P:
 
     push hl             ;Save original HL
@@ -633,7 +633,7 @@ read:
 ;Read the currently set track and sector at the current DMA address.
 ;Returns A=0 for OK, 1 for unrecoverable error, 0FFh if media changed.
 ;
-    ld a,(00044h)        ;A = CP/M drive number
+    ld a,(0044h)        ;A = CP/M drive number
     call tstdrv_corv    ;Is it a Corvus hard drive?
     jp c,corv_read_sec  ;  Yes: jump to Corvus read sector
 
@@ -659,7 +659,7 @@ write:
 ;Returns A=0 for OK, 1 for unrecoverable error,
 ;  2 if disc is readonly, 0FFh if media changed.
 ;
-    ld a,(00044h)        ;A = CP/M drive number
+    ld a,(0044h)        ;A = CP/M drive number
     call tstdrv_corv    ;Is it a Corvus hard drive?
     jp c,corv_writ_sec  ;  Yes: jump to Corvus write sector
 
@@ -1018,10 +1018,10 @@ lf37dh:
     inc ix
     dec a
     jp p,lf37dh
-    ld e,(ix+000h)
-    ld d,(ix+001h)
+    ld e,(ix+00h)
+    ld d,(ix+01h)
     add hl,de
-    ld a,(ix+002h)
+    ld a,(ix+02h)
     adc a,b
                         ;Set upper nibble of A to high bits of Corvus sector:
     add a,a             ;
@@ -1719,39 +1719,39 @@ lf6e4h:
 
     ld a,(dos_err)       ;A=last error code returned from CBM DOS
     ld hl,lf78ch
-    cp 01ah
+    cp 1ah
     jr z,lf750h
     ld hl,lf7a1h
-    cp 019h
+    cp 19h
     jr z,lf750h
     ld hl,lf7b4h
-    cp 01ch
+    cp 1ch
     jr z,lf750h
     ld hl,lf7c4h
     cp 014h
     jr z,lf750h
     ld hl,lf7d3h
-    cp 015h
+    cp 15h
     jr z,lf750h
     cp 04ah
     jr z,lf750h
     ld hl,lf7e2h
-    cp 016h
+    cp 16h
     jr z,lf750h
     ld hl,lf7f5h
-    cp 017h
+    cp 17h
     jr z,lf750h
     ld hl,lf80ch
-    cp 01bh
+    cp 1bh
     jr z,lf750h
     ld hl,lf825h
-    cp 018h
+    cp 18h
     jr z,lf750h
     ld hl,lf84ch
-    cp 046h
+    cp 46h
     jr z,lf750h
     ld hl,lf860h
-    cp 049h
+    cp 49h
     jr z,lf750h
     ld hl,lf839h
 lf750h:

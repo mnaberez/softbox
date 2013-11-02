@@ -583,7 +583,7 @@ tstdrv:
 ;
 ;Sets carry flag is drive is valid, clears it otherwise.
 ;
-    cp 10h              ;Valid drives are 0 (A:) through 00fh (P:)
+    cp 10h              ;Valid drives are 0 (A:) through 0Fh (P:)
     ret nc              ;Return with carry clear if drive is greater than P:
 
     push hl             ;Save original HL
