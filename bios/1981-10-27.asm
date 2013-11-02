@@ -195,7 +195,7 @@ ndac:     equ 04h       ;NDAC
 dav:      equ 02h       ;DAV
 atn:      equ 01h       ;ATN
 
-    org    0f000h
+    org 0f000h
 
 lf000h:
 ;Standard CP/M 2.2 BIOS entry points
@@ -353,10 +353,10 @@ start_ccp:
     and 0fh             ;Mask off user nibble leaving A = current disk
 
     call tstdrv         ;Drive number valid?
-    jr c,lf149h         ;  Yes: keep it
+    jr c,ccp1           ;  Yes: keep it
     ld (hl),00h         ;   No: reset drive number to 0 (A:)
 
-lf149h:
+ccp1:
     ld c,(hl)           ;C = pass current drive number to CCP
     xor a               ;A=0
     ld (trk_3040),a     ;for CBM 3040/4040 = 0
@@ -583,21 +583,21 @@ tstdrv:
     pop hl              ;  H = CP/M drive number
     ld a,h              ;  A = H
 
-    jr nz,lf215h        ;If drive type is not 4:
+    jr nz,tst1          ;If drive type is not 4:
                         ;  Jump over check specific to type 4
 
                         ;If drive type is 4:
     bit 0,a             ;  Z flag = opposite of bit 0 in drive number
                         ;  For drive type 4 (Corvus 5MB as 1 CP/M drive),
                         ;    only the first drive in each pair is valid.
-    jr lf217h           ;  Jump over drive type check
+    jr tst2             ;  Jump over drive type check
 
-lf215h:                 ;If drive type is not 4:
+tst1:                   ;If drive type is not 4:
     bit 7,c             ;  Z flag = opposite of bit 7 of drive type
                         ;  If bit 7 of the drive type is set, it indicates
                         ;    no drive is installed.
 
-lf217h:
+tst2:
     pop hl              ;Recall original HL
 
                         ;If Z flag is clear:
@@ -637,7 +637,7 @@ read:
     call tstdrv_corv    ;Is it a Corvus hard drive?
     jp c,corv_read_sec  ;  Yes: jump to Corvus read sector
 
-    call sub_f652h
+    call sub_rw
     ld a,01h
     call nz,ieee_read_sec
 
@@ -667,13 +667,13 @@ write:
     push af             ;Save it on the stack
 
     cp 02h              ;Deblocking code = 2?
-    call z,lf63ah       ;  Yes: call lf63ah
+    call z,deblock_2    ;  Yes: call deblock_2
 
                         ;Compare value at 0048h (TODO 0048h?):
     ld hl,0048h         ;  HL = address of 0048h
     ld a,(hl)           ;  A = value stored at 0048h
     or a
-    jr z,lf279h         ;  Jump if A=0
+    jr z,wr1            ;  Jump if A=0
 
     dec (hl)            ;Decrement value at 0048h
 
@@ -681,36 +681,36 @@ write:
     ld a,(drive)        ;  A = CP/M drive number
     ld hl,y_drive       ;  HL = address of y_drive
     cp (hl)
-    jr nz,lf279h        ;  Jump if drive != y_drive
+    jr nz,wr1           ;  Jump if drive != y_drive
 
                         ;Compare CP/M track number:
     ld a,(track)        ;  A = CP/M track number
     ld hl,y_track       ;  HL = address of y_track
     cp (hl)
-    jr nz,lf279h        ;  Jump if track != y_track
+    jr nz,wr1           ;  Jump if track != y_track
 
                         ;Compare CP/M sector number:
     ld a,(sector)       ;  A = CP/M sector number
     ld hl,y_sector      ;  HL = address of y_sector
     cp (hl)
-    jr nz,lf279h        ;  Jump if sector != y_sector
+    jr nz,wr1           ;  Jump if sector != y_sector
 
     inc (hl)            ;Increment y_sector
 
-    call sub_f652h
-    jr lf285h
+    call sub_rw
+    jr wr2
 
-lf279h:
+wr1:
 ;Entered if (0048h)=0 or if drive/track/sector != y_drive/y_track/y_sector
 ;
     xor a               ;A=0
     ld (0048h),a        ;0048h=0 (TODO 0048h?)
-    call sub_f652h
+    call sub_rw
     ld a,00h
     call nz,ieee_read_sec
-                           ;Fall through into lf285h
+                           ;Fall through into wr2
 
-lf285h:
+wr2:
 ;Entered if (0048h)>0 or if drive/track/sector = y_drive/y_track/y_sector
 ;
     ld a,(sector)       ;A = CP/M sector number
@@ -722,7 +722,7 @@ lf285h:
                         ;  (dma_buf -> dos_buf)
     pop af              ;A = deblocking code
     dec a
-    jr nz,lf299h
+    jr nz,wr3
 
     ld a,(dos_err)      ;A = last error code from CBM DOS (0=OK)
     or a
@@ -731,7 +731,7 @@ lf285h:
     xor a               ;Return A=0 (OK)
     ret
 
-lf299h:
+wr3:
     ld a,01h
     ld (wrt_pend),a     ;Set flag to indicate a write is pending for CBM DOS
 
@@ -779,19 +779,19 @@ copy_dos_dma:
     ld de,(dma)         ;DE = pointer to DMA buffer
     ld bc,0080h         ;BC = 128 bytes to copy
 
-    jr nc,lf2c0h        ;If carry is clear, jump to keep HL pointing
+    jr nc,cp1           ;If carry is clear, jump to keep HL pointing
                         ;  at the first half of the CBM DOS buffer
 
     add hl,bc           ;If carry is set, add 0080h to HL to point
                         ;  at the second half of the CBM DOS buffer
-lf2c0h:
+cp1:
     or a
-    jr z,lf2c4h         ;If A = 0, keep HL and DE so that the copy
+    jr z,cp2            ;If A = 0, keep HL and DE so that the copy
                         ;  direction is CBM DOS buffer -> DMA buffer
 
     ex de,hl            ;If A != 0, exchange HL and DE so that the copy
                         ;  direction is DMA buffer -> CBM DOS buffer
-lf2c4h:
+cp2:
     ldir                ;Copy BC bytes from (HL) to (DE)
     ret
 
@@ -802,8 +802,8 @@ corv_init:
     out (corvus),a      ;Send it to the controller
 
     ld b,0ffh
-lf2cdh:
-    djnz lf2cdh         ;Delay loop
+cinit1:
+    djnz cinit1         ;Delay loop
 
     in a,(ppi2_pc)
     and 20h
@@ -837,14 +837,14 @@ corv_read_sec:
     jr nz,corv_ret_err  ;Jump if error code is not OK
 
     ld b,80h            ;B = 128 bytes to read
-lf2fch:
+crds1:
     in a,(ppi2_pc)
     and 10h
-    jr z,lf2fch         ;Wait until Corvus READY=high
+    jr z,crds1          ;Wait until Corvus READY=high
     in a,(corvus)       ;Read data byte from Corvus
     ld (hl),a           ;Store it in the buffer
     inc hl              ;Increment to next position in DMA buffer
-    djnz lf2fch         ;Decrement B, loop until all bytes read
+    djnz crds1          ;Decrement B, loop until all bytes read
 
 corv_ret_ok:
 ;Return to the caller with A=0 (OK status) indicating
@@ -873,14 +873,14 @@ corv_writ_sec:
 
     ld b,80h            ;B = 128 bytes to write
     ld hl,(dma)         ;HL = start address of DMA buffer area
-lf324h:
+cwrs1:
     in a,(ppi2_pc)
     and 10h             ;Mask off all but bit 4 (Corvus READY)
-    jr z,lf324h         ;Wait until Corvus READY=high
+    jr z,cwrs1          ;Wait until Corvus READY=high
     ld a,(hl)           ;Read data byte from DMA buffer
     out (corvus),a      ;Send it to the Corvus
     inc hl              ;Increment to next position in DMA buffer
-    djnz lf324h         ;Decrement B, loop until all bytes written
+    djnz cwrs1          ;Decrement B, loop until all bytes written
 
     call corv_read_err  ;A = Corvus error
     jr z,corv_ret_ok    ;Jump if error code is OK
@@ -939,8 +939,8 @@ corv_read_err:
     jr nz,corv_read_err
 
     ld b,0ah
-lf34bh:
-    djnz lf34bh         ;Delay loop
+crde1:
+    djnz crde1          ;Delay loop
                         ;Fall through into corv_wait_read
 
 corv_wait_read:
@@ -963,10 +963,10 @@ corv_put_byte:
 ;A = byte to send
 ;
     push af
-lf359h:
+corpb1:
     in a,(ppi2_pc)
     and 10h
-    jr z,lf359h         ;Wait until Corvus READY=high
+    jr z,corpb1         ;Wait until Corvus READY=high
     pop af
     out (corvus),a      ;Put byte on Corvus data bus
     ret
@@ -997,10 +997,10 @@ corv_find_dadr:
 
     ld a,00h
     ld b,06h
-lf36ah:
+dadr1:
     add hl,hl
     rla
-    djnz lf36ah         ;Decrement B, loop until B=0
+    djnz dadr1          ;Decrement B, loop until B=0
 
     ld b,a
     ld a,(sector)       ;A = CP/M current sector
@@ -1012,12 +1012,12 @@ lf36ah:
     ld a,(drive)        ;  A = CP/M drive number
     and 01h             ;  Is it the first drive in drive pair (e.g. A:/B:)?
 
-lf37dh:
+dadr2:
     inc ix
     inc ix
     inc ix
     dec a
-    jp p,lf37dh
+    jp p,dadr2
     ld e,(ix+00h)
     ld d,(ix+01h)
     add hl,de
@@ -1059,9 +1059,9 @@ put_hex_nib:
 ;
     and 0fh             ;Mask off high nibble
     cp 0ah              ;Convert low nibble to ASCII char
-    jr c,lf3d0h
+    jr c,nib1
     add a,07h
-lf3d0h:
+nib1:
     add a,30h
     ld c,a
     jp conout           ;Write char to console out and return.
@@ -1110,27 +1110,27 @@ boot:
     ld c,02h            ;C = 2 blinks for RAM failure
     ld hl,0000h         ;RAM start address
     ld de,lf000h        ;RAM end address + 1
-lf3f4h:
+boot1:
     ld (hl),l
     inc hl
     ld a,h
     and 0fh
     or l
-    jr nz,lf402h
+    jr nz,boot2
 
     in a,(ppi2_pc)
     xor 04h
     out (ppi2_pc),a     ;Invert "Ready" LED
 
-lf402h:
+boot2:
     dec de
     ld a,e
     or d
-    jr nz,lf3f4h
+    jr nz,boot1
 
     ld hl,0000h         ;RAM start address
     ld de,lf000h        ;RAM end address + 1
-lf40dh:
+boot3:
     ld a,(hl)
     cp l
     jr nz,test_failed
@@ -1140,20 +1140,20 @@ lf40dh:
     ld a,h
     and 0fh
     or l
-    jr nz,lf420h
+    jr nz,boot4
 
     in a,(ppi2_pc)
     xor 04h
     out (ppi2_pc),a     ;Invert "Ready" LED
-lf420h:
+boot4:
     dec de
     ld a,e
     or d
-    jr nz,lf40dh
+    jr nz,boot3
 
     ld hl,0000h         ;RAM start address
     ld de,lf000h        ;RAM end address + 1
-lf42bh:
+boot5:
     ld a,(hl)
     cpl
     cp l
@@ -1162,16 +1162,16 @@ lf42bh:
     ld a,h
     and 0fh
     or l
-    jr nz,lf43dh
+    jr nz,boot6
 
     in a,(ppi2_pc)
     xor 04h
     out (ppi2_pc),a     ;Invert "Ready" LED
-lf43dh:
+boot6:
     dec de
     ld a,e
     or d
-    jr nz,lf42bh
+    jr nz,boot5
 
     ld hl,lf000h        ;ROM start address
     ld bc,0fffh         ;Number of code bytes in the ROM
@@ -1189,37 +1189,37 @@ test_failed:
 ;
     ld b,c
 
-lf454h:
+fail1:
     xor a
     out (ppi2_pc),a     ;Invert "Ready" LED
 
     ld de,0ffffh
-lf45ah:
+fail2:
     dec de
     ld a,e
     or d
-    jr nz,lf45ah        ;Delay loop
+    jr nz,fail2         ;Delay loop
 
     ld a,04h
     out (ppi2_pc),a     ;Turn off "Ready" LED, turn on "A" and "B" LEDs
 
     ld de,0ffffh
-lf466h:
+fail3:
     dec de
     ld a,e
     or d
-    jr nz,lf466h        ;Delay loop
+    jr nz,fail3         ;Delay loop
 
-    djnz lf454h         ;Decrement B, loop until B=0
+    djnz fail1          ;Decrement B, loop until B=0
 
     ld b,03h
     ld de,0ffffh
-lf472h:
+fail4:
     dec de
     ld a,e
     or d
-    jr nz,lf472h        ;Delay loop
-    djnz lf472h         ;Decrement B, loop until B=0
+    jr nz,fail4         ;Delay loop
+    djnz fail4          ;Decrement B, loop until B=0
 
     jr test_failed
 
@@ -1232,7 +1232,7 @@ calc_checksum:
 ;Returns the checksum in A.
 ;
     xor a               ;A=0
-lf47ch:
+sum1:
     add a,(hl)          ;Add byte at pointer to A
     rrca
     ld d,a              ;Save A in D
@@ -1241,7 +1241,7 @@ lf47ch:
     ld a,b
     or c                ;Test if byte counter is zero
     ld a,d              ;Recall A from D
-    jr nz,lf47ch        ;Loop if more bytes remaining
+    jr nz,sum1          ;Loop if more bytes remaining
     ret
 
 test_passed:
@@ -1335,11 +1335,11 @@ wait_for_atn:
     and dav
     jr nz,wait_for_atn  ;Wait until DAV_IN=low
 
-lf4e0h:
+atn1:
     in a,(ppi2_pa)
     cpl
     and dav
-    jr z,lf4e0h         ;Wait until DAV_IN=high
+    jr z,atn1           ;Wait until DAV_IN=high
 
 try_load_cpm:
 ;Try to load the CP/M system and then run it.
@@ -1410,21 +1410,21 @@ runcpm:
     ld hl,0ec00h        ;HL = source address to read from (?)
     ld de,dtypes        ;DE = pointer to drive types
 
-lf543h:
+run1:
     ld a,(de)           ;A = drive type
     or a
-    jp m,lf57eh         ;Jump if bit 7 is set (indicates no device)
+    jp m,run3           ;Jump if bit 7 is set (indicates no device)
 
     cp 02h              ;01h = Corvus 10MB
     ld bc,004ah
-    jr z,lf567h
+    jr z,run2
 
     cp 03h              ;03h = Corvus 20MB
-    jr z,lf567h
+    jr z,run2
 
     cp 04h              ;04h = Corvus 5MB (as 1 CP/M drive)
     ld bc,0058h
-    jr z,lf567h
+    jr z,run2
 
 ;Build the DPH for the current drive
 ;
@@ -1435,7 +1435,7 @@ lf543h:
     add hl,bc
     ld bc,0020h
 
-lf567h:
+run2:
     ld (ix+0eh),l       ;ALV: address of the allocation vector
     ld (ix+0fh),h       ;     for this drive
 
@@ -1447,7 +1447,7 @@ lf567h:
     ld (ix+00h),00h     ;XLT: address of sector translation table
     ld (ix+01h),00h     ;     (address of zero indicates no translation)
 
-lf57eh:
+run3:
 ;Increment to the next drive
 ;
     ld bc,0010h
@@ -1458,11 +1458,11 @@ lf57eh:
     push af
     or a
     rra
-    jr c,lf543h
+    jr c,run1
 
     inc de
     cp 08h              ;Last drive?
-    jr nz,lf543h        ;  No: continue until all 8 are done
+    jr nz,run1          ;  No: continue until all 8 are done
     pop af
 
     ld a,(dirsize)      ;Get CCP directory width
@@ -1508,16 +1508,16 @@ lf57eh:
 
     ld a,(iobyte)
     rra
-    jr nc,lf5d4h        ;Jump if console is CBM Computer (CON: = CRT:)
+    jr nc,run4          ;Jump if console is CBM Computer (CON: = CRT:)
 
     ld a,(termtype)     ;Get terminal type
     rla                 ;Rotate uppercase graphics flag into carry
-    jr nc,lf5d4h        ;Jump if lowercase mode
+    jr nc,run4          ;Jump if lowercase mode
 
     ld c,ucase          ;Go to uppercase mode
     call conout
 
-lf5d4h:
+run4:
     ld hl,signon
     call puts           ;Write "60K SoftBox CP/M" signon to console out
 
@@ -1565,13 +1565,13 @@ ieee_load_cpm:
                         ;C = number of pages to load (1 page = 256 bytes),
                         ;      which is set by the caller
     ld b,00h            ;B = counts down bytes within each page
-lf61ah:
+ilc1:
     call rdieee         ;Get byte from CP/M image file
     ld (hl),a           ;Store it in memory
     inc hl              ;Increment memory pointer
-    djnz lf61ah         ;Decrement B and loop until current page is done
+    djnz ilc1           ;Decrement B and loop until current page is done
     dec c               ;Decrement C
-    jr nz,lf61ah        ;Loop until all pages are done
+    jr nz,ilc1          ;Loop until all pages are done
     call untalk         ;Send UNTALK
     pop de
 
@@ -1590,7 +1590,7 @@ filename:
 dos_i0_0:
     db "I0"
 
-lf63ah:
+deblock_2:
     ld a,10h            ;  A=10h
     ld (0048h),a        ;Store A in 0048h
                         ;  For all drives, A=10h
@@ -1604,7 +1604,7 @@ lf63ah:
     ld (y_sector),a     ;y_sector = sector
     ret
 
-sub_f652h:
+sub_rw:
 ;Called from read and write
 ;
     ld a,(drive)        ;A = CP/M drive number
@@ -1659,10 +1659,10 @@ ieee_u1_or_u2:
 ;
     ld (hl_tmp),hl      ;Preserve HL
     call find_trk_sec   ;Update dos_trk and dos_sec
-lf694h:
+blk1:
     ld a,03h
     ld (tries),a        ;3 tries
-lf699h:
+blk2:
     ld a,(x_drive)      ;A = CP/M drive number
     call diskcmd        ;Open the command channel
 
@@ -1687,27 +1687,27 @@ lf699h:
     ld a,(x_drive)      ;A = CP/M drive number
     call disksta        ;Read the error channel
     cp 16h              ;Is it 22 Read Error (no data block)?
-    jr nz,lf6d1h        ;  No: jump to handle error
+    jr nz,blk3          ;  No: jump to handle error
 
     ex af,af'
     or a
     ret z
     ex af,af'
 
-lf6d1h:
+blk3:
     ld (dos_err),a      ;Save A as last error code returned from CBM DOS
     or a                ;Set flags
     ret z               ;Return if error code = 0 (OK)
 
     ld hl,tries
     dec (hl)            ;Decrement tries
-    jr z,lf6e4h         ;Give up if number of tries exceeded
+    jr z,blk4           ;Give up if number of tries exceeded
 
     ld a,(x_drive)      ;A = CP/M drive number
     call idrive         ;Initialize the disk drive
-    jr lf699h           ;Try again
+    jr blk2             ;Try again
 
-lf6e4h:
+blk4:
     ld hl,bdos_err_on
     call puts           ;Write "BDOS err on " to console out
 
@@ -1803,9 +1803,9 @@ lf776h:
     call idrive         ;Initialize the disk drive
     ld a,(dos_err)
     cp 1ah
-    jp z,lf694h         ;Try again if error is write protect on
+    jp z,blk1           ;Try again if error is write protect on
     cp 15h
-    jp z,lf694h         ;Try again if error is drive not ready
+    jp z,blk1           ;Try again if error is drive not ready
     ld a,00h
     ret
 
@@ -1887,12 +1887,12 @@ find_trk_sec:
 
     ld bc,ts_cbm3040    ;BC = table for CBM 3040
     ld e,10h            ;E = 16 (first reserved track on CBM 3040/4040)
-    jr z,lf8ach         ;Jump if drive type = 0 (CBM 3040/4040)
+    jr z,fts1           ;Jump if drive type = 0 (CBM 3040/4040)
 
     ld ix,trk_8050      ;IX = 0058h for CBM 8050 (TODO what is 0058h?)
     ld bc,ts_cbm8050    ;BC = table for CBM 8050
     ld e,25h            ;E = 37 (first reserved track on CBM 8050)
-lf8ach:
+fts1:
     ;BC = drive specific table
     ;E = 16 for 3040/4040
     ;E = 37 for 8050
@@ -1915,33 +1915,33 @@ lf8ach:
     ld h,00h            ;H = 0
     add hl,hl           ;HL = HL * 2 (One word for one track)
     add hl,bc
-lf8c5h:
+fts2:
     ;DE = (CP/M track * 16) + (CP/M sector)
     ld a,e              ;A = low absolute sector count
     sub (hl)            ;Subtract the low absolute sector count
     inc hl              ;Increment HL to high byte
     ld a,d              ;A = high absolute  sector count
     sbc a,(hl)          ;Subtract the high absolute sector count
-    jr nc,lf8d4h        ;Is sector in this or higher DOS track
+    jr nc,fts3          ;Is sector in this or higher DOS track
     dec (ix+00h)        ;Decrement DOS track
     dec hl              ;Decrement HL to low byte
 
     dec hl
     dec hl              ;Decrement HL by 2 for next track
-    jr lf8c5h
+    jr fts2
 
-lf8d4h:
+fts3:
     inc hl              ;Increment HL for next track
     ld a,e              ;A = low absolute sector count
     cp (hl)             ;Compare the low absolute sector count
     inc hl              ;Increment HL to high byte
     ld a,d              ;A = high absolute sector count
     sbc a,(hl)          ;Subtract the high absolute sector count
-    jr c,lf8e1h         ;Is sector in this track?
+    jr c,fts4           ;Is sector in this track?
     inc (ix+00h)        ;Increment DOS track
-    jr lf8d4h
+    jr fts3
 
-lf8e1h:
+fts4:
     inc (ix+00h)        ;Increment DOS track
     dec hl              ;Decrement HL to low byte
 
@@ -2010,10 +2010,10 @@ ieeenum:
     call wrieee         ;Send space character
     pop af
     ld e,2fh
-lf9dch:
+num1:
     sub 0ah
     inc e
-    jr nc,lf9dch
+    jr nc,num1
     add a,3ah
     push af
     ld a,e
@@ -2040,13 +2040,13 @@ ieee_rd_err_d:
     ld e,0fh
     call talk
     ld hl,errbuf
-lf9f7h:
+rderr1:
     call rdieee
     ld (hl),a
     sub 30h
-    jr c,lf9f7h
+    jr c,rderr1
     cp 0ah
-    jr nc,lf9f7h
+    jr nc,rderr1
     inc hl
     ld b,a
     add a,a
@@ -2061,15 +2061,15 @@ lf9f7h:
     add a,b
     push af
     ld c,3ch
-lfa15h:
+rderr2:
     call rdieee
     dec c
-    jp m,lfa1eh
+    jp m,rderr3
     ld (hl),a
     inc hl
-lfa1eh:
+rderr3:
     cp cr
-    jr nz,lfa15h
+    jr nz,rderr2
     call untalk
     pop af
     ret
@@ -2238,10 +2238,10 @@ idrive:
                         ;  number indicates either drive 0 (bit 0 clear)
                         ;  or drive 1 (bit 0 set).
 
-    jr nc,lfb05h        ;Jump to keep "I0" string if CBM drive 0
+    jr nc,idrv1         ;Jump to keep "I0" string if CBM drive 0
 
     ld hl,dos_i1        ;HL = pointer to "I1" string for CBM drive 1
-lfb05h:
+idrv1:
     call open
     pop de
     ld e,02h            ;E = IEEE-488 secondary address 2
@@ -2284,7 +2284,7 @@ talk:
                         ;Send secondary address if any:
     ld a,e              ;  Low nibble (E) = secondary address
     or 60h              ;  High nibble (6) = Secondary Command Group
-    call p,wrieee        ;Send the byte only if bit 7 is clear
+    call p,wrieee       ;Send the byte only if bit 7 is clear
 
     in a,(ppi2_pb)
     or ndac+nrfd
@@ -2299,9 +2299,9 @@ release_atn:
     and 255-atn
     out (ppi2_pb),a     ;ATN_OUT=high
     ld a,19h
-lfb4ch:
+relatn1:
     dec a
-    jr nz,lfb4ch        ;Delay loop
+    jr nz,relatn1       ;Delay loop
     pop af
     ret
 
@@ -2339,7 +2339,7 @@ listen:
                         ;Send secondary address if any:
     ld a,e              ;  Low nibble (E) = secondary address
     or 60h              ;  High nibble (6) = Secondary Command Group
-    call p,wrieee        ;Send the byte only if bit 7 is clear
+    call p,wrieee       ;Send the byte only if bit 7 is clear
 
     jr release_atn      ;Jump out to release ATN
 
@@ -2385,7 +2385,7 @@ open:
     call wratn
 
     dec c
-    call nz,ieeemsg      ;Send string except for last char
+    call nz,ieeemsg     ;Send string except for last char
 
     ld a,(hl)
     call wreoi          ;Send the last char with EOI asserted
@@ -2428,9 +2428,9 @@ delay_1ms:
 ;
     push bc             ;Preserve BC
     ld b,0c8h           ;B=0c8h
-lfbc2h:
+ms1:
     add a,00h           ;A=A+0
-    djnz lfbc2h         ;Decrement B, loop until B=0
+    djnz ms1            ;Decrement B, loop until B=0
     pop bc              ;Restore BC
     ret
 
@@ -2616,9 +2616,9 @@ move_send:
     ld hl,x_offset
     sub (hl)
     cp 60h
-    jr c,lfc81h
+    jr c,movsnd1
     sub 60h
-lfc81h:
+movsnd1:
     add a,20h
     ld c,a
     call conout_cbm     ;Send X-position byte for move-to
@@ -2680,10 +2680,10 @@ cbm_srq:
 ;The carry flag will be set if a key is available, clear if not.
 ;
     push af
-lfcb1h:
+srq1:
     in a,(ppi1_pa)
     or a
-    jr nz,lfcb1h        ;Wait for IEEE data bus to be released
+    jr nz,srq1          ;Wait for IEEE data bus to be released
 
     pop af
     out (ppi1_pb),a     ;Write data byte to IEEE data bus
@@ -2696,10 +2696,10 @@ lfcb1h:
     and 255-srq
     out (ppi2_pb),a     ;SRQ_OUT=high
 
-lfcc5h:
+srq2:
     in a,(ppi1_pa)      ;Read IEEE data byte
     and 0c0h            ;Mask off all except bits 6 and 7
-    jr z,lfcc5h         ;Wait until CBM changes one of those bits
+    jr z,srq2           ;Wait until CBM changes one of those bits
 
     rla                 ;Rotate bit 7 (key available status) into carry flag
     push af             ;Push flags to save carry
@@ -2707,10 +2707,10 @@ lfcc5h:
     ld a,00h
     out (ppi1_pb),a     ;Release IEEE data lines
 
-lfcd1h:
+srq3:
     in a,(ppi1_pa)
     or a
-    jr nz,lfcd1h        ;Wait for IEEE data bus to be released
+    jr nz,srq3          ;Wait for IEEE data bus to be released
 
     pop af              ;Pop flags to restore carry
     ret
@@ -3136,16 +3136,16 @@ wrieee:
 ;Returns carry flag set if an error occurred, clear if OK.
 ;
     push af             ;Push data byte
-lfe93h:
+wri1:
     in a,(ppi2_pa)
     cpl
     and nrfd
-    jr z,lfe93h         ;Wait until NRFD_IN=high
+    jr z,wri1           ;Wait until NRFD_IN=high
 
     in a,(ppi2_pa)
     cpl
     and ndac
-    jr nz,lfeceh        ;Jump to error if NDAC_IN=high
+    jr nz,wri4          ;Jump to error if NDAC_IN=high
 
     pop af              ;Push data byte
     out (ppi1_pb),a     ;Write byte to IEEE-488 data lines
@@ -3154,11 +3154,11 @@ lfe93h:
     or dav
     out (ppi2_pb),a     ;DAV_OUT=low
 
-lfeaah:
+wri2:
     in a,(ppi2_pa)
     cpl
     and ndac
-    jr z,lfeaah         ;Wait until NDAC_IN=high
+    jr z,wri2           ;Wait until NDAC_IN=high
 
     in a,(ppi2_pb)
     and 255-dav
@@ -3167,11 +3167,11 @@ lfeaah:
     xor a
     out (ppi1_pb),a     ;Release IEEE-488 data lines
 
-lfebah:
+wri3:
     in a,(ppi2_pa)
     cpl
     and ndac
-    jr nz,lfebah        ;Wait until NDAC_IN=low
+    jr nz,wri3          ;Wait until NDAC_IN=low
 
     ex (sp),hl          ;Waste time
     ex (sp),hl
@@ -3181,12 +3181,12 @@ lfebah:
     in a,(ppi2_pa)
     cpl
     and ndac
-    jr nz,lfebah        ;Wait until NDAC_IN=low
+    jr nz,wri3          ;Wait until NDAC_IN=low
 
     or a                ;Clear carry flag to indicate OK
     ret
 
-lfeceh:
+wri4:
     pop af              ;Pop data byte
     scf                 ;Set carry flag to indicate error
     ret
@@ -3198,21 +3198,21 @@ cbm_put_byte:
 ;
     out (ppi1_pb),a     ;Put byte on IEEE data bus
 
-lfed3h:
+cpb1:
     in a,(ppi2_pa)
     cpl
     and nrfd
-    jr z,lfed3h         ;Wait until NRFD_IN=high
+    jr z,cpb1           ;Wait until NRFD_IN=high
 
     in a,(ppi2_pb)
     or dav
     out (ppi2_pb),a     ;DAV_OUT=low
 
-lfee0h:
+cpb2:
     in a,(ppi2_pa)
     cpl
     and ndac
-    jr z,lfee0h         ;Wait until NDAC_IN=high
+    jr z,cpb2           ;Wait until NDAC_IN=high
 
     in a,(ppi2_pb)
     and 255-dav
@@ -3233,7 +3233,7 @@ rdimm:
     in a,(ppi2_pb)
     and 255-nrfd
     out (ppi2_pb),a     ;NRFD_OUT=high
-lfef7h:
+rdm1:
     in a,(ppi2_pa)
     cpl
     and dav
@@ -3242,7 +3242,7 @@ lfef7h:
     dec bc              ;Decrement BC
     ld a,b
     or c
-    jr nz,lfef7h        ;Loop until BC=0
+    jr nz,rdm1          ;Loop until BC=0
     scf
     ret
 
@@ -3256,11 +3256,11 @@ rdieee:
     in a,(ppi2_pb)
     and 255-nrfd
     out (ppi2_pb),a     ;NRFD_OUT=high
-lff0eh:
+rdi1:
     in a,(ppi2_pa)
     cpl
     and dav
-    jr nz,lff0eh        ;Wait until DAV_IN=low
+    jr nz,rdi1          ;Wait until DAV_IN=low
                         ;Fall through to read the byte
 
 ieee_dav_get:
@@ -3287,11 +3287,11 @@ ieee_dav_get:
     and 255-ndac
     out (ppi2_pb),a     ;NDAC_OUT=high
 
-lff29h:
+idg1:
     in a,(ppi2_pa)
     cpl
     and dav
-    jr z,lff29h         ;Wait until DAV_IN=high
+    jr z,idg1           ;Wait until DAV_IN=high
 
     in a,(ppi2_pb)
     or ndac
