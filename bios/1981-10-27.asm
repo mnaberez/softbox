@@ -1965,37 +1965,38 @@ fts4:
     ret
 
 ts_cbm3040:
-    dw    0             ;Start mark track 0
-                        ;Track  1 .. 15
-    dw   21,  42,  63,  84, 105, 126, 147, 168, 189, 210  ;21 sectors per track
+    ;Start mark: track 0
+    dw    0
+    ;Tracks 1..15: 21 sectors per track
+    dw   21,  42,  63,  84, 105, 126, 147, 168, 189, 210
     dw  231, 252, 273, 294, 315
-                        ;Track 16 .. 18 is reserved for CBM DOS
-                        ;Track 19 .. 24
-    dw  334, 353, 372, 391, 410, 429                      ;19 sectors per track
-                        ;Track 25 .. 30
-    dw  447, 465, 483, 501, 519, 537                      ;18 sectors per track
-                        ;Track 31 .. 34
-    dw  554, 571, 588, 605                                ;17 sectors per track
-    dw  -1              ;End mark track 35
+    ;Tracks 16..18: reserved for CBM DOS
+    ;Tracks 19..24: 19 sectors per track
+    dw  334, 353, 372, 391, 410, 429
+    ;Tracks 25..30: 18 sectors per track
+    dw  447, 465, 483, 501, 519, 537
+    ;Tracks 31..34: 17 sectors per track
+    dw  554, 571, 588, 605
+    ;End mark: track 35
+    dw  -1
 
 ts_cbm8050:
-    dw    0             ;Start mark track 0
-                        ;Track  1 .. 36
-    dw   29,  58,  87, 116, 145, 174, 203, 232, 261, 290  ;29 sectors per track
+    ;Start mark: track 0
+    dw    0
+    ;Tracks 1..36: 29 sectors per track
+    dw   29,  58,  87, 116, 145, 174, 203, 232, 261, 290
     dw  319, 348, 377, 406, 435, 464, 493, 522, 551, 580
     dw  609, 638, 667, 696, 725, 754, 783, 812, 841, 870
     dw  899, 928, 957, 986,1015,1044
-                        ;Track 37 .. 39 is reserved for CBM DOS
-                        ;Track 40 .. 53
-    dw 1071,1098,1125,1152,1179,1206,1233,1260,1287,1314  ;27 sectors per track
-    dw 1341,1368,1395,1422
-                        ;Track 54 .. 64
-    dw 1447,1472,1497,1522,1547,1572,1597,1622,1647,1672  ;25 sectors per track
-    dw 1697
-                        ;Track 65 .. 76
-    dw 1720,1743,1766,1789,1812,1835,1858,1881,1904,1927  ;23 sectors per track
-    dw 1950,1973
-    dw  -1              ;End mark track 77
+    ;Tracks 37..39: reserved for CBM DOS
+    ;Tracks 40..53: 27 sectors per track
+    dw 1071,1098,1125,1152,1179,1206,1233,1260,1287,1314,1341,1368,1395,1422
+    ;Tracks 54..64: 25 sectors per track
+    dw 1447,1472,1497,1522,1547,1572,1597,1622,1647,1672,1697
+    ;Tracks 65..76: 23 sectors per track
+    dw 1720,1743,1766,1789,1812,1835,1858,1881,1904,1927,1950,1973
+    ;End mark: track 77
+    dw  -1
 
 ieeenum:
 ;Send a number as decimal string to IEEE-488 device
