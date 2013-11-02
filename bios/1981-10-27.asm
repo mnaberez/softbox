@@ -1007,7 +1007,7 @@ lf36ah:
     or l
     ld l,a
 
-    ld ix,lf3d6h-3
+    ld ix,corv_offs-3
 
     ld a,(drive)        ;  A = CP/M drive number
     and 01h             ;  Is it the first drive in drive pair (e.g. A:/B:)?
@@ -1067,11 +1067,13 @@ lf3d0h:
     jp conout           ;Write char to console out and return.
 
 
-lf3d6h:
-    dw 005ch
+corv_offs:
+;Logical sector offsets for calculating a Corvus DADR
+;
+    dw 005ch            ;005ch = First half of a Corvus hard drive
     db 00h
 
-    dw 941ch
+    dw 941ch            ;941ch = Second half of a Corvus hard drive
     db 00h
 
 boot:
