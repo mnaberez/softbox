@@ -1855,10 +1855,10 @@ dos_u1_2:
     db "U1 2 "
 
 dos_u2_2:
-	db "U2 2 "
+    db "U2 2 "
 
 newline:
-	db cr,lf,0
+    db cr,lf,0
 
 find_trk_sec:
 ;Find the CBM DOS track and sector for the current CP/M track and sector.
