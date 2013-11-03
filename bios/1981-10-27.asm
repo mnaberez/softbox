@@ -934,7 +934,7 @@ corv_read_err:
 ;  0F Illegal Command           1F (Unused)
 ;
     in a,(ppi2_pc)
-    and 20h
+    and 20h             ;Mask off all except bit 5 (Corvus DIRC)
     jr nz,corv_read_err
 
     ld b,0ah
@@ -943,12 +943,12 @@ crde1:
                         ;Fall through into corv_wait_read
 
 corv_wait_read:
-;Wait until Corvus READY=high, then a data byte from Corvus.
+;Wait until Corvus READY=high, then read a data byte from the Corvus.
 ;
 ;Returns the data byte in A and sets the Z flag: Z=1 if OK, Z=0 if error.
 ;
     in a,(ppi2_pc)
-    and 10h             ;Mask off all but bit 4 (Corvus READY)
+    and 10h             ;Mask off all except bit 4 (Corvus READY)
     jr z,corv_wait_read ;Wait until Corvus READY=high
     in a,(corvus)
     bit 7,a             ;Bit 7 of Corvus error byte is set if fatal error
@@ -964,7 +964,7 @@ corv_put_byte:
     push af
 corpb1:
     in a,(ppi2_pc)
-    and 10h
+    and 10h             ;Mask off all except bit 4 (Corvus READY)
     jr z,corpb1         ;Wait until Corvus READY=high
     pop af
     out (corvus),a      ;Put byte on Corvus data bus
@@ -1875,7 +1875,7 @@ find_trk_sec:
 ;    Set x_drive = 0
 ;    Set dtype for drive 0 (0ea70h): 0=3040/4040, 1=8050
 ;    Set x_track and x_sector with CP/M track and sector.
-;    Call find_trk_sec (0f890h).
+;    Call find_trk_sec.
 ;    Read dos_trk and dos_sec for CBM DOS track and sector.
 ;
     ld a,(x_drive)
