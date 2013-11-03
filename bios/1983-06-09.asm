@@ -1471,30 +1471,30 @@ runcpm:
 run1:
     ld a,(de)           ;A = drive type
     or a
-    jp m,run4           ;Jump if bit 7 is set (indicates no device)
+    jp m,run3           ;Jump if bit 7 is set (indicates no device)
 
     cp 02h              ;01h = Corvus 10MB
     ld bc,004ah
-    jr z,run3
+    jr z,run2
 
     cp 03h              ;03h = Corvus 20MB
-    jr z,run3
+    jr z,run2
 
     cp 04h              ;04h = Corvus 5MB (as 1 CP/M drive)
     ld bc,0058h
-    jr z,run3
+    jr z,run2
 
     push af
     ld a,10h
     ld (0058h),a
     pop af
     cp 06h              ;06h = CBM 8250
-    jp nz,run2
+    jp nz,run5
 
     ld a,20h
     ld (0058h),a
 
-run2:
+run5:
 ;Build the DPH for the current drive
 ;
     ld (ix+0ch),l       ;CSV: address of the directory checksum vector
@@ -1508,7 +1508,7 @@ run2:
     rla
     ld c,a
 
-run3:
+run2:
     ld (ix+0eh),l       ;ALV: address of the allocation vector
     ld (ix+0fh),h       ;     for this drive
 
@@ -1520,7 +1520,7 @@ run3:
     ld (ix+00h),00h     ;XLT: address of sector translation table
     ld (ix+01h),00h     ;     (address of zero indicates no translation)
 
-run4:
+run3:
 ;Increment to the next drive
 ;
     ld bc,0010h
@@ -1581,16 +1581,16 @@ run4:
 
     ld a,(iobyte)
     rra
-    jr nc,run5          ;Jump if console is CBM Computer (CON: = CRT:)
+    jr nc,run4          ;Jump if console is CBM Computer (CON: = CRT:)
 
     ld a,(termtype)     ;Get terminal type
     rla                 ;Rotate uppercase graphics flag into carry
-    jr nc,run5          ;Jump if lowercase mode
+    jr nc,run4          ;Jump if lowercase mode
 
     ld c,ucase          ;Go to uppercase mode
     call conout
 
-run5:
+run4:
     ld hl,signon
     call puts           ;Write "60K SoftBox CP/M" signon to console out
 
