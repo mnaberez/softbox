@@ -1817,33 +1817,33 @@ blk4:
     ld hl,cbm_dos_errs  ;HL = pointer to CBM DOS error table
     call put_dos_error  ;Display an error message
 
-blk5:
+blk6:
     call conin          ;Wait for a key to be pressed
 
     cp ctrl_c           ;Control-C pressed?
     jp z,jp_warm        ;  Yes: Jump to BDOS warm start
 
     cp '?'              ;Question mark pressed?
-    jr nz,blk7          ;  No: Jump over printing CBM DOS error msg
+    jr nz,blk8          ;  No: Jump over printing CBM DOS error msg
 
     ld hl,newline
     call puts           ;Write a newline to console out
 
     ld hl,errbuf        ;HL = pointer to CBM DOS error message
                         ;     like "23,READ ERROR,45,27,0",0Dh
-blk6:
+blk7:
     ld a,(hl)           ;Get a char from CBM DOS error message
     cp cr
-    jr z,blk5           ;Jump if end of CBM DOS error message reached
+    jr z,blk6           ;Jump if end of CBM DOS error message reached
 
     ld c,a
     push hl
     call conout         ;Write char from CBM DOS error msg to console out
     pop hl
     inc hl              ;Increment to next char
-    jr blk6             ;Loop to continue printing the error msg
+    jr blk7             ;Loop to continue printing the error msg
 
-blk7:
+blk8:
     ld a,(x_drive)      ;A = CP/M drive number
     call idrive         ;Initialize the disk drive
     ld a,(dos_err)

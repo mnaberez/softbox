@@ -1722,82 +1722,82 @@ blk4:
 
     ld hl,cbm_err_26
     cp 26
-    jr z,lf750h
+    jr z,blk5
 
     ld hl,cbm_err_25
     cp 25
-    jr z,lf750h
+    jr z,blk5
 
     ld hl,cbm_err_28
     cp 28
-    jr z,lf750h
+    jr z,blk5
 
     ld hl,cbm_err_20
     cp 20
-    jr z,lf750h
+    jr z,blk5
 
     ld hl,cbm_err_21
     cp 21
-    jr z,lf750h
+    jr z,blk5
 
     cp 74
-    jr z,lf750h
+    jr z,blk5
 
     ld hl,cbm_err_22
     cp 22
-    jr z,lf750h
+    jr z,blk5
 
     ld hl,cbm_err_23
     cp 23
-    jr z,lf750h
+    jr z,blk5
 
     ld hl,cbm_err_27
     cp 27
-    jr z,lf750h
+    jr z,blk5
 
     ld hl,cbm_err_24
     cp 24
-    jr z,lf750h
+    jr z,blk5
 
     ld hl,cbm_err_70
     cp 70
-    jr z,lf750h
+    jr z,blk5
 
     ld hl,cbm_err_73
     cp 73
-    jr z,lf750h
+    jr z,blk5
 
     ld hl,cbm_err_xx
-lf750h:
+blk5:
     call puts
 
-lf753h:
+blk6:
     call conin          ;Wait for a key to be pressed
 
     cp ctrl_c           ;Control-C pressed?
     jp z,jp_warm        ;  Yes: Jump to BDOS warm start
 
     cp '?'              ;Question mark pressed?
-    jr nz,lf776h        ;  No: Jump over printing CBM DOS error msg
+    jr nz,blk8          ;  No: Jump over printing CBM DOS error msg
 
     ld hl,newline
     call puts           ;Write a newline to console out
 
     ld hl,errbuf        ;HL = pointer to CBM DOS error message
                         ;     like "23,READ ERROR,45,27,0",0Dh
-lf768h:
+blk7:
     ld a,(hl)           ;Get a char from CBM DOS error message
     cp cr
-    jr z,lf753h         ;Jump if end of CBM DOS error message reached
+    jr z,blk6           ;Jump if end of CBM DOS error message reached
 
     ld c,a
     push hl
     call conout         ;Write char from CBM DOS error msg to console out
     pop hl
     inc hl              ;Increment to next char
-    jr lf768h           ;Loop to continue printing the error msg
+    jr blk7             ;Loop to continue printing the error msg
 
-lf776h:
+blk8:
     ld a,(x_drive)      ;A = CP/M drive number
     call idrive         ;Initialize the disk drive
     ld a,(dos_err)
