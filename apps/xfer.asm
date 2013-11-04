@@ -135,7 +135,7 @@ seq_from_pet:
                         ;  source file, create the CP/M destination file
 
     ld hl,dma_buf
-l015ah:
+sfp1:
     call cbm_get_byte   ;Read a data byte from the CBM drive
     ld d,a              ;Save the byte in D
 
@@ -146,10 +146,10 @@ l015ah:
     ld a,(insert_lf)    ;A = insert linefeeds flag
     or a                ;Set flags
     ld a,d              ;Recall data byte
-    jr z,l0174h         ;Jump if insert linefeeds = off
+    jr z,sfp2           ;Jump if insert linefeeds = off
 
     cp cr               ;Is the byte a carriage return?
-    jr nz,l0174h        ;  No: jump over skip over LF insertion
+    jr nz,sfp2          ;  No: jump over skip over LF insertion
 
                         ;The value is a carriage return and insert linefeed
                         ;mode is on.  Send CR+LF.
@@ -158,11 +158,11 @@ l015ah:
     ld a,lf             ;A = linefeed
                         ;Fall through to write LF to file
 
-l0174h:
+sfp2:
     call dma_write      ;Write byte to DMA buffer, advance DMA pointer in HL
 
     pop af              ;Pop EOI state from the stack
-    jr z,l015ah         ;Loop for next byte if EOI=high indicating more data
+    jr z,sfp1           ;Loop for next byte if EOI=high indicating more data
                         ;  (IEEE-488 line states are inverted)
 
                         ;Fall through into from_pet_done
@@ -192,12 +192,12 @@ from_pet_done:
 
                         ;Flush anything left in the DMA buffer:
     ld b,7fh            ;  B = num EOF bytes to write (CP/M sector size - 1)
-l0183h:                 ;
+fpd1:                   ;
     push bc             ;
     ld a,eof            ;  A = End of File marker (CTRL-Z)
     call dma_write      ;  Write EOF to DMA buffer, advance DMA pointer in HL
     pop bc              ;
-    djnz l0183h         ;  Decrement B, loop until B=0
+    djnz fpd1           ;  Decrement B, loop until B=0
 
                         ;Close CP/M file:
     ld de,fcb           ;  DE = address of FCB
@@ -361,11 +361,11 @@ bas_num:
 
     ld a,2fh            ;Seed A with 2Fh = ASCII "0" - 1
 
-l0227h:                 ;Subtract BC from HL until HL goes negative:
+bn1:                    ;Subtract BC from HL until HL goes negative:
     inc a               ;  Increment to next ASCII digit (e.g. "0" to "1")
     or a                ;  Set flags
     sbc hl,bc           ;  HL = HL - (BC + carry)
-    jr nc,l0227h        ;  Loop until carry flag is set (borrow)
+    jr nc,bn1           ;  Loop until carry flag is set (borrow)
 
     add hl,bc           ;Roll back HL to before borrow: HL = HL + BC
 
@@ -412,7 +412,7 @@ open_cbm_src:
 ;Exits back to CP/M if any error occurs.
 ;
     push af             ;Push file type char onto stack
-l0248h:
+ocs1:
     ld de,ask_src_drive ;DE = address of "PET DOS source drive (A-P)?"
     ld c,cwritestr      ;C = Output String
     call bdos           ;BDOS system call
@@ -422,7 +422,7 @@ l0248h:
     sub 41h             ;Convert drive letter to number (A=0, B=1, C=2, ...)
     ld (src_drive),a    ;Save the source drive number
     call tdtdrv         ;Check if drive is valid (carry set = valid)
-    jr c,l026ah         ;Jump if drive is valid
+    jr c,ocs2           ;Jump if drive is valid
 
                         ;The drive letter entered is not valid.
 
@@ -430,9 +430,9 @@ l0248h:
     ld c,cwritestr      ;C = Output String
     call bdos           ;BDOS system call
 
-    jr l0248h           ;Prompt for drive letter again.
+    jr ocs1             ;Prompt for drive letter again.
 
-l026ah:
+ocs2:
     ld de,ask_src_file  ;DE = address of "PET DOS source file? "
     ld c,cwritestr      ;C = Output String
     call bdos           ;BDOS system call
@@ -548,7 +548,7 @@ seq_to_pet:
     sub 41h             ;Convert drive letter to number (A=0, B=1, C=2, ...)
     ld (src_drive),a    ;Save the source drive number
     call tdtdrv         ;Check if drive is valid (carry set = valid)
-    jr c,l0301h         ;Jump if drive is valid
+    jr c,stp1           ;Jump if drive is valid
 
     ld de,bad_drive     ;DE = address of "Bad drive"
     ld c,cwritestr      ;C = Output String
@@ -556,7 +556,7 @@ seq_to_pet:
 
     jr seq_to_pet       ;Prompt for drive letter again.
 
-l0301h:
+stp1:
     ld de,ask_dest_file ;DE = address of "PET DOS destination file?"
     ld c,cwritestr      ;C = Output String
     call bdos           ;BDOS system call
@@ -724,23 +724,23 @@ input:
     ld b,a              ;Move number of chars in buffer to B
     inc b               ;Increment B
 
-l03ceh:
+inp1:
     ld a,(hl)           ;Get a char from the buffer
 
     cp 61h              ;Set carry if A < 97, clear carry if A >= 97
-    jr c,l03dah         ;Jump if A < 97 (ASCII "a")
+    jr c,inp2           ;Jump if A < 97 (ASCII "a")
 
     cp 7bh              ;Set carry if A < 123, clear carry if A >= 123
-    jr nc,l03dah        ;Jump if A >= 123 (ASCII "z" + 1)
+    jr nc,inp2          ;Jump if A >= 123 (ASCII "z" + 1)
 
                         ;Char is in the range of 97 ("a") and 123 ("z").
 
     sub 20h             ;Convert ASCII lowercase to uppercase
     ld (hl),a           ;Save it back to the buffer
 
-l03dah:
+inp2:
     inc hl              ;Increment pointer to next char in the buffer
-    djnz l03ceh         ;Decrement B, loop until B=0
+    djnz inp1           ;Decrement B, loop until B=0
 
     dec hl              ;Decrement HL.  It is now pointing at the
                         ;  at the next byte after data.
@@ -764,7 +764,7 @@ exit_dos_err:
     call bdos           ;BDOS system call
 
     ld hl,errbuf        ;HL = address of last CBM DOS error message
-l03f7h:
+ede1:
     push hl             ;Save HL
     ld e,(hl)           ;E = char from CBM DOS error message
     ld c,cwrite         ;C = write char to console out
@@ -774,7 +774,7 @@ l03f7h:
     ld a,(hl)           ;A = char from CBM DOS error message
     inc hl              ;Increment to next char in the message
     cp cr               ;Is this char a carriage return?
-    jr nz,l03f7h        ;  No: loop to handle next char
+    jr nz,ede1          ;  No: loop to handle next char
     jp warm             ;Warm start
 
 newline:
