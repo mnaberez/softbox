@@ -108,6 +108,7 @@ x_sector: equ  0047h    ;  Sector number
 y_drive:  equ  0049h    ;  Drive number (0=A, 1=B, 2=C, etc.)
 y_track:  equ  004ah    ;  Track number (only 1 byte)
 y_sector: equ  004bh    ;  Sector number
+
 wrt_pend: equ  004ch    ;CBM DOS buffer state (1=write is pending, 0=none)
 dos_trk:  equ  004dh    ;CBM DOS track number
 dos_sec:  equ  004eh    ;CBM DOS sector number
@@ -3058,6 +3059,7 @@ poke:
     call cbm_put_byte   ;Send low byte of CBM start address
     ld a,d
     call cbm_put_byte   ;Send high byte
+
 poke_loop:
     ld a,(hl)           ;Read byte at pointer
     call cbm_put_byte   ;Send it to the CBM
