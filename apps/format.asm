@@ -1,6 +1,13 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=format.asm format.com
 
+bdos:          equ  0005h   ;BDOS entry point
+
+cread:         equ 01h      ;Console Input
+cwrite:        equ 02h      ;Console Output
+cwritestr:     equ 09h      ;Output String
+creadstr:      equ 0ah      ;Buffered Console Input
+
     org 0100h
 
     jp l011eh           ;0100 c3 1e 01
@@ -383,9 +390,9 @@ l04f2h:
 ; LOADSAVE.REL code below ==================================================
 
 sub_04f8h:
-    ld c,0ah            ;04f8 0e 0a
+    ld c,creadstr       ;04f8 0e 0a
     ld de,0080h         ;04fa 11 80 00
-    jp 0005h            ;04fd c3 05 00
+    jp bdos             ;04fd c3 05 00
     ld bc,1c00h         ;0500 01 00 1c
     ld hl,4000h         ;0503 21 00 40
     ld de,0d400h        ;0506 11 00 d4
@@ -531,22 +538,22 @@ sub_05f4h:
     or a                ;05fe b7
     ret z               ;05ff c8
     ld de,l0622h        ;0600 11 22 06
-    ld c,09h            ;0603 0e 09
-    call 0005h          ;0605 cd 05 00
+    ld c,cwritestr      ;0603 0e 09
+    call bdos           ;0605 cd 05 00
     ld hl,0eac0h        ;0608 21 c0 ea
 l060bh:
     ld e,(hl)           ;060b 5e
     push hl             ;060c e5
-    ld c,02h            ;060d 0e 02
-    call 0005h          ;060f cd 05 00
+    ld c,cwrite         ;060d 0e 02
+    call bdos           ;060f cd 05 00
     pop hl              ;0612 e1
     inc hl              ;0613 23
     ld a,(hl)           ;0614 7e
     cp 0dh              ;0615 fe 0d
     jr nz,l060bh        ;0617 20 f2
     ld de,l0632h        ;0619 11 32 06
-    ld c,09h            ;061c 0e 09
-    call 0005h          ;061e cd 05 00
+    ld c,cwritestr      ;061c 0e 09
+    call bdos           ;061e cd 05 00
     ret                 ;0621 c9
 l0622h:
     dec c               ;0622 0d
@@ -747,10 +754,10 @@ l07beh:
     ret                 ;07d0 c9
 l07d1h:
     ld de,l07deh        ;07d1 11 de 07
-    ld c,09h            ;07d4 0e 09
-    call 0005h          ;07d6 cd 05 00
+    ld c,cwritestr      ;07d4 0e 09
+    call bdos           ;07d6 cd 05 00
     ld c,01h            ;07d9 0e 01
-    jp 0005h            ;07db c3 05 00
+    jp bdos             ;07db c3 05 00
 l07deh:
     dec c               ;07de 0d
     ld a,(bc)           ;07df 0a
@@ -867,7 +874,7 @@ l08a9h:
     ret                 ;08b2 c9
     ld a,(bc)           ;08b3 0a
     ld c,a              ;08b4 4f
-    jp 0005h            ;08b5 c3 05 00
+    jp bdos             ;08b5 c3 05 00
     ex de,hl            ;08b8 eb
     pop hl              ;08b9 e1
     ld c,(hl)           ;08ba 4e
@@ -1025,9 +1032,9 @@ sub_098bh:
     push de             ;098c d5
     push bc             ;098d c5
     push af             ;098e f5
-    ld c,02h            ;098f 0e 02
+    ld c,cwrite         ;098f 0e 02
     ld e,a              ;0991 5f
-    call 0005h          ;0992 cd 05 00
+    call bdos           ;0992 cd 05 00
     pop af              ;0995 f1
     pop bc              ;0996 c1
     pop de              ;0997 d1
@@ -1038,8 +1045,8 @@ l099ah:
     push de             ;099a d5
     push bc             ;099b c5
     push hl             ;099c e5
-    ld c,01h            ;099d 0e 01
-    call 0005h          ;099f cd 05 00
+    ld c,cread          ;099d 0e 01
+    call bdos           ;099f cd 05 00
     pop hl              ;09a2 e1
     ld (hl),a           ;09a3 77
     inc hl              ;09a4 23
