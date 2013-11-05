@@ -33,7 +33,7 @@ creadstr:      equ 0ah    ;Buffered Console Input
 
     org 0100h
 
-    jp l011eh           ;0100 c3 1e 01
+    jp start
     nop                 ;0103 00
     nop                 ;0104 00
     nop                 ;0105 00
@@ -67,7 +67,8 @@ l0114h:
     ld (hl),a           ;011b 77
     dec hl              ;011c 2b
     ld a,b              ;011d 78
-l011eh:
+
+start:
     ld hl,l0132h        ;011e 21 32 01
     jp l0983h           ;0121 c3 83 09
     push af             ;0124 f5
