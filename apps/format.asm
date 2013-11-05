@@ -70,8 +70,8 @@ l0114h:
     ld a,b              ;011d 78
 
 start:
-    ld hl,l0132h
-    jp jp_to_hl         ;Perform JP (HL)
+    ld hl,main
+    jp jp_to_hl         ;Perform JP (main)
 
     push af             ;0124 f5
     inc b               ;0125 04
@@ -85,7 +85,9 @@ start:
     nop                 ;012f 00
     ld e,01h            ;0130 1e 01
 
-l0132h:
+main:
+;Print the welcome banner.
+;
     call nop_1
     call nop_2
     ld hl,empty_string
@@ -107,7 +109,10 @@ l0132h:
     ld hl,dashes
     call print          ;Print "=== === ===="
 
-l0162h:
+next_disk:
+;Prompt for a drive letter.  If no letter is entered,
+;warm start back to CP/M.
+;
     call nop_2
     ld hl,empty_string
     call print          ;Print newline
@@ -129,10 +134,12 @@ l0162h:
     ld hl,(l010ah)
     ld a,h
     or l
-    jp nz,l0194h
-    call jp_to_warm     ;Jump to CP/M warm start (never returns)
+    jp nz,check_letter  ;Jump to check drive if a letter was entered
+    call jp_to_warm     ;No letter: jump to CP/M warm start (never returns)
 
-l0194h:
+check_letter:
+;Check that the letter is in the range of valid letters (A-P).
+;
     ld de,0ffbfh
     ld hl,(l010ah)
     add hl,de
@@ -164,14 +171,17 @@ l01b3h:
     ld l,a
     ld a,h
     or l
-    jp z,l01cfh
+    jp z,check_type
 
     call nop_2
     ld hl,doesnt_exist
     call print          ;Print "Drive doesn't exist !"
 
-    jp l0162h
-l01cfh:
+    jp next_disk        ;Loop back to beginning ("Format disk in which...")
+
+check_type:
+;Check that a drive has been configured at the drive letter entered.
+;
     ld hl,(l010ch)
     ld (l010eh),hl
     ld hl,l010eh
@@ -184,14 +194,18 @@ l01cfh:
     add hl,de
     add hl,hl
 l01e8h:
-    jp c,l01f7h
+    jp c,floppy_or_hard
 
     call nop_2
     ld hl,not_in_sys
     call print          ;Print "Drive not in system"
 
-    jp l0162h
-l01f7h:
+    jp next_disk        ;Loop back to beginning ("Format disk in which...")
+
+floppy_or_hard:
+;Determine if the drive to be formatted is a CBM floppy drive
+;or a Corvus hard drive.
+;
     ld hl,(l010eh)
     ld de,0fffeh
     ld a,h
@@ -225,7 +239,11 @@ l0215h:
     ld l,a
     ld a,h
     or l
-    jp nz,l027ch
+    jp nz,prompt_floppy ;Jump if the drive is a CBM floppy drive.
+
+                        ;Drive must be a Corvus hard disk.
+                        ;Prompt for confirmation to format the hard disk.
+
     call nop_2
     ld hl,0007h
     call sub_087bh
@@ -251,10 +269,12 @@ l0215h:
     add hl,de
     ld a,h
     or l
-    jp z,l0261h
+    jp z,format_hard
     call jp_to_warm     ;Jump to CP/M warm start (never returns)
 
-l0261h:
+format_hard:
+;Perform the Corvus hard disk format.
+;
     call nop_2
     ld hl,empty_string
     call print          ;Print newline
@@ -265,8 +285,11 @@ l0261h:
 
     ld hl,l010ch
     call cform
-    jp l02c9h
-l027ch:
+    jp format_done
+
+prompt_floppy:
+;Prompt for confirmation to format the floppy disk.
+;
     call nop_2
     ld hl,disk_on_drv
     call print_         ;Print "Disk on drive "
@@ -286,10 +309,12 @@ l027ch:
     ld hl,(l010ah)
     ld a,h
     or l
-    jp z,l02abh
+    jp z,format_floppy
     call jp_to_warm     ;Jump to CP/M warm start (never returns)
 
-l02abh:
+format_floppy:
+;Perform the CBM floppy disk format.
+;
     call nop_2
     ld hl,empty_string
     call print          ;Print newline
@@ -303,8 +328,12 @@ l02abh:
 
     ld hl,l0110h
     call dskerr
+                        ;Fall through into format_done
 
-l02c9h:
+format_done:
+;Formatting complete (either hard disk or floppy disk).
+;Check if an error occurred and then loop back.
+;
     call nop_2
     ld hl,empty_string
     call print          ;Print newline
@@ -312,19 +341,21 @@ l02c9h:
     ld hl,(l0110h)
     ld a,h
     or l
-    jp nz,l02e6h
+    jp nz,format_failed ;Jump if format failed
 
     call nop_2
     ld hl,complete
     call print          ;Print "Format Complete"
 
-    jp l0162h
-l02e6h:
+    jp next_disk        ;Loop back to beginning ("Format disk in which...")
+
+format_failed:
     call nop_2
     ld hl,bad_disk
     call print          ;Print "Do not use diskette - try again..."
 
-    jp l0162h
+    jp next_disk        ;Loop back to beginning ("Format disk in which...")
+
     call jp_to_warm     ;Jump to CP/M warm start (never returns)
 
 sub_02f5h:
@@ -935,6 +966,7 @@ sub_086fh:
 l0878h:
     add a,30h           ;0878 c6 30
     ret                 ;087a c9
+
 sub_087bh:
     ld a,01h            ;087b 3e 01
     ld (l083eh),a       ;087d 32 3e 08
@@ -1177,6 +1209,7 @@ l099ah:
     pop bc              ;09a7 c1
     pop de              ;09a8 d1
     ret                 ;09a9 c9
+
     ld a,(hl)           ;09aa 7e
     jp print_char       ;09ab c3 8b 09
 l09aeh:
@@ -1206,6 +1239,7 @@ l09d4h:
     ld a,0c0h           ;09d9 3e c0
     jr nc,l09ceh        ;09db 30 f1
     ret                 ;09dd c9
+
     push af             ;09de f5
     ld a,40h            ;09df 3e 40
     jr nc,l09d4h        ;09e1 30 f1
@@ -1214,6 +1248,7 @@ l09d4h:
     ret                 ;09e5 c9
     di                  ;09e6 f3
     ret                 ;09e7 c9
+
     ld a,c              ;09e8 79
     add hl,bc           ;09e9 09
     jp c,l0971h         ;09ea da 71 09
@@ -1224,6 +1259,7 @@ l09d4h:
     add hl,de           ;09f5 19
     ld c,30h            ;09f6 0e 30
     ret                 ;09f8 c9
+
     ld a,l              ;09f9 7d
     sub e               ;09fa 93
     ld l,a              ;09fb 6f
