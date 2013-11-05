@@ -84,34 +84,44 @@ l011eh:
 l0132h:
     call nop_1
     call nop_2
-    ld hl,l04f2h
-    call sub_0888h
+    ld hl,empty_string
+    call print          ;Print newline
+
     call nop_2
-    ld hl,l04f2h
-    call sub_0888h
+    ld hl,empty_string
+    call print          ;Print newline
+
     call nop_2
     ld hl,format_prog
-    call sub_0888h
+    call print          ;Print "Disk formatting program"
+
     call nop_2
-    ld hl,for_pet_cpm
-    call sub_0888h
+    ld hl,for_pet_cpm   ;Print "For PET CP/M "
+    call print
+
     call nop_2
     ld hl,dashes
-    call sub_0888h
+    call print          ;Print "=== === ===="
+
 l0162h:
     call nop_2
-    ld hl,l04f2h
-    call sub_0888h
+    ld hl,empty_string
+    call print          ;Print newline
+
     call nop_2
     ld hl,on_which_drv
-    call sub_0888h
+    call print          ;Print "Format disk on which drive"
+
     call nop_2
     ld hl,a_to_p
-    call sub_0893h
+    call print_         ;Print "(A to P, or RETURN to reboot) ? "
+
     call sub_02f5h
+
     call nop_2
-    ld hl,l04f2h
-    call sub_0888h
+    ld hl,empty_string
+    call print          ;Print newline
+
     ld hl,(l010ah)
     ld a,h
     or l
@@ -150,9 +160,11 @@ l01b3h:
     ld a,h
     or l
     jp z,l01cfh
+
     call nop_2
     ld hl,doesnt_exist
-    call sub_0888h
+    call print          ;Print "Drive doesn't exist !"
+
     jp l0162h
 l01cfh:
     ld hl,(l010ch)
@@ -168,9 +180,11 @@ l01cfh:
     add hl,hl
 l01e8h:
     jp c,l01f7h
+
     call nop_2
-    ld hl,not_in_system
-    call sub_0888h
+    ld hl,not_in_sys
+    call print          ;Print "Drive not in system"
+
     jp l0162h
 l01f7h:
     ld hl,(l010eh)
@@ -210,17 +224,22 @@ l0215h:
     call nop_2
     ld hl,0007h
     call sub_087bh
-    call sub_0893h
+    call print_
+
     ld hl,data_on_hd
-    call sub_0893h
+    call print_         ;Print "Data on hard disk "
+
     ld hl,(l010ah)
     call sub_087bh
-    call sub_0893h
+    call print_
+
     ld hl,will_be_eras
-    call sub_0888h
+    call print          ;Print ": will be erased"
+
     call nop_2
     ld hl,proceed_yn
-    call sub_0893h
+    call print_         ;Print "Proceed (Y/N) ? "
+
     call sub_02f5h
     ld hl,(l010ah)
     ld de,0ffa7h
@@ -231,26 +250,32 @@ l0215h:
     call sub_0980h
 l0261h:
     call nop_2
-    ld hl,l04f2h
-    call sub_0888h
+    ld hl,empty_string
+    call print          ;Print newline
+
     call nop_2
     ld hl,formatting_hd
-    call sub_0888h
+    call print          ;Print "Formatting hard disk"
+
     ld hl,l010ch
     call cform
     jp l02c9h
 l027ch:
     call nop_2
     ld hl,disk_on_drv
-    call sub_0893h
+    call print_         ;Print "Disk on drive "
+
     ld hl,(l010ah)
     call sub_087bh
-    call sub_0893h
+    call print_
+
     ld hl,be_formatted
-    call sub_0888h
+    call print          ;Print ": is to be formatted"
+
     call nop_2
     ld hl,press_return
-    call sub_0893h
+    call print_         ;Print "Press RETURN to continue, ^C to abort : "
+
     call sub_02f5h
     ld hl,(l010ah)
     ld a,h
@@ -259,31 +284,39 @@ l027ch:
     call sub_0980h
 l02abh:
     call nop_2
-    ld hl,l04f2h
-    call sub_0888h
+    ld hl,empty_string
+    call print          ;Print newline
+
     call nop_2
     ld hl,formatting
-    call sub_0888h
+    call print          ;Print "Formatting..."
+
     ld hl,l010ch
     call format
+
     ld hl,l0110h
     call dskerr
+
 l02c9h:
     call nop_2
-    ld hl,l04f2h
-    call sub_0888h
+    ld hl,empty_string
+    call print          ;Print newline
+
     ld hl,(l0110h)
     ld a,h
     or l
     jp nz,l02e6h
+
     call nop_2
     ld hl,complete
-    call sub_0888h
+    call print          ;Print "Format Complete"
+
     jp l0162h
 l02e6h:
     call nop_2
     ld hl,bad_disk
-    call sub_0888h
+    call print          ;Print "Do not use diskette - try again..."
+
     jp l0162h
     call sub_0980h
 sub_02f5h:
@@ -381,7 +414,7 @@ will_be_eras:
 data_on_hd:
     db 12h, 39h, 04h
     db "Data on hard disk "
-not_in_system:
+not_in_sys:
     db 13h, 4eh, 04h
     db "Drive not in system"
 doesnt_exist:
@@ -402,13 +435,9 @@ for_pet_cpm:
 format_prog:
     db 17h, 0dbh, 04h
     db "Disk formatting program"
-l04f2h:
-    nop                 ;04f2 00
-    push af             ;04f3 f5
-    inc b               ;04f4 04
-    nop                 ;04f5 00
-    nop                 ;04f6 00
-    nop                 ;04f7 00
+empty_string:
+    db 00h, 0f5h, 04h
+    db 00h, 00h, 00h
 
 ; Start of LOADSAVE.REL =====================================================
 
@@ -860,14 +889,17 @@ l0841h:
     ret nc              ;0841 d0
 l0842h:
     call 203eh          ;0842 cd 3e 20
-    call sub_098bh      ;0845 cd 8b 09
+    call print_char     ;0845 cd 8b 09
     ret                 ;0848 c9
-l0849h:
-    ld a,0ah            ;0849 3e 0a
-    call sub_098bh      ;084b cd 8b 09
-    ld a,0dh            ;084e 3e 0d
-    call sub_098bh      ;0850 cd 8b 09
-    ret                 ;0853 c9
+
+print_eol:
+;Print end of line (CR+LF)
+    ld a,0ah
+    call print_char
+    ld a,0dh
+    call print_char
+    ret
+
     ld a,02h            ;0854 3e 02
     ld (l083eh),a       ;0856 32 3e 08
     ld a,l              ;0859 7d
@@ -878,6 +910,7 @@ l0849h:
     ld (l0842h),a       ;0864 32 42 08
     ld hl,l083eh        ;0867 21 3e 08
     ret                 ;086a c9
+
 sub_086bh:
     rrca                ;086b 0f
     rrca                ;086c 0f
@@ -898,38 +931,51 @@ sub_087bh:
     ld (l0841h),a       ;0881 32 41 08
     ld hl,l083eh        ;0884 21 3e 08
     ret                 ;0887 c9
-sub_0888h:
-    ld a,(hl)           ;0888 7e
-    or a                ;0889 b7
-    jp z,l0849h         ;088a ca 49 08
-    call sub_08a5h      ;088d cd a5 08
-    jp l0849h           ;0890 c3 49 08
-sub_0893h:
-    ld a,(hl)           ;0893 7e
-    or a                ;0894 b7
-    ret z               ;0895 c8
-    call sub_08a5h      ;0896 cd a5 08
-    ret                 ;0899 c9
+
+print:
+;Print string in HL followed by CR+LF
+;Implements BASIC command: PRINT"foo"
+;
+    ld a,(hl)           ;Get first char in string
+    or a                ;Set flags
+    jp z,print_eol      ;If char = 0, jump to print CR+LF only
+    call print_str      ;Print the string
+    jp print_eol        ;Jump out to print CR+LF
+
+print_:
+;Print string in HL but do not send CR+LF
+;Implements BASIC command: PRINT"foo";
+;
+    ld a,(hl)           ;Get first char in string
+    or a                ;Set flags
+    ret z               ;If char = 0, jump to print CR+LF only
+    call print_str      ;Print the string
+    ret
+
     ld a,(hl)           ;089a 7e
     or a                ;089b b7
     jp z,l0842h+1       ;089c ca 43 08
-    call sub_08a5h      ;089f cd a5 08
+    call print_str      ;089f cd a5 08
     jp l0842h+1         ;08a2 c3 43 08
-sub_08a5h:
-    ld b,a              ;08a5 47
-    inc hl              ;08a6 23
-    inc hl              ;08a7 23
-    inc hl              ;08a8 23
+
+print_str:
+;Print string in HL
+;
+    ld b,a
+    inc hl
+    inc hl
+    inc hl
 l08a9h:
-    ld a,(hl)           ;08a9 7e
-    call sub_098bh      ;08aa cd 8b 09
-    dec b               ;08ad 05
-    inc hl              ;08ae 23
-    jp nz,l08a9h        ;08af c2 a9 08
-    ret                 ;08b2 c9
-    ld a,(bc)           ;08b3 0a
-    ld c,a              ;08b4 4f
-    jp bdos             ;08b5 c3 05 00
+    ld a,(hl)
+    call print_char
+    dec b
+    inc hl
+    jp nz,l08a9h
+    ret
+    ld a,(bc)
+    ld c,a
+    jp bdos
+
     ex de,hl            ;08b8 eb
     pop hl              ;08b9 e1
     ld c,(hl)           ;08ba 4e
@@ -1019,13 +1065,13 @@ l0916h:
     ret                 ;091a c9
     call sub_0932h      ;091b cd 32 09
     ld a,20h            ;091e 3e 20
-    call sub_098bh      ;0920 cd 8b 09
+    call print_char     ;0920 cd 8b 09
     ret                 ;0923 c9
     call sub_0932h      ;0924 cd 32 09
     ld a,0ah            ;0927 3e 0a
-    call sub_098bh      ;0929 cd 8b 09
+    call print_char     ;0929 cd 8b 09
     ld a,0dh            ;092c 3e 0d
-    call sub_098bh      ;092e cd 8b 09
+    call print_char     ;092e cd 8b 09
     ret                 ;0931 c9
 sub_0932h:
     push hl             ;0932 e5
@@ -1040,7 +1086,7 @@ sub_0932h:
     ld h,a              ;093e 67
     inc hl              ;093f 23
     ld a,2dh            ;0940 3e 2d
-    call sub_098bh      ;0942 cd 8b 09
+    call print_char     ;0942 cd 8b 09
 l0945h:
     ld c,30h            ;0945 0e 30
     ld de,2710h         ;0947 11 10 27
@@ -1062,7 +1108,7 @@ sub_0967h:
     jp sub_0967h        ;096e c3 67 09
 l0971h:
     ld a,c              ;0971 79
-    call sub_098bh      ;0972 cd 8b 09
+    call print_char     ;0972 cd 8b 09
     add hl,de           ;0975 19
     ld c,30h            ;0976 0e 30
     ret                 ;0978 c9
@@ -1085,18 +1131,19 @@ nop_1:
     ld hl,0fffeh        ;0985 21 fe ff
     jp l099ah           ;0988 c3 9a 09
 
-sub_098bh:
-    push hl             ;098b e5
-    push de             ;098c d5
-    push bc             ;098d c5
-    push af             ;098e f5
-    ld c,cwrite         ;098f 0e 02
-    ld e,a              ;0991 5f
-    call bdos           ;0992 cd 05 00
-    pop af              ;0995 f1
-    pop bc              ;0996 c1
-    pop de              ;0997 d1
-    pop hl              ;0998 e1
+print_char:
+;Write the char in A to the console
+    push hl
+    push de
+    push bc
+    push af
+    ld c,cwrite
+    ld e,a
+    call bdos
+    pop af
+    pop bc
+    pop de
+    pop hl
 
 nop_2:
 ;Do nothing and return
@@ -1116,7 +1163,7 @@ l099ah:
     pop de              ;09a8 d1
     ret                 ;09a9 c9
     ld a,(hl)           ;09aa 7e
-    jp sub_098bh        ;09ab c3 8b 09
+    jp print_char       ;09ab c3 8b 09
 l09aeh:
     cp 04h              ;09ae fe 04
 l09b0h:
@@ -1158,7 +1205,7 @@ l09d4h:
     inc c               ;09ed 0c
     jp sub_0967h        ;09ee c3 67 09
     ld a,c              ;09f1 79
-    call sub_098bh      ;09f2 cd 8b 09
+    call print_char     ;09f2 cd 8b 09
     add hl,de           ;09f5 19
     ld c,30h            ;09f6 0e 30
     ret                 ;09f8 c9
