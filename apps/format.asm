@@ -979,9 +979,9 @@ print:
 ;Print string in HL followed by CR+LF
 ;Implements BASIC command: PRINT"foo"
 ;
-    ld a,(hl)           ;Get first char in string
+    ld a,(hl)           ;Get the length of the string
     or a                ;Set flags
-    jp z,print_eol      ;If char = 0, jump to print CR+LF only
+    jp z,print_eol      ;If length = 0, jump to print CR+LF only.
     call print_str      ;Print the string
     jp print_eol        ;Jump out to print CR+LF
 
@@ -989,9 +989,9 @@ print_:
 ;Print string in HL but do not send CR+LF
 ;Implements BASIC command: PRINT"foo";
 ;
-    ld a,(hl)           ;Get first char in string
+    ld a,(hl)           ;Get the length of the string
     or a                ;Set flags
-    ret z               ;If char = 0, jump to print CR+LF only
+    ret z               ;If length = 0, return (nothing to do).
     call print_str      ;Print the string
     ret
 
@@ -1002,23 +1002,23 @@ print_:
     jp l0842h+1         ;08a2 c3 43 08
 
 print_str:
-;Print string in HL
+;Print string of length A at pointer HL.
 ;
-    ld b,a
-    inc hl
-    inc hl
-    inc hl
+    ld b,a              ;B = A
+    inc hl              ;Skip string length byte
+    inc hl              ;Skip ? byte
+    inc hl              ;Skip ? byte
 l08a9h:
-    ld a,(hl)
-    call print_char
-    dec b
-    inc hl
-    jp nz,l08a9h
+    ld a,(hl)           ;Read char from string
+    call print_char     ;Print it
+    dec b               ;Decrement number of chars remaining
+    inc hl              ;Increment pointer
+    jp nz,l08a9h        ;Loop until all chars have been printed
     ret
+
     ld a,(bc)
     ld c,a
     jp bdos
-
     ex de,hl            ;08b8 eb
     pop hl              ;08b9 e1
     ld c,(hl)           ;08ba 4e
