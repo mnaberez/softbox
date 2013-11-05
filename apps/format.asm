@@ -376,14 +376,17 @@ l0342h:
     ld l,a
     ld a,h
     or l
-    jp z,l035bh
+    jp z,nop_3
     ld de,0ffe0h
     ld hl,(l010ah)
     add hl,de
     ld (l010ah),hl
-l035bh:
+
+nop_3:
+;Do nothing and return
     ret
     call sub_0980h
+
 bad_disk:
     db 22h, 62h, 03h
     db "Do not use diskette - try again..."
