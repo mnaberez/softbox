@@ -368,12 +368,9 @@ l04c8h:
 l04f2h:
     nop                 ;04f2 00
     push af             ;04f3 f5
-l04f4h:
     inc b               ;04f4 04
-l04f5h:
     nop                 ;04f5 00
     nop                 ;04f6 00
-l04f7h:
     nop                 ;04f7 00
 sub_04f8h:
     ld c,0ah            ;04f8 0e 0a
@@ -383,16 +380,13 @@ sub_04f8h:
     ld hl,4000h         ;0503 21 00 40
     ld de,0d400h        ;0506 11 00 d4
     ldir                ;0509 ed b0
-l050bh:
     jp 0f075h           ;050b c3 75 f0
     ld a,(hl)           ;050e 7e
     ld (l083ch),a       ;050f 32 3c 08
     call 0f054h         ;0512 cd 54 f0
     ld e,00h            ;0515 1e 00
-l0517h:
     push de             ;0517 d5
     call sub_0635h      ;0518 cd 35 06
-l051bh:
     ld a,(l083ch)       ;051b 3a 3c 08
     call 0f05ah         ;051e cd 5a f0
     ld (l083dh),a       ;0521 32 3d 08
@@ -567,7 +561,6 @@ sub_0647h:
     rra                 ;064f 1f
     jp nc,0f05dh        ;0650 d2 5d f0
     ld hl,l0839h        ;0653 21 39 08
-l0656h:
     jp 0f05dh           ;0656 c3 5d f0
     ld a,(hl)           ;0659 7e
     ld (l083ch),a       ;065a 32 3c 08
@@ -577,7 +570,6 @@ l0656h:
     ld hl,l0821h+1      ;0663 21 22 08
     ld a,(l083ch)       ;0666 3a 3c 08
     rra                 ;0669 1f
-l066ah:
     jr nc,l066fh        ;066a 30 03
     ld hl,0826h         ;066c 21 26 08
 l066fh:
@@ -797,7 +789,6 @@ l0841h:
 l0842h:
     call 203eh          ;0842 cd 3e 20
     call sub_098bh      ;0845 cd 8b 09
-l0848h:
     ret                 ;0848 c9
 l0849h:
     ld a,0ah            ;0849 3e 0a
@@ -805,14 +796,12 @@ l0849h:
     ld a,0dh            ;084e 3e 0d
     call sub_098bh      ;0850 cd 8b 09
     ret                 ;0853 c9
-l0854h:
     ld a,02h            ;0854 3e 02
     ld (l083eh),a       ;0856 32 3e 08
     ld a,l              ;0859 7d
     call sub_086bh      ;085a cd 6b 08
     ld (l0841h),a       ;085d 32 41 08
     ld a,l              ;0860 7d
-l0861h:
     call sub_086fh      ;0861 cd 6f 08
     ld (l0842h),a       ;0864 32 42 08
     ld hl,l083eh        ;0867 21 3e 08
