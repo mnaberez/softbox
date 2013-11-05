@@ -930,9 +930,11 @@ l083eh:
 l0841h:
     ret nc              ;0841 d0
 l0842h:
-    call 203eh          ;0842 cd 3e 20
-    call print_char     ;0845 cd 8b 09
-    ret                 ;0848 c9
+    db 0cdh
+l0843h:
+    ld a,' '
+    call print_char
+    ret
 
 print_eol:
 ;Print end of line (CR+LF)
@@ -997,9 +999,9 @@ print_:
 
     ld a,(hl)           ;089a 7e
     or a                ;089b b7
-    jp z,l0842h+1       ;089c ca 43 08
+    jp z,l0843h         ;089c ca 43 08
     call print_str      ;089f cd a5 08
-    jp l0842h+1         ;08a2 c3 43 08
+    jp l0843h           ;08a2 c3 43 08
 
 print_str:
 ;Print string of length A at pointer HL.
