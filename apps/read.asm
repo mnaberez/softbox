@@ -22,7 +22,7 @@ conin:      equ 0f009h  ;BIOS Console input
 
 cwrite:     equ 02h     ;Console Output
 cwritestr:  equ 09h     ;Output String
-creadstr:   equ 10h     ;Buffered Console Input
+fclose:     equ 10h     ;Close File
 fdelete:    equ 13h     ;Delete File
 fwrite:     equ 15h     ;Write Next Record
 fmake:      equ 16h     ;Create File
@@ -124,7 +124,7 @@ chkerr:
     call bdos           ;BDOS System Call
 eof:
     ld de,fcb
-    ld c,creadstr       ;Buffered Console Input
+    ld c,fclose         ;Close File
     call bdos           ;BDOS System Call
 exit:
     ld a,37h
