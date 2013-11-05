@@ -1,6 +1,7 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=format.asm format.com
 
+warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
 seldsk:        equ 0f01bh ;Select disk drive
 settrk:        equ 0f01eh ;Set track number
@@ -69,8 +70,9 @@ l0114h:
     ld a,b              ;011d 78
 
 start:
-    ld hl,l0132h        ;011e 21 32 01
-    jp l0983h           ;0121 c3 83 09
+    ld hl,l0132h
+    jp jp_to_hl         ;Perform JP (HL)
+
     push af             ;0124 f5
     inc b               ;0125 04
     nop                 ;0126 00
@@ -82,6 +84,7 @@ start:
     nop                 ;012e 00
     nop                 ;012f 00
     ld e,01h            ;0130 1e 01
+
 l0132h:
     call nop_1
     call nop_2
@@ -127,7 +130,8 @@ l0162h:
     ld a,h
     or l
     jp nz,l0194h
-    call sub_0980h
+    call jp_to_warm     ;Jump to CP/M warm start (never returns)
+
 l0194h:
     ld de,0ffbfh
     ld hl,(l010ah)
@@ -248,7 +252,8 @@ l0215h:
     ld a,h
     or l
     jp z,l0261h
-    call sub_0980h
+    call jp_to_warm     ;Jump to CP/M warm start (never returns)
+
 l0261h:
     call nop_2
     ld hl,empty_string
@@ -282,7 +287,8 @@ l027ch:
     ld a,h
     or l
     jp z,l02abh
-    call sub_0980h
+    call jp_to_warm     ;Jump to CP/M warm start (never returns)
+
 l02abh:
     call nop_2
     ld hl,empty_string
@@ -319,7 +325,8 @@ l02e6h:
     call print          ;Print "Do not use diskette - try again..."
 
     jp l0162h
-    call sub_0980h
+    call jp_to_warm     ;Jump to CP/M warm start (never returns)
+
 sub_02f5h:
     ld hl,0080h
     ld (l0112h),hl
@@ -386,7 +393,7 @@ l0342h:
 nop_3:
 ;Do nothing and return
     ret
-    call sub_0980h
+    call jp_to_warm
 
 bad_disk:
     db 22h, 62h, 03h
@@ -1124,10 +1131,14 @@ sub_0979h:
     sbc a,d             ;097d 9a
     ld h,a              ;097e 67
     ret                 ;097f c9
-sub_0980h:
-    jp 0000h            ;0980 c3 00 00
-l0983h:
-    jp (hl)             ;0983 e9
+
+jp_to_warm:
+;Jump to CP/M warm start
+    jp warm
+
+jp_to_hl:
+;Jump to the address in HL
+    jp (hl)
 
 nop_1:
 ;Do nothing and return
