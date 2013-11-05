@@ -158,7 +158,7 @@ l01cfh:
     ld hl,(l010ch)      ;01cf 2a 0c 01
     ld (l010eh),hl      ;01d2 22 0e 01
     ld hl,l010eh        ;01d5 21 0e 01
-    call sub_05e7h      ;01d8 cd e7 05
+    call dtype          ;01d8 cd e7 05
     ld hl,(l010eh)      ;01db 2a 0e 01
     ld de,0ff80h        ;01de 11 80 ff
     ld a,h              ;01e1 7c
@@ -237,7 +237,7 @@ l0261h:
     ld hl,formatting_hd ;026d 21 f9 03
     call sub_0888h      ;0270 cd 88 08
     ld hl,l010ch        ;0273 21 0c 01
-    call sub_07a9h      ;0276 cd a9 07
+    call cform          ;0276 cd a9 07
     jp l02c9h           ;0279 c3 c9 02
 l027ch:
     call sub_0999h      ;027c cd 99 09
@@ -265,9 +265,9 @@ l02abh:
     ld hl,formatting    ;02b7 21 96 03
     call sub_0888h      ;02ba cd 88 08
     ld hl,l010ch        ;02bd 21 0c 01
-    call sub_06e5h      ;02c0 cd e5 06
+    call format         ;02c0 cd e5 06
     ld hl,l0110h        ;02c3 21 10 01
-    call sub_05f4h      ;02c6 cd f4 05
+    call dskerr         ;02c6 cd f4 05
 l02c9h:
     call sub_0999h      ;02c9 cd 99 09
     ld hl,l04f2h        ;02cc 21 f2 04
@@ -291,7 +291,7 @@ sub_02f5h:
     ld (l0112h),hl      ;02f8 22 12 01
     ld hl,(l0112h)      ;02fb 2a 12 01
     ld (hl),50h         ;02fe 36 50
-    call sub_04f8h      ;0300 cd f8 04
+    call buffin         ;0300 cd f8 04
     ld hl,(l0112h)      ;0303 2a 12 01
     inc hl              ;0306 23
     ld l,(hl)           ;0307 6e
@@ -412,15 +412,26 @@ l04f2h:
 
 ; LOADSAVE.REL code below ==================================================
 
-sub_04f8h:
+buffin:
+;Buffered Console Input.  Caller must store buffer size at 80h.  On
+;return, 81h will contain the number of data bytes and the data
+;will start at 82h.
     ld c,creadstr       ;04f8 0e 0a
     ld de,0080h         ;04fa 11 80 00
     jp bdos             ;04fd c3 05 00
+
+exsys:
+;Execute a new CP/M system.  The buffer at 4000h contains a new
+;CP/M system image (7168 bytes = CCP + BDOS + BIOS config + BIOS storage).
+;Copy the new system into place and then jump to the BIOS to start it.
     ld bc,1c00h         ;0500 01 00 1c
     ld hl,4000h         ;0503 21 00 40
     ld de,0d400h        ;0506 11 00 d4
     ldir                ;0509 ed b0
     jp runcpm           ;050b c3 75 f0
+
+rdsys:
+;Read the "CP/M" and "K" files from an IEEE-488 drive into memory.
     ld a,(hl)           ;050e 7e
     ld (l083ch),a       ;050f 32 3c 08
     call dskdev         ;0512 cd 54 f0
@@ -477,21 +488,24 @@ l055eh:
     call dsksta         ;0572 cd 5a f0
     ld (l083dh),a       ;0575 32 3d 08
     ret                 ;0578 c9
+
+cread_:
+;Read CP/M image from a Corvus drive.
     ld c,(hl)           ;0579 4e
     call seldsk         ;057a cd 1b f0
     ld de,4000h         ;057d 11 00 40
     ld bc,0000h         ;0580 01 00 00
-l0583h:
+cread2:
     call settrk         ;0583 cd 1e f0
     push bc             ;0586 c5
     ld bc,0000h         ;0587 01 00 00
-l058ah:
+cread1:
     call setsec         ;058a cd 21 f0
     push bc             ;058d c5
     push de             ;058e d5
     call read           ;058f cd 27 f0
     or a                ;0592 b7
-    jr nz,l05e1h        ;0593 20 4c
+    jr nz,cwrit3        ;0593 20 4c
     pop de              ;0595 d1
     ld bc,0080h         ;0596 01 80 00
     ld hl,0080h         ;0599 21 80 00
@@ -500,22 +514,25 @@ l058ah:
     inc c               ;059f 0c
     ld a,c              ;05a0 79
     cp 40h              ;05a1 fe 40
-    jr nz,l058ah        ;05a3 20 e5
+    jr nz,cread1        ;05a3 20 e5
     pop bc              ;05a5 c1
     inc c               ;05a6 0c
     ld a,c              ;05a7 79
     cp 02h              ;05a8 fe 02
-    jr nz,l0583h        ;05aa 20 d7
+    jr nz,cread2        ;05aa 20 d7
     ret                 ;05ac c9
+
+cwrite_:
+;Write CP/M image to a Corvus drive.
     ld c,(hl)           ;05ad 4e
     call seldsk         ;05ae cd 1b f0
     ld hl,4000h         ;05b1 21 00 40
     ld bc,0000h         ;05b4 01 00 00
-l05b7h:
+cwrit2:
     call settrk         ;05b7 cd 1e f0
     push bc             ;05ba c5
     ld bc,0000h         ;05bb 01 00 00
-l05beh:
+cwrit1:
     call setsec         ;05be cd 21 f0
     push bc             ;05c1 c5
     ld bc,0080h         ;05c2 01 80 00
@@ -524,34 +541,43 @@ l05beh:
     push hl             ;05ca e5
     call write          ;05cb cd 2a f0
     or a                ;05ce b7
-    jr nz,l05e1h        ;05cf 20 10
+    jr nz,cwrit3        ;05cf 20 10
     pop hl              ;05d1 e1
     pop bc              ;05d2 c1
     inc c               ;05d3 0c
     ld a,c              ;05d4 79
     cp 40h              ;05d5 fe 40
-    jr nz,l05beh        ;05d7 20 e5
+    jr nz,cwrit1        ;05d7 20 e5
     pop bc              ;05d9 c1
     inc c               ;05da 0c
     ld a,c              ;05db 79
     cp 02h              ;05dc fe 02
-    jr nz,l05b7h        ;05de 20 d7
+    jr nz,cwrit2        ;05de 20 d7
     ret                 ;05e0 c9
-l05e1h:
+cwrit3:
     pop hl              ;05e1 e1
     pop hl              ;05e2 e1
     pop hl              ;05e3 e1
     jp l07d1h           ;05e4 c3 d1 07
-sub_05e7h:
+
+dtype:
+;Get the drive type for a CP/M drive number.
     ld a,(hl)           ;05e7 7e
     call tstdrv         ;05e8 cd 51 f0
     ld (hl),c           ;05eb 71
     inc hl              ;05ec 23
     ld (hl),00h         ;05ed 36 00
     ret                 ;05ef c9
+
+idisk:
+;Initialize an IEEE-488 disk drive.
     ld a,(hl)           ;05f0 7e
     jp idrive           ;05f1 c3 78 f0
-sub_05f4h:
+
+dskerr:
+;Check the last CBM DOS error.  The drive is not queried; this
+;only reads the last error code saved in @L2.  The error code is
+;returned to the caller by storing at in the address at HL.
     ld a,(l083dh)       ;05f4 3a 3d 08
     ld (hl),a           ;05f7 77
     inc hl              ;05f8 23
@@ -583,10 +609,10 @@ l0622h:
     ld a,(bc)           ;0623 0a
     db "Disk error : $"
 l0632h:
-    dec c               ;0632 0d
-    ld a,(bc)           ;0633 0a
-    inc h               ;0634 24
+    db 0dh,0ah,"$"
+
 sub_0635h:
+;Open "CP/M" file on an IEEE-488 drive
     ld c,06h            ;0635 0e 06
     ld hl,l082ah        ;0637 21 2a 08
     ld a,(l083ch)       ;063a 3a 3c 08
@@ -594,7 +620,9 @@ sub_0635h:
     jp nc,open          ;063e d2 5d f0
     ld hl,l0830h        ;0641 21 30 08
     jp open             ;0644 c3 5d f0
+
 sub_0647h:
+;Open "K" file on an IEEE-488 drive
     ld c,03h            ;0647 0e 03
     ld hl,l0836h        ;0649 21 36 08
     ld a,(l083ch)       ;064c 3a 3c 08
@@ -602,6 +630,9 @@ sub_0647h:
     jp nc,open          ;0650 d2 5d f0
     ld hl,l0839h        ;0653 21 39 08
     jp open             ;0656 c3 5d f0
+
+savesy:
+;Read the CP/M system image from an IEEE-488 drive.
     ld a,(hl)           ;0659 7e
     ld (l083ch),a       ;065a 32 3c 08
     call dskdev         ;065d cd 54 f0
@@ -674,7 +705,9 @@ l06cah:
     call dsksta         ;06de cd 5a f0
     ld (l083dh),a       ;06e1 32 3d 08
     ret                 ;06e4 c9
-sub_06e5h:
+
+format:
+;Format an IEEE-488 drive for SoftBox use.
     ld a,(hl)           ;06e5 7e
     ld (l083ch),a       ;06e6 32 3c 08
     call dskdev         ;06e9 cd 54 f0
@@ -703,6 +736,7 @@ sub_06e5h:
     ld a,01h            ;0723 3e 01
     ld (l0820h),a       ;0725 32 20 08
 l0728h:
+;Clear the CP/M directory by filling it with E5 ("unused").
     call sub_073eh      ;0728 cd 3e 07
     ld a,(l083ch)       ;072b 3a 3c 08
     call dsksta         ;072e cd 5a f0
@@ -714,6 +748,7 @@ l0728h:
     jp p,l0728h         ;073a f2 28 07
     ret                 ;073d c9
 sub_073eh:
+;Write a sector to an IEEE-488 drive.
     ld hl,l0818h        ;073e 21 18 08
     ld c,06h            ;0741 0e 06
     ld a,(l083ch)       ;0743 3a 3c 08
@@ -752,7 +787,9 @@ sub_073eh:
     call ieeenum        ;07a0 cd 4e f0
     call creoi          ;07a3 cd 48 f0
     jp unlisten         ;07a6 c3 36 f0
-sub_07a9h:
+
+cform:
+;Format a Corvus drive for Softbox use.
     ld c,(hl)           ;07a9 4e
     call seldsk         ;07aa cd 1b f0
     ld hl,0080h         ;07ad 21 80 00
@@ -776,15 +813,15 @@ l07beh:
     jr nz,l07beh        ;07ce 20 ee
     ret                 ;07d0 c9
 l07d1h:
+;Display "Hit any key to abort" message, wait for a key, and then return.
     ld de,l07deh        ;07d1 11 de 07
     ld c,cwritestr      ;07d4 0e 09
     call bdos           ;07d6 cd 05 00
     ld c,01h            ;07d9 0e 01
     jp bdos             ;07db c3 05 00
+
 l07deh:
-    dec c               ;07de 0d
-    ld a,(bc)           ;07df 0a
-    db "Hit any key to abort : $"
+    db 0dh,0ah,"Hit any key to abort : $"
 l07f8h:
     db "U2 2 "
 l07fdh:
@@ -816,6 +853,7 @@ l0836h:
     ld c,e              ;0838 4b
 l0839h:
     ld sp,4b3ah         ;0839 31 3a 4b
+
 l083ch:
     pop hl              ;083c e1
 l083dh:
