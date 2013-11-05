@@ -42,7 +42,7 @@ talk:          equ 0f039h ;Send TALK to an IEEE-488 device
 untalk:        equ 0f03ch ;Send UNTALK to all IEEE-488 devices
 rdieee:        equ 0f03fh ;Read byte from an IEEE-488 device
 wrieee:        equ 0f042h ;Send byte to an IEEE-488 device
-tdtdrv:        equ 0f051h ;Get drive type for a CP/M drive number
+tstdrv:        equ 0f051h ;Get drive type for a CP/M drive number
 dskdev:        equ 0f054h ;Get device address for a CP/M drive number
 dsksta:        equ 0f05ah ;Read the error channel of an IEEE-488 device
 open:          equ 0f05dh ;Open a file on an IEEE-488 device
@@ -421,7 +421,7 @@ ocs1:
     ld a,(buffer+2)     ;Take the first character from that input
     sub 41h             ;Convert drive letter to number (A=0, B=1, C=2, ...)
     ld (src_drive),a    ;Save the source drive number
-    call tdtdrv         ;Check if drive is valid (carry set = valid)
+    call tstdrv         ;Check if drive is valid (carry set = valid)
     jr c,ocs2           ;Jump if drive is valid
 
                         ;The drive letter entered is not valid.
@@ -547,7 +547,7 @@ seq_to_pet:
     ld a,(buffer+2)     ;Take the first character from that input
     sub 41h             ;Convert drive letter to number (A=0, B=1, C=2, ...)
     ld (src_drive),a    ;Save the source drive number
-    call tdtdrv         ;Check if drive is valid (carry set = valid)
+    call tstdrv         ;Check if drive is valid (carry set = valid)
     jr c,stp1           ;Jump if drive is valid
 
     ld de,bad_drive     ;DE = address of "Bad drive"
