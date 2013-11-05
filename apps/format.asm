@@ -82,34 +82,34 @@ l011eh:
     nop                 ;012f 00
     ld e,01h            ;0130 1e 01
 l0132h:
-    call sub_0984h
-    call sub_0999h
+    call nop_1
+    call nop_2
     ld hl,l04f2h
     call sub_0888h
-    call sub_0999h
+    call nop_2
     ld hl,l04f2h
     call sub_0888h
-    call sub_0999h
+    call nop_2
     ld hl,format_prog
     call sub_0888h
-    call sub_0999h
+    call nop_2
     ld hl,for_pet_cpm
     call sub_0888h
-    call sub_0999h
+    call nop_2
     ld hl,dashes
     call sub_0888h
 l0162h:
-    call sub_0999h
+    call nop_2
     ld hl,l04f2h
     call sub_0888h
-    call sub_0999h
+    call nop_2
     ld hl,on_which_drv
     call sub_0888h
-    call sub_0999h
+    call nop_2
     ld hl,a_to_p
     call sub_0893h
     call sub_02f5h
-    call sub_0999h
+    call nop_2
     ld hl,l04f2h
     call sub_0888h
     ld hl,(l010ah)
@@ -150,7 +150,7 @@ l01b3h:
     ld a,h
     or l
     jp z,l01cfh
-    call sub_0999h
+    call nop_2
     ld hl,doesnt_exist
     call sub_0888h
     jp l0162h
@@ -168,7 +168,7 @@ l01cfh:
     add hl,hl
 l01e8h:
     jp c,l01f7h
-    call sub_0999h
+    call nop_2
     ld hl,not_in_system
     call sub_0888h
     jp l0162h
@@ -207,7 +207,7 @@ l0215h:
     ld a,h
     or l
     jp nz,l027ch
-    call sub_0999h
+    call nop_2
     ld hl,0007h
     call sub_087bh
     call sub_0893h
@@ -218,7 +218,7 @@ l0215h:
     call sub_0893h
     ld hl,will_be_eras
     call sub_0888h
-    call sub_0999h
+    call nop_2
     ld hl,proceed_yn
     call sub_0893h
     call sub_02f5h
@@ -230,17 +230,17 @@ l0215h:
     jp z,l0261h
     call sub_0980h
 l0261h:
-    call sub_0999h
+    call nop_2
     ld hl,l04f2h
     call sub_0888h
-    call sub_0999h
+    call nop_2
     ld hl,formatting_hd
     call sub_0888h
     ld hl,l010ch
     call cform
     jp l02c9h
 l027ch:
-    call sub_0999h
+    call nop_2
     ld hl,disk_on_drv
     call sub_0893h
     ld hl,(l010ah)
@@ -248,7 +248,7 @@ l027ch:
     call sub_0893h
     ld hl,be_formatted
     call sub_0888h
-    call sub_0999h
+    call nop_2
     ld hl,press_return
     call sub_0893h
     call sub_02f5h
@@ -258,10 +258,10 @@ l027ch:
     jp z,l02abh
     call sub_0980h
 l02abh:
-    call sub_0999h
+    call nop_2
     ld hl,l04f2h
     call sub_0888h
-    call sub_0999h
+    call nop_2
     ld hl,formatting
     call sub_0888h
     ld hl,l010ch
@@ -269,19 +269,19 @@ l02abh:
     ld hl,l0110h
     call dskerr
 l02c9h:
-    call sub_0999h
+    call nop_2
     ld hl,l04f2h
     call sub_0888h
     ld hl,(l0110h)
     ld a,h
     or l
     jp nz,l02e6h
-    call sub_0999h
+    call nop_2
     ld hl,complete
     call sub_0888h
     jp l0162h
 l02e6h:
-    call sub_0999h
+    call nop_2
     ld hl,bad_disk
     call sub_0888h
     jp l0162h
@@ -1078,10 +1078,13 @@ sub_0980h:
     jp 0000h            ;0980 c3 00 00
 l0983h:
     jp (hl)             ;0983 e9
-sub_0984h:
+
+nop_1:
+;Do nothing and return
     ret                 ;0984 c9
     ld hl,0fffeh        ;0985 21 fe ff
     jp l099ah           ;0988 c3 9a 09
+
 sub_098bh:
     push hl             ;098b e5
     push de             ;098c d5
@@ -1094,8 +1097,11 @@ sub_098bh:
     pop bc              ;0996 c1
     pop de              ;0997 d1
     pop hl              ;0998 e1
-sub_0999h:
+
+nop_2:
+;Do nothing and return
     ret                 ;0999 c9
+
 l099ah:
     push de             ;099a d5
     push bc             ;099b c5
