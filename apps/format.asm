@@ -60,7 +60,7 @@ l0132h:
     ld hl,l04f2h        ;0141 21 f2 04
     call sub_0888h      ;0144 cd 88 08
     call sub_0999h      ;0147 cd 99 09
-    ld hl,04d8h         ;014a 21 d8 04
+    ld hl,l04d8h        ;014a 21 d8 04
     call sub_0888h      ;014d cd 88 08
     call sub_0999h      ;0150 cd 99 09
     ld hl,l04c8h        ;0153 21 c8 04
@@ -73,7 +73,7 @@ l0162h:
     ld hl,l04f2h        ;0165 21 f2 04
     call sub_0888h      ;0168 cd 88 08
     call sub_0999h      ;016b cd 99 09
-    ld hl,049ch         ;016e 21 9c 04
+    ld hl,l049ch        ;016e 21 9c 04
     call sub_0888h      ;0171 cd 88 08
     call sub_0999h      ;0174 cd 99 09
     ld hl,l0479h        ;0177 21 79 04
@@ -139,7 +139,7 @@ l01cfh:
 l01e8h:
     jp c,l01f7h         ;01e8 da f7 01
     call sub_0999h      ;01eb cd 99 09
-    ld hl,044bh         ;01ee 21 4b 04
+    ld hl,l044bh        ;01ee 21 4b 04
     call sub_0888h      ;01f1 cd 88 08
     jp l0162h           ;01f4 c3 62 01
 l01f7h:
@@ -204,7 +204,7 @@ l0261h:
     ld hl,l04f2h        ;0264 21 f2 04
     call sub_0888h      ;0267 cd 88 08
     call sub_0999h      ;026a cd 99 09
-    ld hl,03f9h         ;026d 21 f9 03
+    ld hl,l03f9h        ;026d 21 f9 03
     call sub_0888h      ;0270 cd 88 08
     ld hl,l010ch        ;0273 21 0c 01
     call sub_07a9h      ;0276 cd a9 07
@@ -216,10 +216,10 @@ l027ch:
     ld hl,(l010ah)      ;0285 2a 0a 01
     call sub_087bh      ;0288 cd 7b 08
     call sub_0893h      ;028b cd 93 08
-    ld hl,03d1h         ;028e 21 d1 03
+    ld hl,l03d1h        ;028e 21 d1 03
     call sub_0888h      ;0291 cd 88 08
     call sub_0999h      ;0294 cd 99 09
-    ld hl,03a6h         ;0297 21 a6 03
+    ld hl,l03a6h        ;0297 21 a6 03
     call sub_0893h      ;029a cd 93 08
     call sub_02f5h      ;029d cd f5 02
     ld hl,(l010ah)      ;02a0 2a 0a 01
@@ -247,7 +247,7 @@ l02c9h:
     or l                ;02d6 b5
     jp nz,l02e6h        ;02d7 c2 e6 02
     call sub_0999h      ;02da cd 99 09
-    ld hl,0384h         ;02dd 21 84 03
+    ld hl,l0384h        ;02dd 21 84 03
     call sub_0888h      ;02e0 cd 88 08
     jp l0162h           ;02e3 c3 62 01
 l02e6h:
@@ -324,18 +324,22 @@ l035bh:
 l035fh:
     db 22h, 62h, 03h
     db "Do not use diskette - try again..."
+l0384h:
     db 0fh, 87h, 03h
     db "Format complete"
 l0396h:
     db 0dh, 099h, 03h
     db "Formatting..."
+l03a6h:
     db 28h, 0a9h, 03h
     db "Press RETURN to continue, ^C to abort : "
+l03d1h:
     db 14h, 0d4h, 03h
     db ": is to be formatted"
 l03e8h:
     db 0eh, 0ebh, 03h
     db "Disk on drive "
+l03f9h:
     db 14h,0fch, 03h
     db "Formatting hard disk"
 l0410h:
@@ -347,6 +351,7 @@ l0423h:
 l0436h:
     db 12h, 39h, 04h
     db "Data on hard disk "
+l044bh:
     db 13h, 4eh, 04h
     db "Drive not in system"
 l0461h:
@@ -355,6 +360,7 @@ l0461h:
 l0479h:
     db 20h, 7ch, 04h
     db "(A to P, or RETURN to reboot) ? "
+l049ch:
     db 1ah, 9fh, 04h
     db "Format disk on which drive"
 l04b9h:
@@ -363,6 +369,7 @@ l04b9h:
 l04c8h:
     db 0dh, 0cbh, 04h
     db "For PET CP/M "
+l04d8h:
     db 17h, 0dbh, 04h
     db "Disk formatting program"
 l04f2h:
