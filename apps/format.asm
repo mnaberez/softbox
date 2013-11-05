@@ -60,23 +60,23 @@ l0132h:
     ld hl,l04f2h        ;0141 21 f2 04
     call sub_0888h      ;0144 cd 88 08
     call sub_0999h      ;0147 cd 99 09
-    ld hl,l04d8h        ;014a 21 d8 04
+    ld hl,format_prog   ;014a 21 d8 04
     call sub_0888h      ;014d cd 88 08
     call sub_0999h      ;0150 cd 99 09
-    ld hl,l04c8h        ;0153 21 c8 04
+    ld hl,for_pet_cpm   ;0153 21 c8 04
     call sub_0888h      ;0156 cd 88 08
     call sub_0999h      ;0159 cd 99 09
-    ld hl,l04b9h        ;015c 21 b9 04
+    ld hl,dashes        ;015c 21 b9 04
     call sub_0888h      ;015f cd 88 08
 l0162h:
     call sub_0999h      ;0162 cd 99 09
     ld hl,l04f2h        ;0165 21 f2 04
     call sub_0888h      ;0168 cd 88 08
     call sub_0999h      ;016b cd 99 09
-    ld hl,l049ch        ;016e 21 9c 04
+    ld hl,on_which_drv  ;016e 21 9c 04
     call sub_0888h      ;0171 cd 88 08
     call sub_0999h      ;0174 cd 99 09
-    ld hl,l0479h        ;0177 21 79 04
+    ld hl,a_to_p        ;0177 21 79 04
     call sub_0893h      ;017a cd 93 08
     call sub_02f5h      ;017d cd f5 02
     call sub_0999h      ;0180 cd 99 09
@@ -121,7 +121,7 @@ l01b3h:
     or l                ;01bf b5
     jp z,l01cfh         ;01c0 ca cf 01
     call sub_0999h      ;01c3 cd 99 09
-    ld hl,l0461h        ;01c6 21 61 04
+    ld hl,doesnt_exist  ;01c6 21 61 04
     call sub_0888h      ;01c9 cd 88 08
     jp l0162h           ;01cc c3 62 01
 l01cfh:
@@ -139,7 +139,7 @@ l01cfh:
 l01e8h:
     jp c,l01f7h         ;01e8 da f7 01
     call sub_0999h      ;01eb cd 99 09
-    ld hl,l044bh        ;01ee 21 4b 04
+    ld hl,not_in_system ;01ee 21 4b 04
     call sub_0888h      ;01f1 cd 88 08
     jp l0162h           ;01f4 c3 62 01
 l01f7h:
@@ -181,15 +181,15 @@ l0215h:
     ld hl,0007h         ;0228 21 07 00
     call sub_087bh      ;022b cd 7b 08
     call sub_0893h      ;022e cd 93 08
-    ld hl,l0436h        ;0231 21 36 04
+    ld hl,data_on_hd    ;0231 21 36 04
     call sub_0893h      ;0234 cd 93 08
     ld hl,(l010ah)      ;0237 2a 0a 01
     call sub_087bh      ;023a cd 7b 08
     call sub_0893h      ;023d cd 93 08
-    ld hl,l0423h        ;0240 21 23 04
+    ld hl,will_be_eras  ;0240 21 23 04
     call sub_0888h      ;0243 cd 88 08
     call sub_0999h      ;0246 cd 99 09
-    ld hl,l0410h        ;0249 21 10 04
+    ld hl,proceed_yn    ;0249 21 10 04
     call sub_0893h      ;024c cd 93 08
     call sub_02f5h      ;024f cd f5 02
     ld hl,(l010ah)      ;0252 2a 0a 01
@@ -204,22 +204,22 @@ l0261h:
     ld hl,l04f2h        ;0264 21 f2 04
     call sub_0888h      ;0267 cd 88 08
     call sub_0999h      ;026a cd 99 09
-    ld hl,l03f9h        ;026d 21 f9 03
+    ld hl,formatting_hd ;026d 21 f9 03
     call sub_0888h      ;0270 cd 88 08
     ld hl,l010ch        ;0273 21 0c 01
     call sub_07a9h      ;0276 cd a9 07
     jp l02c9h           ;0279 c3 c9 02
 l027ch:
     call sub_0999h      ;027c cd 99 09
-    ld hl,l03e8h        ;027f 21 e8 03
+    ld hl,disk_on_drv   ;027f 21 e8 03
     call sub_0893h      ;0282 cd 93 08
     ld hl,(l010ah)      ;0285 2a 0a 01
     call sub_087bh      ;0288 cd 7b 08
     call sub_0893h      ;028b cd 93 08
-    ld hl,l03d1h        ;028e 21 d1 03
+    ld hl,be_formatted  ;028e 21 d1 03
     call sub_0888h      ;0291 cd 88 08
     call sub_0999h      ;0294 cd 99 09
-    ld hl,l03a6h        ;0297 21 a6 03
+    ld hl,press_return  ;0297 21 a6 03
     call sub_0893h      ;029a cd 93 08
     call sub_02f5h      ;029d cd f5 02
     ld hl,(l010ah)      ;02a0 2a 0a 01
@@ -232,7 +232,7 @@ l02abh:
     ld hl,l04f2h        ;02ae 21 f2 04
     call sub_0888h      ;02b1 cd 88 08
     call sub_0999h      ;02b4 cd 99 09
-    ld hl,l0396h        ;02b7 21 96 03
+    ld hl,formatting    ;02b7 21 96 03
     call sub_0888h      ;02ba cd 88 08
     ld hl,l010ch        ;02bd 21 0c 01
     call sub_06e5h      ;02c0 cd e5 06
@@ -247,12 +247,12 @@ l02c9h:
     or l                ;02d6 b5
     jp nz,l02e6h        ;02d7 c2 e6 02
     call sub_0999h      ;02da cd 99 09
-    ld hl,l0384h        ;02dd 21 84 03
+    ld hl,complete      ;02dd 21 84 03
     call sub_0888h      ;02e0 cd 88 08
     jp l0162h           ;02e3 c3 62 01
 l02e6h:
     call sub_0999h      ;02e6 cd 99 09
-    ld hl,l035fh        ;02e9 21 5f 03
+    ld hl,bad_disk      ;02e9 21 5f 03
     call sub_0888h      ;02ec cd 88 08
     jp l0162h           ;02ef c3 62 01
     call sub_0980h      ;02f2 cd 80 09
@@ -321,55 +321,55 @@ l0342h:
 l035bh:
     ret                 ;035b c9
     call sub_0980h      ;035c cd 80 09
-l035fh:
+bad_disk:
     db 22h, 62h, 03h
     db "Do not use diskette - try again..."
-l0384h:
+complete:
     db 0fh, 87h, 03h
     db "Format complete"
-l0396h:
+formatting:
     db 0dh, 099h, 03h
     db "Formatting..."
-l03a6h:
+press_return:
     db 28h, 0a9h, 03h
     db "Press RETURN to continue, ^C to abort : "
-l03d1h:
+be_formatted:
     db 14h, 0d4h, 03h
     db ": is to be formatted"
-l03e8h:
+disk_on_drv:
     db 0eh, 0ebh, 03h
     db "Disk on drive "
-l03f9h:
+formatting_hd:
     db 14h,0fch, 03h
     db "Formatting hard disk"
-l0410h:
+proceed_yn:
     db 10h, 13h, 04h
     db "Proceed (Y/N) ? "
-l0423h:
+will_be_eras:
     db 10h, 26h, 04h
     db ": will be erased"
-l0436h:
+data_on_hd:
     db 12h, 39h, 04h
     db "Data on hard disk "
-l044bh:
+not_in_system:
     db 13h, 4eh, 04h
     db "Drive not in system"
-l0461h:
+doesnt_exist:
     db 15h, 64h, 04h
     db "Drive doesn't exist !"
-l0479h:
+a_to_p:
     db 20h, 7ch, 04h
     db "(A to P, or RETURN to reboot) ? "
-l049ch:
+on_which_drv:
     db 1ah, 9fh, 04h
     db "Format disk on which drive"
-l04b9h:
+dashes:
     db 0ch, 0bch, 04h
     db "=== === ===="
-l04c8h:
+for_pet_cpm:
     db 0dh, 0cbh, 04h
     db "For PET CP/M "
-l04d8h:
+format_prog:
     db 17h, 0dbh, 04h
     db "Disk formatting program"
 l04f2h:
@@ -983,7 +983,7 @@ l0945h:
     ld c,30h            ;0945 0e 30
     ld de,2710h         ;0947 11 10 27
     call sub_0967h      ;094a cd 67 09
-    ld de,l03e8h        ;094d 11 e8 03
+    ld de,disk_on_drv   ;094d 11 e8 03
     call sub_0967h      ;0950 cd 67 09
     ld de,0064h         ;0953 11 64 00
     call sub_0967h      ;0956 cd 67 09
