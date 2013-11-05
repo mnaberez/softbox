@@ -410,7 +410,7 @@ l04f2h:
     nop                 ;04f6 00
     nop                 ;04f7 00
 
-; LOADSAVE.REL code below ==================================================
+; Start of LOADSAVE.REL =====================================================
 
 buffin:
 ;Buffered Console Input.  Caller must store buffer size at 80h.  On
@@ -832,27 +832,21 @@ l0818h:
     db "M-W",00h,13h,01h
     db "#2"
 l0820h:
-    ret                 ;0820 c9
+    db 0c9h
 l0821h:
-    call 3053h          ;0821 cd 53 30
-    ld a,(532ah)        ;0824 3a 2a 53
-    ld sp,2a3ah         ;0827 31 3a 2a
+    db 0cdh
+    db "S0:*"
+    db "S1:*"
 l082ah:
-    jr nc,$+60          ;082a 30 3a
-    ld b,e              ;082c 43
-    ld d,b              ;082d 50
-    cpl                 ;082e 2f
-    ld c,l              ;082f 4d
+    db "0:CP/M"
 l0830h:
-    ld sp,433ah         ;0830 31 3a 43
-    ld d,b              ;0833 50
-    cpl                 ;0834 2f
-    ld c,l              ;0835 4d
+    db "1:CP/M"
 l0836h:
-    jr nc,$+60          ;0836 30 3a
-    ld c,e              ;0838 4b
+    db "0:K"
 l0839h:
-    ld sp,4b3ah         ;0839 31 3a 4b
+    db "1:K"
+
+; End of LOADSAVE.REL =======================================================
 
 l083ch:
     pop hl              ;083c e1
