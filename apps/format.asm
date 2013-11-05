@@ -372,6 +372,9 @@ l04f2h:
     nop                 ;04f5 00
     nop                 ;04f6 00
     nop                 ;04f7 00
+
+; LOADSAVE.REL code below ==================================================
+
 sub_04f8h:
     ld c,0ah            ;04f8 0e 0a
     ld de,0080h         ;04fa 11 80 00
