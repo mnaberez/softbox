@@ -129,7 +129,7 @@ next_disk:
     ld hl,a_to_p
     call print_         ;Print "(A to P, or RETURN to reboot) ? "
 
-    call sub_02f5h
+    call get_char       ;Get a character from the user
 
     call nop_2
     ld hl,empty_string
@@ -267,13 +267,16 @@ l0215h:
     ld hl,proceed_yn
     call print_         ;Print "Proceed (Y/N) ? "
 
-    call sub_02f5h
-    ld hl,(l010ah)
-    ld de,0ffa7h
-    add hl,de
-    ld a,h
-    or l
-    jp z,format_hard
+    call get_char       ;Get a character from the user
+
+                        ;Jump to format if char is "Y":
+    ld hl,(l010ah)      ;  HL = char typed by user ("Y" = 59h)
+    ld de,0-"Y"         ;  DE = 0ffa7h (0 - 59h)
+    add hl,de           ;  HL = HL + DE
+    ld a,h              ;
+    or l                ;  Is the result zero?
+    jp z,format_hard    ;    Yes: jump to format
+
     call jp_to_warm     ;Jump to CP/M warm start (never returns)
 
 format_hard:
@@ -309,7 +312,8 @@ prompt_floppy:
     ld hl,press_return
     call print_         ;Print "Press RETURN to continue, ^C to abort : "
 
-    call sub_02f5h
+    call get_char       ;Get a character from the user
+
     ld hl,(l010ah)
     ld a,h
     or l
@@ -362,7 +366,9 @@ format_failed:
 
     call jp_to_warm     ;Jump to CP/M warm start (never returns)
 
-sub_02f5h:
+get_char:
+;Get a character from the user
+;
     ld hl,0080h
     ld (l0112h),hl
     ld hl,(l0112h)
