@@ -46,21 +46,18 @@ cr:            equ 0dh    ;Carriage Return
     nop                 ;0107 00
     nop                 ;0108 00
     nop                 ;0109 00
-l010ah:
-    nop                 ;010a 00
-    nop                 ;010b 00
-l010ch:
-    nop                 ;010c 00
-    nop                 ;010d 00
-l010eh:
-    nop                 ;010e 00
-    nop                 ;010f 00
-l0110h:
-    nop                 ;0110 00
-    nop                 ;0111 00
-l0112h:
-    nop                 ;0112 00
-    nop                 ;0113 00
+
+first_char:
+    dw 0                ;First char of user input from any prompt
+drv_num:
+    dw 0                ;CP/M source drive number (0=A:, 1=B:, ...)
+drv_typ:
+    dw 0                ;Drive type (from dtypes table)
+cbm_err:
+    dw 0                ;Last error code from CBM DOS
+buf_addr:
+    dw 0                ;Address of buffer used in get_char
+
 l0114h:
     nop                 ;0114 00
     nop                 ;0115 00
@@ -135,7 +132,7 @@ next_disk:
     ld hl,empty_string
     call print          ;Print newline
 
-    ld hl,(l010ah)
+    ld hl,(first_char)
     ld a,h
     or l
     jp nz,check_letter  ;Jump to check drive if a letter was entered
@@ -145,16 +142,16 @@ check_letter:
 ;Check that the letter is in the range of valid letters (A-P).
 ;
     ld de,0ffbfh
-    ld hl,(l010ah)
+    ld hl,(first_char)
     add hl,de
-    ld (l010ch),hl
-    ld hl,(l010ch)
+    ld (drv_num),hl
+    ld hl,(drv_num)
     add hl,hl
     sbc a,a
     ld h,a
     ld l,a
     push hl
-    ld hl,(l010ch)
+    ld hl,(drv_num)
     ld de,0fff0h
     ld a,h
     rla
@@ -186,15 +183,21 @@ l01b3h:
 check_type:
 ;Check that a drive has been configured at the drive letter entered.
 ;
-    ld hl,(l010ch)
-    ld (l010eh),hl
-    ld hl,l010eh
-    call dtype
-    ld hl,(l010eh)
+    ld hl,(drv_num)     ;HL = CP/M drive number
+    ld (drv_typ),hl     ;Store drive number in drv_type to pass it to dtype
+
+    ld hl,drv_typ       ;HL = address of drv_type
+    call dtype          ;Get drive type for CP/M drive number
+                        ;  Before the call, drv_type holds a drive number
+                        ;  After the call, drv_type holds its drive type
+
+    ld hl,(drv_typ)     ;HL = drive type returned by dtype
     ld de,0ff80h
+
     ld a,h
     rla
     jp c,l01e8h
+
     add hl,de
     add hl,hl
 l01e8h:
@@ -210,7 +213,7 @@ floppy_or_hard:
 ;Determine if the drive to be formatted is a CBM floppy drive
 ;or a Corvus hard drive.
 ;
-    ld hl,(l010eh)
+    ld hl,(drv_typ)
     ld de,0fffeh
     ld a,h
     rla
@@ -222,7 +225,7 @@ l0204h:
     ld h,a
     ld l,a
     push hl
-    ld hl,(l010eh)
+    ld hl,(drv_typ)
     ld de,0fff6h
     ld a,h
     rla
@@ -256,7 +259,7 @@ l0215h:
     ld hl,data_on_hd
     call print_         ;Print "Data on hard disk "
 
-    ld hl,(l010ah)
+    ld hl,(first_char)
     call make_tmp       ;Temp string = drive letter
     call print_         ;Print temp string
 
@@ -270,7 +273,7 @@ l0215h:
     call get_char       ;Get a character from the user
 
                         ;Jump to format if char is "Y":
-    ld hl,(l010ah)      ;  HL = char typed by user ("Y" = 59h)
+    ld hl,(first_char)  ;  HL = char typed by user ("Y" = 59h)
     ld de,0-"Y"         ;  DE = 0ffa7h (0 - 59h)
     add hl,de           ;  HL = HL + DE
     ld a,h              ;
@@ -290,8 +293,8 @@ format_hard:
     ld hl,formatting_hd
     call print          ;Print "Formatting hard disk"
 
-    ld hl,l010ch
-    call cform
+    ld hl,drv_num       ;HL = address of CP/M drive number of Corvus
+    call cform          ;Format the Corvus hard disk
     jp format_done
 
 prompt_floppy:
@@ -301,7 +304,7 @@ prompt_floppy:
     ld hl,disk_on_drv
     call print_         ;Print "Disk on drive "
 
-    ld hl,(l010ah)
+    ld hl,(first_char)
     call make_tmp       ;Temp string = drive letter
     call print_         ;Print temp string
 
@@ -314,7 +317,7 @@ prompt_floppy:
 
     call get_char       ;Get a character from the user
 
-    ld hl,(l010ah)
+    ld hl,(first_char)
     ld a,h
     or l
     jp z,format_floppy
@@ -331,11 +334,12 @@ format_floppy:
     ld hl,formatting
     call print          ;Print "Formatting..."
 
-    ld hl,l010ch
-    call format
+    ld hl,drv_num       ;HL = address of CP/M drive number of CBM floppy
+    call format         ;Format the CBM floppy disk
 
-    ld hl,l0110h
-    call dskerr
+    ld hl,cbm_err       ;HL = address to receive CBM DOS error code
+    call dskerr         ;Check CBM DOS error
+
                         ;Fall through into format_done
 
 format_done:
@@ -346,10 +350,11 @@ format_done:
     ld hl,empty_string
     call print          ;Print newline
 
-    ld hl,(l0110h)
-    ld a,h
-    or l
-    jp nz,format_failed ;Jump if format failed
+                        ;Handle CBM DOS error:
+    ld hl,(cbm_err)     ;  HL = last error code from CBM DOS
+    ld a,h              ;
+    or l                ;  Error code = 0 (OK)?
+    jp nz,format_failed ;    No: jump to format failed
 
     call nop_2
     ld hl,complete
@@ -370,11 +375,11 @@ get_char:
 ;Get a character from the user
 ;
     ld hl,0080h
-    ld (l0112h),hl
-    ld hl,(l0112h)
+    ld (buf_addr),hl
+    ld hl,(buf_addr)
     ld (hl),50h
     call buffin
-    ld hl,(l0112h)
+    ld hl,(buf_addr)
     inc hl
     ld l,(hl)
     ld h,00h
@@ -382,17 +387,17 @@ get_char:
     or l
     jp nz,l0318h
     ld hl,0000h
-    ld (l010ah),hl
+    ld (first_char),hl
     jp l0323h
 l0318h:
-    ld hl,(l0112h)
+    ld hl,(buf_addr)
     inc hl
     inc hl
     ld l,(hl)
     ld h,00h
-    ld (l010ah),hl
+    ld (first_char),hl
 l0323h:
-    ld hl,(l010ah)
+    ld hl,(first_char)
     ld de,0ff9fh
     ld a,h
     rla
@@ -405,7 +410,7 @@ l0330h:
     ld h,a
     ld l,a
     push hl
-    ld hl,(l010ah)
+    ld hl,(first_char)
     ld de,0ff85h
     ld a,h
     rla
@@ -427,9 +432,9 @@ l0342h:
     or l
     jp z,nop_3
     ld de,0ffe0h
-    ld hl,(l010ah)
+    ld hl,(first_char)
     add hl,de
-    ld (l010ah),hl
+    ld (first_char),hl
 
 nop_3:
 ;Do nothing and return
