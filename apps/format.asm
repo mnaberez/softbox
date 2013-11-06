@@ -1,5 +1,19 @@
-; z80dasm 1.1.3
-; command line: z80dasm --origin=256 --address --labels --output=format.asm format.com
+;FORMAT.COM
+;  Format a disk for use with SoftBox CP/M.
+;
+;Both CBM floppy drives and Corvus hard drives are supported.  For a CBM
+;floppy, the disk may be unformatted because the program will first format it
+;with CBM DOS before writing the CP/M filesystem.  For a Corvus hard drive,
+;the drive must already have been prepared using the Corvus diagnostics.
+;
+;Usage: "FORMAT"  Accepts no arguments.  The program will prompt for
+;                 a drive letter and confirmation.
+;
+;This is a disassembly of a compiled BASIC program.  FORMAT.COM was
+;originally written in Microsoft BASIC (MBASIC).  It was then compiled
+;with Microsoft BASIC Compiler (BASCOM) and linked with the SoftBox
+;support library LOADSAVE.REL using Microsoft Link-80 (L80).
+;
 
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
