@@ -917,12 +917,13 @@ l0836h:
 l0839h:
     db "1:K"
 
+l083ch:
+    db 0e1h
+l083dh:
+    db 0d1h
+
 ; End of LOADSAVE.REL =======================================================
 
-l083ch:
-    pop hl              ;083c e1
-l083dh:
-    pop de              ;083d d1
 l083eh:
     inc hl              ;083e 23
     ld a,(hl)           ;083f 7e
