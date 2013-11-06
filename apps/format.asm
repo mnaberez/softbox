@@ -53,6 +53,8 @@ cr:            equ 0dh    ;Carriage Return
     org 0100h
 
     jp start
+
+unused_1:
     nop                 ;0103 00
     nop                 ;0104 00
     nop                 ;0105 00
@@ -72,7 +74,7 @@ cbm_err:
 buf_addr:
     dw 0                ;Address of buffer used in get_char
 
-l0114h:
+unused_2:
     nop                 ;0114 00
     nop                 ;0115 00
     nop                 ;0116 00
@@ -88,6 +90,7 @@ start:
     ld hl,main
     jp jp_to_hl         ;Perform JP (main)
 
+unused_3:
     push af             ;0124 f5
     inc b               ;0125 04
     nop                 ;0126 00
@@ -95,7 +98,7 @@ start:
     rst 30h             ;0128 f7
     inc b               ;0129 04
     inc bc              ;012a 03
-    ld bc,l0114h        ;012b 01 14 01
+    ld bc,unused_2      ;012b 01 14 01
     nop                 ;012e 00
     nop                 ;012f 00
     ld e,01h            ;0130 1e 01
@@ -947,6 +950,7 @@ l07beh:
     cp 40h
     jr nz,l07beh
     ret
+
 l07d1h:
 ;Display "Hit any key to abort" message, wait for a key, and then return.
     ld de,l07deh
@@ -994,7 +998,7 @@ tmp:
     dw 2b7eh            ;header: start address of string
     db 0d0h, 0cdh       ;string data (not at start address ??)
 
-l0843h:
+unused_4:
     ld a,' '
     call print_char
     ret
@@ -1007,28 +1011,29 @@ print_eol:
     call print_char
     ret
 
+unused_5:
     ld a,02h
     ld (tmp),a
     ld a,l
-    call sub_086bh
+    call unused_6
     ld (tmp+3),a
     ld a,l
-    call sub_086fh
+    call unused_7
     ld (tmp+4),a
     ld hl,tmp
     ret
 
-sub_086bh:
+unused_6:
     rrca
     rrca
     rrca
     rrca
-sub_086fh:
+unused_7:
     and 0fh
     cp 0ah
-    jp m,l0878h
+    jp m,unused_8
     add a,07h
-l0878h:
+unused_8:
     add a,30h
     ret
 
@@ -1065,9 +1070,9 @@ print_:
 
     ld a,(hl)           ;089a 7e
     or a                ;089b b7
-    jp z,l0843h         ;089c ca 43 08
+    jp z,unused_4         ;089c ca 43 08
     call print_str      ;089f cd a5 08
-    jp l0843h           ;08a2 c3 43 08
+    jp unused_4           ;08a2 c3 43 08
 
 print_str:
 ;Print string of length A at pointer HL.
@@ -1084,6 +1089,7 @@ l08a9h:
     jp nz,l08a9h        ;Loop until all chars have been printed
     ret
 
+unused_9:
     ld a,(bc)
     ld c,a
     jp bdos
@@ -1092,21 +1098,21 @@ l08a9h:
     ld c,(hl)
     inc hl
     ld b,(hl)
-    jp l08c6h
+    jp unused_10
     ld b,h
     ld c,l
     pop hl
     ld e,(hl)
     inc hl
     ld d,(hl)
-l08c6h:
+unused_10:
     inc hl
     push hl
-    jp l08ceh
+    jp unused_11
     ex de,hl
     ld b,h
     ld c,l
-l08ceh:
+unused_11:
     ld a,d
     cpl
     ld d,a
@@ -1116,12 +1122,12 @@ l08ceh:
     inc de
     ld hl,0000h
     ld a,11h
-l08dah:
+unused_12:
     push hl
     add hl,de
-    jp nc,l08e0h
+    jp nc,unused_13
     ex (sp),hl
-l08e0h:
+unused_13:
     pop hl
     push af
     ld a,c
@@ -1138,7 +1144,7 @@ l08e0h:
     ld h,a
     pop af
     dec a
-    jp nz,l08dah
+    jp nz,unused_12
     ld l,c
     ld h,b
     ret
@@ -1163,32 +1169,33 @@ l08e0h:
     ld c,l
     ld hl,0000h
     ld a,10h
-l090eh:
+unused_14:
     add hl,hl
     ex de,hl
     add hl,hl
     ex de,hl
-    jp nc,l0916h
+    jp nc,unused_15
     add hl,bc
-l0916h:
+unused_15:
     dec a
-    jp nz,l090eh
+    jp nz,unused_14
     ret
-    call sub_0932h
+    call unused_16
     ld a,20h
     call print_char
     ret
-    call sub_0932h
+    call unused_16
     ld a,lf
     call print_char
     ld a,cr
     call print_char
     ret
-sub_0932h:
+
+unused_16:
     push hl
     ld a,h
     and 80h
-    jp z,l0945h
+    jp z,unused_17
     ld a,l
     cpl
     ld l,a
@@ -1198,32 +1205,35 @@ sub_0932h:
     inc hl
     ld a,2dh
     call print_char
-l0945h:
+unused_17:
     ld c,30h
     ld de,2710h
-    call sub_0967h
+    call unused_18
     ld de,03e8h
-    call sub_0967h
+    call unused_18
     ld de,0064h
-    call sub_0967h
+    call unused_18
     ld de,000ah
-    call sub_0967h
+    call unused_18
     ld de,0001h
-    call sub_0967h
+    call unused_18
     pop hl
     ret
-sub_0967h:
-    call sub_0979h
-    jp c,l0971h
+
+unused_18:
+    call unused_20
+    jp c,unused_19
     inc c
-    jp sub_0967h
-l0971h:
+    jp unused_18
+
+unused_19:
     ld a,c
     call print_char
     add hl,de
     ld c,30h
     ret
-sub_0979h:
+
+unused_20:
     ld a,l
     sub e
     ld l,a
@@ -1242,9 +1252,10 @@ jp_to_hl:
 
 nop_1:
 ;Do nothing and return
-    ret                 ;0984 c9
-    ld hl,0fffeh        ;0985 21 fe ff
-    jp l099ah           ;0988 c3 9a 09
+    ret
+    ld hl,0fffeh
+    jp unused_21        ;Jump to unused code area.  This jump will
+                        ;  never be performed.
 
 print_char:
 ;Write the char in A to the console
@@ -1264,7 +1275,7 @@ nop_2:
 ;Do nothing and return
     ret
 
-l099ah:
+unused_21:
     push de
     push bc
     push hl
@@ -1280,54 +1291,57 @@ l099ah:
 
     ld a,(hl)
     jp print_char
-l09aeh:
+unused_22:
     cp 04h
-l09b0h:
+unused_23:
     jp c,0d33eh
-    ld (l09aeh),a
+    ld (unused_22),a
     ld a,l
-    ld (l09aeh+1),a
+    ld (unused_22+1),a
     ld a,0c9h
-    ld (l09b0h),a
+    ld (unused_23),a
     ld a,e
-    jp l09aeh
+    jp unused_22
     ld a,0dbh
-    ld (l09aeh),a
+    ld (unused_22),a
     ld a,l
-    ld (l09aeh+1),a
+    ld (unused_22+1),a
     ld a,0c9h
-l09ceh:
-    ld (l09b0h),a
-    call l09aeh
-l09d4h:
+unused_24:
+    ld (unused_23),a
+    call unused_22
+unused_25:
     ld h,00h
     ld l,a
     ret
     push af
     ld a,0c0h
-    jr nc,l09ceh
+    jr nc,unused_24
     ret
 
+unused_26:
     push af
     ld a,40h
-    jr nc,l09d4h
+    jr nc,unused_25
     ret
     ei
     ret
     di
     ret
 
+unused_27:
     ld a,c
     add hl,bc
-    jp c,l0971h
+    jp c,unused_19
     inc c
-    jp sub_0967h
+    jp unused_18
     ld a,c
     call print_char
     add hl,de
     ld c,30h
     ret
 
+unused_28:
     ld a,l
     sub e
     ld l,a
