@@ -32,6 +32,10 @@ cwrite:        equ 02h    ;Console Output
 cwritestr:     equ 09h    ;Output String
 creadstr:      equ 0ah    ;Buffered Console Input
 
+bell:          equ 07h    ;Bell
+lf:            equ 0ah    ;Line Feed
+cr:            equ 0dh    ;Carriage Return
+
     org 0100h
 
     jp start
@@ -245,16 +249,16 @@ l0215h:
                         ;Prompt for confirmation to format the hard disk.
 
     call nop_2
-    ld hl,0007h
-    call sub_087bh
-    call print_
+    ld hl,bell
+    call make_tmp       ;Temp string = bell character
+    call print_         ;Print temp string
 
     ld hl,data_on_hd
     call print_         ;Print "Data on hard disk "
 
     ld hl,(l010ah)
-    call sub_087bh
-    call print_
+    call make_tmp       ;Temp string = drive letter
+    call print_         ;Print temp string
 
     ld hl,will_be_eras
     call print          ;Print ": will be erased"
@@ -295,8 +299,8 @@ prompt_floppy:
     call print_         ;Print "Disk on drive "
 
     ld hl,(l010ah)
-    call sub_087bh
-    call print_
+    call make_tmp       ;Temp string = drive letter
+    call print_         ;Print temp string
 
     ld hl,be_formatted
     call print          ;Print ": is to be formatted"
@@ -669,7 +673,7 @@ l060bh:
     pop hl
     inc hl
     ld a,(hl)
-    cp 0dh
+    cp cr
     jr nz,l060bh
     ld de,l0632h
     ld c,cwritestr
@@ -680,7 +684,7 @@ l0622h:
     ld a,(bc)
     db "Disk error : $"
 l0632h:
-    db 0dh,0ah,"$"
+    db cr,lf,"$"
 
 sub_0635h:
 ;Open "CP/M" file on an IEEE-488 drive
@@ -892,7 +896,7 @@ l07d1h:
     jp bdos
 
 l07deh:
-    db 0dh,0ah,"Hit any key to abort : $"
+    db cr,lf,"Hit any key to abort : $"
 l07f8h:
     db "U2 2 "
 l07fdh:
@@ -924,14 +928,11 @@ l083dh:
 
 ; End of LOADSAVE.REL =======================================================
 
-l083eh:
-    inc hl              ;083e 23
-    ld a,(hl)           ;083f 7e
-    dec hl              ;0840 2b
-l0841h:
-    ret nc              ;0841 d0
-l0842h:
-    db 0cdh
+tmp:
+;Temporary string
+    db 23h, 7eh, 2bh    ;3 bytes header
+    db 0d0h, 0cdh       ;2 bytes data
+
 l0843h:
     ld a,' '
     call print_char
@@ -939,21 +940,21 @@ l0843h:
 
 print_eol:
 ;Print end of line (CR+LF)
-    ld a,0ah
+    ld a,lf
     call print_char
-    ld a,0dh
+    ld a,cr
     call print_char
     ret
 
     ld a,02h            ;0854 3e 02
-    ld (l083eh),a       ;0856 32 3e 08
+    ld (tmp),a          ;0856 32 3e 08
     ld a,l              ;0859 7d
     call sub_086bh      ;085a cd 6b 08
-    ld (l0841h),a       ;085d 32 41 08
+    ld (tmp+3),a        ;085d 32 41 08
     ld a,l              ;0860 7d
     call sub_086fh      ;0861 cd 6f 08
-    ld (l0842h),a       ;0864 32 42 08
-    ld hl,l083eh        ;0867 21 3e 08
+    ld (tmp+4),a        ;0864 32 42 08
+    ld hl,tmp           ;0867 21 3e 08
     ret                 ;086a c9
 
 sub_086bh:
@@ -970,13 +971,16 @@ l0878h:
     add a,30h           ;0878 c6 30
     ret                 ;087a c9
 
-sub_087bh:
-    ld a,01h            ;087b 3e 01
-    ld (l083eh),a       ;087d 32 3e 08
-    ld a,l              ;0880 7d
-    ld (l0841h),a       ;0881 32 41 08
-    ld hl,l083eh        ;0884 21 3e 08
-    ret                 ;0887 c9
+make_tmp:
+;Make a temporary string from the char in L and
+;return a pointer to it in HL.
+;
+    ld a,01h            ;A = 1 byte in string
+    ld (tmp),a          ;Store length in temp string header
+    ld a,l              ;A = L
+    ld (tmp+3),a        ;Store A as the temp string data
+    ld hl,tmp           ;HL = address of the string
+    ret
 
 print:
 ;Print string in HL followed by CR+LF
@@ -1114,9 +1118,9 @@ l0916h:
     call print_char     ;0920 cd 8b 09
     ret                 ;0923 c9
     call sub_0932h      ;0924 cd 32 09
-    ld a,0ah            ;0927 3e 0a
+    ld a,lf             ;0927 3e 0a
     call print_char     ;0929 cd 8b 09
-    ld a,0dh            ;092c 3e 0d
+    ld a,cr             ;092c 3e 0d
     call print_char     ;092e cd 8b 09
     ret                 ;0931 c9
 sub_0932h:
