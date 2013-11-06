@@ -437,58 +437,93 @@ nop_3:
     call jp_to_warm
 
 bad_disk:
-    db 22h, 62h, 03h
+    db 22h
+    dw bad_disk+3
     db "Do not use diskette - try again..."
+
 complete:
-    db 0fh, 87h, 03h
+    db 0fh
+    dw complete+3
     db "Format complete"
+
 formatting:
-    db 0dh, 099h, 03h
+    db 0dh
+    dw formatting+3
     db "Formatting..."
+
 press_return:
-    db 28h, 0a9h, 03h
+    db 28h
+    dw press_return+3
     db "Press RETURN to continue, ^C to abort : "
+
 be_formatted:
-    db 14h, 0d4h, 03h
+    db 14h
+    dw be_formatted+3
     db ": is to be formatted"
+
 disk_on_drv:
-    db 0eh, 0ebh, 03h
+    db 0eh
+    dw disk_on_drv+3
     db "Disk on drive "
+
 formatting_hd:
-    db 14h,0fch, 03h
+    db 14h
+    dw formatting_hd+3
     db "Formatting hard disk"
+
 proceed_yn:
-    db 10h, 13h, 04h
+    db 10h
+    dw proceed_yn+3
     db "Proceed (Y/N) ? "
+
 will_be_eras:
-    db 10h, 26h, 04h
+    db 10h
+    dw will_be_eras+3
     db ": will be erased"
+
 data_on_hd:
-    db 12h, 39h, 04h
+    db 12h
+    dw data_on_hd+3
     db "Data on hard disk "
+
 not_in_sys:
-    db 13h, 4eh, 04h
+    db 13h
+    dw not_in_sys+3
     db "Drive not in system"
+
 doesnt_exist:
-    db 15h, 64h, 04h
+    db 15h
+    dw doesnt_exist+3
     db "Drive doesn't exist !"
+
 a_to_p:
-    db 20h, 7ch, 04h
+    db 20h
+    dw a_to_p+3
     db "(A to P, or RETURN to reboot) ? "
+
 on_which_drv:
-    db 1ah, 9fh, 04h
+    db 1ah
+    dw on_which_drv+3
     db "Format disk on which drive"
+
 dashes:
-    db 0ch, 0bch, 04h
+    db 0ch
+    dw dashes+3
     db "=== === ===="
+
 for_pet_cpm:
-    db 0dh, 0cbh, 04h
+    db 0dh
+    dw for_pet_cpm+3
     db "For PET CP/M "
+
 format_prog:
-    db 17h, 0dbh, 04h
+    db 17h
+    dw format_prog+3
     db "Disk formatting program"
+
 empty_string:
-    db 00h, 0f5h, 04h
+    db 00h
+    dw empty_string+3
     db 00h, 00h, 00h
 
 ; Start of LOADSAVE.REL =====================================================
@@ -936,8 +971,9 @@ l083dh:
 
 tmp:
 ;Temporary string
-    db 23h, 7eh, 2bh    ;3 bytes header
-    db 0d0h, 0cdh       ;2 bytes data
+    db 23h              ;header: string length
+    dw 2b7eh            ;header: start address of string
+    db 0d0h, 0cdh       ;string data (not at start address ??)
 
 l0843h:
     ld a,' '
