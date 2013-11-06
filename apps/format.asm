@@ -1007,30 +1007,30 @@ print_eol:
     call print_char
     ret
 
-    ld a,02h            ;0854 3e 02
-    ld (tmp),a          ;0856 32 3e 08
-    ld a,l              ;0859 7d
-    call sub_086bh      ;085a cd 6b 08
-    ld (tmp+3),a        ;085d 32 41 08
-    ld a,l              ;0860 7d
-    call sub_086fh      ;0861 cd 6f 08
-    ld (tmp+4),a        ;0864 32 42 08
-    ld hl,tmp           ;0867 21 3e 08
-    ret                 ;086a c9
+    ld a,02h
+    ld (tmp),a
+    ld a,l
+    call sub_086bh
+    ld (tmp+3),a
+    ld a,l
+    call sub_086fh
+    ld (tmp+4),a
+    ld hl,tmp
+    ret
 
 sub_086bh:
-    rrca                ;086b 0f
-    rrca                ;086c 0f
-    rrca                ;086d 0f
-    rrca                ;086e 0f
+    rrca
+    rrca
+    rrca
+    rrca
 sub_086fh:
-    and 0fh             ;086f e6 0f
-    cp 0ah              ;0871 fe 0a
-    jp m,l0878h         ;0873 fa 78 08
-    add a,07h           ;0876 c6 07
+    and 0fh
+    cp 0ah
+    jp m,l0878h
+    add a,07h
 l0878h:
-    add a,30h           ;0878 c6 30
-    ret                 ;087a c9
+    add a,30h
+    ret
 
 make_tmp:
 ;Make a temporary string from the char in L and
@@ -1087,150 +1087,150 @@ l08a9h:
     ld a,(bc)
     ld c,a
     jp bdos
-    ex de,hl            ;08b8 eb
-    pop hl              ;08b9 e1
-    ld c,(hl)           ;08ba 4e
-    inc hl              ;08bb 23
-    ld b,(hl)           ;08bc 46
-    jp l08c6h           ;08bd c3 c6 08
-    ld b,h              ;08c0 44
-    ld c,l              ;08c1 4d
-    pop hl              ;08c2 e1
-    ld e,(hl)           ;08c3 5e
-    inc hl              ;08c4 23
-    ld d,(hl)           ;08c5 56
+    ex de,hl
+    pop hl
+    ld c,(hl)
+    inc hl
+    ld b,(hl)
+    jp l08c6h
+    ld b,h
+    ld c,l
+    pop hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
 l08c6h:
-    inc hl              ;08c6 23
-    push hl             ;08c7 e5
-    jp l08ceh           ;08c8 c3 ce 08
-    ex de,hl            ;08cb eb
-    ld b,h              ;08cc 44
-    ld c,l              ;08cd 4d
+    inc hl
+    push hl
+    jp l08ceh
+    ex de,hl
+    ld b,h
+    ld c,l
 l08ceh:
-    ld a,d              ;08ce 7a
-    cpl                 ;08cf 2f
-    ld d,a              ;08d0 57
-    ld a,e              ;08d1 7b
-    cpl                 ;08d2 2f
-    ld e,a              ;08d3 5f
-    inc de              ;08d4 13
-    ld hl,0000h         ;08d5 21 00 00
-    ld a,11h            ;08d8 3e 11
+    ld a,d
+    cpl
+    ld d,a
+    ld a,e
+    cpl
+    ld e,a
+    inc de
+    ld hl,0000h
+    ld a,11h
 l08dah:
-    push hl             ;08da e5
-    add hl,de           ;08db 19
-    jp nc,l08e0h        ;08dc d2 e0 08
-    ex (sp),hl          ;08df e3
+    push hl
+    add hl,de
+    jp nc,l08e0h
+    ex (sp),hl
 l08e0h:
-    pop hl              ;08e0 e1
-    push af             ;08e1 f5
-    ld a,c              ;08e2 79
-    rla                 ;08e3 17
-    ld c,a              ;08e4 4f
-    ld a,b              ;08e5 78
-    rla                 ;08e6 17
-    ld b,a              ;08e7 47
-    ld a,l              ;08e8 7d
-    rla                 ;08e9 17
-    ld l,a              ;08ea 6f
-    ld a,h              ;08eb 7c
-    rla                 ;08ec 17
-    ld h,a              ;08ed 67
-    pop af              ;08ee f1
-    dec a               ;08ef 3d
-    jp nz,l08dah        ;08f0 c2 da 08
-    ld l,c              ;08f3 69
-    ld h,b              ;08f4 60
-    ret                 ;08f5 c9
-    ld b,h              ;08f6 44
-    ld c,l              ;08f7 4d
-    pop hl              ;08f8 e1
-    ld e,(hl)           ;08f9 5e
-    inc hl              ;08fa 23
-    ld d,(hl)           ;08fb 56
-    inc hl              ;08fc 23
-    push hl             ;08fd e5
-    ld l,c              ;08fe 69
-    ld h,b              ;08ff 60
-    ld a,h              ;0900 7c
-    or l                ;0901 b5
-    ret z               ;0902 c8
-    ex de,hl            ;0903 eb
-    ld a,h              ;0904 7c
-    or l                ;0905 b5
-    ret z               ;0906 c8
-    ld b,h              ;0907 44
-    ld c,l              ;0908 4d
-    ld hl,0000h         ;0909 21 00 00
-    ld a,10h            ;090c 3e 10
+    pop hl
+    push af
+    ld a,c
+    rla
+    ld c,a
+    ld a,b
+    rla
+    ld b,a
+    ld a,l
+    rla
+    ld l,a
+    ld a,h
+    rla
+    ld h,a
+    pop af
+    dec a
+    jp nz,l08dah
+    ld l,c
+    ld h,b
+    ret
+    ld b,h
+    ld c,l
+    pop hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    inc hl
+    push hl
+    ld l,c
+    ld h,b
+    ld a,h
+    or l
+    ret z
+    ex de,hl
+    ld a,h
+    or l
+    ret z
+    ld b,h
+    ld c,l
+    ld hl,0000h
+    ld a,10h
 l090eh:
-    add hl,hl           ;090e 29
-    ex de,hl            ;090f eb
-    add hl,hl           ;0910 29
-    ex de,hl            ;0911 eb
-    jp nc,l0916h        ;0912 d2 16 09
-    add hl,bc           ;0915 09
+    add hl,hl
+    ex de,hl
+    add hl,hl
+    ex de,hl
+    jp nc,l0916h
+    add hl,bc
 l0916h:
-    dec a               ;0916 3d
-    jp nz,l090eh        ;0917 c2 0e 09
-    ret                 ;091a c9
-    call sub_0932h      ;091b cd 32 09
-    ld a,20h            ;091e 3e 20
-    call print_char     ;0920 cd 8b 09
-    ret                 ;0923 c9
-    call sub_0932h      ;0924 cd 32 09
-    ld a,lf             ;0927 3e 0a
-    call print_char     ;0929 cd 8b 09
-    ld a,cr             ;092c 3e 0d
-    call print_char     ;092e cd 8b 09
-    ret                 ;0931 c9
+    dec a
+    jp nz,l090eh
+    ret
+    call sub_0932h
+    ld a,20h
+    call print_char
+    ret
+    call sub_0932h
+    ld a,lf
+    call print_char
+    ld a,cr
+    call print_char
+    ret
 sub_0932h:
-    push hl             ;0932 e5
-    ld a,h              ;0933 7c
-    and 80h             ;0934 e6 80
-    jp z,l0945h         ;0936 ca 45 09
-    ld a,l              ;0939 7d
-    cpl                 ;093a 2f
-    ld l,a              ;093b 6f
-    ld a,h              ;093c 7c
-    cpl                 ;093d 2f
-    ld h,a              ;093e 67
-    inc hl              ;093f 23
-    ld a,2dh            ;0940 3e 2d
-    call print_char     ;0942 cd 8b 09
+    push hl
+    ld a,h
+    and 80h
+    jp z,l0945h
+    ld a,l
+    cpl
+    ld l,a
+    ld a,h
+    cpl
+    ld h,a
+    inc hl
+    ld a,2dh
+    call print_char
 l0945h:
-    ld c,30h            ;0945 0e 30
-    ld de,2710h         ;0947 11 10 27
-    call sub_0967h      ;094a cd 67 09
-    ld de,disk_on_drv   ;094d 11 e8 03
-    call sub_0967h      ;0950 cd 67 09
-    ld de,0064h         ;0953 11 64 00
-    call sub_0967h      ;0956 cd 67 09
-    ld de,000ah         ;0959 11 0a 00
-    call sub_0967h      ;095c cd 67 09
-    ld de,0001h         ;095f 11 01 00
-    call sub_0967h      ;0962 cd 67 09
-    pop hl              ;0965 e1
-    ret                 ;0966 c9
+    ld c,30h
+    ld de,2710h
+    call sub_0967h
+    ld de,03e8h
+    call sub_0967h
+    ld de,0064h
+    call sub_0967h
+    ld de,000ah
+    call sub_0967h
+    ld de,0001h
+    call sub_0967h
+    pop hl
+    ret
 sub_0967h:
-    call sub_0979h      ;0967 cd 79 09
-    jp c,l0971h         ;096a da 71 09
-    inc c               ;096d 0c
-    jp sub_0967h        ;096e c3 67 09
+    call sub_0979h
+    jp c,l0971h
+    inc c
+    jp sub_0967h
 l0971h:
-    ld a,c              ;0971 79
-    call print_char     ;0972 cd 8b 09
-    add hl,de           ;0975 19
-    ld c,30h            ;0976 0e 30
-    ret                 ;0978 c9
+    ld a,c
+    call print_char
+    add hl,de
+    ld c,30h
+    ret
 sub_0979h:
-    ld a,l              ;0979 7d
-    sub e               ;097a 93
-    ld l,a              ;097b 6f
-    ld a,h              ;097c 7c
-    sbc a,d             ;097d 9a
-    ld h,a              ;097e 67
-    ret                 ;097f c9
+    ld a,l
+    sub e
+    ld l,a
+    ld a,h
+    sbc a,d
+    ld h,a
+    ret
 
 jp_to_warm:
 ;Jump to CP/M warm start
@@ -1262,76 +1262,76 @@ print_char:
 
 nop_2:
 ;Do nothing and return
-    ret                 ;0999 c9
+    ret
 
 l099ah:
-    push de             ;099a d5
-    push bc             ;099b c5
-    push hl             ;099c e5
-    ld c,cread          ;099d 0e 01
-    call bdos           ;099f cd 05 00
-    pop hl              ;09a2 e1
-    ld (hl),a           ;09a3 77
-    inc hl              ;09a4 23
-    ld (hl),00h         ;09a5 36 00
-    pop bc              ;09a7 c1
-    pop de              ;09a8 d1
-    ret                 ;09a9 c9
+    push de
+    push bc
+    push hl
+    ld c,cread
+    call bdos
+    pop hl
+    ld (hl),a
+    inc hl
+    ld (hl),00h
+    pop bc
+    pop de
+    ret
 
-    ld a,(hl)           ;09aa 7e
-    jp print_char       ;09ab c3 8b 09
+    ld a,(hl)
+    jp print_char
 l09aeh:
-    cp 04h              ;09ae fe 04
+    cp 04h
 l09b0h:
-    jp c,0d33eh         ;09b0 da 3e d3
-    ld (l09aeh),a       ;09b3 32 ae 09
-    ld a,l              ;09b6 7d
-    ld (l09aeh+1),a     ;09b7 32 af 09
-    ld a,0c9h           ;09ba 3e c9
-    ld (l09b0h),a       ;09bc 32 b0 09
-    ld a,e              ;09bf 7b
-    jp l09aeh           ;09c0 c3 ae 09
-    ld a,0dbh           ;09c3 3e db
-    ld (l09aeh),a       ;09c5 32 ae 09
-    ld a,l              ;09c8 7d
-    ld (l09aeh+1),a     ;09c9 32 af 09
-    ld a,0c9h           ;09cc 3e c9
+    jp c,0d33eh
+    ld (l09aeh),a
+    ld a,l
+    ld (l09aeh+1),a
+    ld a,0c9h
+    ld (l09b0h),a
+    ld a,e
+    jp l09aeh
+    ld a,0dbh
+    ld (l09aeh),a
+    ld a,l
+    ld (l09aeh+1),a
+    ld a,0c9h
 l09ceh:
-    ld (l09b0h),a       ;09ce 32 b0 09
-    call l09aeh         ;09d1 cd ae 09
+    ld (l09b0h),a
+    call l09aeh
 l09d4h:
-    ld h,00h            ;09d4 26 00
-    ld l,a              ;09d6 6f
-    ret                 ;09d7 c9
-    push af             ;09d8 f5
-    ld a,0c0h           ;09d9 3e c0
-    jr nc,l09ceh        ;09db 30 f1
-    ret                 ;09dd c9
+    ld h,00h
+    ld l,a
+    ret
+    push af
+    ld a,0c0h
+    jr nc,l09ceh
+    ret
 
-    push af             ;09de f5
-    ld a,40h            ;09df 3e 40
-    jr nc,l09d4h        ;09e1 30 f1
-    ret                 ;09e3 c9
-    ei                  ;09e4 fb
-    ret                 ;09e5 c9
-    di                  ;09e6 f3
-    ret                 ;09e7 c9
+    push af
+    ld a,40h
+    jr nc,l09d4h
+    ret
+    ei
+    ret
+    di
+    ret
 
-    ld a,c              ;09e8 79
-    add hl,bc           ;09e9 09
-    jp c,l0971h         ;09ea da 71 09
-    inc c               ;09ed 0c
-    jp sub_0967h        ;09ee c3 67 09
-    ld a,c              ;09f1 79
-    call print_char     ;09f2 cd 8b 09
-    add hl,de           ;09f5 19
-    ld c,30h            ;09f6 0e 30
-    ret                 ;09f8 c9
+    ld a,c
+    add hl,bc
+    jp c,l0971h
+    inc c
+    jp sub_0967h
+    ld a,c
+    call print_char
+    add hl,de
+    ld c,30h
+    ret
 
-    ld a,l              ;09f9 7d
-    sub e               ;09fa 93
-    ld l,a              ;09fb 6f
-    ld a,h              ;09fc 7c
-    sbc a,d             ;09fd 9a
-    ld h,a              ;09fe 67
-    ret                 ;09ff c9
+    ld a,l
+    sub e
+    ld l,a
+    ld a,h
+    sbc a,d
+    ld h,a
+    ret
