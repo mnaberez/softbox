@@ -1074,8 +1074,8 @@ print_str:
 ;
     ld b,a              ;B = A
     inc hl              ;Skip string length byte
-    inc hl              ;Skip ? byte
-    inc hl              ;Skip ? byte
+    inc hl              ;Skip string start address low byte
+    inc hl              ;Skip string start address high byte
 l08a9h:
     ld a,(hl)           ;Read char from string
     call print_char     ;Print it
