@@ -49,7 +49,7 @@ BUFFIN:
 ;will start at 82h.
 ;
         LD      C,0AH           ;C = Buffered Console Input
-        LD      DE,080H         ;DE = address of DMA buffer area
+        LD      DE,80H          ;DE = address of DMA buffer area
         JP      05H             ;BDOS System Call
 
 EXSYS:
@@ -57,8 +57,8 @@ EXSYS:
 ;CP/M system image (7168 bytes = CCP + BDOS + BIOS config + BIOS storage).
 ;Copy the new system into place and then jump to the BIOS to start it.
 ;
-        LD      BC,01C00H       ;BC = 7168 bytes to copy
-        LD      HL,04000H       ;HL = address of new CP/M system image
+        LD      BC,1C00H        ;BC = 7168 bytes to copy
+        LD      HL,4000H        ;HL = address of new CP/M system image
         LD      DE,0D400H       ;DE = base address of CP/M system image
         LDIR                    ;Copy BC bytes from (HL) to (DE)
         JP      RUNCPM          ;Perform system init and then run CP/M
@@ -85,8 +85,8 @@ RDSYS:
         LD      (@L2),A         ;  Store CBM DOS error code in @L2
 
                                 ;Read "CP/M" file into buffer at 4000h:
-        LD      HL,04000H       ;  HL = base address of buffer for CP/M image
-        LD      BC,01C00H       ;  BC = 7168 bytes in CP/M image
+        LD      HL,4000H        ;  HL = base address of buffer for CP/M image
+        LD      BC,1C00H        ;  BC = 7168 bytes in CP/M image
 
         POP     DE              ;  Pop IEEE-488 primary & secondary addrs
         OR      A               ;  Set flags to check error (0=OK)
@@ -118,7 +118,7 @@ RDSYS:
         LD      (@L2),A         ;  Store CBM DOS error code in @L2
 
                                 ;Read the "K" file into buffer at 6000h:
-        LD      HL,06000H       ;  HL = base address of buffer for term
+        LD      HL,6000H        ;  HL = base address of buffer for term
         LD      BC,0800H        ;  BC = 2048 bytes in terminal program
 
         POP     DE              ;  Pop IEEE-488 primary & secondary addrs
@@ -161,7 +161,7 @@ CREAD:
 ;
         LD      C,(HL)          ;C = CP/M drive number
         CALL    SELDSK          ;Select disk drive
-        LD      DE,04000H       ;DE = start address of CP/M image buffer
+        LD      DE,4000H        ;DE = start address of CP/M image buffer
         LD      BC,00H          ;BC = track 0
 
 CREAD2:
@@ -183,15 +183,15 @@ CREAD1:
         POP     DE              ;  Pop buffer pointer
 
                                 ;Copy data for one sector out of DMA buffer:
-        LD      BC,080H         ;  BC = 128 bytes to copy (one sector)
-        LD      HL,080H         ;  HL = CP/M standard DMA buffer area
+        LD      BC,80H          ;  BC = 128 bytes to copy (one sector)
+        LD      HL,80H          ;  HL = CP/M standard DMA buffer area
         LDIR                    ;  Copy BC bytes from (HL) to (DE)
 
                                 ;Increment to next sector:
         POP     BC              ;  Pop sector number
         INC     C               ;  Increment to next sector
         LD      A,C             ;  A = sector number
-        CP      040H            ;  Read all 64 sectors on the track?
+        CP      40H             ;  Read all 64 sectors on the track?
         JR      NZ,CREAD1       ;      No: loop to do next sector
 
                                 ;Increment to next track:
@@ -218,7 +218,7 @@ CWRITE:
 ;
         LD      C,(HL)          ;C = CP/M drive number
         CALL    SELDSK          ;Select disk drive
-        LD      HL,04000H       ;HL = start address of CP/M image buffer
+        LD      HL,4000H        ;HL = start address of CP/M image buffer
         LD      BC,00H          ;BC = track 0
 
 CWRIT2:
@@ -234,8 +234,8 @@ CWRIT1:
 
                                 ;Copy data for one sector into DMA buffer:
                                 ;  HL contains pointer to CP/M image
-        LD      BC,080H         ;  BC = 128 bytes to copy (one sector)
-        LD      DE,080H         ;  DE = CP/M standard DMA buffer area
+        LD      BC,80H          ;  BC = 128 bytes to copy (one sector)
+        LD      DE,80H          ;  DE = CP/M standard DMA buffer area
         LDIR                    ;  Copy BC bytes from (HL) to (DE)
 
                                 ;Write the sector to the Corvus:
@@ -249,7 +249,7 @@ CWRIT1:
         POP     BC              ;  Pop sector number
         INC     C               ;  Increment to next sector
         LD      A,C             ;  A = sector number
-        CP      040H            ;  Wrote all 64 sectors on the track?
+        CP      40H             ;  Wrote all 64 sectors on the track?
         JR      NZ,CWRIT1       ;    No: loop to do next sector
 
                                 ;Increment to next track:
@@ -421,7 +421,7 @@ SAVESY:
 
         PUSH    DE
         CALL    LISTEN          ;Send LISTEN to an IEEE-488 device
-        LD      HL,06000H       ;HL = base address of buffer for term
+        LD      HL,6000H        ;HL = base address of buffer for term
         LD      BC,0800H        ;BC = 2048 bytes in terminal program
 @L27:
         LD      A,(HL)
@@ -448,8 +448,8 @@ SAVESY:
         PUSH    DE
         CALL    LISTEN          ;Send LISTEN to an IEEE-488 device
 
-        LD      HL,04000H       ;HL = base address of buffer for CP/M image
-        LD      BC,01C00H       ;BC = 7168 bytes in CP/M image
+        LD      HL,4000H        ;HL = base address of buffer for CP/M image
+        LD      BC,1C00H        ;BC = 7168 bytes in CP/M image
 @L28:
         LD      A,(HL)
         CALL    WRIEEE          ;Send byte to an IEEE-488 device
@@ -489,13 +489,13 @@ FORMAT:
                                 ;Set CBM drive number in format command:
         LD      A,(@L0)         ;  Get current CP/M drive number from @L0
         AND     01H             ;  Mask off all except bit 1 (CBM drive num)
-        ADD     A,030H          ;  Convert it to ASCII
+        ADD     A,30H           ;  Convert it to ASCII
         LD      (@L13+1),A      ;  Save it into format command ("N0:CP/M...")
 
                                 ;Send format command:
                                 ;  D contains IEEE-488 primary address
         LD      E,0FH           ;  E = file number (15 = command channel)
-        LD      C,014H          ;  C = 20 chars in string
+        LD      C,14H           ;  C = 20 chars in string
         LD      HL,@L13         ;  HL = address of "N0:CP/M V2.2 DISK,XX"
         CALL    OPEN            ;  Open a file on an IEEE-488 device
 
@@ -511,8 +511,8 @@ FORMAT:
         CALL    IDRIVE          ;  Initialize an IEEE-488 disk drive
 
                                 ;Fill 4000-40FF with E5 ("unused"):
-        LD      HL,04000H       ;  HL = source start address
-        LD      DE,04001H       ;  DE = destination start address
+        LD      HL,4000H        ;  HL = source start address
+        LD      DE,4001H        ;  DE = destination start address
         LD      BC,0FFH         ;  BC = 255 bytes to copy
         LD      (HL),0E5H       ;  Store E5 ("unused") in 4000h
         LDIR                    ;  Copy BC bytes from (HL) to (DE)
@@ -557,7 +557,7 @@ FORMAT:
         LD      A,(@L0)         ;  Get current CP/M drive number from @L0
         CALL    DISKCMD         ;  Open command channel on IEEE-488 dev
         CALL    IEEEMSG         ;  Send string to an IEEE-488 device
-        LD      A,(04000H)      ;  A = first byte
+        LD      A,(4000H)       ;  A = first byte
         CALL    WREOI           ;  Send byte to IEEE-488 device with EOI
         CALL    UNLISTEN        ;  Send UNLISTEN to all IEEE-488 devices
 
@@ -575,7 +575,7 @@ FORMAT:
         CALL    DSKDEV          ;  D = Get device addr for CP/M drive num
         LD      E,02H           ;  E = secondary address 2
         CALL    LISTEN          ;  Send LISTEN to an IEEE-488 device
-        LD      HL,04001H       ;  HL = start address
+        LD      HL,4001H        ;  HL = start address
         LD      C,0FFH          ;  C = 255 bytes to send
         CALL    IEEEMSG         ;  Send string to an IEEE-488 device
         CALL    UNLISTEN        ;  Send UNLISTEN to all IEEE-488 devices
@@ -592,7 +592,7 @@ FORMAT:
                                 ;
         LD      A,(@L0)         ;  Get current CP/M drive number from @L0
         AND     01H             ;  Mask off all except bit 1 (CBM drive num)
-        ADD     A,030H          ;  Convert it to ASCII
+        ADD     A,30H           ;  Convert it to ASCII
         CALL    WRIEEE          ;  Send byte to an IEEE-488 device
                                 ;
         LD      A,(@L16)        ;  CBM DOS track
@@ -621,7 +621,7 @@ CFORM:
         CALL    SELDSK          ;Select disk drive
 
                                 ;Fill DMA buffer with E5 ("unused"):
-        LD      HL,080H         ;  HL = CP/M standard DMA buffer area
+        LD      HL,80H          ;  HL = CP/M standard DMA buffer area
 @L29:                           ;
         LD      (HL),0E5H       ;  Store E5 ("unused") in DMA
         INC     L               ;  Increment DMA pointer
@@ -644,7 +644,7 @@ CFORM:
                                 ;
         INC     BC              ;  Increment to next sector
         LD      A,C             ;  A = sector number
-        CP      040H            ;  All 64 sectors filled?
+        CP      40H             ;  All 64 sectors filled?
         JR      NZ,@L30         ;    No: loop to do next sector
         RET
 
