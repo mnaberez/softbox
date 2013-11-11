@@ -257,8 +257,8 @@ arenam:   equ usrdat+16 ;User area name (16 Bytes) ???
                         ;Bytes 18 .. 20: Size in Bytes (3 Bytes), 19 .. 20: Size in Blocks
                         ;Byte        21: Record Length (1 Byte)
                         ;Bytes 22 .. 31: <Unknown or Undefined>
-                        ;Bytes 32 .. 34: ???
-                        ;Bytes 35 .. 36: ???
+                        ;Bytes 32 .. 34: Current file pointer to read or write (3 Bytes)
+                        ;Bytes 35 .. 36: ??? (Entry number???)
                         ;Byte        37: ???
                         ;Byte        38: ???
                         ;Byte        39: ???
@@ -580,7 +580,7 @@ le093h:
     ld de,8000h
 le09ch:
     in a,(ppi2_pc)
-    and 010h            ;Corvus READY
+    and ready           ;Corvus READY
     jr z,le0a3h
     inc bc
 le0a3h:
@@ -596,22 +596,22 @@ le0a3h:
     out (ppi2_pc),a     ;Turn off "Ready" LED, turn on "A" and "B" LEDs
     call corv_init      ;Initialize the Corvus controller
 
-    in a,(ppi1_pc)        ;Read DIP switches
+    in a,(ppi1_pc)      ;Read DIP switches
     cpl
-    rra                    ;Shift 1 bit right
+    rra                 ;Shift 1 bit right
     and 00000111b       ;Use only these bits ----xxx-
     add a,8             ;plus 8 (0=8, 1=9, ... 7=15)
     ld (devnum),a
 
-    in a,(ppi1_pc)        ;Read DIP switches
+    in a,(ppi1_pc)      ;Read DIP switches
     cpl
     ld c,a
     rra
     rra
     rra
-    rra                    ;Shift 4 bits right
+    rra                 ;Shift 4 bits right
 
-    ld b,04h
+    ld b,4              ;B=04h (4 bits to process)
 le0c8h:
     rra
     rl c
@@ -626,10 +626,12 @@ init_user:
 ;
     ld sp,stack
 
-    ld hl,00004h
-    ld de,00005h
-    ld bc,02a0eh
-    ld (hl),000h
+                        ;Clear memory from 0004h .. 2a13h
+    ld hl,0004h         ;HL=0004h
+    ld de,0005h         ;DE=0005h
+    ld bc,2a0eh         ;BC=2a0eh
+    ld (hl),00h         ;(0004h)=0
+                        ;(0005h)=(0004h) or 00h .. (2a13h)=(2a12h) or 00h
     ldir                ;Copy BC bytes from (HL) to (DE)
 
     ld (userid),a       ;Store User Number
@@ -651,7 +653,7 @@ init_user:
     jp le2aeh           ;  And don't configure the drive!
 
 le100h:
-    ld de,0010h
+    ld de,16
     xor a               ;ADE=000010h (Sector 16)
     ld b,1              ;B=Corvus drive number (1)
     ld hl,rdbuf         ;HL=rdbuf (target address)
@@ -691,7 +693,7 @@ le100h:
     ld hl,rdbuf
     add hl,bc           ;HL=rdbuf+BC
     ld de,usrnam
-    ld bc,0010h         ;BC=0010h (16 bytes for the user name)
+    ld bc,16            ;BC=0010h (16 bytes for the user name)
     ldir                ;Copy BC bytes from (HL) to (DE)
 
     ld a,(userid)
@@ -717,7 +719,7 @@ le100h:
     ld hl,rdbuf
     add hl,bc           ;HL=rdbuf+BC
     ld de,phydrv
-    ld bc,0020h         ;BC=0020h (32 bytes for the user parameter)
+    ld bc,32            ;BC=0020h (32 bytes for the user parameter)
     ldir                ;Copy BC bytes from (HL) to (DE)
 
     call head_read_sec  ;Read the header sector into the header buffer (hdrbuf)
@@ -839,7 +841,7 @@ le21eh:
 
     call sub_f7d0h
 
-    ld hl,0000h
+    ld hl,0
     ld (dirnum),hl      ;(dirnum)=0
 
                         ;Build own BAM for files from directory entries
@@ -862,7 +864,7 @@ le25ah:
     jr le246h
 
 le26eh:
-    ld de,00000h
+    ld de,0             ;DE=0000h
     ld hl,l0057h        ;HL=l0057h (BAM table for files)
 
 le274h:
@@ -878,12 +880,12 @@ le278h:
     push hl
     push de
     call loc2_read_sec  ;Read (256 bytes)
-    ld b,80h            ;B=80h (128 word entries in 256 bytes)
+    ld b,128            ;B=80h (128 word entries in 256 bytes)
     ld ix,(al2ptr)
 
 le288h:
-    ld l,(ix+000h)
-    ld h,(ix+001h)
+    ld l,(ix+00h)
+    ld h,(ix+00h+1)
     inc ix
     inc ix
     ld de,l0457h
@@ -912,7 +914,7 @@ le2aeh:
     out (ppi1_pb),a
 
     in a,(ppi2_pb)
-    and 00h
+    and 00000000b
     out (ppi2_pb),a
 
 le2b9h:
@@ -950,17 +952,17 @@ le2dah:
     out (ppi2_pb),a     ;NDAC_OUT=high
 
     ld a,(devnum)
-    or 20h                 ;Generate LISTEN address
+    or 20h              ;Generate LISTEN address
     cp c
-    jr z,do_listn        ;If found execute do_listn
-    xor 60h                ;Generate TALK address
+    jr z,do_listn       ;If found execute do_listn
+    xor 60h             ;Generate TALK address
     cp c
     jr z,do_talk        ;If found execute do_talk
     ld a,c
-    cp 3fh                ;3Fh=UNLISTEN
-    jr z,do_unlst        ;If found execute do_unlst
-    cp 5fh                ;5Fh=UNTALK
-    jr z,do_untlk        ;If found execute do_untlk
+    cp 3fh              ;3Fh=UNLISTEN
+    jr z,do_unlst       ;If found execute do_unlst
+    cp 5fh              ;5Fh=UNTALK
+    jr z,do_untlk       ;If found execute do_untlk
     and 60h
     cp 60h
     jr nz,le312h
@@ -1086,7 +1088,7 @@ le3b5h:
 
     ld hl,l0c75h
     ld de,cmdbuf
-    ld bc,0080h         ;BC=0080h (128 bytes)
+    ld bc,128           ;BC=0080h (128 bytes)
     ldir                ;Copy BC bytes from (HL) to (DE)
     jp le4a2h
 
@@ -1225,7 +1227,7 @@ le473h:
     jr nz,le48dh
     in a,(ppi2_pa)
     and ndac
-    jr nz,le473h         ;Wait until NDAC_IN=high
+    jr nz,le473h        ;Wait until NDAC_IN=high
 
     in a,(ppi2_pa)
     and nrfd
@@ -1336,7 +1338,7 @@ le528h:
     inc de
     push de
     ld hl,stabuf        ;HL=stabuf
-    ld de,0000h         ;DEA=(errcod)
+    ld de,0             ;DEA=(errcod)
     call put_number     ;Put a number into buffer
 
     ld (hl),","         ;Put comma into buffer
@@ -1345,7 +1347,7 @@ le528h:
     pop de
 le538h:
     ld a,(de)           ;Get the charcter from error text
-    and 07fh            ;Mask off the highest bit (end marker bit)
+    and 01111111b       ;Mask off the highest bit (end marker bit)
     ld (hl),a           ;Store it into buffer
 
     cp 020h             ;Is this a error token?
@@ -1368,7 +1370,7 @@ le548h:
 
 le54fh:
     ld a,(de)           ;Get the charcter from error token
-    and 07fh            ;Mask off the highest bit (end marker bit)
+    and 01111111b       ;Mask off the highest bit (end marker bit)
     ld (hl),a           ;Store it into buffer
     ld a,(de)           ;Get last charcter from error token
     inc hl
@@ -1494,7 +1496,7 @@ le613h:
     jp z,open_chn
     cp "@"
     jr nz,le629h
-    set 5,(iy+028h)        ;Set marker for command access
+    set 5,(iy+028h)     ;Set marker for command access
     inc hl
     jr le613h
 
@@ -1506,7 +1508,7 @@ le629h:
     cp 02h
     jr nc,le63fh
     ld (iy+000h),typ_prg
-    set 0,(iy+028h)        ;Set marker for file type
+    set 0,(iy+028h)     ;Set marker for file type
 le63fh:
     ld a,(hl)
     cp cr
@@ -1545,34 +1547,35 @@ le66fh:
     jr nz,le680h
     inc hl
     ld a,(hl)
-    ld (iy+015h),a      ;Save detected record length
+    ld (iy+15h),a       ;Save detected record length
+
 le680h:
-    ld a,(iy+000h)
+    ld a,(iy+00h)
     and 11111100b
     or b
-    ld (iy+000h),a      ;Save detected file type
+    ld (iy+00h),a       ;Save detected file type
 
-    set 0,(iy+028h)     ;Set marker for file type
+    set 0,(iy+28h)      ;Set marker for file type
     jr le63fh
 
 le68fh:
-    set 4,(iy+028h)     ;Set marker for Append
+    set 4,(iy+28h)      ;Set marker for Append
     jr le63fh
 
 le695h:
-    set 3,(iy+028h)     ;Set marker for Write
+    set 3,(iy+28h)      ;Set marker for Write
     jr le63fh
 
 le69bh:
     ld a,(sa)
     cp 02h
     jr nc,le6adh
-    res 3,(iy+028h)     ;Reset marker for Write
+    res 3,(iy+28h)      ;Reset marker for Write
     or a
     jr z,le6adh
-    set 3,(iy+028h)     ;Set marker for Write
+    set 3,(iy+28h)      ;Set marker for Write
 le6adh:
-    bit 3,(iy+028h)     ;Is marker for Write set?
+    bit 3,(iy+28h)      ;Is marker for Write set?
     jp z,le748h
 
 le6b4h:
@@ -1585,11 +1588,11 @@ le6b4h:
     call find_first
     ld iy,(entptr)
     jr c,le6e2h
-    bit 5,(iy+028h)     ;Is marker for command access set
+    bit 5,(iy+28h)      ;Is marker for command access set
     ld a,error_63       ;"FILE EXISTS"
     jp z,error
 
-    bit 6,(ix+000h)     ;is marker for "Write Protect" set?
+    bit 6,(ix+00h)      ;is marker for "Write Protect" set?
     ld a,error_26       ;"WRITE PROTECED"
     jp nz,error         ;If yes, WRITE PROTECTED
 
@@ -1601,31 +1604,38 @@ le6e5h:
     push de
     push ix
     ld a,(drvnum)
-    ld (iy+001h),a
-    ld (iy+023h),e
-    ld (iy+024h),d
-    set 7,(iy+000h)
-    set 7,(iy+028h)
+    ld (iy+01h),a       ;(IY+01h)=(drvnum)
+
+    ld (iy+23h),e
+    ld (iy+23h+1),d     ;(IY+23h)=DE
+
+    set 7,(iy+00h)      ;Set marker for "???"
+    set 7,(iy+28h)
+
     ld b,3              ;B=03h (3 .... ????)
-    ld a,(iy+015h)
-    ld (iy+025h),a
-    or a
-    jr nz,le70fh
-    ld (iy+015h),0feh
-    ld (iy+025h),0feh
+
+    ld a,(iy+15h)
+    ld (iy+25h),a       ;(IY+25h)=(IY+15h)
+    or a                ;Was this zero?
+    jr nz,le70fh        ;  NO: all okay, else change it to the maximum 254
+
+    ld (iy+15h),254     ;(IY+15h)=0feh
+    ld (iy+25h),254     ;(IY+25h)=0feh
 
 le70fh:
-    ld (iy+012h),0ffh
-    ld (iy+020h),000h
+    ld (iy+12h),0ffh    ;(IY+12h)=0ffffffh (all 3 bytes)
+    ld (iy+20h),000h    ;(IY+20h)=000000h (all 3 bytes)
     inc iy
     djnz le70fh
 
-    ld hl,(al1ptr)
-    ld b,80h            ;B=80h (128 .... ????)
+                        ;Fill all 128 bytes from the Allocation 1 sector (al1ptr) with 0ffh
+    ld hl,(al1ptr)      ;HL=(al1ptr)
+    ld b,128            ;B=80h (128 .... ????)
 le720h:
-    ld (hl),0ffh
+    ld (hl),0ffh        ;(HL)=0ffh
     inc hl
     djnz le720h
+
     call loc1_writ_sec  ;Write sector (al1srt)+DE with 128 bytes from (al1ptr)
     ld hl,(entptr)
     ld de,0002h
@@ -1655,10 +1665,11 @@ le748h:
     jp error
 
 le766h:
-    bit 0,(iy+028h)     ;Is marker for file type set?
+    bit 0,(iy+28h)      ;Is marker for file type set?
     jr z,le78ah
-    ld a,(iy+000h)
-    xor (ix+000h)
+
+    ld a,(iy+00h)
+    xor (ix+00h)
     and 00000011b
     jr z,le78ah
     ld hl,filnam
@@ -1671,17 +1682,19 @@ le766h:
 
 le78ah:
     call loc1_read_sec  ;Read sector (al1srt)+DE with 128 bytes to (al1ptr)
-    ld (iy+023h),e
-    ld (iy+023h+1),d
-    ld (iy+020h),000h
-    ld (iy+020h+1),000h
-    ld (iy+020h+2),000h
+    ld (iy+23h),e
+    ld (iy+23h+1),d     ;(IY+23h)=DE
+
+    ld (iy+20h),0
+    ld (iy+20h+1),0
+    ld (iy+20h+2),0     ;(IY+20h)=000000h
+
     set 7,(iy+028h)
 
-    ld b,020h           ;B=32 Bytes
+    ld b,32             ;B=20h (32 Bytes)
 le7a5h:
-    ld a,(ix+000h)
-    ld (iy+000h),a
+    ld a,(ix+00h)
+    ld (iy+00h),a       ;(IY+00h)=(IX+00h) (Copy all 32 bytes from IX to IY)
     inc ix
     inc iy
     djnz le7a5h
@@ -1724,7 +1737,7 @@ le7ebh:
     ld (iy+020h+1),a
     ld a,(iy+012h+2)
     adc a,000h
-    ld (iy+020h+2),a    ;[iy+020h]=[iy+012h]+1
+    ld (iy+020h+2),a    ;(iy+020h)=(iy+012h)+1
 
     call sub_eb00h
     ld a,(l0d6bh)
@@ -1751,8 +1764,8 @@ sub_e81fh:
     bit 7,(iy+000h)
     ret z
 le840h:
-    ld e,(iy+023h)
-    ld d,(iy+023h+1)
+    ld e,(iy+23h)
+    ld d,(iy+23h+1)     ;DE=(IY+23h)
     push de
     call dir_read_sec
     res 7,(iy+000h)
@@ -1784,23 +1797,25 @@ le86bh:
     cp 0fh
     jr nz,le86bh
     ret
+
 le879h:
     call sub_f7d0h
-    bit 7,(iy+028h)
+    bit 7,(iy+28h)
     jp z,le2aeh
-    bit 6,(iy+028h)     ;Ist marker for channel access set?
+    bit 6,(iy+28h)      ;Ist marker for channel access set?
     jp nz,le921h
-    bit 4,(iy+028h)     ;Ist marker for Append set?
+    bit 4,(iy+28h)      ;Ist marker for Append set?
     jp nz,le2aeh
-    bit 3,(iy+028h)     ;Is marker for Write set?
+    bit 3,(iy+28h)      ;Is marker for Write set?
     jp nz,le2aeh
-    bit 2,(iy+028h)     ;Is marker for directory set?
+    bit 2,(iy+28h)      ;Is marker for directory set?
     jp nz,le949h
     call sub_eb00h
-    ld a,(iy+000h)
+    ld a,(iy+00h)
     and 00000011b
     cp typ_rel          ;Is it file type equal relative?
     jr nz,le8b3h        ;  NO: No check
+
     call sub_f1f7h
     ld a,error_50       ;"RECORD NOT PRESENT"
     jp nc,error
@@ -1812,7 +1827,7 @@ le8b3h:
     ld hl,(bufptr)
     add hl,de
 le8bdh:
-    ld a,(iy+000h)
+    ld a,(iy+00h)
     and 00000011b
     cp typ_rel          ;Is it file type equal relative?
     jr nz,le8d7h        ;  NO: ???
@@ -1826,25 +1841,28 @@ le8bdh:
     out (ppi2_pb),a     ;EOI_OUT=low
 
 le8d7h:
-    ld a,(iy+020h)
-    cp (iy+012h)
+    ld a,(iy+20h)
+    cp (iy+12h)
     jr nz,le8efh
-    ld a,(iy+020h+1)
-    cp (iy+012h+1)
+    ld a,(iy+20h+1)
+    cp (iy+12h+1)
     jr nz,le8efh
-    ld a,(iy+020h+2)
-    cp (iy+012h+2)
-    jr z,le912h
+    ld a,(iy+20h+2)
+    cp (iy+12h+2)       ;Is (IY+20h) = (IY+12h)?
+    jr z,le912h         ;  YES: Last byte reached, write with EOI
+
 le8efh:
-    ld a,(hl)
-    call wrieee
-    jp c,le91bh
-    inc hl
-    inc (iy+020h)
+    ld a,(hl)           ;Get byte from buffer
+    call wrieee         ;and write to ieeee
+    jp c,le91bh         ;If error, ????
+
+    inc hl              ;Increment data buffer pointer
+    inc (iy+20h)
     jr nz,le90dh
-    inc (iy+020h+1)
+    inc (iy+20h+1)
     jr nz,le904h
-    inc (iy+020h+2)
+    inc (iy+20h+2)      ;(IY+20h)=(IY+20h)+1
+
 le904h:
     call sub_eb00h
     call file_read_sec  ;Read a file sector
@@ -1852,11 +1870,13 @@ le904h:
 le90dh:
     call sub_e492h
     jr le8bdh
+
 le912h:
-    ld a,(hl)
-    call wreoi
-    jp c,le2aeh
-    jr le912h
+    ld a,(hl)           ;Get byte from buffer
+    call wreoi          ;and write to ieee with EOI
+    jp c,le2aeh         ;If error, ???
+    jr le912h           ;Loop until error to exit
+
 le91bh:
     inc (iy+025h)
     jp le2aeh
@@ -2312,8 +2332,8 @@ lec73h:
     jp c,error
 
     ld iy,(entptr)
-    ld (iy+023h),e
-    ld (iy+023h+1),d
+    ld (iy+23h),e
+    ld (iy+23h+1),d     ;(IY+23h)=DE
     push ix
     pop hl
     ld de,(entptr)
@@ -2341,8 +2361,8 @@ lecbah:
     call sub_f6cdh
     ld iy,(entptr)
 
-    ld (iy+023h),e
-    ld (iy+023h+1),d    ;(iy+023h)=DE
+    ld (iy+23h),e
+    ld (iy+23h+1),d     ;(iy+23h)=DE
 
     set 5,(iy+027h)
 
