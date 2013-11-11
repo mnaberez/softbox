@@ -3110,7 +3110,7 @@ cmd_new:
     push hl
     ld bc,drvid
     add hl,bc
-    ex de,hl            ;DE=drvnam+HL
+    ex de,hl            ;DE=drvid+HL
 
     ld bc,2             ;BC=0002h (2 characters for drive id)
     ldir                ;Copy BC bytes from (HL) to (DE)
