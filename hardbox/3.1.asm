@@ -1,7 +1,7 @@
 ; z80dasm 1.1.2
 ; command line: z80dasm.exe --labels --origin=57344 3.1.bin
 
-;SoftBox Memory Map:
+;HardBox Memory Map:
 ;  F000-FFFF  BIOS ROM High (IC4)   4096
 ;  E000-EFFF  BIOS ROM Low (IC3)    4096
 ;
