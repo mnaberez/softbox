@@ -397,6 +397,8 @@ drvcnf:   equ 260ch     ;Flag if drive is configured (0: Not Configured, 1: Conf
 l260dh:   equ 260dh     ;Temporary in cmd_cpy (2 bytes)
 l260fh:   equ 260fh     ;Temporary in put_number (1 byte)
 hdrbuf:   equ 2610h     ;Buffer of header sector (first sector of user area with 256 bytes)
+drvnam:   equ hdrbuf+  0;Position   0 starts the drive names of the ten drives
+drvid:    equ hdrbuf+160;Position 160 starts the drive ids of the ten drives
 rdbuf:    equ 2710h     ;(256 bytes)
 cpbuf:    equ 2810h     ;(256 bytes)
 bambuf:   equ 2910h     ;Buffer of BAM sector bamsec used in bam_read_sec and bam_writ_sec or for B-A and B-F (256 bytes)
@@ -3106,21 +3108,21 @@ cmd_new:
     ld h,0
     add hl,hl           ;HL=(drvnum)*2 (2 characters for drive id)
     push hl
-    ld bc,hdrbuf+160
+    ld bc,drvid
     add hl,bc
-    ex de,hl            ;DE=hdrbuf+0a0h+HL
+    ex de,hl            ;DE=drvnam+HL
 
     ld bc,2             ;BC=0002h (2 characters for drive id)
     ldir                ;Copy BC bytes from (HL) to (DE)
 
-                        ;Copy drive name to position starting at 00h
+                        ;Copy drive name to position starting at 0
     pop hl
     add hl,hl
     add hl,hl
     add hl,hl           ;HL=(drvnum)*16 (16 characters for drive name)
-    ld bc,hdrbuf
+    ld bc,drvnam
     add hl,bc
-    ex de,hl            ;DE=hdrbuf+HL
+    ex de,hl            ;DE=drvnam+HL
 
     ld hl,filnam
     ld bc,16            ;BC=0010h (16 characters for drive name)
@@ -3758,8 +3760,8 @@ lf4c4h:
     add hl,hl
     add hl,hl
     add hl,hl
-    ld bc,hdrbuf
-    add hl,bc           ;HL=hdrbuf+16*(drvnum) (16 characters for drive name)
+    ld bc,drvnam
+    add hl,bc           ;HL=drvnam+16*(drvnum) (16 characters for drive name)
     ld bc,16            ;BC=0010h (16 characters for drive name)
     ldir                ;Copy BC bytes from (HL) to (DE)
     ex de,hl
@@ -3770,11 +3772,11 @@ lf4c4h:
     inc hl              ;put a space as delemiter into buffer
 
     ex de,hl
-    ld hl,hdrbuf+160
+    ld hl,drvid
     pop bc
 
     add hl,bc
-    add hl,bc           ;HL=hdrbuf+0a0+2*(drvnum) (2 characters for drive id)
+    add hl,bc           ;HL=drvid+2*(drvnum) (2 characters for drive id)
     ld bc,2             ;BC=0002h (2 characters for drive id)
     ldir                ;Copy BC bytes from (HL) to (DE)
     ld hl,msg_space     ;" "
