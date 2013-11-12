@@ -185,14 +185,20 @@ ucase:    equ 15h       ;Uppercase Mode
 cls:      equ 1ah       ;Clear Screen
 esc:      equ 1bh       ;Escape
 
-ifc:      equ 80h       ;IFC
-ren:      equ 40h       ;REN
-srq:      equ 20h       ;SRQ
-eoi:      equ 10h       ;EOI
-nrfd:     equ 08h       ;NRFD
-ndac:     equ 04h       ;NDAC
-dav:      equ 02h       ;DAV
-atn:      equ 01h       ;ATN
+ifc:      equ 10000000b ;IFC
+ren:      equ 01000000b ;REN
+srq:      equ 00100000b ;SRQ
+eoi:      equ 00010000b ;EOI
+nrfd:     equ 00001000b ;NRFD
+ndac:     equ 00000100b ;NDAC
+dav:      equ 00000010b ;DAV
+atn:      equ 00000001b ;ATN
+
+dirc:     equ 00100000b ;Corvus DIRC
+ready:    equ 00010000b ;Corvus READY
+ledrdy:   equ 00000100b ;LED "Ready"
+ledb:     equ 00000010b ;LED "B"
+leda:     equ 00000001b ;LED "A"
 
     org 0f000h
 
@@ -856,7 +862,7 @@ cinit1:
     djnz cinit1         ;Delay loop
 
     in a,(ppi2_pc)
-    and 20h
+    and dirc
     jr nz,corv_init     ;Loop until Corvus DIRC=low
     call corv_wait_read ;Wait until Corvus READY=high, then read byte
 
@@ -890,7 +896,7 @@ corv_read_sec:
     ld b,80h            ;B = 128 bytes to read
 crds1:
     in a,(ppi2_pc)
-    and 10h
+    and ready
     jr z,crds1          ;Wait until Corvus READY=high
     in a,(corvus)       ;Read data byte from Corvus
     ld (hl),a           ;Store it in the buffer
@@ -926,7 +932,7 @@ corv_writ_sec:
     ld hl,(dma)         ;HL = start address of DMA buffer area
 cwrs1:
     in a,(ppi2_pc)
-    and 10h             ;Mask off all but bit 4 (Corvus READY)
+    and ready           ;Mask off all but bit 4 (Corvus READY)
     jr z,cwrs1          ;Wait until Corvus READY=high
     ld a,(hl)           ;Read data byte from DMA buffer
     out (corvus),a      ;Send it to the Corvus
@@ -986,8 +992,8 @@ corv_read_err:
 ;  0F Illegal Command           1F (Unused)
 ;
     in a,(ppi2_pc)
-    xor 10h             ;Flip bit 4 (Corvus READY)
-    and 30h             ;Mask off all except bits 4 (READY) and 5 (DIRC)
+    xor ready           ;Flip bit 4 (Corvus READY)
+    and ready+dirc      ;Mask off all except bits 4 (READY) and 5 (DIRC)
     jr nz,corv_read_err
 
     ld b,19h
@@ -995,8 +1001,8 @@ crde1:
     djnz crde1          ;Delay loop
 
     in a,(ppi2_pc)
-    xor 10h             ;Flip bit 4 (Corvus READY)
-    and 30h             ;Mask off all except bits 4 (READY) and 5 (DIRC)
+    xor ready           ;Flip bit 4 (Corvus READY)
+    and ready+dirc      ;Mask off all except bits 4 (READY) and 5 (DIRC)
     jr nz,corv_read_err
                         ;Fall through into corv_wait_read
 
@@ -1006,7 +1012,7 @@ corv_wait_read:
 ;Returns the data byte in A and sets the Z flag: Z=1 if OK, Z=0 if error.
 ;
     in a,(ppi2_pc)
-    and 10h             ;Mask off all but bit 4 (Corvus READY)
+    and ready           ;Mask off all but bit 4 (Corvus READY)
     jr z,corv_wait_read ;Wait until Corvus READY=high
     in a,(corvus)
     bit 7,a             ;Bit 7 of Corvus error byte is set if fatal error
@@ -1022,7 +1028,7 @@ corv_put_byte:
     push af
 corpb1:
     in a,(ppi2_pc)
-    and 10h             ;Mask off all except bit 4 (Corvus READY)
+    and ready           ;Mask off all except bit 4 (Corvus READY)
     jr z,corpb1         ;Wait until Corvus READY=high
     pop af
     out (corvus),a      ;Put byte on Corvus data bus
@@ -1174,7 +1180,7 @@ boot1:
     jr nz,boot2
 
     in a,(ppi2_pc)
-    xor 04h
+    xor ledrdy
     out (ppi2_pc),a     ;Invert "Ready" LED
 
 boot2:
@@ -1198,7 +1204,7 @@ boot3:
     jr nz,boot4
 
     in a,(ppi2_pc)
-    xor 04h
+    xor ledrdy
     out (ppi2_pc),a     ;Invert "Ready" LED
 boot4:
     dec de
@@ -1220,7 +1226,7 @@ boot5:
     jr nz,boot6
 
     in a,(ppi2_pc)
-    xor 04h
+    xor ledrdy
     out (ppi2_pc),a     ;Invert "Ready" LED
 boot6:
     dec de
@@ -1255,7 +1261,7 @@ fail2:
     or d
     jr nz,fail2         ;Delay loop
 
-    ld a,04h
+    ld a,ledrdy
     out (ppi2_pc),a     ;Turn off "Ready" LED, turn on "A" and "B" LEDs
 
     ld de,0ffffh
