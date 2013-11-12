@@ -390,7 +390,7 @@ wrtprt:   equ 25f0h     ;Points to current position to writee to ieee (2 bytes)
 endbuf:   equ 25f2h     ;Points to end of buffer to write to ieee (2 bytes)
 l25f4h:   equ 25f4h     ;(2 bytes)
 l25f6h:   equ 25f6h     ;(1 byte)
-l25f7h:   equ 25f7h     ;(17 bytes, 16 for the characters and one for end marker or delimiter)
+dirnam:   equ 25f7h     ;open_dir parameter (17 bytes: 16 for the characters and one for end marker or delimiter)
 pattfn:   equ 2608h     ;Points to pattern for filename, used in find_first and find_next (2 bytes)
 tmpdrv:   equ 260ah     ;Temporary drive number, used in corv_read_sec und corv_writ_sec (2 bytes)
 drvcnf:   equ 260ch     ;Flag if drive is configured (0: Not Configured, 1: Configured)
@@ -3738,7 +3738,7 @@ lf4c4h:
     ld (dirhid),a       ;Store Marker for "Show Hidden"
 
     ld hl,filnam
-    ld de,l25f7h
+    ld de,dirnam
     ld bc,16            ;BC=0010h (16 characters)
     ldir                ;Copy BC bytes from (HL) to (DE)
 
@@ -3820,7 +3820,7 @@ lf4c4h:
     ld hl,0000h
     ld (dirnum),hl      ;(dirnum)=0
 
-    ld hl,l25f7h
+    ld hl,dirnam
     ld a,(hl)
     or a
     jp nz,le2aeh
@@ -3832,7 +3832,7 @@ lf4c4h:
     jp le2aeh
 
 sub_f556h:
-    ld hl,l25f7h
+    ld hl,dirnam
     ld a,(l25f6h)
     call find_next
     jp c,lf623h         ;All entries readed? Yes: we are finish, write "Blocks free"
