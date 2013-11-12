@@ -55,8 +55,8 @@ ndac:     equ 00000100b ;NDAC
 dav:      equ 00000010b ;DAV
 atn:      equ 00000001b ;ATN
 
-dirc:     equ 00100000b ;Curvus DIRC
-ready:    equ 00010000b ;Curvus READY
+dirc:     equ 00100000b ;Corvus DIRC
+ready:    equ 00010000b ;Corvus READY
 ledrdy:   equ 00000100b ;LED "Ready"
 ledb:     equ 00000010b ;LED "B"
 leda:     equ 00000001b ;LED "A"
@@ -2977,7 +2977,7 @@ cmd_clr:
     ld a,(userid)
     or a
     ld a,error_92       ;"PRIVILEGED COMMAND"
-    jp nz,error         ;only allowd for userid=0
+    jp nz,error         ;only allowed for userid=0
 
     call corv_init      ;Initialize the Corvus controller
     ld bc,4             ;BC=0004h (Send 4 Bytes)
@@ -3332,7 +3332,7 @@ lf290h:
     call bam_writ_sec   ;Write a BAM sector
     jp error_ok         ;Done
 
-                        ;Serach the next free sector
+                        ;Search the next free sector
 lf29ah:
     inc b
 lf29bh:
@@ -3471,7 +3471,7 @@ cmd_u2:
 sub_f36dh:
     call get_chan       ;Get channel number
     ld a,error_30       ;"SYNTAX ERROR"
-    jp c,error          ;If missung or wrong channel number, SYNTAX ERROR
+    jp c,error          ;If missing or wrong channel number, SYNTAX ERROR
 
     call get_ts         ;Get track and sector to absolute sector BDE
     call clrerrts
@@ -3570,7 +3570,7 @@ lf3dah:
     jr c,lf417h         ;If missing sector number, SYNTAX ERROR
 
     ld (errsec),a
-    ld (errsec+1),de    ;Save as error seector (if it must be used)
+    ld (errsec+1),de    ;Save as error sector (if it must be used)
 
     ld b,a
     ld hl,maxsec
@@ -3674,7 +3674,7 @@ abs_wr:
     ld a,(userid)
     or a
     ld a,error_92       ;"PRIVILEGED COMMAND"
-    jp nz,error         ;only allowd for userid=0
+    jp nz,error         ;only allowed for userid=0
 
     call sub_f494h
     jp corv_writ_sec    ;Write a sector (256 bytes)
@@ -3696,7 +3696,7 @@ lf487h:
     ld a,(userid)
     or a
     ld a,error_92       ;"PRIVILEGED COMMAND"
-    jp nz,error         ;only allowd for userid=0
+    jp nz,error         ;only allowed for userid=0
 
 lf490h:
     pop af
@@ -4509,7 +4509,7 @@ dir_read_sec:
 ;
     push de
     push hl
-    call calc_dir_sec   ;Calculate Diretory sector
+    call calc_dir_sec   ;Calculate Directory sector
     call corv_read_sec  ;Reads a sector (256 bytes)
     pop hl
     pop de
@@ -4523,7 +4523,7 @@ dir_writ_sec:
     push de
     push hl
     call chk_wrt_rights
-    call calc_dir_sec   ;Calculate Diretory sector
+    call calc_dir_sec   ;Calculate Directory sector
     call corv_writ_sec  ;Write a sector (256 bytes)
     pop hl
     pop de
@@ -4534,7 +4534,7 @@ calc_dir_sec:
 ;
 ;DE = Directory entry number
 ;
-;(phydrv) = Curvus device number
+;(phydrv) = Corvus device number
 ;(dirsrt) = Directory start sector
 ;
     ld a,(phydrv)
@@ -4588,7 +4588,7 @@ calc_loc2_sec:
 ;
 ;DE = Allocation 2 sector number
 ;
-;(phydrv) = Curvus device number
+;(phydrv) = Corvus device number
 ;(al2srt) = Allocation 2 start sector
 ;
     ld a,(phydrv)
@@ -4627,7 +4627,7 @@ file_writ_sec:
 calc_file_sec:
 ;Calculate the absolute sector to read/write from a file sector
 ;
-;(phydrv) = Curvus device number
+;(phydrv) = Corvus device number
 ;(al1srt) = Allocation 1 sectors starts
 ;(al2srt) = Allocation 2 sectors starts
 ;(filsrt) = File sectors starts
@@ -4747,7 +4747,7 @@ loc1_read_sec:
 ;
 ;      DE = Allocation 1 sector number (128 byte)
 ;
-;(phydrv) = Curvus device number
+;(phydrv) = Corvus device number
 ;(al1srt) = Allocation 1 sectors starts at (al1srt)
 ;(al1ptr) = target address
 ;
@@ -4788,7 +4788,7 @@ loc1_writ_sec:
 ;
 ;      DE = Allocation 1 sector number (128 byte)
 ;
-;(phydrv) = Curvus device number
+;(phydrv) = Corvus device number
 ;(al1srt) = Allocation 1 sectors starts at (al1srt)
 ;(al1ptr) = source address
 ;
@@ -4839,7 +4839,7 @@ lfa61h:
 head_read_sec:
 ;Read the header sector at user starting sector (usrsrt) from Corvus hard drive into hdrbuf
 ;
-;(phydrv) = Curvus device number
+;(phydrv) = Corvus device number
 ;(usrsrt) = Absolute sector number
 ;
     ld a,(phydrv)
@@ -4852,7 +4852,7 @@ head_read_sec:
 head_writ_sec:
 ;Write the header sector at user starting sector (usrsrt) to Corvus hard drive from hdrbuf
 ;
-;(phydrv) = Curvus device number
+;(phydrv) = Corvus device number
 ;(usrsrt) = Absolute sector number
 ;
     ld a,(phydrv)
@@ -4883,7 +4883,7 @@ calc_bam_sec:
 ;
 ;(bamsec) = BAM Sector
 ;
-;(phydrv) = Curvus device number
+;(phydrv) = Corvus device number
 ;(bamsrt) = BAM start sector
 ;
     ld de,(bamsec)
