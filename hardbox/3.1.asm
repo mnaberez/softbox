@@ -1581,7 +1581,7 @@ le6adh:
     jp z,le748h
 
 le6b4h:
-    call sub_f782h
+    call check_wild
     ld a,error_33       ;"SYNTAX ERROR(INVALID FILENAME)"
     jp c,error          ;If invalid filename, SYNTAX ERROR(INVALID FILENAME)
 
@@ -2298,7 +2298,7 @@ cmd_cpy:
     ld hl,filnam
     ld bc,0010h         ;BC=0010h (16 .... ????)
     ldir                ;Copy BC bytes from (HL) to (DE)
-    call sub_f782h
+    call check_wild
     ld a,error_33       ;"SYNTAX ERROR(INVALID FILENAME)"
     jp c,error
 
@@ -3045,7 +3045,7 @@ cmd_ren:
     ld a,(drvnum)
     push af
     push hl
-    call sub_f782h
+    call check_wild
     ld a,error_33       ;"SYNTAX ERROR(INVALID FILENAME)"
     jp c,error
 
@@ -3062,7 +3062,7 @@ cmd_ren:
     inc hl
     call get_filename   ;Get a filename
 
-    call sub_f782h
+    call check_wild
     ld a,error_33       ;"SYNTAX ERROR(INVALID FILENAME)"
     jp c,error
 
@@ -4203,19 +4203,25 @@ lf77fh:
     inc hl
     jr lf76fh
 
-sub_f782h:
-    ld b,16             ;B=10h (16 characters for a filename)
-    ld hl,filnam
-lf787h:
-    ld a,(hl)
-    cp "?"
-    scf
-    ret z
-    cp "*"
-    scf
-    ret z
-    djnz lf787h
-    or a
+check_wild:
+;Check if the filename contains wildcards.
+;Returns carry set if wildcards are found, carry clear if not.
+;
+    ld b,16             ;B = 16 characters in filename
+    ld hl,filnam        ;HL = address of filename
+cw1:
+    ld a,(hl)           ;A = Get next char from filename
+
+    cp "?"              ;Compare char to "?"
+    scf                 ;Set carry
+    ret z               ;Return with carry set if char is "?"
+
+    cp "*"              ;Compare char to "*"
+    scf                 ;Set carry
+    ret z               ;Return with carry set if char is "*"
+
+    djnz cw1            ;Decrement B, loop until all chars are checked
+    or a                ;Clear carry (no wildcards found)
     ret
 
 get_numeric:
