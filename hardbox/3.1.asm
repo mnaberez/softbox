@@ -339,7 +339,7 @@ l0c75h:   equ 0c75h     ;(256 bytes)
 stabuf:   equ 0cf5h     ;Status buffer for reading from control channel 15 (80 Bytes)
 
 filnam:   equ 0d45h     ;(17 bytes, 16 for the characters and one for end marker or delimiter)
-l0d56h:   equ 0d56h     ;(17 bytes, 16 for the characters and one for end marker or delimiter)
+dstnam:   equ 0d56h     ;(17 bytes, 16 for the characters and one for end marker or delimiter)
 drvnum:   equ 0d67h     ;Drive number (1 byte: 0 .. 9)
 dirnum:   equ 0d68h     ;The number of directory entry to process (2 bytes)
 l0d6ah:   equ 0d6ah     ;(1 byte)
@@ -2551,7 +2551,7 @@ cmd_lgn:
 
     push hl
     ld hl,filnam
-    ld de,l0d56h
+    ld de,dstnam
     ld bc,0010h         ;BC=0010h (16 bytes)
     ldir                ;Copy BC bytes from (HL) to (DE)
 
@@ -2590,7 +2590,7 @@ lee5ah:
 
     ld hl,rdbuf
 lee69h:
-    ld de,l0d56h
+    ld de,dstnam
     push bc
     ld b,10h
     ld c,00h
@@ -3037,54 +3037,67 @@ lf0e1h:
     jp init_user
 
 cmd_ren:
-;command for rename "R"
+;Command for rename "R"
+;Format: "R0:DESTINATION=SOURCE"
 ;
     call find_drvlet    ;Find drive letter
-    call get_filename   ;Get a filename
+    call get_filename   ;Get destination filename from command
 
     ld a,(drvnum)
     push af
     push hl
-    call check_wild
-    ld a,error_33       ;"SYNTAX ERROR(INVALID FILENAME)"
-    jp c,error
 
-    ld hl,filnam
-    ld de,l0d56h
-    ld bc,16            ;BC=0010h (16 ????)
-    ldir                ;Copy BC bytes from (HL) to (DE)
+                        ;Abort if destination filename contains wildcards:
+    call check_wild     ;  Set carry if wildcards are present
+    ld a,error_33       ;  A = address of "SYNTAX ERROR(INVALID FILENAME)"
+    jp c,error          ;  Jump out to send error if carry is set
+
+                        ;Copy destination filename into dstnam:
+    ld hl,filnam        ;  HL = address of filename
+    ld de,dstnam        ;  DE = address of destination filename
+    ld bc,16            ;  BC = 16 bytes to copy (length of a filename)
+    ldir                ;  Copy BC bytes from (HL) to (DE)
+
     pop hl
-    ld a,(hl)
-    cp "="
-    ld a,error_30       ;"SYNTAX ERROR"
-    jp nz,error
 
-    inc hl
-    call get_filename   ;Get a filename
+                        ;Abort if char is not equals ("="):
+    ld a,(hl)           ;  Get character after destination filename
+    cp "="              ;  Compare to "="
+    ld a,error_30       ;  A = address of "SYNTAX ERROR"
+    jp nz,error         ;  Jump out to send error if char is not "="
 
-    call check_wild
-    ld a,error_33       ;"SYNTAX ERROR(INVALID FILENAME)"
-    jp c,error
+    inc hl              ;Increment pointer to first char of source filename
+    call get_filename   ;Get the source filename from command
+
+                        ;Abort if source filename contains wildcards:
+    call check_wild     ;  Set carry if wildcards are present
+    ld a,error_33       ;  A = address of "SYNTAX ERROR(INVALID FILENAME)"
+    jp c,error          ;  Jump out to send error if carry is set
 
     pop af
     push af
-    ld hl,l0d56h
-    call find_first
-    ld a,error_63       ;"FILE EXISTS"
-    jp nc,error
+
+                        ;Abort if destination filename already exists:
+    ld hl,dstnam        ;  HL = address of destination filename
+    call find_first     ;  Clears carry flag if file exists
+    ld a,error_63       ;  A = address of "FILE EXISTS"
+    jp nc,error         ;  Jump out to send error if carry is clear
 
     pop af
-    ld hl,filnam
-    call find_first
-    ld a,error_62       ;"FILE NOT FOUND"
-    jp c,error
+
+                        ;Abort if source filename does not exist:
+    ld hl,filnam        ;  HL = address of source filename
+    call find_first     ;  Sets carry flag if file does not exist
+    ld a,error_62       ;  A = address of "FILE NOT FOUND"
+    jp c,error          ;  Jump out to send error if carry is set
 
     bit 7,(ix+000h)     ;is marker for "Open File" set?
     ret nz
-    ld hl,l0d56h
-    ld b,16             ;B=10h (16 ????)
+
+    ld hl,dstnam        ;HL = address of destination filename
+    ld b,16             ;B = 16 chars in filename
 lf13dh:
-    ld a,(hl)
+    ld a,(hl)           ;TODO: this must actually do the rename
     ld (ix+002h),a
     inc hl
     inc ix
@@ -4016,14 +4029,17 @@ msg_blk_free_end:
 
 find_first:
 ;Find the first result from directory
+;Returns carry set if file is not found, clear if found.
 ;
 ;See find_next
 ;
     ld de,0000h
     ld (dirnum),de      ;(dirnum)=0
+                        ;Fall through into find_next
 
 find_next:
 ;Find the next result from directory
+;Returns carry set if file is not found, clear if found.
 ;
 ;  A = Drive Number (0..9)
 ; HL = Pattern for filename
