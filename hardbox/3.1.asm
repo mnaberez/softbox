@@ -5157,7 +5157,7 @@ error_txt:
     db " O",80h+"K"
 
     db error_01         ;"FILES SCRATCHED"
-    db t_file, "S SCRATCHE",80h+"D"
+    db t_file,"S SCRATCHE",80h+"D"
 
     db error_22         ;"READ ERROR"
     db t_read,80h+t_error
