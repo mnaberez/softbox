@@ -391,8 +391,8 @@ endbuf:   equ 25f2h     ;Points to end of buffer to write to ieee (2 bytes)
 l25f4h:   equ 25f4h     ;(2 bytes)
 l25f6h:   equ 25f6h     ;(1 byte)
 l25f7h:   equ 25f7h     ;(17 bytes, 16 for the characters and one for end marker or delemiter)
-l2608h:   equ 2608h     ;(2 bytes)
-l260ah:   equ 260ah     ;(2 bytes)
+pattfn:   equ 2608h     ;Points to pattern for filename, used in find_first and find_next (2 bytes)
+tmpdrv:   equ 260ah     ;Temporary drive number, used in corv_read_sec und corv_writ_sec (2 bytes)
 drvcnf:   equ 260ch     ;Flag if drive is configured (0: Not Configured, 1: Configured)
 l260dh:   equ 260dh     ;Temporary in cmd_cpy (2 bytes)
 l260fh:   equ 260fh     ;Temporary in put_number (1 byte)
@@ -400,7 +400,7 @@ hdrbuf:   equ 2610h     ;Buffer of header sector (first sector of user area with
 drvnam:   equ hdrbuf+  0;Position   0 starts the drive names of the ten drives
 drvid:    equ hdrbuf+160;Position 160 starts the drive ids of the ten drives
 rdbuf:    equ 2710h     ;(256 bytes)
-cpbuf:    equ 2810h     ;(256 bytes)
+cpybuf:   equ 2810h     ;Temporary buffer, only used for concat command (256 bytes)
 bambuf:   equ 2910h     ;Buffer of BAM sector bamsec used in bam_read_sec and bam_writ_sec or for B-A and B-F (256 bytes)
 
 stack:    equ 2a93h
@@ -2399,12 +2399,12 @@ led18h:
     and 03h
     or c
     jr nz,led43h
-    ld hl,cpbuf
+    ld hl,cpybuf
     ld (al1ptr),hl
     ld (al2ptr),hl
     ld de,(l260dh)
     call loc1_read_sec  ;Read sector (al1srt)+DE with 128 bytes to (al1ptr)
-    ld hl,cpbuf
+    ld hl,cpybuf
     pop bc
     push bc
     srl b
@@ -2425,7 +2425,7 @@ led43h:
     rr e
     res 0,e
     ld d,00h
-    ld hl,cpbuf
+    ld hl,cpybuf
     add hl,de
     ld e,(hl)
     inc hl
@@ -4013,18 +4013,26 @@ msg_blk_free:
 msg_blk_free_end:
 
 find_first:
-;A = Drive Number (0..9)
+;Find the first result from directory
+;
+;See find_next
+;
     ld de,0000h
     ld (dirnum),de      ;(dirnum)=0
 
 find_next:
+;Find the next result from directory
+;
+;  A = Drive Number (0..9)
+; HL = Pattern for filename
+;
     ld c,a
-    ld (l2608h),hl
+    ld (pattfn),hl
 
 lf68fh:
     push bc
     call sub_f6edh
-    ld hl,(l2608h)
+    ld hl,(pattfn)
     pop bc
     ret c
     push ix
@@ -4937,7 +4945,7 @@ corv_read_sec:
 ;ADE = Sector address (20 bit address)
 ; HL = DMA buffer address
 ;
-    ld (l260ah),bc
+    ld (tmpdrv),bc
     ld c,02h            ;02h = Read a sector (256 byte sector)
     call corv_send_cmd
     call corv_read_err
@@ -4958,7 +4966,7 @@ lfb1ch:
 read_err:
     and 00011111b
     ld (errtrk),a       ;Store error code as error track
-    ld a,(l260ah+1)
+    ld a,(tmpdrv+1)
     ld (errsec),a       ;Store drive number as error sector
     ld a,error_22       ;"READ ERROR"
     jp error_out
@@ -4970,7 +4978,7 @@ corv_writ_sec:
 ;ADE = Sector address (20 bit address)
 ; HL = DMA buffer address
 ;
-    ld (l260ah),bc
+    ld (tmpdrv),bc
     ld c,03h            ;03h = Write a sector (256 byte sector)
     call corv_send_cmd
 
@@ -4989,7 +4997,7 @@ lfb43h:
 
     and 00011111b
     ld (errtrk),a       ;Store error code as error track
-    ld a,(l260ah+1)
+    ld a,(tmpdrv+1)
     ld (errsec),a       ;Store drive Number as error sector
     ld a,error_25       ;"WRITE ERROR"
     jp error_out
