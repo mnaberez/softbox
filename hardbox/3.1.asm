@@ -2,7 +2,7 @@
 ;Version 3.1 (Sunol)
 
 ;This is a disassembly of two original 2732 EPROMs from a HardBox,
-;labeled "295" (IC3) and "296" (IC4). 
+;labeled "295" (IC3) and "296" (IC4).
 
 ;HardBox Memory Map:
 ;  F000-FFFF  BIOS ROM High (IC4)   4096
@@ -46,7 +46,7 @@ ppi2_pc:  equ ppi2+2    ;  Port C:
                         ;    PC0 LED "A"
 ppi2_cr:  equ ppi2+3    ;  Control Register
 
-atna      equ 10000000b ;ATNA (With installed IC37 this isn't IFC, leave LK3 open!)
+atna:     equ 10000000b ;ATNA (With installed IC37 this isn't IFC, leave LK3 open!)
 ren:      equ 01000000b ;REN (unused)
 srq:      equ 00100000b ;SRQ (unused)
 eoi:      equ 00010000b ;EOI
