@@ -243,7 +243,7 @@ arenam:   equ usrdat+16 ;User area name (16 Bytes) ???
                         ;                ---------------
                         ;                ------XX (Bits 0 .. 1): File Type
                         ;                                        ---------
-                        ;                                        00: SEQ (Sequentiell file)
+                        ;                                        00: SEQ (Sequential file)
                         ;                                        01: USR (User file)
                         ;                                        10: PRG (Program file)
                         ;                                        11: REL (Relative file)
@@ -265,7 +265,7 @@ arenam:   equ usrdat+16 ;User area name (16 Bytes) ???
                         ;Byte        40: ???
                         ;Bytes 41 .. 63: Unused and Undefined
 
-typ_seq:  equ 0         ;File Type for SEQ (Seqentiell file)
+typ_seq:  equ 0         ;File Type for SEQ (Sequential file)
 typ_usr:  equ 1         ;File Type for USR (User file)
 typ_prg:  equ 2         ;File Type for PRG (Program file)
 typ_rel:  equ 3         ;File Type for REL (Relative file)
@@ -338,8 +338,8 @@ cmdbuf:   equ 0bf5h     ;Command buffer for writing to control channel 15 (256 b
 l0c75h:   equ 0c75h     ;(256 bytes)
 stabuf:   equ 0cf5h     ;Status buffer for reading from control channel 15 (80 Bytes)
 
-filnam:   equ 0d45h     ;(17 bytes, 16 for the characters and one for end marker or delemiter)
-l0d56h:   equ 0d56h     ;(17 bytes, 16 for the characters and one for end marker or delemiter)
+filnam:   equ 0d45h     ;(17 bytes, 16 for the characters and one for end marker or delimiter)
+l0d56h:   equ 0d56h     ;(17 bytes, 16 for the characters and one for end marker or delimiter)
 drvnum:   equ 0d67h     ;Drive number (1 byte: 0 .. 9)
 dirnum:   equ 0d68h     ;The number of directory entry to process (2 bytes)
 l0d6ah:   equ 0d6ah     ;(1 byte)
@@ -390,7 +390,7 @@ wrtprt:   equ 25f0h     ;Points to current position to writee to ieee (2 bytes)
 endbuf:   equ 25f2h     ;Points to end of buffer to write to ieee (2 bytes)
 l25f4h:   equ 25f4h     ;(2 bytes)
 l25f6h:   equ 25f6h     ;(1 byte)
-l25f7h:   equ 25f7h     ;(17 bytes, 16 for the characters and one for end marker or delemiter)
+l25f7h:   equ 25f7h     ;(17 bytes, 16 for the characters and one for end marker or delimiter)
 pattfn:   equ 2608h     ;Points to pattern for filename, used in find_first and find_next (2 bytes)
 tmpdrv:   equ 260ah     ;Temporary drive number, used in corv_read_sec und corv_writ_sec (2 bytes)
 drvcnf:   equ 260ch     ;Flag if drive is configured (0: Not Configured, 1: Configured)
@@ -1300,7 +1300,7 @@ cmd_addr:
     dw leb7eh           ;"G": Set Global
     dw leb7eh           ;"H": Set Hide a File
     dw leb7eh           ;"W": Set Write Protect
-    dw leb7eh           ;"-": Reset (Global | Hide a File | Write Protoct)
+    dw leb7eh           ;"-": Reset (Global | Hide a File | Write Protect)
     dw cmd_vfy          ;"V": Validate
     dw cmd_lgn          ;"L": Login
     dw lebdfh           ;"T": Trasfer Files
@@ -3771,7 +3771,7 @@ lf4c4h:
     ld (hl),"""
     inc hl              ;put ending quote in buffer
     ld (hl)," "
-    inc hl              ;put a space as delemiter into buffer
+    inc hl              ;put a space as delimiter into buffer
 
     ex de,hl
     ld hl,drvid
@@ -3912,7 +3912,7 @@ lf5c9h:
                         ;Copy file type into buffer
     ex de,hl
 
-    ld (hl)," "         ;put a space as delemiter into buffer
+    ld (hl)," "         ;put a space as delimiter into buffer
     inc hl
 
     ld (hl),"-"         ;Minus for not write proteected
@@ -4131,7 +4131,7 @@ lf713h:
 get_filename:
 ;Get a filename (max. 16 characters) from HL and store it. Read a heading drive number, too.
 ;
-; HL = Poniter to command buffer
+; HL = Pointer to command buffer
 ;
     ld a,(defdnu)       ;Get the defdnu as default, if we don't read it
     ld (drvnum),a       ;(drvnum)=(defdnu)
@@ -4185,7 +4185,7 @@ lf766h:
 find_drvlet:
 ;Find drive letter
 ;
-; HL = Poniter to command buffer
+; HL = Pointer to command buffer
 ;
     ld hl,cmdbuf
 lf76fh:
@@ -4221,7 +4221,7 @@ lf787h:
 get_numeric:
 ;Get a number from HL and return in DEA
 ;
-; HL = Poniter to command buffer
+; HL = Pointer to command buffer
 ;
     ld a,(hl)           ;Get Character from buffer
     inc hl
