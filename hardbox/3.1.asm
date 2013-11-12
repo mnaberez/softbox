@@ -389,7 +389,7 @@ dirout:   equ 2570h     ;Here where a directory output line stored before output
 wrtprt:   equ 25f0h     ;Points to current position to writee to ieee (2 bytes)
 endbuf:   equ 25f2h     ;Points to end of buffer to write to ieee (2 bytes)
 l25f4h:   equ 25f4h     ;(2 bytes)
-l25f6h:   equ 25f6h     ;(1 byte)
+dirdrv:   equ 25f6h     ;Save the Drive Number (drvnum) when Directory (open_dir) is processed (1 byte)
 dirnam:   equ 25f7h     ;open_dir parameter (17 bytes: 16 for the characters and one for end marker or delimiter)
 pattfn:   equ 2608h     ;Points to pattern for filename, used in find_first and find_next (2 bytes)
 tmpdrv:   equ 260ah     ;Temporary drive number, used in corv_read_sec und corv_writ_sec (2 bytes)
@@ -3743,7 +3743,7 @@ lf4c4h:
     ldir                ;Copy BC bytes from (HL) to (DE)
 
     ld a,(drvnum)
-    ld (l25f6h),a       ;(l25f6h)=(drvnum)
+    ld (dirdrv),a       ;(dirdrv)=(drvnum)
     ld e,a
     ld d,0              ;DE=(drvnum)
 
@@ -3833,7 +3833,7 @@ lf4c4h:
 
 sub_f556h:
     ld hl,dirnam
-    ld a,(l25f6h)
+    ld a,(dirdrv)
     call find_next
     jp c,lf623h         ;All entries readed? Yes: we are finish, write "Blocks free"
 
