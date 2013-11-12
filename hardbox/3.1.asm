@@ -192,10 +192,10 @@ userid:   equ 0002h     ;Read via DIP switch (0 .. 31) or set via command "L" (0
 
                         ;User Parameter
                         ;==============
-                        ;Byte         0: Physical Drive Number (1 .. 4 )
+                        ;Byte         0: Physical Drive Number (1 .. 4 = Drive Number, 0 = Unused Entry)
                         ;Bytes  1 ..  3: Starting Sector Number on Disk
                         ;Bytes  4 ..  5: User Area Size in Kilobytes (1 Kilobyte are 4 Sectors or Blocks)
-                        ;Byte         6: Type of User Area (Single User or Multi User)
+                        ;Byte         6: Type of User Area (Single User or 0aah for Multi User)
                         ;Bytes  7 ..  8: Maximum Numbers of Files allowed (Reserved for Directory Entries)
                         ;Bytes  9 .. 10: Size (in Kilobytes) allocated for Direct Access (1 Kilobyte are 4 Sectors or Blocks)
                         ;Bytes 11 .. 12: Number of "Tracks per Drive" for Direct Access
@@ -237,8 +237,8 @@ arenam:   equ usrdat+16 ;User area name (16 Bytes) ???
                         ;Bytes 178 .. 179: Drive ID for Drive Number 9 ("9:..")
                         ;Bytes 180 .. 255: <Unknown or Undefined>
 
-                        ;Directory Entry (64 Bytes for one File, only 41 are used)
-                        ;=========================================================
+                        ;Directory Entry (32 Bytes for one File on Disk, additionaly 9 Bytes in Memory)
+                        ;==============================================================================
                         ;Byte         0: File Attributes
                         ;                ---------------
                         ;                ------XX (Bits 0 .. 1): File Type
@@ -257,13 +257,13 @@ arenam:   equ usrdat+16 ;User area name (16 Bytes) ???
                         ;Bytes 18 .. 20: Size in Bytes (3 Bytes), 19 .. 20: Size in Blocks
                         ;Byte        21: Record Length (1 Byte)
                         ;Bytes 22 .. 31: <Unknown or Undefined>
+                        ;----- Now only temporary used data bytes, holded in memory only -----
                         ;Bytes 32 .. 34: Current file pointer to read or write (3 Bytes)
-                        ;Bytes 35 .. 36: ??? (Entry number???)
+                        ;Bytes 35 .. 36: Number of Directory Entry - see dirnum also (2 Bytes)
                         ;Byte        37: ???
                         ;Byte        38: ???
                         ;Byte        39: ???
                         ;Byte        40: ???
-                        ;Bytes 41 .. 63: Unused and Undefined
 
 typ_seq:  equ 0         ;File Type for SEQ (Sequential file)
 typ_usr:  equ 1         ;File Type for USR (User file)
@@ -338,8 +338,8 @@ cmdbuf:   equ 0bf5h     ;Command buffer for writing to control channel 15 (256 b
 l0c75h:   equ 0c75h     ;(256 bytes)
 stabuf:   equ 0cf5h     ;Status buffer for reading from control channel 15 (80 Bytes)
 
-filnam:   equ 0d45h     ;(17 bytes, 16 for the characters and one for end marker or delimiter)
-dstnam:   equ 0d56h     ;(17 bytes, 16 for the characters and one for end marker or delimiter)
+filnam:   equ 0d45h     ;(17 bytes: 16 for the characters and one for end marker or delimiter)
+dstnam:   equ 0d56h     ;(17 bytes: 16 for the characters and one for end marker or delimiter)
 drvnum:   equ 0d67h     ;Drive number (1 byte: 0 .. 9)
 dirnum:   equ 0d68h     ;The number of directory entry to process (2 bytes)
 l0d6ah:   equ 0d6ah     ;(1 byte)
