@@ -1296,7 +1296,7 @@ cmd_addr:
     dw cmd_del          ;"S": Scratch Files
     dw cmd_drv          ;"D": Set Default Drive Number
     dw cmd_ini          ;"I": Initialize
-    dw lf0e7h           ;"R"
+    dw cmd_ren          ;"R": Rename File
     dw leb7eh           ;"G": Set Global
     dw leb7eh           ;"H": Set Hide a File
     dw leb7eh           ;"W": Set Write Protect
@@ -3036,7 +3036,9 @@ lf0e1h:
     ld a,(userid)
     jp init_user
 
-lf0e7h:
+cmd_ren:
+;command for rename "R"
+;
     call find_drvlet    ;Find drive letter
     call get_filename   ;Get a filename
 
