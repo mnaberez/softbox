@@ -88,7 +88,7 @@ error_64: equ 40h       ;"FILE TYPE MISMATCH"
 error_65: equ 41h       ;"NO BLOCK"
 error_66: equ 42h       ;"ILLEGAL TRACK OR SECTOR"
 error_72: equ 48h       ;"DISK FULL"
-error_84: equ 54h       ;"DRIVE NOT CONFIGURED"
+error_84: equ 54h       ;" DRIVE NOT CONFIGURED"
 error_89: equ 59h       ;"USER #"
 error_90: equ 5ah       ;"INVALID USER NAME"
 error_91: equ 5bh       ;"PASSWORD INCORRECT"
@@ -641,7 +641,7 @@ init_user:
     xor a
     ld (drvcnf),a       ;(drvcnf)=0
 
-    ld a,error_84       ;"DRIVE NOT CONFIGURED"
+    ld a,error_84       ;" DRIVE NOT CONFIGURED"
     call error_out
 
     ld hl,cmdbuf
@@ -670,7 +670,7 @@ le100h:
 
     ld hl,drvcnf        ;Okay, drive is configured
     inc (hl)            ;(drvcnf)=(drvcnf)+1
-    call error_ok       ;"OK" overwrites "DRIVE NOT CONFIGURED"
+    call error_ok       ;"OK" overwrites " DRIVE NOT CONFIGURED"
 
     ld a,(userid)
     rr a
@@ -4105,7 +4105,7 @@ lf6d3h:
 sub_f6edh:
     ld a,(drvcnf)
     or a
-    ld a,error_84       ;"DRIVE NOT CONFIGURED"
+    ld a,error_84       ;" DRIVE NOT CONFIGURED"
     jp z,error
 
     ld hl,(dirnum)
@@ -5240,7 +5240,7 @@ error_txt:
     db error_72         ;"DISK FULL"
     db "DISK FUL",80h+"L"
 
-    db error_84         ;"DRIVE NOT CONFIGURED"
+    db error_84         ;" DRIVE NOT CONFIGURED"
     db t_drive,t_not," CONFIGURE",80h+"D"
 
     db error_89         ;"USER #"
