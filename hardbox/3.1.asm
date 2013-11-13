@@ -330,12 +330,12 @@ al2ptr:   equ 0aeah     ;Pointer to a buffer (al2bufs) of a Allocation 2 sector 
 bufptr:   equ 0aech     ;Pointer to a buffer (buffers) of a sector buffer with 256 bytes (2 bytes)
 al1ptr:   equ 0aeeh     ;Pointer to a buffer (al1bufs) of a Allocation 1 sector with 128 bytes (2 bytes)
 lsntlk:   equ 0af0h     ;State of ieee bus (1 byte: bit 1 = TALK active, bit 2 = LISTEN active)
-l0af1h:   equ 0af1h     ;(2 bytes points to stabuf)
-l0af3h:   equ 0af3h     ;(2 bytes)
+staptr:   equ 0af1h     ;Pointer to current position of stabuf when writing to control channel (2 bytes)
+cmdptr:   equ 0af3h     ;Pointer to current position of cmdbuf when reading from control channel(2 bytes)
 
 dirbuf:   equ 0af5h     ;Directory block buffer (256 bytes)
-cmdbuf:   equ 0bf5h     ;Command buffer for writing to control channel 15 (256 bytes)
-l0c75h:   equ 0c75h     ;(256 bytes)
+cmdbuf:   equ 0bf5h     ;Command buffer for writing to control channel 15 (128 bytes)
+getbuf:   equ 0c75h     ;Buffer to read after SA or OPEN bytes, this stores commands (SA and OPEN) or filenames (OPEN) (128 bytes)
 stabuf:   equ 0cf5h     ;Status buffer for reading from control channel 15 (80 Bytes)
 
 filnam:   equ 0d45h     ;(17 bytes: 16 for the characters and one for end marker or delimiter)
@@ -642,10 +642,10 @@ init_user:
     ld (drvcnf),a       ;(drvcnf)=0
 
     ld a,error_84       ;" DRIVE NOT CONFIGURED"
-    call error_out
+    call error_out      ;Writes the error message " DRIVE NOT CONFIGURED" into the status buffer
 
-    ld hl,cmdbuf
-    ld (l0af3h),hl
+    ld hl,cmdbuf        ;When we start reading from control channel, we store it into command buffer (cmdbuf)
+    ld (cmdptr),hl      ;(cmdptr)=cmdbuf
 
     ld a,(userid)       ;Get User Number
     cp 01fh             ;Is it 31?
@@ -956,24 +956,25 @@ le2dah:
     ld a,(devnum)
     or 20h              ;Generate LISTEN address
     cp c
-    jr z,do_listn       ;If found execute do_listn
+    jr z,do_listn       ;If found LISTEN execute do_listn
     xor 60h             ;Generate TALK address
     cp c
-    jr z,do_talk        ;If found execute do_talk
+    jr z,do_talk        ;If found TALK execute do_talk
     ld a,c
     cp 3fh              ;3Fh=UNLISTEN
-    jr z,do_unlst       ;If found execute do_unlst
+    jr z,do_unlst       ;If found UNLISTEN execute do_unlst
     cp 5fh              ;5Fh=UNTALK
-    jr z,do_untlk       ;If found execute do_untlk
+    jr z,do_untlk       ;If found UNTALK execute do_untlk
     and 60h
-    cp 60h
-    jr nz,le312h
+    cp 60h              ;Is the byte a SA, OPEN or CLOSE?
+    jr nz,le312h        ;  NO: finish this data cyclus and skip data
 
-    ld a,c
+    ld a,c              ;We store the channel number as SA
     ld (sa),a           ;(sa)=C
+
     and 0f0h
-    cp 0e0h
-    jr z,le332h
+    cp 0e0h             ;Is this byte a CLOSE?
+    jr z,sa_close         ;  YES: process a close
 
 le312h:
     in a,(ppi2_pa)
@@ -1002,7 +1003,7 @@ do_untlk:
     res 1,(hl)          ;Clear marker for TALK is active
     jr le312h
 
-le332h:
+sa_close:
     ld (hl),0           ;Clear all marker for LISTEN and TALK active
     ld a,c
     and 0fh
@@ -1027,8 +1028,9 @@ le34dh:
     or a
     jp z,le2aeh         ;  YES: Nothing to do
     bit 2,a             ;Is marker for LISTEN active set?
-    jr nz,le38dh        ;  YES: do LISTEN
-                        ;  NO: do TALK
+    jr nz,do_read       ;  YES: do reading from ieee
+                        ;  NO: do writing to ieee
+do_write:
     in a,(ppi2_pb)
     and 255-ndac
     out (ppi2_pb),a     ;NDAC_OUT=high (inactive, we want to talk)
@@ -1039,57 +1041,64 @@ le34dh:
     and 0fh
     ld (sa),a
     cp 0fh              ;Is Control Channel?
-    jp nz,le879h        ;  NO: We write from data channel to ieee
+    jp nz,do_wr_chan    ;  NO: We write from data channel to ieee
                         ;  YES: We write the disk status from status buffer to ieee
 le375h:
-    ld hl,(l0af1h)
-    ld a,(hl)
+    ld hl,(staptr)      ;HL=(staptr) (staptr is current position in stabuf) 
+    ld a,(hl)           ;Read the character from stabuf
     call sub_e448h
     jp c,le2aeh
-    ld a,(hl)
-    inc hl
-    cp cr
-    jr nz,le388h
-    ld hl,stabuf
-le388h:
-    ld (l0af1h),hl
-    jr le375h
+    ld a,(hl)           ;Read the character from stabuf again
+    inc hl              ;Increment the position in stabuf
+    cp cr               ;Is the end marker (cr) reached?
+    jr nz,le388h        ;  NO: continue
+                        ;  YES: Set the pointer to the start of status buffer
+    ld hl,stabuf        ;HL=stabuf
 
-le38dh:
+le388h:
+    ld (staptr),hl      ;(staptr)=HL (Store the current position)
+    jr le375h           ;Write the next character
+
+do_read:
     ld a,(sa)
     or a
     jp z,le2aeh
     push af
-    and 0fh
-    ld (sa),a
-    cp 02h
-    call nc,error_ok
+    and 0fh             ;Get only the channel number from the secondary address
+    ld (sa),a           ;And store it
+    cp 02h              ;Is the channel number is 0 or 1?
+    call nc,error_ok    ;Set the error message to "OK"
 
-    pop af
-    jp p,le3d3h
-    ld hl,l0c75h
-    ld b,7fh
+    pop af              ;Is the secondary address a OPEN or CLOSE
+    jp p,le3d3h         ;No, this must be a command or data for a channel
+
+    ld hl,getbuf        ;HL=getbuf (Parameter for OPEN command, e.g. filename)
+    ld b,7fh            ;B=7fh (127 Characters of .... )
+
 le3a8h:
     call rdieee
     jp c,le2aeh
-    bit 7,b
-    jr nz,le3b5h
-    ld (hl),a
-    inc hl
-    dec b
-le3b5h:
-    ld a,(eoisav)
-    or a
-    jr z,le3a8h         ;No EOI detected, read next characters
+    bit 7,b             ;Is bit 7 of B set, this means B is negative and we read more than 128 bytes
+    jr nz,le3b5h        ;  YES: Don't store the readed character
 
-    ld (hl),cr          ;Save end marker in buffer
+    ld (hl),a           ;Store the charcater in getbuf
+    inc hl              ;Increment the position in getbuf
+    dec b               ;Decrement the counter B
+
+le3b5h:
+    ld a,(eoisav)       ;Read the last state of EOI
+    or a                ;Is EOI detected?
+    jr z,le3a8h         ;  NO: Read next characters
+
+    ld (hl),cr          ;Save end marker in buffer getbuf
 
     ld a,(sa)           ;Get secondary address
     cp 0fh              ;Is Control Channel?
-    jp nz,le5f3h        ;  No, jump
+    jp nz,do_open       ;  NO: do a open file or channel
 
-    ld hl,l0c75h
-    ld de,cmdbuf
+                        ;Copy all 128 charcters from getbuf to command buffer (cmdbuf)
+    ld hl,getbuf        ;HL=getbuf
+    ld de,cmdbuf        ;DE=cmdbuf
     ld bc,128           ;BC=0080h (128 bytes)
     ldir                ;Copy BC bytes from (HL) to (DE)
     jp le4a2h
@@ -1097,17 +1106,21 @@ le3b5h:
 le3d3h:
     ld a,(sa)
     cp 0fh              ;Is Control Channel?
-    jp nz,le980h
-    ld hl,(l0af3h)
+    jp nz,do_rd_chan    ;  NO: We read from ieee to data channels
+                        ;  YES: We read the command from ieee to command buffer
+    ld hl,(cmdptr)      ;HL=(cmdptr) (cmdptr is current position in cmdbuf)
+
 le3deh:
     call rdieee
     jp c,le2aeh
-    ld (hl),a
+    ld (hl),a           ;Store the charcater in cmdbuf
     ld a,l
-    cp low (l0c75h+255)
+    cp low (cmdbuf+127)
     jr z,le3eeh
-    inc hl
-    ld (l0af3h),hl
+
+    inc hl              ;Increment the position in cmdbuf
+    ld (cmdptr),hl      ;(cmdptr)=HL (Store the current position)
+
 le3eeh:
     ld a,(eoisav)
     or a
@@ -1264,8 +1277,10 @@ sub_e492h:
 le4a2h:
     call error_ok
     ld de,cmd_char
-    ld hl,cmdbuf
-    ld (l0af3h),hl
+
+    ld hl,cmdbuf        ;When we start reading from control channel, we store it into command buffer (cmdbuf)
+    ld (cmdptr),hl      ;(cmdptr)=cmdbuf
+
     ld b,cmd_addr-cmd_char ;B=12h (18 Commands)
     ld ix,cmd_addr
 le4b4h:
@@ -1312,14 +1327,22 @@ cmd_addr:
     dw cmd_cpy          ;"C": Copy and Concat
 
 error:
-    call error_out
+    call error_out      ;Writes the error message defined in A into the status buffer
     ld sp,stack
     jp le2aeh
 
 error_ok:
+;Writes the error message "OK" into the status buffer
+;
     call clrerrts
 
 error_out:
+;Writes the error message defined in A into the status buffer
+;
+;        A = Error Code
+; (errtrk) = Error Track
+; (errsec) = Error Sector
+;
     ld (errcod),a
     ld hl,error_txt     ;Get address of error code/text table
 
@@ -1405,8 +1428,8 @@ le55bh:
 
     ld (hl),cr          ;Put cr into buffer
 
-    ld hl,stabuf
-    ld (l0af1h),hl
+    ld hl,stabuf        ;When we start writing to control channel, we take it from status buffer (stabuf)
+    ld (staptr),hl      ;(staptr)=stabuf
     ret
 
 clrerrts:
@@ -1479,7 +1502,7 @@ le5e7h:
     dt 10
     dt 1
 
-le5f3h:
+do_open:
     call error_ok
     call sub_f7d0h
     bit 7,(iy+028h)
@@ -1488,7 +1511,7 @@ le5f3h:
     ld (iy+028h),000h
     ld (iy+027h),000h
     ld (iy+026h),0ffh
-    ld hl,l0c75h
+    ld hl,getbuf        ;HL=getbuf
 
 le613h:
     ld a,(hl)
@@ -1800,7 +1823,7 @@ le86bh:
     jr nz,le86bh
     ret
 
-le879h:
+do_wr_chan:
     call sub_f7d0h
     bit 7,(iy+28h)
     jp z,le2aeh
@@ -1935,7 +1958,7 @@ le977h:
     jr nc,le977h        ;If no error, repeat it
     jp le2aeh           ;Else aborting
 
-le980h:
+do_rd_chan:
     call sub_f7d0h
     bit 7,(iy+028h)
     jp z,le2aeh
@@ -2073,7 +2096,7 @@ lea99h:
     push af
     push iy
     ld a,error_51       ;"OVERFLOW IN RECORD"
-    call z,error_out
+    call z,error_out    ;Writes the error message "OVERFLOW IN RECORD" into the status buffer
     pop iy
     pop af
     call nz,sub_eacah
@@ -2190,7 +2213,7 @@ leb6fh:
     cp cr               ;Is there a end marker
     jr nz,leb6fh        ;  NO: Check next character
     ld a,error_01       ;"FILES SCRATCHED"
-    jp error_out
+    jp error_out        ;Writes the error message "FILES SCRATCHED" into the status buffer
 
 leb7eh:
     call find_drvlet    ;Find drive letter
@@ -3723,7 +3746,7 @@ open_dir:
 ;
     set 2,(iy+028h)     ;Set marker for directory
     set 7,(iy+028h)
-    ld hl,l0c75h+1
+    ld hl,getbuf+1
     call get_filename   ;Get a filename
 
 lf4bah:
@@ -4993,7 +5016,7 @@ read_err:
     ld a,(tmpdrv+1)
     ld (errsec),a       ;Store drive number as error sector
     ld a,error_22       ;"READ ERROR"
-    jp error_out
+    jp error_out        ;Writes the error message "READ ERROR" into the status buffer
 
 corv_writ_sec:
 ;Write a sector (256 bytes) to the Corvus hard drive
@@ -5024,7 +5047,7 @@ lfb43h:
     ld a,(tmpdrv+1)
     ld (errsec),a       ;Store drive Number as error sector
     ld a,error_25       ;"WRITE ERROR"
-    jp error_out
+    jp error_out        ;Writes the error message "WRITE ERROR" into the status buffer
 
 corv_read_err:
 ;Read the error code from a Corvus hard drive.
