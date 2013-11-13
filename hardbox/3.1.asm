@@ -3,10 +3,12 @@
 ;Version 3.1 (Sunol)
 
 ;version:  equ 23        ;for version 2.3 (Corvus)
+;version:  equ 24        ;for version 2.3 (Corvus)
 version:  equ 31        ;for version 3.1 (Sunol)
 
 ;This is a disassembly of two original 2732 EPROMs from a HardBox,
-;labeled "295" (IC3) and "296" (IC4) for version 2.3 and 3.1.
+;labeled "295" (IC3) and "296" (IC4) for version 2.3 and 3.1 and
+;labeled "289" (IC3) and "290" (IC4) for version 2.4.
 
 ;HardBox Memory Map:
 ;  F000-FFFF  BIOS ROM High (IC4)   4096
@@ -2873,17 +2875,23 @@ cmd_uid:
 cmd_hbv:
 ;command for get hardbox version "!H"
 ;
-IF version = 31
-    ld a,3              ;Set major version 3
-    ld (errtrk),a
-
-    ld a,1              ;Set minor version 1
-    ld (errsec),a
-ELSE
+IF version = 23
     ld a,2              ;Set major version 2
     ld (errtrk),a
 
     ld a,3              ;Set minor version 3
+    ld (errsec),a
+ELSEIF version = 24
+    ld a,2              ;Set major version 2
+    ld (errtrk),a
+
+    ld a,4              ;Set minor version 4
+    ld (errsec),a
+ELSEIF version = 31
+    ld a,3              ;Set major version 3
+    ld (errtrk),a
+
+    ld a,1              ;Set minor version 1
     ld (errsec),a
 ENDIF
 
@@ -3389,8 +3397,7 @@ lf1cch:
     ld a,(iy+015h)
     sub e
     ld (iy+025h),a      ;(iy+025h)=(iy+015h)-E
-IF version = 31
-ELSE
+IF version = 23
     ld a,(iy+020h+1)
     cp h    
     jr nz,lf24ah
@@ -3404,17 +3411,17 @@ ENDIF
 
     call sub_eb00h
     call sub_f1f7h
-IF version = 31
-    jp c,file_read_sec  ;Read a file sector
-    ld a,error_50       ;"RECORD NOT PRESENT"
-    jp error
-ELSE
+IF version = 23
     call c,file_read_sec
 lf259h:
     call sub_f1f7h
     ld a,error_50       ;"RECORD NOT PRESENT"
     jp nc,error
     ret    
+ELSE
+    jp c,file_read_sec  ;Read a file sector
+    ld a,error_50       ;"RECORD NOT PRESENT"
+    jp error
 ENDIF
 
 sub_f1f7h:
@@ -5513,6 +5520,74 @@ ELSE
 ENDIF
 
 filler:
+IF version = 24
+    db 0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 0a9h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 0a8h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 050h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 02ch,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
+    db 000h,0ffh,000h, 0ffh,000h,0ffh,000h
+ELSE
 IF version = 31
     jp nz,02383h
     ret
@@ -5869,10 +5944,12 @@ ENDIF
     ld hl,(01d9dh)
     ld (01f1ch),hl
     xor a
-
+ENDIF
 checksum:
-IF version = 31
-    db 32h
-ELSE
+IF version = 23
     db 0dfh
+ELSEIF version = 24
+    db 85h
+ELSEIF version = 31
+    db 32h
 ENDIF
