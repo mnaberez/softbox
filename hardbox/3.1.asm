@@ -1,8 +1,12 @@
 ;HardBox Firmware
+;Version 2.3 (Corvus)
 ;Version 3.1 (Sunol)
 
+;version:  equ 23        ;for version 2.3 (Corvus)
+version:  equ 31        ;for version 3.1 (Sunol)
+
 ;This is a disassembly of two original 2732 EPROMs from a HardBox,
-;labeled "295" (IC3) and "296" (IC4).
+;labeled "295" (IC3) and "296" (IC4) for version 2.3 and 3.1.
 
 ;HardBox Memory Map:
 ;  F000-FFFF  BIOS ROM High (IC4)   4096
@@ -95,10 +99,17 @@ error_91: equ 5bh       ;"PASSWORD INCORRECT"
 error_92: equ 5ch       ;"PRIVILEGED COMMAND"
 error_93: equ 5dh       ;"BAD SECTORS CORRECTED" (unused!)
 error_94: equ 5eh       ;"LOCK ALREADY IN USE"
+IF version = 31         ;This is for a SUNOL Hard Drive
 error_95: equ 5fh       ;"SUNOL DRIVE ERROR"
 error_96: equ 60h       ;"SUNOL DRIVE SIZE"
 error_98: equ 62h       ;"VERSION #"
-error_99: equ 63h       ;"SMALL SYSTEMS HARDBOXVERSION #"
+ELSE
+error_95: equ 5fh       ;"CORVUSDRIVE ERROR"
+error_96: equ 60h       ;"CURVUSDRIVE SIZE"
+error_97: equ 61h       ;"CURVUS REV A VERSION #"
+error_98: equ 62h       ;"CURVUS REV B VERSION #"
+ENDIF
+error_99: equ 63h       ;"SMALL SYSTEMS HARDBOX VERSION #"
 
 t_file:   equ 01h       ;"FILE"
 t_write:  equ 02h       ;"WRITE"
@@ -113,8 +124,13 @@ t_open:   equ 0ah       ;" OPEN"
 t_not:    equ 0bh       ;" NOT"
 t_user:   equ 0ch       ;"USER"
 t_version:equ 0dh       ;" VERSION #"
+IF version = 31
 t_drive:  equ 0eh       ;" DRIVE"
 t_sunol:  equ 0fh       ;"SUNOL"
+ELSE
+t_drive:  equ 0eh       ;"DRIVE"
+t_corvus: equ 0fh       ;"CORVUS"
+ENDIF
 
                         ;DIP Switch
                         ;==========
@@ -2087,7 +2103,13 @@ lea83h:
     jr lea99h
 lea93h:
     call rdieee
+IF version = 31
     jp c,le2aeh
+ELSE
+    jr nc,lea99h
+    call file_writ_sec
+    jp le2aeh
+ENDIF
 lea99h:
     ld c,a
     ld a,(iy+025h)
@@ -2111,7 +2133,9 @@ leab3h:
     call sub_eacah
     jr leab3h
 leabfh:
+IF version = 31
     call file_writ_sec  ;Write a file sector
+ENDIF
     ld a,(iy+015h)
     ld (iy+025h),a
     jr lea93h
@@ -2693,7 +2717,11 @@ leeceh:
     ld a,(hl)
     inc hl
     ld ix,leef6h
+IF version = 31
     ld b,0ah
+ELSE
+    ld b,0bh
+ENDIF
 leed9h:
     cp (ix+000h)
     jr z,leeebh
@@ -2736,11 +2764,22 @@ leef6h:
     db "U"              ;Unlock
     dw cmd_ulk
 
+IF version = 31
     db "S"              ;Get Disk Size
     dw cmd_siz
+ELSE
+    db "F"              ;???
+    dw lf045h
+ENDIF
 
     db "V"              ;Version
     dw cmd_ver
+
+IF version = 31
+ELSE
+    db "S"              ;Get Disk Size
+    dw cmd_siz
+ENDIF
 
 cmd_pwd:
 ;command for set password "!P"
@@ -2834,13 +2873,21 @@ cmd_uid:
 cmd_hbv:
 ;command for get hardbox version "!H"
 ;
+IF version = 31
     ld a,3              ;Set major version 3
     ld (errtrk),a
 
     ld a,1              ;Set minor version 1
     ld (errsec),a
+ELSE
+    ld a,2              ;Set major version 2
+    ld (errtrk),a
 
-    ld a,error_99       ;"SMALL SYSTEMS HARDBOXVERSION #"
+    ld a,3              ;Set minor version 3
+    ld (errsec),a
+ENDIF
+
+    ld a,error_99       ;"SMALL SYSTEMS HARDBOX VERSION #"
     jp error
 
 cmd_exe:
@@ -2860,7 +2907,23 @@ cmd_ver:
 ;command for get version "!V"
 ;
     call corv_init      ;Initialize the Corvus controller
-
+IF version = 31
+ELSE
+    jr nz,lefc2h
+    push af             ;Save version byte on stack
+    rra
+    rra
+    rra
+    rra                 ;Shift high nibble into low nibble
+    and 0fh             ;Mask out only 4 bits for nibble
+    ld (errtrk),a       ;Store it (high nibble) into errtrk
+    pop af              ;Restore version byte from stack
+    and 0fh             ;Mask out only 4 bits for nibble
+    ld (errsec),a       ;Store it (low nibble) into errsec
+    ld a,error_97       ;"CURVUS REV A VERSION #"
+    jp error
+lefc2h:
+ENDIF
     ld a,10h            ;10h=Get drive parameter
     call corv_put_byte  ;Send first command byte
     ld hl,cmdbuf
@@ -2883,7 +2946,11 @@ cmd_ver:
     ld a,0ffh
     ld (entbuf14+025h),a
 
+IF version = 31
     ld a,error_98       ;"VERSION #"
+ELSE
+    ld a,error_98       ;"CURVUS REV B VERSION #"
+ENDIF
     jp error
 
 cmd_siz:
@@ -2891,18 +2958,31 @@ cmd_siz:
 ;
     ld hl,cmdbuf
     call get_numeric    ;Get drive number
+IF version = 31
     ld (errtrk),a
+ELSE
+    ld b,a    
+ENDIF
     ld a,error_30       ;"SYNTAX ERROR"
     jp c,error
 
+IF version = 31
     ld a,(errtrk)
+ELSE
+    ld a,b    
+ENDIF
     dec a
+IF version = 31
     and 0f0h
+ELSE
+    and 0fch
+ENDIF
     or d
     or e
     ld a,error_30       ;"SYNTAX ERROR"
     jp nz,error
 
+IF version = 31
     ld a,10h            ;10h=Get drive parameter
     call corv_put_byte  ;Send first command byte
     ld a,(errtrk)
@@ -2943,11 +3023,89 @@ cmd_siz:
 
     ld a,error_96       ;"SUNOL DRIVE SIZE"
     jp error
+ELSE
+    ld de,00000h
+    call sub_f03ah
+    ld a,000h
+    jr nz,lf02eh
+    ld de,07530h
+    call sub_f03ah
+    ld a,005h
+    jr nz,lf02eh
+    ld de,0ea60h
+    call sub_f03ah
+    ld a,00ah
+    jr nz,lf02eh
+    ld a,014h
+lf02eh:
+    ld (00054h),a
+    ld a,b    
+    ld (00051h),a
 
+    ld a,error_96       ;"CORVUSDRIVE SIZE"
+    jp error
+
+sub_f03ah:
+    push bc    
+    xor a    
+    call corv_read_sec
+    pop bc    
+    ld a,(errcod)
+    or a    
+    ret
+
+lf045h:    
+    ld a,(userid)
+    or a    
+    ld a,error_92       ;"PRIVILEGED COMMAND"
+    jp nz,error
+
+    call get_numeric
+    push af    
+    ld a,error_30       ;"SYNTAX ERROR"
+    jp c,error
+
+    call corv_init
+    pop bc    
+    ld a,b    
+    push af    
+    call nz,corv_park_heads
+    jr nz,lf036h
+    ld a,007h
+    call corv_put_byte
+    pop af    
+    call z,corv_put_byte
+    call sub_fae8h
+    jr nz,lf088h
+    xor a    
+    call corv_put_byte
+    call corv_read_err
+    ld a,(rdbuf)
+    or a    
+    ret z 
+
+    srl a
+    srl a
+    ld (errtrk),a
+    ld a,error_93       ;"BAD SECTORS CORRECTED"
+    jp error
+
+lf088h:
+    push af    
+    xor a    
+    call corv_put_byte
+    call corv_read_err
+    pop af
+ENDIF
+    
 lf036h:
     and 00011111b
     ld (errtrk),a
+IF version = 31
     ld a,error_95       ;"SUNOL DRIVE ERROR"
+ELSE
+    ld a,error_95       ;"CORVUSDRIVE ERROR"
+ENDIF
     jp error
 
 cmd_lck:
@@ -3231,14 +3389,33 @@ lf1cch:
     ld a,(iy+015h)
     sub e
     ld (iy+025h),a      ;(iy+025h)=(iy+015h)-E
+IF version = 31
+ELSE
+    ld a,(iy+020h+1)
+    cp h    
+    jr nz,lf24ah
+    ld a,(iy+020h+2)
+    cp l    
+    jr z,lf259h
+lf24ah:
+ENDIF
     ld (iy+020h+1),h    ;Set block address for this channel
     ld (iy+020h+2),l    ;(iy+020h+1)=LH
 
     call sub_eb00h
     call sub_f1f7h
+IF version = 31
     jp c,file_read_sec  ;Read a file sector
     ld a,error_50       ;"RECORD NOT PRESENT"
     jp error
+ELSE
+    call c,file_read_sec
+lf259h:
+    call sub_f1f7h
+    ld a,error_50       ;"RECORD NOT PRESENT"
+    jp nc,error
+    ret    
+ENDIF
 
 sub_f1f7h:
     push bc
@@ -5284,6 +5461,7 @@ error_txt:
     db error_94         ;"LOCK ALREADY IN USE"
     db "LOCK ALREADY IN US",80h+"E"
 
+IF version = 31
     db error_95         ;"SUNOL DRIVE ERROR"
     db t_sunol,t_drive,80h+t_error
 
@@ -5292,8 +5470,21 @@ error_txt:
 
     db error_98         ;"VERSION #"
     db 80h+t_version
+ELSE
+    db error_95         ;"CORVUSDRIVE ERROR"
+    db t_corvus,t_drive,80h+t_error
 
-    db error_99         ;"SMALL SYSTEMS HARDBOXVERSION #"
+    db error_96         ;"CORVUSDRIVE SIZE"
+    db t_corvus,t_drive," SIZ",80h+"E"
+
+    db error_97         ;"CORVUS REV A VERSION #"
+    db t_corvus," REV A",80h+t_version
+
+    db error_98         ;"CORVUS REV B VERSION #"
+    db t_corvus," REV B",80h+t_version
+ENDIF
+
+    db error_99         ;"SMALL SYSTEMS HARDBOX VERSION #"
     db "SMALL SYSTEMS HARDBOX",80h+t_version
 
     db 0ffh             ;"UNKNWON ERROR CODE"
@@ -5313,10 +5504,16 @@ error_tok:
     db " NO",80h+"T"       ;0bh: " NOT"
     db "USE",80h+"R"       ;0ch: "USER"
     db " VERSION ",80h+"#" ;0dh: " VERSION #"
+IF version = 31
     db " DRIV",80h+"E"     ;0eh: " DRIVE"
     db "SUNO",80h+"L"      ;0fh: "SUNOL"
+ELSE
+    db "DRIV",80h+"E"      ;0eh: "DRIVE"
+    db "CORVU",80h+"S"     ;0fh: "CORVUS"
+ENDIF
 
 filler:
+IF version = 31
     jp nz,02383h
     ret
     call 005eeh
@@ -5387,6 +5584,7 @@ filler:
     ld (hl),a
     ex de,hl
     dec hl
+ENDIF
     dec de
     dec bc
     ld a,b
@@ -5673,4 +5871,8 @@ filler:
     xor a
 
 checksum:
+IF version = 31
     db 32h
+ELSE
+    db 0dfh
+ENDIF
