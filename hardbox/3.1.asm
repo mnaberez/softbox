@@ -1,5 +1,5 @@
 ;HardBox Firmware
-;Version 2.3 (Corvus)
+;Version 2.3 and 2.4 (Corvus)
 ;Version 3.1 (Sunol)
 
 ;version:  equ 23        ;for version 2.3 (Corvus)
@@ -99,7 +99,7 @@ error_89: equ 59h       ;"USER #"
 error_90: equ 5ah       ;"INVALID USER NAME"
 error_91: equ 5bh       ;"PASSWORD INCORRECT"
 error_92: equ 5ch       ;"PRIVILEGED COMMAND"
-error_93: equ 5dh       ;"BAD SECTORS CORRECTED" (unused!)
+error_93: equ 5dh       ;"BAD SECTORS CORRECTED" (only used in version 2.3 and 2.4)
 error_94: equ 5eh       ;"LOCK ALREADY IN USE"
 IF version = 31         ;This is for a SUNOL Hard Drive
 error_95: equ 5fh       ;"SUNOL DRIVE ERROR"
@@ -107,9 +107,9 @@ error_96: equ 60h       ;"SUNOL DRIVE SIZE"
 error_98: equ 62h       ;"VERSION #"
 ELSE
 error_95: equ 5fh       ;"CORVUSDRIVE ERROR"
-error_96: equ 60h       ;"CURVUSDRIVE SIZE"
-error_97: equ 61h       ;"CURVUS REV A VERSION #"
-error_98: equ 62h       ;"CURVUS REV B VERSION #"
+error_96: equ 60h       ;"CORVUSDRIVE SIZE"
+error_97: equ 61h       ;"CORVUS REV A VERSION #"
+error_98: equ 62h       ;"CORVUS REV B VERSION #"
 ENDIF
 error_99: equ 63h       ;"SMALL SYSTEMS HARDBOX VERSION #"
 
@@ -2928,7 +2928,7 @@ ELSE
     pop af              ;Restore version byte from stack
     and 0fh             ;Mask out only 4 bits for nibble
     ld (errsec),a       ;Store it (low nibble) into errsec
-    ld a,error_97       ;"CURVUS REV A VERSION #"
+    ld a,error_97       ;"CORVUS REV A VERSION #"
     jp error
 lefc2h:
 ENDIF
@@ -2957,7 +2957,7 @@ ENDIF
 IF version = 31
     ld a,error_98       ;"VERSION #"
 ELSE
-    ld a,error_98       ;"CURVUS REV B VERSION #"
+    ld a,error_98       ;"CORVUS REV B VERSION #"
 ENDIF
     jp error
 
@@ -5339,7 +5339,7 @@ lfb94h:
     ret
 
 corv_park_heads:
-;Park the heads from corvus hard drive
+;Park the heads from corvus hard drive (only used in version 2.3 and 2.4)
 ;
 ;A = Drive number
 ;
