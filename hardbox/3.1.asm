@@ -1062,7 +1062,7 @@ do_write:
     jp nz,do_wr_chan    ;  NO: We write from data channel to ieee
                         ;  YES: We write the disk status from status buffer to ieee
 le375h:
-    ld hl,(staptr)      ;HL=(staptr) (staptr is current position in stabuf) 
+    ld hl,(staptr)      ;HL=(staptr) (staptr is current position in stabuf)
     ld a,(hl)           ;Read the character from stabuf
     call sub_e448h
     jp c,le2aeh
@@ -2969,7 +2969,7 @@ cmd_siz:
 IF version = 31
     ld (errtrk),a
 ELSE
-    ld b,a    
+    ld b,a
 ENDIF
     ld a,error_30       ;"SYNTAX ERROR"
     jp c,error
@@ -2977,7 +2977,7 @@ ENDIF
 IF version = 31
     ld a,(errtrk)
 ELSE
-    ld a,b    
+    ld a,b
 ENDIF
     dec a
 IF version = 31
@@ -3047,50 +3047,50 @@ ELSE
     ld a,014h
 lf02eh:
     ld (00054h),a
-    ld a,b    
+    ld a,b
     ld (00051h),a
 
     ld a,error_96       ;"CORVUSDRIVE SIZE"
     jp error
 
 sub_f03ah:
-    push bc    
-    xor a    
+    push bc
+    xor a
     call corv_read_sec
-    pop bc    
+    pop bc
     ld a,(errcod)
-    or a    
+    or a
     ret
 
-lf045h:    
+lf045h:
     ld a,(userid)
-    or a    
+    or a
     ld a,error_92       ;"PRIVILEGED COMMAND"
     jp nz,error
 
     call get_numeric
-    push af    
+    push af
     ld a,error_30       ;"SYNTAX ERROR"
     jp c,error
 
     call corv_init
-    pop bc    
-    ld a,b    
-    push af    
+    pop bc
+    ld a,b
+    push af
     call nz,corv_park_heads
     jr nz,lf036h
     ld a,007h
     call corv_put_byte
-    pop af    
+    pop af
     call z,corv_put_byte
     call sub_fae8h
     jr nz,lf088h
-    xor a    
+    xor a
     call corv_put_byte
     call corv_read_err
     ld a,(rdbuf)
-    or a    
-    ret z 
+    or a
+    ret z
 
     srl a
     srl a
@@ -3099,13 +3099,13 @@ lf045h:
     jp error
 
 lf088h:
-    push af    
-    xor a    
+    push af
+    xor a
     call corv_put_byte
     call corv_read_err
     pop af
 ENDIF
-    
+
 lf036h:
     and 00011111b
     ld (errtrk),a
@@ -3399,10 +3399,10 @@ lf1cch:
     ld (iy+025h),a      ;(iy+025h)=(iy+015h)-E
 IF version = 23
     ld a,(iy+020h+1)
-    cp h    
+    cp h
     jr nz,lf24ah
     ld a,(iy+020h+2)
-    cp l    
+    cp l
     jr z,lf259h
 lf24ah:
 ENDIF
@@ -3417,7 +3417,7 @@ lf259h:
     call sub_f1f7h
     ld a,error_50       ;"RECORD NOT PRESENT"
     jp nc,error
-    ret    
+    ret
 ELSE
     jp c,file_read_sec  ;Read a file sector
     ld a,error_50       ;"RECORD NOT PRESENT"
