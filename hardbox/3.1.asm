@@ -14,7 +14,7 @@ include "3.1_version.asm"
 ;HardBox Memory Map:
 ;  F000-FFFF  BIOS ROM High (IC4)   4096
 ;  E000-EFFF  BIOS ROM Low (IC3)    4096
-;  0000-3FFF  RAM (IC24-IC31)       4164
+;  0000-3FFF  RAM (IC24-IC31)       4516 (Only 16 Kilobytes)
 ;
 
 ppi1:     equ 10h       ;8255 PPI #1 (IC17)
