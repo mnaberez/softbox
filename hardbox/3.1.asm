@@ -4,7 +4,8 @@
 
 ;version:  equ 23        ;for version 2.3 (Corvus)
 ;version:  equ 24        ;for version 2.3 (Corvus)
-version:  equ 31        ;for version 3.1 (Sunol)
+;version:  equ 31        ;for version 3.1 (Sunol)
+include "3.1_version.asm"
 
 ;This is a disassembly of two original 2732 EPROMs from a HardBox,
 ;labeled "295" (IC3) and "296" (IC4) for version 2.3 and 3.1 and
@@ -102,14 +103,14 @@ error_92: equ 5ch       ;"PRIVILEGED COMMAND"
 error_93: equ 5dh       ;"BAD SECTORS CORRECTED" (only used in version 2.3 and 2.4)
 error_94: equ 5eh       ;"LOCK ALREADY IN USE"
 IF version = 31         ;This is for a SUNOL Hard Drive
-error_95: equ 5fh       ;"SUNOL DRIVE ERROR"
-error_96: equ 60h       ;"SUNOL DRIVE SIZE"
-error_98: equ 62h       ;"VERSION #"
-ELSE
-error_95: equ 5fh       ;"CORVUSDRIVE ERROR"
-error_96: equ 60h       ;"CORVUSDRIVE SIZE"
-error_97: equ 61h       ;"CORVUS REV A VERSION #"
-error_98: equ 62h       ;"CORVUS REV B VERSION #"
+error_95: equ 5fh       ;  "SUNOL DRIVE ERROR"
+error_96: equ 60h       ;  "SUNOL DRIVE SIZE"
+error_98: equ 62h       ;  "VERSION #"
+ELSE                    ;This is for a CORVUS Hard Drive
+error_95: equ 5fh       ;  "CORVUSDRIVE ERROR"
+error_96: equ 60h       ;  "CORVUSDRIVE SIZE"
+error_97: equ 61h       ;  "CORVUS REV A VERSION #"
+error_98: equ 62h       ;  "CORVUS REV B VERSION #"
 ENDIF
 error_99: equ 63h       ;"SMALL SYSTEMS HARDBOX VERSION #"
 
@@ -126,12 +127,12 @@ t_open:   equ 0ah       ;" OPEN"
 t_not:    equ 0bh       ;" NOT"
 t_user:   equ 0ch       ;"USER"
 t_version:equ 0dh       ;" VERSION #"
-IF version = 31
-t_drive:  equ 0eh       ;" DRIVE"
-t_sunol:  equ 0fh       ;"SUNOL"
-ELSE
-t_drive:  equ 0eh       ;"DRIVE"
-t_corvus: equ 0fh       ;"CORVUS"
+IF version = 31         ;This is for a SUNOL Hard Drive
+t_drive:  equ 0eh       ;  " DRIVE"
+t_sunol:  equ 0fh       ;  "SUNOL"
+ELSE                    ;This is for a CORVUS Hard Drive
+t_drive:  equ 0eh       ;  "DRIVE"
+t_corvus: equ 0fh       ;  "CORVUS"
 ENDIF
 
                         ;DIP Switch
@@ -2719,11 +2720,7 @@ leeceh:
     ld a,(hl)
     inc hl
     ld ix,leef6h
-IF version = 31
-    ld b,0ah
-ELSE
-    ld b,0bh
-ENDIF
+    ld b,(leef6h_end-leef6h)/3
 leed9h:
     cp (ix+000h)
     jr z,leeebh
@@ -2745,7 +2742,7 @@ leef6h:
     db "D"              ;Set Device Number
     dw cmd_dev
 
-    db "H"              ;Hardbox Version
+    db "H"              ;Get Hardbox Version
     dw cmd_hbv
 
     db "N"              ;Number of current User
@@ -2766,22 +2763,23 @@ leef6h:
     db "U"              ;Unlock
     dw cmd_ulk
 
-IF version = 31
-    db "S"              ;Get Disk Size
+IF version = 31         ;This is for a SUNOL Hard Drive
+    db "S"              ;  Get Disk Size
     dw cmd_siz
-ELSE
-    db "F"              ;???
-    dw lf045h
-ENDIF
 
-    db "V"              ;Version
+    db "V"              ;  Get Version
+    dw cmd_ver
+ELSE                    ;This is for a CORVUS Hard Drive
+    db "F"              ;  ???
+    dw lf045h
+
+    db "V"              ;  Get Version
     dw cmd_ver
 
-IF version = 31
-ELSE
-    db "S"              ;Get Disk Size
+    db "S"              ;  Get Disk Size
     dw cmd_siz
 ENDIF
+leef6h_end:
 
 cmd_pwd:
 ;command for set password "!P"
@@ -2875,25 +2873,11 @@ cmd_uid:
 cmd_hbv:
 ;command for get hardbox version "!H"
 ;
-IF version = 23
-    ld a,2              ;Set major version 2
+    ld a,version / 10   ;Set major version
     ld (errtrk),a
 
-    ld a,3              ;Set minor version 3
+    ld a,version mod 10 ;Set minor version
     ld (errsec),a
-ELSEIF version = 24
-    ld a,2              ;Set major version 2
-    ld (errtrk),a
-
-    ld a,4              ;Set minor version 4
-    ld (errsec),a
-ELSEIF version = 31
-    ld a,3              ;Set major version 3
-    ld (errtrk),a
-
-    ld a,1              ;Set minor version 1
-    ld (errsec),a
-ENDIF
 
     ld a,error_99       ;"SMALL SYSTEMS HARDBOX VERSION #"
     jp error
@@ -2916,7 +2900,7 @@ cmd_ver:
 ;
     call corv_init      ;Initialize the Corvus controller
 IF version = 31
-ELSE
+ELSE                    ;This is for a CORVUS Hard Drive
     jr nz,lefc2h
     push af             ;Save version byte on stack
     rra
@@ -2954,10 +2938,10 @@ ENDIF
     ld a,0ffh
     ld (entbuf14+025h),a
 
-IF version = 31
-    ld a,error_98       ;"VERSION #"
-ELSE
-    ld a,error_98       ;"CORVUS REV B VERSION #"
+IF version = 31         ;This is for a SUNOL Hard Drive
+    ld a,error_98       ;  "VERSION #"
+ELSE                    ;This is for a CORVUS Hard Drive
+    ld a,error_98       ;  "CORVUS REV B VERSION #"
 ENDIF
     jp error
 
@@ -2966,31 +2950,31 @@ cmd_siz:
 ;
     ld hl,cmdbuf
     call get_numeric    ;Get drive number
-IF version = 31
-    ld (errtrk),a
-ELSE
-    ld b,a
+IF version = 31         ;This is for a SUNOL Hard Drive
+    ld (errtrk),a       ;  Store drive number as error track
+ELSE                    ;This is for a CORVUS Hard Drive
+    ld b,a              ;  Save drive number in B
 ENDIF
     ld a,error_30       ;"SYNTAX ERROR"
-    jp c,error
+    jp c,error          ;If no drive number was read, "SYNTAX ERROR"
 
-IF version = 31
-    ld a,(errtrk)
-ELSE
-    ld a,b
+IF version = 31         ;This is for a SUNOL Hard Drive
+    ld a,(errtrk)       ;  Get drive number into A
+ELSE                    ;This is for a CORVUS Hard Drive
+    ld a,b              ;  Restore drive Number to A
 ENDIF
-    dec a
-IF version = 31
-    and 0f0h
-ELSE
-    and 0fch
+    dec a               ;Decrement drive number, because it starts with 1
+IF version = 31         ;This is for a SUNOL Hard Drive
+    and 0f0h            ;  Allow valid drive numbers from 1 .. 16
+ELSE                    ;This is for a CORVUS Hard Drive
+    and 0fch            ;  Allow valid drive numbers from 1 .. 4
 ENDIF
     or d
     or e
     ld a,error_30       ;"SYNTAX ERROR"
-    jp nz,error
+    jp nz,error         ;If drive number are invalid, "SYNTAX ERROR"
 
-IF version = 31
+IF version = 31         ;This is for a SUNOL Hard Drive
     ld a,10h            ;10h=Get drive parameter
     call corv_put_byte  ;Send first command byte
     ld a,(errtrk)
@@ -3031,70 +3015,85 @@ IF version = 31
 
     ld a,error_96       ;"SUNOL DRIVE SIZE"
     jp error
-ELSE
-    ld de,00000h
-    call sub_f03ah
-    ld a,000h
-    jr nz,lf02eh
-    ld de,07530h
-    call sub_f03ah
-    ld a,005h
-    jr nz,lf02eh
-    ld de,0ea60h
-    call sub_f03ah
-    ld a,00ah
-    jr nz,lf02eh
-    ld a,014h
+ELSE                    ;This is for a CORVUS Hard Drive
+    ld de,0             ;DE=0000h (0 bytes)
+    call corv_try_read  ;Try to read sector 0
+    ld a,0              ;A=00h (no drive detected)
+    jr nz,lf02eh        ;If an error detected, no readable disc is present
+
+    ld de,30000         ;DE=7530h (7680000 bytes = 7500 kilobytes)
+    call corv_try_read  ;Try to read sector 30000
+    ld a,5              ;A=05h (5 MB drive detected)
+    jr nz,lf02eh        ;If an error detected, drive space must be less then 7.5 MB
+
+    ld de,60000         ;DE=0ea60h (15360000 bytes = 15000 kilobytes)
+    call corv_try_read  ;Try to read sector 60000
+    ld a,10             ;A=0ah (10 MB drive detected)
+    jr nz,lf02eh        ;If an error detected, drive space must be less then 10 MB
+                        ;Else it must be the greatest veersion: 20 MB
+    ld a,20             ;A=14h (20 MB drive detected)
 lf02eh:
-    ld (00054h),a
-    ld a,b
-    ld (00051h),a
+    ld (errsec),a       ;Store the capacity as sector number
+
+    ld a,b              ;A=B (Drive number)
+    ld (errtrk),a       ;Store drive number as track number
 
     ld a,error_96       ;"CORVUSDRIVE SIZE"
     jp error
 
-sub_f03ah:
-    push bc
-    xor a
-    call corv_read_sec
-    pop bc
-    ld a,(errcod)
-    or a
+corv_try_read:
+;Try to read a sector
+;Returns with zero flag set, if sector is readable, else zero is cleared
+;
+; BC = Absolute sector number
+;
+    push bc             ;Save BC
+    xor a               ;Set high byte of absolute sector number to zero
+    call corv_read_sec  ;Reads a sector (256 bytes)
+    pop bc              ;Restore BC
+    ld a,(errcod)       ;Load error code into A
+    or a                ;And set zero flag for "No error"
     ret
 
 lf045h:
-    ld a,(userid)
+    ld a,(userid)       ;Get user number
     or a
     ld a,error_92       ;"PRIVILEGED COMMAND"
-    jp nz,error
+    jp nz,error         ;If user number not equal zero (supervisor), "PRIVILEGED COMMAND"
 
-    call get_numeric
-    push af
+    call get_numeric    ;Get drive number
+    push af             ;Store drive number on stack
     ld a,error_30       ;"SYNTAX ERROR"
-    jp c,error
+    jp c,error          ;If no drive number was read, "SYNTAX ERROR"
 
-    call corv_init
+    call corv_init      ;Initialize the Corvus controller
+
     pop bc
     ld a,b
-    push af
+    push af             ;Change zero flag into word with drive number on stack
+
     call nz,corv_park_heads
     jr nz,lf036h
-    ld a,007h
-    call corv_put_byte
+
+    ld a,07h
+    call corv_put_byte  ;Send first command byte (07h for Verify)
     pop af
-    call z,corv_put_byte
+    call z,corv_put_byte;If corv_init was without errors, send drive number
+
     call sub_fae8h
     jr nz,lf088h
-    xor a
-    call corv_put_byte
-    call corv_read_err
+
+    xor a              ;A=0
+    call corv_put_byte ;Send 00h byte
+    call corv_read_err ;Read the error code
+
     ld a,(rdbuf)
     or a
     ret z
 
     srl a
     srl a
-    ld (errtrk),a
+    ld (errtrk),a       ;(errtrk)=(rdbuf)/4
     ld a,error_93       ;"BAD SECTORS CORRECTED"
     jp error
 
@@ -3109,10 +3108,10 @@ ENDIF
 lf036h:
     and 00011111b
     ld (errtrk),a
-IF version = 31
-    ld a,error_95       ;"SUNOL DRIVE ERROR"
-ELSE
-    ld a,error_95       ;"CORVUSDRIVE ERROR"
+IF version = 31         ;This is for a SUNOL Hard Drive
+    ld a,error_95       ;  "SUNOL DRIVE ERROR"
+ELSE                    ;This is for a CORVUS Hard Drive
+    ld a,error_95       ;  "CORVUSDRIVE ERROR"
 ENDIF
     jp error
 
@@ -4002,7 +4001,7 @@ lf4c4h:
     ld bc,2             ;BC=0002h (2 characters for drive id)
     ldir                ;Copy BC bytes from (HL) to (DE)
     ld hl,msg_space     ;" "
-    ld bc,1             ;BC=0001h (1 character for a space)
+    ld bc,msg_space_end-msg_space
     ldir                ;Copy BC bytes from (HL) to (DE)
     ex de,hl
 
@@ -4229,6 +4228,7 @@ filetypes:
 
 msg_space:
     db " "
+msg_space_end:
 
 msg_blk_free:
     db "BLOCKS FREE : "
@@ -5339,7 +5339,7 @@ lfb94h:
     ret
 
 corv_park_heads:
-;Park the heads from corvus hard drive (only used in version 2.3 and 2.4)
+;Park the heads from corvus hard drive (only used in version 2.3 and 2.4 for Corvus drives)
 ;
 ;A = Drive number
 ;
@@ -5468,26 +5468,26 @@ error_txt:
     db error_94         ;"LOCK ALREADY IN USE"
     db "LOCK ALREADY IN US",80h+"E"
 
-IF version = 31
-    db error_95         ;"SUNOL DRIVE ERROR"
+IF version = 31         ;This is for a SUNOL Hard Drive
+    db error_95         ;  "SUNOL DRIVE ERROR"
     db t_sunol,t_drive,80h+t_error
 
-    db error_96         ;"SUNOL DRIVE SIZE"
+    db error_96         ;  "SUNOL DRIVE SIZE"
     db t_sunol,t_drive," SIZ",80h+"E"
 
-    db error_98         ;"VERSION #"
+    db error_98         ;  "VERSION #"
     db 80h+t_version
-ELSE
-    db error_95         ;"CORVUSDRIVE ERROR"
+ELSE                    ;This is for a CORVUS Hard Drive
+    db error_95         ;  "CORVUSDRIVE ERROR"
     db t_corvus,t_drive,80h+t_error
 
-    db error_96         ;"CORVUSDRIVE SIZE"
+    db error_96         ;  "CORVUSDRIVE SIZE"
     db t_corvus,t_drive," SIZ",80h+"E"
 
-    db error_97         ;"CORVUS REV A VERSION #"
+    db error_97         ;  "CORVUS REV A VERSION #"
     db t_corvus," REV A",80h+t_version
 
-    db error_98         ;"CORVUS REV B VERSION #"
+    db error_98         ;  "CORVUS REV B VERSION #"
     db t_corvus," REV B",80h+t_version
 ENDIF
 
@@ -5511,12 +5511,12 @@ error_tok:
     db " NO",80h+"T"       ;0bh: " NOT"
     db "USE",80h+"R"       ;0ch: "USER"
     db " VERSION ",80h+"#" ;0dh: " VERSION #"
-IF version = 31
-    db " DRIV",80h+"E"     ;0eh: " DRIVE"
-    db "SUNO",80h+"L"      ;0fh: "SUNOL"
-ELSE
-    db "DRIV",80h+"E"      ;0eh: "DRIVE"
-    db "CORVU",80h+"S"     ;0fh: "CORVUS"
+IF version = 31            ;This is for a SUNOL Hard Drive
+    db " DRIV",80h+"E"     ;  0eh: " DRIVE"
+    db "SUNO",80h+"L"      ;  0fh: "SUNOL"
+ELSE                       ;This is for a CORVUS Hard Drive
+    db "DRIV",80h+"E"      ;  0eh: "DRIVE"
+    db "CORVU",80h+"S"     ;  0fh: "CORVUS"
 ENDIF
 
 filler:
