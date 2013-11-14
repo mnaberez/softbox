@@ -1511,14 +1511,14 @@ le5d6h:
     ret
 
 le5e1h:
-    dt 100000
-    dt 10000
+    db 0a0h,86h,01h     ;100000
+    db 10h,27h,00h      ;10000
 
 le5e7h:
-    dt 1000
-    dt 100
-    dt 10
-    dt 1
+    db 0e8h,03h,00h     ;1000
+    db 64h,00h,00h      ;100
+    db 0ah,00h,00h      ;10
+    db 01h,00h,00h      ;1
 
 do_open:
     call error_ok
