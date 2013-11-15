@@ -777,8 +777,11 @@ wr2:
                         ;  (dma_buf -> dos_buf)
 
     pop af              ;A = deblocking code
-    dec a
-    jr nz,wr3
+    dec a               ;Decrement deblocking code to test it
+    jr nz,wr3           ;Jump if deblocking code was 0 or 2
+                        ;  (write can be deferred)
+
+                        ;Write must be immediate
 
     ld a,(dos_err)      ;A = last error code from CBM DOS (0=OK)
     or a
@@ -788,6 +791,8 @@ wr2:
     ret
 
 wr3:
+;Entered if write can be deferred
+;
     ld a,01h
     ld (wrt_pend),a     ;Set flag to indicate a write is pending for CBM DOS
 
@@ -1677,7 +1682,8 @@ deblock_2:
     call tstdrv_corv    ;Carry flag = set if drive type is Corvus
                         ;A = drive type
     pop bc
-    or a
+    or a                ;Clear carry flag
+
     cp 06h              ;Drive type = 06h (CBM 8250)?
     jp z,db1            ;  Yes: jump over to set A=20h
     ld a,10h            ;  No: A=10h

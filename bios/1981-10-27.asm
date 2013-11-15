@@ -726,9 +726,13 @@ wr2:
                         ;  the 128-byte CP/M DMA buffer
     call copy_from_dma  ;Copy from CP/M DMA buffer into CBM DOS buffer
                         ;  (dma_buf -> dos_buf)
+
     pop af              ;A = deblocking code
-    dec a
-    jr nz,wr3
+    dec a               ;Decrement deblocking code to test it
+    jr nz,wr3           ;Jump if deblocking code was 0 or 2
+                        ;  (write can be deferred)
+
+                        ;Write must be immediate
 
     ld a,(dos_err)      ;A = last error code from CBM DOS (0=OK)
     or a
@@ -738,6 +742,8 @@ wr2:
     ret
 
 wr3:
+;Entered if write can be deferred
+;
     ld a,01h
     ld (wrt_pend),a     ;Set flag to indicate a write is pending for CBM DOS
 
