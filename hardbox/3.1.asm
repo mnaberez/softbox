@@ -258,7 +258,7 @@ arenam:   equ usrdat+16 ;User area name (16 Bytes) ???
 
                         ;Directory Entry (32 Bytes for one File on Disk, additionaly 9 Bytes in Memory)
                         ;==============================================================================
-                        ;Byte         0: File Attributes
+f_attr:   equ 00h       ;Byte         0: File Attributes
                         ;                ---------------
                         ;                ------XX (Bits 0 .. 1): File Type
                         ;                                        ---------
@@ -271,14 +271,14 @@ arenam:   equ usrdat+16 ;User area name (16 Bytes) ???
                         ;                --X----- (Bit       5): 1 = Hidden
                         ;                -X------ (Bit       6): 1 = Write Protected
                         ;                X------- (Bit       7): 1 = Open File
-                        ;Byte         1: Drive Number (0 .. 9 = Drive Number, 255 = Unused Entry)
-                        ;Bytes  2 .. 17: File Name (16 Characters)
-                        ;Bytes 18 .. 20: Size in Bytes (3 Bytes), 19 .. 20: Size in Blocks
-                        ;Byte        21: Record Length (1 Byte)
+f_drvn:   equ 01h       ;Byte         1: Drive Number (0 .. 9 = Drive Number, 255 = Unused Entry)
+f_name:   equ 02h       ;Bytes  2 .. 17: File Name (16 Characters)
+f_size:   equ 12h       ;Bytes 18 .. 20: Size in Bytes (3 Bytes), 19 .. 20: Size in Blocks
+f_rlen:   equ 15h       ;Byte        21: Record Length (1 Byte)
                         ;Bytes 22 .. 31: <Unknown or Undefined>
                         ;----- Now only temporary used data bytes, holded in memory only -----
-                        ;Bytes 32 .. 34: Current file pointer to read or write (3 Bytes)
-                        ;Bytes 35 .. 36: Number of Directory Entry - see dirnum also (2 Bytes)
+f_cptr:   equ 20h       ;Bytes 32 .. 34: Current file pointer to read or write (3 Bytes)
+f_dirn:   equ 23h       ;Bytes 35 .. 36: Number of Directory Entry - see dirnum also (2 Bytes)
                         ;Byte        37: ???
                         ;Byte        38: ???
                         ;Byte        39: ???
