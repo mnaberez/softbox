@@ -311,9 +311,9 @@ typ_rel:  equ 3         ;File Type for REL (Relative file)
 
 dirsrt:   equ 0024h     ;Absolute sector where directory starts (3 bytes, 4 sector after the user area starts)
 al1srt:   equ 0027h     ;Absolute sector where allocation 1 (128 bytes) starts (3 bytes)
-l002ah:   equ 002ah     ;(2 bytes)
+al1max:   equ 002ah     ;Maximum number of Files for Allocation 1 Sectors (2 bytes)
 al2srt:   equ 002ch     ;Absolute sector where allocation 2 (256 bytes) starts (3 bytes)
-l002fh:   equ 002fh     ;(2 bytes)
+al2max:   equ 002fh     ;(2 bytes)
 filsrt:   equ 0031h     ;Absolute sector where the files starts (3 bytes)
 l0034h:   equ 0034h     ;Size (in kilobytes) usable for normal files, these are 4 blocks (2 bytes)
 l0036h:   equ 0036h     ;Starting sector number for direct access (3 bytes)
@@ -749,15 +749,18 @@ le100h:
 
     call head_read_sec  ;Read the header sector into the header buffer (hdrbuf)
 
+                        ;For Allocation 1 sectors we need the same count as for directory entries.
     ld hl,(maxdir)      ;HL=Maximum directory entries in the user area (maxdir)
-    ld (l002ah),hl      ;(l002ah)=HL
+    ld (al1max),hl      ;Store it as (al1max), too
 
+                        ;For half the user space we reserved Allocation 2 sectors to build large files.
     ld a,(usrsiz+1)
-    ld e,a              ;A ??? entry is 256 Bytes long
+    ld e,a              ;A Allocation 2 sector can hold 128 file data sectors, we calculate with 256
     ld d,0              ;DE=(usrsiz)/256
     add hl,de
-    ld (l002fh),hl      ;(l002fh)=HL+DE
+    ld (al2max),hl      ;(al2max)=HL+DE
 
+                        ; ???? (BAM???)
     ld hl,(usrdir)      ;HL=User area size for direct access in kb (usrdir)
 
     ld a,h
@@ -767,32 +770,33 @@ le100h:
     inc hl
     ld (l0039h),hl      ;(l0039h)=HL+1
 
-    ld hl,(maxdir)
-    ld b,5              ;A ??? entry is 8 Bytes long
+                        ;Now we calculate the management space in kilobytes to subtract from user space
+    ld hl,(maxdir)      ;Number of Directory Entries with 32 bytes
+    ld b,5              ;A Directory entry is 8*4 Bytes long
     call hl_shr_b       ;HL=(maxdir)/32
 
     inc hl              ;HL=HL+1
 
     ex de,hl
-    ld hl,(l002ah)
-    ld b,3              ;A Directory is 32 Bytes long
-    call hl_shr_b       ;HL=(l002ah)/8
+    ld hl,(al1max)      ;Number of Allocation 1 sectors with 128 bytes
+    ld b,3              ;A Allocation 1 sector is 32*4 Bytes long
+    call hl_shr_b       ;HL=(al1max)/8
 
     inc hl
     add hl,de           ;HL=HL+DE+1
 
     ex de,hl
-    ld hl,(l002fh)
-    ld b,2              ;A ??? is 64 Bytes long
+    ld hl,(al2max)      ;Number of Allocation 2 sectors with 256 bytes
+    ld b,2              ;A Allocation 2 sectors is 64*4 Bytes long
     call hl_shr_b
-    inc hl              ;DE=(l002fh)/4+1
+    inc hl              ;DE=(al2max)/4+1
 
     add hl,de           ;HL=HL+DE
 
-    ld de,(usrdir)
+    ld de,(usrdir)      ;The size in kilobytes from the user space for direct access
     add hl,de           ;HL=HL+User area size for direct access in kb (usrdir)
 
-    ld de,(l0039h)
+    ld de,(l0039h)      ; ????
     add hl,de           ;HL=HL+(l0039h)
 
     ex de,hl
@@ -824,19 +828,19 @@ le100h:
     ld (al1srt),hl      ;Allocation 1 Entries starts after the Directory
     ld (al1srt+2),a     ;(al1srt)=AHL
 
-    ld de,(l002ah)
+    ld de,(al1max)      ;Number of Allocation 1 sectors with 128 bytes
     srl d
     rr e                ;A Allocation 1 Entry is 128 bytes long
     inc de
     add hl,de
-    adc a,0             ;AHL=AHL+((l002ah)/2)+1
+    adc a,0             ;AHL=AHL+((al1max)/2)+1
 
     ld (al2srt),hl      ;Allocation 2 Entries starts after Allocation 1 Entries
     ld (al2srt+2),a     ;(al2srt)=AHL
 
-    ld de,(l002fh)
+    ld de,(al2max)      ;Number of Allocation 2 sectors with 256 bytes
     add hl,de
-    adc a,0             ;AHL=AHL+(l002fh)
+    adc a,0             ;AHL=AHL+(al2max)
 
     ld (filsrt),hl      ;Files starts after Allocation 2 Entries
     ld (filsrt+2),a     ;(filsrt)=AHL
@@ -922,10 +926,10 @@ le288h:
 
 le29dh:
     inc de              ;Increment counter
-    ld a,(l002fh)
+    ld a,(al2max)
     cp e
     jr nz,le2aah
-    ld a,(l002fh+1)
+    ld a,(al2max+1)
     cp d                ;If counter reached the end
     jr z,le2aeh         ;  YES: finish
 
@@ -4960,7 +4964,7 @@ calc_file_sec:
     jr nz,lf98eh
 
     ld de,l0057h        ;DE=l0057h (BAM table for files)
-    ld bc,(l002fh)      ;BC=(l002fh)
+    ld bc,(al2max)      ;BC=(al2max)
     call allocate_blk   ;Allocate a block in BAM table for files
     ld (ix+0),l
     ld (ix+1),h         ;(IX)=HL
