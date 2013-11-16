@@ -644,7 +644,7 @@ read:
     jp c,corv_read_sec  ;  Yes: jump to Corvus read sector
 
     call sub_rw
-    ld a,01h
+    ld a,01h            ;Flag: if a CBM DOS error 22 occurs, retry it.
     call nz,ieee_read_sec
 
     ld a,(sector)
@@ -712,7 +712,7 @@ wr1:
     xor a               ;A=0
     ld (0048h),a        ;0048h=0 (TODO 0048h?)
     call sub_rw
-    ld a,00h
+    ld a,00h            ;Flag: if a CBM DOS error 22 occurs, ignore it.
     call nz,ieee_read_sec
                            ;Fall through into wr2
 
@@ -753,8 +753,12 @@ wr3:
 ieee_read_sec:
 ;Read a sector from CBM DOS into the dos_buf buffer.
 ;
+;A = flag for how to handle a CBM DOS read error 22 (no data block)
+;       If A=0, error 22 will be ignored.
+;       If A=1, error 22 will be handled like any other error.
+;
     ld hl,dos_buf       ;HL = address of CBM DOS buffer area
-    ex af,af'           ;TODO why are these exchanged?
+    ex af,af'           ;Save A in A' to be used in ieee_u1_or_u2
     jp ieee_read_sec_hl ;Read a CBM sector into buffer at HL
 
 ieee_writ_sec:
@@ -1669,6 +1673,10 @@ ieee_u1_or_u2:
 ;HL = pointer to string, either "U1 2 " (Block Read)
 ;       or "U1 2 " (Block Write)
 ;
+;A' = flag for how to handle a CBM DOS read error 22 (no data block)
+;       If A'=0, error 22 will be ignored.
+;       If A'=1, error 22 will be handled like any other error.
+;
     ld (hl_tmp),hl      ;Preserve HL
     call find_trk_sec   ;Update dos_trk and dos_sec
 blk1:
@@ -1699,12 +1707,16 @@ blk2:
     ld a,(x_drive)      ;A = CP/M drive number
     call disksta        ;Read the error channel
     cp 16h              ;Is it 22 Read Error (no data block)?
-    jr nz,blk3          ;  No: jump to handle error
+    jr nz,blk3          ;  No: jump to blk3 to handle error
 
-    ex af,af'
+                        ;The error is 22 Read Error.  This error is a
+                        ;special case.  If A'=0, it will be ignored.
+                        ;If A'=1, it will be retried like any other error.
+
+    ex af,af'           ;A=retry error 22 flag, A'=CBM DOS error code
     or a
-    ret z
-    ex af,af'
+    ret z               ;Return with A=0 if the flag is 0
+    ex af,af'           ;A=CBM DOS error code, A'=retry error 22 flag
 
 blk3:
     ld (dos_err),a      ;Save A as last error code returned from CBM DOS
@@ -2132,6 +2144,9 @@ ieee_writ_sec_hl:
 
 ieee_read_sec_hl:
 ;Read a sector from a CBM disk drive into buffer at HL.
+;
+;There is special handling for a CBM DOS error 22 depending on the
+;contents of A'.  See ieee_read_sec and ieee_u1_or_u2.
 ;
     push hl
                         ;Perform block read (U1):
