@@ -272,7 +272,10 @@ f_attr:   equ 00h       ;Byte         0: File Attributes
                         ;                --X----- (Bit       5): 1 = Hidden
                         ;                -X------ (Bit       6): 1 = Write Protected
                         ;                X------- (Bit       7): 1 = Open File
-f_drvn:   equ 01h       ;Byte         1: Drive Number (0 .. 9 = Drive Number, 255 = Unused Entry)
+f_drvn:   equ 01h       ;Byte         1: Drive Number
+                        ;                  0 .. 9 = Drive Number
+                        ;                    0e5h = End of Directory (Initialized Value)
+                        ;                    0ffh = Unused Entry (Deleted Value)
 f_name:   equ 02h       ;Bytes  2 .. 17: File Name (16 Characters)
 f_size:   equ 12h       ;Bytes 18 .. 20: Size in Bytes (3 Bytes), 19 .. 20: Size in Blocks
 f_rlen:   equ 15h       ;Byte        21: Record Length (1 Byte)
@@ -868,7 +871,7 @@ le21eh:
 
                         ;Build own BAM for files from directory entries
 le246h:
-    call sub_f6edh      ;DE=(00d68h)
+    call dir_get_next      ;DE=(00d68h)
     jr c,le26eh         ;End reached? Skipping ...
     bit 7,(ix+001h)
     jr nz,le246h
@@ -876,8 +879,8 @@ le246h:
     ld b,040h           ;B=40h (64 word entries in 128 bytes)
     ld ix,(al1ptr)
 le25ah:
-    ld l,(ix+00h)
-    ld h,(ix+00h+1)     ;HL=(ix+00h)
+    ld l,(ix+0)
+    ld h,(ix+1)         ;HL=(IX)
     ld de,l0057h        ;DE=l0057h (BAM table for files)
     call set_bam_bit    ;Set a bit in a BAM table for files (l0057h)
     inc ix
@@ -906,8 +909,8 @@ le278h:
     ld ix,(al2ptr)
 
 le288h:
-    ld l,(ix+00h)
-    ld h,(ix+00h+1)
+    ld l,(ix+0)
+    ld h,(ix+1)         ;HL=(IX)
     inc ix
     inc ix
     ld de,l0457h
@@ -937,13 +940,16 @@ le2aeh:
 
     in a,(ppi2_pb)
     and 00000000b
-    out (ppi2_pb),a
+    out (ppi2_pb),a     ;ATNA=high (inactice), EOI_out=high, NRFD_out=high, NDAC_out=high, DAV_out=high, ATN_out=high
 
 le2b9h:
     in a,(ppi2_pa)
     and atn
-    jr z,le2b9h
+    jr z,le2b9h         ;Wait until ATN=low
+
 le2bfh:
+;After we detect a ATN=low, now we wait for DAV=low before we can read
+;
     in a,(ppi2_pb)
     or atna+ndac
     out (ppi2_pb),a     ;ATNA=low (active), NDAC_OUT=low
@@ -951,15 +957,21 @@ le2bfh:
     in a,(ppi2_pb)
     and 255-nrfd
     out (ppi2_pb),a     ;NRFD_OUT=high
+
 le2cbh:
     in a,(ppi2_pa)
     and dav
-    jr nz,le2dah
+    jr nz,le2dah        ;If DAV=low, read attention data
+
     in a,(ppi2_pa)
     and atn
-    jr nz,le2cbh
-    jp le34dh
+    jr nz,le2cbh        ;Wait until ATN=high
+
+    jp le34dh           ;Now we proceed the normal data exchange after ATN
+
 le2dah:
+;After detection an ATN=low, now is DAV=low. So we must read the primary address (TALK or LISTEN)
+;
     ld hl,lsntlk
 
     in a,(ppi2_pb)
@@ -1044,7 +1056,7 @@ le34dh:
     and 255-atna
     out (ppi2_pb),a     ;ATNA=high (inactive)
 
-    ld a,(lsntlk)       ;Is neither LISTEN nor TALK active seet?
+    ld a,(lsntlk)       ;Is neither LISTEN nor TALK active set?
     or a
     jp z,le2aeh         ;  YES: Nothing to do
     bit 2,a             ;Is marker for LISTEN active set?
@@ -1316,7 +1328,7 @@ le4b4h:
 
 cmd_found:
     ld l,(ix+0)
-    ld h,(ix+1)
+    ld h,(ix+1)         ;HL=(IX)
     call do_cmd
     jp le2aeh
 
@@ -1745,7 +1757,7 @@ le78ah:
     ld b,32             ;B=20h (32 Bytes)
 le7a5h:
     ld a,(ix+0)
-    ld (iy+0),a         ;(IY+00h)=(IX+00h) (Copy all 32 bytes from IX to IY)
+    ld (iy+0),a         ;(IY)=(IX) (Copy all 32 bytes from IX to IY)
     inc ix
     inc iy
     djnz le7a5h
@@ -1853,9 +1865,9 @@ do_wr_chan:
     call sub_f7d0h
     bit 7,(iy+28h)
     jp z,le2aeh
-    bit 6,(iy+28h)      ;Ist marker for channel access set?
+    bit 6,(iy+28h)      ;Is marker for "Channel Access" set?
     jp nz,le921h
-    bit 4,(iy+28h)      ;Ist marker for "Append" set?
+    bit 4,(iy+28h)      ;Is marker for "Append" set?
     jp nz,le2aeh
     bit 3,(iy+28h)      ;Is marker for "Write" set?
     jp nz,le2aeh
@@ -1986,50 +1998,66 @@ le977h:
 
 do_rd_chan:
     call sub_f7d0h
-    bit 7,(iy+028h)
-    jp z,le2aeh
+    bit 7,(iy+028h)     ;Is marker for "???" set?
+    jp z,le2aeh         ;  NO: aborting
+
     bit 6,(iy+028h)     ;Is marker for "Channel Access" set?
     jp nz,leaebh
+
     ld a,(iy+f_attr)    ;Get file type
     and 00000011b
     cp typ_rel          ;Is it file type equal relative?
-    jr z,le9e7h         ;  YES: ???
+    jr z,le9e7h         ;  YES: do special case for relative files
+
     bit 3,(iy+028h)     ;Is marker for "Write" set?
-    jr nz,le9a7h
+    jr nz,le9a7h        ;  YES: write
+
     bit 4,(iy+028h)     ;Is marker for "Append" set?
-    jp z,le2aeh
+    jp z,le2aeh         ;  NO: aborting
+
 le9a7h:
     call sub_eb00h
+
     ld a,(l0d6bh)
     ld e,a
     ld d,00h
     ld hl,(bufptr)
-    add hl,de
+    add hl,de           ;HL=(bufptr) + (l0d6bh)
+
 le9b4h:
-    call rdieee
-    jp c,le2aeh
-    ld (hl),a
+    call rdieee         ;Read character from ieee
+    jp c,le2aeh         ;If error, abort
+
+    ld (hl),a           ;Store character into buffer
+
     set 7,(iy+027h)
     set 4,(iy+027h)
-    inc hl
+
+    inc hl              ;Increment pointer to buffer
+
     inc (iy+f_size+0)
     jr nz,le9d1h
     inc (iy+f_size+1)
     jr nz,le9d1h
-    inc (iy+f_size+2)
+    inc (iy+f_size+2)   ;Increment file size
+
 le9d1h:
-    inc (iy+f_cptr+0)
-    jr nz,le9b4h
+    inc (iy+f_cptr+0)   ;Increment current file pointer
+    jr nz,le9b4h        ;Same Sector? YES: Next character
     inc (iy+f_cptr+1)
     jr nz,le9deh
     inc (iy+f_cptr+2)
+                        ;  NO: Write this sector and start with a new one
+
 le9deh:
     call file_writ_sec  ;Write a file sector
     res 7,(iy+027h)
     jr le9a7h
+
 le9e7h:
-    call rdieee
-    jp c,le2aeh
+    call rdieee         ;Read character from ieee
+    jp c,le2aeh         ;If error, abort
+
     push af
     call error_ok
     call sub_eb00h
@@ -2054,15 +2082,18 @@ le9e7h:
 
     call sub_eb00h
     call file_read_sec  ;Read a file sector
+
     ld c,(iy+f_cptr)
     ld b,00h
     ld hl,(bufptr)
-    add hl,bc
+    add hl,bc           ;HL=(bufptr)+(IY+f_cptr)
+
 lea2ch:
     pop de
     pop bc
     push bc
     push de
+
     ld a,(iy+f_cptr+0)
     cp e
     ld a,(iy+f_cptr+1)
@@ -2070,26 +2101,32 @@ lea2ch:
     ld a,(iy+f_cptr+2)
     sbc a,b
     jr nc,lea63h
+
     ld a,0ffh
     ld b,(iy+f_rlen)
+
 lea43h:
-    ld (hl),a
-    inc hl
+    ld (hl),a           ;Store character into buffer
+    inc hl              ;Increment pointer to buffer
+
     inc (iy+f_cptr+0)
     jr nz,lea5dh
     inc (iy+f_cptr+1)
     jr nz,lea52h
-    inc (iy+f_cptr+2)
+    inc (iy+f_cptr+2)   ;(IY+f_cptr)=(IY+f_cptr)+1
+
 lea52h:
     push bc
     call file_writ_sec  ;Write a file sector
     call sub_eb00h
     pop bc
+
     ld hl,(bufptr)
 lea5dh:
     ld a,cr
     djnz lea43h
     jr lea2ch
+
 lea63h:
     pop hl
     pop hl
@@ -2114,6 +2151,7 @@ lea83h:
     add hl,bc
     pop af
     jr lea99h
+
 lea93h:
     call rdieee
 IF version = 31
@@ -2123,6 +2161,7 @@ ELSE
     call file_writ_sec
     jp le2aeh
 ENDIF
+
 lea99h:
     ld c,a
     ld a,(iy+025h)
@@ -2145,6 +2184,7 @@ leab3h:
     xor a               ;A=0
     call sub_eacah
     jr leab3h
+
 leabfh:
 IF version = 31
     call file_writ_sec  ;Write a file sector
@@ -2152,6 +2192,7 @@ ENDIF
     ld a,(iy+f_rlen)
     ld (iy+025h),a
     jr lea93h
+
 sub_eacah:
     ld (hl),a
     dec (iy+025h)
@@ -2168,6 +2209,7 @@ leadbh:
     call c,file_read_sec;Read a file sector
     ld hl,(bufptr)
     ret
+
 leaebh:
     call rdieee
     jp c,le2aeh
@@ -2352,13 +2394,16 @@ cmd_cpy:
     ld (iy+028h),000h
     ld (iy+027h),000h
     ld (iy+026h),0ffh
+
+                        ;Copy the filename from filnam into directory entry
     ld hl,(entptr)
-    ld de,0002h
+    ld de,f_name
     add hl,de
-    ex de,hl
+    ex de,hl            ;DE=(entptr)+f_name
     ld hl,filnam
-    ld bc,0010h         ;BC=0010h (16 .... ????)
+    ld bc,16            ;BC=0010h (16 characters for a filename)
     ldir                ;Copy BC bytes from (HL) to (DE)
+
     call check_wild
     ld a,error_33       ;"SYNTAX ERROR(INVALID FILENAME)"
     jp c,error
@@ -2736,7 +2781,7 @@ leeceh:
     ld ix,leef6h
     ld b,(leef6h_end-leef6h)/3
 leed9h:
-    cp (ix+000h)
+    cp (ix+0)
     jr z,leeebh
     inc ix
     inc ix
@@ -2746,8 +2791,8 @@ leed9h:
     jp error
 
 leeebh:
-    ld e,(ix+001h)
-    ld d,(ix+001h+1)
+    ld e,(ix+1)
+    ld d,(ix+2)
     push de
     pop iy
     jp (iy)
@@ -3226,17 +3271,19 @@ cmd_vfy:
     ld (dirnum),hl      ;(dirnum)=0
 
 lf0cdh:
-    call sub_f6edh
-    jr c,lf0e1h
-    bit 7,(ix+f_attr)     ;is marker for "Open File" set?
-    jr z,lf0cdh
-    ld (ix+f_drvn),0ffh
-    call dir_writ_sec
-    jr lf0cdh
+    call dir_get_next   ;Get the directory entry
+    jr c,lf0e1h         ;All done? Restart
+    bit 7,(ix+f_attr)   ;Is marker for "Open File" set?
+    jr z,lf0cdh         ;  NO: Test next entry
+                        ;  YES: We delete this open file
+
+    ld (ix+f_drvn),0ffh ;Set this directory entry as unused
+    call dir_writ_sec   ;And write this changed directory sector back
+    jr lf0cdh           ;Next entry
 
 lf0e1h:
-    ld a,(userid)
-    jp init_user
+    ld a,(userid)       ;Get the user number
+    jp init_user        ;and initialize all data
 
 cmd_ren:
 ;Command for rename "R"
@@ -3251,7 +3298,7 @@ cmd_ren:
 
                         ;Abort if destination filename contains wildcards:
     call check_wild     ;  Set carry if wildcards are present
-    ld a,error_33       ;  A = address of "SYNTAX ERROR(INVALID FILENAME)"
+    ld a,error_33       ;  A = error code for "SYNTAX ERROR(INVALID FILENAME)"
     jp c,error          ;  Jump out to send error if carry is set
 
                         ;Copy destination filename into dstnam:
@@ -3265,7 +3312,7 @@ cmd_ren:
                         ;Abort if char is not equals ("="):
     ld a,(hl)           ;  Get character after destination filename
     cp "="              ;  Compare to "="
-    ld a,error_30       ;  A = address of "SYNTAX ERROR"
+    ld a,error_30       ;  A = error code for "SYNTAX ERROR"
     jp nz,error         ;  Jump out to send error if char is not "="
 
     inc hl              ;Increment pointer to first char of source filename
@@ -3273,7 +3320,7 @@ cmd_ren:
 
                         ;Abort if source filename contains wildcards:
     call check_wild     ;  Set carry if wildcards are present
-    ld a,error_33       ;  A = address of "SYNTAX ERROR(INVALID FILENAME)"
+    ld a,error_33       ;  A = error code for "SYNTAX ERROR(INVALID FILENAME)"
     jp c,error          ;  Jump out to send error if carry is set
 
     pop af
@@ -3282,7 +3329,7 @@ cmd_ren:
                         ;Abort if destination filename already exists:
     ld hl,dstnam        ;  HL = address of destination filename
     call find_first     ;  Clears carry flag if file exists
-    ld a,error_63       ;  A = address of "FILE EXISTS"
+    ld a,error_63       ;  A = error code for "FILE EXISTS"
     jp nc,error         ;  Jump out to send error if carry is clear
 
     pop af
@@ -3290,21 +3337,23 @@ cmd_ren:
                         ;Abort if source filename does not exist:
     ld hl,filnam        ;  HL = address of source filename
     call find_first     ;  Sets carry flag if file does not exist
-    ld a,error_62       ;  A = address of "FILE NOT FOUND"
+    ld a,error_62       ;  A = error code for "FILE NOT FOUND"
     jp c,error          ;  Jump out to send error if carry is set
 
     bit 7,(ix+f_attr)   ;is marker for "Open File" set?
-    ret nz
+    ret nz              ;  YES: return
 
-    ld hl,dstnam        ;HL = address of destination filename
-    ld b,16             ;B = 16 chars in filename
+                        ;Copy the new filename into the directory
+    ld hl,dstnam        ;  HL = address of destination filename
+    ld b,16             ;  B = 16 chars in filename
 lf13dh:
-    ld a,(hl)           ;TODO: this must actually do the rename
-    ld (ix+f_name),a
-    inc hl
-    inc ix
-    djnz lf13dh
-    jp dir_writ_sec
+    ld a,(hl)           ;  Get the characters from destination filename
+    ld (ix+f_name),a    ;  Write them into directory
+    inc hl              ;  Increment pointer to destination filename
+    inc ix              ;  Increment pointer to directory
+    djnz lf13dh         ;  All done? NO: repeat
+
+    jp dir_writ_sec     ;Write the changed directory sector back
 
 cmd_new:
 ;command for new drive name (header or format) "N"
@@ -3373,9 +3422,11 @@ cmd_pos:
     dec a
     cp (iy+f_rlen)
     jr c,lf1b1h
+
     ld a,(iy+f_rlen)
     dec a
     ld (cmdbuf+4),a
+
 lf1b1h:
     ld c,(iy+f_rlen)    ;Get record length
     ld de,(cmdbuf+2)    ;Get record number from command buffer
@@ -3426,6 +3477,7 @@ ENDIF
     call sub_f1f7h
 IF version = 23
     call c,file_read_sec
+
 lf259h:
     call sub_f1f7h
     ld a,error_50       ;"RECORD NOT PRESENT"
@@ -3440,21 +3492,25 @@ ENDIF
 sub_f1f7h:
     push bc
     push hl
+
     ld l,(iy+f_size+0)
     ld h,(iy+f_size+1)
-    ld b,(iy+f_size+2)  ;BHL=file size in bytes
+    ld b,(iy+f_size+2)  ;BHL=(IY+f_size) file size in bytes
+
     inc hl
     ld a,h
     or l
     jr nz,lf208h
-    inc b
+    inc b               ;BHL=BHL+1
+
 lf208h:
     ld a,(iy+f_cptr+0)
     cp l
     ld a,(iy+f_cptr+1)
     sbc a,h
     ld a,(iy+f_cptr+2)
-    sbc a,b
+    sbc a,b             ;Carry is set if BHL <= (IY-f_cptr)
+
     pop hl
     pop bc
     ret
@@ -4082,9 +4138,9 @@ lf570h:
     ld iy,le5e7h        ;IY=le5e7h
 lf589h:
     ld a,e
-    cp (iy+00h)
+    cp (iy+0)
     ld a,d
-    sbc a,(iy+00h+1)    ;Is DE > value to check?
+    sbc a,(iy+1)        ;Is DE > value to check?
     jr nc,lf59eh        ;Yes, all spaces are print, skip
     ld (hl)," "         ;Put a space into buffer
     inc hl
@@ -4270,7 +4326,7 @@ find_next:
 
 lf68fh:
     push bc
-    call sub_f6edh
+    call dir_get_next
     ld hl,(pattfn)
     pop bc
     ret c
@@ -4314,8 +4370,8 @@ sub_f6cdh:
     ld hl,0000h
     ld (dirnum),hl      ;(dirnum)=0
 lf6d3h:
-    call sub_f6edh
-    bit 7,(ix+001h)
+    call dir_get_next
+    bit 7,(ix+f_drvn)
     ret nz
     inc de
     ld a,(maxdir)
@@ -4327,7 +4383,13 @@ lf6d3h:
     ld a,error_72       ;"DISK FULL"
     jp error
 
-sub_f6edh:
+dir_get_next:
+;Get the next directory entry.
+;If all entries are passed, carry is set.
+;
+; (dirnum) = Current directory number
+; (maxdir) = Maximal count of directory entries
+;
     ld a,(drvcnf)
     or a
     ld a,error_84       ;" DRIVE NOT CONFIGURED"
@@ -4345,7 +4407,7 @@ sub_f6edh:
     ld a,(maxdir+1)
     cp d                ;If DE=(maxdir)?
     scf                 ;Set carry flag
-    ret z               ;  YES: Return with carry set
+    ret z               ;  YES: Return with carry set (All directory proceed)
 
 lf70bh:
     ld a,e
@@ -4361,12 +4423,13 @@ lf713h:
     rrca
     rrca
     ld c,a
-    ld b,00h
-    add ix,bc
-    ld a,(ix+01h)
-    xor 0e5h
-    ret nz
-    scf
+    ld b,0
+    add ix,bc           ;IX=dirbuf+(E Mod 8) * 32
+
+    ld a,(ix+f_drvn)
+    xor 0e5h            ;Is Drive Number equal 0e5h? (Unused directory entry)
+    ret nz              ;  NO: return without carry set (All okay)
+    scf                 ;  YES: Return with carry set (End of directory reached)
     ret
 
 get_filename:
@@ -4612,7 +4675,7 @@ sub_f82ah:
     ld ix,(al1ptr)
 lf83dh:
     ld e,(ix+0)
-    ld d,(ix+1)         ;DE=(IX+00h)
+    ld d,(ix+1)         ;DE=(IX)
     bit 7,d
     jr nz,lf86ch
     push bc
@@ -4624,8 +4687,8 @@ lf83dh:
 
 lf852h:
     ld l,(iy+0)
-    ld h,(iy+1)
-    ld de,l0457h        ;DEE=l0457h (BAM table for direct access)
+    ld h,(iy+1)         ;HL=(IY)
+    ld de,l0457h        ;DE=l0457h (BAM table for direct access)
     call clr_bam_bit    ;Clear a bit in a BAM table for dircet access (l0457h)
 
     inc iy
@@ -4873,7 +4936,7 @@ calc_file_sec:
     add ix,bc
     add ix,bc           ;IX=(al1ptr)+2*BC
     ld e,(ix+0)
-    ld d,(ix+1)         ;DE=(IX+00h)
+    ld d,(ix+1)         ;DE=(IX)
     ld a,e
     and d
     inc a
@@ -4886,7 +4949,7 @@ calc_file_sec:
     ld bc,(l002fh)      ;BC=(l002fh)
     call allocate_blk   ;Allocate a block in BAM table for files
     ld (ix+0),l
-    ld (ix+1),h         ;(IX+00h)=HL
+    ld (ix+1),h         ;(IX)=HL
 
     ld hl,(al2ptr)      ;HL=(al2ptr)
     ld b,00h            ;B=00h (256 bytes for 1 sector)
@@ -4907,7 +4970,7 @@ lf98eh:
     add ix,bc
     add ix,bc           ;IX=(al2ptr)+2*C
     ld l,(ix+0)
-    ld h,(ix+1)         ;HL=(IX+00h)
+    ld h,(ix+1)         ;HL=(IX)
 
     ld a,l
     and h
@@ -4918,7 +4981,7 @@ lf98eh:
     ld bc,(l0034h)      ;BC=(l0034h)
     call allocate_blk   ;Allocate a block in BAM table for direct access
     ld (ix+0),l
-    ld (ix+1),h         ;(IX+00h)=HL
+    ld (ix+1),h         ;(IX)=HL
 
     ld c,(iy+26h)       ;C=(iy+26h)
     ld b,0
@@ -4927,7 +4990,7 @@ lf98eh:
     add ix,bc           ;IX=(al1ptr)+2*C
 
     ld e,(ix+0)
-    ld d,(ix+1)         ;DE=(IX+00h)
+    ld d,(ix+1)         ;DE=(IX)
     call loc2_writ_sec  ;Write allocation 2 sector DE with 256 bytes from (al2ptr)
 
 lf9cdh:
@@ -4939,7 +5002,7 @@ lf9cdh:
     add ix,de           ;IX=(al2ptr)+DE
     ld l,(ix+0)
     ld h,(ix+1)
-    xor a               ;AHL=(IX+00h)
+    xor a               ;AHL=(IX)
 
     ld b,3              ;B=03h
 lf9e3h:
