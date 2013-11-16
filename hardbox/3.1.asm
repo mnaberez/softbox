@@ -1344,10 +1344,10 @@ cmd_addr:
     dw cmd_drv          ;"D": Set Default Drive Number
     dw cmd_ini          ;"I": Initialize
     dw cmd_ren          ;"R": Rename File
-    dw leb7eh           ;"G": Set Global
-    dw leb7eh           ;"H": Set Hide a File
-    dw leb7eh           ;"W": Set Write Protect
-    dw leb7eh           ;"-": Reset (Global | Hide a File | Write Protect)
+    dw cmd_flg          ;"G": Set Global
+    dw cmd_flg          ;"H": Set Hide a File
+    dw cmd_flg          ;"W": Set Write Protect
+    dw cmd_flg          ;"-": Reset (Global | Hide a File | Write Protect)
     dw cmd_vfy          ;"V": Validate
     dw cmd_lgn          ;"L": Login
     dw lebdfh           ;"T": Trasfer Files
@@ -1486,7 +1486,7 @@ put_number:
     ld ix,le5e1h
     ld b,6              ;B=06h (Maximum 6 digits)
     ld iy,l260fh
-    res 0,(iy+00h)
+    res 0,(iy+0)
     push hl
     ex de,hl
 le5a8h:
@@ -1504,13 +1504,13 @@ le5b0h:
     ld a,c
     cp "0"
     jr nz,le5ceh
-    bit 0,(iy+00h)
+    bit 0,(iy+0)
     jr nz,le5ceh
     ld a,b
     cp 02h
     jr nz,le5d6h
 le5ceh:
-    set 0,(iy+00h)
+    set 0,(iy+0)
     ex (sp),hl
     ld (hl),c
     inc hl
@@ -1625,16 +1625,19 @@ le695h:
 
 le69bh:
     ld a,(sa)
-    cp 02h
-    jr nc,le6adh
+    cp 02h              ;Is (sa) >= 2
+    jr nc,le6adh        ;  YES: No changes (can be read and write)
+
     res 3,(iy+28h)      ;Reset marker for "Write"
-    or a
-    jr z,le6adh
+    or a                ;Is (sa) equal 0
+    jr z,le6adh         ;  YES: This is a read channel
+
     set 3,(iy+28h)      ;Set marker for "Write"
+
 le6adh:
     bit 3,(iy+28h)      ;Is marker for "Write" set?
-    jp z,le748h
-
+    jp z,le748h         ;  YES: do write
+                        ;  NO: do read
 le6b4h:
     call check_wild
     ld a,error_33       ;"SYNTAX ERROR(INVALID FILENAME)"
@@ -1657,7 +1660,7 @@ le6b4h:
     jr le6e5h
 
 le6e2h:
-    call sub_f6cdh
+    call find_free      ;Find the first free directory entry
 le6e5h:
     push de
     push ix
@@ -1673,12 +1676,12 @@ le6e5h:
     ld b,3              ;B=03h (3 Bytes for file size)
 
     ld a,(iy+f_rlen)
-    ld (iy+25h),a       ;(IY+25h)=(IY+f_rlen)
+    ld (iy+025h),a      ;(IY+025h)=(IY+f_rlen)
     or a                ;Was this zero?
     jr nz,le70fh        ;  NO: all okay, else change it to the maximum 254
 
     ld (iy+f_rlen),254  ;(IY+f_rlen)=0feh
-    ld (iy+25h),254     ;(IY+25h)=0feh
+    ld (iy+025h),254    ;(IY+025h)=0feh
 
 le70fh:
     ld (iy+f_size),255  ;(IY+f_size)=0ffffffh (all 3 bytes)
@@ -1735,11 +1738,13 @@ le766h:
     xor (ix+f_attr)
     and 00000011b
     jr z,le78ah
+
     ld hl,filnam
     ld a,(drvnum)
     call find_next
     ld iy,(entptr)
     jr nc,le766h
+
     ld a,error_64       ;"FILE TYPE MISMATCH"
     jp error
 
@@ -2295,7 +2300,9 @@ leb6fh:
     ld a,error_01       ;"FILES SCRATCHED"
     jp error_out        ;Writes the error message "FILES SCRATCHED" into the status buffer
 
-leb7eh:
+cmd_flg:
+;Command set or reset a flag (Global, Hide a File, Write Protect)
+;
     call find_drvlet    ;Find drive letter
     call get_filename   ;Get a filename
 
@@ -2342,6 +2349,7 @@ lebc9h:
     res 4,(ix+f_attr)   ;reset marker for "Global"
 lebd1h:
     call dir_writ_sec
+
     ld hl,filnam
     ld a,(drvnum)
     call find_next      ;Search for next file entry in directory
@@ -2468,7 +2476,7 @@ lecbah:
     ld a,error_63       ;"FILE EXISTS"
     jp nc,error
 
-    call sub_f6cdh
+    call find_free      ;Find the first free directory entry
     ld iy,(entptr)
 
     ld (iy+f_dirn+0),e
@@ -3509,7 +3517,7 @@ lf208h:
     ld a,(iy+f_cptr+1)
     sbc a,h
     ld a,(iy+f_cptr+2)
-    sbc a,b             ;Carry is set if BHL <= (IY-f_cptr)
+    sbc a,b             ;Carry is set if BHL > (IY-f_cptr)
 
     pop hl
     pop bc
@@ -3880,7 +3888,7 @@ lf3dah:
     ld a,d
     sbc a,h
     ld a,b
-    sbc a,c             ;If BDE <= CHL
+    sbc a,c             ;If BDE < CHL
     ret c               ;  YES: All okay, return
 
 lf412h:
@@ -4140,7 +4148,7 @@ lf589h:
     ld a,e
     cp (iy+0)
     ld a,d
-    sbc a,(iy+1)        ;Is DE > value to check?
+    sbc a,(iy+1)        ;Is DE >= value to check?
     jr nc,lf59eh        ;Yes, all spaces are print, skip
     ld (hl)," "         ;Put a space into buffer
     inc hl
@@ -4366,20 +4374,26 @@ lf6c5h:
     djnz lf6b0h        ;All 16 characters done? NO: do the next
     ret                ;Return with zero flag set for found
 
-sub_f6cdh:
+find_free:
+;Find the first free directory entry.
+;If nothing is left, give a "DISK FULL" error out.
+;
     ld hl,0000h
     ld (dirnum),hl      ;(dirnum)=0
+
 lf6d3h:
     call dir_get_next
-    bit 7,(ix+f_drvn)
-    ret nz
-    inc de
+    bit 7,(ix+f_drvn)   ;Is this entry free?
+    ret nz              ;  YES: found and return
+
+    inc de              ;Increment the directory entry number
+
     ld a,(maxdir)
     cp e
     jr nz,lf6d3h
     ld a,(maxdir+1)
-    cp d
-    jr nz,lf6d3h
+    cp d                ;Is this number equal to the maximum of files?
+    jr nz,lf6d3h        ;  NO: check the next entry
     ld a,error_72       ;"DISK FULL"
     jp error
 
@@ -4479,11 +4493,11 @@ lf74fh:
     ld a,error_31       ;"SYNTAX ERROR (INVALID COMMAND)"
     jp error
 
-lf766h:
-    xor a               ;A=0
-    ld (de),a
+lf766h:                 ;Padding filename with ascii 0
+    xor a               ;  A=0
+    ld (de),a           ;Store it as filename
     inc de
-    djnz lf766h
+    djnz lf766h         ;Loop all 17 Characters
     ret
 
 find_drvlet:
