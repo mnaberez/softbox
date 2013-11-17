@@ -233,6 +233,60 @@ maxtrk:   equ usrdat+11 ;# of "tracks per drive" for direct access (2 Bytes)
 maxsec:   equ usrdat+13 ;# of "sectors per track" for direct access (3 Bytes)
 arenam:   equ usrdat+16 ;User area name (16 Bytes) ???
 
+                        ;Every sector contain 256 bytes and is accessed via the commands
+                        ; - 02h = Read a sector (256 byte sector) and
+                        ; - 03h = Write a sector (256 byte sector).
+                        ;These commands expected a absolute sector number (logical disk address - DADR) for the access.
+                        ;This is a 3 byte address, but from the first byte only the upper nibble is for the address used.
+                        ;The lower nibble represents the drive number. So the maximum address is 1048575. With a 256 byte
+                        ;sector are 268435456 bytes (262144 kilobytes or 256 megabytes) addressable. The existing drives
+                        ;have storages less than this value. The hardbox supports 6, 10 and 20 megabytes drives.
+
+                        ;These storage space is partitioned into separated user areas. Each user ares is divided into
+                        ;functional parts:
+                        ; 1. Header sector
+                        ;    This is one sector with 10 disk names and 10 disk ids. These names and ids can be defined by
+                        ;    the dos commend new "N". A maximum of 10 virtual drive numbers are usable. After the header
+                        ;    sector additional 3 sectors are reserved.
+                        ; 2. Directory
+                        ;    When a user area is defined, the number of allowed files must be specified. This number is
+                        ;    used to calculate the size of the directory. For every file is a directory entry reseerved.
+                        ;    A directory entry on disk need 32 bytes. So in one sector fits 8 directory entries.
+                        ; 3. Allocation 1
+                        ;    All data file sectors are linked with a side sector. The side sector are linked with a super
+                        ;    side sector. For every directory entriy is space in the super side sectors reserved. Two
+                        ;    directory entries use one super side sector, because for one directory entry only a maximum
+                        ;    of 64 links (words with 2 bytes) to a side sector are needed. So every super side sector
+                        ;    entry is 128 bytes.
+                        ; 4. Allocation 2
+                        ;    Every link in the super side sector points to a side sector. This is a real sector with 128
+                        ;    links to data file sectors. Each link is a word (2 bytes), too. If a file is larger than 128
+                        ;    clusters (262144 bytes) an additional side sector is needed. So the maximum size of 16777216
+                        ;    bytes (16384 kilobytes or 16 megabytes) is possible.
+                        ;    The DOS reserved for every file one side sector that is needed and an additional side sector
+                        ;    for every 256 kilobyte user area size. So for 12.5% of all files exists enougth side sectors
+                        ;    to create large files.
+                        ; 5. Storage for files
+                        ;    Every file is stored in a cluster that contains 8 real sectors with 256 bytes. (Remember the
+                        ;    CBM DOS use only 254 bytes, because the first two bytes of a sector points to the next
+                        ;    sector. So these two bytes are unusable for data.) Every data cluster has a cluster number
+                        ;    as a word (2 bytes). This number is stored as link into the side sector. If the highest is
+                        ;    set in the link, it's unused. So the maximum of 32768 sectors are addressable. In the memory
+                        ;    BAM can only 1024 bytes with 8192 bits for 8192 clusters stored. So there are only 8192 used
+                        ;    and the maximum capacity for all files are 16777216 bytes (16384 kilobytes or 16 megabytes).
+                        ;    But this format is expandable up to 67108864 bytes (65536 kilobytes or 64 megabytes).
+                        ;    When the user area is created, only the number of allowed files, the complete user ares size
+                        ;    and the size allocated for direct access is defined. So the size available for files is
+                        ;    calculated.
+                        ; 6. Direct access sectors
+                        ;    Additional to the storage for the files is a separated storage area for direct access
+                        ;    possible. This area is also defined, when the user area is configured. The configured size
+                        ;    is in kilobytes or in 4 sectors.
+                        ; 7. BAM for direct access sectors
+                        ;    For every direct access aector is a available bit needed. So we need a block available map.
+                        ;    So for 2 kilobytes (8 sectors) we need a byte. Or with one BAM sector we can manage 2048
+                        ;    direct access sectors (524288 bytes or 512 kilobytes).
+
                         ;Header Sector (The first Sector in a User Area)
                         ;===============================================
                         ;Bytes   0 ..  15: Drive Name for Drive Number 0 ("0:..")
@@ -284,7 +338,7 @@ f_rlen:   equ 15h       ;Byte        21: Record Length (1 Byte)
 f_cptr:   equ 20h       ;Bytes 32 .. 34: Current file pointer to read or write (3 Bytes)
 f_dirn:   equ 23h       ;Bytes 35 .. 36: Number of Directory Entry - see dirnum also (2 Bytes)
                         ;Byte        37: ???
-                        ;Byte        38: ???
+f_al1x:   equ 26h       ;Byte        38: Current Allocation 1 index number
                         ;Byte        39: ???
                         ;Byte        40: ???
 
@@ -306,7 +360,7 @@ typ_rel:  equ 3         ;File Type for REL (Relative file)
 
                         ;Allocation Entry 2 (256 Bytes for one Allocation Entry 1)
                         ;=========================================================
-                        ;Bytes 0 ..   1: (Points to Data Sector)
+                        ;Bytes 0 ..   1: (0 .. 32767 = Points to Data Sector, 32768 .. 65535 = Unused Entry)
                         ;Bytes 2 .. 255: Same as Bytes 0 .. 1
 
 dirsrt:   equ 0024h     ;Absolute sector where directory starts (3 bytes, 4 sector after the user area starts)
@@ -326,8 +380,8 @@ errcod:   equ 0050h     ;Error code in error message
 errtrk:   equ 0051h     ;Track number in error message (3 bytes)
 errsec:   equ 0054h     ;Sector number in error message (3 bytes)
 
-l0057h:   equ 0057h     ;BAM table for files (1 bit for 1 kilobyte, 1024 byte are 8192 bits or 8192 kilobyte) ???
-l0457h:   equ 0457h     ;BAM table for direct access (1 bit for 1 kilobyte, 1024 byte are 8192 bits or 8192 kilobyte) ???
+l0057h:   equ 0057h     ;BAM table for allocation 2 sectors (1 bit for 1 sector, 1024 bytes are 8192 bits or 8192 sectors)
+l0457h:   equ 0457h     ;BAM table for data files (1 bit for 1 kilobyte, 1024 byte are 8192 bits or 8192 kilobyte) ???
 
 entbufs:  equ 0857h     ;(16 Directory entry buffer with 41 bytes)
 entbuf0:  equ entbufs+ 0*41;(Directory entry buffer for channel number  0 with 41 bytes)
@@ -365,10 +419,10 @@ filnam:   equ 0d45h     ;(17 bytes: 16 for the characters and one for end marker
 dstnam:   equ 0d56h     ;(17 bytes: 16 for the characters and one for end marker or delimiter)
 drvnum:   equ 0d67h     ;Drive number (1 byte: 0 .. 9)
 dirnum:   equ 0d68h     ;The number of directory entry to process (2 bytes)
-l0d6ah:   equ 0d6ah     ;(1 byte)
-l0d6bh:   equ 0d6bh     ;(1 byte)
-l0d6ch:   equ 0d6ch     ;(1 byte)
-l0d6dh:   equ 0d6dh     ;(1 byte)
+al2idx:   equ 0d6ah     ;Allocation 2 sector index (1 byte: 0 .. 127)
+secidx:   equ 0d6bh     ;Data sector index (1 byte: 0 .. 255)
+l0d6ch:   equ 0d6ch     ;??? (1 byte)
+al1idx:   equ 0d6dh     ;Allocation 1 sector index (1 byte: 0 .. 63)
 dirhid:   equ 0d6eh     ;Flag for show hidden files on directory ("H": Yes, else: no)
 
 al2bufs:  equ 0d6fh     ;(16 Allocation 2 sector buffers with 256 bytes)
@@ -875,30 +929,32 @@ le21eh:
 
                         ;Build own BAM for files from directory entries
 le246h:
-    call dir_get_next      ;DE=(00d68h)
+    call dir_get_next   ;Get the next directory entry into DE
     jr c,le26eh         ;End reached? Skipping ...
-    bit 7,(ix+001h)
-    jr nz,le246h
-    call loc1_read_sec  ;Read sector (al1srt)+DE with 128 bytes to (al1ptr)
-    ld b,040h           ;B=40h (64 word entries in 128 bytes)
-    ld ix,(al1ptr)
+    bit 7,(ix+f_drvn)   ;Is this directory entry used?
+    jr nz,le246h        ;  NO: next directory entry
+
+    call loc1_read_sec  ;Read allocation 1 sector DE to (al1ptr)
+    ld b,64             ;B=40h (64 links to allocation 2 sectors)
+    ld ix,(al1ptr)      ;IX=(al1ptr)
+
 le25ah:
     ld l,(ix+0)
     ld h,(ix+1)         ;HL=(IX)
-    ld de,l0057h        ;DE=l0057h (BAM table for files)
-    call set_bam_bit    ;Set a bit in a BAM table for files (l0057h)
+    ld de,l0057h        ;DE=l0057h (BAM table for allocation 2 sectors)
+    call set_bam_bit    ;Set a bit in a BAM table for allocation 2 sectors (l0057h)
     inc ix
-    inc ix
-    djnz le25ah
-    jr le246h
+    inc ix              ;Increment the pointer
+    djnz le25ah         ;All done? NO: next link
+    jr le246h           ;next directory entry
 
 le26eh:
-    ld de,0             ;DE=0000h
-    ld hl,l0057h        ;HL=l0057h (BAM table for files)
+    ld de,0             ;DE=0000h (Start with allocation 2 sector 0)
+    ld hl,l0057h        ;HL=l0057h (BAM table for allocation 2 sectors)
 
 le274h:
     ld b,8              ;Loop over all 8 bits
-    ld c,(hl)           ;Get the byte with 8 bits
+    ld c,(hl)           ;Get the byte with 8 bits from the BAM
     inc hl
 
 le278h:
@@ -909,28 +965,28 @@ le278h:
     push hl
     push de
     call loc2_read_sec  ;Read (256 bytes)
-    ld b,128            ;B=80h (128 word entries in 256 bytes)
+    ld b,128            ;B=80h (128 links to data file sectors)
     ld ix,(al2ptr)
 
 le288h:
     ld l,(ix+0)
     ld h,(ix+1)         ;HL=(IX)
     inc ix
-    inc ix
-    ld de,l0457h
-    call set_bam_bit    ;Set a bit in a BAM table for direct access (l0457h)
-    djnz le288h
+    inc ix              ;Increment the pointer
+    ld de,l0457h        ;DE=l0457h (BAM table for data files)
+    call set_bam_bit    ;Set a bit in a BAM table for data files (l0457h)
+    djnz le288h         ;All done? NO: next link
     pop de
     pop hl
     pop bc
 
 le29dh:
-    inc de              ;Increment counter
+    inc de              ;Increment allocation 2 sector
     ld a,(al2max)
     cp e
     jr nz,le2aah
     ld a,(al2max+1)
-    cp d                ;If counter reached the end
+    cp d                ;If the maximum of allocation 2 sectors reached?
     jr z,le2aeh         ;  YES: finish
 
 le2aah:
@@ -1546,7 +1602,7 @@ do_open:
     ld iy,(entptr)
     ld (iy+028h),000h
     ld (iy+027h),000h
-    ld (iy+026h),0ffh
+    ld (iy+f_al1x),0ffh ;No valid Allocation 1 index number
     ld hl,getbuf        ;HL=getbuf
 
 le613h:
@@ -1753,7 +1809,7 @@ le766h:
     jp error
 
 le78ah:
-    call loc1_read_sec  ;Read sector (al1srt)+DE with 128 bytes to (al1ptr)
+    call loc1_read_sec  ;Read allocation 1 sector DE to (al1ptr)
     ld (iy+f_dirn+0),e  ;Store the directory entry number
     ld (iy+f_dirn+1),d  ;(IY+f_dirn)=DE
 
@@ -1812,7 +1868,7 @@ le7ebh:
     ld (iy+f_cptr+2),a    ;(IY+f_cptr)=(IY+f_size)+1
 
     call sub_eb00h
-    ld a,(l0d6bh)
+    ld a,(secidx)
     or a
     call nz,file_read_sec;Read a file sector
     jp le2aeh
@@ -1893,11 +1949,12 @@ do_wr_chan:
     jp nc,error
 
 le8b3h:
-    ld a,(l0d6bh)
+    ld a,(secidx)
     ld e,a
     ld d,00h
     ld hl,(bufptr)
-    add hl,de
+    add hl,de           ;HL=(bufptr) + (secidx)
+
 le8bdh:
     ld a,(iy+f_attr)    ;Get file type
     and 00000011b
@@ -2027,11 +2084,11 @@ do_rd_chan:
 le9a7h:
     call sub_eb00h
 
-    ld a,(l0d6bh)
+    ld a,(secidx)
     ld e,a
     ld d,00h
     ld hl,(bufptr)
-    add hl,de           ;HL=(bufptr) + (l0d6bh)
+    add hl,de           ;HL=(bufptr) + (secidx)
 
 le9b4h:
     call rdieee         ;Read character from ieee
@@ -2154,10 +2211,12 @@ lea63h:
     set 4,(iy+027h)
 lea83h:
     call sub_eb00h
-    ld bc,(l0d6bh)
+
+    ld bc,(secidx)
     ld b,00h
     ld hl,(bufptr)
-    add hl,bc
+    add hl,bc           ;HL=(bufptr) + (secidx)
+
     pop af
     jr lea99h
 
@@ -2231,23 +2290,39 @@ leaebh:
     jr leaebh
 
 sub_eb00h:
-    ld iy,(entptr)
+;
+;Split a file pointer into used index parts (allocation 1, allocation 2, ???, sector)
+;  +2  Hi   +1  Mi   +0  Lo
+; 76543210 76543210 76543210
+;                   ^^^^^^^^. (secidx): 0 .. 255 = sector pointer 
+;               ^^^.......... (l0d6ch): 0 ..   7 = ???
+;       ^^ ^^^^^............. (al2idx): 0 .. 127 = allocation 2 sector number (index)
+; ^^^^^^..................... (al1idx): 0 ..  63 = allocation 1 sector number (index)
+;
+    ld iy,(entptr)      ;IY=(entptr)
+
     ld a,(iy+f_cptr+0)
-    ld (l0d6bh),a
+    ld (secidx),a       ;(secidx)=(IY+f_cptr)
+
     ld l,(iy+f_cptr+1)
-    ld h,(iy+f_cptr+2)  ;AHL=(IY+f_cptr)
+    ld h,(iy+f_cptr+2)  ;HL=(IY+f_cptr+1)
+
     ld a,l
     and 07h
-    ld (l0d6ch),a
-    ld b,003h
-    call hl_shr_b
+    ld (l0d6ch),a       ;(l0d6ch)=HL mod 8
+
+    ld b,3
+    call hl_shr_b       ;HL=HL / 8
+
     ld a,l
-    and 07fh
-    ld (l0d6ah),a
-    ld b,007h
-    call hl_shr_b
+    and 7fh
+    ld (al2idx),a       ;(al2idx)=HL mod 128
+
+    ld b,7
+    call hl_shr_b       ;HL=HL / 128
+
     ld a,l
-    ld (l0d6dh),a
+    ld (al1idx),a       ;(al1idx)=L
     ret
 
 cmd_del:
@@ -2405,7 +2480,7 @@ cmd_cpy:
     ld (iy+f_drvn),a
     ld (iy+028h),000h
     ld (iy+027h),000h
-    ld (iy+026h),0ffh
+    ld (iy+f_al1x),0ffh ;No valid Allocation 1 index number
 
                         ;Copy the filename from filnam into directory entry
     ld hl,(entptr)
@@ -2523,7 +2598,7 @@ led18h:
     ld (al1ptr),hl
     ld (al2ptr),hl
     ld de,(l260dh)
-    call loc1_read_sec  ;Read sector (al1srt)+DE with 128 bytes to (al1ptr)
+    call loc1_read_sec  ;Read allocation 1 sector DE to (al1ptr)
     ld hl,cpybuf
     pop bc
     push bc
@@ -2591,11 +2666,13 @@ led43h:
     ld b,(ix+f_size)
     inc b
 led97h:
-    ld a,(l0d6bh)
+
+    ld a,(secidx)
     ld e,a
     ld d,00h
     ld hl,(bufptr)
-    add hl,de
+    add hl,de           ;HL=(bufptr) + (secidx)
+
     ld de,rdbuf
 leda4h:
     ld a,(de)
@@ -3283,7 +3360,7 @@ cmd_vfy:
     ld (dirnum),hl      ;(dirnum)=0
 
 lf0cdh:
-    call dir_get_next   ;Get the directory entry
+    call dir_get_next   ;Get the next directory entry into DE
     jr c,lf0e1h         ;All done? Restart
     bit 7,(ix+f_attr)   ;Is marker for "Open File" set?
     jr z,lf0cdh         ;  NO: Test next entry
@@ -4338,7 +4415,7 @@ find_next:
 
 lf68fh:
     push bc
-    call dir_get_next
+    call dir_get_next   ;Get the next directory entry into DE
     ld hl,(pattfn)
     pop bc
     ret c
@@ -4386,7 +4463,7 @@ find_free:
     ld (dirnum),hl      ;(dirnum)=0
 
 lf6d3h:
-    call dir_get_next
+    call dir_get_next   ;Get the next directory entry into DE
     bit 7,(ix+f_drvn)   ;Is this entry free?
     ret nz              ;  YES: found and return
 
@@ -4402,7 +4479,7 @@ lf6d3h:
     jp error
 
 dir_get_next:
-;Get the next directory entry.
+;Get the next directory entry. Returns the entry number in DE.
 ;If all entries are passed, carry is set.
 ;
 ; (dirnum) = Current directory number
@@ -4688,7 +4765,7 @@ sub_f82ah:
     push de
     push bc
     call chk_wrt_rights
-    call loc1_read_sec  ;Read sector (al1srt)+DE with 128 bytes to (al1ptr)
+    call loc1_read_sec  ;Read allocation 1 sector DE to (al1ptr)
     ld b,64             ;B=40 (64 ???)
     ld ix,(al1ptr)
 lf83dh:
@@ -4706,16 +4783,16 @@ lf83dh:
 lf852h:
     ld l,(iy+0)
     ld h,(iy+1)         ;HL=(IY)
-    ld de,l0457h        ;DE=l0457h (BAM table for direct access)
-    call clr_bam_bit    ;Clear a bit in a BAM table for dircet access (l0457h)
+    ld de,l0457h        ;DE=l0457h (BAM table for data files)
+    call clr_bam_bit    ;Clear a bit in a BAM table for data files (l0457h)
 
     inc iy
     inc iy
     djnz lf852h
 
     pop hl
-    ld de,l0057h        ;DE=l0057h (BAM table for files)
-    call clr_bam_bit    ;Clear a bit in a BAM table for files (l0057h)
+    ld de,l0057h        ;DE=l0057h (BAM table for allocation 2 sectors)
+    call clr_bam_bit    ;Clear a bit in a BAM table for allocation 2 sectors (l0057h)
 
     pop bc
 lf86ch:
@@ -4786,7 +4863,7 @@ lf8a1h:
     ret
 
 sub_f8a3h:
-    ld ix,l0457h        ;IX=l0457h (BAM table for direct access)
+    ld ix,l0457h        ;IX=l0457h (BAM table for data files)
     ld de,(l0034h)
     ld hl,0000h
 lf8aeh:
@@ -4942,17 +5019,19 @@ calc_file_sec:
     push ix
     push iy             ;Save IX and IY
 
-    ld a,(l0d6dh)
+    ld a,(al1idx)       ;Get calculated Allocation 1 index number
     ld iy,(entptr)      ;IY=(entptr)
-    cp (iy+26h)         ;If (l0d6dh) = (iy+26h)?
-    jr z,lf98eh         ;  YES: ???
+    cp (iy+f_al1x)      ;Is this index number identically to the processed index number from the direectory?
+    jr z,lf98eh         ;  YES: Update the Allocation 1 sector is not needed
 
-    ld (iy+26h),a
-    ld c,a              ;C=(IY+26h)
-    ld b,0
+    ld (iy+f_al1x),a    ;Store the new Allocation 1 index number
+    ld c,a
+    ld b,0              ;BC(IY+f_al1x)
+
     ld ix,(al1ptr)
     add ix,bc
     add ix,bc           ;IX=(al1ptr)+2*BC
+
     ld e,(ix+0)
     ld d,(ix+1)         ;DE=(IX)
     ld a,e
@@ -4963,9 +5042,9 @@ calc_file_sec:
     pop af
     jr nz,lf98eh
 
-    ld de,l0057h        ;DE=l0057h (BAM table for files)
+    ld de,l0057h        ;DE=l0057h (BAM table for allocation 2 sectors)
     ld bc,(al2max)      ;BC=(al2max)
-    call allocate_blk   ;Allocate a block in BAM table for files
+    call allocate_blk   ;Allocate a block in BAM table for allocation 2 sectors
     ld (ix+0),l
     ld (ix+1),h         ;(IX)=HL
 
@@ -4981,12 +5060,12 @@ lf980h:
     call loc1_writ_sec  ;Write allocation 1 sector DE with 128 bytes from (al1ptr)
 
 lf98eh:
-    ld a,(l0d6ah)
-    ld c,a              ;C=(l0d6ah)
-    ld b,0
+    ld a,(al2idx)
+    ld c,a
+    ld b,0              ;BC=(al2idx)
     ld ix,(al2ptr)
     add ix,bc
-    add ix,bc           ;IX=(al2ptr)+2*C
+    add ix,bc           ;IX=(al2ptr)+2*BC
     ld l,(ix+0)
     ld h,(ix+1)         ;HL=(IX)
 
@@ -4995,13 +5074,13 @@ lf98eh:
     inc a
     jr nz,lf9cdh
 
-    ld de,l0457h        ;DE=l0457h (BAM table for direct access)
+    ld de,l0457h        ;DE=l0457h (BAM table for data files)
     ld bc,(l0034h)      ;BC=(l0034h)
-    call allocate_blk   ;Allocate a block in BAM table for direct access
+    call allocate_blk   ;Allocate a block in BAM table for data files
     ld (ix+0),l
     ld (ix+1),h         ;(IX)=HL
 
-    ld c,(iy+26h)       ;C=(iy+26h)
+    ld c,(iy+f_al1x)    ;C=(iy+f_al1x)
     ld b,0
     ld ix,(al1ptr)
     add ix,bc
@@ -5013,10 +5092,10 @@ lf98eh:
 
 lf9cdh:
     ld ix,(al2ptr)
-    ld a,(l0d6ah)
+    ld a,(al2idx)
     add a,a
     ld e,a
-    ld d,0              ;DE=(l0d6ah)*2
+    ld d,0              ;DE=(al2idx)*2
     add ix,de           ;IX=(al2ptr)+DE
     ld l,(ix+0)
     ld h,(ix+1)
