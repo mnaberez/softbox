@@ -105,6 +105,7 @@ x_track:  equ  0046h    ;  Track number (only 1 byte)
 x_sector: equ  0047h    ;  Sector number
 
                         ;Alternate copy of disk position (??):
+sec_cnt:  equ  0048h    ;  Counts down sectors, related to y_* (TODO how?)
 y_drive:  equ  0049h    ;  Drive number (0=A, 1=B, 2=C, etc.)
 y_track:  equ  004ah    ;  Track number (only 1 byte)
 y_sector: equ  004bh    ;  Sector number
@@ -369,7 +370,7 @@ ccp1:
     xor a               ;A=0
     ld (trk_3040),a     ;for CBM 3040/4040 = 0
     ld (trk_8050),a     ;for CBM 8050 = 0
-    ld (0048h),a        ;0048h=0 (TODO 0048h?)
+    ld (sec_cnt),a      ;sec_cnt = 0
     ld (wrt_pend),a     ;No write pending for CBM DOS
     dec a               ;A=0ffh
     ld (x_drive),a
@@ -651,7 +652,7 @@ read:
     rrca
     call copy_to_dma
     xor a               ;A=0
-    ld (0048h),a        ;0048h=0 (TODO 0048h?)
+    ld (sec_cnt),a      ;sec_cnt=0
     ret
 
 write:
@@ -673,15 +674,17 @@ write:
     push af             ;Save it on the stack
 
     cp 02h              ;Deblocking code = 2?
-    call z,deblock_2    ;  Yes: call deblock_2
+    call z,deblock_2    ;  Yes: call deblock_2, which sets sec_cnt nonzero,
+                        ;         sets y_drive/y_track/y_sector to be
+                        ;         drive/track/sector, then returns here.
 
-                        ;Compare value at 0048h (TODO 0048h?):
-    ld hl,0048h         ;  HL = address of 0048h
-    ld a,(hl)           ;  A = value stored at 0048h
+                        ;Compare sector countdown value to zero:
+    ld hl,sec_cnt       ;  HL = address of sector countdown
+    ld a,(hl)           ;  A = value of sector countdown
     or a
     jr z,wr1            ;  Jump if A=0
 
-    dec (hl)            ;Decrement value at 0048h
+    dec (hl)            ;Decrement sector countdown
 
                         ;Compare CP/M drive number:
     ld a,(drive)        ;  A = CP/M drive number
@@ -707,17 +710,17 @@ write:
     jr wr2
 
 wr1:
-;Entered if (0048h)=0 or if drive/track/sector != y_drive/y_track/y_sector
+;Entered if (sec_cnt)=0 or if drive/track/sector != y_drive/y_track/y_sector
 ;
     xor a               ;A=0
-    ld (0048h),a        ;0048h=0 (TODO 0048h?)
+    ld (sec_cnt),a      ;sec_cnt=0
     call sub_rw
     ld a,00h            ;Flag: if a CBM DOS error 22 occurs, ignore it.
     call nz,ieee_read_sec
                            ;Fall through into wr2
 
 wr2:
-;Entered if (0048h)>0 or if drive/track/sector = y_drive/y_track/y_sector
+;Entered if (sec_cnt)>0 or if drive/track/sector = y_drive/y_track/y_sector
 ;
     ld a,(sector)       ;A = CP/M sector number
     rrca                ;Rotate bit 0 of CP/M sector into the carry flag
@@ -1607,9 +1610,15 @@ dos_i0_0:
     db "I0"
 
 deblock_2:
-    ld a,10h            ;  A=10h
-    ld (0048h),a        ;Store A in 0048h
-                        ;  For all drives, A=10h
+;Called only from write, and only if deblocking code = 2
+;  (2 = Write can be deferred, no pre-read is necessary)
+;
+;TODO: sec_cnt decreases as y_sector increases.  Find out what
+;      exactly this is doing and why.
+;
+    ld a,10h            ;A=10h for all drives
+    ld (sec_cnt),a      ;Store A in sec_cnt (sector countdown)
+
     ld a,(drive)
     ld (y_drive),a      ;y_drive = drive
 
