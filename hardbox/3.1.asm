@@ -12,10 +12,12 @@ include "3.1_version.asm"
 ;labeled "289" (IC3) and "290" (IC4) for version 2.4.
 
 ;HardBox Memory Map:
-;  F000-FFFF  BIOS ROM High (IC4)   4096
-;  E000-EFFF  BIOS ROM Low (IC3)    4096
-;  4000-DFFF  Mirror of RAM
-;  0000-3FFF  RAM (IC24-IC31)       4516 (Only 16 Kilobytes)
+;  F000-FFFF  ROM High (IC4)        4096
+;  E000-EFFF  ROM Low (IC3)         4096
+;  C000-DFFF  Mirror of 0000-1FFF   8192
+;  8000-BFFF  Mirror of 0000-3FFF  16384
+;  4000-7FFF  Mirror of 0000-3FFF  16384
+;  0000-3FFF  RAM (IC24-IC31)      16384 (Uses 4516 DRAMs instead of 4164)
 ;
 
 ppi1:     equ 10h       ;8255 PPI #1 (IC17)
@@ -2294,7 +2296,7 @@ sub_eb00h:
 ;Split a file pointer into used index parts (allocation 1, allocation 2, ???, sector)
 ;  +2  Hi   +1  Mi   +0  Lo
 ; 76543210 76543210 76543210
-;                   ^^^^^^^^. (secidx): 0 .. 255 = sector pointer 
+;                   ^^^^^^^^. (secidx): 0 .. 255 = sector pointer
 ;               ^^^.......... (l0d6ch): 0 ..   7 = ???
 ;       ^^ ^^^^^............. (al2idx): 0 .. 127 = allocation 2 sector number (index)
 ; ^^^^^^..................... (al1idx): 0 ..  63 = allocation 1 sector number (index)
