@@ -3,7 +3,7 @@
 ;Version 3.1 (Sunol)
 
 ;version:  equ 23        ;for version 2.3 (Corvus)
-;version:  equ 24        ;for version 2.3 (Corvus)
+;version:  equ 24        ;for version 2.4 (Corvus)
 ;version:  equ 31        ;for version 3.1 (Sunol)
 include "3.1_version.asm"
 
