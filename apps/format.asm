@@ -1068,11 +1068,12 @@ print_:
     call print_str      ;Print the string
     ret
 
-    ld a,(hl)           ;089a 7e
-    or a                ;089b b7
-    jp z,unused_4         ;089c ca 43 08
-    call print_str      ;089f cd a5 08
-    jp unused_4           ;08a2 c3 43 08
+unused_29:
+    ld a,(hl)
+    or a
+    jp z,unused_4
+    call print_str
+    jp unused_4
 
 print_str:
 ;Print string of length A at pointer HL.
