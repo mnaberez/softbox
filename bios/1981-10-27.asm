@@ -1434,7 +1434,7 @@ run1:
     or a
     jp m,run3           ;Jump if bit 7 is set (indicates no device)
 
-    cp 02h              ;01h = Corvus 10MB
+    cp 02h              ;02h = Corvus 10MB
     ld bc,004ah
     jr z,run2
 
