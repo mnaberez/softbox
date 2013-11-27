@@ -1889,7 +1889,7 @@ put_dos_error:
 ;Write a description of a CBM DOS error to console out.
 ;HL = pointer to cbm_dos_errs table
 ;
-    ld a,(dos_err)       ;A=last error code returned from CBM DOS
+    ld a,(dos_err)      ;A=last error code returned from CBM DOS
     cp (hl)
     ld a,(hl)
     inc hl
