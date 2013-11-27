@@ -1890,18 +1890,22 @@ put_dos_error:
 ;HL = pointer to cbm_dos_errs table
 ;
     ld a,(dos_err)      ;A=last error code returned from CBM DOS
-    cp (hl)
-    ld a,(hl)
-    inc hl
-    jp z,puts
-    inc a
-    jp z,puts
-err1:
-    ld a,(hl)
-    inc hl
-    or a
-    jr nz,err1
-    jr put_dos_error
+    cp (hl)             ;Compare it to current error code in table
+    ld a,(hl)           ;A = current error code in table
+
+    inc hl              ;Increment HL to point to first byte in string
+    jp z,puts           ;If error code matched, jump out to print string
+
+    inc a               ;Increment A to check it for 0FFh (end of table)
+    jp z,puts           ;If A=0FFh, jump out to print "Unknown error code"
+
+err1:                   ;Move to the next error in the table:
+    ld a,(hl)           ;  A = read a byte from the current error string
+    inc hl              ;  Increment pointer
+    or a                ;  Set flags
+    jr nz,err1          ;  Loop until the end of the string
+
+    jr put_dos_error    ;Loop to check the next error in the table
 
 cbm_dos_errs:
 ;      Hex SoftBox Error Message          Dec  CBM DOS Error Description
