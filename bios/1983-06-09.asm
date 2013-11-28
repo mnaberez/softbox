@@ -1510,7 +1510,8 @@ run1:
     jp nz,run5
 
     ld a,20h
-    ld (0058h),a
+    ld (0058h),a        ;Store 20h in 0058h for CBM 8250 only
+                        ;  TODO: see note about 0058h in deblock_2
 
 run5:
 ;Build the DPH for the current drive
