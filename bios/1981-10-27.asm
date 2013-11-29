@@ -1100,7 +1100,7 @@ boot:
 ;
     ld sp,0100h         ;Initialize stack pointer
 
-    ld a,99h            ;Set PPI #1 control
+    ld a,10011001b      ;Set PPI #1 control
                         ;  Bit 7: IO   1 = I/O mode (not BSR)
                         ;  Bit 6: GA1  0 = Group A as Mode 1 (Simple I/O)
                         ;  Bit 5: GA0  0
@@ -1111,7 +1111,7 @@ boot:
                         ;  Bit 0: PCl  1 = Group B, Port C lower as Input
     out (ppi1_cr),a
 
-    ld a,98h            ;Set PPI #2 control
+    ld a,10011000b      ;Set PPI #2 control
                         ;  Bit 7: IO   1 = I/O mode (not BSR)
                         ;  Bit 6: GA1  0 = Group A as Mode 1 (Simple I/O)
                         ;  Bit 5: GA0  0
@@ -1292,7 +1292,7 @@ test_passed:
     ld a,40h            ;Reset
     out (usart_st),a
 
-    ld a,7ah            ;Set mode
+    ld a,01111010b      ;Set mode
                         ;  Bit 7: S2   0 = 1 stop bit
                         ;  Bit 6: S1   1
                         ;  Bit 5: EP   1 = Even parity
@@ -1303,7 +1303,7 @@ test_passed:
                         ;  Bit 0: B1   0
     out (usart_st),a
 
-    ld a,37h            ;Set command
+    ld a,00110111b      ;Set command
                         ;  Bit 7: EH   0 = Normal (not hunt mode)
                         ;  Bit 6: IR   0 = Normal (not internal reset)
                         ;  Bit 5: RTS  1 = RTS output = 0

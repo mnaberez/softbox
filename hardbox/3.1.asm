@@ -508,7 +508,7 @@ le000h:
     jp reset
 
 reset:
-    ld a,99h            ;Set PPI #1 control
+    ld a,10011001b      ;Set PPI #1 control
                         ;  Bit 7: IO   1 = I/O mode (not BSR)
                         ;  Bit 6: GA1  0 = Group A as Mode 1 (Simple I/O)
                         ;  Bit 5: GA0  0
@@ -519,7 +519,7 @@ reset:
                         ;  Bit 0: PCl  1 = Group B, Port C lower as Input
     out (ppi1_cr),a
 
-    ld a,98h            ;Set PPI #2 control
+    ld a,10011000b      ;Set PPI #2 control
                         ;  Bit 7: IO   1 = I/O mode (not BSR)
                         ;  Bit 6: GA1  0 = Group A as Mode 1 (Simple I/O)
                         ;  Bit 5: GA0  0
