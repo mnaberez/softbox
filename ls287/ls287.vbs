@@ -5,7 +5,7 @@ Dim Values(255)
 Set objStream = CreateObject("ADODB.Stream")
   objStream.Open
   objStream.Type = adTypeBinary
-  objStream.LoadFromFile("LS287.bin")
+  objStream.LoadFromFile("ls287.bin")
   For I = 0 To 255
     Values(I) = AscB(objStream.Read(1))
   Next
@@ -34,7 +34,7 @@ For I = 0 TO 255
 
   If D <> Values(I) Then MsgBox "Fehler: Calculate " & D & " but readed from dump " & Values(I)
 
-  If Out <> "" Then  
+  If Out <> "" Then
     If I mod 16 = 0 Then
       Out = Out & VBCrLf
     Else
