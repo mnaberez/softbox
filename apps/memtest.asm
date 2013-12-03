@@ -59,18 +59,18 @@ l0134h:
     push bc
 
 l013fh:
-    call sub_023ch      ;013f  cd 00 00
-    ld (hl),a           ;0142  77
-    inc hl              ;0143  23
-    ld a,l              ;0144  7d
-    cp e                ;0145  bb
-    jr nz,l013fh        ;0146  20 f7
-    ld a,h              ;0148  7c
-    cp d                ;0149  ba
-    jr nz,l013fh        ;014a  20 f3
-    pop bc              ;014c  c1
-    djnz l0134h         ;014d  10 e5
-    ld b,01h            ;014f  06 01
+    call sub_023ch
+    ld (hl),a
+    inc hl
+    ld a,l
+    cp e
+    jr nz,l013fh
+    ld a,h
+    cp d
+    jr nz,l013fh
+    pop bc
+    djnz l0134h
+    ld b,01h
 
 l0151h:
     ld hl,(cur_addr)    ;HL = current address to test
@@ -80,44 +80,44 @@ l0151h:
     push bc
 
 l015ch:
-    call sub_023ch      ;015c  cd 00 00
-    ld b,a              ;015f  47
-    ld a,(hl)           ;0160  7e
-    cp b                ;0161  b8
-    jr z,l016ah         ;0162  28 00
-    ld (hl),b           ;0164  70
-    call sub_01ffh      ;0165  cd 00 00
-    jr l017eh           ;0168  18 00
+    call sub_023ch
+    ld b,a
+    ld a,(hl)
+    cp b
+    jr z,l016ah
+    ld (hl),b
+    call sub_01ffh
+    jr l017eh
 l016ah:
-    sub (hl)            ;016a  96
-    add a,(hl)          ;016b  86
-    sub (hl)            ;016c  96
-    add a,(hl)          ;016d  86
-    sub (hl)            ;016e  96
-    add a,(hl)          ;016f  86
-    sub (hl)            ;0170  96
-    add a,(hl)          ;0171  86
-    sub (hl)            ;0172  96
-    add a,(hl)          ;0173  86
-    sub (hl)            ;0174  96
-    add a,(hl)          ;0175  86
-    sub (hl)            ;0176  96
-    add a,(hl)          ;0177  86
-    sub (hl)            ;0178  96
-    add a,(hl)          ;0179  86
-    cp b                ;017a  b8
-    call nz,sub_01ffh   ;017b  c4 00 00
+    sub (hl)
+    add a,(hl)
+    sub (hl)
+    add a,(hl)
+    sub (hl)
+    add a,(hl)
+    sub (hl)
+    add a,(hl)
+    sub (hl)
+    add a,(hl)
+    sub (hl)
+    add a,(hl)
+    sub (hl)
+    add a,(hl)
+    sub (hl)
+    add a,(hl)
+    cp b
+    call nz,sub_01ffh
 l017eh:
-    inc hl              ;017e  23
-    ld a,l              ;017f  7d
-    cp e                ;0180  bb
-    jr nz,l015ch        ;0181  20 d9
-    ld a,h              ;0183  7c
-    cp d                ;0184  ba
-    jr nz,l015ch        ;0185  20 d5
-    pop bc              ;0187  c1
-    djnz l0151h         ;0188  10 c7
-    push bc             ;018a  c5
+    inc hl
+    ld a,l
+    cp e
+    jr nz,l015ch
+    ld a,h
+    cp d
+    jr nz,l015ch
+    pop bc
+    djnz l0151h
+    push bc
 
     ld hl,pass_msg      ;HL = address of "Pass=" string
     call puts           ;Write string to console out
@@ -136,36 +136,36 @@ l017eh:
     ld hl,(0020h)
     call put_hex_word
 
-    ld ix,0020h         ;01ad  dd 21 20 00
-    ld a,(ix+00h)       ;01b1  dd 7e 00
-    or (ix+01h)         ;01b4  dd b6 01
-    or (ix+02h)         ;01b7  dd b6 02
-    or (ix+03h)         ;01ba  dd b6 03
-    jr z,l01e1h         ;01bd  28 00
-    ld a,' '            ;01bf  3e 20
-    call putc           ;01c1  cd 00 00
-    ld hl,(0026h)       ;01c4  2a 26 00
-    call put_hex_word   ;01c7  cd 00 00
-    ld a,'-'            ;01ca  3e 2d
-    call putc           ;01cc  cd 00 00
-    ld hl,(0028h)       ;01cf  2a 28 00
-    call put_hex_word   ;01d2  cd 00 00
-    ld hl,bit_msg       ;01d5  21 00 00
-    call puts           ;01d8  cd 00 00
-    ld a,(0024h)        ;01db  3a 24 00
-    call put_hex_byte   ;01de  cd 00 00
+    ld ix,0020h
+    ld a,(ix+00h)
+    or (ix+01h)
+    or (ix+02h)
+    or (ix+03h)
+    jr z,l01e1h
+    ld a,' '
+    call putc
+    ld hl,(0026h)
+    call put_hex_word
+    ld a,'-'
+    call putc
+    ld hl,(0028h)
+    call put_hex_word
+    ld hl,bit_msg
+    call puts
+    ld a,(0024h)
+    call put_hex_byte
 
 l01e1h:
-    call newline        ;01e1  cd 00 00
-    pop bc              ;01e4  c1
-    inc c               ;01e5  0c
-    ld a,c              ;01e6  79
-    cp 0bh              ;01e7  fe 0b
-    jp nz,l0132h        ;01e9  c2 32 01
-    ld a,(0025h)        ;01ec  3a 25 00
-    rrca                ;01ef  0f
-    ld (0025h),a        ;01f0  32 25 00
-    jp l0130h           ;01f3  c3 30 01
+    call newline
+    pop bc
+    inc c
+    ld a,c
+    cp 0bh
+    jp nz,l0132h
+    ld a,(0025h)
+    rrca
+    ld (0025h),a
+    jp l0130h
 
 exit:
 ;Return to CP/M
