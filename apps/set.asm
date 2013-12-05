@@ -173,11 +173,11 @@ set_e:
     and 5fh             ;Normalize char to uppercase
     cp 'E'
     ld b,esc            ;Escape
-    jp z,l018eh
+    jp z,store_leadin
     cp 'T'
     jp nz,bad_syntax
     ld b,tilde          ;Tilde
-l018eh:
+store_leadin:
     ld hl,leadin
     ld (hl),b
     ret
