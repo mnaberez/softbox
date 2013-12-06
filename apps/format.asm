@@ -17,6 +17,7 @@
 
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
+dma_buf:       equ  0080h ;Default DMA buffer area (128 bytes) for disk I/O
 seldsk:        equ 0f01bh ;Select disk drive
 settrk:        equ 0f01eh ;Set track number
 setsec:        equ 0f021h ;Set sector number
@@ -391,30 +392,39 @@ format_failed:
 get_char:
 ;Get a character from the user
 ;
-    ld hl,0080h
-    ld (buf_addr),hl
-    ld hl,(buf_addr)
-    ld (hl),50h
-    call buffin
-    ld hl,(buf_addr)
-    inc hl
-    ld l,(hl)
+    ld hl,dma_buf       ;HL = address of CP/M default DMA buffer area
+    ld (buf_addr),hl    ;Store it in buf_addr
+
+    ld hl,(buf_addr)    ;HL = address of buffer area
+    ld (hl),50h         ;Store buffer size (80 bytes) in buf_addr+0
+
+    call buffin         ;Perform buffered console input via BDOS call
+                        ;  0Ah (CREADSTR).
+
+    ld hl,(buf_addr)    ;HL = address of CP/M DMA buffer area
+    inc hl              ;Increment HL so it points to buf_addr+1
+    ld l,(hl)           ;L = number of valid chars in buffer
+
     ld h,00h
     ld a,h
-    or l
-    jp nz,l0318h
-    ld hl,0000h
+    or l                ;Is there any data in the buffer?
+    jp nz,l0318h        ;  Yes: jump to l0318h
+
+    ld hl,0000h         ;Store 0 in first_char
     ld (first_char),hl
-    jp l0323h
+    jp l0323h           ;Jump to l0323h
+
 l0318h:
-    ld hl,(buf_addr)
+    ld hl,(buf_addr)    ;HL = buf_addr + 2 (first char in the buffer)
     inc hl
     inc hl
-    ld l,(hl)
+
+    ld l,(hl)           ;Store the first char in the buffer in first_char
     ld h,00h
     ld (first_char),hl
+
 l0323h:
-    ld hl,(first_char)
+    ld hl,(first_char)  ;HL = first char from user input (or zero if none)
     ld de,0ff9fh
     ld a,h
     rla
