@@ -159,11 +159,13 @@ next_disk:
 check_letter:
 ;Check that the letter is in the range of valid letters (A-P).
 ;
-    ld de,0ffbfh
-    ld hl,(first_char)
-    add hl,de
-    ld (drv_num),hl
-    ld hl,(drv_num)
+                        ;Convert ASCII char from input to CP/M drive number:
+    ld de,0-"A"         ;  DE = 0ffbfh (0 - 41h)
+    ld hl,(first_char)  ;  HL = first char from user input
+    add hl,de           ;  HL = HL + DE
+    ld (drv_num),hl     ;  Store HL in drv_num
+    ld hl,(drv_num)     ;  HL = Read value back from drv_num
+
     add hl,hl
     sbc a,a
     ld h,a
