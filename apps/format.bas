@@ -14,6 +14,8 @@
 1025 IF R = 0 THEN END
 1030 D = R - &H41 ' Convert drive letter (A-P) to number (0-15)
 1035 IF (D < 0) OR (D > 15) THEN PRINT "Drive doesn't exist !" : GOTO 1000
+1040 DT = D : CALL DTYPE (DT)
+1045 IF DT > 128 THEN PRINT "Drive not in system" : GOTO 1000
 2000 ' Get a key from the user, store its ASCII code in R
 2005 BUF = &H80
 2010 POKE BUF,80 ' Set buffer size (80 chars)
