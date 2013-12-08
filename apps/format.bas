@@ -10,7 +10,7 @@
 1005 PRINT
 1010 PRINT "Format disk on which drive"
 1015 PRINT "(A to P, or RETURN to reboot) ? "
-1020 GOSUB 2000
+1020 GOSUB 5000
 1025 IF R = 0 THEN END
 1030 D = R - &H41 ' Convert drive letter (A-P) to number (0-15)
 1035 IF (D < 0) OR (D > 15) THEN PRINT "Drive doesn't exist !" : GOTO 1000
@@ -18,13 +18,23 @@
 1045 IF DT > 128 THEN PRINT "Drive not in system" : GOTO 1000
 1050 IF (DT < 2) OR (DT > 5) THEN GOTO 3000
 2000 ' Format a Corvus hard drive
+2005 PRINT CHR$(7) ' Ring bell
+2010 PRINT "Data on hard disk ";CHR$(R);": will be erased"
+2015 PRINT "Proceed (Y/N) ? "
+2020 GOSUB 5000
+2025 IF R = &H59 THEN GOTO 2035 ' Proceed only if "Y" is entered
+2030 END
+2035 PRINT : PRINT "Formatting hard disk"
+2040 CALL CFORM (D)
+2045 GOTO 4000
 3000 ' Format a Commodore floppy drive
-4000 ' Get a key from the user, store its ASCII code in R
-4005 BUF = &H80
-4010 POKE BUF,80 ' Set buffer size (80 chars)
-4015 CALL BUFFIN ' Perform buffered input using BDOS call CREADSTR
-4020 PRINT
-4025 IF PEEK(BUF+1)=0 THEN R=0 : RETURN ' Nothing entered
-4030 R=PEEK(BUF+2) ' First char of input
-4035 IF (R >= &H61) AND (R <= &H7A) THEN R=R-&H20 ' Normalize to uppercase
-4040 RETURN
+4000 ' Format complete
+5000 ' Get a key from the user, store its ASCII code in R
+5005 BUF = &H80
+5010 POKE BUF,80 ' Set buffer size (80 chars)
+5015 CALL BUFFIN ' Perform buffered input using BDOS call CREADSTR
+5020 PRINT
+5025 IF PEEK(BUF+1)=0 THEN R=0 : RETURN ' Nothing entered
+5030 R=PEEK(BUF+2) ' First char of input
+5035 IF (R >= &H61) AND (R <= &H7A) THEN R=R-&H20 ' Normalize to uppercase
+5040 RETURN
