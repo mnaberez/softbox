@@ -28,7 +28,18 @@
 2040 CALL CFORM (D)
 2045 GOTO 4000
 3000 ' Format a Commodore floppy drive
+3005 PRINT "Disk on drive ";CHR$(R);": is to be formatted"
+3010 PRINT "Press RETURN to continue, ^C to abort : "
+3015 GOSUB 5000
+3020 IF R = 0 THEN GOTO 3030 ' Proceed only if no input
+3025 END
+3030 PRINT : PRINT "Formatting..."
+3035 CALL FORMAT (D) : CALL DSKERR (E)
 4000 ' Format complete
+4005 PRINT
+4010 IF E <> 0 THEN GOTO 4020
+4015 PRINT "Format Complete" : GOTO 1000
+4020 PRINT "Do not use diskette - try again..." : GOTO 1000
 5000 ' Get a key from the user, store its ASCII code in R
 5005 BUF = &H80
 5010 POKE BUF,80 ' Set buffer size (80 chars)
