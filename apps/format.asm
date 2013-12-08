@@ -179,10 +179,11 @@ check_letter:
     add hl,de
     add hl,hl
 l01b3h:
-    ccf
-    sbc a,a
-    ld h,a
-    ld l,a
+    ccf                 ;Clear carry flag
+    sbc a,a             ;Sets A=0, carry flag stays cleared
+    ld h,a              ;H = 0
+    ld l,a              ;L = 0
+
     pop de
     ld a,h
     or d
