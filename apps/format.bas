@@ -16,12 +16,15 @@
 1035 IF (D < 0) OR (D > 15) THEN PRINT "Drive doesn't exist !" : GOTO 1000
 1040 DT = D : CALL DTYPE (DT)
 1045 IF DT > 128 THEN PRINT "Drive not in system" : GOTO 1000
-2000 ' Get a key from the user, store its ASCII code in R
-2005 BUF = &H80
-2010 POKE BUF,80 ' Set buffer size (80 chars)
-2015 CALL BUFFIN ' Perform buffered input using BDOS call CREADSTR
-2020 PRINT
-2025 IF PEEK(BUF+1)=0 THEN R=0 : RETURN ' Nothing entered
-2030 R=PEEK(BUF+2) ' First char of input
-2035 IF (R >= &H61) AND (R <= &H7A) THEN R=R-&H20 ' Normalize to uppercase
-2040 RETURN
+1050 IF (DT < 2) OR (DT > 5) THEN GOTO 3000
+2000 ' Format a Corvus hard drive
+3000 ' Format a Commodore floppy drive
+4000 ' Get a key from the user, store its ASCII code in R
+4005 BUF = &H80
+4010 POKE BUF,80 ' Set buffer size (80 chars)
+4015 CALL BUFFIN ' Perform buffered input using BDOS call CREADSTR
+4020 PRINT
+4025 IF PEEK(BUF+1)=0 THEN R=0 : RETURN ' Nothing entered
+4030 R=PEEK(BUF+2) ' First char of input
+4035 IF (R >= &H61) AND (R <= &H7A) THEN R=R-&H20 ' Normalize to uppercase
+4040 RETURN
