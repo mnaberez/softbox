@@ -393,7 +393,9 @@ format_failed:
     call jp_to_warm     ;Jump to CP/M warm start (never returns)
 
 get_char:
-;Get a character from the user
+;Get a line of input from the user and save the first character
+;in first_char.  If the char is alphabetic, it will be normalized
+;to uppercase.  If nothing was entered, first_char will be zero.
 ;
     ld hl,dma_buf       ;HL = address of CP/M default DMA buffer area
     ld (buf_addr),hl    ;Store it in buf_addr
@@ -413,11 +415,14 @@ get_char:
     or l                ;Is there any data in the buffer?
     jp nz,l0318h        ;  Yes: jump to l0318h
 
-    ld hl,0000h         ;Store 0 in first_char
-    ld (first_char),hl
-    jp l0323h           ;Jump to l0323h
+                        ;Nothing was entered, store 0 in first_char:
+    ld hl,0000h         ;  HL = 0
+    ld (first_char),hl  ;  Store HL in first_char
+    jp l0323h           ;  Jump to l0323h
 
 l0318h:
+;A character was entered.  Store it in first_char.
+;
     ld hl,(buf_addr)    ;HL = buf_addr + 2 (first char in the buffer)
     inc hl
     inc hl
@@ -427,21 +432,27 @@ l0318h:
     ld (first_char),hl
 
 l0323h:
+;Normalize first_char to uppercase.
+;
+;If (first_char >= 61h) and (first_char <= 7Ah) then
+;  first_char = first_char - 20h
+;
     ld hl,(first_char)  ;HL = first char from user input (or zero if none)
-    ld de,0ff9fh
+    ld de,0-"a"         ;DE = 0ff9fh (0 - 61h)
     ld a,h
     rla
     jp c,l0330h
     add hl,de
     add hl,hl
 l0330h:
-    ccf
-    sbc a,a
-    ld h,a
-    ld l,a
-    push hl
-    ld hl,(first_char)
-    ld de,0ff85h
+    ccf                 ;Clear carry flag
+    sbc a,a             ;Sets A=0, carry stays the same
+    ld h,a              ;H = 0
+    ld l,a              ;L = 0
+    push hl             ;Push 0000h onto stack
+
+    ld hl,(first_char)  ;HL = first char from user input (or zero if none)
+    ld de,0-"z"-1       ;DE = 0ff85h (0 - 7Bh)
     ld a,h
     rla
     jp c,l0342h
@@ -452,19 +463,23 @@ l0342h:
     ld h,a
     ld l,a
     pop de
-    ld a,h
+
+    ld a,h              ;H = H & D
     and d
     ld h,a
-    ld a,l
+
+    ld a,l              ;L = L & E
     and e
     ld l,a
-    ld a,h
+
+    ld a,h              ;Jump to l035bh if HL = 0
     or l
     jp z,l035bh
-    ld de,0ffe0h
-    ld hl,(first_char)
-    add hl,de
-    ld (first_char),hl
+                        ;Convert lowercase char to uppercase:
+    ld de,0-20h         ;  DE = 0ffe0h
+    ld hl,(first_char)  ;  HL = first char from input
+    add hl,de           ;  Add 20h to convert char to uppercase
+    ld (first_char),hl  ;  Save normalized char
 l035bh:
     ret
 

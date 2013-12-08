@@ -18,4 +18,5 @@
 1020 PRINT
 1025 IF PEEK(BUF+1)=0 THEN R=0 : RETURN ' Nothing entered
 1030 R=PEEK(BUF+2) ' First char of input
-1035 RETURN
+1035 IF (R >= &H61) AND (R <= &H7A) THEN R=R-&H20 ' Normalize to uppercase
+1040 RETURN
