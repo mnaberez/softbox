@@ -460,15 +460,15 @@ l0342h:
     ld l,a
     ld a,h
     or l
-    jp z,nop_3
+    jp z,l035bh
     ld de,0ffe0h
     ld hl,(first_char)
     add hl,de
     ld (first_char),hl
-
-nop_3:
-;Do nothing and return
+l035bh:
     ret
+
+unused_30:
     call jp_to_warm
 
 bad_disk:
@@ -1267,9 +1267,10 @@ jp_to_hl:
 nop_1:
 ;Do nothing and return
     ret
+
+unused_31:
     ld hl,0fffeh
-    jp unused_21        ;Jump to unused code area.  This jump will
-                        ;  never be performed.
+    jp unused_21
 
 print_char:
 ;Write the char in A to the console
