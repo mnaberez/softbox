@@ -46,8 +46,7 @@
 5005 BUF = &H80
 5010 POKE BUF,80 ' Set buffer size (80 chars)
 5015 CALL BUFFIN ' Perform buffered input using BDOS call CREADSTR
-5020 PRINT
-5025 IF PEEK(BUF+1)=0 THEN R=0 : RETURN ' Nothing entered
-5030 R=PEEK(BUF+2) ' First char of input
-5035 IF (R >= &H61) AND (R <= &H7A) THEN R=R-&H20 ' Normalize to uppercase
-5040 RETURN
+5020 IF PEEK(BUF+1)=0 THEN R=0 : RETURN ' Nothing entered
+5025 R=PEEK(BUF+2) ' First char of input
+5030 IF (R >= &H61) AND (R <= &H7A) THEN R=R-&H20 ' Normalize to uppercase
+5035 RETURN
