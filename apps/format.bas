@@ -12,7 +12,7 @@
 1005 PRINT
 1010 PRINT "Format disk on which drive"
 1015 PRINT "(A to P, or RETURN to reboot) ? ";
-1020 GOSUB 5000
+1020 GOSUB 5000 : PRINT
 1025 IF R = 0 THEN END
 1030 D = R - &H41 ' Convert drive letter (A-P) to number (0-15)
 1035 IF (D < 0) OR (D > 15) THEN PRINT "Drive doesn't exist !" : GOTO 1000
