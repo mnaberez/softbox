@@ -20,7 +20,7 @@
 1045 IF DT > 128 THEN PRINT "Drive not in system" : GOTO 1000
 1050 IF (DT < 2) OR (DT > 5) THEN GOTO 3000
 2000 ' Format a Corvus hard drive
-2005 PRINT CHR$(7) ' Ring bell
+2005 PRINT CHR$(7); ' Ring bell
 2010 PRINT "Data on hard disk ";CHR$(R);": will be erased"
 2015 PRINT "Proceed (Y/N) ? ";
 2020 GOSUB 5000
