@@ -42,6 +42,7 @@
 4010 IF E <> 0 THEN GOTO 4020
 4015 PRINT "Format complete" : GOTO 1000
 4020 PRINT "Do not use diskette - try again..." : GOTO 1000
+4025 END
 5000 ' Get a key from the user, store its ASCII code in R
 5005 BUF = &H80
 5010 POKE BUF,80 ' Set buffer size (80 chars)
