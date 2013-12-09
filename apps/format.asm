@@ -274,14 +274,14 @@ l0215h:
 
     call nop_2
     ld hl,bell
-    call make_tmp       ;Temp string = bell character
+    call chr            ;Temp string = bell character
     call print_         ;Print temp string
 
     ld hl,data_on_hd
     call print_         ;Print "Data on hard disk "
 
     ld hl,(first_char)
-    call make_tmp       ;Temp string = drive letter
+    call chr            ;Temp string = drive letter
     call print_         ;Print temp string
 
     ld hl,will_be_eras
@@ -326,7 +326,7 @@ prompt_floppy:
     call print_         ;Print "Disk on drive "
 
     ld hl,(first_char)
-    call make_tmp       ;Temp string = drive letter
+    call chr            ;Temp string = drive letter
     call print_         ;Print temp string
 
     ld hl,be_formatted
@@ -1065,9 +1065,10 @@ unused_8:
     add a,30h
     ret
 
-make_tmp:
+chr:
 ;Make a temporary string from the char in L and
 ;return a pointer to it in HL.
+;Implements BASIC function: CHR$(x)
 ;
     ld a,01h            ;A = 1 byte in string
     ld (tmp),a          ;Store length in temp string header
