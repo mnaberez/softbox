@@ -154,7 +154,7 @@ next_disk:
     ld a,h
     or l
     jp nz,check_letter  ;Jump to check drive if a letter was entered
-    call jp_to_warm     ;No letter: jump to CP/M warm start (never returns)
+    call end            ;No letter: call END to warm start (never returns)
 
 check_letter:
 ;Check that the letter is in the range of valid letters (A-P).
@@ -301,7 +301,7 @@ l0215h:
     or l                ;  Is the result zero?
     jp z,format_hard    ;    Yes: jump to format
 
-    call jp_to_warm     ;Jump to CP/M warm start (never returns)
+    call end            ;Call END to warm start (never returns)
 
 format_hard:
 ;Perform the Corvus hard disk format.
@@ -342,7 +342,7 @@ prompt_floppy:
     ld a,h
     or l
     jp z,format_floppy
-    call jp_to_warm     ;Jump to CP/M warm start (never returns)
+    call end            ;Call END to warm start (never returns)
 
 format_floppy:
 ;Perform the CBM floppy disk format.
@@ -390,7 +390,7 @@ format_failed:
 
     jp next_disk        ;Loop back to beginning ("Format disk in which...")
 
-    call jp_to_warm     ;Jump to CP/M warm start (never returns)
+    call end            ;Call END to warm start (never returns)
 
 get_char:
 ;Get a line of input from the user and save the first character
@@ -484,7 +484,7 @@ l035bh:
     ret
 
 unused_30:
-    call jp_to_warm
+    call end
 
 bad_disk:
     db 22h
@@ -1272,8 +1272,9 @@ unused_20:
     ld h,a
     ret
 
-jp_to_warm:
+end:
 ;Jump to CP/M warm start
+;Implements BASIC command: END
     jp warm
 
 jp_to_hl:
