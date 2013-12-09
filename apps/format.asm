@@ -108,47 +108,47 @@ main:
 ;Print the welcome banner.
 ;
     call nop_1
-    call nop_2
+    call pr0a
     ld hl,empty_string
-    call print          ;Print newline
+    call pv2d           ;Print newline
 
-    call nop_2
+    call pr0a
     ld hl,empty_string
-    call print          ;Print newline
+    call pv2d           ;Print newline
 
-    call nop_2
+    call pr0a
     ld hl,format_prog
-    call print          ;Print "Disk formatting program"
+    call pv2d           ;Print "Disk formatting program"
 
-    call nop_2
+    call pr0a
     ld hl,for_pet_cpm   ;Print "For PET CP/M "
-    call print
+    call pv2d
 
-    call nop_2
+    call pr0a
     ld hl,dashes
-    call print          ;Print "=== === ===="
+    call pv2d           ;Print "=== === ===="
 
 next_disk:
 ;Prompt for a drive letter.  If no letter is entered,
 ;warm start back to CP/M.
 ;
-    call nop_2
+    call pr0a
     ld hl,empty_string
-    call print          ;Print newline
+    call pv2d           ;Print newline
 
-    call nop_2
+    call pr0a
     ld hl,on_which_drv
-    call print          ;Print "Format disk on which drive"
+    call pv2d           ;Print "Format disk on which drive"
 
-    call nop_2
+    call pr0a
     ld hl,a_to_p
-    call print_         ;Print "(A to P, or RETURN to reboot) ? "
+    call pv1d           ;Print "(A to P, or RETURN to reboot) ? "
 
     call get_char       ;Get a character from the user
 
-    call nop_2
+    call pr0a
     ld hl,empty_string
-    call print          ;Print newline
+    call pv2d           ;Print newline
 
     ld hl,(first_char)
     ld a,h
@@ -195,9 +195,9 @@ l01b3h:
     or l
     jp z,check_type
 
-    call nop_2
+    call pr0a
     ld hl,doesnt_exist
-    call print          ;Print "Drive doesn't exist !"
+    call pv2d           ;Print "Drive doesn't exist !"
 
     jp next_disk        ;Loop back to beginning ("Format disk in which...")
 
@@ -224,9 +224,9 @@ check_type:
 l01e8h:
     jp c,floppy_or_hard
 
-    call nop_2
+    call pr0a
     ld hl,not_in_sys
-    call print          ;Print "Drive not in system"
+    call pv2d           ;Print "Drive not in system"
 
     jp next_disk        ;Loop back to beginning ("Format disk in which...")
 
@@ -272,24 +272,24 @@ l0215h:
                         ;Drive must be a Corvus hard disk.
                         ;Prompt for confirmation to format the hard disk.
 
-    call nop_2
+    call pr0a
     ld hl,bell
     call chr            ;Temp string = bell character
-    call print_         ;Print temp string
+    call pv1d           ;Print temp string
 
     ld hl,data_on_hd
-    call print_         ;Print "Data on hard disk "
+    call pv1d           ;Print "Data on hard disk "
 
     ld hl,(first_char)
     call chr            ;Temp string = drive letter
-    call print_         ;Print temp string
+    call pv1d           ;Print temp string
 
     ld hl,will_be_eras
-    call print          ;Print ": will be erased"
+    call pv2d           ;Print ": will be erased"
 
-    call nop_2
+    call pr0a
     ld hl,proceed_yn
-    call print_         ;Print "Proceed (Y/N) ? "
+    call pv1d           ;Print "Proceed (Y/N) ? "
 
     call get_char       ;Get a character from the user
 
@@ -306,13 +306,13 @@ l0215h:
 format_hard:
 ;Perform the Corvus hard disk format.
 ;
-    call nop_2
+    call pr0a
     ld hl,empty_string
-    call print          ;Print newline
+    call pv2d           ;Print newline
 
-    call nop_2
+    call pr0a
     ld hl,formatting_hd
-    call print          ;Print "Formatting hard disk"
+    call pv2d           ;Print "Formatting hard disk"
 
     ld hl,drv_num       ;HL = address of CP/M drive number of Corvus
     call cform          ;Format the Corvus hard disk
@@ -321,20 +321,20 @@ format_hard:
 prompt_floppy:
 ;Prompt for confirmation to format the floppy disk.
 ;
-    call nop_2
+    call pr0a
     ld hl,disk_on_drv
-    call print_         ;Print "Disk on drive "
+    call pv1d           ;Print "Disk on drive "
 
     ld hl,(first_char)
     call chr            ;Temp string = drive letter
-    call print_         ;Print temp string
+    call pv1d           ;Print temp string
 
     ld hl,be_formatted
-    call print          ;Print ": is to be formatted"
+    call pv2d           ;Print ": is to be formatted"
 
-    call nop_2
+    call pr0a
     ld hl,press_return
-    call print_         ;Print "Press RETURN to continue, ^C to abort : "
+    call pv1d           ;Print "Press RETURN to continue, ^C to abort : "
 
     call get_char       ;Get a character from the user
 
@@ -347,13 +347,13 @@ prompt_floppy:
 format_floppy:
 ;Perform the CBM floppy disk format.
 ;
-    call nop_2
+    call pr0a
     ld hl,empty_string
-    call print          ;Print newline
+    call pv2d           ;Print newline
 
-    call nop_2
+    call pr0a
     ld hl,formatting
-    call print          ;Print "Formatting..."
+    call pv2d           ;Print "Formatting..."
 
     ld hl,drv_num       ;HL = address of CP/M drive number of CBM floppy
     call format         ;Format the CBM floppy disk
@@ -367,9 +367,9 @@ format_done:
 ;Formatting complete (either hard disk or floppy disk).
 ;Check if an error occurred and then loop back.
 ;
-    call nop_2
+    call pr0a
     ld hl,empty_string
-    call print          ;Print newline
+    call pv2d           ;Print newline
 
                         ;Handle CBM DOS error:
     ld hl,(cbm_err)     ;  HL = last error code from CBM DOS
@@ -377,16 +377,16 @@ format_done:
     or l                ;  Error code = 0 (OK)?
     jp nz,format_failed ;    No: jump to format failed
 
-    call nop_2
+    call pr0a
     ld hl,complete
-    call print          ;Print "Format Complete"
+    call pv2d           ;Print "Format Complete"
 
     jp next_disk        ;Loop back to beginning ("Format disk in which...")
 
 format_failed:
-    call nop_2
+    call pr0a
     ld hl,bad_disk
-    call print          ;Print "Do not use diskette - try again..."
+    call pv2d           ;Print "Do not use diskette - try again..."
 
     jp next_disk        ;Loop back to beginning ("Format disk in which...")
 
@@ -1077,7 +1077,7 @@ chr:
     ld hl,tmp           ;HL = address of the string
     ret
 
-print:
+pv2d:
 ;Print string in HL followed by CR+LF
 ;Implements BASIC command: PRINT"foo"
 ;
@@ -1087,7 +1087,7 @@ print:
     call print_str      ;Print the string
     jp print_eol        ;Jump out to print CR+LF
 
-print_:
+pv1d:
 ;Print string in HL but do not send CR+LF
 ;Implements BASIC command: PRINT"foo";
 ;
@@ -1303,7 +1303,7 @@ print_char:
     pop de
     pop hl
 
-nop_2:
+pr0a:
 ;Do nothing and return
     ret
 
