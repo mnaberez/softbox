@@ -2,6 +2,8 @@
 1 ' This is a reconstruction of the original MBASIC source based on a
 2 ' disassembly of FORMAT.COM, which was compiled with BASCOM.
 3 '
+10 OPTION BASE 0
+25 DEFINT A-Z
 100 PRINT : PRINT
 110 PRINT "Disk formatting program"
 115 PRINT "For PET CP/M "
