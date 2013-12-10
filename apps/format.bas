@@ -38,7 +38,7 @@
 3035 CALL FORMAT (D) : CALL DSKERR (E)
 4000 ' Format complete
 4005 PRINT
-4010 IF E <> 0 THEN GOTO 4020
+4010 IF E THEN GOTO 4020
 4015 PRINT "Format complete" : GOTO 1000
 4020 PRINT "Do not use diskette - try again..." : GOTO 1000
 4025 END
