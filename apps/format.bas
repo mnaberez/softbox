@@ -20,15 +20,14 @@
 1045 IF DT >= 128 THEN PRINT "Drive not in system" : GOTO 1000
 1050 IF (DT < 2) OR (DT > 9) THEN GOTO 3000
 2000 ' Format a Corvus hard drive
-2005 PRINT CHR$(7); ' Ring bell
-2010 PRINT "Data on hard disk ";CHR$(R);": will be erased"
-2015 PRINT "Proceed (Y/N) ? ";
-2020 GOSUB 5000
-2025 IF R - &H59 = 0 THEN GOTO 2035 ' Proceed only if "Y" is entered
-2030 END
-2035 PRINT : PRINT "Formatting hard disk"
-2040 CALL CFORM (D)
-2045 GOTO 4000
+2005 PRINT CHR$(7);"Data on hard disk ";CHR$(R);": will be erased"
+2010 PRINT "Proceed (Y/N) ? ";
+2015 GOSUB 5000
+2020 IF R - &H59 = 0 THEN GOTO 2030 ' Proceed only if "Y" is entered
+2025 END
+2030 PRINT : PRINT "Formatting hard disk"
+2035 CALL CFORM (D)
+2040 GOTO 4000
 3000 ' Format a Commodore floppy drive
 3005 PRINT "Disk on drive ";CHR$(R);": is to be formatted"
 3010 PRINT "Press RETURN to continue, ^C to abort : ";
