@@ -379,7 +379,7 @@ format_done:
 
     call pr0a
     ld hl,complete
-    call pv2d           ;Print "Format Complete"
+    call pv2d           ;Print "Format complete"
 
     jp next_disk        ;Loop back to beginning ("Format disk in which...")
 
