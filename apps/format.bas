@@ -24,7 +24,7 @@
 2010 PRINT "Data on hard disk ";CHR$(R);": will be erased"
 2015 PRINT "Proceed (Y/N) ? ";
 2020 GOSUB 5000
-2025 IF R = &H59 THEN GOTO 2035 ' Proceed only if "Y" is entered
+2025 IF R - &H59 = 0 THEN GOTO 2035 ' Proceed only if "Y" is entered
 2030 END
 2035 PRINT : PRINT "Formatting hard disk"
 2040 CALL CFORM (D)
