@@ -32,10 +32,9 @@
 3005 PRINT "Disk on drive ";CHR$(R);": is to be formatted"
 3010 PRINT "Press RETURN to continue, ^C to abort : ";
 3015 GOSUB 5000
-3020 IF R = 0 THEN GOTO 3030 ' Proceed only if no input
-3025 END
-3030 PRINT : PRINT "Formatting..."
-3035 CALL FORMAT (D) : CALL DSKERR (E)
+3020 IF R THEN END ' Proceed only if no input
+3025 PRINT : PRINT "Formatting..."
+3030 CALL FORMAT (D) : CALL DSKERR (E)
 4000 ' Format complete
 4005 PRINT
 4010 IF E THEN GOTO 4020
