@@ -4335,8 +4335,6 @@ l2880h:
     dw 2883h
     db "CP/M  Reconfiguration"
 
-
-
 l2898h:
     nop                 ;2898 00
 l2899h:
@@ -4345,6 +4343,9 @@ l2899h:
     inc h               ;289c 24
     dec l               ;289d 2d
     ld bc,0000h         ;289e 01 00 00
+
+; Start of LOADSAVE.REL =====================================================
+
 sub_28a1h:
     ld c,0ah            ;28a1 0e 0a
     ld de,0080h         ;28a3 11 80 00
@@ -4820,6 +4821,9 @@ l2be5h:
     dec l               ;2be5 2d
 l2be6h:
     ld d,h              ;2be6 54
+
+; End of LOADSAVE.REL =======================================================
+
 l2be7h:
     cp 64h              ;2be7 fe 64
     jp z,53d6h          ;2be9 ca d6 53
