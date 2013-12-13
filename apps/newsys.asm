@@ -4562,7 +4562,7 @@ sub_2a02h:
     call 0f054h         ;2a06 cd 54 f0
     push de             ;2a09 d5
     ld e,0fh            ;2a0a 1e 0f
-    ld hl,l2bcah+1      ;2a0c 21 cb 2b
+    ld hl,l2bcbh        ;2a0c 21 cb 2b
     ld a,(l2be5h)       ;2a0f 3a e5 2b
     rra                 ;2a12 1f
 l2a13h:
@@ -4640,7 +4640,7 @@ l2a73h:
     ld a,(l2be5h)       ;2a95 3a e5 2b
     and 01h             ;2a98 e6 01
     add a,30h           ;2a9a c6 30
-    ld (l2ba7h),a       ;2a9c 32 a7 2b
+    ld (l2ba6h+1),a     ;2a9c 32 a7 2b
     ld e,0fh            ;2a9f 1e 0f
     ld c,14h            ;2aa1 0e 14
     ld hl,2ba6h         ;2aa3 21 a6 2b
@@ -4741,86 +4741,40 @@ l2b7ah:
     call 0005h          ;2b7f cd 05 00
     ld c,01h            ;2b82 0e 01
     jp 0005h            ;2b84 c3 05 00
+
 l2b87h:
-    dec c               ;2b87 0d
-    ld a,(bc)           ;2b88 0a
-    ld c,b              ;2b89 48
-    ld l,c              ;2b8a 69
-    ld (hl),h           ;2b8b 74
-    jr nz,$+99          ;2b8c 20 61
-    ld l,(hl)           ;2b8e 6e
-    ld a,c              ;2b8f 79
-    jr nz,l2bfdh        ;2b90 20 6b
-    ld h,l              ;2b92 65
-    ld a,c              ;2b93 79
-    jr nz,l2c0ah        ;2b94 20 74
-    ld l,a              ;2b96 6f
-    jr nz,$+99          ;2b97 20 61
-    ld h,d              ;2b99 62
-    ld l,a              ;2b9a 6f
-    ld (hl),d           ;2b9b 72
-    ld (hl),h           ;2b9c 74
-    jr nz,l2bd9h        ;2b9d 20 3a
-    jr nz,l2bc5h        ;2b9f 20 24
+    db 0dh,0ah,"Hit any key to abort : $"
 l2ba1h:
-    ld d,l              ;2ba1 55
-    ld (3220h),a        ;2ba2 32 20 32
-    jr nz,$+80          ;2ba5 20 4e
-l2ba7h:
-    jr nc,$+60          ;2ba7 30 3a
-    ld b,e              ;2ba9 43
-    ld d,b              ;2baa 50
-    cpl                 ;2bab 2f
-    ld c,l              ;2bac 4d
-    jr nz,$+88          ;2bad 20 56
-    ld (322eh),a        ;2baf 32 2e 32
-    jr nz,$+70          ;2bb2 20 44
-    ld c,c              ;2bb4 49
-    ld d,e              ;2bb5 53
-    ld c,e              ;2bb6 4b
-    inc l               ;2bb7 2c
-    ld e,b              ;2bb8 58
-    ld e,b              ;2bb9 58
+    db "U2 2 "
+l2ba6h:
+    db "N0:CP/M V2.2 DISK,XX"
 l2bbah:
-    ld b,d              ;2bba 42
-    dec l               ;2bbb 2d
-    ld d,b              ;2bbc 50
-    jr nz,l2bf1h        ;2bbd 20 32
-    jr nz,l2bf2h        ;2bbf 20 31
+    db "B-P 2 1"
 l2bc1h:
-    ld c,l              ;2bc1 4d
-    dec l               ;2bc2 2d
-    ld d,a              ;2bc3 57
-    nop                 ;2bc4 00
-l2bc5h:
-    inc de              ;2bc5 13
-    ld bc,3223h         ;2bc6 01 23 32
+    db "M-W",00h,13h,01h
+    db "#2"
+
 l2bc9h:
-    ld d,e              ;2bc9 53
+    db 53h
 l2bcah:
-    ld a,(3053h)        ;2bca 3a 53 30
-    ld a,(532ah)        ;2bcd 3a 2a 53
-    ld sp,l2a3ah        ;2bd0 31 3a 2a
+    db 3ah
+
+l2bcbh:
+    db "S0:*"
+    db "S1:*"
 l2bd3h:
-    jr nc,$+60          ;2bd3 30 3a
-    ld b,e              ;2bd5 43
-    ld d,b              ;2bd6 50
-    cpl                 ;2bd7 2f
-    ld c,l              ;2bd8 4d
+    db "0:CP/M"
 l2bd9h:
-    ld sp,433ah         ;2bd9 31 3a 43
-    ld d,b              ;2bdc 50
-    cpl                 ;2bdd 2f
-    ld c,l              ;2bde 4d
+    db "1:CP/M"
 l2bdfh:
-    jr nc,$+60          ;2bdf 30 3a
-    ld c,e              ;2be1 4b
+    db "0:K"
 l2be2h:
-    ld sp,4b3ah         ;2be2 31 3a 4b
+    db "1:K"
+
 l2be5h:
-    dec l               ;2be5 2d
+    db 2dh
 l2be6h:
-    ld d,h              ;2be6 54
+    db 54h
 
 ; End of LOADSAVE.REL =======================================================
 
