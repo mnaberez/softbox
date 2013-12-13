@@ -373,10 +373,10 @@ l031dh:
     ld hl,l2898h        ;0323 21 98 28
     call sub_2c31h      ;0326 cd 31 2c
     call sub_2d3dh      ;0329 cd 3d 2d
-    ld hl,l2880h        ;032c 21 80 28
+    ld hl,cpm_reconfig  ;032c 21 80 28
     call sub_2c31h      ;032f cd 31 2c
     call sub_2d3dh      ;0332 cd 3d 2d
-    ld hl,l2868h        ;0335 21 68 28
+    ld hl,dashes_3      ;0335 21 68 28
     call sub_2c31h      ;0338 cd 31 2c
     call sub_2d3dh      ;033b cd 3d 2d
     ld hl,l2898h        ;033e 21 98 28
@@ -388,7 +388,7 @@ l031dh:
     or l                ;034c b5
     jp nz,l0359h        ;034d c2 59 03
     call sub_2d3dh      ;0350 cd 3d 2d
-    ld hl,l284eh        ;0353 21 4e 28
+    ld hl,mw_version    ;0353 21 4e 28
     call sub_2c31h      ;0356 cd 31 2c
 l0359h:
     call sub_2d3dh      ;0359 cd 3d 2d
@@ -401,7 +401,7 @@ l0359h:
     ld hl,l2898h        ;036e 21 98 28
     call sub_2c31h      ;0371 cd 31 2c
     call sub_2d3dh      ;0374 cd 3d 2d
-    ld hl,l280eh        ;0377 21 0e 28
+    ld hl,source_drv_a_p ;0377 21 0e 28
     call sub_2c3ch      ;037a cd 3c 2c
     call sub_1bcah      ;037d cd ca 1b
     ld hl,(02b2h)       ;0380 2a b2 02
@@ -722,52 +722,52 @@ l05b5h:
     ld hl,l2898h        ;05bb 21 98 28
     call sub_2c31h      ;05be cd 31 2c
     call sub_2d3dh      ;05c1 cd 3d 2d
-    ld hl,l27f5h        ;05c4 21 f5 27
+    ld hl,cpm_reconfig_2 ;05c4 21 f5 27
     call sub_2c31h      ;05c7 cd 31 2c
     call sub_2d3dh      ;05ca cd 3d 2d
-    ld hl,l27dch        ;05cd 21 dc 27
+    ld hl,dashes_4      ;05cd 21 dc 27
     call sub_2c31h      ;05d0 cd 31 2c
     call sub_2d3dh      ;05d3 cd 3d 2d
     ld hl,l2898h        ;05d6 21 98 28
     call sub_2c31h      ;05d9 cd 31 2c
     call sub_2d3dh      ;05dc cd 3d 2d
-    ld hl,l27c5h        ;05df 21 c5 27
+    ld hl,a_autoload    ;05df 21 c5 27
     call sub_2c31h      ;05e2 cd 31 2c
     call sub_2d3dh      ;05e5 cd 3d 2d
     ld hl,l2898h        ;05e8 21 98 28
     call sub_2c31h      ;05eb cd 31 2c
     call sub_2d3dh      ;05ee cd 3d 2d
-    ld hl,l27a9h        ;05f1 21 a9 27
+    ld hl,d_drv_asgn    ;05f1 21 a9 27
     call sub_2c31h      ;05f4 cd 31 2c
     call sub_2d3dh      ;05f7 cd 3d 2d
     ld hl,l2898h        ;05fa 21 98 28
     call sub_2c31h      ;05fd cd 31 2c
     call sub_2d3dh      ;0600 cd 3d 2d
-    ld hl,l2794h        ;0603 21 94 27
+    ld hl,i_io_asgn     ;0603 21 94 27
     call sub_2c31h      ;0606 cd 31 2c
     call sub_2d3dh      ;0609 cd 3d 2d
     ld hl,l2898h        ;060c 21 98 28
     call sub_2c31h      ;060f cd 31 2c
     call sub_2d3dh      ;0612 cd 3d 2d
-    ld hl,l2776h        ;0615 21 76 27
+    ld hl,p_pet_term    ;0615 21 76 27
     call sub_2c31h      ;0618 cd 31 2c
     call sub_2d3dh      ;061b cd 3d 2d
     ld hl,l2898h        ;061e 21 98 28
     call sub_2c31h      ;0621 cd 31 2c
     call sub_2d3dh      ;0624 cd 3d 2d
-    ld hl,l275ah        ;0627 21 5a 27
+    ld hl,r_rs232       ;0627 21 5a 27
     call sub_2c31h      ;062a cd 31 2c
     call sub_2d3dh      ;062d cd 3d 2d
     ld hl,l2898h        ;0630 21 98 28
     call sub_2c31h      ;0633 cd 31 2c
     call sub_2d3dh      ;0636 cd 3d 2d
-    ld hl,l2744h        ;0639 21 44 27
+    ld hl,s_save        ;0639 21 44 27
     call sub_2c31h      ;063c cd 31 2c
     call sub_2d3dh      ;063f cd 3d 2d
     ld hl,l2898h        ;0642 21 98 28
     call sub_2c31h      ;0645 cd 31 2c
     call sub_2d3dh      ;0648 cd 3d 2d
-    ld hl,l272bh        ;064b 21 2b 27
+    ld hl,e_execute     ;064b 21 2b 27
     call sub_2c31h      ;064e cd 31 2c
     call sub_2d3dh      ;0651 cd 3d 2d
     ld hl,l2898h        ;0654 21 98 28
@@ -779,7 +779,7 @@ l05b5h:
     ld hl,l2898h        ;0666 21 98 28
     call sub_2c31h      ;0669 cd 31 2c
     call sub_2d3dh      ;066c cd 3d 2d
-    ld hl,l26eah        ;066f 21 ea 26
+    ld hl,pls_letter    ;066f 21 ea 26
     call sub_2c3ch      ;0672 cd 3c 2c
     call sub_1bcah      ;0675 cd ca 1b
     ld hl,(02b2h)       ;0678 2a b2 02
@@ -836,10 +836,10 @@ l0693h:
 l06deh:
     call sub_1bbdh      ;06de cd bd 1b
     call sub_2d3dh      ;06e1 cd 3d 2d
-    ld hl,l26c7h        ;06e4 21 c7 26
+    ld hl,rs232_chrs    ;06e4 21 c7 26
     call sub_2c31h      ;06e7 cd 31 2c
     call sub_2d3dh      ;06ea cd 3d 2d
-    ld hl,l26a4h        ;06ed 21 a4 26
+    ld hl,dashes_5      ;06ed 21 a4 26
     call sub_2c31h      ;06f0 cd 31 2c
     call sub_2d3dh      ;06f3 cd 3d 2d
     ld hl,l2898h        ;06f6 21 98 28
@@ -866,7 +866,7 @@ l06deh:
     ld hl,l2898h        ;0725 21 98 28
     call sub_2c31h      ;0728 cd 31 2c
     call sub_2d3dh      ;072b cd 3d 2d
-    ld hl,l2660h        ;072e 21 60 26
+    ld hl,rs232_2_stop  ;072e 21 60 26
     call sub_2c3ch      ;0731 cd 3c 2c
     ld hl,(02c0h)       ;0734 2a c0 02
     ld a,l              ;0737 7d
@@ -881,7 +881,7 @@ l06deh:
     or l                ;0746 b5
     jp nz,l0753h        ;0747 c2 53 07
     call sub_2d3dh      ;074a cd 3d 2d
-    ld hl,l2654h        ;074d 21 54 26
+    ld hl,undefined     ;074d 21 54 26
     call sub_2c31h      ;0750 cd 31 2c
 l0753h:
     ld hl,(02d6h)       ;0753 2a d6 02
@@ -891,7 +891,7 @@ l0753h:
     or l                ;075b b5
     jp nz,l0768h        ;075c c2 68 07
     call sub_2d3dh      ;075f cd 3d 2d
-    ld hl,l2650h        ;0762 21 50 26
+    ld hl,one           ;0762 21 50 26
     call sub_2c31h      ;0765 cd 31 2c
 l0768h:
     ld hl,(02d6h)       ;0768 2a d6 02
@@ -901,7 +901,7 @@ l0768h:
     or l                ;0770 b5
     jp nz,l077dh        ;0771 c2 7d 07
     call sub_2d3dh      ;0774 cd 3d 2d
-    ld hl,l264ah        ;0777 21 4a 26
+    ld hl,one_dot_five  ;0777 21 4a 26
     call sub_2c31h      ;077a cd 31 2c
 l077dh:
     ld hl,(02d6h)       ;077d 2a d6 02
@@ -911,14 +911,14 @@ l077dh:
     or l                ;0785 b5
     jp nz,l0792h        ;0786 c2 92 07
     call sub_2d3dh      ;0789 cd 3d 2d
-    ld hl,l2646h        ;078c 21 46 26
+    ld hl,two           ;078c 21 46 26
     call sub_2c31h      ;078f cd 31 2c
 l0792h:
     call sub_2d3dh      ;0792 cd 3d 2d
     ld hl,l2898h        ;0795 21 98 28
     call sub_2c31h      ;0798 cd 31 2c
     call sub_2d3dh      ;079b cd 3d 2d
-    ld hl,l2624h        ;079e 21 24 26
+    ld hl,rs232_3_par   ;079e 21 24 26
     call sub_2c3ch      ;07a1 cd 3c 2c
     ld hl,(02c0h)       ;07a4 2a c0 02
     ld a,l              ;07a7 7d
@@ -931,7 +931,7 @@ l0792h:
     or l                ;07b0 b5
     jp nz,l07bdh        ;07b1 c2 bd 07
     call sub_2d3dh      ;07b4 cd 3d 2d
-    ld hl,l261dh        ;07b7 21 1d 26
+    ld hl,none          ;07b7 21 1d 26
     call sub_2c31h      ;07ba cd 31 2c
 l07bdh:
     ld hl,(02c0h)       ;07bd 2a c0 02
@@ -947,7 +947,7 @@ l07bdh:
     or l                ;07cd b5
     jp nz,l07dah        ;07ce c2 da 07
     call sub_2d3dh      ;07d1 cd 3d 2d
-    ld hl,l2616h        ;07d4 21 16 26
+    ld hl,even          ;07d4 21 16 26
     call sub_2c31h      ;07d7 cd 31 2c
 l07dah:
     ld hl,(02c0h)       ;07da 2a c0 02
@@ -971,7 +971,7 @@ l07f7h:
     call sub_2c31h      ;07fd cd 31 2c
 l0800h:
     call sub_2d3dh      ;0800 cd 3d 2d
-    ld hl,l25eeh        ;0803 21 ee 25
+    ld hl,rs232_4_baud  ;0803 21 ee 25
     call sub_2c3ch      ;0806 cd 3c 2c
     ld hl,(02c2h)       ;0809 2a c2 02
     ld de,0ffdeh        ;080c 11 de ff
@@ -980,7 +980,7 @@ l0800h:
     or l                ;0811 b5
     jp nz,l081eh        ;0812 c2 1e 08
     call sub_2d3dh      ;0815 cd 3d 2d
-    ld hl,l25e8h        ;0818 21 e8 25
+    ld hl,baud_110      ;0818 21 e8 25
     call sub_2c31h      ;081b cd 31 2c
 l081eh:
     ld hl,(02c2h)       ;081e 2a c2 02
@@ -1000,7 +1000,7 @@ l0833h:
     or l                ;083b b5
     jp nz,l0848h        ;083c c2 48 08
     call sub_2d3dh      ;083f cd 3d 2d
-    ld hl,l25dbh        ;0842 21 db 25
+    ld hl,baud_1200     ;0842 21 db 25
     call sub_2c31h      ;0845 cd 31 2c
 l0848h:
     ld hl,(02c2h)       ;0848 2a c2 02
@@ -1010,7 +1010,7 @@ l0848h:
     or l                ;0850 b5
     jp nz,l085dh        ;0851 c2 5d 08
     call sub_2d3dh      ;0854 cd 3d 2d
-    ld hl,l25d4h        ;0857 21 d4 25
+    ld hl,baud_9600     ;0857 21 d4 25
     call sub_2c31h      ;085a cd 31 2c
 l085dh:
     ld hl,(02c2h)       ;085d 2a c2 02
@@ -1177,7 +1177,7 @@ l0980h:
     jp l06deh           ;0980 c3 de 06
 l0983h:
     call sub_2d3dh      ;0983 cd 3d 2d
-    ld hl,l2537h        ;0986 21 37 25
+    ld hl,odd_even_none  ;0986 21 37 25
     call sub_2c3ch      ;0989 cd 3c 2c
     call sub_1bcah      ;098c cd ca 1b
     ld hl,(02b2h)       ;098f 2a b2 02
@@ -1303,10 +1303,10 @@ l0a78h:
 l0a7bh:
     call sub_1bbdh      ;0a7b cd bd 1b
     call sub_2d3dh      ;0a7e cd 3d 2d
-    ld hl,l24e2h        ;0a81 21 e2 24
+    ld hl,io_dev_asgn        ;0a81 21 e2 24
     call sub_2c31h      ;0a84 cd 31 2c
     call sub_2d3dh      ;0a87 cd 3d 2d
-    ld hl,l24bdh        ;0a8a 21 bd 24
+    ld hl,dashes_6        ;0a8a 21 bd 24
     call sub_2c31h      ;0a8d cd 31 2c
     call sub_2d3dh      ;0a90 cd 3d 2d
     ld hl,l2898h        ;0a93 21 98 28
@@ -1373,7 +1373,7 @@ l0b1bh:
     or l                ;0b2b b5
     jp nz,l0b38h        ;0b2c c2 38 0b
     call sub_2d3dh      ;0b2f cd 3d 2d
-    ld hl,l240ah        ;0b32 21 0a 24
+    ld hl,crt           ;0b32 21 0a 24
     call sub_2c31h      ;0b35 cd 31 2c
 l0b38h:
     ld hl,(l010ch)      ;0b38 2a 0c 01
@@ -1455,7 +1455,7 @@ l0ba9h:
     jp l0be0h           ;0bd4 c3 e0 0b
 l0bd7h:
     call sub_2d3dh      ;0bd7 cd 3d 2d
-    ld hl,l23ach        ;0bda 21 ac 23
+    ld hl,ptp           ;0bda 21 ac 23
     call sub_2c31h      ;0bdd cd 31 2c
 l0be0h:
     call sub_2d3dh      ;0be0 cd 3d 2d
@@ -1534,7 +1534,7 @@ l0c2dh:
     ld hl,(02b2h)       ;0c83 2a b2 02
     ld (l02d8h+2),hl    ;0c86 22 da 02
     call sub_2d3dh      ;0c89 cd 3d 2d
-    ld hl,l2343h        ;0c8c 21 43 23
+    ld hl,new_dev_num   ;0c8c 21 43 23
     call sub_2c3ch      ;0c8f cd 3c 2c
     call sub_1bcah      ;0c92 cd ca 1b
     ld hl,(l02d8h+2)    ;0c95 2a da 02
@@ -1579,13 +1579,13 @@ l0ce0h:
     ld hl,l2898h        ;0ce3 21 98 28
     call sub_2c31h      ;0ce6 cd 31 2c
     call sub_2d3dh      ;0ce9 cd 3d 2d
-    ld hl,l2328h        ;0cec 21 28 23
+    ld hl,tty_rs232     ;0cec 21 28 23
     call sub_2c31h      ;0cef cd 31 2c
     call sub_2d3dh      ;0cf2 cd 3d 2d
-    ld hl,l2310h        ;0cf5 21 10 23
+    ld hl,crt_pet_scrn  ;0cf5 21 10 23
     call sub_2c31h      ;0cf8 cd 31 2c
     call sub_2d3dh      ;0cfb cd 3d 2d
-    ld hl,l22f2h        ;0cfe 21 f2 22
+    ld hl,lpt_pet       ;0cfe 21 f2 22
     call sub_2c31h      ;0d01 cd 31 2c
 l0d04h:
     call sub_2d3dh      ;0d04 cd 3d 2d
@@ -1721,7 +1721,7 @@ l0dedh:
     jp l0a7bh           ;0ded c3 7b 0a
 l0df0h:
     call sub_2d3dh      ;0df0 cd 3d 2d
-    ld hl,l2280h        ;0df3 21 80 22
+    ld hl,tty_or_ptp    ;0df3 21 80 22
     call sub_2c3ch      ;0df6 cd 3c 2c
     call sub_1bcah      ;0df9 cd ca 1b
     ld hl,(02b2h)       ;0dfc 2a b2 02
@@ -1766,10 +1766,10 @@ l0e3bh:
     ld hl,l2898h        ;0e3e 21 98 28
     call sub_2c31h      ;0e41 cd 31 2c
     call sub_2d3dh      ;0e44 cd 3d 2d
-    ld hl,l2261h        ;0e47 21 61 22
+    ld hl,cbm3022        ;0e47 21 61 22
     call sub_2c31h      ;0e4a cd 31 2c
     call sub_2d3dh      ;0e4d cd 3d 2d
-    ld hl,l2256h        ;0e50 21 56 22
+    ld hl,cbm8024        ;0e50 21 56 22
     call sub_2c31h      ;0e53 cd 31 2c
     call sub_2d3dh      ;0e56 cd 3d 2d
     ld hl,2236h         ;0e59 21 36 22
@@ -1778,7 +1778,7 @@ l0e3bh:
     ld hl,l2898h        ;0e62 21 98 28
     call sub_2c31h      ;0e65 cd 31 2c
     call sub_2d3dh      ;0e68 cd 3d 2d
-    ld hl,l220fh        ;0e6b 21 0f 22
+    ld hl,which_printer ;0e6b 21 0f 22
     call sub_2c3ch      ;0e6e cd 3c 2c
     call sub_1bcah      ;0e71 cd ca 1b
     ld hl,(02b2h)       ;0e74 2a b2 02
@@ -1812,7 +1812,7 @@ l0eaah:
 l0eadh:
     call sub_1bbdh      ;0ead cd bd 1b
     call sub_2d3dh      ;0eb0 cd 3d 2d
-    ld hl,l21ebh        ;0eb3 21 eb 21
+    ld hl,drv_assgnmt   ;0eb3 21 eb 21
     call sub_2c31h      ;0eb6 cd 31 2c
     call sub_2d3dh      ;0eb9 cd 3d 2d
     ld hl,21c6h+1       ;0ebc 21 c7 21
@@ -1821,7 +1821,7 @@ l0eadh:
     ld hl,l2898h        ;0ec5 21 98 28
     call sub_2c31h      ;0ec8 cd 31 2c
     call sub_2d3dh      ;0ecb cd 3d 2d
-    ld hl,l21b9h        ;0ece 21 b9 21
+    ld hl,drives_a_b    ;0ece 21 b9 21
     call sub_2c3ch      ;0ed1 cd 3c 2c
     ld hl,0000h         ;0ed4 21 00 00
     ld (l02dch),hl      ;0ed7 22 dc 02
@@ -2092,7 +2092,7 @@ l10f8h:
     jp l0eadh           ;10f8 c3 ad 0e
 l10fbh:
     call sub_2d3dh      ;10fb cd 3d 2d
-    ld hl,l208fh        ;10fe 21 8f 20
+    ld hl,drv_3_6_12    ;10fe 21 8f 20
     call sub_2c3ch      ;1101 cd 3c 2c
     call sub_1bcah      ;1104 cd ca 1b
     ld hl,(l02d8h)      ;1107 2a d8 02
@@ -2190,7 +2190,7 @@ sub_119ah:
     or l                ;11a7 b5
     jp nz,l11b7h        ;11a8 c2 b7 11
     call sub_2d3dh      ;11ab cd 3d 2d
-    ld hl,l2038h        ;11ae 21 38 20
+    ld hl,cbm_3040      ;11ae 21 38 20
     call sub_2c3ch      ;11b1 cd 3c 2c
     jp l1285h           ;11b4 c3 85 12
 l11b7h:
@@ -2209,7 +2209,7 @@ l11b7h:
     or l                ;11c9 b5
     jp nz,l11d9h        ;11ca c2 d9 11
     call sub_2d3dh      ;11cd cd 3d 2d
-    ld hl,l202ah        ;11d0 21 2a 20
+    ld hl,cbm_8050      ;11d0 21 2a 20
     call sub_2c3ch      ;11d3 cd 3c 2c
     jp l1285h           ;11d6 c3 85 12
 l11d9h:
@@ -2231,7 +2231,7 @@ l11d9h:
 l11f0h:
     jp c,l11fdh         ;11f0 da fd 11
     call sub_2d3dh      ;11f3 cd 3d 2d
-    ld hl,l201fh        ;11f6 21 1f 20
+    ld hl,not_used      ;11f6 21 1f 20
     call sub_2c31h      ;11f9 cd 31 2c
     ret                 ;11fc c9
 l11fdh:
@@ -2257,7 +2257,7 @@ l11fdh:
     jp nz,l1228h        ;121c c2 28 12
     call sub_2d3dh      ;121f cd 3d 2d
 l1222h:
-    ld hl,l2011h        ;1222 21 11 20
+    ld hl,cor_10mb      ;1222 21 11 20
     call sub_2c3ch      ;1225 cd 3c 2c
 l1228h:
     ld hl,(l02dch)      ;1228 2a dc 02
@@ -2311,11 +2311,11 @@ l1266h:
     or l                ;1278 b5
     jp nz,l1285h        ;1279 c2 85 12
     call sub_2d3dh      ;127c cd 3d 2d
-    ld hl,l1fe7h        ;127f 21 e7 1f
+    ld hl,cor_5mb_star  ;127f 21 e7 1f
     call sub_2c3ch      ;1282 cd 3c 2c
 l1285h:
     call sub_2d3dh      ;1285 cd 3d 2d
-    ld hl,l1fd9h        ;1288 21 d9 1f
+    ld hl,device_num    ;1288 21 d9 1f
     call sub_2c43h      ;128b cd 43 2c
     ld hl,(l02dch)      ;128e 2a dc 02
     add hl,hl           ;1291 29
@@ -2346,7 +2346,7 @@ l129eh:
     or l                ;12b9 b5
     jp nz,l12c6h        ;12ba c2 c6 12
     call sub_2d3dh      ;12bd cd 3d 2d
-    ld hl,l1fb9h        ;12c0 21 b9 1f
+    ld hl,mw_3mb        ;12c0 21 b9 1f
     call sub_2c31h      ;12c3 cd 31 2c
 l12c6h:
     ld hl,(l02dch)      ;12c6 2a dc 02
@@ -2382,7 +2382,7 @@ l12e5h:
     or l                ;12f7 b5
     jp nz,l1304h        ;12f8 c2 04 13
     call sub_2d3dh      ;12fb cd 3d 2d
-    ld hl,l1f9fh        ;12fe 21 9f 1f
+    ld hl,mw_12mb       ;12fe 21 9f 1f
     call sub_2c31h      ;1301 cd 31 2c
 l1304h:
     ld hl,(l02dch)      ;1304 2a dc 02
@@ -2400,7 +2400,7 @@ l1304h:
     or l                ;1316 b5
     jp nz,l1323h        ;1317 c2 23 13
     call sub_2d3dh      ;131a cd 3d 2d
-    ld hl,l1f8eh        ;131d 21 8e 1f
+    ld hl,mw_3mb_half   ;131d 21 8e 1f
     call sub_2c31h      ;1320 cd 31 2c
 l1323h:
     ld hl,(l02dch)      ;1323 2a dc 02
@@ -2418,7 +2418,7 @@ l1323h:
     or l                ;1335 b5
     jp nz,l1342h        ;1336 c2 42 13
     call sub_2d3dh      ;1339 cd 3d 2d
-    ld hl,l1f7dh        ;133c 21 7d 1f
+    ld hl,mw_6mb_half   ;133c 21 7d 1f
     call sub_2c31h      ;133f cd 31 2c
 l1342h:
     ld hl,(l02dch)      ;1342 2a dc 02
@@ -2436,7 +2436,7 @@ l1342h:
     or l                ;1354 b5
     jp nz,l1361h        ;1355 c2 61 13
     call sub_2d3dh      ;1358 cd 3d 2d
-    ld hl,l1f6ch        ;135b 21 6c 1f
+    ld hl,mw_12mb_half  ;135b 21 6c 1f
     call sub_2c31h      ;135e cd 31 2c
 l1361h:
     ret                 ;1361 c9
@@ -2447,7 +2447,7 @@ l1362h:
     or l                ;1369 b5
     jp nz,l1379h        ;136a c2 79 13
     call sub_2d3dh      ;136d cd 3d 2d
-    ld hl,l1f4eh        ;1370 21 4e 1f
+    ld hl,no_aload_cmd  ;1370 21 4e 1f
     call sub_2c31h      ;1373 cd 31 2c
     jp l13bfh           ;1376 c3 bf 13
 l1379h:
@@ -2503,7 +2503,7 @@ l13bfh:
     or l                ;13dc b5
     jp nz,l05b5h        ;13dd c2 b5 05
     call sub_2d3dh      ;13e0 cd 3d 2d
-    ld hl,1eech         ;13e3 21 ec 1e
+    ld hl,new_command   ;13e3 21 ec 1e
     call sub_2c31h      ;13e6 cd 31 2c
     call sub_1bcah      ;13e9 cd ca 1b
     ld hl,(02e0h)       ;13ec 2a e0 02
@@ -2914,7 +2914,7 @@ l1658h:
     ret                 ;1667 c9
 l1668h:
     call sub_2d3dh      ;1668 cd 3d 2d
-    ld hl,l1ecah        ;166b 21 ca 1e
+    ld hl,save_on_which ;166b 21 ca 1e
     call sub_2c3ch      ;166e cd 3c 2c
     call sub_1bcah      ;1671 cd ca 1b
     ld hl,(02b2h)       ;1674 2a b2 02
@@ -2970,7 +2970,7 @@ l16c3h:
 l16c5h:
     jp c,l16d4h         ;16c5 da d4 16
     call sub_2d3dh      ;16c8 cd 3d 2d
-    ld hl,1eb4h         ;16cb 21 b4 1e
+    ld hl,no_drive      ;16cb 21 b4 1e
     call sub_2c31h      ;16ce cd 31 2c
     jp l1668h           ;16d1 c3 68 16
 l16d4h:
@@ -3024,7 +3024,7 @@ l170eh:
     or l                ;1724 b5
     jp z,l05b5h         ;1725 ca b5 05
     call sub_2d3dh      ;1728 cd 3d 2d
-    ld hl,l1ea2h        ;172b 21 a2 1e
+    ld hl,retry_yn      ;172b 21 a2 1e
     call sub_2c3ch      ;172e cd 3c 2c
     call sub_1bcah      ;1731 cd ca 1b
     ld hl,(02b2h)       ;1734 2a b2 02
@@ -3037,10 +3037,10 @@ l170eh:
 l1743h:
     call sub_1bbdh      ;1743 cd bd 1b
     call sub_2d3dh      ;1746 cd 3d 2d
-    ld hl,l1e82h        ;1749 21 82 1e
+    ld hl,pet_params    ;1749 21 82 1e
     call sub_2c31h      ;174c cd 31 2c
     call sub_2d3dh      ;174f cd 3d 2d
-    ld hl,1e62h         ;1752 21 62 1e
+    ld hl,dashes        ;1752 21 62 1e
     call sub_2c31h      ;1755 cd 31 2c
     call sub_2d3dh      ;1758 cd 3d 2d
     ld hl,l2898h        ;175b 21 98 28
@@ -3053,7 +3053,7 @@ l1743h:
     or l                ;176e b5
     jp nz,l177eh        ;176f c2 7e 17
     call sub_2d3dh      ;1772 cd 3d 2d
-    ld hl,l2650h        ;1775 21 50 26
+    ld hl,one           ;1775 21 50 26
     call sub_2c31h      ;1778 cd 31 2c
     jp l179fh           ;177b c3 9f 17
 l177eh:
@@ -3064,19 +3064,19 @@ l177eh:
     or l                ;1786 b5
     jp nz,l1796h        ;1787 c2 96 17
     call sub_2d3dh      ;178a cd 3d 2d
-    ld hl,l2646h        ;178d 21 46 26
+    ld hl,two           ;178d 21 46 26
     call sub_2c31h      ;1790 cd 31 2c
     jp l179fh           ;1793 c3 9f 17
 l1796h:
     call sub_2d3dh      ;1796 cd 3d 2d
-    ld hl,1e3ch         ;1799 21 3c 1e
+    ld hl,four          ;1799 21 3c 1e
     call sub_2c31h      ;179c cd 31 2c
 l179fh:
     call sub_2d3dh      ;179f cd 3d 2d
     ld hl,l2898h        ;17a2 21 98 28
     call sub_2c31h      ;17a5 cd 31 2c
     call sub_2d3dh      ;17a8 cd 3d 2d
-    ld hl,l1e1ah        ;17ab 21 1a 1e
+    ld hl,crt_in_upper  ;17ab 21 1a 1e
     call sub_2c3ch      ;17ae cd 3c 2c
     ld hl,(02c6h)       ;17b1 2a c6 02
     ld a,l              ;17b4 7d
@@ -3089,12 +3089,12 @@ l179fh:
     or l                ;17bd b5
     jp z,l17cdh         ;17be ca cd 17
     call sub_2d3dh      ;17c1 cd 3d 2d
-    ld hl,l1e14h        ;17c4 21 14 1e
+    ld hl,yes           ;17c4 21 14 1e
     call sub_2c31h      ;17c7 cd 31 2c
     jp l17d6h           ;17ca c3 d6 17
 l17cdh:
     call sub_2d3dh      ;17cd cd 3d 2d
-    ld hl,1e0fh         ;17d0 21 0f 1e
+    ld hl,no            ;17d0 21 0f 1e
     call sub_2c31h      ;17d3 cd 31 2c
 l17d6h:
     call sub_2d3dh      ;17d6 cd 3d 2d
@@ -3114,7 +3114,7 @@ l17d6h:
     or l                ;17f4 b5
     jp nz,l1804h        ;17f5 c2 04 18
     call sub_2d3dh      ;17f8 cd 3d 2d
-    ld hl,1de5h         ;17fb 21 e5 1d
+    ld hl,adm3a         ;17fb 21 e5 1d
     call sub_2c31h      ;17fe cd 31 2c
     jp l1871h           ;1801 c3 71 18
 l1804h:
@@ -3131,7 +3131,7 @@ l1804h:
     or l                ;1814 b5
     jp nz,l1824h        ;1815 c2 24 18
     call sub_2d3dh      ;1818 cd 3d 2d
-    ld hl,1dddh         ;181b 21 dd 1d
+    ld hl,tv912         ;181b 21 dd 1d
     call sub_2c31h      ;181e cd 31 2c
     jp l1871h           ;1821 c3 71 18
 l1824h:
@@ -3148,7 +3148,7 @@ l1824h:
     or l                ;1834 b5
     jp nz,l1844h        ;1835 c2 44 18
     call sub_2d3dh      ;1838 cd 3d 2d
-    ld hl,l1dd4h        ;183b 21 d4 1d
+    ld hl,hz1500        ;183b 21 d4 1d
     call sub_2c31h      ;183e cd 31 2c
     jp l1847h           ;1841 c3 47 18
 l1844h:
@@ -3161,7 +3161,7 @@ l1847h:
     or l                ;184f b5
     jp nz,l185ch        ;1850 c2 5c 18
     call sub_2d3dh      ;1853 cd 3d 2d
-    ld hl,1dach        ;1856 21 ac 1d
+    ld hl,1dach         ;1856 21 ac 1d
     call sub_2c31h      ;1859 cd 31 2c
 l185ch:
     ld hl,(l02c8h)      ;185c 2a c8 02
@@ -3171,7 +3171,7 @@ l185ch:
     or l                ;1864 b5
     jp nz,l1871h        ;1865 c2 71 18
     call sub_2d3dh      ;1868 cd 3d 2d
-    ld hl,1d90h+1      ;186b 21 91 1d
+    ld hl,1d90h+1       ;186b 21 91 1d
     call sub_2c31h      ;186e cd 31 2c
 l1871h:
     call sub_2d3dh      ;1871 cd 3d 2d
@@ -3723,616 +3723,624 @@ l1cceh:
     dw 1dafh
     db "                   (Lead-in = ESCAPE)"
 
-l1dd4h:
+hz1500:
     db 06h
-    dw 1dd7h
+    dw hz1500+3
     db "HZ1500"
 
+tv912:
     db 05h
-    dw 1de0h
+    dw tv912+3
     db "TV912"
 
+adm3a:
     db 05h
-    dw 1de8h
+    dw adm3a+3
     db "ADM3A"
 
 l1dedh:
     db 1fh
-    dw 1df0h
+    dw l1dedh+3
     db "3.  CRT terminal emulation :   "
 
+no:
     db 02h
-    dw 1e12h
+    dw no+3
     db "no"
 
-l1e14h:
+yes:
     db 03h
-    dw 1e17h
+    dw yes+3
     db "yes"
 
-l1e1ah:
+crt_in_upper:
     db 1fh
-    dw 1e1dh
+    dw crt_in_upper+3
     db "2.  CRT in upper case mode :   "
 
+four:
     db 01h
-    dw 1e3fh
+    dw four+3
     db "4"
 
+cols_in_dir:
     db 1fh
-    dw 1e43h
+    dw cols_in_dir+3
     db "1.  Columns in DIR listing :   "
 
+dashes:
     db 1dh
-    dw 1e65h
+    dw dashes+3
     db "      --- -------- ----------"
 
-l1e82h:
+pet_params:
     db 1dh
-    dw 1e85h
+    dw pet_params+3
     db "      Pet terminal parameters"
 
-l1ea2h:
+retry_yn:
     db 0fh
-    dw 1ea5h
+    dw retry_yn+3
     db "Re-try (Y/N) ? "
 
+no_drive:
     db 13h
-    dw 1eb7h
+    dw no_drive+3
     db "Drive not in system"
 
-l1ecah:
+save_on_which:
     db 1fh
-    dw 1ecdh
+    dw save_on_which+3
     db "Save on which drive (A to P) ? "
 
+new_command:
     db 1fh
-    dw 1eefh
+    dw new_command+3
     db "Please enter the new command : "
 
-l1f0eh:
+new_aload_yn:
     db 1dh
-    dw 1f11h
+    dw new_aload_yn+3
     db "New autoload command (Y/N) ? "
 
-l1f2eh:
+cur_aload_is:
     db 1dh
-    dw 1f31h
+    dw cur_aload_is+3
     db "Current autoload command is :"
 
-l1f4eh:
+no_aload_cmd:
     db 1bh
-    dw 1f51h
+    dw no_aload_cmd+3
     db "No current autoload command"
 
-l1f6ch:
+mw_12mb_half:
     db 0eh
-    dw 1f6fh
+    dw mw_12mb_half+3
     db "12Mbyte (half)"
 
-l1f7dh:
+mw_6mb_half:
     db 0eh
-    dw 1f80h
+    dw mw_6mb_half+3
     db "6 Mbyte (half)"
 
-l1f8eh:
+mw_3mb_half:
     db 0eh
-    dw 1f91h
+    dw mw_3mb_half+3
     db "3 Mbyte (half)"
 
-l1f9fh:
+mw_12mb:
     db 0dh
-    dw 1fa2h
+    dw mw_12mb+3
     db "12 Mbyte     "
 
-l1fafh:
+mw_6mb:
     db 07h
-    dw 1fb2h
+    dw mw_6mb+3
     db "6 Mbyte"
 
-l1fb9h:
+mw_3mb:
     db 0ch
-    dw 1fbch
+    dw mw_3mb+3
     db "3 Mbyte     "
 
-l1fc8h:
+winchester:
     db 0eh
-    dw 1fcbh
+    dw winchester+3
     db "Winchester    "
 
-l1fd9h:
+device_num:
     db 0bh
-    dw 1fdch
+    dw device_num+3
     db "   Device #"
 
-l1fe7h:
+cor_5mb_star:
     db 0bh
-    dw 1feah
+    dw cor_5mb_star+3
     db "Corvus 5Mb*"
 
-l1ff5h:
+cor_5mb:
     db 0bh
-    dw 1ff8h
+    dw cor_5mb+3
     db "Corvus 5Mb "
 
-l2003h:
+cor_20mb:
     db 0bh
-    dw 2006h
+    dw cor_20mb+3
     db "Corvus 20Mb"
 
-l2011h:
+cor_10mb:
     db 0bh
-    dw 2014h
+    dw cor_10mb+3
     db "Corvus 10Mb"
 
-l201fh:
+not_used:
     db 08h
-    dw 2022h
+    dw not_used+3
     db "not used"
 
-l202ah:
+cbm_8050:
     db 0bh
-    dw 202dh
+    dw cbm_8050+3
     db "8050       "
 
-l2038h:
+cbm_3040:
     db 0bh
-    dw 203bh
+    dw cbm_3040+3
     db "3040/4040  "
 
-l2046h:
+use_first_half:
     db 1ch
-    dw 2049h
+    dw use_first_half+3
     db "use the FIRST HALF (E/H)  ? "
 
-l2065h:
+use_entire_drv:
     db 27h
-    dw 2068h
+    dw use_entire_drv+3
     db "Use the ENTIRE drive for CP/M,  or just"
 
-l208fh:
+drv_3_6_12:
     db 19h
-    dw 2092h
+    dw drv_3_6_12+3
     db "3, 6 or 12 Mbyte drive ? "
 
-l20abh:
+config_as_1_or_2:
     db 22h
-    dw 20aeh
+    dw config_as_1_or_2+3
     db "Configure as 1 or 2 CP/M drives ? "
 
-l20d0h:
+dev_num_for_drv:
     db 1ah
-    dw 20d3h
+    dw dev_num_for_drv+3
     db "Device number for drive ? "
 
-l20edh:
+drv_5_10_20:
     db 1ah
-    dw 20f0h
+    dw drv_5_10_20+3
     db "5, 10 or 20 Mbyte drive ? "
 
-l210ah:
+cbm_hard_unused:
     db 25h
-    dw 210dh
+    dw cbm_hard_unused+3
     db "3(040), 8(050), h(ard) or u(nused) ? "
 
-l2132h:
+alter_which_pair:
     db 22h
-    dw 2135h
+    dw alter_which_pair+3
     db "Alter which drive pair (A to O) ? "
 
-l2157h:
+drives_o_p:
     db 0bh
-    dw 215ah
+    dw drives_o_p+3
     db "O, P :     "
 
-l2165h:
+drives_m_n:
     db 0bh
-    dw 2168h
+    dw drives_m_n+3
     db "M, N :     "
 
-l2173h:
+drives_k_l:
     db 0bh
-    dw 2176h
+    dw drives_k_l+3
     db "K, L :     "
 
-l2181h:
+drives_i_j:
     db 0bh
-    dw 2184h
+    dw drives_i_j+3
     db "I, J :     "
 
-l218fh:
+drives_g_h:
     db 0bh
-    dw 2192h
+    dw drives_g_h+3
     db "G, H :     "
 
-l219dh:
+drives_e_f:
     db 0bh
-    dw 21a0h
+    dw drives_e_f+3
     db "E, F :     "
 
-l21abh:
+drives_c_d:
     db 0bh
-    dw 21aeh
+    dw drives_c_d+3
     db "C, D :     "
 
-l21b9h:
+drives_a_b:
     db 0bh
-    dw 21bch
+    dw drives_a_b+3
     db "A, B :     "
 
-l21c7h:
+dashes_2:
     db 21h
-    dw 21cah
+    dw dashes_2+3
     db "            ---- ----- ----------"
 
-l21ebh:
+drv_assgnmt:
     db 21h
-    dw 21eeh
+    dw drv_assgnmt+3
     db "            Disk drive assignment"
 
-l220fh:
+which_printer:
     db 24h
-    dw 2212h
+    dw which_printer+3
     db "Which type of printer (3, 8 or D) ? "
 
-l2236h:
+daisywheel:
     db 1dh
-    dw 2239h
+    dw daisywheel+3
     db "D = 8026 or 8027 (daisywheel)"
 
-l2256h:
+cbm8024:
     db 08h
-    dw 2259h
+    dw cbm8024+3
     db "8 = 8024"
 
-l2261h:
+cbm3022:
     db 1ch
-    dw 2264h
+    dw cbm3022+3
     db "3 = 3022, 3023, 4022 or 4023"
 
-l2280h:
+tty_or_ptp:
     db 13h
-    dw 2283h
+    dw tty_or_ptp+3
     db "T(TY:) or P(TP:) ? "
 
-l2296h:
+tty_or_ptr:
     db 13h
-    dw 2299h
+    dw tty_or_ptr+3
     db "T(TY:) or P(TR:) ? "
 
-l22ach:
+which_list_dev:
     db 23h
-    dw 22afh
+    dw which_list_dev+3
     db "Which list device (T, C, L or U) ? "
 
-l22d2h:
+ul1_ascii:
     db 1dh
-    dw 22d5h
+    dw ul1_ascii+3
     db "U(L1:) --  ASCII IEEE printer"
 
-l22f2h:
+lpt_pet:
     db 1bh
-    dw 22f5h
+    dw lpt_pet+3
     db "L(PT:) --  PET IEEE printer"
 
-l2310h:
+crt_pet_scrn:
     db 15h
-    dw 2313h
+    dw crt_pet_scrn+3
     db "C(RT:) --  PET screen"
 
-l2328h:
+tty_rs232:
     db 18h
-    dw 232bh
+    dw tty_rs232+3
     db "T(TY:) --  RS232 printer"
 
-l2343h:
+new_dev_num:
     db 0fh
-    dw 2346h
+    dw new_dev_num+3
     db "New device # ? "
 
-l2355h:
+alter_which_1_8:
     db 14h
-    dw 2358h
+    dw alter_which_1_8+3
     db "Alter which (1-8) ? "
 
-l236ch:
+cbm8024_2:
     db 04h
-    dw 236fh
+    dw cbm8024_2+3
     db "8024"
 
-l2373h:
+daisywheel_2:
     db 09h
-    dw 2376h
+    dw daisywheel_2+3
     db "8026/8027"
 
-l237fh:
+cbm_3022_2:
     db 09h
-    dw 2382h
+    dw cbm_3022_2+3
     db "3022/4022"
 
 l238bh:
     db 1eh
-    dw 238eh
+    dw l238bh+3
     db "8.  PET printer type :        "
 
-l23ach:
+ptp:
     db 04h
-    dw 23afh
+    dw ptp+3
     db "PTP:"
 
 l23b3h:
     db 1eh
-    dw 23b6h
+    dw l23b3h+3
     db "7.  Default PUN: device :     "
 
-l23d4h:
+ptr:
     db 04h
-    dw 23d7h
+    dw ptr+3
     db "PTR:"
 
 l23dbh:
     db 1eh
-    dw 23deh
+    dw l23dbh+3
     db "6.  Default RDR: device :     "
 
-l23fch:
+ul1:
     db 04h
-    dw 23ffh
+    dw ul1+3
     db "UL1:"
 
-l2403h:
+lpt:
     db 04h
-    dw 2406h
+    dw lpt+3
     db "LPT:"
 
-l240ah:
+crt:
     db 04h
-    dw 240dh
+    dw crt+3
     db "CRT:"
 
-l2411h:
+tty:
     db 04h
-    dw 2414h
+    dw tty+3
     db "TTY:"
 
 l2418h:
     db 1eh
-    dw 241bh
+    dw l2418h+3
     db "5.  Default LST: device :     "
 
 l2439h:
     db 1eh
-    dw 243ch
+    dw l2439h+3
     db "4.  Punch device # :          "
 
 l245ah:
     db 1eh
-    dw 245dh
+    dw l245ah+3
     db "3.  Reader device # :         "
 
 l247bh:
     db 1eh
-    dw 247eh
+    dw l247bh+3
     db "2.  ASCII printer device # :  "
 
 l249ch:
     db 1eh
-    dw 249fh
+    dw l249ch+3
     db "1.  Pet printer device # :    "
 
-l24bdh:
+dashes_6:
     db 22h
-    dw 24c0h
+    dw dashes_6+3
     db "             --- ------ ----------"
 
-l24e2h:
+io_dev_asgn:
     db 22h
-    dw 24e5h
+    dw io_dev_asgn+3
     db "             I/O device assignment"
 
 l2507h:
     db 0dh
-    dw 250ah
+    dw l2507h+3
     db "19200 baud ? "
 
 l2517h:
     db 1dh
-    dw 251ah
+    dw l2517h+3
     db "110, 300, 1200, 4800, 9600 or"
 
-l2537h:
+odd_even_none:
     db 1fh
-    dw 253ah
+    dw odd_even_none+3
     db "O(dd), E(ven) or N(o parity) ? "
 
-l2559h:
+num_stop_bits:
     db 20h
-    dw 255ch
+    dw num_stop_bits+3
     db "Number of stop bits (1 or 2)  ? "
 
-l257ch:
+new_char_len:
     db 20h
-    dw 257fh
+    dw new_char_len+3
     db "New character length (5 to 8) ? "
 
-l259fh:
+alter_which_1_4:
     db 23h
-    dw 25a2h
+    dw alter_which_1_4+3
     db "Alter which characteristic (1-4) ? "
 
-l25c5h:
+baud_4800:
     db 04h
-    dw 25c8h
+    dw baud_4800+3
     db "4800"
 
-l25cch:
+baud_19200:
     db 05h
-    dw 25cfh
+    dw baud_19200+3
     db "19200"
 
-l25d4h:
+baud_9600:
     db 04h
-    dw 25d7h
+    dw baud_9600+3
     db "9600"
 
-l25dbh:
+baud_1200:
     db 04h
-    dw 25deh
+    dw baud_1200+3
     db "1200"
 
-l25e2h:
+baud_300:
     db 03h
-    dw 25e5h
+    dw baud_300+3
     db "300"
 
-l25e8h:
+baud_110:
     db 03h
-    dw 25ebh
+    dw baud_110+3
     db "110"
 
-l25eeh:
+rs232_4_baud:
     db 1fh
-    dw 25f1h
+    dw rs232_4_baud+3
     db " 4.  Baud rate :               "
 
-l2610h:
+odd:
     db 03h
-    dw 2613h
+    dw odd+3
     db "odd"
 
-l2616h:
+even:
     db 04h
-    dw 2619h
+    dw even+3
     db "even"
 
-l261dh:
+none:
     db 04h
-    dw 2620h
+    dw none+3
     db "none"
 
-l2624h:
+rs232_3_par:
     db 1fh
-    dw 2627h
+    dw rs232_3_par+3
     db " 3.  Parity :                  "
 
-l2646h:
+two:
     db 01h
-    dw 2649h
+    dw two+3
     db "2"
 
-l264ah:
+one_dot_five:
     db 03h
-    dw 264dh
+    dw one_dot_five+3
     db "1.5"
 
-l2650h:
+one:
     db 01h
-    dw 2653h
+    dw one+3
     db "1"
 
-l2654h:
+undefined:
     db 09h
-    dw 2657h
+    dw undefined+3
     db "undefined"
 
-l2660h:
+rs232_2_stop:
     db 1fh
-    dw 2663h
+    dw rs232_2_stop+3
     db " 2.  Number of stop bits :     "
 
-l2682h:
+rs232_1_chr:
     db 1fh
-    dw 2685h
+    dw rs232_1_chr+3
     db " 1.  Character size :          "
 
-l26a4h:
+dashes_5:
     db 20h
-    dw 26a7h
+    dw dashes_5+3
     db "           ----- ---------------"
 
-l26c7h:
+rs232_chrs:
     db 20h
-    dw 26cah
+    dw rs232_chrs+3
     db "           RS232 Characteristics"
 
-l26eah:
+pls_letter:
     db 26h
-    dw 26edh
+    dw pls_letter+3
     db "Please enter the appropriate letter : "
 
-l2713h:
+q_quit:
     db 15h
-    dw 2716h
+    dw q_quit+3
     db "Q - Quit this program"
 
-l272bh:
+e_execute:
     db 16h
-    dw 272eh
+    dw e_execute+3
     db "E - Execute new system"
 
-l2744h:
+s_save:
     db 13h
-    dw 2747h
+    dw s_save+3
     db "S - Save new system"
 
-l275ah:
+r_rs232:
     db 19h
-    dw 275dh
+    dw r_rs232+3
     db "R - RS232 characteristics"
 
-l2776h:
+p_pet_term:
     db 1bh
-    dw 2779h
+    dw p_pet_term+3
     db "P - PET terminal parameters"
 
-l2794h:
+i_io_asgn:
     db 12h
-    dw 2797h
+    dw i_io_asgn+3
     db "I - I/O assignment"
 
-l27a9h:
+d_drv_asgn:
     db 19h
-    dw 27ach
+    dw d_drv_asgn+3
     db "D - Disk drive assignment"
 
-l27c5h:
+a_autoload:
     db 14h
-    dw 27c8h
+    dw a_autoload+3
     db "A - Autoload command"
 
-l27dch:
+dashes_4:
     db 16h
-    dw 27dfh
+    dw dashes_4+3
     db "----  ----------------"
 
-l27f5h:
+cpm_reconfig_2:
     db 16h
-    dw 27f8h
+    dw cpm_reconfig_2+3
     db "CP/M  Re-configuration"
 
-l280eh:
+source_drv_a_p:
     db 18h
-    dw 2811h
+    dw source_drv_a_p+3
     db "Source drive (A to P) ? "
 
-l2829h:
+rev_3_feb_1982:
     db 22h
-    dw 282ch
+    dw rev_3_feb_1982+3
     db "Revision 3   --   19 February 1982"
 
-l284eh:
+mw_version:
     db 17h
-    dw 2851h
+    dw mw_version+3
     db "Mini-winchester version"
 
-l2868h:
+dashes_3:
     db 15h
-    dw 286bh
+    dw dashes_3+3
     db "----  ---------------"
 
-l2880h:
+cpm_reconfig:
     db 15h
-    dw 2883h
+    dw cpm_reconfig+3
     db "CP/M  Reconfiguration"
 
 l2898h:
