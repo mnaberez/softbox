@@ -369,40 +369,47 @@ l0302h:
     ld (l02b0h),hl      ;031a 22 b0 02
 l031dh:
     call sub_1bbdh      ;031d cd bd 1b
-    call sub_2d3dh      ;0320 cd 3d 2d
+    call pr0a           ;0320 cd 3d 2d
     ld hl,l2898h        ;0323 21 98 28
-    call sub_2c31h      ;0326 cd 31 2c
-    call sub_2d3dh      ;0329 cd 3d 2d
+    call pv2d           ;0326 cd 31 2c
+
+    call pr0a           ;0329 cd 3d 2d
     ld hl,cpm_reconfig  ;032c 21 80 28
-    call sub_2c31h      ;032f cd 31 2c
-    call sub_2d3dh      ;0332 cd 3d 2d
+    call pv2d           ;032f cd 31 2c
+
+    call pr0a           ;0332 cd 3d 2d
     ld hl,dashes_3      ;0335 21 68 28
-    call sub_2c31h      ;0338 cd 31 2c
-    call sub_2d3dh      ;033b cd 3d 2d
+    call pv2d           ;0338 cd 31 2c
+
+    call pr0a           ;033b cd 3d 2d
     ld hl,l2898h        ;033e 21 98 28
-    call sub_2c31h      ;0341 cd 31 2c
+    call pv2d           ;0341 cd 31 2c
+
     ld hl,(l010ah)      ;0344 2a 0a 01
     ld de,0ffffh        ;0347 11 ff ff
     add hl,de           ;034a 19
     ld a,h              ;034b 7c
     or l                ;034c b5
     jp nz,l0359h        ;034d c2 59 03
-    call sub_2d3dh      ;0350 cd 3d 2d
+
+    call pr0a           ;0350 cd 3d 2d
     ld hl,mw_version    ;0353 21 4e 28
-    call sub_2c31h      ;0356 cd 31 2c
+    call pv2d           ;0356 cd 31 2c
+
 l0359h:
-    call sub_2d3dh      ;0359 cd 3d 2d
+    call pr0a           ;0359 cd 3d 2d
     ld hl,2829h         ;035c 21 29 28
-    call sub_2c31h      ;035f cd 31 2c
-    call sub_2d3dh      ;0362 cd 3d 2d
+    call pv2d           ;035f cd 31 2c
+
+    call pr0a           ;0362 cd 3d 2d
     ld hl,l2898h        ;0365 21 98 28
-    call sub_2c31h      ;0368 cd 31 2c
-    call sub_2d3dh      ;036b cd 3d 2d
+    call pv2d           ;0368 cd 31 2c
+    call pr0a           ;036b cd 3d 2d
     ld hl,l2898h        ;036e 21 98 28
-    call sub_2c31h      ;0371 cd 31 2c
-    call sub_2d3dh      ;0374 cd 3d 2d
+    call pv2d           ;0371 cd 31 2c
+    call pr0a           ;0374 cd 3d 2d
     ld hl,source_drv_a_p ;0377 21 0e 28
-    call sub_2c3ch      ;037a cd 3c 2c
+    call pv1d           ;037a cd 3c 2c
     call sub_1bcah      ;037d cd ca 1b
     ld hl,(02b2h)       ;0380 2a b2 02
     ld a,h              ;0383 7c
@@ -718,69 +725,69 @@ l0599h:
     ld (02d4h),hl       ;05b2 22 d4 02
 l05b5h:
     call sub_1bbdh      ;05b5 cd bd 1b
-    call sub_2d3dh      ;05b8 cd 3d 2d
+    call pr0a           ;05b8 cd 3d 2d
     ld hl,l2898h        ;05bb 21 98 28
-    call sub_2c31h      ;05be cd 31 2c
-    call sub_2d3dh      ;05c1 cd 3d 2d
+    call pv2d           ;05be cd 31 2c
+    call pr0a           ;05c1 cd 3d 2d
     ld hl,cpm_reconfig_2 ;05c4 21 f5 27
-    call sub_2c31h      ;05c7 cd 31 2c
-    call sub_2d3dh      ;05ca cd 3d 2d
+    call pv2d           ;05c7 cd 31 2c
+    call pr0a           ;05ca cd 3d 2d
     ld hl,dashes_4      ;05cd 21 dc 27
-    call sub_2c31h      ;05d0 cd 31 2c
-    call sub_2d3dh      ;05d3 cd 3d 2d
+    call pv2d           ;05d0 cd 31 2c
+    call pr0a           ;05d3 cd 3d 2d
     ld hl,l2898h        ;05d6 21 98 28
-    call sub_2c31h      ;05d9 cd 31 2c
-    call sub_2d3dh      ;05dc cd 3d 2d
+    call pv2d           ;05d9 cd 31 2c
+    call pr0a           ;05dc cd 3d 2d
     ld hl,a_autoload    ;05df 21 c5 27
-    call sub_2c31h      ;05e2 cd 31 2c
-    call sub_2d3dh      ;05e5 cd 3d 2d
+    call pv2d           ;05e2 cd 31 2c
+    call pr0a           ;05e5 cd 3d 2d
     ld hl,l2898h        ;05e8 21 98 28
-    call sub_2c31h      ;05eb cd 31 2c
-    call sub_2d3dh      ;05ee cd 3d 2d
+    call pv2d           ;05eb cd 31 2c
+    call pr0a           ;05ee cd 3d 2d
     ld hl,d_drv_asgn    ;05f1 21 a9 27
-    call sub_2c31h      ;05f4 cd 31 2c
-    call sub_2d3dh      ;05f7 cd 3d 2d
+    call pv2d           ;05f4 cd 31 2c
+    call pr0a           ;05f7 cd 3d 2d
     ld hl,l2898h        ;05fa 21 98 28
-    call sub_2c31h      ;05fd cd 31 2c
-    call sub_2d3dh      ;0600 cd 3d 2d
+    call pv2d           ;05fd cd 31 2c
+    call pr0a           ;0600 cd 3d 2d
     ld hl,i_io_asgn     ;0603 21 94 27
-    call sub_2c31h      ;0606 cd 31 2c
-    call sub_2d3dh      ;0609 cd 3d 2d
+    call pv2d           ;0606 cd 31 2c
+    call pr0a           ;0609 cd 3d 2d
     ld hl,l2898h        ;060c 21 98 28
-    call sub_2c31h      ;060f cd 31 2c
-    call sub_2d3dh      ;0612 cd 3d 2d
+    call pv2d           ;060f cd 31 2c
+    call pr0a           ;0612 cd 3d 2d
     ld hl,p_pet_term    ;0615 21 76 27
-    call sub_2c31h      ;0618 cd 31 2c
-    call sub_2d3dh      ;061b cd 3d 2d
+    call pv2d           ;0618 cd 31 2c
+    call pr0a           ;061b cd 3d 2d
     ld hl,l2898h        ;061e 21 98 28
-    call sub_2c31h      ;0621 cd 31 2c
-    call sub_2d3dh      ;0624 cd 3d 2d
+    call pv2d           ;0621 cd 31 2c
+    call pr0a           ;0624 cd 3d 2d
     ld hl,r_rs232       ;0627 21 5a 27
-    call sub_2c31h      ;062a cd 31 2c
-    call sub_2d3dh      ;062d cd 3d 2d
+    call pv2d           ;062a cd 31 2c
+    call pr0a           ;062d cd 3d 2d
     ld hl,l2898h        ;0630 21 98 28
-    call sub_2c31h      ;0633 cd 31 2c
-    call sub_2d3dh      ;0636 cd 3d 2d
+    call pv2d           ;0633 cd 31 2c
+    call pr0a           ;0636 cd 3d 2d
     ld hl,s_save        ;0639 21 44 27
-    call sub_2c31h      ;063c cd 31 2c
-    call sub_2d3dh      ;063f cd 3d 2d
+    call pv2d           ;063c cd 31 2c
+    call pr0a           ;063f cd 3d 2d
     ld hl,l2898h        ;0642 21 98 28
-    call sub_2c31h      ;0645 cd 31 2c
-    call sub_2d3dh      ;0648 cd 3d 2d
+    call pv2d           ;0645 cd 31 2c
+    call pr0a           ;0648 cd 3d 2d
     ld hl,e_execute     ;064b 21 2b 27
-    call sub_2c31h      ;064e cd 31 2c
-    call sub_2d3dh      ;0651 cd 3d 2d
+    call pv2d           ;064e cd 31 2c
+    call pr0a           ;0651 cd 3d 2d
     ld hl,l2898h        ;0654 21 98 28
-    call sub_2c31h      ;0657 cd 31 2c
-    call sub_2d3dh      ;065a cd 3d 2d
+    call pv2d           ;0657 cd 31 2c
+    call pr0a           ;065a cd 3d 2d
     ld hl,2713h         ;065d 21 13 27
-    call sub_2c31h      ;0660 cd 31 2c
-    call sub_2d3dh      ;0663 cd 3d 2d
+    call pv2d           ;0660 cd 31 2c
+    call pr0a           ;0663 cd 3d 2d
     ld hl,l2898h        ;0666 21 98 28
-    call sub_2c31h      ;0669 cd 31 2c
-    call sub_2d3dh      ;066c cd 3d 2d
+    call pv2d           ;0669 cd 31 2c
+    call pr0a           ;066c cd 3d 2d
     ld hl,pls_letter    ;066f 21 ea 26
-    call sub_2c3ch      ;0672 cd 3c 2c
+    call pv1d           ;0672 cd 3c 2c
     call sub_1bcah      ;0675 cd ca 1b
     ld hl,(02b2h)       ;0678 2a b2 02
     ld de,0ffaeh        ;067b 11 ae ff
@@ -835,19 +842,19 @@ l0693h:
     jp l05b5h           ;06db c3 b5 05
 l06deh:
     call sub_1bbdh      ;06de cd bd 1b
-    call sub_2d3dh      ;06e1 cd 3d 2d
+    call pr0a           ;06e1 cd 3d 2d
     ld hl,rs232_chrs    ;06e4 21 c7 26
-    call sub_2c31h      ;06e7 cd 31 2c
-    call sub_2d3dh      ;06ea cd 3d 2d
+    call pv2d           ;06e7 cd 31 2c
+    call pr0a           ;06ea cd 3d 2d
     ld hl,dashes_5      ;06ed 21 a4 26
-    call sub_2c31h      ;06f0 cd 31 2c
-    call sub_2d3dh      ;06f3 cd 3d 2d
+    call pv2d           ;06f0 cd 31 2c
+    call pr0a           ;06f3 cd 3d 2d
     ld hl,l2898h        ;06f6 21 98 28
-    call sub_2c31h      ;06f9 cd 31 2c
-    call sub_2d3dh      ;06fc cd 3d 2d
+    call pv2d           ;06f9 cd 31 2c
+    call pr0a           ;06fc cd 3d 2d
     ld hl,2682h         ;06ff 21 82 26
-    call sub_2c3ch      ;0702 cd 3c 2c
-    call sub_2d3dh      ;0705 cd 3d 2d
+    call pv1d           ;0702 cd 3c 2c
+    call pr0a           ;0705 cd 3d 2d
     ld hl,(02c0h)       ;0708 2a c0 02
     ld a,l              ;070b 7d
     and 0ch             ;070c e6 0c
@@ -860,14 +867,14 @@ l06deh:
     nop                 ;0717 00
     ld de,0035h         ;0718 11 35 00
     add hl,de           ;071b 19
-    call sub_2c24h      ;071c cd 24 2c
-    call sub_2c31h      ;071f cd 31 2c
-    call sub_2d3dh      ;0722 cd 3d 2d
+    call chr            ;071c cd 24 2c
+    call pv2d           ;071f cd 31 2c
+    call pr0a           ;0722 cd 3d 2d
     ld hl,l2898h        ;0725 21 98 28
-    call sub_2c31h      ;0728 cd 31 2c
-    call sub_2d3dh      ;072b cd 3d 2d
+    call pv2d           ;0728 cd 31 2c
+    call pr0a           ;072b cd 3d 2d
     ld hl,rs232_2_stop  ;072e 21 60 26
-    call sub_2c3ch      ;0731 cd 3c 2c
+    call pv1d           ;0731 cd 3c 2c
     ld hl,(02c0h)       ;0734 2a c0 02
     ld a,l              ;0737 7d
     and 0c0h            ;0738 e6 c0
@@ -880,9 +887,9 @@ l06deh:
     ld a,h              ;0745 7c
     or l                ;0746 b5
     jp nz,l0753h        ;0747 c2 53 07
-    call sub_2d3dh      ;074a cd 3d 2d
+    call pr0a           ;074a cd 3d 2d
     ld hl,undefined     ;074d 21 54 26
-    call sub_2c31h      ;0750 cd 31 2c
+    call pv2d           ;0750 cd 31 2c
 l0753h:
     ld hl,(02d6h)       ;0753 2a d6 02
     ld de,0ffc0h        ;0756 11 c0 ff
@@ -890,9 +897,9 @@ l0753h:
     ld a,h              ;075a 7c
     or l                ;075b b5
     jp nz,l0768h        ;075c c2 68 07
-    call sub_2d3dh      ;075f cd 3d 2d
+    call pr0a           ;075f cd 3d 2d
     ld hl,one           ;0762 21 50 26
-    call sub_2c31h      ;0765 cd 31 2c
+    call pv2d           ;0765 cd 31 2c
 l0768h:
     ld hl,(02d6h)       ;0768 2a d6 02
     ld de,0ff80h        ;076b 11 80 ff
@@ -900,9 +907,9 @@ l0768h:
     ld a,h              ;076f 7c
     or l                ;0770 b5
     jp nz,l077dh        ;0771 c2 7d 07
-    call sub_2d3dh      ;0774 cd 3d 2d
+    call pr0a           ;0774 cd 3d 2d
     ld hl,one_dot_five  ;0777 21 4a 26
-    call sub_2c31h      ;077a cd 31 2c
+    call pv2d           ;077a cd 31 2c
 l077dh:
     ld hl,(02d6h)       ;077d 2a d6 02
     ld de,0ff40h        ;0780 11 40 ff
@@ -910,16 +917,16 @@ l077dh:
     ld a,h              ;0784 7c
     or l                ;0785 b5
     jp nz,l0792h        ;0786 c2 92 07
-    call sub_2d3dh      ;0789 cd 3d 2d
+    call pr0a           ;0789 cd 3d 2d
     ld hl,two           ;078c 21 46 26
-    call sub_2c31h      ;078f cd 31 2c
+    call pv2d           ;078f cd 31 2c
 l0792h:
-    call sub_2d3dh      ;0792 cd 3d 2d
+    call pr0a           ;0792 cd 3d 2d
     ld hl,l2898h        ;0795 21 98 28
-    call sub_2c31h      ;0798 cd 31 2c
-    call sub_2d3dh      ;079b cd 3d 2d
+    call pv2d           ;0798 cd 31 2c
+    call pr0a           ;079b cd 3d 2d
     ld hl,rs232_3_par   ;079e 21 24 26
-    call sub_2c3ch      ;07a1 cd 3c 2c
+    call pv1d           ;07a1 cd 3c 2c
     ld hl,(02c0h)       ;07a4 2a c0 02
     ld a,l              ;07a7 7d
     and 10h             ;07a8 e6 10
@@ -930,9 +937,9 @@ l0792h:
     ld a,h              ;07af 7c
     or l                ;07b0 b5
     jp nz,l07bdh        ;07b1 c2 bd 07
-    call sub_2d3dh      ;07b4 cd 3d 2d
+    call pr0a           ;07b4 cd 3d 2d
     ld hl,none          ;07b7 21 1d 26
-    call sub_2c31h      ;07ba cd 31 2c
+    call pv2d           ;07ba cd 31 2c
 l07bdh:
     ld hl,(02c0h)       ;07bd 2a c0 02
     ld a,l              ;07c0 7d
@@ -946,9 +953,9 @@ l07bdh:
     ld a,h              ;07cc 7c
     or l                ;07cd b5
     jp nz,l07dah        ;07ce c2 da 07
-    call sub_2d3dh      ;07d1 cd 3d 2d
+    call pr0a           ;07d1 cd 3d 2d
     ld hl,even          ;07d4 21 16 26
-    call sub_2c31h      ;07d7 cd 31 2c
+    call pv2d           ;07d7 cd 31 2c
 l07dah:
     ld hl,(02c0h)       ;07da 2a c0 02
     ld a,l              ;07dd 7d
@@ -962,26 +969,26 @@ l07dah:
     ld a,h              ;07e9 7c
     or l                ;07ea b5
     jp nz,l07f7h        ;07eb c2 f7 07
-    call sub_2d3dh      ;07ee cd 3d 2d
+    call pr0a           ;07ee cd 3d 2d
     ld hl,2610h         ;07f1 21 10 26
-    call sub_2c31h      ;07f4 cd 31 2c
+    call pv2d           ;07f4 cd 31 2c
 l07f7h:
-    call sub_2d3dh      ;07f7 cd 3d 2d
+    call pr0a           ;07f7 cd 3d 2d
     ld hl,l2898h        ;07fa 21 98 28
-    call sub_2c31h      ;07fd cd 31 2c
+    call pv2d           ;07fd cd 31 2c
 l0800h:
-    call sub_2d3dh      ;0800 cd 3d 2d
+    call pr0a           ;0800 cd 3d 2d
     ld hl,rs232_4_baud  ;0803 21 ee 25
-    call sub_2c3ch      ;0806 cd 3c 2c
+    call pv1d           ;0806 cd 3c 2c
     ld hl,(02c2h)       ;0809 2a c2 02
     ld de,0ffdeh        ;080c 11 de ff
     add hl,de           ;080f 19
     ld a,h              ;0810 7c
     or l                ;0811 b5
     jp nz,l081eh        ;0812 c2 1e 08
-    call sub_2d3dh      ;0815 cd 3d 2d
+    call pr0a           ;0815 cd 3d 2d
     ld hl,baud_110      ;0818 21 e8 25
-    call sub_2c31h      ;081b cd 31 2c
+    call pv2d           ;081b cd 31 2c
 l081eh:
     ld hl,(02c2h)       ;081e 2a c2 02
     ld de,0ffabh        ;0821 11 ab ff
@@ -989,9 +996,9 @@ l081eh:
     ld a,h              ;0825 7c
     or l                ;0826 b5
     jp nz,l0833h        ;0827 c2 33 08
-    call sub_2d3dh      ;082a cd 3d 2d
+    call pr0a           ;082a cd 3d 2d
     ld hl,25e2h         ;082d 21 e2 25
-    call sub_2c31h      ;0830 cd 31 2c
+    call pv2d           ;0830 cd 31 2c
 l0833h:
     ld hl,(02c2h)       ;0833 2a c2 02
     ld de,0ff89h        ;0836 11 89 ff
@@ -999,9 +1006,9 @@ l0833h:
     ld a,h              ;083a 7c
     or l                ;083b b5
     jp nz,l0848h        ;083c c2 48 08
-    call sub_2d3dh      ;083f cd 3d 2d
+    call pr0a           ;083f cd 3d 2d
     ld hl,baud_1200     ;0842 21 db 25
-    call sub_2c31h      ;0845 cd 31 2c
+    call pv2d           ;0845 cd 31 2c
 l0848h:
     ld hl,(02c2h)       ;0848 2a c2 02
     ld de,0ff12h        ;084b 11 12 ff
@@ -1009,9 +1016,9 @@ l0848h:
     ld a,h              ;084f 7c
     or l                ;0850 b5
     jp nz,l085dh        ;0851 c2 5d 08
-    call sub_2d3dh      ;0854 cd 3d 2d
+    call pr0a           ;0854 cd 3d 2d
     ld hl,baud_9600     ;0857 21 d4 25
-    call sub_2c31h      ;085a cd 31 2c
+    call pv2d           ;085a cd 31 2c
 l085dh:
     ld hl,(02c2h)       ;085d 2a c2 02
     ld de,0ff01h        ;0860 11 01 ff
@@ -1019,9 +1026,9 @@ l085dh:
     ld a,h              ;0864 7c
     or l                ;0865 b5
     jp nz,l0872h        ;0866 c2 72 08
-    call sub_2d3dh      ;0869 cd 3d 2d
+    call pr0a           ;0869 cd 3d 2d
     ld hl,25cch         ;086c 21 cc 25
-    call sub_2c31h      ;086f cd 31 2c
+    call pv2d           ;086f cd 31 2c
 l0872h:
     ld hl,(02c2h)       ;0872 2a c2 02
     ld de,0ff34h        ;0875 11 34 ff
@@ -1029,16 +1036,16 @@ l0872h:
     ld a,h              ;0879 7c
     or l                ;087a b5
     jp nz,l0887h        ;087b c2 87 08
-    call sub_2d3dh      ;087e cd 3d 2d
+    call pr0a           ;087e cd 3d 2d
     ld hl,25c5h         ;0881 21 c5 25
-    call sub_2c31h      ;0884 cd 31 2c
+    call pv2d           ;0884 cd 31 2c
 l0887h:
-    call sub_2d3dh      ;0887 cd 3d 2d
+    call pr0a           ;0887 cd 3d 2d
     ld hl,l2898h        ;088a 21 98 28
-    call sub_2c31h      ;088d cd 31 2c
-    call sub_2d3dh      ;0890 cd 3d 2d
+    call pv2d           ;088d cd 31 2c
+    call pr0a           ;0890 cd 3d 2d
     ld hl,259fh         ;0893 21 9f 25
-    call sub_2c3ch      ;0896 cd 3c 2c
+    call pv1d           ;0896 cd 3c 2c
     call sub_1bcah      ;0899 cd ca 1b
     ld hl,(02b2h)       ;089c 2a b2 02
     ld de,0ffcfh        ;089f 11 cf ff
@@ -1070,9 +1077,9 @@ l0887h:
     jp z,l09e8h         ;08d1 ca e8 09
     jp l06deh           ;08d4 c3 de 06
 l08d7h:
-    call sub_2d3dh      ;08d7 cd 3d 2d
+    call pr0a           ;08d7 cd 3d 2d
     ld hl,257ch         ;08da 21 7c 25
-    call sub_2c3ch      ;08dd cd 3c 2c
+    call pv1d           ;08dd cd 3c 2c
     call sub_1bcah      ;08e0 cd ca 1b
     ld de,0ffcbh        ;08e3 11 cb ff
     ld hl,(02b2h)       ;08e6 2a b2 02
@@ -1128,9 +1135,9 @@ l0903h:
 l092dh:
     jp l06deh           ;092d c3 de 06
 l0930h:
-    call sub_2d3dh      ;0930 cd 3d 2d
+    call pr0a           ;0930 cd 3d 2d
     ld hl,2559h         ;0933 21 59 25
-    call sub_2c3ch      ;0936 cd 3c 2c
+    call pv1d           ;0936 cd 3c 2c
     call sub_1bcah      ;0939 cd ca 1b
     ld hl,(02b2h)       ;093c 2a b2 02
     ld de,0ffcfh        ;093f 11 cf ff
@@ -1176,9 +1183,9 @@ l095eh:
 l0980h:
     jp l06deh           ;0980 c3 de 06
 l0983h:
-    call sub_2d3dh      ;0983 cd 3d 2d
+    call pr0a           ;0983 cd 3d 2d
     ld hl,odd_even_none  ;0986 21 37 25
-    call sub_2c3ch      ;0989 cd 3c 2c
+    call pv1d           ;0989 cd 3c 2c
     call sub_1bcah      ;098c cd ca 1b
     ld hl,(02b2h)       ;098f 2a b2 02
     ld de,0ffb1h        ;0992 11 b1 ff
@@ -1233,15 +1240,15 @@ l09cbh:
 l09e5h:
     jp l06deh           ;09e5 c3 de 06
 l09e8h:
-    call sub_2d3dh      ;09e8 cd 3d 2d
+    call pr0a           ;09e8 cd 3d 2d
     ld hl,l2898h        ;09eb 21 98 28
-    call sub_2c31h      ;09ee cd 31 2c
-    call sub_2d3dh      ;09f1 cd 3d 2d
+    call pv2d           ;09ee cd 31 2c
+    call pr0a           ;09f1 cd 3d 2d
     ld hl,2517h         ;09f4 21 17 25
-    call sub_2c31h      ;09f7 cd 31 2c
-    call sub_2d3dh      ;09fa cd 3d 2d
+    call pv2d           ;09f7 cd 31 2c
+    call pr0a           ;09fa cd 3d 2d
     ld hl,l2507h        ;09fd 21 07 25
-    call sub_2c3ch      ;0a00 cd 3c 2c
+    call pv1d           ;0a00 cd 3c 2c
     call sub_1bcah      ;0a03 cd ca 1b
     ld hl,(l02d8h)      ;0a06 2a d8 02
     ld de,0ff92h        ;0a09 11 92 ff
@@ -1302,50 +1309,50 @@ l0a78h:
     jp l06deh           ;0a78 c3 de 06
 l0a7bh:
     call sub_1bbdh      ;0a7b cd bd 1b
-    call sub_2d3dh      ;0a7e cd 3d 2d
+    call pr0a           ;0a7e cd 3d 2d
     ld hl,io_dev_asgn        ;0a81 21 e2 24
-    call sub_2c31h      ;0a84 cd 31 2c
-    call sub_2d3dh      ;0a87 cd 3d 2d
+    call pv2d           ;0a84 cd 31 2c
+    call pr0a           ;0a87 cd 3d 2d
     ld hl,dashes_6        ;0a8a 21 bd 24
-    call sub_2c31h      ;0a8d cd 31 2c
-    call sub_2d3dh      ;0a90 cd 3d 2d
+    call pv2d           ;0a8d cd 31 2c
+    call pr0a           ;0a90 cd 3d 2d
     ld hl,l2898h        ;0a93 21 98 28
-    call sub_2c31h      ;0a96 cd 31 2c
-    call sub_2d3dh      ;0a99 cd 3d 2d
+    call pv2d           ;0a96 cd 31 2c
+    call pr0a           ;0a99 cd 3d 2d
     ld hl,l249ch        ;0a9c 21 9c 24
-    call sub_2c3ch      ;0a9f cd 3c 2c
+    call pv1d           ;0a9f cd 3c 2c
     ld hl,(l02bah)      ;0aa2 2a ba 02
     call sub_2cc8h      ;0aa5 cd c8 2c
-    call sub_2d3dh      ;0aa8 cd 3d 2d
+    call pr0a           ;0aa8 cd 3d 2d
     ld hl,l2898h        ;0aab 21 98 28
-    call sub_2c31h      ;0aae cd 31 2c
-    call sub_2d3dh      ;0ab1 cd 3d 2d
+    call pv2d           ;0aae cd 31 2c
+    call pr0a           ;0ab1 cd 3d 2d
     ld hl,247ah+1       ;0ab4 21 7b 24
-    call sub_2c3ch      ;0ab7 cd 3c 2c
+    call pv1d           ;0ab7 cd 3c 2c
     ld hl,(l02c4h)      ;0aba 2a c4 02
     call sub_2cc8h      ;0abd cd c8 2c
-    call sub_2d3dh      ;0ac0 cd 3d 2d
+    call pr0a           ;0ac0 cd 3d 2d
     ld hl,l2898h        ;0ac3 21 98 28
-    call sub_2c31h      ;0ac6 cd 31 2c
-    call sub_2d3dh      ;0ac9 cd 3d 2d
+    call pv2d           ;0ac6 cd 31 2c
+    call pr0a           ;0ac9 cd 3d 2d
     ld hl,l245ah        ;0acc 21 5a 24
-    call sub_2c3ch      ;0acf cd 3c 2c
+    call pv1d           ;0acf cd 3c 2c
     ld hl,(l02bch)      ;0ad2 2a bc 02
     call sub_2cc8h      ;0ad5 cd c8 2c
-    call sub_2d3dh      ;0ad8 cd 3d 2d
+    call pr0a           ;0ad8 cd 3d 2d
     ld hl,l2898h        ;0adb 21 98 28
-    call sub_2c31h      ;0ade cd 31 2c
-    call sub_2d3dh      ;0ae1 cd 3d 2d
+    call pv2d           ;0ade cd 31 2c
+    call pr0a           ;0ae1 cd 3d 2d
     ld hl,2439h         ;0ae4 21 39 24
-    call sub_2c3ch      ;0ae7 cd 3c 2c
+    call pv1d           ;0ae7 cd 3c 2c
     ld hl,(l02bch+2)    ;0aea 2a be 02
     call sub_2cc8h      ;0aed cd c8 2c
-    call sub_2d3dh      ;0af0 cd 3d 2d
+    call pr0a           ;0af0 cd 3d 2d
     ld hl,l2898h        ;0af3 21 98 28
-    call sub_2c31h      ;0af6 cd 31 2c
-    call sub_2d3dh      ;0af9 cd 3d 2d
+    call pv2d           ;0af6 cd 31 2c
+    call pr0a           ;0af9 cd 3d 2d
     ld hl,2418h         ;0afc 21 18 24
-    call sub_2c3ch      ;0aff cd 3c 2c
+    call pv1d           ;0aff cd 3c 2c
     ld hl,(l010ch)      ;0b02 2a 0c 01
     ld a,l              ;0b05 7d
     and 0c0h            ;0b06 e6 c0
@@ -1356,9 +1363,9 @@ l0a7bh:
     ld a,h              ;0b0d 7c
     or l                ;0b0e b5
     jp nz,l0b1bh        ;0b0f c2 1b 0b
-    call sub_2d3dh      ;0b12 cd 3d 2d
+    call pr0a           ;0b12 cd 3d 2d
     ld hl,2411h         ;0b15 21 11 24
-    call sub_2c31h      ;0b18 cd 31 2c
+    call pv2d           ;0b18 cd 31 2c
 l0b1bh:
     ld hl,(l010ch)      ;0b1b 2a 0c 01
     ld a,l              ;0b1e 7d
@@ -1372,9 +1379,9 @@ l0b1bh:
     ld a,h              ;0b2a 7c
     or l                ;0b2b b5
     jp nz,l0b38h        ;0b2c c2 38 0b
-    call sub_2d3dh      ;0b2f cd 3d 2d
+    call pr0a           ;0b2f cd 3d 2d
     ld hl,crt           ;0b32 21 0a 24
-    call sub_2c31h      ;0b35 cd 31 2c
+    call pv2d           ;0b35 cd 31 2c
 l0b38h:
     ld hl,(l010ch)      ;0b38 2a 0c 01
     ld a,l              ;0b3b 7d
@@ -1388,9 +1395,9 @@ l0b38h:
     ld a,h              ;0b47 7c
     or l                ;0b48 b5
     jp nz,l0b55h        ;0b49 c2 55 0b
-    call sub_2d3dh      ;0b4c cd 3d 2d
+    call pr0a           ;0b4c cd 3d 2d
     ld hl,2401h+2       ;0b4f 21 03 24
-    call sub_2c31h      ;0b52 cd 31 2c
+    call pv2d           ;0b52 cd 31 2c
 l0b55h:
     ld hl,(l010ch)      ;0b55 2a 0c 01
     ld a,l              ;0b58 7d
@@ -1404,16 +1411,16 @@ l0b55h:
     ld a,h              ;0b64 7c
     or l                ;0b65 b5
     jp nz,l0b72h        ;0b66 c2 72 0b
-    call sub_2d3dh      ;0b69 cd 3d 2d
+    call pr0a           ;0b69 cd 3d 2d
     ld hl,23fch         ;0b6c 21 fc 23
-    call sub_2c31h      ;0b6f cd 31 2c
+    call pv2d           ;0b6f cd 31 2c
 l0b72h:
-    call sub_2d3dh      ;0b72 cd 3d 2d
+    call pr0a           ;0b72 cd 3d 2d
     ld hl,l2898h        ;0b75 21 98 28
-    call sub_2c31h      ;0b78 cd 31 2c
-    call sub_2d3dh      ;0b7b cd 3d 2d
+    call pv2d           ;0b78 cd 31 2c
+    call pr0a           ;0b7b cd 3d 2d
     ld hl,23dbh         ;0b7e 21 db 23
-    call sub_2c3ch      ;0b81 cd 3c 2c
+    call pv1d           ;0b81 cd 3c 2c
     ld hl,(l010ch)      ;0b84 2a 0c 01
     ld a,l              ;0b87 7d
     and 0ch             ;0b88 e6 0c
@@ -1424,21 +1431,21 @@ l0b72h:
     ld a,h              ;0b8f 7c
     or l                ;0b90 b5
     jp nz,l0ba0h        ;0b91 c2 a0 0b
-    call sub_2d3dh      ;0b94 cd 3d 2d
+    call pr0a           ;0b94 cd 3d 2d
     ld hl,2411h         ;0b97 21 11 24
-    call sub_2c31h      ;0b9a cd 31 2c
+    call pv2d           ;0b9a cd 31 2c
     jp l0ba9h           ;0b9d c3 a9 0b
 l0ba0h:
-    call sub_2d3dh      ;0ba0 cd 3d 2d
+    call pr0a           ;0ba0 cd 3d 2d
     ld hl,23d4h         ;0ba3 21 d4 23
-    call sub_2c31h      ;0ba6 cd 31 2c
+    call pv2d           ;0ba6 cd 31 2c
 l0ba9h:
-    call sub_2d3dh      ;0ba9 cd 3d 2d
+    call pr0a           ;0ba9 cd 3d 2d
     ld hl,l2898h        ;0bac 21 98 28
-    call sub_2c31h      ;0baf cd 31 2c
-    call sub_2d3dh      ;0bb2 cd 3d 2d
+    call pv2d           ;0baf cd 31 2c
+    call pr0a           ;0bb2 cd 3d 2d
     ld hl,l23b3h        ;0bb5 21 b3 23
-    call sub_2c3ch      ;0bb8 cd 3c 2c
+    call pv1d           ;0bb8 cd 3c 2c
     ld hl,(l010ch)      ;0bbb 2a 0c 01
     ld a,l              ;0bbe 7d
     and 30h             ;0bbf e6 30
@@ -1449,29 +1456,29 @@ l0ba9h:
     ld a,h              ;0bc6 7c
     or l                ;0bc7 b5
     jp nz,l0bd7h        ;0bc8 c2 d7 0b
-    call sub_2d3dh      ;0bcb cd 3d 2d
+    call pr0a           ;0bcb cd 3d 2d
     ld hl,2411h         ;0bce 21 11 24
-    call sub_2c31h      ;0bd1 cd 31 2c
+    call pv2d           ;0bd1 cd 31 2c
     jp l0be0h           ;0bd4 c3 e0 0b
 l0bd7h:
-    call sub_2d3dh      ;0bd7 cd 3d 2d
+    call pr0a           ;0bd7 cd 3d 2d
     ld hl,ptp           ;0bda 21 ac 23
-    call sub_2c31h      ;0bdd cd 31 2c
+    call pv2d           ;0bdd cd 31 2c
 l0be0h:
-    call sub_2d3dh      ;0be0 cd 3d 2d
+    call pr0a           ;0be0 cd 3d 2d
     ld hl,l2898h        ;0be3 21 98 28
-    call sub_2c31h      ;0be6 cd 31 2c
-    call sub_2d3dh      ;0be9 cd 3d 2d
+    call pv2d           ;0be6 cd 31 2c
+    call pr0a           ;0be9 cd 3d 2d
     ld hl,238bh         ;0bec 21 8b 23
-    call sub_2c3ch      ;0bef cd 3c 2c
+    call pv1d           ;0bef cd 3c 2c
     ld hl,(02d4h)       ;0bf2 2a d4 02
     ld a,h              ;0bf5 7c
     or l                ;0bf6 b5
     jp nz,l0c03h        ;0bf7 c2 03 0c
-    call sub_2d3dh      ;0bfa cd 3d 2d
+    call pr0a           ;0bfa cd 3d 2d
     ld hl,237fh         ;0bfd 21 7f 23
 l0c00h:
-    call sub_2c31h      ;0c00 cd 31 2c
+    call pv2d           ;0c00 cd 31 2c
 l0c03h:
     ld hl,(02d4h)       ;0c03 2a d4 02
     ld de,0ffffh        ;0c06 11 ff ff
@@ -1479,9 +1486,9 @@ l0c03h:
     ld a,h              ;0c0a 7c
     or l                ;0c0b b5
     jp nz,l0c18h        ;0c0c c2 18 0c
-    call sub_2d3dh      ;0c0f cd 3d 2d
+    call pr0a           ;0c0f cd 3d 2d
     ld hl,2371h+2       ;0c12 21 73 23
-    call sub_2c31h      ;0c15 cd 31 2c
+    call pv2d           ;0c15 cd 31 2c
 l0c18h:
     ld hl,(02d4h)       ;0c18 2a d4 02
     ld de,0fffeh        ;0c1b 11 fe ff
@@ -1489,19 +1496,19 @@ l0c18h:
     ld a,h              ;0c1f 7c
     or l                ;0c20 b5
     jp nz,l0c2dh        ;0c21 c2 2d 0c
-    call sub_2d3dh      ;0c24 cd 3d 2d
+    call pr0a           ;0c24 cd 3d 2d
     ld hl,236ch         ;0c27 21 6c 23
-    call sub_2c31h      ;0c2a cd 31 2c
+    call pv2d           ;0c2a cd 31 2c
 l0c2dh:
-    call sub_2d3dh      ;0c2d cd 3d 2d
+    call pr0a           ;0c2d cd 3d 2d
     ld hl,l2898h        ;0c30 21 98 28
-    call sub_2c31h      ;0c33 cd 31 2c
-    call sub_2d3dh      ;0c36 cd 3d 2d
+    call pv2d           ;0c33 cd 31 2c
+    call pr0a           ;0c36 cd 3d 2d
     ld hl,l2898h        ;0c39 21 98 28
-    call sub_2c31h      ;0c3c cd 31 2c
-    call sub_2d3dh      ;0c3f cd 3d 2d
+    call pv2d           ;0c3c cd 31 2c
+    call pr0a           ;0c3f cd 3d 2d
     ld hl,2355h         ;0c42 21 55 23
-    call sub_2c3ch      ;0c45 cd 3c 2c
+    call pv1d           ;0c45 cd 3c 2c
     call sub_1bcah      ;0c48 cd ca 1b
     ld hl,(02b2h)       ;0c4b 2a b2 02
     ld a,h              ;0c4e 7c
@@ -1533,9 +1540,9 @@ l0c2dh:
     jp z,l0e3bh         ;0c80 ca 3b 0e
     ld hl,(02b2h)       ;0c83 2a b2 02
     ld (l02d8h+2),hl    ;0c86 22 da 02
-    call sub_2d3dh      ;0c89 cd 3d 2d
+    call pr0a           ;0c89 cd 3d 2d
     ld hl,new_dev_num   ;0c8c 21 43 23
-    call sub_2c3ch      ;0c8f cd 3c 2c
+    call pv1d           ;0c8f cd 3c 2c
     call sub_1bcah      ;0c92 cd ca 1b
     ld hl,(l02d8h+2)    ;0c95 2a da 02
     ld de,0ffcfh        ;0c98 11 cf ff
@@ -1575,28 +1582,28 @@ l0ccbh:
 l0cddh:
     jp l0a7bh           ;0cdd c3 7b 0a
 l0ce0h:
-    call sub_2d3dh      ;0ce0 cd 3d 2d
+    call pr0a           ;0ce0 cd 3d 2d
     ld hl,l2898h        ;0ce3 21 98 28
-    call sub_2c31h      ;0ce6 cd 31 2c
-    call sub_2d3dh      ;0ce9 cd 3d 2d
+    call pv2d           ;0ce6 cd 31 2c
+    call pr0a           ;0ce9 cd 3d 2d
     ld hl,tty_rs232     ;0cec 21 28 23
-    call sub_2c31h      ;0cef cd 31 2c
-    call sub_2d3dh      ;0cf2 cd 3d 2d
+    call pv2d           ;0cef cd 31 2c
+    call pr0a           ;0cf2 cd 3d 2d
     ld hl,crt_pet_scrn  ;0cf5 21 10 23
-    call sub_2c31h      ;0cf8 cd 31 2c
-    call sub_2d3dh      ;0cfb cd 3d 2d
+    call pv2d           ;0cf8 cd 31 2c
+    call pr0a           ;0cfb cd 3d 2d
     ld hl,lpt_pet       ;0cfe 21 f2 22
-    call sub_2c31h      ;0d01 cd 31 2c
+    call pv2d           ;0d01 cd 31 2c
 l0d04h:
-    call sub_2d3dh      ;0d04 cd 3d 2d
+    call pr0a           ;0d04 cd 3d 2d
     ld hl,22d2h         ;0d07 21 d2 22
-    call sub_2c31h      ;0d0a cd 31 2c
-    call sub_2d3dh      ;0d0d cd 3d 2d
+    call pv2d           ;0d0a cd 31 2c
+    call pr0a           ;0d0d cd 3d 2d
     ld hl,l2898h        ;0d10 21 98 28
-    call sub_2c31h      ;0d13 cd 31 2c
-    call sub_2d3dh      ;0d16 cd 3d 2d
+    call pv2d           ;0d13 cd 31 2c
+    call pr0a           ;0d16 cd 3d 2d
     ld hl,22ach         ;0d19 21 ac 22
-    call sub_2c3ch      ;0d1c cd 3c 2c
+    call pv1d           ;0d1c cd 3c 2c
     call sub_1bcah      ;0d1f cd ca 1b
     ld hl,(02b2h)       ;0d22 2a b2 02
     ld de,0ffach        ;0d25 11 ac ff
@@ -1678,9 +1685,9 @@ l0d80h:
 l0da2h:
     jp l0a7bh           ;0da2 c3 7b 0a
 l0da5h:
-    call sub_2d3dh      ;0da5 cd 3d 2d
+    call pr0a           ;0da5 cd 3d 2d
     ld hl,2296h         ;0da8 21 96 22
-    call sub_2c3ch      ;0dab cd 3c 2c
+    call pv1d           ;0dab cd 3c 2c
     call sub_1bcah      ;0dae cd ca 1b
     ld hl,(02b2h)       ;0db1 2a b2 02
     ld de,0ffach        ;0db4 11 ac ff
@@ -1720,9 +1727,9 @@ l0dcbh:
 l0dedh:
     jp l0a7bh           ;0ded c3 7b 0a
 l0df0h:
-    call sub_2d3dh      ;0df0 cd 3d 2d
+    call pr0a           ;0df0 cd 3d 2d
     ld hl,tty_or_ptp    ;0df3 21 80 22
-    call sub_2c3ch      ;0df6 cd 3c 2c
+    call pv1d           ;0df6 cd 3c 2c
     call sub_1bcah      ;0df9 cd ca 1b
     ld hl,(02b2h)       ;0dfc 2a b2 02
     ld de,0ffach        ;0dff 11 ac ff
@@ -1762,24 +1769,24 @@ l0e16h:
 l0e38h:
     jp l0a7bh           ;0e38 c3 7b 0a
 l0e3bh:
-    call sub_2d3dh      ;0e3b cd 3d 2d
+    call pr0a           ;0e3b cd 3d 2d
     ld hl,l2898h        ;0e3e 21 98 28
-    call sub_2c31h      ;0e41 cd 31 2c
-    call sub_2d3dh      ;0e44 cd 3d 2d
+    call pv2d           ;0e41 cd 31 2c
+    call pr0a           ;0e44 cd 3d 2d
     ld hl,cbm3022        ;0e47 21 61 22
-    call sub_2c31h      ;0e4a cd 31 2c
-    call sub_2d3dh      ;0e4d cd 3d 2d
+    call pv2d           ;0e4a cd 31 2c
+    call pr0a           ;0e4d cd 3d 2d
     ld hl,cbm8024        ;0e50 21 56 22
-    call sub_2c31h      ;0e53 cd 31 2c
-    call sub_2d3dh      ;0e56 cd 3d 2d
+    call pv2d           ;0e53 cd 31 2c
+    call pr0a           ;0e56 cd 3d 2d
     ld hl,2236h         ;0e59 21 36 22
-    call sub_2c31h      ;0e5c cd 31 2c
-    call sub_2d3dh      ;0e5f cd 3d 2d
+    call pv2d           ;0e5c cd 31 2c
+    call pr0a           ;0e5f cd 3d 2d
     ld hl,l2898h        ;0e62 21 98 28
-    call sub_2c31h      ;0e65 cd 31 2c
-    call sub_2d3dh      ;0e68 cd 3d 2d
+    call pv2d           ;0e65 cd 31 2c
+    call pr0a           ;0e68 cd 3d 2d
     ld hl,which_printer ;0e6b 21 0f 22
-    call sub_2c3ch      ;0e6e cd 3c 2c
+    call pv1d           ;0e6e cd 3c 2c
     call sub_1bcah      ;0e71 cd ca 1b
     ld hl,(02b2h)       ;0e74 2a b2 02
     ld de,0ffcdh        ;0e77 11 cd ff
@@ -1811,69 +1818,69 @@ l0eaah:
     jp l0a7bh           ;0eaa c3 7b 0a
 l0eadh:
     call sub_1bbdh      ;0ead cd bd 1b
-    call sub_2d3dh      ;0eb0 cd 3d 2d
+    call pr0a           ;0eb0 cd 3d 2d
     ld hl,drv_assgnmt   ;0eb3 21 eb 21
-    call sub_2c31h      ;0eb6 cd 31 2c
-    call sub_2d3dh      ;0eb9 cd 3d 2d
+    call pv2d           ;0eb6 cd 31 2c
+    call pr0a           ;0eb9 cd 3d 2d
     ld hl,21c6h+1       ;0ebc 21 c7 21
-    call sub_2c31h      ;0ebf cd 31 2c
-    call sub_2d3dh      ;0ec2 cd 3d 2d
+    call pv2d           ;0ebf cd 31 2c
+    call pr0a           ;0ec2 cd 3d 2d
     ld hl,l2898h        ;0ec5 21 98 28
-    call sub_2c31h      ;0ec8 cd 31 2c
-    call sub_2d3dh      ;0ecb cd 3d 2d
+    call pv2d           ;0ec8 cd 31 2c
+    call pr0a           ;0ecb cd 3d 2d
     ld hl,drives_a_b    ;0ece 21 b9 21
-    call sub_2c3ch      ;0ed1 cd 3c 2c
+    call pv1d           ;0ed1 cd 3c 2c
     ld hl,0000h         ;0ed4 21 00 00
     ld (l02dch),hl      ;0ed7 22 dc 02
     call sub_119ah      ;0eda cd 9a 11
-    call sub_2d3dh      ;0edd cd 3d 2d
+    call pr0a           ;0edd cd 3d 2d
     ld hl,21abh         ;0ee0 21 ab 21
-    call sub_2c3ch      ;0ee3 cd 3c 2c
+    call pv1d           ;0ee3 cd 3c 2c
     ld hl,0001h         ;0ee6 21 01 00
     ld (l02dch),hl      ;0ee9 22 dc 02
     call sub_119ah      ;0eec cd 9a 11
-    call sub_2d3dh      ;0eef cd 3d 2d
+    call pr0a           ;0eef cd 3d 2d
     ld hl,219dh         ;0ef2 21 9d 21
-    call sub_2c3ch      ;0ef5 cd 3c 2c
+    call pv1d           ;0ef5 cd 3c 2c
     ld hl,0002h         ;0ef8 21 02 00
     ld (l02dch),hl      ;0efb 22 dc 02
     call sub_119ah      ;0efe cd 9a 11
-    call sub_2d3dh      ;0f01 cd 3d 2d
+    call pr0a           ;0f01 cd 3d 2d
     ld hl,218fh         ;0f04 21 8f 21
-    call sub_2c3ch      ;0f07 cd 3c 2c
+    call pv1d           ;0f07 cd 3c 2c
     ld hl,0003h         ;0f0a 21 03 00
     ld (l02dch),hl      ;0f0d 22 dc 02
     call sub_119ah      ;0f10 cd 9a 11
-    call sub_2d3dh      ;0f13 cd 3d 2d
+    call pr0a           ;0f13 cd 3d 2d
     ld hl,2181h         ;0f16 21 81 21
-    call sub_2c3ch      ;0f19 cd 3c 2c
+    call pv1d           ;0f19 cd 3c 2c
     ld hl,0004h         ;0f1c 21 04 00
     ld (l02dch),hl      ;0f1f 22 dc 02
     call sub_119ah      ;0f22 cd 9a 11
-    call sub_2d3dh      ;0f25 cd 3d 2d
+    call pr0a           ;0f25 cd 3d 2d
     ld hl,2173h         ;0f28 21 73 21
-    call sub_2c3ch      ;0f2b cd 3c 2c
+    call pv1d           ;0f2b cd 3c 2c
     ld hl,0005h         ;0f2e 21 05 00
     ld (l02dch),hl      ;0f31 22 dc 02
     call sub_119ah      ;0f34 cd 9a 11
-    call sub_2d3dh      ;0f37 cd 3d 2d
+    call pr0a           ;0f37 cd 3d 2d
     ld hl,2165h         ;0f3a 21 65 21
-    call sub_2c3ch      ;0f3d cd 3c 2c
+    call pv1d           ;0f3d cd 3c 2c
     ld hl,0006h         ;0f40 21 06 00
     ld (l02dch),hl      ;0f43 22 dc 02
     call sub_119ah      ;0f46 cd 9a 11
-    call sub_2d3dh      ;0f49 cd 3d 2d
+    call pr0a           ;0f49 cd 3d 2d
     ld hl,2157h         ;0f4c 21 57 21
-    call sub_2c3ch      ;0f4f cd 3c 2c
+    call pv1d           ;0f4f cd 3c 2c
     ld hl,0007h         ;0f52 21 07 00
     ld (l02dch),hl      ;0f55 22 dc 02
     call sub_119ah      ;0f58 cd 9a 11
-    call sub_2d3dh      ;0f5b cd 3d 2d
+    call pr0a           ;0f5b cd 3d 2d
     ld hl,l2898h        ;0f5e 21 98 28
-    call sub_2c31h      ;0f61 cd 31 2c
-    call sub_2d3dh      ;0f64 cd 3d 2d
+    call pv2d           ;0f61 cd 31 2c
+    call pr0a           ;0f64 cd 3d 2d
     ld hl,2132h         ;0f67 21 32 21
-    call sub_2c3ch      ;0f6a cd 3c 2c
+    call pv1d           ;0f6a cd 3c 2c
     call sub_1bcah      ;0f6d cd ca 1b
     ld hl,(02b2h)       ;0f70 2a b2 02
     ld a,h              ;0f73 7c
@@ -1920,12 +1927,12 @@ l0f96h:
     ld (bc),a           ;0fb0 02
     nop                 ;0fb1 00
     ld (l02dch),hl      ;0fb2 22 dc 02
-    call sub_2d3dh      ;0fb5 cd 3d 2d
+    call pr0a           ;0fb5 cd 3d 2d
     ld hl,l2898h        ;0fb8 21 98 28
-    call sub_2c31h      ;0fbb cd 31 2c
-    call sub_2d3dh      ;0fbe cd 3d 2d
+    call pv2d           ;0fbb cd 31 2c
+    call pr0a           ;0fbe cd 3d 2d
     ld hl,210ah         ;0fc1 21 0a 21
-    call sub_2c3ch      ;0fc4 cd 3c 2c
+    call pv1d           ;0fc4 cd 3c 2c
     call sub_1bcah      ;0fc7 cd ca 1b
     ld hl,(02b2h)       ;0fca 2a b2 02
     ld de,0ffcdh        ;0fcd 11 cd ff
@@ -1987,9 +1994,9 @@ l1021h:
     ld a,h              ;1034 7c
     or l                ;1035 b5
     jp z,l10fbh         ;1036 ca fb 10
-    call sub_2d3dh      ;1039 cd 3d 2d
+    call pr0a           ;1039 cd 3d 2d
     ld hl,20edh         ;103c 21 ed 20
-    call sub_2c3ch      ;103f cd 3c 2c
+    call pv1d           ;103f cd 3c 2c
     call sub_1bcah      ;1042 cd ca 1b
     ld hl,(02b2h)       ;1045 2a b2 02
     ld de,0ffcbh        ;1048 11 cb ff
@@ -2041,9 +2048,9 @@ l107fh:
 l109ch:
     jp l0eadh           ;109c c3 ad 0e
 l109fh:
-    call sub_2d3dh      ;109f cd 3d 2d
+    call pr0a           ;109f cd 3d 2d
     ld hl,20d0h         ;10a2 21 d0 20
-    call sub_2c3ch      ;10a5 cd 3c 2c
+    call pv1d           ;10a5 cd 3c 2c
     call sub_1bcah      ;10a8 cd ca 1b
     ld hl,(l02dch)      ;10ab 2a dc 02
     add hl,hl           ;10ae 29
@@ -2070,9 +2077,9 @@ l109fh:
     ld a,h              ;10cd 7c
     or l                ;10ce b5
     jp nz,l0eadh        ;10cf c2 ad 0e
-    call sub_2d3dh      ;10d2 cd 3d 2d
+    call pr0a           ;10d2 cd 3d 2d
     ld hl,20abh         ;10d5 21 ab 20
-    call sub_2c3ch      ;10d8 cd 3c 2c
+    call pv1d           ;10d8 cd 3c 2c
     call sub_1bcah      ;10db cd ca 1b
     ld hl,(02b2h)       ;10de 2a b2 02
     ld de,0ffceh        ;10e1 11 ce ff
@@ -2091,9 +2098,9 @@ l109fh:
 l10f8h:
     jp l0eadh           ;10f8 c3 ad 0e
 l10fbh:
-    call sub_2d3dh      ;10fb cd 3d 2d
+    call pr0a           ;10fb cd 3d 2d
     ld hl,drv_3_6_12    ;10fe 21 8f 20
-    call sub_2c3ch      ;1101 cd 3c 2c
+    call pv1d           ;1101 cd 3c 2c
     call sub_1bcah      ;1104 cd ca 1b
     ld hl,(l02d8h)      ;1107 2a d8 02
     ld de,0fffdh        ;110a 11 fd ff
@@ -2145,12 +2152,12 @@ l1141h:
 l115eh:
     jp l0eadh           ;115e c3 ad 0e
 l1161h:
-    call sub_2d3dh      ;1161 cd 3d 2d
+    call pr0a           ;1161 cd 3d 2d
     ld hl,2065h         ;1164 21 65 20
-    call sub_2c31h      ;1167 cd 31 2c
-    call sub_2d3dh      ;116a cd 3d 2d
+    call pv2d           ;1167 cd 31 2c
+    call pr0a           ;116a cd 3d 2d
     ld hl,2046h         ;116d 21 46 20
-    call sub_2c3ch      ;1170 cd 3c 2c
+    call pv1d           ;1170 cd 3c 2c
     call sub_1bcah      ;1173 cd ca 1b
     ld hl,(02b2h)       ;1176 2a b2 02
     ld de,0ffb8h        ;1179 11 b8 ff
@@ -2189,9 +2196,9 @@ sub_119ah:
     ld a,h              ;11a6 7c
     or l                ;11a7 b5
     jp nz,l11b7h        ;11a8 c2 b7 11
-    call sub_2d3dh      ;11ab cd 3d 2d
+    call pr0a           ;11ab cd 3d 2d
     ld hl,cbm_3040      ;11ae 21 38 20
-    call sub_2c3ch      ;11b1 cd 3c 2c
+    call pv1d           ;11b1 cd 3c 2c
     jp l1285h           ;11b4 c3 85 12
 l11b7h:
     ld hl,(l02dch)      ;11b7 2a dc 02
@@ -2208,9 +2215,9 @@ l11b7h:
     ld a,h              ;11c8 7c
     or l                ;11c9 b5
     jp nz,l11d9h        ;11ca c2 d9 11
-    call sub_2d3dh      ;11cd cd 3d 2d
+    call pr0a           ;11cd cd 3d 2d
     ld hl,cbm_8050      ;11d0 21 2a 20
-    call sub_2c3ch      ;11d3 cd 3c 2c
+    call pv1d           ;11d3 cd 3c 2c
     jp l1285h           ;11d6 c3 85 12
 l11d9h:
     ld hl,(l02dch)      ;11d9 2a dc 02
@@ -2230,9 +2237,9 @@ l11d9h:
     add hl,hl           ;11ef 29
 l11f0h:
     jp c,l11fdh         ;11f0 da fd 11
-    call sub_2d3dh      ;11f3 cd 3d 2d
+    call pr0a           ;11f3 cd 3d 2d
     ld hl,not_used      ;11f6 21 1f 20
-    call sub_2c31h      ;11f9 cd 31 2c
+    call pv2d           ;11f9 cd 31 2c
     ret                 ;11fc c9
 l11fdh:
     ld hl,(l010ah)      ;11fd 2a 0a 01
@@ -2255,10 +2262,10 @@ l11fdh:
     ld a,h              ;121a 7c
     or l                ;121b b5
     jp nz,l1228h        ;121c c2 28 12
-    call sub_2d3dh      ;121f cd 3d 2d
+    call pr0a           ;121f cd 3d 2d
 l1222h:
     ld hl,cor_10mb      ;1222 21 11 20
-    call sub_2c3ch      ;1225 cd 3c 2c
+    call pv1d           ;1225 cd 3c 2c
 l1228h:
     ld hl,(l02dch)      ;1228 2a dc 02
     add hl,hl           ;122b 29
@@ -2274,9 +2281,9 @@ l1228h:
     ld a,h              ;1239 7c
     or l                ;123a b5
     jp nz,l1247h        ;123b c2 47 12
-    call sub_2d3dh      ;123e cd 3d 2d
+    call pr0a           ;123e cd 3d 2d
     ld hl,2003h         ;1241 21 03 20
-    call sub_2c3ch      ;1244 cd 3c 2c
+    call pv1d           ;1244 cd 3c 2c
 l1247h:
     ld hl,(l02dch)      ;1247 2a dc 02
     add hl,hl           ;124a 29
@@ -2292,9 +2299,9 @@ l1247h:
     ld a,h              ;1258 7c
     or l                ;1259 b5
     jp nz,l1266h        ;125a c2 66 12
-    call sub_2d3dh      ;125d cd 3d 2d
+    call pr0a           ;125d cd 3d 2d
     ld hl,1ff5h         ;1260 21 f5 1f
-    call sub_2c3ch      ;1263 cd 3c 2c
+    call pv1d           ;1263 cd 3c 2c
 l1266h:
     ld hl,(l02dch)      ;1266 2a dc 02
     add hl,hl           ;1269 29
@@ -2310,11 +2317,11 @@ l1266h:
     ld a,h              ;1277 7c
     or l                ;1278 b5
     jp nz,l1285h        ;1279 c2 85 12
-    call sub_2d3dh      ;127c cd 3d 2d
+    call pr0a           ;127c cd 3d 2d
     ld hl,cor_5mb_star  ;127f 21 e7 1f
-    call sub_2c3ch      ;1282 cd 3c 2c
+    call pv1d           ;1282 cd 3c 2c
 l1285h:
-    call sub_2d3dh      ;1285 cd 3d 2d
+    call pr0a           ;1285 cd 3d 2d
     ld hl,device_num    ;1288 21 d9 1f
     call sub_2c43h      ;128b cd 43 2c
     ld hl,(l02dch)      ;128e 2a dc 02
@@ -2328,9 +2335,9 @@ l1285h:
     call sub_2cc8h      ;129a cd c8 2c
     ret                 ;129d c9
 l129eh:
-    call sub_2d3dh      ;129e cd 3d 2d
+    call pr0a           ;129e cd 3d 2d
     ld hl,1fc8h         ;12a1 21 c8 1f
-    call sub_2c3ch      ;12a4 cd 3c 2c
+    call pv1d           ;12a4 cd 3c 2c
     ld hl,(l02dch)      ;12a7 2a dc 02
     add hl,hl           ;12aa 29
     ld de,l010eh        ;12ab 11 0e 01
@@ -2345,9 +2352,9 @@ l129eh:
     ld a,h              ;12b8 7c
     or l                ;12b9 b5
     jp nz,l12c6h        ;12ba c2 c6 12
-    call sub_2d3dh      ;12bd cd 3d 2d
+    call pr0a           ;12bd cd 3d 2d
     ld hl,mw_3mb        ;12c0 21 b9 1f
-    call sub_2c31h      ;12c3 cd 31 2c
+    call pv2d           ;12c3 cd 31 2c
 l12c6h:
     ld hl,(l02dch)      ;12c6 2a dc 02
     add hl,hl           ;12c9 29
@@ -2363,9 +2370,9 @@ l12c6h:
     ld a,h              ;12d7 7c
     or l                ;12d8 b5
     jp nz,l12e5h        ;12d9 c2 e5 12
-    call sub_2d3dh      ;12dc cd 3d 2d
+    call pr0a           ;12dc cd 3d 2d
     ld hl,1fafh         ;12df 21 af 1f
-    call sub_2c31h      ;12e2 cd 31 2c
+    call pv2d           ;12e2 cd 31 2c
 l12e5h:
     ld hl,(l02dch)      ;12e5 2a dc 02
     add hl,hl           ;12e8 29
@@ -2381,9 +2388,9 @@ l12e5h:
     ld a,h              ;12f6 7c
     or l                ;12f7 b5
     jp nz,l1304h        ;12f8 c2 04 13
-    call sub_2d3dh      ;12fb cd 3d 2d
+    call pr0a           ;12fb cd 3d 2d
     ld hl,mw_12mb       ;12fe 21 9f 1f
-    call sub_2c31h      ;1301 cd 31 2c
+    call pv2d           ;1301 cd 31 2c
 l1304h:
     ld hl,(l02dch)      ;1304 2a dc 02
     add hl,hl           ;1307 29
@@ -2399,9 +2406,9 @@ l1304h:
     ld a,h              ;1315 7c
     or l                ;1316 b5
     jp nz,l1323h        ;1317 c2 23 13
-    call sub_2d3dh      ;131a cd 3d 2d
+    call pr0a           ;131a cd 3d 2d
     ld hl,mw_3mb_half   ;131d 21 8e 1f
-    call sub_2c31h      ;1320 cd 31 2c
+    call pv2d           ;1320 cd 31 2c
 l1323h:
     ld hl,(l02dch)      ;1323 2a dc 02
     add hl,hl           ;1326 29
@@ -2417,9 +2424,9 @@ l1323h:
     ld a,h              ;1334 7c
     or l                ;1335 b5
     jp nz,l1342h        ;1336 c2 42 13
-    call sub_2d3dh      ;1339 cd 3d 2d
+    call pr0a           ;1339 cd 3d 2d
     ld hl,mw_6mb_half   ;133c 21 7d 1f
-    call sub_2c31h      ;133f cd 31 2c
+    call pv2d           ;133f cd 31 2c
 l1342h:
     ld hl,(l02dch)      ;1342 2a dc 02
     add hl,hl           ;1345 29
@@ -2435,9 +2442,9 @@ l1342h:
     ld a,h              ;1353 7c
     or l                ;1354 b5
     jp nz,l1361h        ;1355 c2 61 13
-    call sub_2d3dh      ;1358 cd 3d 2d
+    call pr0a           ;1358 cd 3d 2d
     ld hl,mw_12mb_half  ;135b 21 6c 1f
-    call sub_2c31h      ;135e cd 31 2c
+    call pv2d           ;135e cd 31 2c
 l1361h:
     ret                 ;1361 c9
 l1362h:
@@ -2446,20 +2453,20 @@ l1362h:
     ld a,h              ;1368 7c
     or l                ;1369 b5
     jp nz,l1379h        ;136a c2 79 13
-    call sub_2d3dh      ;136d cd 3d 2d
+    call pr0a           ;136d cd 3d 2d
     ld hl,no_aload_cmd  ;1370 21 4e 1f
-    call sub_2c31h      ;1373 cd 31 2c
+    call pv2d           ;1373 cd 31 2c
     jp l13bfh           ;1376 c3 bf 13
 l1379h:
-    call sub_2d3dh      ;1379 cd 3d 2d
+    call pr0a           ;1379 cd 3d 2d
     ld hl,1f2eh         ;137c 21 2e 1f
-    call sub_2c31h      ;137f cd 31 2c
+    call pv2d           ;137f cd 31 2c
     ld hl,(013ah)       ;1382 2a 3a 01
     ld (l02deh),hl      ;1385 22 de 02
     ld hl,0001h         ;1388 21 01 00
     jp l13a7h           ;138b c3 a7 13
 l138eh:
-    call sub_2d3dh      ;138e cd 3d 2d
+    call pr0a           ;138e cd 3d 2d
     ld hl,(l02d0h)      ;1391 2a d0 02
     add hl,hl           ;1394 29
     ld de,013ah         ;1395 11 3a 01
@@ -2468,8 +2475,8 @@ l138eh:
     inc hl              ;139a 23
     ld d,(hl)           ;139b 56
     ex de,hl            ;139c eb
-    call sub_2c24h      ;139d cd 24 2c
-    call sub_2c3ch      ;13a0 cd 3c 2c
+    call chr            ;139d cd 24 2c
+    call pv1d           ;13a0 cd 3c 2c
     ld hl,(l02d0h)      ;13a3 2a d0 02
     inc hl              ;13a6 23
 l13a7h:
@@ -2489,12 +2496,12 @@ l13bbh:
     rla                 ;13bb 17
     jp nc,l138eh        ;13bc d2 8e 13
 l13bfh:
-    call sub_2d3dh      ;13bf cd 3d 2d
+    call pr0a           ;13bf cd 3d 2d
     ld hl,l2898h        ;13c2 21 98 28
-    call sub_2c31h      ;13c5 cd 31 2c
-    call sub_2d3dh      ;13c8 cd 3d 2d
+    call pv2d           ;13c5 cd 31 2c
+    call pr0a           ;13c8 cd 3d 2d
     ld hl,1f0eh         ;13cb 21 0e 1f
-    call sub_2c3ch      ;13ce cd 3c 2c
+    call pv1d           ;13ce cd 3c 2c
     call sub_1bcah      ;13d1 cd ca 1b
     ld hl,(02b2h)       ;13d4 2a b2 02
     ld de,0ffa7h        ;13d7 11 a7 ff
@@ -2502,9 +2509,9 @@ l13bfh:
     ld a,h              ;13db 7c
     or l                ;13dc b5
     jp nz,l05b5h        ;13dd c2 b5 05
-    call sub_2d3dh      ;13e0 cd 3d 2d
+    call pr0a           ;13e0 cd 3d 2d
     ld hl,new_command   ;13e3 21 ec 1e
-    call sub_2c31h      ;13e6 cd 31 2c
+    call pv2d           ;13e6 cd 31 2c
     call sub_1bcah      ;13e9 cd ca 1b
     ld hl,(02e0h)       ;13ec 2a e0 02
     inc hl              ;13ef 23
@@ -2913,9 +2920,9 @@ l1658h:
     ld (hl),e           ;1666 73
     ret                 ;1667 c9
 l1668h:
-    call sub_2d3dh      ;1668 cd 3d 2d
+    call pr0a           ;1668 cd 3d 2d
     ld hl,save_on_which ;166b 21 ca 1e
-    call sub_2c3ch      ;166e cd 3c 2c
+    call pv1d           ;166e cd 3c 2c
     call sub_1bcah      ;1671 cd ca 1b
     ld hl,(02b2h)       ;1674 2a b2 02
     ld de,0ffbfh        ;1677 11 bf ff
@@ -2969,9 +2976,9 @@ l16c3h:
     add hl,hl           ;16c4 29
 l16c5h:
     jp c,l16d4h         ;16c5 da d4 16
-    call sub_2d3dh      ;16c8 cd 3d 2d
+    call pr0a           ;16c8 cd 3d 2d
     ld hl,no_drive      ;16cb 21 b4 1e
-    call sub_2c31h      ;16ce cd 31 2c
+    call pv2d           ;16ce cd 31 2c
     jp l1668h           ;16d1 c3 68 16
 l16d4h:
     call sub_149ah      ;16d4 cd 9a 14
@@ -3023,9 +3030,9 @@ l170eh:
     ld a,h              ;1723 7c
     or l                ;1724 b5
     jp z,l05b5h         ;1725 ca b5 05
-    call sub_2d3dh      ;1728 cd 3d 2d
+    call pr0a           ;1728 cd 3d 2d
     ld hl,retry_yn      ;172b 21 a2 1e
-    call sub_2c3ch      ;172e cd 3c 2c
+    call pv1d           ;172e cd 3c 2c
     call sub_1bcah      ;1731 cd ca 1b
     ld hl,(02b2h)       ;1734 2a b2 02
     ld de,0ffa7h        ;1737 11 a7 ff
@@ -3036,25 +3043,25 @@ l170eh:
     jp l05b5h           ;1740 c3 b5 05
 l1743h:
     call sub_1bbdh      ;1743 cd bd 1b
-    call sub_2d3dh      ;1746 cd 3d 2d
+    call pr0a           ;1746 cd 3d 2d
     ld hl,pet_params    ;1749 21 82 1e
-    call sub_2c31h      ;174c cd 31 2c
-    call sub_2d3dh      ;174f cd 3d 2d
+    call pv2d           ;174c cd 31 2c
+    call pr0a           ;174f cd 3d 2d
     ld hl,dashes        ;1752 21 62 1e
-    call sub_2c31h      ;1755 cd 31 2c
-    call sub_2d3dh      ;1758 cd 3d 2d
+    call pv2d           ;1755 cd 31 2c
+    call pr0a           ;1758 cd 3d 2d
     ld hl,l2898h        ;175b 21 98 28
-    call sub_2c31h      ;175e cd 31 2c
-    call sub_2d3dh      ;1761 cd 3d 2d
+    call pv2d           ;175e cd 31 2c
+    call pr0a           ;1761 cd 3d 2d
     ld hl,1e40h         ;1764 21 40 1e
-    call sub_2c3ch      ;1767 cd 3c 2c
+    call pv1d           ;1767 cd 3c 2c
     ld hl,(02b8h)       ;176a 2a b8 02
     ld a,h              ;176d 7c
     or l                ;176e b5
     jp nz,l177eh        ;176f c2 7e 17
-    call sub_2d3dh      ;1772 cd 3d 2d
+    call pr0a           ;1772 cd 3d 2d
     ld hl,one           ;1775 21 50 26
-    call sub_2c31h      ;1778 cd 31 2c
+    call pv2d           ;1778 cd 31 2c
     jp l179fh           ;177b c3 9f 17
 l177eh:
     ld hl,(02b8h)       ;177e 2a b8 02
@@ -3063,21 +3070,21 @@ l177eh:
     ld a,h              ;1785 7c
     or l                ;1786 b5
     jp nz,l1796h        ;1787 c2 96 17
-    call sub_2d3dh      ;178a cd 3d 2d
+    call pr0a           ;178a cd 3d 2d
     ld hl,two           ;178d 21 46 26
-    call sub_2c31h      ;1790 cd 31 2c
+    call pv2d           ;1790 cd 31 2c
     jp l179fh           ;1793 c3 9f 17
 l1796h:
-    call sub_2d3dh      ;1796 cd 3d 2d
+    call pr0a           ;1796 cd 3d 2d
     ld hl,four          ;1799 21 3c 1e
-    call sub_2c31h      ;179c cd 31 2c
+    call pv2d           ;179c cd 31 2c
 l179fh:
-    call sub_2d3dh      ;179f cd 3d 2d
+    call pr0a           ;179f cd 3d 2d
     ld hl,l2898h        ;17a2 21 98 28
-    call sub_2c31h      ;17a5 cd 31 2c
-    call sub_2d3dh      ;17a8 cd 3d 2d
+    call pv2d           ;17a5 cd 31 2c
+    call pr0a           ;17a8 cd 3d 2d
     ld hl,crt_in_upper  ;17ab 21 1a 1e
-    call sub_2c3ch      ;17ae cd 3c 2c
+    call pv1d           ;17ae cd 3c 2c
     ld hl,(02c6h)       ;17b1 2a c6 02
     ld a,l              ;17b4 7d
     and 80h             ;17b5 e6 80
@@ -3088,21 +3095,21 @@ l179fh:
     ld a,h              ;17bc 7c
     or l                ;17bd b5
     jp z,l17cdh         ;17be ca cd 17
-    call sub_2d3dh      ;17c1 cd 3d 2d
+    call pr0a           ;17c1 cd 3d 2d
     ld hl,yes           ;17c4 21 14 1e
-    call sub_2c31h      ;17c7 cd 31 2c
+    call pv2d           ;17c7 cd 31 2c
     jp l17d6h           ;17ca c3 d6 17
 l17cdh:
-    call sub_2d3dh      ;17cd cd 3d 2d
+    call pr0a           ;17cd cd 3d 2d
     ld hl,no            ;17d0 21 0f 1e
-    call sub_2c31h      ;17d3 cd 31 2c
+    call pv2d           ;17d3 cd 31 2c
 l17d6h:
-    call sub_2d3dh      ;17d6 cd 3d 2d
+    call pr0a           ;17d6 cd 3d 2d
     ld hl,l2898h        ;17d9 21 98 28
-    call sub_2c31h      ;17dc cd 31 2c
-    call sub_2d3dh      ;17df cd 3d 2d
+    call pv2d           ;17dc cd 31 2c
+    call pr0a           ;17df cd 3d 2d
     ld hl,l1dedh        ;17e2 21 ed 1d
-    call sub_2c3ch      ;17e5 cd 3c 2c
+    call pv1d           ;17e5 cd 3c 2c
     ld hl,(02c6h)       ;17e8 2a c6 02
     ld a,l              ;17eb 7d
     and 7fh             ;17ec e6 7f
@@ -3113,9 +3120,9 @@ l17d6h:
     ld a,h              ;17f3 7c
     or l                ;17f4 b5
     jp nz,l1804h        ;17f5 c2 04 18
-    call sub_2d3dh      ;17f8 cd 3d 2d
+    call pr0a           ;17f8 cd 3d 2d
     ld hl,adm3a         ;17fb 21 e5 1d
-    call sub_2c31h      ;17fe cd 31 2c
+    call pv2d           ;17fe cd 31 2c
     jp l1871h           ;1801 c3 71 18
 l1804h:
     ld hl,(02c6h)       ;1804 2a c6 02
@@ -3130,9 +3137,9 @@ l1804h:
     ld a,h              ;1813 7c
     or l                ;1814 b5
     jp nz,l1824h        ;1815 c2 24 18
-    call sub_2d3dh      ;1818 cd 3d 2d
+    call pr0a           ;1818 cd 3d 2d
     ld hl,tv912         ;181b 21 dd 1d
-    call sub_2c31h      ;181e cd 31 2c
+    call pv2d           ;181e cd 31 2c
     jp l1871h           ;1821 c3 71 18
 l1824h:
     ld hl,(02c6h)       ;1824 2a c6 02
@@ -3147,9 +3154,9 @@ l1824h:
     ld a,h              ;1833 7c
     or l                ;1834 b5
     jp nz,l1844h        ;1835 c2 44 18
-    call sub_2d3dh      ;1838 cd 3d 2d
+    call pr0a           ;1838 cd 3d 2d
     ld hl,hz1500        ;183b 21 d4 1d
-    call sub_2c31h      ;183e cd 31 2c
+    call pv2d           ;183e cd 31 2c
     jp l1847h           ;1841 c3 47 18
 l1844h:
     jp l1871h           ;1844 c3 71 18
@@ -3160,9 +3167,9 @@ l1847h:
     ld a,h              ;184e 7c
     or l                ;184f b5
     jp nz,l185ch        ;1850 c2 5c 18
-    call sub_2d3dh      ;1853 cd 3d 2d
+    call pr0a           ;1853 cd 3d 2d
     ld hl,1dach         ;1856 21 ac 1d
-    call sub_2c31h      ;1859 cd 31 2c
+    call pv2d           ;1859 cd 31 2c
 l185ch:
     ld hl,(l02c8h)      ;185c 2a c8 02
     ld de,0ff82h        ;185f 11 82 ff
@@ -3170,24 +3177,24 @@ l185ch:
     ld a,h              ;1863 7c
     or l                ;1864 b5
     jp nz,l1871h        ;1865 c2 71 18
-    call sub_2d3dh      ;1868 cd 3d 2d
+    call pr0a           ;1868 cd 3d 2d
     ld hl,1d90h+1       ;186b 21 91 1d
-    call sub_2c31h      ;186e cd 31 2c
+    call pv2d           ;186e cd 31 2c
 l1871h:
-    call sub_2d3dh      ;1871 cd 3d 2d
+    call pr0a           ;1871 cd 3d 2d
     ld hl,l2898h        ;1874 21 98 28
-    call sub_2c31h      ;1877 cd 31 2c
-    call sub_2d3dh      ;187a cd 3d 2d
+    call pv2d           ;1877 cd 31 2c
+    call pr0a           ;187a cd 3d 2d
     ld hl,1d6fh         ;187d 21 6f 1d
-    call sub_2c3ch      ;1880 cd 3c 2c
+    call pv1d           ;1880 cd 3c 2c
     ld hl,(l02d0h+2)    ;1883 2a d2 02
     call sub_2cc8h      ;1886 cd c8 2c
-    call sub_2d3dh      ;1889 cd 3d 2d
+    call pr0a           ;1889 cd 3d 2d
     ld hl,l2898h        ;188c 21 98 28
-    call sub_2c31h      ;188f cd 31 2c
-    call sub_2d3dh      ;1892 cd 3d 2d
+    call pv2d           ;188f cd 31 2c
+    call pr0a           ;1892 cd 3d 2d
     ld hl,01d57h+1      ;1895 21 58 1d
-    call sub_2c3ch      ;1898 cd 3c 2c
+    call pv1d           ;1898 cd 3c 2c
     call sub_1bcah      ;189b cd ca 1b
     ld hl,(02b2h)       ;189e 2a b2 02
     ld a,h              ;18a1 7c
@@ -3229,9 +3236,9 @@ l18cfh:
     jp z,l192fh         ;18e4 ca 2f 19
     jp l1743h           ;18e7 c3 43 17
 l18eah:
-    call sub_2d3dh      ;18ea cd 3d 2d
+    call pr0a           ;18ea cd 3d 2d
     ld hl,1d35h         ;18ed 21 35 1d
-    call sub_2c3ch      ;18f0 cd 3c 2c
+    call pv1d           ;18f0 cd 3c 2c
     call sub_1bcah      ;18f3 cd ca 1b
     ld hl,(02b2h)       ;18f6 2a b2 02
     ld de,0ffcfh        ;18f9 11 cf ff
@@ -3262,9 +3269,9 @@ l191ah:
 l192ch:
     jp l1743h           ;192c c3 43 17
 l192fh:
-    call sub_2d3dh      ;192f cd 3d 2d
+    call pr0a           ;192f cd 3d 2d
     ld hl,1d1ch         ;1932 21 1c 1d
-    call sub_2c3ch      ;1935 cd 3c 2c
+    call pv1d           ;1935 cd 3c 2c
     call sub_1bcah      ;1938 cd ca 1b
     ld hl,(02b2h)       ;193b 2a b2 02
     ld a,h              ;193e 7c
@@ -3275,9 +3282,9 @@ l192fh:
 l1949h:
     jp l1743h           ;1949 c3 43 17
 l194ch:
-    call sub_2d3dh      ;194c cd 3d 2d
+    call pr0a           ;194c cd 3d 2d
     ld hl,1cf4h         ;194f 21 f4 1c
-    call sub_2c3ch      ;1952 cd 3c 2c
+    call pv1d           ;1952 cd 3c 2c
     call sub_1bcah      ;1955 cd ca 1b
     ld hl,(02b2h)       ;1958 2a b2 02
     ld de,0ffbfh        ;195b 11 bf ff
@@ -3323,9 +3330,9 @@ l199ah:
     ld a,h              ;19a1 7c
     or l                ;19a2 b5
     jp nz,l1743h        ;19a3 c2 43 17
-    call sub_2d3dh      ;19a6 cd 3d 2d
+    call pr0a           ;19a6 cd 3d 2d
     ld hl,l1cceh        ;19a9 21 ce 1c
-    call sub_2c3ch      ;19ac cd 3c 2c
+    call pv1d           ;19ac cd 3c 2c
     call sub_1bcah      ;19af cd ca 1b
     ld hl,(02b2h)       ;19b2 2a b2 02
     ld de,0ffbbh        ;19b5 11 bb ff
@@ -3518,10 +3525,10 @@ l1b1eh:
     ld (l0280h),hl      ;1bb7 22 80 02
     jp l1743h           ;1bba c3 43 17
 sub_1bbdh:
-    call sub_2d3dh      ;1bbd cd 3d 2d
+    call pr0a           ;1bbd cd 3d 2d
     ld hl,001ah         ;1bc0 21 1a 00
-    call sub_2c24h      ;1bc3 cd 24 2c
-    call sub_2c31h      ;1bc6 cd 31 2c
+    call chr            ;1bc3 cd 24 2c
+    call pv2d           ;1bc6 cd 31 2c
     ret                 ;1bc9 c9
 sub_1bcah:
     ld hl,0080h         ;1bca 21 80 00
@@ -3529,9 +3536,9 @@ sub_1bcah:
     ld hl,(02e0h)       ;1bd0 2a e0 02
     ld (hl),50h         ;1bd3 36 50
     call sub_28a1h      ;1bd5 cd a1 28
-    call sub_2d3dh      ;1bd8 cd 3d 2d
+    call pr0a           ;1bd8 cd 3d 2d
     ld hl,l2898h        ;1bdb 21 98 28
-    call sub_2c31h      ;1bde cd 31 2c
+    call pv2d           ;1bde cd 31 2c
     ld hl,(02e0h)       ;1be1 2a e0 02
     inc hl              ;1be4 23
     ld l,(hl)           ;1be5 6e
@@ -4825,25 +4832,39 @@ sub_2c18h:
 l2c21h:
     add a,30h           ;2c21 c6 30
     ret                 ;2c23 c9
-sub_2c24h:
+
+chr:
+;Make a temporary string from the char in L and
+;return a pointer to it in HL.
+;Implements BASIC function: CHR$(x)
+;
     ld a,01h            ;2c24 3e 01
     ld (l2be7h),a       ;2c26 32 e7 2b
     ld a,l              ;2c29 7d
     ld (2beah),a        ;2c2a 32 ea 2b
     ld hl,l2be7h        ;2c2d 21 e7 2b
     ret                 ;2c30 c9
-sub_2c31h:
+
+pv2d:
+;Print string in HL followed by CR+LF
+;Implements BASIC command: PRINT"foo"
+;
     ld a,(hl)           ;2c31 7e
     or a                ;2c32 b7
     jp z,l2bf2h         ;2c33 ca f2 2b
     call sub_2c4eh      ;2c36 cd 4e 2c
     jp l2bf2h           ;2c39 c3 f2 2b
-sub_2c3ch:
+
+pv1d:
+;Print string in HL but do not send CR+LF
+;Implements BASIC command: PRINT"foo";
+;
     ld a,(hl)           ;2c3c 7e
     or a                ;2c3d b7
     ret z               ;2c3e c8
     call sub_2c4eh      ;2c3f cd 4e 2c
     ret                 ;2c42 c9
+
 sub_2c43h:
     ld a,(hl)           ;2c43 7e
     or a                ;2c44 b7
@@ -5032,8 +5053,11 @@ sub_2d2fh:
     pop bc              ;2d3a c1
     pop de              ;2d3b d1
     pop hl              ;2d3c e1
-sub_2d3dh:
-    ret                 ;2d3d c9
+
+pr0a:
+;Do nothing and return
+    ret
+
 l2d3eh:
     push de             ;2d3e d5
     push bc             ;2d3f c5
