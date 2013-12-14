@@ -1248,7 +1248,7 @@ l09e8h:
     ld hl,2517h         ;09f4 21 17 25
     call pv2d           ;09f7 cd 31 2c
     call pr0a           ;09fa cd 3d 2d
-    ld hl,l2507h        ;09fd 21 07 25
+    ld hl,ask_19200     ;09fd 21 07 25
     call pv1d           ;0a00 cd 3c 2c
     call sub_1bcah      ;0a03 cd ca 1b
     ld hl,(l02d8h)      ;0a06 2a d8 02
@@ -1311,16 +1311,16 @@ l0a78h:
 l0a7bh:
     call clear_screen   ;0a7b cd bd 1b
     call pr0a           ;0a7e cd 3d 2d
-    ld hl,io_dev_asgn        ;0a81 21 e2 24
+    ld hl,io_dev_asgn   ;0a81 21 e2 24
     call pv2d           ;0a84 cd 31 2c
     call pr0a           ;0a87 cd 3d 2d
-    ld hl,dashes_6        ;0a8a 21 bd 24
+    ld hl,dashes_6      ;0a8a 21 bd 24
     call pv2d           ;0a8d cd 31 2c
     call pr0a           ;0a90 cd 3d 2d
     ld hl,empty_string  ;0a93 21 98 28
     call pv2d           ;0a96 cd 31 2c
     call pr0a           ;0a99 cd 3d 2d
-    ld hl,l249ch        ;0a9c 21 9c 24
+    ld hl,io_lpt_device ;0a9c 21 9c 24
     call pv1d           ;0a9f cd 3c 2c
     ld hl,(l02bah)      ;0aa2 2a ba 02
     call sub_2cc8h      ;0aa5 cd c8 2c
@@ -1336,7 +1336,7 @@ l0a7bh:
     ld hl,empty_string  ;0ac3 21 98 28
     call pv2d           ;0ac6 cd 31 2c
     call pr0a           ;0ac9 cd 3d 2d
-    ld hl,l245ah        ;0acc 21 5a 24
+    ld hl,io_rdr_device ;0acc 21 5a 24
     call pv1d           ;0acf cd 3c 2c
     ld hl,(l02bch)      ;0ad2 2a bc 02
     call sub_2cc8h      ;0ad5 cd c8 2c
@@ -1420,7 +1420,7 @@ l0b72h:
     ld hl,empty_string  ;0b75 21 98 28
     call pv2d           ;0b78 cd 31 2c
     call pr0a           ;0b7b cd 3d 2d
-    ld hl,23dbh         ;0b7e 21 db 23
+    ld hl,default_rdr   ;0b7e 21 db 23
     call pv1d           ;0b81 cd 3c 2c
     ld hl,(l010ch)      ;0b84 2a 0c 01
     ld a,l              ;0b87 7d
@@ -1445,7 +1445,7 @@ l0ba9h:
     ld hl,empty_string  ;0bac 21 98 28
     call pv2d           ;0baf cd 31 2c
     call pr0a           ;0bb2 cd 3d 2d
-    ld hl,l23b3h        ;0bb5 21 b3 23
+    ld hl,default_pun   ;0bb5 21 b3 23
     call pv1d           ;0bb8 cd 3c 2c
     ld hl,(l010ch)      ;0bbb 2a 0c 01
     ld a,l              ;0bbe 7d
@@ -1470,7 +1470,7 @@ l0be0h:
     ld hl,empty_string  ;0be3 21 98 28
     call pv2d           ;0be6 cd 31 2c
     call pr0a           ;0be9 cd 3d 2d
-    ld hl,238bh         ;0bec 21 8b 23
+    ld hl,pet_prtr_type ;0bec 21 8b 23
     call pv1d           ;0bef cd 3c 2c
     ld hl,(02d4h)       ;0bf2 2a d4 02
     ld a,h              ;0bf5 7c
@@ -3109,7 +3109,7 @@ l17d6h:
     ld hl,empty_string  ;17d9 21 98 28
     call pv2d           ;17dc cd 31 2c
     call pr0a           ;17df cd 3d 2d
-    ld hl,l1dedh        ;17e2 21 ed 1d
+    ld hl,crt_term_emu  ;17e2 21 ed 1d
     call pv1d           ;17e5 cd 3c 2c
     ld hl,(02c6h)       ;17e8 2a c6 02
     ld a,l              ;17eb 7d
@@ -3169,7 +3169,7 @@ l1847h:
     or l                ;184f b5
     jp nz,l185ch        ;1850 c2 5c 18
     call pr0a           ;1853 cd 3d 2d
-    ld hl,1dach         ;1856 21 ac 1d
+    ld hl,leadin_esc    ;1856 21 ac 1d
     call pv2d           ;1859 cd 31 2c
 l185ch:
     ld hl,(l02c8h)      ;185c 2a c8 02
@@ -3179,14 +3179,14 @@ l185ch:
     or l                ;1864 b5
     jp nz,l1871h        ;1865 c2 71 18
     call pr0a           ;1868 cd 3d 2d
-    ld hl,1d90h+1       ;186b 21 91 1d
+    ld hl,leadin_tilde  ;186b 21 91 1d
     call pv2d           ;186e cd 31 2c
 l1871h:
     call pr0a           ;1871 cd 3d 2d
     ld hl,empty_string  ;1874 21 98 28
     call pv2d           ;1877 cd 31 2c
     call pr0a           ;187a cd 3d 2d
-    ld hl,1d6fh         ;187d 21 6f 1d
+    ld hl,clock_freq    ;187d 21 6f 1d
     call pv1d           ;1880 cd 3c 2c
     ld hl,(l02d0h+2)    ;1883 2a d2 02
     call sub_2cc8h      ;1886 cd c8 2c
@@ -3194,7 +3194,7 @@ l1871h:
     ld hl,empty_string  ;188c 21 98 28
     call pv2d           ;188f cd 31 2c
     call pr0a           ;1892 cd 3d 2d
-    ld hl,01d57h+1      ;1895 21 58 1d
+    ld hl,alter_which_1_4 ;1895 21 58 1d
     call pv1d           ;1898 cd 3c 2c
     call sub_1bcah      ;189b cd ca 1b
     ld hl,(02b2h)       ;189e 2a b2 02
@@ -3238,7 +3238,7 @@ l18cfh:
     jp l1743h           ;18e7 c3 43 17
 l18eah:
     call pr0a           ;18ea cd 3d 2d
-    ld hl,1d35h         ;18ed 21 35 1d
+    ld hl,num_of_cols   ;18ed 21 35 1d
     call pv1d           ;18f0 cd 3c 2c
     call sub_1bcah      ;18f3 cd ca 1b
     ld hl,(02b2h)       ;18f6 2a b2 02
@@ -3271,7 +3271,7 @@ l192ch:
     jp l1743h           ;192c c3 43 17
 l192fh:
     call pr0a           ;192f cd 3d 2d
-    ld hl,1d1ch         ;1932 21 1c 1d
+    ld hl,new_clock     ;1932 21 1c 1d
     call pv1d           ;1935 cd 3c 2c
     call sub_1bcah      ;1938 cd ca 1b
     ld hl,(02b2h)       ;193b 2a b2 02
@@ -3284,7 +3284,7 @@ l1949h:
     jp l1743h           ;1949 c3 43 17
 l194ch:
     call pr0a           ;194c cd 3d 2d
-    ld hl,1cf4h         ;194f 21 f4 1c
+    ld hl,screen_type   ;194f 21 f4 1c
     call pv1d           ;1952 cd 3c 2c
     call sub_1bcah      ;1955 cd ca 1b
     ld hl,(02b2h)       ;1958 2a b2 02
@@ -3332,7 +3332,7 @@ l199ah:
     or l                ;19a2 b5
     jp nz,l1743h        ;19a3 c2 43 17
     call pr0a           ;19a6 cd 3d 2d
-    ld hl,l1cceh        ;19a9 21 ce 1c
+    ld hl,esc_or_tilde  ;19a9 21 ce 1c
     call pv1d           ;19ac cd 3c 2c
     call sub_1bcah      ;19af cd ca 1b
     ld hl,(02b2h)       ;19b2 2a b2 02
@@ -3702,37 +3702,44 @@ l1ccah:
     ret                 ;1cca c9
     call sub_2d24h      ;1ccb cd 24 2d
 
-l1cceh:
+esc_or_tilde:
     db 23h
-    dw 1cd1h
+    dw esc_or_tilde+3
     db "Lead-in code E(scape) or T(ilde) ? "
 
+screen_type:
     db 25h
-    dw 1cf7h
+    dw screen_type+3
     db "Screen type (ADM3A, HZ1500, TV912) ? "
 
+new_clock:
     db 16h
-    dw 1d1fh
+    dw new_clock+3
     db "New clock frequency ? "
 
+num_of_cols:
     db 20h
-    dw 1d38h
+    dw num_of_cols+3
     db "Number of columns (1, 2 or 4) ? "
 
+alter_which_1_4:
     db 14h
-    dw 1d5bh
+    dw alter_which_1_4+3
     db "Alter which (1-4) ? "
 
+clock_freq:
     db 1fh
-    dw 1d72h
+    dw clock_freq+3
     db "4.  Clock frequency (Hz) :     "
 
+leadin_tilde:
     db 18h
-    dw 1d94h
+    dw leadin_tilde+3
     db 09h,09h,"     (Lead-in = TILDE)"
 
+leadin_esc:
     db 25h
-    dw 1dafh
+    dw leadin_esc+3
     db "                   (Lead-in = ESCAPE)"
 
 hz1500:
@@ -3750,9 +3757,9 @@ adm3a:
     dw adm3a+3
     db "ADM3A"
 
-l1dedh:
+crt_term_emu:
     db 1fh
-    dw l1dedh+3
+    dw crt_term_emu+3
     db "3.  CRT terminal emulation :   "
 
 no:
@@ -4070,9 +4077,9 @@ cbm_3022_2:
     dw cbm_3022_2+3
     db "3022/4022"
 
-l238bh:
+pet_prtr_type:
     db 1eh
-    dw l238bh+3
+    dw pet_prtr_type+3
     db "8.  PET printer type :        "
 
 ptp:
@@ -4080,9 +4087,9 @@ ptp:
     dw ptp+3
     db "PTP:"
 
-l23b3h:
+default_pun:
     db 1eh
-    dw l23b3h+3
+    dw default_pun+3
     db "7.  Default PUN: device :     "
 
 ptr:
@@ -4090,9 +4097,9 @@ ptr:
     dw ptr+3
     db "PTR:"
 
-l23dbh:
+default_rdr:
     db 1eh
-    dw l23dbh+3
+    dw default_rdr+3
     db "6.  Default RDR: device :     "
 
 ul1:
@@ -4115,29 +4122,29 @@ tty:
     dw tty+3
     db "TTY:"
 
-l2418h:
+io_lst_device:
     db 1eh
-    dw l2418h+3
+    dw io_lst_device+3
     db "5.  Default LST: device :     "
 
-l2439h:
+io_pun_device:
     db 1eh
-    dw l2439h+3
+    dw io_pun_device+3
     db "4.  Punch device # :          "
 
-l245ah:
+io_rdr_device:
     db 1eh
-    dw l245ah+3
+    dw io_rdr_device+3
     db "3.  Reader device # :         "
 
-l247bh:
+io_ul1_device:
     db 1eh
-    dw l247bh+3
+    dw io_ul1_device+3
     db "2.  ASCII printer device # :  "
 
-l249ch:
+io_lpt_device:
     db 1eh
-    dw l249ch+3
+    dw io_lpt_device+3
     db "1.  Pet printer device # :    "
 
 dashes_6:
@@ -4150,14 +4157,14 @@ io_dev_asgn:
     dw io_dev_asgn+3
     db "             I/O device assignment"
 
-l2507h:
+ask_19200:
     db 0dh
-    dw l2507h+3
+    dw ask_19200+3
     db "19200 baud ? "
 
-l2517h:
+ask_bauds:
     db 1dh
-    dw l2517h+3
+    dw ask_bauds+3
     db "110, 300, 1200, 4800, 9600 or"
 
 odd_even_none:
@@ -4175,9 +4182,9 @@ new_char_len:
     dw new_char_len+3
     db "New character length (5 to 8) ? "
 
-alter_which_1_4:
+alter_chr_1_4:
     db 23h
-    dw alter_which_1_4+3
+    dw alter_chr_1_4  +3
     db "Alter which characteristic (1-4) ? "
 
 baud_4800:
