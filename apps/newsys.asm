@@ -4386,193 +4386,193 @@ buffin:
 ;Buffered Console Input.  Caller must store buffer size at 80h.  On
 ;return, 81h will contain the number of data bytes and the data
 ;will start at 82h.
-    ld c,0ah            ;28a1 0e 0a
-    ld de,0080h         ;28a3 11 80 00
-    jp 0005h            ;28a6 c3 05 00
+    ld c,0ah
+    ld de,0080h
+    jp 0005h
 
 exsys:
 ;Execute a new CP/M system.  The buffer at 4000h contains a new
 ;CP/M system image (7168 bytes = CCP + BDOS + BIOS config + BIOS storage).
 ;Copy the new system into place and then jump to the BIOS to start it.
-    ld bc,1c00h         ;28a9 01 00 1c
-    ld hl,4000h         ;28ac 21 00 40
-    ld de,0d400h        ;28af 11 00 d4
-    ldir                ;28b2 ed b0
-    jp 0f075h           ;28b4 c3 75 f0
+    ld bc,1c00h
+    ld hl,4000h
+    ld de,0d400h
+    ldir
+    jp 0f075h
 
 rdsys:
 ;Read the "CP/M" and "K" files from an IEEE-488 drive into memory.
-    ld a,(hl)           ;28b7 7e
-    ld (l2be5h),a       ;28b8 32 e5 2b
-    call 0f054h         ;28bb cd 54 f0
-    ld e,00h            ;28be 1e 00
-    push de             ;28c0 d5
-    call sub_29deh      ;28c1 cd de 29
-    ld a,(l2be5h)       ;28c4 3a e5 2b
-    call 0f05ah         ;28c7 cd 5a f0
-    ld (l2be6h),a       ;28ca 32 e6 2b
-    ld hl,4000h         ;28cd 21 00 40
-    ld bc,1c00h         ;28d0 01 00 1c
-    pop de              ;28d3 d1
-    or a                ;28d4 b7
-    ret nz              ;28d5 c0
-    push de             ;28d6 d5
-    call 0f039h         ;28d7 cd 39 f0
+    ld a,(hl)
+    ld (l2be5h),a
+    call 0f054h
+    ld e,00h
+    push de
+    call sub_29deh
+    ld a,(l2be5h)
+    call 0f05ah
+    ld (l2be6h),a
+    ld hl,4000h
+    ld bc,1c00h
+    pop de
+    or a
+    ret nz
+    push de
+    call 0f039h
 l28dah:
-    call 0f03fh         ;28da cd 3f f0
-    ld (hl),a           ;28dd 77
-    inc hl              ;28de 23
-    dec bc              ;28df 0b
-    ld a,b              ;28e0 78
-    or c                ;28e1 b1
-    jr nz,l28dah        ;28e2 20 f6
-    call 0f03ch         ;28e4 cd 3c f0
-    pop de              ;28e7 d1
-    push de             ;28e8 d5
-    call 0f060h         ;28e9 cd 60 f0
-    pop de              ;28ec d1
-    push de             ;28ed d5
-    call sub_29f0h      ;28ee cd f0 29
-    ld a,(l2be5h)       ;28f1 3a e5 2b
-    call 0f05ah         ;28f4 cd 5a f0
-    ld (l2be6h),a       ;28f7 32 e6 2b
-    ld hl,6000h         ;28fa 21 00 60
-    ld bc,l0800h        ;28fd 01 00 08
-    pop de              ;2900 d1
-    or a                ;2901 b7
-    ret nz              ;2902 c0
-    push de             ;2903 d5
-    call 0f039h         ;2904 cd 39 f0
+    call 0f03fh
+    ld (hl),a
+    inc hl
+    dec bc
+    ld a,b
+    or c
+    jr nz,l28dah
+    call 0f03ch
+    pop de
+    push de
+    call 0f060h
+    pop de
+    push de
+    call sub_29f0h
+    ld a,(l2be5h)
+    call 0f05ah
+    ld (l2be6h),a
+    ld hl,6000h
+    ld bc,l0800h
+    pop de
+    or a
+    ret nz
+    push de
+    call 0f039h
 l2907h:
-    call 0f03fh         ;2907 cd 3f f0
-    ld (hl),a           ;290a 77
-    inc hl              ;290b 23
-    dec bc              ;290c 0b
-    ld a,b              ;290d 78
-    or c                ;290e b1
-    jr nz,l2907h        ;290f 20 f6
-    call 0f03ch         ;2911 cd 3c f0
-    pop de              ;2914 d1
-    call 0f060h         ;2915 cd 60 f0
-    ld a,(l2be5h)       ;2918 3a e5 2b
-    call 0f05ah         ;291b cd 5a f0
-    ld (l2be6h),a       ;291e 32 e6 2b
-    ret                 ;2921 c9
+    call 0f03fh
+    ld (hl),a
+    inc hl
+    dec bc
+    ld a,b
+    or c
+    jr nz,l2907h
+    call 0f03ch
+    pop de
+    call 0f060h
+    ld a,(l2be5h)
+    call 0f05ah
+    ld (l2be6h),a
+    ret
 
 cread_:
 ;Read CP/M image from a Corvus drive.
-    ld c,(hl)           ;2922 4e
-    call 0f01bh         ;2923 cd 1b f0
-    ld de,4000h         ;2926 11 00 40
-    ld bc,0000h         ;2929 01 00 00
+    ld c,(hl)
+    call 0f01bh
+    ld de,4000h
+    ld bc,0000h
 cread2:
-    call 0f01eh         ;292c cd 1e f0
-    push bc             ;292f c5
-    ld bc,0000h         ;2930 01 00 00
+    call 0f01eh
+    push bc
+    ld bc,0000h
 cread1:
-    call 0f021h         ;2933 cd 21 f0
-    push bc             ;2936 c5
-    push de             ;2937 d5
-    call 0f027h         ;2938 cd 27 f0
-    or a                ;293b b7
-    jr nz,cwrit3        ;293c 20 4c
-    pop de              ;293e d1
-    ld bc,0080h         ;293f 01 80 00
-    ld hl,0080h         ;2942 21 80 00
+    call 0f021h
+    push bc
+    push de
+    call 0f027h
+    or a
+    jr nz,cwrit3
+    pop de
+    ld bc,0080h
+    ld hl,0080h
 l2945h:
-    ldir                ;2945 ed b0
-    pop bc              ;2947 c1
-    inc c               ;2948 0c
-    ld a,c              ;2949 79
-    cp 40h              ;294a fe 40
-    jr nz,cread1        ;294c 20 e5
-    pop bc              ;294e c1
-    inc c               ;294f 0c
-    ld a,c              ;2950 79
-    cp 02h              ;2951 fe 02
-    jr nz,cread2        ;2953 20 d7
-    ret                 ;2955 c9
+    ldir
+    pop bc
+    inc c
+    ld a,c
+    cp 40h
+    jr nz,cread1
+    pop bc
+    inc c
+    ld a,c
+    cp 02h
+    jr nz,cread2
+    ret
 
 cwrite_:
 ;Write CP/M image to a Corvus drive.
-    ld c,(hl)           ;2956 4e
-    call 0f01bh         ;2957 cd 1b f0
-    ld hl,4000h         ;295a 21 00 40
-    ld bc,0000h         ;295d 01 00 00
+    ld c,(hl)
+    call 0f01bh
+    ld hl,4000h
+    ld bc,0000h
 cwrit2:
-    call 0f01eh         ;2960 cd 1e f0
-    push bc             ;2963 c5
-    ld bc,0000h         ;2964 01 00 00
+    call 0f01eh
+    push bc
+    ld bc,0000h
 cwrit1:
-    call 0f021h         ;2967 cd 21 f0
-    push bc             ;296a c5
-    ld bc,0080h         ;296b 01 80 00
-    ld de,0080h         ;296e 11 80 00
-    ldir                ;2971 ed b0
-    push hl             ;2973 e5
-    call 0f02ah         ;2974 cd 2a f0
-    or a                ;2977 b7
-    jr nz,cwrit3        ;2978 20 10
-    pop hl              ;297a e1
-    pop bc              ;297b c1
-    inc c               ;297c 0c
-    ld a,c              ;297d 79
-    cp 40h              ;297e fe 40
-    jr nz,cwrit1        ;2980 20 e5
-    pop bc              ;2982 c1
-    inc c               ;2983 0c
+    call 0f021h
+    push bc
+    ld bc,0080h
+    ld de,0080h
+    ldir
+    push hl
+    call 0f02ah
+    or a
+    jr nz,cwrit3
+    pop hl
+    pop bc
+    inc c
+    ld a,c
+    cp 40h
+    jr nz,cwrit1
+    pop bc
+    inc c
 l2984h:
-    ld a,c              ;2984 79
-    cp 02h              ;2985 fe 02
-    jr nz,cwrit2        ;2987 20 d7
-    ret                 ;2989 c9
+    ld a,c
+    cp 02h
+    jr nz,cwrit2
+    ret
 cwrit3:
-    pop hl              ;298a e1
-    pop hl              ;298b e1
-    pop hl              ;298c e1
-    jp l2b7ah           ;298d c3 7a 2b
+    pop hl
+    pop hl
+    pop hl
+    jp l2b7ah
 
 dtype:
 ;Get the drive type for a CP/M drive number.
-    ld a,(hl)           ;2990 7e
-    call 0f051h         ;2991 cd 51 f0
-    ld (hl),c           ;2994 71
-    inc hl              ;2995 23
-    ld (hl),00h         ;2996 36 00
-    ret                 ;2998 c9
+    ld a,(hl)
+    call 0f051h
+    ld (hl),c
+    inc hl
+    ld (hl),00h
+    ret
 
 idisk:
 ;Initialize an IEEE-488 disk drive.
-    ld a,(hl)           ;2999 7e
-    jp 0f078h           ;299a c3 78 f0
+    ld a,(hl)
+    jp 0f078h
 
 dskerr:
-    ld a,(l2be6h)       ;299d 3a e6 2b
-    ld (hl),a           ;29a0 77
-    inc hl              ;29a1 23
-    xor a               ;29a2 af
-    ld (hl),a           ;29a3 77
-    ld a,(l2be6h)       ;29a4 3a e6 2b
-    or a                ;29a7 b7
-    ret z               ;29a8 c8
-    ld de,l29cbh        ;29a9 11 cb 29
-    ld c,09h            ;29ac 0e 09
-    call 0005h          ;29ae cd 05 00
-    ld hl,0eac0h        ;29b1 21 c0 ea
+    ld a,(l2be6h)
+    ld (hl),a
+    inc hl
+    xor a
+    ld (hl),a
+    ld a,(l2be6h)
+    or a
+    ret z
+    ld de,l29cbh
+    ld c,09h
+    call 0005h
+    ld hl,0eac0h
 l29b4h:
-    ld e,(hl)           ;29b4 5e
-    push hl             ;29b5 e5
-    ld c,02h            ;29b6 0e 02
-    call 0005h          ;29b8 cd 05 00
-    pop hl              ;29bb e1
-    inc hl              ;29bc 23
-    ld a,(hl)           ;29bd 7e
-    cp 0dh              ;29be fe 0d
-    jr nz,l29b4h        ;29c0 20 f2
-    ld de,l29dbh        ;29c2 11 db 29
-    ld c,09h            ;29c5 0e 09
-    call 0005h          ;29c7 cd 05 00
-    ret                 ;29ca c9
+    ld e,(hl)
+    push hl
+    ld c,02h
+    call 0005h
+    pop hl
+    inc hl
+    ld a,(hl)
+    cp 0dh
+    jr nz,l29b4h
+    ld de,l29dbh
+    ld c,09h
+    call 0005h
+    ret
 l29cbh:
     dec c
     ld a,(bc)
@@ -4582,211 +4582,211 @@ l29dbh:
 
 sub_29deh:
 ;Open "CP/M" file on an IEEE-488 drive
-    ld c,06h            ;29de 0e 06
-    ld hl,l2bd3h        ;29e0 21 d3 2b
+    ld c,06h
+    ld hl,l2bd3h
 l29e3h:
-    ld a,(l2be5h)       ;29e3 3a e5 2b
-    rra                 ;29e6 1f
-    jp nc,0f05dh        ;29e7 d2 5d f0
-    ld hl,l2bd9h        ;29ea 21 d9 2b
-    jp 0f05dh           ;29ed c3 5d f0
+    ld a,(l2be5h)
+    rra
+    jp nc,0f05dh
+    ld hl,l2bd9h
+    jp 0f05dh
 
 sub_29f0h:
 ;Open "K" file on an IEEE-488 drive
-    ld c,03h            ;29f0 0e 03
-    ld hl,l2bdfh        ;29f2 21 df 2b
-    ld a,(l2be5h)       ;29f5 3a e5 2b
-    rra                 ;29f8 1f
-    jp nc,0f05dh        ;29f9 d2 5d f0
-    ld hl,l2be2h        ;29fc 21 e2 2b
+    ld c,03h
+    ld hl,l2bdfh
+    ld a,(l2be5h)
+    rra
+    jp nc,0f05dh
+    ld hl,l2be2h
 l29ffh:
-    jp 0f05dh           ;29ff c3 5d f0
+    jp 0f05dh
 
 savesy:
 ;Read the CP/M system image from an IEEE-488 drive.
-    ld a,(hl)           ;2a02 7e
-    ld (l2be5h),a       ;2a03 32 e5 2b
-    call 0f054h         ;2a06 cd 54 f0
-    push de             ;2a09 d5
-    ld e,0fh            ;2a0a 1e 0f
-    ld hl,l2bcbh        ;2a0c 21 cb 2b
-    ld a,(l2be5h)       ;2a0f 3a e5 2b
-    rra                 ;2a12 1f
+    ld a,(hl)
+    ld (l2be5h),a
+    call 0f054h
+    push de
+    ld e,0fh
+    ld hl,l2bcbh
+    ld a,(l2be5h)
+    rra
 l2a13h:
-    jr nc,l2a18h        ;2a13 30 03
-    ld hl,2bcfh         ;2a15 21 cf 2b
+    jr nc,l2a18h
+    ld hl,2bcfh
 l2a18h:
-    ld c,04h            ;2a18 0e 04
-    call 0f05dh         ;2a1a cd 5d f0
-    ld a,(l2be5h)       ;2a1d 3a e5 2b
-    call 0f05ah         ;2a20 cd 5a f0
-    ld (l2be6h),a       ;2a23 32 e6 2b
-    pop de              ;2a26 d1
+    ld c,04h
+    call 0f05dh
+    ld a,(l2be5h)
+    call 0f05ah
+    ld (l2be6h),a
+    pop de
 l2a27h:
-    cp 01h              ;2a27 fe 01
-    ret nz              ;2a29 c0
-    ld e,01h            ;2a2a 1e 01
+    cp 01h
+    ret nz
+    ld e,01h
 l2a2ch:
-    push de             ;2a2c d5
-    call sub_29f0h      ;2a2d cd f0 29
-    ld a,(l2be5h)       ;2a30 3a e5 2b
-    call 0f05ah         ;2a33 cd 5a f0
-    ld (l2be6h),a       ;2a36 32 e6 2b
-    pop de              ;2a39 d1
-    or a                ;2a3a b7
-    ret nz              ;2a3b c0
-    push de             ;2a3c d5
-    call 0f033h         ;2a3d cd 33 f0
-    ld hl,6000h         ;2a40 21 00 60
-    ld bc,l0800h        ;2a43 01 00 08
+    push de
+    call sub_29f0h
+    ld a,(l2be5h)
+    call 0f05ah
+    ld (l2be6h),a
+    pop de
+    or a
+    ret nz
+    push de
+    call 0f033h
+    ld hl,6000h
+    ld bc,l0800h
 l2a46h:
-    ld a,(hl)           ;2a46 7e
-    call 0f042h         ;2a47 cd 42 f0
+    ld a,(hl)
+    call 0f042h
 l2a4ah:
-    inc hl              ;2a4a 23
-    dec bc              ;2a4b 0b
-    ld a,b              ;2a4c 78
-    or c                ;2a4d b1
-    jr nz,l2a46h        ;2a4e 20 f6
-    call 0f036h         ;2a50 cd 36 f0
-    pop de              ;2a53 d1
-    push de             ;2a54 d5
-    call 0f060h         ;2a55 cd 60 f0
-    pop de              ;2a58 d1
-    push de             ;2a59 d5
-    call sub_29deh      ;2a5a cd de 29
-    ld a,(l2be5h)       ;2a5d 3a e5 2b
-    call 0f05ah         ;2a60 cd 5a f0
-    ld (l2be6h),a       ;2a63 32 e6 2b
-    pop de              ;2a66 d1
-    or a                ;2a67 b7
-    ret nz              ;2a68 c0
-    push de             ;2a69 d5
-    call 0f033h         ;2a6a cd 33 f0
-    ld hl,4000h         ;2a6d 21 00 40
-    ld bc,1c00h         ;2a70 01 00 1c
+    inc hl
+    dec bc
+    ld a,b
+    or c
+    jr nz,l2a46h
+    call 0f036h
+    pop de
+    push de
+    call 0f060h
+    pop de
+    push de
+    call sub_29deh
+    ld a,(l2be5h)
+    call 0f05ah
+    ld (l2be6h),a
+    pop de
+    or a
+    ret nz
+    push de
+    call 0f033h
+    ld hl,4000h
+    ld bc,1c00h
 l2a73h:
-    ld a,(hl)           ;2a73 7e
-    call 0f042h         ;2a74 cd 42 f0
-    inc hl              ;2a77 23
-    dec bc              ;2a78 0b
-    ld a,b              ;2a79 78
-    or c                ;2a7a b1
-    jr nz,l2a73h        ;2a7b 20 f6
-    call 0f036h         ;2a7d cd 36 f0
-    pop de              ;2a80 d1
-    call 0f060h         ;2a81 cd 60 f0
-    ld a,(l2be5h)       ;2a84 3a e5 2b
-    call 0f05ah         ;2a87 cd 5a f0
-    ld (l2be6h),a       ;2a8a 32 e6 2b
-    ret                 ;2a8d c9
-    ld a,(hl)           ;2a8e 7e
-    ld (l2be5h),a       ;2a8f 32 e5 2b
-    call 0f054h         ;2a92 cd 54 f0
-    ld a,(l2be5h)       ;2a95 3a e5 2b
-    and 01h             ;2a98 e6 01
-    add a,30h           ;2a9a c6 30
-    ld (l2ba6h+1),a     ;2a9c 32 a7 2b
-    ld e,0fh            ;2a9f 1e 0f
-    ld c,14h            ;2aa1 0e 14
-    ld hl,2ba6h         ;2aa3 21 a6 2b
-    call 0f05dh         ;2aa6 cd 5d f0
+    ld a,(hl)
+    call 0f042h
+    inc hl
+    dec bc
+    ld a,b
+    or c
+    jr nz,l2a73h
+    call 0f036h
+    pop de
+    call 0f060h
+    ld a,(l2be5h)
+    call 0f05ah
+    ld (l2be6h),a
+    ret
+    ld a,(hl)
+    ld (l2be5h),a
+    call 0f054h
+    ld a,(l2be5h)
+    and 01h
+    add a,30h
+    ld (l2ba6h+1),a
+    ld e,0fh
+    ld c,14h
+    ld hl,2ba6h
+    call 0f05dh
 l2aa9h:
-    ld a,(l2be5h)       ;2aa9 3a e5 2b
-    call 0f05ah         ;2aac cd 5a f0
-    ld (l2be6h),a       ;2aaf 32 e6 2b
-    or a                ;2ab2 b7
-    ret nz              ;2ab3 c0
-    ld a,(l2be5h)       ;2ab4 3a e5 2b
-    call 0f078h         ;2ab7 cd 78 f0
+    ld a,(l2be5h)
+    call 0f05ah
+    ld (l2be6h),a
+    or a
+    ret nz
+    ld a,(l2be5h)
+    call 0f078h
 sub_2abah:
-    ld hl,4000h         ;2aba 21 00 40
-    ld de,4001h         ;2abd 11 01 40
-    ld bc,00ffh         ;2ac0 01 ff 00
-    ld (hl),0e5h        ;2ac3 36 e5
-    ldir                ;2ac5 ed b0
-    ld a,07h            ;2ac7 3e 07
-    ld (l2bcah),a       ;2ac9 32 ca 2b
-    ld a,01h            ;2acc 3e 01
-    ld (l2bc9h),a       ;2ace 32 c9 2b
+    ld hl,4000h
+    ld de,4001h
+    ld bc,00ffh
+    ld (hl),0e5h
+    ldir
+    ld a,07h
+    ld (l2bcah),a
+    ld a,01h
+    ld (l2bc9h),a
 l2ad1h:
-    call sub_2ae7h      ;2ad1 cd e7 2a
-    ld a,(l2be5h)       ;2ad4 3a e5 2b
-    call 0f05ah         ;2ad7 cd 5a f0
-    ld (l2be6h),a       ;2ada 32 e6 2b
-    or a                ;2add b7
-    ret nz              ;2ade c0
-    ld hl,l2bcah        ;2adf 21 ca 2b
-    dec (hl)            ;2ae2 35
-    jp p,l2ad1h         ;2ae3 f2 d1 2a
-    ret                 ;2ae6 c9
+    call sub_2ae7h
+    ld a,(l2be5h)
+    call 0f05ah
+    ld (l2be6h),a
+    or a
+    ret nz
+    ld hl,l2bcah
+    dec (hl)
+    jp p,l2ad1h
+    ret
 sub_2ae7h:
-    ld hl,l2bc1h        ;2ae7 21 c1 2b
-    ld c,06h            ;2aea 0e 06
-    ld a,(l2be5h)       ;2aec 3a e5 2b
-    call 0f057h         ;2aef cd 57 f0
-    call 0f04bh         ;2af2 cd 4b f0
-    ld a,(4000h)        ;2af5 3a 00 40
-    call 0f045h         ;2af8 cd 45 f0
-    call 0f036h         ;2afb cd 36 f0
-    ld hl,l2bbah        ;2afe 21 ba 2b
-    ld c,07h            ;2b01 0e 07
-    ld a,(l2be5h)       ;2b03 3a e5 2b
-    call 0f057h         ;2b06 cd 57 f0
-    call 0f04bh         ;2b09 cd 4b f0
-    call 0f048h         ;2b0c cd 48 f0
-    call 0f036h         ;2b0f cd 36 f0
-    ld a,(l2be5h)       ;2b12 3a e5 2b
-    call 0f054h         ;2b15 cd 54 f0
-    ld e,02h            ;2b18 1e 02
-    call 0f033h         ;2b1a cd 33 f0
-    ld hl,4001h         ;2b1d 21 01 40
-    ld c,0ffh           ;2b20 0e ff
-    call 0f04bh         ;2b22 cd 4b f0
-    call 0f036h         ;2b25 cd 36 f0
-    ld a,(l2be5h)       ;2b28 3a e5 2b
-    call 0f057h         ;2b2b cd 57 f0
-    ld hl,l2ba1h        ;2b2e 21 a1 2b
-    ld c,05h            ;2b31 0e 05
-    call 0f04bh         ;2b33 cd 4b f0
-    ld a,(l2be5h)       ;2b36 3a e5 2b
-    and 01h             ;2b39 e6 01
-    add a,30h           ;2b3b c6 30
-    call 0f042h         ;2b3d cd 42 f0
-    ld a,(l2bc9h)       ;2b40 3a c9 2b
-    call 0f04eh         ;2b43 cd 4e f0
-    ld a,(l2bcah)       ;2b46 3a ca 2b
-    call 0f04eh         ;2b49 cd 4e f0
-    call 0f048h         ;2b4c cd 48 f0
-    jp 0f036h           ;2b4f c3 36 f0
-    ld c,(hl)           ;2b52 4e
-    call 0f01bh         ;2b53 cd 1b f0
-    ld hl,0080h         ;2b56 21 80 00
+    ld hl,l2bc1h
+    ld c,06h
+    ld a,(l2be5h)
+    call 0f057h
+    call 0f04bh
+    ld a,(4000h)
+    call 0f045h
+    call 0f036h
+    ld hl,l2bbah
+    ld c,07h
+    ld a,(l2be5h)
+    call 0f057h
+    call 0f04bh
+    call 0f048h
+    call 0f036h
+    ld a,(l2be5h)
+    call 0f054h
+    ld e,02h
+    call 0f033h
+    ld hl,4001h
+    ld c,0ffh
+    call 0f04bh
+    call 0f036h
+    ld a,(l2be5h)
+    call 0f057h
+    ld hl,l2ba1h
+    ld c,05h
+    call 0f04bh
+    ld a,(l2be5h)
+    and 01h
+    add a,30h
+    call 0f042h
+    ld a,(l2bc9h)
+    call 0f04eh
+    ld a,(l2bcah)
+    call 0f04eh
+    call 0f048h
+    jp 0f036h
+    ld c,(hl)
+    call 0f01bh
+    ld hl,0080h
 l2b59h:
-    ld (hl),0e5h        ;2b59 36 e5
-    inc l               ;2b5b 2c
-    jr nz,l2b59h        ;2b5c 20 fb
-    ld bc,0002h         ;2b5e 01 02 00
-    call 0f01eh         ;2b61 cd 1e f0
-    ld bc,0000h         ;2b64 01 00 00
+    ld (hl),0e5h
+    inc l
+    jr nz,l2b59h
+    ld bc,0002h
+    call 0f01eh
+    ld bc,0000h
 l2b67h:
-    push bc             ;2b67 c5
-    call 0f021h         ;2b68 cd 21 f0
-    call 0f02ah         ;2b6b cd 2a f0
-    pop bc              ;2b6e c1
-    or a                ;2b6f b7
-    jp nz,l2b7ah        ;2b70 c2 7a 2b
-    inc bc              ;2b73 03
-    ld a,c              ;2b74 79
-    cp 40h              ;2b75 fe 40
-    jr nz,l2b67h        ;2b77 20 ee
-    ret                 ;2b79 c9
+    push bc
+    call 0f021h
+    call 0f02ah
+    pop bc
+    or a
+    jp nz,l2b7ah
+    inc bc
+    ld a,c
+    cp 40h
+    jr nz,l2b67h
+    ret
 l2b7ah:
-    ld de,l2b87h        ;2b7a 11 87 2b
-    ld c,09h            ;2b7d 0e 09
-    call 0005h          ;2b7f cd 05 00
-    ld c,01h            ;2b82 0e 01
-    jp 0005h            ;2b84 c3 05 00
+    ld de,l2b87h
+    ld c,09h
+    call 0005h
+    ld c,01h
+    jp 0005h
 
 l2b87h:
     db 0dh,0ah,"Hit any key to abort : $"
