@@ -368,7 +368,8 @@ l0302h:
     ld hl,6002h         ;0317 21 02 60
     ld (l02b0h),hl      ;031a 22 b0 02
 l031dh:
-    call sub_1bbdh      ;031d cd bd 1b
+    call clear_screen   ;031d cd bd 1b
+
     call pr0a           ;0320 cd 3d 2d
     ld hl,l2898h        ;0323 21 98 28
     call pv2d           ;0326 cd 31 2c
@@ -724,7 +725,7 @@ l0599h:
     ld h,00h            ;05b0 26 00
     ld (02d4h),hl       ;05b2 22 d4 02
 l05b5h:
-    call sub_1bbdh      ;05b5 cd bd 1b
+    call clear_screen   ;05b5 cd bd 1b
     call pr0a           ;05b8 cd 3d 2d
     ld hl,l2898h        ;05bb 21 98 28
     call pv2d           ;05be cd 31 2c
@@ -841,7 +842,7 @@ l0693h:
     jp z,l1743h         ;06d8 ca 43 17
     jp l05b5h           ;06db c3 b5 05
 l06deh:
-    call sub_1bbdh      ;06de cd bd 1b
+    call clear_screen   ;06de cd bd 1b
     call pr0a           ;06e1 cd 3d 2d
     ld hl,rs232_chrs    ;06e4 21 c7 26
     call pv2d           ;06e7 cd 31 2c
@@ -1308,7 +1309,7 @@ l0a66h:
 l0a78h:
     jp l06deh           ;0a78 c3 de 06
 l0a7bh:
-    call sub_1bbdh      ;0a7b cd bd 1b
+    call clear_screen   ;0a7b cd bd 1b
     call pr0a           ;0a7e cd 3d 2d
     ld hl,io_dev_asgn        ;0a81 21 e2 24
     call pv2d           ;0a84 cd 31 2c
@@ -1817,7 +1818,7 @@ l0e98h:
 l0eaah:
     jp l0a7bh           ;0eaa c3 7b 0a
 l0eadh:
-    call sub_1bbdh      ;0ead cd bd 1b
+    call clear_screen   ;0ead cd bd 1b
     call pr0a           ;0eb0 cd 3d 2d
     ld hl,drv_assgnmt   ;0eb3 21 eb 21
     call pv2d           ;0eb6 cd 31 2c
@@ -2448,7 +2449,7 @@ l1342h:
 l1361h:
     ret                 ;1361 c9
 l1362h:
-    call sub_1bbdh      ;1362 cd bd 1b
+    call clear_screen   ;1362 cd bd 1b
     ld hl,(013ah)       ;1365 2a 3a 01
     ld a,h              ;1368 7c
     or l                ;1369 b5
@@ -3042,7 +3043,7 @@ l170eh:
     jp z,l170eh         ;173d ca 0e 17
     jp l05b5h           ;1740 c3 b5 05
 l1743h:
-    call sub_1bbdh      ;1743 cd bd 1b
+    call clear_screen   ;1743 cd bd 1b
     call pr0a           ;1746 cd 3d 2d
     ld hl,pet_params    ;1749 21 82 1e
     call pv2d           ;174c cd 31 2c
@@ -3524,21 +3525,25 @@ l1b1eh:
     ld (l027eh),hl      ;1bb4 22 7e 02
     ld (l0280h),hl      ;1bb7 22 80 02
     jp l1743h           ;1bba c3 43 17
-sub_1bbdh:
-    call pr0a           ;1bbd cd 3d 2d
-    ld hl,001ah         ;1bc0 21 1a 00
-    call chr            ;1bc3 cd 24 2c
-    call pv2d           ;1bc6 cd 31 2c
-    ret                 ;1bc9 c9
+
+clear_screen:
+    call pr0a
+    ld hl,001ah
+    call chr
+    call pv2d
+    ret
+
 sub_1bcah:
     ld hl,0080h         ;1bca 21 80 00
     ld (02e0h),hl       ;1bcd 22 e0 02
     ld hl,(02e0h)       ;1bd0 2a e0 02
     ld (hl),50h         ;1bd3 36 50
     call sub_28a1h      ;1bd5 cd a1 28
+
     call pr0a           ;1bd8 cd 3d 2d
     ld hl,l2898h        ;1bdb 21 98 28
     call pv2d           ;1bde cd 31 2c
+
     ld hl,(02e0h)       ;1be1 2a e0 02
     inc hl              ;1be4 23
     ld l,(hl)           ;1be5 6e
@@ -4351,13 +4356,9 @@ cpm_reconfig:
     db "CP/M  Reconfiguration"
 
 l2898h:
-    nop                 ;2898 00
-l2899h:
-    sbc a,e             ;2899 9b
-    jr z,2869h          ;289a 28 cd
-    inc h               ;289c 24
-    dec l               ;289d 2d
-    ld bc,0000h         ;289e 01 00 00
+    db 00h
+    dw l2898h+3
+    db 0cdh,"$-",01h,00h,00h
 
 ; Start of LOADSAVE.REL =====================================================
 
