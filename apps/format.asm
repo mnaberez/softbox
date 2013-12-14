@@ -1030,12 +1030,12 @@ tmp:
     dw 2b7eh            ;header: start address of string
     db 0d0h, 0cdh       ;string data (not at start address ??)
 
-unused_4:
+xstrin_1:
     ld a,' '
     call print_char
     ret
 
-print_eol:
+xstrin_2:
 ;Print end of line (CR+LF)
     ld a,lf
     call print_char
@@ -1043,35 +1043,41 @@ print_eol:
     call print_char
     ret
 
-unused_5:
-    ld a,02h
-    ld (tmp),a
-    ld a,l
-    call unused_6
-    ld (tmp+3),a
-    ld a,l
-    call unused_7
-    ld (tmp+4),a
-    ld hl,tmp
+hex:
+;XSTRIN: HEX
+;Make a temporary string (length 2 bytes) with the hexadecimal
+;representation of the byte in HL and return a pointer to it in HL.
+;Implements BASIC function: HEX$(x)
+;
+    ld a,02h            ;A = 2 bytes in string
+    ld (tmp),a          ;Store length in temp string header
+    ld a,l              ;A = L
+    call xstrin_3       ;Convert high nibble in A to ASCII
+    ld (tmp+3),a        ;Save it as first char of string
+    ld a,l              ;A = L
+    call xstrin_4       ;Convert low nibble in A to ASCII
+    ld (tmp+4),a        ;Save it as second char of string
+    ld hl,tmp           ;HL = address of the string
     ret
 
-unused_6:
+xstrin_3:
     rrca
     rrca
     rrca
     rrca
-unused_7:
+xstrin_4:
     and 0fh
     cp 0ah
-    jp m,unused_8
+    jp m,xstrin_5
     add a,07h
-unused_8:
+xstrin_5:
     add a,30h
     ret
 
 chr:
-;Make a temporary string from the char in L and
-;return a pointer to it in HL.
+;XSTRIN: CHR
+;Make a temporary string (length 1 byte) from the byte in L
+;and return a pointer to it in HL.
 ;Implements BASIC function: CHR$(x)
 ;
     ld a,01h            ;A = 1 byte in string
@@ -1082,16 +1088,18 @@ chr:
     ret
 
 pv2d:
+;XSTRIN: PV2D
 ;Print string in HL followed by CR+LF
 ;Implements BASIC command: PRINT"foo"
 ;
     ld a,(hl)           ;Get the length of the string
     or a                ;Set flags
-    jp z,print_eol      ;If length = 0, jump to print CR+LF only.
+    jp z,xstrin_2      ;If length = 0, jump to print CR+LF only.
     call print_str      ;Print the string
-    jp print_eol        ;Jump out to print CR+LF
+    jp xstrin_2        ;Jump out to print CR+LF
 
 pv1d:
+;XSTRIN: PV1D
 ;Print string in HL but do not send CR+LF
 ;Implements BASIC command: PRINT"foo";
 ;
@@ -1104,9 +1112,9 @@ pv1d:
 unused_29:
     ld a,(hl)
     or a
-    jp z,unused_4
+    jp z,xstrin_1
     call print_str
-    jp unused_4
+    jp xstrin_1
 
 print_str:
 ;Print string of length A at pointer HL.
@@ -1360,8 +1368,14 @@ unused_26:
     ld a,40h
     jr nc,unused_25
     ret
+
+enabl:
+;INTLIB: ENABL
     ei
     ret
+
+disabl:
+;INTLIB: DISABL
     di
     ret
 
