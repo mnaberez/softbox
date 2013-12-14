@@ -4831,13 +4831,13 @@ l2be7h:
     jp z,53d6h          ;2be9 ca d6 53
 l2bech:
     ld a,20h            ;2bec 3e 20
-    call sub_2d2fh      ;2bee cd 2f 2d
+    call print_char     ;2bee cd 2f 2d
     ret                 ;2bf1 c9
 l2bf2h:
     ld a,0ah            ;2bf2 3e 0a
-    call sub_2d2fh      ;2bf4 cd 2f 2d
+    call print_char     ;2bf4 cd 2f 2d
     ld a,0dh            ;2bf7 3e 0d
-    call sub_2d2fh      ;2bf9 cd 2f 2d
+    call print_char     ;2bf9 cd 2f 2d
     ret                 ;2bfc c9
     ld a,02h            ;2bfd 3e 02
     ld (l2be7h),a       ;2bff 32 e7 2b
@@ -4882,7 +4882,7 @@ pv2d:
     ld a,(hl)           ;2c31 7e
     or a                ;2c32 b7
     jp z,l2bf2h         ;2c33 ca f2 2b
-    call sub_2c4eh      ;2c36 cd 4e 2c
+    call print_str      ;2c36 cd 4e 2c
     jp l2bf2h           ;2c39 c3 f2 2b
 
 pv1d:
@@ -4892,27 +4892,31 @@ pv1d:
     ld a,(hl)           ;2c3c 7e
     or a                ;2c3d b7
     ret z               ;2c3e c8
-    call sub_2c4eh      ;2c3f cd 4e 2c
+    call print_str      ;2c3f cd 4e 2c
     ret                 ;2c42 c9
 
 sub_2c43h:
     ld a,(hl)           ;2c43 7e
     or a                ;2c44 b7
     jp z,l2bech         ;2c45 ca ec 2b
-    call sub_2c4eh      ;2c48 cd 4e 2c
+    call print_str      ;2c48 cd 4e 2c
     jp l2bech           ;2c4b c3 ec 2b
-sub_2c4eh:
-    ld b,a              ;2c4e 47
-    inc hl              ;2c4f 23
-    inc hl              ;2c50 23
-    inc hl              ;2c51 23
+
+print_str:
+;Print string of length A at pointer HL.
+;
+    ld b,a              ;B = A
+    inc hl              ;Skip string length byte
+    inc hl              ;Skip string start address low byte
+    inc hl              ;Skip string start address high byte
 l2c52h:
-    ld a,(hl)           ;2c52 7e
-    call sub_2d2fh      ;2c53 cd 2f 2d
-    dec b               ;2c56 05
-    inc hl              ;2c57 23
-    jp nz,l2c52h        ;2c58 c2 52 2c
-    ret                 ;2c5b c9
+    ld a,(hl)           ;Read char from string
+    call print_char     ;Print it
+    dec b               ;Decrement number of chars remaining
+    inc hl              ;Increment pointer
+    jp nz,l2c52h        ;Loop until all chars have been printed
+    ret
+
     ex de,hl            ;2c5c eb
     pop hl              ;2c5d e1
     ld c,(hl)           ;2c5e 4e
@@ -5004,14 +5008,14 @@ l2cbah:
     ret                 ;2cbe c9
     call sub_2cd6h      ;2cbf cd d6 2c
     ld a,20h            ;2cc2 3e 20
-    call sub_2d2fh      ;2cc4 cd 2f 2d
+    call print_char     ;2cc4 cd 2f 2d
     ret                 ;2cc7 c9
 sub_2cc8h:
     call sub_2cd6h      ;2cc8 cd d6 2c
     ld a,0ah            ;2ccb 3e 0a
-    call sub_2d2fh      ;2ccd cd 2f 2d
+    call print_char     ;2ccd cd 2f 2d
     ld a,0dh            ;2cd0 3e 0d
-    call sub_2d2fh      ;2cd2 cd 2f 2d
+    call print_char     ;2cd2 cd 2f 2d
     ret                 ;2cd5 c9
 sub_2cd6h:
     push hl             ;2cd6 e5
@@ -5026,7 +5030,7 @@ sub_2cd6h:
     ld h,a              ;2ce2 67
     inc hl              ;2ce3 23
     ld a,2dh            ;2ce4 3e 2d
-    call sub_2d2fh      ;2ce6 cd 2f 2d
+    call print_char     ;2ce6 cd 2f 2d
 l2ce9h:
     ld c,30h            ;2ce9 0e 30
     ld de,2710h         ;2ceb 11 10 27
@@ -5048,7 +5052,7 @@ sub_2d0bh:
     jp sub_2d0bh        ;2d12 c3 0b 2d
 l2d15h:
     ld a,c              ;2d15 79
-    call sub_2d2fh      ;2d16 cd 2f 2d
+    call print_char     ;2d16 cd 2f 2d
     add hl,de           ;2d19 19
     ld c,30h            ;2d1a 0e 30
     ret                 ;2d1c c9
@@ -5076,7 +5080,9 @@ nop_1:
 
     ld hl,0fffeh        ;2d29 21 fe ff
     jp l2d3eh           ;2d2c c3 3e 2d
-sub_2d2fh:
+
+print_char:
+;Write the char in A to the console
     push hl             ;2d2f e5
     push de             ;2d30 d5
     push bc             ;2d31 c5
@@ -5107,8 +5113,8 @@ l2d3eh:
     pop de              ;2d4c d1
     ret                 ;2d4d c9
     ld a,(hl)           ;2d4e 7e
-    jp sub_2d2fh        ;2d4f c3 2f 2d
-    call sub_2d2fh      ;2d52 cd 2f 2d
+    jp print_char       ;2d4f c3 2f 2d
+    call print_char     ;2d52 cd 2f 2d
     ret                 ;2d55 c9
     push hl             ;2d56 e5
     ld a,h              ;2d57 7c
@@ -5122,7 +5128,7 @@ l2d3eh:
     ld h,a              ;2d62 67
     inc hl              ;2d63 23
     ld a,2dh            ;2d64 3e 2d
-    call sub_2d2fh      ;2d66 cd 2f 2d
+    call print_char     ;2d66 cd 2f 2d
     ld c,30h            ;2d69 0e 30
     ld de,2710h         ;2d6b 11 10 27
     call sub_2d0bh      ;2d6e cd 0b 2d
