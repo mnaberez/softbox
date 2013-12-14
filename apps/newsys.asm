@@ -457,7 +457,7 @@ l03a6h:
     ld hl,(02b2h)       ;03c0 2a b2 02
     ld (02b4h),hl       ;03c3 22 b4 02
     ld hl,02b4h         ;03c6 21 b4 02
-    call sub_2990h      ;03c9 cd 90 29
+    call dtype          ;03c9 cd 90 29
     ld hl,(02b4h)       ;03cc 2a b4 02
     ld de,0ff7fh        ;03cf 11 7f ff
     ld a,h              ;03d2 7c
@@ -503,15 +503,15 @@ l03fbh:
     or l                ;0406 b5
     jp z,l0413h         ;0407 ca 13 04
     ld hl,02b2h         ;040a 21 b2 02
-    call sub_2922h      ;040d cd 22 29
+    call cread_         ;040d cd 22 29
     jp l0430h           ;0410 c3 30 04
 l0413h:
     ld hl,02b2h         ;0413 21 b2 02
-    call sub_2999h      ;0416 cd 99 29
+    call idisk          ;0416 cd 99 29
     ld hl,02b2h         ;0419 21 b2 02
-    call sub_28b7h      ;041c cd b7 28
+    call rdsys          ;041c cd b7 28
     ld hl,l02b6h        ;041f 21 b6 02
-    call sub_299dh      ;0422 cd 9d 29
+    call dskerr         ;0422 cd 9d 29
     ld hl,(l02b6h)      ;0425 2a b6 02
     ld a,h              ;0428 7c
     or l                ;0429 b5
@@ -2628,7 +2628,7 @@ sub_147eh:
     ret                 ;1493 c9
 l1494h:
     call sub_149ah      ;1494 cd 9a 14
-    call sub_28a9h      ;1497 cd a9 28
+    call exsys          ;1497 cd a9 28
 sub_149ah:
     ld hl,0000h         ;149a 21 00 00
     jp l14dah           ;149d c3 da 14
@@ -2966,7 +2966,7 @@ l1692h:
     ld hl,(l02dch)      ;16ac 2a dc 02
     ld (02b4h),hl       ;16af 22 b4 02
     ld hl,02b4h         ;16b2 21 b4 02
-    call sub_2990h      ;16b5 cd 90 29
+    call dtype          ;16b5 cd 90 29
     ld hl,(02b4h)       ;16b8 2a b4 02
     ld de,0ff80h        ;16bb 11 80 ff
     ld a,h              ;16be 7c
@@ -3018,15 +3018,15 @@ l16f6h:
     or l                ;1701 b5
     jp z,l170eh         ;1702 ca 0e 17
     ld hl,l02dch        ;1705 21 dc 02
-    call sub_2956h      ;1708 cd 56 29
+    call cwrite_        ;1708 cd 56 29
     jp l05b5h           ;170b c3 b5 05
 l170eh:
     ld hl,l02dch        ;170e 21 dc 02
-    call sub_2999h      ;1711 cd 99 29
+    call idisk          ;1711 cd 99 29
     ld hl,l02dch        ;1714 21 dc 02
-    call sub_2a02h      ;1717 cd 02 2a
+    call savesy         ;1717 cd 02 2a
     ld hl,l02b6h        ;171a 21 b6 02
-    call sub_299dh      ;171d cd 9d 29
+    call dskerr         ;171d cd 9d 29
     ld hl,(l02b6h)      ;1720 2a b6 02
     ld a,h              ;1723 7c
     or l                ;1724 b5
@@ -3538,7 +3538,7 @@ sub_1bcah:
     ld (02e0h),hl       ;1bcd 22 e0 02
     ld hl,(02e0h)       ;1bd0 2a e0 02
     ld (hl),50h         ;1bd3 36 50
-    call sub_28a1h      ;1bd5 cd a1 28
+    call buffin         ;1bd5 cd a1 28
 
     call pr0a           ;1bd8 cd 3d 2d
     ld hl,empty_string  ;1bdb 21 98 28
@@ -4369,17 +4369,26 @@ empty_string:
 
 ; Start of LOADSAVE.REL =====================================================
 
-sub_28a1h:
+buffin:
+;Buffered Console Input.  Caller must store buffer size at 80h.  On
+;return, 81h will contain the number of data bytes and the data
+;will start at 82h.
     ld c,0ah            ;28a1 0e 0a
     ld de,0080h         ;28a3 11 80 00
     jp 0005h            ;28a6 c3 05 00
-sub_28a9h:
+
+exsys:
+;Execute a new CP/M system.  The buffer at 4000h contains a new
+;CP/M system image (7168 bytes = CCP + BDOS + BIOS config + BIOS storage).
+;Copy the new system into place and then jump to the BIOS to start it.
     ld bc,1c00h         ;28a9 01 00 1c
     ld hl,4000h         ;28ac 21 00 40
     ld de,0d400h        ;28af 11 00 d4
     ldir                ;28b2 ed b0
     jp 0f075h           ;28b4 c3 75 f0
-sub_28b7h:
+
+rdsys:
+;Read the "CP/M" and "K" files from an IEEE-488 drive into memory.
     ld a,(hl)           ;28b7 7e
     ld (l2be5h),a       ;28b8 32 e5 2b
     call 0f054h         ;28bb cd 54 f0
@@ -4437,22 +4446,24 @@ l2907h:
     call 0f05ah         ;291b cd 5a f0
     ld (l2be6h),a       ;291e 32 e6 2b
     ret                 ;2921 c9
-sub_2922h:
+
+cread_:
+;Read CP/M image from a Corvus drive.
     ld c,(hl)           ;2922 4e
     call 0f01bh         ;2923 cd 1b f0
     ld de,4000h         ;2926 11 00 40
     ld bc,0000h         ;2929 01 00 00
-l292ch:
+cread2:
     call 0f01eh         ;292c cd 1e f0
     push bc             ;292f c5
     ld bc,0000h         ;2930 01 00 00
-l2933h:
+cread1:
     call 0f021h         ;2933 cd 21 f0
     push bc             ;2936 c5
     push de             ;2937 d5
     call 0f027h         ;2938 cd 27 f0
     or a                ;293b b7
-    jr nz,l298ah        ;293c 20 4c
+    jr nz,cwrit3        ;293c 20 4c
     pop de              ;293e d1
     ld bc,0080h         ;293f 01 80 00
     ld hl,0080h         ;2942 21 80 00
@@ -4462,23 +4473,25 @@ l2945h:
     inc c               ;2948 0c
     ld a,c              ;2949 79
     cp 40h              ;294a fe 40
-    jr nz,l2933h        ;294c 20 e5
+    jr nz,cread1        ;294c 20 e5
     pop bc              ;294e c1
     inc c               ;294f 0c
     ld a,c              ;2950 79
     cp 02h              ;2951 fe 02
-    jr nz,l292ch        ;2953 20 d7
+    jr nz,cread2        ;2953 20 d7
     ret                 ;2955 c9
-sub_2956h:
+
+cwrite_:
+;Write CP/M image to a Corvus drive.
     ld c,(hl)           ;2956 4e
     call 0f01bh         ;2957 cd 1b f0
     ld hl,4000h         ;295a 21 00 40
     ld bc,0000h         ;295d 01 00 00
-l2960h:
+cwrit2:
     call 0f01eh         ;2960 cd 1e f0
     push bc             ;2963 c5
     ld bc,0000h         ;2964 01 00 00
-l2967h:
+cwrit1:
     call 0f021h         ;2967 cd 21 f0
     push bc             ;296a c5
     ld bc,0080h         ;296b 01 80 00
@@ -4487,36 +4500,41 @@ l2967h:
     push hl             ;2973 e5
     call 0f02ah         ;2974 cd 2a f0
     or a                ;2977 b7
-    jr nz,l298ah        ;2978 20 10
+    jr nz,cwrit3        ;2978 20 10
     pop hl              ;297a e1
     pop bc              ;297b c1
     inc c               ;297c 0c
     ld a,c              ;297d 79
     cp 40h              ;297e fe 40
-    jr nz,l2967h        ;2980 20 e5
+    jr nz,cwrit1        ;2980 20 e5
     pop bc              ;2982 c1
     inc c               ;2983 0c
 l2984h:
     ld a,c              ;2984 79
     cp 02h              ;2985 fe 02
-    jr nz,l2960h        ;2987 20 d7
+    jr nz,cwrit2        ;2987 20 d7
     ret                 ;2989 c9
-l298ah:
+cwrit3:
     pop hl              ;298a e1
     pop hl              ;298b e1
     pop hl              ;298c e1
     jp l2b7ah           ;298d c3 7a 2b
-sub_2990h:
+
+dtype:
+;Get the drive type for a CP/M drive number.
     ld a,(hl)           ;2990 7e
     call 0f051h         ;2991 cd 51 f0
     ld (hl),c           ;2994 71
     inc hl              ;2995 23
     ld (hl),00h         ;2996 36 00
     ret                 ;2998 c9
-sub_2999h:
+
+idisk:
+;Initialize an IEEE-488 disk drive.
     ld a,(hl)           ;2999 7e
     jp 0f078h           ;299a c3 78 f0
-sub_299dh:
+
+dskerr:
     ld a,(l2be6h)       ;299d 3a e6 2b
     ld (hl),a           ;29a0 77
     inc hl              ;29a1 23
@@ -4561,7 +4579,9 @@ l29dbh:
     dec c               ;29db 0d
     ld a,(bc)           ;29dc 0a
     inc h               ;29dd 24
+
 sub_29deh:
+;Open "CP/M" file on an IEEE-488 drive
     ld c,06h            ;29de 0e 06
     ld hl,l2bd3h        ;29e0 21 d3 2b
 l29e3h:
@@ -4570,7 +4590,9 @@ l29e3h:
     jp nc,0f05dh        ;29e7 d2 5d f0
     ld hl,l2bd9h        ;29ea 21 d9 2b
     jp 0f05dh           ;29ed c3 5d f0
+
 sub_29f0h:
+;Open "K" file on an IEEE-488 drive
     ld c,03h            ;29f0 0e 03
     ld hl,l2bdfh        ;29f2 21 df 2b
     ld a,(l2be5h)       ;29f5 3a e5 2b
@@ -4579,7 +4601,9 @@ sub_29f0h:
     ld hl,l2be2h        ;29fc 21 e2 2b
 l29ffh:
     jp 0f05dh           ;29ff c3 5d f0
-sub_2a02h:
+
+savesy:
+;Read the CP/M system image from an IEEE-488 drive.
     ld a,(hl)           ;2a02 7e
     ld (l2be5h),a       ;2a03 32 e5 2b
     call 0f054h         ;2a06 cd 54 f0
