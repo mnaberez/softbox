@@ -3,7 +3,7 @@
 
     org 0100h
 
-    jp l02eeh           ;0100 c3 ee 02
+    jp start            ;0100 c3 ee 02
     nop                 ;0103 00
     nop                 ;0104 00
     nop                 ;0105 00
@@ -14,9 +14,8 @@
 
 ; Start of BASIC variables ==================================================
 
-l010ah:
-    nop                 ;010a 00
-    nop                 ;010b 00
+mini:
+    dw 0                ;Mini-Winchester flag: 1=MW, 0=Corvus
 l010ch:
     nop                 ;010c 00
     nop                 ;010d 00
@@ -350,9 +349,11 @@ l02e2h:
     call 48beh          ;02e9 cd be 48
     ld e,(hl)           ;02ec 5e
     inc hl              ;02ed 23
-l02eeh:
-    ld hl,l0302h        ;02ee 21 02 03
-    jp l2d27h           ;02f1 c3 27 2d
+
+start:
+    ld hl,main          ;02ee 21 02 03
+    jp jp_to_hl         ;02f1 c3 27 2d
+
     sbc a,a             ;02f4 9f
     jr z,$-14           ;02f5 28 f0
     inc d               ;02f7 14
@@ -363,10 +364,11 @@ l02feh:
     nop                 ;02fe 00
     nop                 ;02ff 00
     xor 02h             ;0300 ee 02
-l0302h:
-    call sub_2d28h      ;0302 cd 28 2d
+
+main:
+    call nop_1          ;0302 cd 28 2d
     ld hl,0000h         ;0305 21 00 00
-    ld (l010ah),hl      ;0308 22 0a 01
+    ld (mini),hl        ;0308 22 0a 01
     ld hl,0000h         ;030b 21 00 00
     ld (l010ch),hl      ;030e 22 0c 01
     ld hl,l0c00h        ;0311 21 00 0c
@@ -392,7 +394,7 @@ l031dh:
     ld hl,empty_string  ;033e 21 98 28
     call pv2d           ;0341 cd 31 2c
 
-    ld hl,(l010ah)      ;0344 2a 0a 01
+    ld hl,(mini)        ;0344 2a 0a 01
     ld de,0ffffh        ;0347 11 ff ff
     add hl,de           ;034a 19
     ld a,h              ;034b 7c
@@ -1993,7 +1995,7 @@ l1021h:
     ld a,h              ;1028 7c
     or l                ;1029 b5
     jp nz,l0eadh        ;102a c2 ad 0e
-    ld hl,(l010ah)      ;102d 2a 0a 01
+    ld hl,(mini)        ;102d 2a 0a 01
     ld de,0ffffh        ;1030 11 ff ff
     add hl,de           ;1033 19
     ld a,h              ;1034 7c
@@ -2247,7 +2249,7 @@ l11f0h:
     call pv2d           ;11f9 cd 31 2c
     ret                 ;11fc c9
 l11fdh:
-    ld hl,(l010ah)      ;11fd 2a 0a 01
+    ld hl,(mini)        ;11fd 2a 0a 01
     ld de,0ffffh        ;1200 11 ff ff
     add hl,de           ;1203 19
     ld a,h              ;1204 7c
@@ -5061,10 +5063,13 @@ sub_2d1dh:
     ret                 ;2d23 c9
 sub_2d24h:
     jp 0000h            ;2d24 c3 00 00
-l2d27h:
+
+jp_to_hl:
     jp (hl)             ;2d27 e9
-sub_2d28h:
+
+nop_1:
     ret                 ;2d28 c9
+
     ld hl,0fffeh        ;2d29 21 fe ff
     jp l2d3eh           ;2d2c c3 3e 2d
 sub_2d2fh:
