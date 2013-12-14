@@ -64,6 +64,8 @@ unused_1:
     nop                 ;0108 00
     nop                 ;0109 00
 
+; Start of BASIC variables ==================================================
+
 first_char:
     dw 0                ;First char of user input from any prompt
 drv_num:
@@ -74,6 +76,8 @@ cbm_err:
     dw 0                ;Last error code from CBM DOS
 buf_addr:
     dw 0                ;Address of buffer used in get_char
+
+; End of BASIC variables ====================================================
 
 unused_2:
     nop                 ;0114 00
