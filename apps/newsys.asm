@@ -523,7 +523,6 @@ l0430h:
     add hl,de           ;0436 19
     ld l,(hl)           ;0437 6e
     ld h,00h            ;0438 26 00
-l043ah:
     ld (02b8h),hl       ;043a 22 b8 02
     ld de,4a60h         ;043d 11 60 4a
     ld hl,(02aeh)       ;0440 2a ae 02
@@ -1595,7 +1594,6 @@ l0ce0h:
     call pr0a           ;0cfb cd 3d 2d
     ld hl,lpt_pet       ;0cfe 21 f2 22
     call pv2d           ;0d01 cd 31 2c
-l0d04h:
     call pr0a           ;0d04 cd 3d 2d
     ld hl,ul1_ascii     ;0d07 21 d2 22
     call pv2d           ;0d0a cd 31 2c
@@ -2526,7 +2524,6 @@ l13fch:
     ex de,hl            ;13ff eb
     ld hl,(l02d0h)      ;1400 2a d0 02
     add hl,de           ;1403 19
-l1404h:
     inc hl              ;1404 23
     ld l,(hl)           ;1405 6e
     ld h,00h            ;1406 26 00
@@ -3471,7 +3468,6 @@ l1aa6h:
     ld hl,0011h         ;1b15 21 11 00
     ld (l024ah),hl      ;1b18 22 4a 02
     ld hl,00d2h         ;1b1b 21 d2 00
-l1b1eh:
     ld (l024ch),hl      ;1b1e 22 4c 02
     ld hl,0012h         ;1b21 21 12 00
     ld (l024eh),hl      ;1b24 22 4e 02
@@ -4396,7 +4392,6 @@ rdsys:
     push de             ;28c0 d5
     call sub_29deh      ;28c1 cd de 29
     ld a,(l2be5h)       ;28c4 3a e5 2b
-l28c7h:
     call 0f05ah         ;28c7 cd 5a f0
     ld (l2be6h),a       ;28ca 32 e6 2b
     ld hl,4000h         ;28cd 21 00 40
@@ -4633,7 +4628,6 @@ l2a2ch:
     call 0f05ah         ;2a33 cd 5a f0
     ld (l2be6h),a       ;2a36 32 e6 2b
     pop de              ;2a39 d1
-l2a3ah:
     or a                ;2a3a b7
     ret nz              ;2a3b c0
     push de             ;2a3c d5
@@ -4831,7 +4825,6 @@ l2be7h:
 l2bech:
     ld a,20h            ;2bec 3e 20
     call sub_2d2fh      ;2bee cd 2f 2d
-l2bf1h:
     ret                 ;2bf1 c9
 l2bf2h:
     ld a,0ah            ;2bf2 3e 0a
@@ -4839,14 +4832,12 @@ l2bf2h:
     ld a,0dh            ;2bf7 3e 0d
     call sub_2d2fh      ;2bf9 cd 2f 2d
     ret                 ;2bfc c9
-l2bfdh:
     ld a,02h            ;2bfd 3e 02
     ld (l2be7h),a       ;2bff 32 e7 2b
     ld a,l              ;2c02 7d
     call sub_2c14h      ;2c03 cd 14 2c
     ld (2beah),a        ;2c06 32 ea 2b
     ld a,l              ;2c09 7d
-l2c0ah:
     call sub_2c18h      ;2c0a cd 18 2c
     ld (2bebh),a        ;2c0d 32 eb 2b
     ld hl,l2be7h        ;2c10 21 e7 2b
@@ -4900,14 +4891,11 @@ pv1d:
 sub_2c43h:
     ld a,(hl)           ;2c43 7e
     or a                ;2c44 b7
-l2c45h:
     jp z,l2bech         ;2c45 ca ec 2b
     call sub_2c4eh      ;2c48 cd 4e 2c
-l2c4bh:
     jp l2bech           ;2c4b c3 ec 2b
 sub_2c4eh:
     ld b,a              ;2c4e 47
-l2c4fh:
     inc hl              ;2c4f 23
     inc hl              ;2c50 23
     inc hl              ;2c51 23
