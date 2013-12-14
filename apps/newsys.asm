@@ -399,7 +399,7 @@ l031dh:
 
 l0359h:
     call pr0a           ;0359 cd 3d 2d
-    ld hl,2829h         ;035c 21 29 28
+    ld hl,rev_3_feb_1982 ;035c 21 29 28
     call pv2d           ;035f cd 31 2c
 
     call pr0a           ;0362 cd 3d 2d
@@ -781,7 +781,7 @@ l05b5h:
     ld hl,empty_string  ;0654 21 98 28
     call pv2d           ;0657 cd 31 2c
     call pr0a           ;065a cd 3d 2d
-    ld hl,2713h         ;065d 21 13 27
+    ld hl,q_quit        ;065d 21 13 27
     call pv2d           ;0660 cd 31 2c
     call pr0a           ;0663 cd 3d 2d
     ld hl,empty_string  ;0666 21 98 28
@@ -853,7 +853,7 @@ l06deh:
     ld hl,empty_string  ;06f6 21 98 28
     call pv2d           ;06f9 cd 31 2c
     call pr0a           ;06fc cd 3d 2d
-    ld hl,2682h         ;06ff 21 82 26
+    ld hl,rs232_1_chr   ;06ff 21 82 26
     call pv1d           ;0702 cd 3c 2c
     call pr0a           ;0705 cd 3d 2d
     ld hl,(02c0h)       ;0708 2a c0 02
@@ -971,7 +971,7 @@ l07dah:
     or l                ;07ea b5
     jp nz,l07f7h        ;07eb c2 f7 07
     call pr0a           ;07ee cd 3d 2d
-    ld hl,2610h         ;07f1 21 10 26
+    ld hl,odd           ;07f1 21 10 26
     call pv2d           ;07f4 cd 31 2c
 l07f7h:
     call pr0a           ;07f7 cd 3d 2d
@@ -998,7 +998,7 @@ l081eh:
     or l                ;0826 b5
     jp nz,l0833h        ;0827 c2 33 08
     call pr0a           ;082a cd 3d 2d
-    ld hl,25e2h         ;082d 21 e2 25
+    ld hl,baud_300      ;082d 21 e2 25
     call pv2d           ;0830 cd 31 2c
 l0833h:
     ld hl,(02c2h)       ;0833 2a c2 02
@@ -1028,7 +1028,7 @@ l085dh:
     or l                ;0865 b5
     jp nz,l0872h        ;0866 c2 72 08
     call pr0a           ;0869 cd 3d 2d
-    ld hl,25cch         ;086c 21 cc 25
+    ld hl,baud_19200    ;086c 21 cc 25
     call pv2d           ;086f cd 31 2c
 l0872h:
     ld hl,(02c2h)       ;0872 2a c2 02
@@ -1038,14 +1038,14 @@ l0872h:
     or l                ;087a b5
     jp nz,l0887h        ;087b c2 87 08
     call pr0a           ;087e cd 3d 2d
-    ld hl,25c5h         ;0881 21 c5 25
+    ld hl,baud_4800     ;0881 21 c5 25
     call pv2d           ;0884 cd 31 2c
 l0887h:
     call pr0a           ;0887 cd 3d 2d
     ld hl,empty_string  ;088a 21 98 28
     call pv2d           ;088d cd 31 2c
     call pr0a           ;0890 cd 3d 2d
-    ld hl,259fh         ;0893 21 9f 25
+    ld hl,alter_chr_1_4 ;0893 21 9f 25
     call pv1d           ;0896 cd 3c 2c
     call sub_1bcah      ;0899 cd ca 1b
     ld hl,(02b2h)       ;089c 2a b2 02
@@ -1079,7 +1079,7 @@ l0887h:
     jp l06deh           ;08d4 c3 de 06
 l08d7h:
     call pr0a           ;08d7 cd 3d 2d
-    ld hl,257ch         ;08da 21 7c 25
+    ld hl,new_char_len  ;08da 21 7c 25
     call pv1d           ;08dd cd 3c 2c
     call sub_1bcah      ;08e0 cd ca 1b
     ld de,0ffcbh        ;08e3 11 cb ff
@@ -1137,7 +1137,7 @@ l092dh:
     jp l06deh           ;092d c3 de 06
 l0930h:
     call pr0a           ;0930 cd 3d 2d
-    ld hl,2559h         ;0933 21 59 25
+    ld hl,num_stop_bits ;0933 21 59 25
     call pv1d           ;0936 cd 3c 2c
     call sub_1bcah      ;0939 cd ca 1b
     ld hl,(02b2h)       ;093c 2a b2 02
@@ -1245,7 +1245,7 @@ l09e8h:
     ld hl,empty_string  ;09eb 21 98 28
     call pv2d           ;09ee cd 31 2c
     call pr0a           ;09f1 cd 3d 2d
-    ld hl,2517h         ;09f4 21 17 25
+    ld hl,ask_bauds     ;09f4 21 17 25
     call pv2d           ;09f7 cd 31 2c
     call pr0a           ;09fa cd 3d 2d
     ld hl,ask_19200     ;09fd 21 07 25
@@ -1328,7 +1328,7 @@ l0a7bh:
     ld hl,empty_string  ;0aab 21 98 28
     call pv2d           ;0aae cd 31 2c
     call pr0a           ;0ab1 cd 3d 2d
-    ld hl,247ah+1       ;0ab4 21 7b 24
+    ld hl,io_ul1_device ;0ab4 21 7b 24
     call pv1d           ;0ab7 cd 3c 2c
     ld hl,(l02c4h)      ;0aba 2a c4 02
     call sub_2cc8h      ;0abd cd c8 2c
@@ -1344,7 +1344,7 @@ l0a7bh:
     ld hl,empty_string  ;0adb 21 98 28
     call pv2d           ;0ade cd 31 2c
     call pr0a           ;0ae1 cd 3d 2d
-    ld hl,2439h         ;0ae4 21 39 24
+    ld hl,io_pun_device ;0ae4 21 39 24
     call pv1d           ;0ae7 cd 3c 2c
     ld hl,(l02bch+2)    ;0aea 2a be 02
     call sub_2cc8h      ;0aed cd c8 2c
@@ -1352,7 +1352,7 @@ l0a7bh:
     ld hl,empty_string  ;0af3 21 98 28
     call pv2d           ;0af6 cd 31 2c
     call pr0a           ;0af9 cd 3d 2d
-    ld hl,2418h         ;0afc 21 18 24
+    ld hl,io_lst_device ;0afc 21 18 24
     call pv1d           ;0aff cd 3c 2c
     ld hl,(l010ch)      ;0b02 2a 0c 01
     ld a,l              ;0b05 7d
@@ -1365,7 +1365,7 @@ l0a7bh:
     or l                ;0b0e b5
     jp nz,l0b1bh        ;0b0f c2 1b 0b
     call pr0a           ;0b12 cd 3d 2d
-    ld hl,2411h         ;0b15 21 11 24
+    ld hl,tty           ;0b15 21 11 24
     call pv2d           ;0b18 cd 31 2c
 l0b1bh:
     ld hl,(l010ch)      ;0b1b 2a 0c 01
@@ -1397,7 +1397,7 @@ l0b38h:
     or l                ;0b48 b5
     jp nz,l0b55h        ;0b49 c2 55 0b
     call pr0a           ;0b4c cd 3d 2d
-    ld hl,2401h+2       ;0b4f 21 03 24
+    ld hl,lpt           ;0b4f 21 03 24
     call pv2d           ;0b52 cd 31 2c
 l0b55h:
     ld hl,(l010ch)      ;0b55 2a 0c 01
@@ -1413,7 +1413,7 @@ l0b55h:
     or l                ;0b65 b5
     jp nz,l0b72h        ;0b66 c2 72 0b
     call pr0a           ;0b69 cd 3d 2d
-    ld hl,23fch         ;0b6c 21 fc 23
+    ld hl,ul1           ;0b6c 21 fc 23
     call pv2d           ;0b6f cd 31 2c
 l0b72h:
     call pr0a           ;0b72 cd 3d 2d
@@ -1433,12 +1433,12 @@ l0b72h:
     or l                ;0b90 b5
     jp nz,l0ba0h        ;0b91 c2 a0 0b
     call pr0a           ;0b94 cd 3d 2d
-    ld hl,2411h         ;0b97 21 11 24
+    ld hl,tty           ;0b97 21 11 24
     call pv2d           ;0b9a cd 31 2c
     jp l0ba9h           ;0b9d c3 a9 0b
 l0ba0h:
     call pr0a           ;0ba0 cd 3d 2d
-    ld hl,23d4h         ;0ba3 21 d4 23
+    ld hl,ptr           ;0ba3 21 d4 23
     call pv2d           ;0ba6 cd 31 2c
 l0ba9h:
     call pr0a           ;0ba9 cd 3d 2d
@@ -1458,7 +1458,7 @@ l0ba9h:
     or l                ;0bc7 b5
     jp nz,l0bd7h        ;0bc8 c2 d7 0b
     call pr0a           ;0bcb cd 3d 2d
-    ld hl,2411h         ;0bce 21 11 24
+    ld hl,tty           ;0bce 21 11 24
     call pv2d           ;0bd1 cd 31 2c
     jp l0be0h           ;0bd4 c3 e0 0b
 l0bd7h:
@@ -1477,7 +1477,7 @@ l0be0h:
     or l                ;0bf6 b5
     jp nz,l0c03h        ;0bf7 c2 03 0c
     call pr0a           ;0bfa cd 3d 2d
-    ld hl,237fh         ;0bfd 21 7f 23
+    ld hl,cbm_3022_2    ;0bfd 21 7f 23
 l0c00h:
     call pv2d           ;0c00 cd 31 2c
 l0c03h:
@@ -1488,7 +1488,7 @@ l0c03h:
     or l                ;0c0b b5
     jp nz,l0c18h        ;0c0c c2 18 0c
     call pr0a           ;0c0f cd 3d 2d
-    ld hl,2371h+2       ;0c12 21 73 23
+    ld hl,daisywheel_2  ;0c12 21 73 23
     call pv2d           ;0c15 cd 31 2c
 l0c18h:
     ld hl,(02d4h)       ;0c18 2a d4 02
@@ -1498,7 +1498,7 @@ l0c18h:
     or l                ;0c20 b5
     jp nz,l0c2dh        ;0c21 c2 2d 0c
     call pr0a           ;0c24 cd 3d 2d
-    ld hl,236ch         ;0c27 21 6c 23
+    ld hl,cbm8024_2     ;0c27 21 6c 23
     call pv2d           ;0c2a cd 31 2c
 l0c2dh:
     call pr0a           ;0c2d cd 3d 2d
@@ -1508,7 +1508,7 @@ l0c2dh:
     ld hl,empty_string  ;0c39 21 98 28
     call pv2d           ;0c3c cd 31 2c
     call pr0a           ;0c3f cd 3d 2d
-    ld hl,2355h         ;0c42 21 55 23
+    ld hl,alter_which_1_8 ;0c42 21 55 23
     call pv1d           ;0c45 cd 3c 2c
     call sub_1bcah      ;0c48 cd ca 1b
     ld hl,(02b2h)       ;0c4b 2a b2 02
@@ -1597,13 +1597,13 @@ l0ce0h:
     call pv2d           ;0d01 cd 31 2c
 l0d04h:
     call pr0a           ;0d04 cd 3d 2d
-    ld hl,22d2h         ;0d07 21 d2 22
+    ld hl,ul1_ascii     ;0d07 21 d2 22
     call pv2d           ;0d0a cd 31 2c
     call pr0a           ;0d0d cd 3d 2d
     ld hl,empty_string  ;0d10 21 98 28
     call pv2d           ;0d13 cd 31 2c
     call pr0a           ;0d16 cd 3d 2d
-    ld hl,22ach         ;0d19 21 ac 22
+    ld hl,which_list_dev ;0d19 21 ac 22
     call pv1d           ;0d1c cd 3c 2c
     call sub_1bcah      ;0d1f cd ca 1b
     ld hl,(02b2h)       ;0d22 2a b2 02
@@ -1687,7 +1687,7 @@ l0da2h:
     jp l0a7bh           ;0da2 c3 7b 0a
 l0da5h:
     call pr0a           ;0da5 cd 3d 2d
-    ld hl,2296h         ;0da8 21 96 22
+    ld hl,tty_or_ptr    ;0da8 21 96 22
     call pv1d           ;0dab cd 3c 2c
     call sub_1bcah      ;0dae cd ca 1b
     ld hl,(02b2h)       ;0db1 2a b2 02
@@ -1780,7 +1780,7 @@ l0e3bh:
     ld hl,cbm8024        ;0e50 21 56 22
     call pv2d           ;0e53 cd 31 2c
     call pr0a           ;0e56 cd 3d 2d
-    ld hl,2236h         ;0e59 21 36 22
+    ld hl,daisywheel    ;0e59 21 36 22
     call pv2d           ;0e5c cd 31 2c
     call pr0a           ;0e5f cd 3d 2d
     ld hl,empty_string  ;0e62 21 98 28
@@ -1823,7 +1823,7 @@ l0eadh:
     ld hl,drv_assgnmt   ;0eb3 21 eb 21
     call pv2d           ;0eb6 cd 31 2c
     call pr0a           ;0eb9 cd 3d 2d
-    ld hl,21c6h+1       ;0ebc 21 c7 21
+    ld hl,dashes_2      ;0ebc 21 c7 21
     call pv2d           ;0ebf cd 31 2c
     call pr0a           ;0ec2 cd 3d 2d
     ld hl,empty_string  ;0ec5 21 98 28
@@ -1835,43 +1835,43 @@ l0eadh:
     ld (l02dch),hl      ;0ed7 22 dc 02
     call sub_119ah      ;0eda cd 9a 11
     call pr0a           ;0edd cd 3d 2d
-    ld hl,21abh         ;0ee0 21 ab 21
+    ld hl,drives_c_d    ;0ee0 21 ab 21
     call pv1d           ;0ee3 cd 3c 2c
     ld hl,0001h         ;0ee6 21 01 00
     ld (l02dch),hl      ;0ee9 22 dc 02
     call sub_119ah      ;0eec cd 9a 11
     call pr0a           ;0eef cd 3d 2d
-    ld hl,219dh         ;0ef2 21 9d 21
+    ld hl,drives_e_f    ;0ef2 21 9d 21
     call pv1d           ;0ef5 cd 3c 2c
     ld hl,0002h         ;0ef8 21 02 00
     ld (l02dch),hl      ;0efb 22 dc 02
     call sub_119ah      ;0efe cd 9a 11
     call pr0a           ;0f01 cd 3d 2d
-    ld hl,218fh         ;0f04 21 8f 21
+    ld hl,drives_g_h    ;0f04 21 8f 21
     call pv1d           ;0f07 cd 3c 2c
     ld hl,0003h         ;0f0a 21 03 00
     ld (l02dch),hl      ;0f0d 22 dc 02
     call sub_119ah      ;0f10 cd 9a 11
     call pr0a           ;0f13 cd 3d 2d
-    ld hl,2181h         ;0f16 21 81 21
+    ld hl,drives_i_j    ;0f16 21 81 21
     call pv1d           ;0f19 cd 3c 2c
     ld hl,0004h         ;0f1c 21 04 00
     ld (l02dch),hl      ;0f1f 22 dc 02
     call sub_119ah      ;0f22 cd 9a 11
     call pr0a           ;0f25 cd 3d 2d
-    ld hl,2173h         ;0f28 21 73 21
+    ld hl,drives_k_l    ;0f28 21 73 21
     call pv1d           ;0f2b cd 3c 2c
     ld hl,0005h         ;0f2e 21 05 00
     ld (l02dch),hl      ;0f31 22 dc 02
     call sub_119ah      ;0f34 cd 9a 11
     call pr0a           ;0f37 cd 3d 2d
-    ld hl,2165h         ;0f3a 21 65 21
+    ld hl,drives_m_n    ;0f3a 21 65 21
     call pv1d           ;0f3d cd 3c 2c
     ld hl,0006h         ;0f40 21 06 00
     ld (l02dch),hl      ;0f43 22 dc 02
     call sub_119ah      ;0f46 cd 9a 11
     call pr0a           ;0f49 cd 3d 2d
-    ld hl,2157h         ;0f4c 21 57 21
+    ld hl,drives_o_p    ;0f4c 21 57 21
     call pv1d           ;0f4f cd 3c 2c
     ld hl,0007h         ;0f52 21 07 00
     ld (l02dch),hl      ;0f55 22 dc 02
@@ -1880,7 +1880,7 @@ l0eadh:
     ld hl,empty_string  ;0f5e 21 98 28
     call pv2d           ;0f61 cd 31 2c
     call pr0a           ;0f64 cd 3d 2d
-    ld hl,2132h         ;0f67 21 32 21
+    ld hl,alter_which_pair ;0f67 21 32 21
     call pv1d           ;0f6a cd 3c 2c
     call sub_1bcah      ;0f6d cd ca 1b
     ld hl,(02b2h)       ;0f70 2a b2 02
@@ -1932,7 +1932,7 @@ l0f96h:
     ld hl,empty_string  ;0fb8 21 98 28
     call pv2d           ;0fbb cd 31 2c
     call pr0a           ;0fbe cd 3d 2d
-    ld hl,210ah         ;0fc1 21 0a 21
+    ld hl,cbm_hard_unused ;0fc1 21 0a 21
     call pv1d           ;0fc4 cd 3c 2c
     call sub_1bcah      ;0fc7 cd ca 1b
     ld hl,(02b2h)       ;0fca 2a b2 02
@@ -1996,7 +1996,7 @@ l1021h:
     or l                ;1035 b5
     jp z,l10fbh         ;1036 ca fb 10
     call pr0a           ;1039 cd 3d 2d
-    ld hl,20edh         ;103c 21 ed 20
+    ld hl,drv_5_10_20   ;103c 21 ed 20
     call pv1d           ;103f cd 3c 2c
     call sub_1bcah      ;1042 cd ca 1b
     ld hl,(02b2h)       ;1045 2a b2 02
@@ -2050,7 +2050,7 @@ l109ch:
     jp l0eadh           ;109c c3 ad 0e
 l109fh:
     call pr0a           ;109f cd 3d 2d
-    ld hl,20d0h         ;10a2 21 d0 20
+    ld hl,dev_num_for_drv ;10a2 21 d0 20
     call pv1d           ;10a5 cd 3c 2c
     call sub_1bcah      ;10a8 cd ca 1b
     ld hl,(l02dch)      ;10ab 2a dc 02
@@ -2079,7 +2079,7 @@ l109fh:
     or l                ;10ce b5
     jp nz,l0eadh        ;10cf c2 ad 0e
     call pr0a           ;10d2 cd 3d 2d
-    ld hl,20abh         ;10d5 21 ab 20
+    ld hl,config_as_1_or_2 ;10d5 21 ab 20
     call pv1d           ;10d8 cd 3c 2c
     call sub_1bcah      ;10db cd ca 1b
     ld hl,(02b2h)       ;10de 2a b2 02
@@ -2154,10 +2154,10 @@ l115eh:
     jp l0eadh           ;115e c3 ad 0e
 l1161h:
     call pr0a           ;1161 cd 3d 2d
-    ld hl,2065h         ;1164 21 65 20
+    ld hl,use_entire_drv ;1164 21 65 20
     call pv2d           ;1167 cd 31 2c
     call pr0a           ;116a cd 3d 2d
-    ld hl,2046h         ;116d 21 46 20
+    ld hl,use_first_half ;116d 21 46 20
     call pv1d           ;1170 cd 3c 2c
     call sub_1bcah      ;1173 cd ca 1b
     ld hl,(02b2h)       ;1176 2a b2 02
@@ -2283,7 +2283,7 @@ l1228h:
     or l                ;123a b5
     jp nz,l1247h        ;123b c2 47 12
     call pr0a           ;123e cd 3d 2d
-    ld hl,2003h         ;1241 21 03 20
+    ld hl,cor_20mb      ;1241 21 03 20
     call pv1d           ;1244 cd 3c 2c
 l1247h:
     ld hl,(l02dch)      ;1247 2a dc 02
@@ -2301,7 +2301,7 @@ l1247h:
     or l                ;1259 b5
     jp nz,l1266h        ;125a c2 66 12
     call pr0a           ;125d cd 3d 2d
-    ld hl,1ff5h         ;1260 21 f5 1f
+    ld hl,cor_5mb       ;1260 21 f5 1f
     call pv1d           ;1263 cd 3c 2c
 l1266h:
     ld hl,(l02dch)      ;1266 2a dc 02
@@ -2337,7 +2337,7 @@ l1285h:
     ret                 ;129d c9
 l129eh:
     call pr0a           ;129e cd 3d 2d
-    ld hl,1fc8h         ;12a1 21 c8 1f
+    ld hl,winchester    ;12a1 21 c8 1f
     call pv1d           ;12a4 cd 3c 2c
     ld hl,(l02dch)      ;12a7 2a dc 02
     add hl,hl           ;12aa 29
@@ -2372,7 +2372,7 @@ l12c6h:
     or l                ;12d8 b5
     jp nz,l12e5h        ;12d9 c2 e5 12
     call pr0a           ;12dc cd 3d 2d
-    ld hl,1fafh         ;12df 21 af 1f
+    ld hl,mw_6mb        ;12df 21 af 1f
     call pv2d           ;12e2 cd 31 2c
 l12e5h:
     ld hl,(l02dch)      ;12e5 2a dc 02
@@ -2460,7 +2460,7 @@ l1362h:
     jp l13bfh           ;1376 c3 bf 13
 l1379h:
     call pr0a           ;1379 cd 3d 2d
-    ld hl,1f2eh         ;137c 21 2e 1f
+    ld hl,cur_aload_is  ;137c 21 2e 1f
     call pv2d           ;137f cd 31 2c
     ld hl,(013ah)       ;1382 2a 3a 01
     ld (l02deh),hl      ;1385 22 de 02
@@ -2501,7 +2501,7 @@ l13bfh:
     ld hl,empty_string  ;13c2 21 98 28
     call pv2d           ;13c5 cd 31 2c
     call pr0a           ;13c8 cd 3d 2d
-    ld hl,1f0eh         ;13cb 21 0e 1f
+    ld hl,new_aload_yn  ;13cb 21 0e 1f
     call pv1d           ;13ce cd 3c 2c
     call sub_1bcah      ;13d1 cd ca 1b
     ld hl,(02b2h)       ;13d4 2a b2 02
@@ -3054,7 +3054,7 @@ l1743h:
     ld hl,empty_string  ;175b 21 98 28
     call pv2d           ;175e cd 31 2c
     call pr0a           ;1761 cd 3d 2d
-    ld hl,1e40h         ;1764 21 40 1e
+    ld hl,cols_in_dir   ;1764 21 40 1e
     call pv1d           ;1767 cd 3c 2c
     ld hl,(02b8h)       ;176a 2a b8 02
     ld a,h              ;176d 7c
