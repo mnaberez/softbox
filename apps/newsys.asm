@@ -4574,23 +4574,11 @@ l29b4h:
     call 0005h          ;29c7 cd 05 00
     ret                 ;29ca c9
 l29cbh:
-    dec c               ;29cb 0d
-    ld a,(bc)           ;29cc 0a
-    ld b,h              ;29cd 44
-    ld l,c              ;29ce 69
-    ld (hl),e           ;29cf 73
-    ld l,e              ;29d0 6b
-    jr nz,$+103         ;29d1 20 65
-    ld (hl),d           ;29d3 72
-    ld (hl),d           ;29d4 72
-    ld l,a              ;29d5 6f
-    ld (hl),d           ;29d6 72
-    jr nz,l2a13h        ;29d7 20 3a
-    jr nz,l29ffh        ;29d9 20 24
+    dec c
+    ld a,(bc)
+    db "Disk error : $"
 l29dbh:
-    dec c               ;29db 0d
-    ld a,(bc)           ;29dc 0a
-    inc h               ;29dd 24
+    db 0dh,0ah,"$"
 
 sub_29deh:
 ;Open "CP/M" file on an IEEE-488 drive
