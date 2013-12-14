@@ -1,6 +1,8 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --labels --address newsys.com
 
+warm:          equ  0000h ;Warm start entry point
+
     org 0100h
 
     jp start            ;0100 c3 ee 02
@@ -534,7 +536,7 @@ l0413h:
     ld a,h              ;0428 7c
     or l                ;0429 b5
     jp z,l0430h         ;042a ca 30 04
-    call sub_2d24h      ;042d cd 24 2d
+    call end            ;042d cd 24 2d
 l0430h:
     ld de,38b2h         ;0430 11 b2 38
     ld hl,(bias)        ;0433 2a ae 02
@@ -819,7 +821,7 @@ l05b5h:
     ld a,h              ;068b 7c
     or l                ;068c b5
     jp nz,l0693h        ;068d c2 93 06
-    call sub_2d24h      ;0690 cd 24 2d
+    call end            ;0690 cd 24 2d
 l0693h:
     ld hl,(02b2h)       ;0693 2a b2 02
     ld de,0ffb7h        ;0696 11 b7 ff
@@ -3713,7 +3715,7 @@ l1c93h:
     jp l1c43h           ;1cc7 c3 43 1c
 l1ccah:
     ret                 ;1cca c9
-    call sub_2d24h      ;1ccb cd 24 2d
+    call end            ;1ccb cd 24 2d
 
 esc_or_tilde:
     db 23h
@@ -5058,13 +5060,18 @@ sub_2d1dh:
     sbc a,d             ;2d21 9a
     ld h,a              ;2d22 67
     ret                 ;2d23 c9
-sub_2d24h:
-    jp 0000h            ;2d24 c3 00 00
+
+end:
+;Jump to CP/M warm start
+;Implements BASIC command: END
+    jp warm
 
 jp_to_hl:
+;Jump to the address in HL
     jp (hl)             ;2d27 e9
 
 nop_1:
+;Do nothing and return
     ret                 ;2d28 c9
 
     ld hl,0fffeh        ;2d29 21 fe ff
