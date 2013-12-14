@@ -16,9 +16,8 @@
 
 mini:
     dw 0                ;Mini-Winchester flag: 1=MW, 0=Corvus
-l010ch:
-    nop                 ;010c 00
-    nop                 ;010d 00
+iobyte:
+    dw 0                ;Value to be stored in the CP/M IOBYTE
 l010eh:
     nop                 ;010e 00
     nop                 ;010f 00
@@ -299,10 +298,21 @@ l0280h:
     ld a,b              ;02a7 78
     and 08h             ;02a8 e6 08
     jp z,2a9bh          ;02aa ca 9b 2a
-    call 2050h          ;02ad cd 50 20
-l02b0h:
-    inc b               ;02b0 04
-    ld a,07h            ;02b1 3e 07
+    db 0cdh             ;02ad cd
+
+; Start of BASIC variables ==================================================
+
+bias:
+    dw 2050h            ;Offset used to calculate start of buffer that
+                        ;  stores the CP/M system data
+
+loader:
+    dw 3e04h            ;Start address of the buffer that holds the
+                        ;  "loader" (terminal program "K" for the PET)
+
+; End of BASIC variables ====================================================
+
+    db 07h
     jp 2bceh            ;02b3 c3 ce 2b
 l02b6h:
     ld a,b              ;02b6 78
@@ -370,11 +380,11 @@ main:
     ld hl,0000h         ;0305 21 00 00
     ld (mini),hl        ;0308 22 0a 01
     ld hl,0000h         ;030b 21 00 00
-    ld (l010ch),hl      ;030e 22 0c 01
-    ld hl,l0c00h        ;0311 21 00 0c
-    ld (02aeh),hl       ;0314 22 ae 02
+    ld (iobyte),hl      ;030e 22 0c 01
+    ld hl,0c00h         ;0311 21 00 0c
+    ld (bias),hl        ;0314 22 ae 02
     ld hl,6002h         ;0317 21 02 60
-    ld (l02b0h),hl      ;031a 22 b0 02
+    ld (loader),hl      ;031a 22 b0 02
 l031dh:
     call clear_screen   ;031d cd bd 1b
 
@@ -527,79 +537,79 @@ l0413h:
     call sub_2d24h      ;042d cd 24 2d
 l0430h:
     ld de,38b2h         ;0430 11 b2 38
-    ld hl,(02aeh)       ;0433 2a ae 02
+    ld hl,(bias)        ;0433 2a ae 02
     add hl,de           ;0436 19
     ld l,(hl)           ;0437 6e
     ld h,00h            ;0438 26 00
     ld (02b8h),hl       ;043a 22 b8 02
     ld de,4a60h         ;043d 11 60 4a
-    ld hl,(02aeh)       ;0440 2a ae 02
+    ld hl,(bias)        ;0440 2a ae 02
     add hl,de           ;0443 19
     ld l,(hl)           ;0444 6e
     ld h,00h            ;0445 26 00
-    ld (l010ch),hl      ;0447 22 0c 01
+    ld (iobyte),hl      ;0447 22 0c 01
     ld de,4a61h         ;044a 11 61 4a
-    ld hl,(02aeh)       ;044d 2a ae 02
+    ld hl,(bias)        ;044d 2a ae 02
     add hl,de           ;0450 19
     ld l,(hl)           ;0451 6e
     ld h,00h            ;0452 26 00
     ld (l02bah),hl      ;0454 22 ba 02
     ld de,4a62h         ;0457 11 62 4a
-    ld hl,(02aeh)       ;045a 2a ae 02
+    ld hl,(bias)        ;045a 2a ae 02
     add hl,de           ;045d 19
     ld l,(hl)           ;045e 6e
     ld h,00h            ;045f 26 00
     ld (l02bch),hl      ;0461 22 bc 02
     ld de,4a63h         ;0464 11 63 4a
-    ld hl,(02aeh)       ;0467 2a ae 02
+    ld hl,(bias)        ;0467 2a ae 02
     add hl,de           ;046a 19
     ld l,(hl)           ;046b 6e
     ld h,00h            ;046c 26 00
     ld (l02bch+2),hl    ;046e 22 be 02
     ld de,4a64h         ;0471 11 64 4a
-    ld hl,(02aeh)       ;0474 2a ae 02
+    ld hl,(bias)        ;0474 2a ae 02
     add hl,de           ;0477 19
     ld l,(hl)           ;0478 6e
     ld h,00h            ;0479 26 00
     ld (02c0h),hl       ;047b 22 c0 02
     ld de,4a65h         ;047e 11 65 4a
-    ld hl,(02aeh)       ;0481 2a ae 02
+    ld hl,(bias)        ;0481 2a ae 02
     add hl,de           ;0484 19
     ld l,(hl)           ;0485 6e
     ld h,00h            ;0486 26 00
     ld (02c2h),hl       ;0488 22 c2 02
     ld de,4a66h         ;048b 11 66 4a
-    ld hl,(02aeh)       ;048e 2a ae 02
+    ld hl,(bias)        ;048e 2a ae 02
     add hl,de           ;0491 19
     ld l,(hl)           ;0492 6e
     ld h,00h            ;0493 26 00
     ld (l02c4h),hl      ;0495 22 c4 02
     ld de,4a67h         ;0498 11 67 4a
-    ld hl,(02aeh)       ;049b 2a ae 02
+    ld hl,(bias)        ;049b 2a ae 02
     add hl,de           ;049e 19
     ld l,(hl)           ;049f 6e
     ld h,00h            ;04a0 26 00
     ld (02c6h),hl       ;04a2 22 c6 02
     ld de,4a68h         ;04a5 11 68 4a
-    ld hl,(02aeh)       ;04a8 2a ae 02
+    ld hl,(bias)        ;04a8 2a ae 02
     add hl,de           ;04ab 19
     ld l,(hl)           ;04ac 6e
     ld h,00h            ;04ad 26 00
     ld (l02c8h),hl      ;04af 22 c8 02
     ld de,4a69h         ;04b2 11 69 4a
-    ld hl,(02aeh)       ;04b5 2a ae 02
+    ld hl,(bias)        ;04b5 2a ae 02
     add hl,de           ;04b8 19
     ld l,(hl)           ;04b9 6e
     ld h,00h            ;04ba 26 00
     ld (l02cah),hl      ;04bc 22 ca 02
     ld de,4a6ah         ;04bf 11 6a 4a
-    ld hl,(02aeh)       ;04c2 2a ae 02
+    ld hl,(bias)        ;04c2 2a ae 02
     add hl,de           ;04c5 19
     ld l,(hl)           ;04c6 6e
     ld h,00h            ;04c7 26 00
     ld (02cch),hl       ;04c9 22 cc 02
     ld de,4a6bh         ;04cc 11 6b 4a
-    ld hl,(02aeh)       ;04cf 2a ae 02
+    ld hl,(bias)        ;04cf 2a ae 02
     add hl,de           ;04d2 19
     ld l,(hl)           ;04d3 6e
     ld h,00h            ;04d4 26 00
@@ -607,7 +617,7 @@ l0430h:
     ld hl,0000h         ;04d9 21 00 00
     jp l0517h           ;04dc c3 17 05
 l04dfh:
-    ld hl,(02aeh)       ;04df 2a ae 02
+    ld hl,(bias)        ;04df 2a ae 02
     ex de,hl            ;04e2 eb
     ld hl,(l02d0h)      ;04e3 2a d0 02
     add hl,de           ;04e6 19
@@ -655,7 +665,7 @@ l0527h:
     ld hl,0000h         ;052a 21 00 00
     jp l0550h           ;052d c3 50 05
 l0530h:
-    ld hl,(02aeh)       ;0530 2a ae 02
+    ld hl,(bias)        ;0530 2a ae 02
     ex de,hl            ;0533 eb
     ld hl,(l02d0h)      ;0534 2a d0 02
     add hl,de           ;0537 19
@@ -688,7 +698,7 @@ l0560h:
     ld hl,0000h         ;0563 21 00 00
     jp l0589h           ;0566 c3 89 05
 l0569h:
-    ld hl,(02aeh)       ;0569 2a ae 02
+    ld hl,(bias)        ;0569 2a ae 02
     ex de,hl            ;056c eb
     ld hl,(l02d0h)      ;056d 2a d0 02
     add hl,de           ;0570 19
@@ -718,7 +728,7 @@ l0589h:
     add hl,hl           ;0598 29
 l0599h:
     jp c,l0569h         ;0599 da 69 05
-    ld hl,(l02b0h)      ;059c 2a b0 02
+    ld hl,(loader)      ;059c 2a b0 02
     inc hl              ;059f 23
     inc hl              ;05a0 23
     inc hl              ;05a1 23
@@ -726,7 +736,7 @@ l0599h:
     ld h,00h            ;05a3 26 00
     ld (l02d0h+2),hl    ;05a5 22 d2 02
     ld de,4a6dh         ;05a8 11 6d 4a
-    ld hl,(02aeh)       ;05ab 2a ae 02
+    ld hl,(bias)        ;05ab 2a ae 02
     add hl,de           ;05ae 19
     ld l,(hl)           ;05af 6e
     ld h,00h            ;05b0 26 00
@@ -1361,7 +1371,7 @@ l0a7bh:
     call pr0a           ;0af9 cd 3d 2d
     ld hl,io_lst_device ;0afc 21 18 24
     call pv1d           ;0aff cd 3c 2c
-    ld hl,(l010ch)      ;0b02 2a 0c 01
+    ld hl,(iobyte)      ;0b02 2a 0c 01
     ld a,l              ;0b05 7d
     and 0c0h            ;0b06 e6 c0
     ld l,a              ;0b08 6f
@@ -1375,7 +1385,7 @@ l0a7bh:
     ld hl,tty           ;0b15 21 11 24
     call pv2d           ;0b18 cd 31 2c
 l0b1bh:
-    ld hl,(l010ch)      ;0b1b 2a 0c 01
+    ld hl,(iobyte)      ;0b1b 2a 0c 01
     ld a,l              ;0b1e 7d
     and 0c0h            ;0b1f e6 c0
     ld l,a              ;0b21 6f
@@ -1391,7 +1401,7 @@ l0b1bh:
     ld hl,crt           ;0b32 21 0a 24
     call pv2d           ;0b35 cd 31 2c
 l0b38h:
-    ld hl,(l010ch)      ;0b38 2a 0c 01
+    ld hl,(iobyte)      ;0b38 2a 0c 01
     ld a,l              ;0b3b 7d
     and 0c0h            ;0b3c e6 c0
     ld l,a              ;0b3e 6f
@@ -1407,7 +1417,7 @@ l0b38h:
     ld hl,lpt           ;0b4f 21 03 24
     call pv2d           ;0b52 cd 31 2c
 l0b55h:
-    ld hl,(l010ch)      ;0b55 2a 0c 01
+    ld hl,(iobyte)      ;0b55 2a 0c 01
     ld a,l              ;0b58 7d
     and 0c0h            ;0b59 e6 c0
     ld l,a              ;0b5b 6f
@@ -1429,7 +1439,7 @@ l0b72h:
     call pr0a           ;0b7b cd 3d 2d
     ld hl,default_rdr   ;0b7e 21 db 23
     call pv1d           ;0b81 cd 3c 2c
-    ld hl,(l010ch)      ;0b84 2a 0c 01
+    ld hl,(iobyte)      ;0b84 2a 0c 01
     ld a,l              ;0b87 7d
     and 0ch             ;0b88 e6 0c
     ld l,a              ;0b8a 6f
@@ -1454,7 +1464,7 @@ l0ba9h:
     call pr0a           ;0bb2 cd 3d 2d
     ld hl,default_pun   ;0bb5 21 b3 23
     call pv1d           ;0bb8 cd 3c 2c
-    ld hl,(l010ch)      ;0bbb 2a 0c 01
+    ld hl,(iobyte)      ;0bbb 2a 0c 01
     ld a,l              ;0bbe 7d
     and 30h             ;0bbf e6 30
     ld l,a              ;0bc1 6f
@@ -1485,7 +1495,6 @@ l0be0h:
     jp nz,l0c03h        ;0bf7 c2 03 0c
     call pr0a           ;0bfa cd 3d 2d
     ld hl,cbm_3022_2    ;0bfd 21 7f 23
-l0c00h:
     call pv2d           ;0c00 cd 31 2c
 l0c03h:
     ld hl,(02d4h)       ;0c03 2a d4 02
@@ -1618,14 +1627,14 @@ l0ce0h:
     ld a,h              ;0d29 7c
     or l                ;0d2a b5
     jp nz,l0d3ch        ;0d2b c2 3c 0d
-    ld hl,(l010ch)      ;0d2e 2a 0c 01
+    ld hl,(iobyte)      ;0d2e 2a 0c 01
     ld a,l              ;0d31 7d
     and 3fh             ;0d32 e6 3f
     ld l,a              ;0d34 6f
     ld a,h              ;0d35 7c
     and 00h             ;0d36 e6 00
     ld h,a              ;0d38 67
-    ld (l010ch),hl      ;0d39 22 0c 01
+    ld (iobyte),hl      ;0d39 22 0c 01
 l0d3ch:
     ld hl,(02b2h)       ;0d3c 2a b2 02
     ld de,0ffbdh        ;0d3f 11 bd ff
@@ -1633,7 +1642,7 @@ l0d3ch:
     ld a,h              ;0d43 7c
     or l                ;0d44 b5
     jp nz,l0d5eh        ;0d45 c2 5e 0d
-    ld hl,(l010ch)      ;0d48 2a 0c 01
+    ld hl,(iobyte)      ;0d48 2a 0c 01
     ld a,l              ;0d4b 7d
     and 3fh             ;0d4c e6 3f
     ld l,a              ;0d4e 6f
@@ -1646,7 +1655,7 @@ l0d3ch:
     ld a,h              ;0d57 7c
     or 00h              ;0d58 f6 00
     ld h,a              ;0d5a 67
-    ld (l010ch),hl      ;0d5b 22 0c 01
+    ld (iobyte),hl      ;0d5b 22 0c 01
 l0d5eh:
     ld hl,(02b2h)       ;0d5e 2a b2 02
     ld de,0ffb4h        ;0d61 11 b4 ff
@@ -1654,7 +1663,7 @@ l0d5eh:
     ld a,h              ;0d65 7c
     or l                ;0d66 b5
     jp nz,l0d80h        ;0d67 c2 80 0d
-    ld hl,(l010ch)      ;0d6a 2a 0c 01
+    ld hl,(iobyte)      ;0d6a 2a 0c 01
     ld a,l              ;0d6d 7d
     and 3fh             ;0d6e e6 3f
     ld l,a              ;0d70 6f
@@ -1667,7 +1676,7 @@ l0d5eh:
     ld a,h              ;0d79 7c
     or 00h              ;0d7a f6 00
     ld h,a              ;0d7c 67
-    ld (l010ch),hl      ;0d7d 22 0c 01
+    ld (iobyte),hl      ;0d7d 22 0c 01
 l0d80h:
     ld hl,(02b2h)       ;0d80 2a b2 02
     ld de,0ffabh        ;0d83 11 ab ff
@@ -1675,7 +1684,7 @@ l0d80h:
     ld a,h              ;0d87 7c
     or l                ;0d88 b5
     jp nz,l0da2h        ;0d89 c2 a2 0d
-    ld hl,(l010ch)      ;0d8c 2a 0c 01
+    ld hl,(iobyte)      ;0d8c 2a 0c 01
     ld a,l              ;0d8f 7d
     and 3fh             ;0d90 e6 3f
     ld l,a              ;0d92 6f
@@ -1688,7 +1697,7 @@ l0d80h:
     ld a,h              ;0d9b 7c
     or 00h              ;0d9c f6 00
     ld h,a              ;0d9e 67
-    ld (l010ch),hl      ;0d9f 22 0c 01
+    ld (iobyte),hl      ;0d9f 22 0c 01
 l0da2h:
     jp l0a7bh           ;0da2 c3 7b 0a
 l0da5h:
@@ -1702,14 +1711,14 @@ l0da5h:
     ld a,h              ;0db8 7c
     or l                ;0db9 b5
     jp nz,l0dcbh        ;0dba c2 cb 0d
-    ld hl,(l010ch)      ;0dbd 2a 0c 01
+    ld hl,(iobyte)      ;0dbd 2a 0c 01
     ld a,l              ;0dc0 7d
     and 0f3h            ;0dc1 e6 f3
     ld l,a              ;0dc3 6f
     ld a,h              ;0dc4 7c
     and 00h             ;0dc5 e6 00
     ld h,a              ;0dc7 67
-    ld (l010ch),hl      ;0dc8 22 0c 01
+    ld (iobyte),hl      ;0dc8 22 0c 01
 l0dcbh:
     ld hl,(02b2h)       ;0dcb 2a b2 02
     ld de,0ffb0h        ;0dce 11 b0 ff
@@ -1717,7 +1726,7 @@ l0dcbh:
     ld a,h              ;0dd2 7c
     or l                ;0dd3 b5
     jp nz,l0dedh        ;0dd4 c2 ed 0d
-    ld hl,(l010ch)      ;0dd7 2a 0c 01
+    ld hl,(iobyte)      ;0dd7 2a 0c 01
     ld a,l              ;0dda 7d
     and 0f3h            ;0ddb e6 f3
     ld l,a              ;0ddd 6f
@@ -1730,7 +1739,7 @@ l0dcbh:
     ld a,h              ;0de6 7c
     or 00h              ;0de7 f6 00
     ld h,a              ;0de9 67
-    ld (l010ch),hl      ;0dea 22 0c 01
+    ld (iobyte),hl      ;0dea 22 0c 01
 l0dedh:
     jp l0a7bh           ;0ded c3 7b 0a
 l0df0h:
@@ -1744,14 +1753,14 @@ l0df0h:
     ld a,h              ;0e03 7c
     or l                ;0e04 b5
     jp nz,l0e16h        ;0e05 c2 16 0e
-    ld hl,(l010ch)      ;0e08 2a 0c 01
+    ld hl,(iobyte)      ;0e08 2a 0c 01
     ld a,l              ;0e0b 7d
     and 0cfh            ;0e0c e6 cf
     ld l,a              ;0e0e 6f
     ld a,h              ;0e0f 7c
     and 00h             ;0e10 e6 00
     ld h,a              ;0e12 67
-    ld (l010ch),hl      ;0e13 22 0c 01
+    ld (iobyte),hl      ;0e13 22 0c 01
 l0e16h:
     ld hl,(02b2h)       ;0e16 2a b2 02
     ld de,0ffb0h        ;0e19 11 b0 ff
@@ -1759,7 +1768,7 @@ l0e16h:
     ld a,h              ;0e1d 7c
     or l                ;0e1e b5
     jp nz,l0e38h        ;0e1f c2 38 0e
-    ld hl,(l010ch)      ;0e22 2a 0c 01
+    ld hl,(iobyte)      ;0e22 2a 0c 01
     ld a,l              ;0e25 7d
     and 0cfh            ;0e26 e6 cf
     ld l,a              ;0e28 6f
@@ -1772,7 +1781,7 @@ l0e16h:
     ld a,h              ;0e31 7c
     or 00h              ;0e32 f6 00
     ld h,a              ;0e34 67
-    ld (l010ch),hl      ;0e35 22 0c 01
+    ld (iobyte),hl      ;0e35 22 0c 01
 l0e38h:
     jp l0a7bh           ;0e38 c3 7b 0a
 l0e3bh:
@@ -2647,7 +2656,7 @@ l14a0h:
     ld d,(hl)           ;14aa 56
     ex de,hl            ;14ab eb
     push hl             ;14ac e5
-    ld hl,(02aeh)       ;14ad 2a ae 02
+    ld hl,(bias)        ;14ad 2a ae 02
     ex de,hl            ;14b0 eb
     ld hl,(l02d0h)      ;14b1 2a d0 02
     add hl,de           ;14b4 19
@@ -2664,7 +2673,7 @@ l14a0h:
     ld d,(hl)           ;14c5 56
     ex de,hl            ;14c6 eb
     push hl             ;14c7 e5
-    ld hl,(02aeh)       ;14c8 2a ae 02
+    ld hl,(bias)        ;14c8 2a ae 02
     ex de,hl            ;14cb eb
     ld hl,(l02d0h)      ;14cc 2a d0 02
     add hl,de           ;14cf 19
@@ -2739,10 +2748,10 @@ l151dh:
     dec hl              ;1523 2b
     nop                 ;1524 00
 l1525h:
-    ld hl,(l010ch)      ;1525 2a 0c 01
+    ld hl,(iobyte)      ;1525 2a 0c 01
     ld de,4a60h         ;1528 11 60 4a
     push hl             ;152b e5
-    ld hl,(02aeh)       ;152c 2a ae 02
+    ld hl,(bias)        ;152c 2a ae 02
 l152fh:
     add hl,de           ;152f 19
     pop de              ;1530 d1
@@ -2750,21 +2759,21 @@ l152fh:
     ld hl,(l02bah)      ;1532 2a ba 02
     ld de,4a61h         ;1535 11 61 4a
     push hl             ;1538 e5
-    ld hl,(02aeh)       ;1539 2a ae 02
+    ld hl,(bias)        ;1539 2a ae 02
     add hl,de           ;153c 19
     pop de              ;153d d1
     ld (hl),e           ;153e 73
     ld hl,(l02bch)      ;153f 2a bc 02
     ld de,4a62h         ;1542 11 62 4a
     push hl             ;1545 e5
-    ld hl,(02aeh)       ;1546 2a ae 02
+    ld hl,(bias)        ;1546 2a ae 02
     add hl,de           ;1549 19
     pop de              ;154a d1
     ld (hl),e           ;154b 73
     ld hl,(l02bch+2)    ;154c 2a be 02
     ld de,4a63h         ;154f 11 63 4a
     push hl             ;1552 e5
-    ld hl,(02aeh)       ;1553 2a ae 02
+    ld hl,(bias)        ;1553 2a ae 02
     add hl,de           ;1556 19
     pop de              ;1557 d1
     ld (hl),e           ;1558 73
@@ -2783,42 +2792,42 @@ l152fh:
     ld h,a              ;156b 67
     ld de,4a64h         ;156c 11 64 4a
     push hl             ;156f e5
-    ld hl,(02aeh)       ;1570 2a ae 02
+    ld hl,(bias)        ;1570 2a ae 02
     add hl,de           ;1573 19
     pop de              ;1574 d1
     ld (hl),e           ;1575 73
     ld hl,(02c2h)       ;1576 2a c2 02
     ld de,4a65h         ;1579 11 65 4a
     push hl             ;157c e5
-    ld hl,(02aeh)       ;157d 2a ae 02
+    ld hl,(bias)        ;157d 2a ae 02
     add hl,de           ;1580 19
     pop de              ;1581 d1
     ld (hl),e           ;1582 73
     ld hl,(l02c4h)      ;1583 2a c4 02
     ld de,4a66h         ;1586 11 66 4a
     push hl             ;1589 e5
-    ld hl,(02aeh)       ;158a 2a ae 02
+    ld hl,(bias)        ;158a 2a ae 02
     add hl,de           ;158d 19
     pop de              ;158e d1
     ld (hl),e           ;158f 73
     ld hl,(02c6h)       ;1590 2a c6 02
     ld de,4a67h         ;1593 11 67 4a
     push hl             ;1596 e5
-    ld hl,(02aeh)       ;1597 2a ae 02
+    ld hl,(bias)        ;1597 2a ae 02
     add hl,de           ;159a 19
     pop de              ;159b d1
     ld (hl),e           ;159c 73
     ld hl,(02d4h)       ;159d 2a d4 02
     ld de,4a6dh         ;15a0 11 6d 4a
     push hl             ;15a3 e5
-    ld hl,(02aeh)       ;15a4 2a ae 02
+    ld hl,(bias)        ;15a4 2a ae 02
     add hl,de           ;15a7 19
     pop de              ;15a8 d1
     ld (hl),e           ;15a9 73
     ld hl,(02b8h)       ;15aa 2a b8 02
     ld de,38b2h         ;15ad 11 b2 38
     push hl             ;15b0 e5
-    ld hl,(02aeh)       ;15b1 2a ae 02
+    ld hl,(bias)        ;15b1 2a ae 02
     add hl,de           ;15b4 19
     pop de              ;15b5 d1
     ld (hl),e           ;15b6 73
@@ -2834,7 +2843,7 @@ l15bdh:
     ld d,(hl)           ;15c7 56
     ex de,hl            ;15c8 eb
     push hl             ;15c9 e5
-    ld hl,(02aeh)       ;15ca 2a ae 02
+    ld hl,(bias)        ;15ca 2a ae 02
     ex de,hl            ;15cd eb
     ld hl,(l02d0h)      ;15ce 2a d0 02
     add hl,de           ;15d1 19
@@ -2858,28 +2867,28 @@ l15ech:
     ld hl,(l02c8h)      ;15ef 2a c8 02
     ld de,4a68h         ;15f2 11 68 4a
     push hl             ;15f5 e5
-    ld hl,(02aeh)       ;15f6 2a ae 02
+    ld hl,(bias)        ;15f6 2a ae 02
     add hl,de           ;15f9 19
     pop de              ;15fa d1
     ld (hl),e           ;15fb 73
     ld hl,(l02cah)      ;15fc 2a ca 02
     ld de,4a69h         ;15ff 11 69 4a
     push hl             ;1602 e5
-    ld hl,(02aeh)       ;1603 2a ae 02
+    ld hl,(bias)        ;1603 2a ae 02
     add hl,de           ;1606 19
     pop de              ;1607 d1
     ld (hl),e           ;1608 73
     ld hl,(02cch)       ;1609 2a cc 02
     ld de,4a6ah         ;160c 11 6a 4a
     push hl             ;160f e5
-    ld hl,(02aeh)       ;1610 2a ae 02
+    ld hl,(bias)        ;1610 2a ae 02
     add hl,de           ;1613 19
     pop de              ;1614 d1
     ld (hl),e           ;1615 73
     ld hl,(l02ceh)      ;1616 2a ce 02
     ld de,4a6bh         ;1619 11 6b 4a
     push hl             ;161c e5
-    ld hl,(02aeh)       ;161d 2a ae 02
+    ld hl,(bias)        ;161d 2a ae 02
     add hl,de           ;1620 19
     pop de              ;1621 d1
     ld (hl),e           ;1622 73
@@ -2895,7 +2904,7 @@ l1629h:
     ld d,(hl)           ;1633 56
     ex de,hl            ;1634 eb
     push hl             ;1635 e5
-    ld hl,(02aeh)       ;1636 2a ae 02
+    ld hl,(bias)        ;1636 2a ae 02
     ex de,hl            ;1639 eb
     ld hl,(l02d0h)      ;163a 2a d0 02
     add hl,de           ;163d 19
@@ -2918,7 +2927,7 @@ l1658h:
     jp c,l1629h         ;1658 da 29 16
     ld hl,(l02d0h+2)    ;165b 2a d2 02
     push hl             ;165e e5
-    ld hl,(l02b0h)      ;165f 2a b0 02
+    ld hl,(loader)      ;165f 2a b0 02
     inc hl              ;1662 23
     inc hl              ;1663 23
     inc hl              ;1664 23
