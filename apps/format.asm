@@ -93,7 +93,7 @@ unused_2:
 
 start:
     ld hl,main
-    jp jp_to_hl         ;Perform JP (main)
+    jp ini              ;Perform JP (main)
 
 unused_3:
     push af             ;0124 f5
@@ -111,7 +111,7 @@ unused_3:
 main:
 ;Print the welcome banner.
 ;
-    call nop_1
+    call n5_0
     call pr0a
     ld hl,empty_string
     call pv2d           ;Print newline
@@ -1024,23 +1024,28 @@ l083dh:
 
 ; End of LOADSAVE.REL =======================================================
 
+; Start of KLIB.REL =========================================================
+
+; XSTRIN --------------------------------------------------------------------
+
 tmp:
 ;Temporary string
     db 23h              ;header: string length
     dw 2b7eh            ;header: start address of string
     db 0d0h, 0cdh       ;string data (not at start address ??)
 
-xstrin_1:
+print_spc:
+;Print a space
     ld a,' '
-    call print_char
+    call conout
     ret
 
-xstrin_2:
+print_eol:
 ;Print end of line (CR+LF)
     ld a,lf
-    call print_char
+    call conout
     ld a,cr
-    call print_char
+    call conout
     ret
 
 hex:
@@ -1094,9 +1099,9 @@ pv2d:
 ;
     ld a,(hl)           ;Get the length of the string
     or a                ;Set flags
-    jp z,xstrin_2      ;If length = 0, jump to print CR+LF only.
+    jp z,print_eol      ;If length = 0, jump to print CR+LF only.
     call print_str      ;Print the string
-    jp xstrin_2        ;Jump out to print CR+LF
+    jp print_eol        ;Jump out to print CR+LF
 
 pv1d:
 ;XSTRIN: PV1D
@@ -1109,12 +1114,15 @@ pv1d:
     call print_str      ;Print the string
     ret
 
-unused_29:
-    ld a,(hl)
-    or a
-    jp z,xstrin_1
-    call print_str
-    jp xstrin_1
+pv0d:
+;XSTRIN: PV0D
+;Print string in HL followed by a space
+;
+    ld a,(hl)           ;Get the length of the string
+    or a                ;Set flags
+    jp z,print_spc      ;If length = 0, jump out print a space only.
+    call print_str      ;Print the string
+    jp print_spc        ;Jump out to print a space
 
 print_str:
 ;Print string of length A at pointer HL.
@@ -1125,22 +1133,33 @@ print_str:
     inc hl              ;Skip string start address high byte
 l08a9h:
     ld a,(hl)           ;Read char from string
-    call print_char     ;Print it
+    call conout         ;Print it
     dec b               ;Decrement number of chars remaining
     inc hl              ;Increment pointer
     jp nz,l08a9h        ;Loop until all chars have been printed
     ret
 
-unused_9:
+; BDOS ----------------------------------------------------------------------
+
+bdos_:
+;BDOS: BDOS
     ld a,(bc)
     ld c,a
     jp bdos
+
+; DIV1 ----------------------------------------------------------------------
+
+idvd:
+;DIV1: $IDVD
     ex de,hl
     pop hl
     ld c,(hl)
     inc hl
     ld b,(hl)
     jp unused_10
+
+idva:
+;DIV1: $IDVA
     ld b,h
     ld c,l
     pop hl
@@ -1151,7 +1170,13 @@ unused_10:
     inc hl
     push hl
     jp unused_11
+
+idvb:
+;DIV1: $IDVB
     ex de,hl
+
+idve:
+;DIV1: $IDVE
     ld b,h
     ld c,l
 unused_11:
@@ -1190,6 +1215,11 @@ unused_13:
     ld l,c
     ld h,b
     ret
+
+; MUL1 ----------------------------------------------------------------------
+
+imug:
+;MUL1: IMUG
     ld b,h
     ld c,l
     pop hl
@@ -1200,6 +1230,9 @@ unused_13:
     push hl
     ld l,c
     ld h,b
+
+imuh:
+;MUL1: IMUH
     ld a,h
     or l
     ret z
@@ -1222,15 +1255,24 @@ unused_15:
     dec a
     jp nz,unused_14
     ret
+
+; N16 -----------------------------------------------------------------------
+
+pv0c:
+pv1c:
+;N16: PV0C and PV1C
     call unused_16
     ld a,20h
-    call print_char
+    call conout
     ret
+
+pv2c:
+;N16: PV2C`
     call unused_16
     ld a,lf
-    call print_char
+    call conout
     ld a,cr
-    call print_char
+    call conout
     ret
 
 unused_16:
@@ -1246,18 +1288,18 @@ unused_16:
     ld h,a
     inc hl
     ld a,2dh
-    call print_char
+    call conout
 unused_17:
-    ld c,30h
-    ld de,2710h
+    ld c,'0'
+    ld de,10000
     call unused_18
-    ld de,03e8h
+    ld de,1000
     call unused_18
-    ld de,0064h
+    ld de,100
     call unused_18
-    ld de,000ah
+    ld de,10
     call unused_18
-    ld de,0001h
+    ld de,1
     call unused_18
     pop hl
     ret
@@ -1270,7 +1312,7 @@ unused_18:
 
 unused_19:
     ld a,c
-    call print_char
+    call conout
     add hl,de
     ld c,30h
     ret
@@ -1284,24 +1326,33 @@ unused_20:
     ld h,a
     ret
 
+; XXXLIB --------------------------------------------------------------------
+
 end:
+;XXXLIB: $END
 ;Jump to CP/M warm start
 ;Implements BASIC command: END
     jp warm
 
-jp_to_hl:
+ini:
+;XXXLIB: INI
 ;Jump to the address in HL
     jp (hl)
 
-nop_1:
+n5_0:
+;XXXLIB: $5.0
 ;Do nothing and return
     ret
 
-unused_31:
-    ld hl,0fffeh
-    jp unused_21
+; CPMIO ---------------------------------------------------------------------
 
-print_char:
+charin:
+;CPMIO: CHARIN
+    ld hl,0fffeh
+    jp conin
+
+conout:
+;CPMIO: CONOUT
 ;Write the char in A to the console
     push hl
     push de
@@ -1316,10 +1367,12 @@ print_char:
     pop hl
 
 pr0a:
+;CPMIO: $PR0A
 ;Do nothing and return
     ret
 
-unused_21:
+conin:
+;CPMIO: CONIN
     push de
     push bc
     push hl
@@ -1333,8 +1386,11 @@ unused_21:
     pop de
     ret
 
+char:
+;CPMIO: CHAR
     ld a,(hl)
-    jp print_char
+    jp conout
+
 unused_22:
     cp 04h
 unused_23:
@@ -1358,16 +1414,24 @@ unused_25:
     ld h,00h
     ld l,a
     ret
+
+; SOD -----------------------------------------------------------------------
+
+sodon:
+;SOD: SODON
     push af
     ld a,0c0h
     jr nc,unused_24
     ret
 
-unused_26:
+sodoff:
+;SOD: SODOFF
     push af
     ld a,40h
     jr nc,unused_25
     ret
+
+; INTLIB --------------------------------------------------------------------
 
 enabl:
 ;INTLIB: ENABL
@@ -1379,6 +1443,8 @@ disabl:
     di
     ret
 
+;TODO: Unknown code below ---------------------------------------------------
+
 unused_27:
     ld a,c
     add hl,bc
@@ -1386,7 +1452,7 @@ unused_27:
     inc c
     jp unused_18
     ld a,c
-    call print_char
+    call conout
     add hl,de
     ld c,30h
     ret
@@ -1399,3 +1465,5 @@ unused_28:
     sbc a,d
     ld h,a
     ret
+
+; End of KLIB.REL ===========================================================
