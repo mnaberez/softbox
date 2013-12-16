@@ -248,12 +248,11 @@ l02c4h:
     ld a,b              ;02c4 78
     and 04h             ;02c5 e6 04
     ret z               ;02c7 c8
-l02c8h:
-    inc hl              ;02c8 23
-    ld a,(hl)           ;02c9 7e
 
 ; Start of BASIC variables ==================================================
 
+leadin:
+    dw 7e23h            ;Terminal command lead-in: 1bh=escape, 7eh=tilde
 order:
     dw 0fe2bh           ;X,Y order when sending move-to: 0=Y first, 1=X first
 rowoff:
@@ -521,7 +520,7 @@ l0430h:
     add hl,de           ;04ab 19
     ld l,(hl)           ;04ac 6e
     ld h,00h            ;04ad 26 00
-    ld (l02c8h),hl      ;04af 22 c8 02
+    ld (leadin),hl      ;04af 22 c8 02
     ld de,4a69h         ;04b2 11 69 4a
     ld hl,(bias)        ;04b5 2a ae 02
     add hl,de           ;04b8 19
@@ -2790,7 +2789,7 @@ l15dch:
     add hl,hl           ;15eb 29
 l15ech:
     jp c,l15bdh         ;15ec da bd 15
-    ld hl,(l02c8h)      ;15ef 2a c8 02
+    ld hl,(leadin)      ;15ef 2a c8 02
     ld de,4a68h         ;15f2 11 68 4a
     push hl             ;15f5 e5
     ld hl,(bias)        ;15f6 2a ae 02
@@ -3102,7 +3101,7 @@ l1824h:
 l1844h:
     jp l1871h           ;1844 c3 71 18
 l1847h:
-    ld hl,(l02c8h)      ;1847 2a c8 02
+    ld hl,(leadin)      ;1847 2a c8 02
     ld de,0ffe5h        ;184a 11 e5 ff
     add hl,de           ;184d 19
     ld a,h              ;184e 7c
@@ -3112,7 +3111,7 @@ l1847h:
     ld hl,leadin_esc    ;1856 21 ac 1d
     call pv2d           ;1859 cd 31 2c
 l185ch:
-    ld hl,(l02c8h)      ;185c 2a c8 02
+    ld hl,(leadin)      ;185c 2a c8 02
     ld de,0ff82h        ;185f 11 82 ff
     add hl,de           ;1862 19
     ld a,h              ;1863 7c
@@ -3282,7 +3281,7 @@ l199ah:
     or l                ;19ba b5
     jp nz,l19c7h        ;19bb c2 c7 19
     ld hl,001bh         ;19be 21 1b 00
-    ld (l02c8h),hl      ;19c1 22 c8 02
+    ld (leadin),hl      ;19c1 22 c8 02
     jp l19dfh           ;19c4 c3 df 19
 l19c7h:
     ld hl,(02b2h)       ;19c7 2a b2 02
@@ -3292,7 +3291,7 @@ l19c7h:
     or l                ;19cf b5
     jp nz,l19dch        ;19d0 c2 dc 19
     ld hl,007eh         ;19d3 21 7e 00
-    ld (l02c8h),hl      ;19d6 22 c8 02
+    ld (leadin),hl      ;19d6 22 c8 02
     jp l19dfh           ;19d9 c3 df 19
 l19dch:
     jp l1743h           ;19dc c3 43 17
@@ -3376,7 +3375,7 @@ l19dfh:
 
 l1aa6h:
     ld hl,001bh
-    ld (l02c8h),hl
+    ld (leadin),hl
     ld hl,0020h
     ld (rowoff),hl
     ld (coloff),hl
