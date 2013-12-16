@@ -364,7 +364,7 @@ l02e2h:
 
 start:
     ld hl,main          ;02ee 21 02 03
-    jp jp_to_hl         ;02f1 c3 27 2d
+    jp ini              ;02f1 c3 27 2d
 
     sbc a,a             ;02f4 9f
     jr z,$-14           ;02f5 28 f0
@@ -378,7 +378,7 @@ l02feh:
     xor 02h             ;0300 ee 02
 
 main:
-    call nop_1          ;0302 cd 28 2d
+    call n5_0           ;0302 cd 28 2d
     ld hl,0000h         ;0305 21 00 00
     ld (mini),hl        ;0308 22 0a 01
     ld hl,0000h         ;030b 21 00 00
@@ -882,7 +882,7 @@ l06deh:
     ld a,h              ;070f 7c
     and 00h             ;0710 e6 00
     ld h,a              ;0712 67
-    call sub_2c64h      ;0713 cd 64 2c
+    call idva           ;0713 cd 64 2c
     inc b               ;0716 04
     nop                 ;0717 00
     ld de,0035h         ;0718 11 35 00
@@ -1342,7 +1342,7 @@ l0a7bh:
     ld hl,io_lpt_device ;0a9c 21 9c 24
     call pv1d           ;0a9f cd 3c 2c
     ld hl,(l02bah)      ;0aa2 2a ba 02
-    call sub_2cc8h      ;0aa5 cd c8 2c
+    call pv2c      ;0aa5 cd c8 2c
     call pr0a           ;0aa8 cd 3d 2d
     ld hl,empty_string  ;0aab 21 98 28
     call pv2d           ;0aae cd 31 2c
@@ -1350,7 +1350,7 @@ l0a7bh:
     ld hl,io_ul1_device ;0ab4 21 7b 24
     call pv1d           ;0ab7 cd 3c 2c
     ld hl,(l02c4h)      ;0aba 2a c4 02
-    call sub_2cc8h      ;0abd cd c8 2c
+    call pv2c      ;0abd cd c8 2c
     call pr0a           ;0ac0 cd 3d 2d
     ld hl,empty_string  ;0ac3 21 98 28
     call pv2d           ;0ac6 cd 31 2c
@@ -1358,7 +1358,7 @@ l0a7bh:
     ld hl,io_rdr_device ;0acc 21 5a 24
     call pv1d           ;0acf cd 3c 2c
     ld hl,(l02bch)      ;0ad2 2a bc 02
-    call sub_2cc8h      ;0ad5 cd c8 2c
+    call pv2c      ;0ad5 cd c8 2c
     call pr0a           ;0ad8 cd 3d 2d
     ld hl,empty_string  ;0adb 21 98 28
     call pv2d           ;0ade cd 31 2c
@@ -1366,7 +1366,7 @@ l0a7bh:
     ld hl,io_pun_device ;0ae4 21 39 24
     call pv1d           ;0ae7 cd 3c 2c
     ld hl,(l02bch+2)    ;0aea 2a be 02
-    call sub_2cc8h      ;0aed cd c8 2c
+    call pv2c      ;0aed cd c8 2c
     call pr0a           ;0af0 cd 3d 2d
     ld hl,empty_string  ;0af3 21 98 28
     call pv2d           ;0af6 cd 31 2c
@@ -1941,7 +1941,7 @@ l0f96h:
     ld de,0ffbfh        ;0fa6 11 bf ff
     ld hl,(02b2h)       ;0fa9 2a b2 02
     add hl,de           ;0fac 19
-    call sub_2c64h      ;0fad cd 64 2c
+    call idva           ;0fad cd 64 2c
     ld (bc),a           ;0fb0 02
     nop                 ;0fb1 00
     ld (l02dch),hl      ;0fb2 22 dc 02
@@ -2341,7 +2341,7 @@ l1266h:
 l1285h:
     call pr0a           ;1285 cd 3d 2d
     ld hl,device_num    ;1288 21 d9 1f
-    call sub_2c43h      ;128b cd 43 2c
+    call pv0d      ;128b cd 43 2c
     ld hl,(l02dch)      ;128e 2a dc 02
     add hl,hl           ;1291 29
     ld de,l0124h        ;1292 11 24 01
@@ -2350,7 +2350,7 @@ l1285h:
     inc hl              ;1297 23
     ld d,(hl)           ;1298 56
     ex de,hl            ;1299 eb
-    call sub_2cc8h      ;129a cd c8 2c
+    call pv2c      ;129a cd c8 2c
     ret                 ;129d c9
 l129eh:
     call pr0a           ;129e cd 3d 2d
@@ -3205,7 +3205,7 @@ l1871h:
     ld hl,clock_freq    ;187d 21 6f 1d
     call pv1d           ;1880 cd 3c 2c
     ld hl,(l02d0h+2)    ;1883 2a d2 02
-    call sub_2cc8h      ;1886 cd c8 2c
+    call pv2c      ;1886 cd c8 2c
     call pr0a           ;1889 cd 3d 2d
     ld hl,empty_string  ;188c 21 98 28
     call pv2d           ;188f cd 31 2c
@@ -3694,7 +3694,7 @@ l1c93h:
     or l                ;1c9f b5
     jp z,l1ccah         ;1ca0 ca ca 1c
     ld hl,(l02d8h)      ;1ca3 2a d8 02
-    call sub_2c9ah      ;1ca6 cd 9a 2c
+    call imug      ;1ca6 cd 9a 2c
     ld a,(bc)           ;1ca9 0a
     nop                 ;1caa 00
     push hl             ;1cab e5
@@ -4826,81 +4826,104 @@ l2be6h:
 
 ; End of LOADSAVE.REL =======================================================
 
-l2be7h:
-    cp 64h              ;2be7 fe 64
-    jp z,53d6h          ;2be9 ca d6 53
-l2bech:
-    ld a,20h            ;2bec 3e 20
-    call print_char     ;2bee cd 2f 2d
-    ret                 ;2bf1 c9
-l2bf2h:
-    ld a,0ah            ;2bf2 3e 0a
-    call print_char     ;2bf4 cd 2f 2d
-    ld a,0dh            ;2bf7 3e 0d
-    call print_char     ;2bf9 cd 2f 2d
-    ret                 ;2bfc c9
-    ld a,02h            ;2bfd 3e 02
-    ld (l2be7h),a       ;2bff 32 e7 2b
-    ld a,l              ;2c02 7d
-    call sub_2c14h      ;2c03 cd 14 2c
-    ld (2beah),a        ;2c06 32 ea 2b
-    ld a,l              ;2c09 7d
-    call sub_2c18h      ;2c0a cd 18 2c
-    ld (2bebh),a        ;2c0d 32 eb 2b
-    ld hl,l2be7h        ;2c10 21 e7 2b
-    ret                 ;2c13 c9
-sub_2c14h:
-    rrca                ;2c14 0f
-    rrca                ;2c15 0f
-    rrca                ;2c16 0f
-    rrca                ;2c17 0f
-sub_2c18h:
-    and 0fh             ;2c18 e6 0f
-    cp 0ah              ;2c1a fe 0a
-    jp m,l2c21h         ;2c1c fa 21 2c
-    add a,07h           ;2c1f c6 07
-l2c21h:
-    add a,30h           ;2c21 c6 30
-    ret                 ;2c23 c9
+; Start of KLIB.REL =========================================================
+
+; XSTRIN --------------------------------------------------------------------
+
+tmp:
+;Temporary string
+    db 0feh             ;header: string length
+    dw 0ca64h           ;header: start address of string
+    db 0d6h, 53h        ;string data (not at start address ??)
+
+print_spc:
+;Print a space
+    ld a,' '
+    call conout
+    ret
+
+print_eol:
+    ld a,0ah
+    call conout
+    ld a,0dh
+    call conout
+    ret
+
+hex:
+;XSTRIN: HEX
+;Make a temporary string (length 2 bytes) with the hexadecimal
+;representation of the byte in HL and return a pointer to it in HL.
+;Implements BASIC function: HEX$(x)
+;
+    ld a,02h            ;A = 2 bytes in string
+    ld (tmp),a          ;Store length in temp string header
+    ld a,l              ;A = L
+    call xstrin_3       ;Convert high nibble in A to ASCII
+    ld (tmp+3),a        ;Save it as first char of string
+    ld a,l              ;A = L
+    call xstrin_4       ;Convert low nibble in A to ASCII
+    ld (tmp+4),a        ;Save it as second char of string
+    ld hl,tmp           ;HL = address of the string
+    ret
+
+xstrin_3:
+    rrca
+    rrca
+    rrca
+    rrca
+xstrin_4:
+    and 0fh
+    cp 0ah
+    jp m,xstrin_5
+    add a,07h
+xstrin_5:
+    add a,30h
+    ret
 
 chr:
+;XSTRIN: CHR
 ;Make a temporary string from the char in L and
 ;return a pointer to it in HL.
 ;Implements BASIC function: CHR$(x)
 ;
-    ld a,01h            ;2c24 3e 01
-    ld (l2be7h),a       ;2c26 32 e7 2b
-    ld a,l              ;2c29 7d
-    ld (2beah),a        ;2c2a 32 ea 2b
-    ld hl,l2be7h        ;2c2d 21 e7 2b
-    ret                 ;2c30 c9
+    ld a,01h            ;A = 1 byte in string
+    ld (tmp),a          ;Store length in temp string header
+    ld a,l              ;A = L
+    ld (tmp+3),a        ;Store A as the temp string data
+    ld hl,tmp           ;HL = address of the string
+    ret
 
 pv2d:
+;XSTRIN: PV2D
 ;Print string in HL followed by CR+LF
 ;Implements BASIC command: PRINT"foo"
 ;
-    ld a,(hl)           ;2c31 7e
-    or a                ;2c32 b7
-    jp z,l2bf2h         ;2c33 ca f2 2b
-    call print_str      ;2c36 cd 4e 2c
-    jp l2bf2h           ;2c39 c3 f2 2b
+    ld a,(hl)           ;Get the length of the string
+    or a                ;Set flags
+    jp z,print_eol      ;If length = 0, jump to print CR+LF only.
+    call print_str      ;Print the string
+    jp print_eol        ;Jump out to print CR+LF
 
 pv1d:
+;XSTRIN: PV1D
 ;Print string in HL but do not send CR+LF
 ;Implements BASIC command: PRINT"foo";
 ;
-    ld a,(hl)           ;2c3c 7e
-    or a                ;2c3d b7
-    ret z               ;2c3e c8
-    call print_str      ;2c3f cd 4e 2c
-    ret                 ;2c42 c9
+    ld a,(hl)           ;Get the length of the string
+    or a                ;Set flags
+    ret z               ;If length = 0, return (nothing to do).
+    call print_str      ;Print the string
+    ret
 
-sub_2c43h:
-    ld a,(hl)           ;2c43 7e
-    or a                ;2c44 b7
-    jp z,l2bech         ;2c45 ca ec 2b
-    call print_str      ;2c48 cd 4e 2c
-    jp l2bech           ;2c4b c3 ec 2b
+pv0d:
+;XSTRIN: PV0D
+;Print string in HL followed by a space
+;
+    ld a,(hl)           ;Get the length of the string
+    or a                ;Set flags
+    jp z,print_spc      ;If length = 0, jump out print a space only.
+    call print_str      ;Print the string
+    jp print_spc        ;Jump out to print a space
 
 print_str:
 ;Print string of length A at pointer HL.
@@ -4911,210 +4934,259 @@ print_str:
     inc hl              ;Skip string start address high byte
 l2c52h:
     ld a,(hl)           ;Read char from string
-    call print_char     ;Print it
+    call conout         ;Print it
     dec b               ;Decrement number of chars remaining
     inc hl              ;Increment pointer
     jp nz,l2c52h        ;Loop until all chars have been printed
     ret
 
-    ex de,hl            ;2c5c eb
-    pop hl              ;2c5d e1
-    ld c,(hl)           ;2c5e 4e
-    inc hl              ;2c5f 23
-    ld b,(hl)           ;2c60 46
-    jp l2c6ah           ;2c61 c3 6a 2c
-sub_2c64h:
-    ld b,h              ;2c64 44
-    ld c,l              ;2c65 4d
-    pop hl              ;2c66 e1
-    ld e,(hl)           ;2c67 5e
-    inc hl              ;2c68 23
-    ld d,(hl)           ;2c69 56
+; DIV1 ----------------------------------------------------------------------
+
+idvd:
+;DIV1: $IDVD
+    ex de,hl
+    pop hl
+    ld c,(hl)
+    inc hl
+    ld b,(hl)
+    jp l2c6ah
+
+idva:
+;DIV1: $IDVA
+    ld b,h
+    ld c,l
+    pop hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
 l2c6ah:
-    inc hl              ;2c6a 23
-    push hl             ;2c6b e5
-    jp l2c72h           ;2c6c c3 72 2c
-    ex de,hl            ;2c6f eb
-    ld b,h              ;2c70 44
-    ld c,l              ;2c71 4d
+    inc hl
+    push hl
+    jp l2c72h
+
+idvb:
+;DIV1: $IDVB
+    ex de,hl
+
+idve:
+;DIV1: $IDVE
+    ld b,h
+    ld c,l
 l2c72h:
-    ld a,d              ;2c72 7a
-    cpl                 ;2c73 2f
-    ld d,a              ;2c74 57
-    ld a,e              ;2c75 7b
-    cpl                 ;2c76 2f
-    ld e,a              ;2c77 5f
-    inc de              ;2c78 13
-    ld hl,0000h         ;2c79 21 00 00
-    ld a,11h            ;2c7c 3e 11
+    ld a,d
+    cpl
+    ld d,a
+    ld a,e
+    cpl
+    ld e,a
+    inc de
+    ld hl,0000h
+    ld a,11h
 l2c7eh:
-    push hl             ;2c7e e5
-    add hl,de           ;2c7f 19
-    jp nc,l2c84h        ;2c80 d2 84 2c
-    ex (sp),hl          ;2c83 e3
+    push hl
+    add hl,de
+    jp nc,l2c84h
+    ex (sp),hl
 l2c84h:
-    pop hl              ;2c84 e1
-    push af             ;2c85 f5
-    ld a,c              ;2c86 79
-    rla                 ;2c87 17
-    ld c,a              ;2c88 4f
-    ld a,b              ;2c89 78
-    rla                 ;2c8a 17
-    ld b,a              ;2c8b 47
-    ld a,l              ;2c8c 7d
-    rla                 ;2c8d 17
-    ld l,a              ;2c8e 6f
-    ld a,h              ;2c8f 7c
-    rla                 ;2c90 17
-    ld h,a              ;2c91 67
-    pop af              ;2c92 f1
-    dec a               ;2c93 3d
-    jp nz,l2c7eh        ;2c94 c2 7e 2c
-    ld l,c              ;2c97 69
-    ld h,b              ;2c98 60
-    ret                 ;2c99 c9
-sub_2c9ah:
-    ld b,h              ;2c9a 44
-    ld c,l              ;2c9b 4d
-    pop hl              ;2c9c e1
-    ld e,(hl)           ;2c9d 5e
-    inc hl              ;2c9e 23
-    ld d,(hl)           ;2c9f 56
-    inc hl              ;2ca0 23
-    push hl             ;2ca1 e5
-    ld l,c              ;2ca2 69
-    ld h,b              ;2ca3 60
-    ld a,h              ;2ca4 7c
-    or l                ;2ca5 b5
-    ret z               ;2ca6 c8
-    ex de,hl            ;2ca7 eb
-    ld a,h              ;2ca8 7c
-    or l                ;2ca9 b5
-    ret z               ;2caa c8
-    ld b,h              ;2cab 44
-    ld c,l              ;2cac 4d
-    ld hl,0000h         ;2cad 21 00 00
-    ld a,10h            ;2cb0 3e 10
+    pop hl
+    push af
+    ld a,c
+    rla
+    ld c,a
+    ld a,b
+    rla
+    ld b,a
+    ld a,l
+    rla
+    ld l,a
+    ld a,h
+    rla
+    ld h,a
+    pop af
+    dec a
+    jp nz,l2c7eh
+    ld l,c
+    ld h,b
+    ret
+
+; MUL1 ----------------------------------------------------------------------
+
+imug:
+;MUL1: IMUG
+    ld b,h
+    ld c,l
+    pop hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    inc hl
+    push hl
+    ld l,c
+    ld h,b
+
+imuh:
+;MUL1: IMUH
+    ld a,h
+    or l
+    ret z
+    ex de,hl
+    ld a,h
+    or l
+    ret z
+    ld b,h
+    ld c,l
+    ld hl,0000h
+    ld a,10h
 l2cb2h:
-    add hl,hl           ;2cb2 29
-    ex de,hl            ;2cb3 eb
-    add hl,hl           ;2cb4 29
-    ex de,hl            ;2cb5 eb
-    jp nc,l2cbah        ;2cb6 d2 ba 2c
-    add hl,bc           ;2cb9 09
+    add hl,hl
+    ex de,hl
+    add hl,hl
+    ex de,hl
+    jp nc,l2cbah
+    add hl,bc
 l2cbah:
-    dec a               ;2cba 3d
-    jp nz,l2cb2h        ;2cbb c2 b2 2c
-    ret                 ;2cbe c9
-    call sub_2cd6h      ;2cbf cd d6 2c
-    ld a,20h            ;2cc2 3e 20
-    call print_char     ;2cc4 cd 2f 2d
-    ret                 ;2cc7 c9
-sub_2cc8h:
-    call sub_2cd6h      ;2cc8 cd d6 2c
-    ld a,0ah            ;2ccb 3e 0a
-    call print_char     ;2ccd cd 2f 2d
-    ld a,0dh            ;2cd0 3e 0d
-    call print_char     ;2cd2 cd 2f 2d
-    ret                 ;2cd5 c9
+    dec a
+    jp nz,l2cb2h
+    ret
+
+; N16 -----------------------------------------------------------------------
+
+pv0c:
+pv1c:
+;N16: PV0C and PV1C
+    call sub_2cd6h
+    ld a,20h
+    call conout
+    ret
+
+pv2c:
+;N16: PV2C
+    call sub_2cd6h
+    ld a,0ah
+    call conout
+    ld a,0dh
+    call conout
+    ret
+
 sub_2cd6h:
-    push hl             ;2cd6 e5
-    ld a,h              ;2cd7 7c
-    and 80h             ;2cd8 e6 80
-    jp z,l2ce9h         ;2cda ca e9 2c
-    ld a,l              ;2cdd 7d
-    cpl                 ;2cde 2f
-    ld l,a              ;2cdf 6f
-    ld a,h              ;2ce0 7c
-    cpl                 ;2ce1 2f
-    ld h,a              ;2ce2 67
-    inc hl              ;2ce3 23
-    ld a,2dh            ;2ce4 3e 2d
-    call print_char     ;2ce6 cd 2f 2d
+    push hl
+    ld a,h
+    and 80h
+    jp z,l2ce9h
+    ld a,l
+    cpl
+    ld l,a
+    ld a,h
+    cpl
+    ld h,a
+    inc hl
+    ld a,2dh
+    call conout
 l2ce9h:
-    ld c,30h            ;2ce9 0e 30
-    ld de,2710h         ;2ceb 11 10 27
-    call sub_2d0bh      ;2cee cd 0b 2d
-    ld de,l03e8h        ;2cf1 11 e8 03
-    call sub_2d0bh      ;2cf4 cd 0b 2d
-    ld de,0064h         ;2cf7 11 64 00
-    call sub_2d0bh      ;2cfa cd 0b 2d
-    ld de,000ah         ;2cfd 11 0a 00
-    call sub_2d0bh      ;2d00 cd 0b 2d
-    ld de,0001h         ;2d03 11 01 00
-    call sub_2d0bh      ;2d06 cd 0b 2d
-    pop hl              ;2d09 e1
-    ret                 ;2d0a c9
+    ld c,30h
+    ld de,2710h
+    call sub_2d0bh
+    ld de,l03e8h
+    call sub_2d0bh
+    ld de,0064h
+    call sub_2d0bh
+    ld de,000ah
+    call sub_2d0bh
+    ld de,0001h
+    call sub_2d0bh
+    pop hl
+    ret
+
 sub_2d0bh:
-    call sub_2d1dh      ;2d0b cd 1d 2d
-    jp c,l2d15h         ;2d0e da 15 2d
-    inc c               ;2d11 0c
-    jp sub_2d0bh        ;2d12 c3 0b 2d
+    call sub_2d1dh
+    jp c,l2d15h
+    inc c
+    jp sub_2d0bh
+
 l2d15h:
-    ld a,c              ;2d15 79
-    call print_char     ;2d16 cd 2f 2d
-    add hl,de           ;2d19 19
-    ld c,30h            ;2d1a 0e 30
-    ret                 ;2d1c c9
+    ld a,c
+    call conout
+    add hl,de
+    ld c,30h
+    ret
+
 sub_2d1dh:
-    ld a,l              ;2d1d 7d
-    sub e               ;2d1e 93
-    ld l,a              ;2d1f 6f
-    ld a,h              ;2d20 7c
-    sbc a,d             ;2d21 9a
-    ld h,a              ;2d22 67
-    ret                 ;2d23 c9
+    ld a,l
+    sub e
+    ld l,a
+    ld a,h
+    sbc a,d
+    ld h,a
+    ret
+
+; XXXLIB --------------------------------------------------------------------
 
 end:
+;XXXLIB: $END
 ;Jump to CP/M warm start
 ;Implements BASIC command: END
     jp warm
 
-jp_to_hl:
+ini:
+;XXXLIB: INI
 ;Jump to the address in HL
-    jp (hl)             ;2d27 e9
+    jp (hl)
 
-nop_1:
-;Do nothing and return
-    ret                 ;2d28 c9
-
-    ld hl,0fffeh        ;2d29 21 fe ff
-    jp l2d3eh           ;2d2c c3 3e 2d
-
-print_char:
-;Write the char in A to the console
-    push hl             ;2d2f e5
-    push de             ;2d30 d5
-    push bc             ;2d31 c5
-    push af             ;2d32 f5
-    ld c,02h            ;2d33 0e 02
-    ld e,a              ;2d35 5f
-    call 0005h          ;2d36 cd 05 00
-    pop af              ;2d39 f1
-    pop bc              ;2d3a c1
-    pop de              ;2d3b d1
-    pop hl              ;2d3c e1
-
-pr0a:
+n5_0:
+;XXXLIB: $5.0
 ;Do nothing and return
     ret
 
-l2d3eh:
-    push de             ;2d3e d5
-    push bc             ;2d3f c5
-    push hl             ;2d40 e5
-    ld c,01h            ;2d41 0e 01
-    call 0005h          ;2d43 cd 05 00
-    pop hl              ;2d46 e1
-    ld (hl),a           ;2d47 77
-    inc hl              ;2d48 23
-    ld (hl),00h         ;2d49 36 00
-    pop bc              ;2d4b c1
-    pop de              ;2d4c d1
-    ret                 ;2d4d c9
-    ld a,(hl)           ;2d4e 7e
-    jp print_char       ;2d4f c3 2f 2d
-    call print_char     ;2d52 cd 2f 2d
+; CPMIO ---------------------------------------------------------------------
+
+charin:
+;CPMIO: CHARIN
+    ld hl,0fffeh
+    jp conin
+
+conout:
+;CPMIO: CONOUT
+;Write the char in A to the console
+    push hl
+    push de
+    push bc
+    push af
+    ld c,02h
+    ld e,a
+    call 0005h
+    pop af
+    pop bc
+    pop de
+    pop hl
+
+pr0a:
+;CPMIO: $PR0A
+;Do nothing and return
+    ret
+
+conin:
+;CPMIO: CONIN
+    push de
+    push bc
+    push hl
+    ld c,01h
+    call 0005h
+    pop hl
+    ld (hl),a
+    inc hl
+    ld (hl),00h
+    pop bc
+    pop de
+    ret
+
+char:
+;CPMIO: CHAR
+    ld a,(hl)
+    jp conout
+
+;TODO: Unknown code below ---------------------------------------------------
+
+    call conout         ;2d52 cd 2f 2d
     ret                 ;2d55 c9
     push hl             ;2d56 e5
     ld a,h              ;2d57 7c
@@ -5128,7 +5200,7 @@ l2d3eh:
     ld h,a              ;2d62 67
     inc hl              ;2d63 23
     ld a,2dh            ;2d64 3e 2d
-    call print_char     ;2d66 cd 2f 2d
+    call conout         ;2d66 cd 2f 2d
     ld c,30h            ;2d69 0e 30
     ld de,2710h         ;2d6b 11 10 27
     call sub_2d0bh      ;2d6e cd 0b 2d
@@ -5137,3 +5209,5 @@ l2d3eh:
     ld de,0064h         ;2d77 11 64 00
     call sub_2d0bh      ;2d7a cd 0b 2d
     ld de,000ah         ;2d7d 11 0a 00
+
+; End of KLIB.REL ===========================================================
