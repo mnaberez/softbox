@@ -1267,7 +1267,7 @@ pv1c:
     ret
 
 pv2c:
-;N16: PV2C`
+;N16: PV2C
     call unused_16
     ld a,lf
     call conout
