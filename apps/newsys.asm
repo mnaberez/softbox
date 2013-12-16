@@ -205,104 +205,22 @@ l013ch:
     push hl             ;0226 e5
     ld a,b              ;0227 78
     cp 04h              ;0228 fe 04
-    jp z,2a1bh          ;022a ca 1b 2a
-    call 4ea8h          ;022d cd a8 4e
-l0230h:
-    call 4deah          ;0230 cd ea 4d
-    jp l2a27h           ;0233 c3 27 2a
-l0236h:
-    call 4e7ch          ;0236 cd 7c 4e
-    ld hl,12bbh         ;0239 21 bb 12
-l023ch:
-    call 4d2eh          ;023c cd 2e 4d
-    call 4d7dh          ;023f cd 7d 4d
-l0242h:
-    pop hl              ;0242 e1
-    and a               ;0243 a7
-l0244h:
-    jp nz,2a48h         ;0244 c2 48 2a
-    pop af              ;0247 f1
-l0248h:
-    or 40h              ;0248 f6 40
-l024ah:
-    push af             ;024a f5
-    ld e,l              ;024b 5d
-l024ch:
-    ld d,h              ;024c 54
-    dec de              ;024d 1b
-l024eh:
-    ld a,l              ;024e 7d
-    and e               ;024f a3
-l0250h:
-    ld e,a              ;0250 5f
-    ld a,h              ;0251 7c
-l0252h:
-    and d               ;0252 a2
-    or e                ;0253 b3
-l0254h:
-    jp nz,2a48h         ;0254 c2 48 2a
-    ld b,10h            ;0257 06 10
-    dec b               ;0259 05
-l025ah:
-    add hl,hl           ;025a 29
-    jp nc,2a3eh         ;025b d2 3e 2a
-l025eh:
-    pop af              ;025e f1
-    or b                ;025f b0
-l0260h:
-    or 10h              ;0260 f6 10
-l0262h:
-    push af             ;0262 f5
-    pop af              ;0263 f1
-l0264h:
-    ret                 ;0264 c9
-    pop af              ;0265 f1
-l0266h:
-    xor a               ;0266 af
-    ret                 ;0267 c9
-l0268h:
-    call 2e71h          ;0268 cd 71 2e
-    cp 0e5h             ;026b fe e5
-    call z,2730h        ;026d cc 30 27
-l0270h:
-    jp 232eh            ;0270 c3 2e 23
-    ld a,34h            ;0273 3e 34
-    call sub_2abah      ;0275 cd ba 2a
-l0278h:
-    jp 303eh            ;0278 c3 3e 30
-    ld de,l1222h        ;027b 11 22 12
-l027eh:
-    ld a,c              ;027e 79
-    push de             ;027f d5
-l0280h:
-    dec a               ;0280 3d
-    jp nz,2a64h         ;0281 c2 64 2a
-    call 2050h          ;0284 cd 50 20
-    inc d               ;0287 14
-    call 2f6fh          ;0288 cd 6f 2f
-    ret                 ;028b c9
-    inc hl              ;028c 23
-    ld a,(hl)           ;028d 7e
-    dec hl              ;028e 2b
-    cp 07h              ;028f fe 07
-    jp nz,2a8ch         ;0291 c2 8c 2a
-    ld a,b              ;0294 78
-    add a,a             ;0295 87
-    jp p,2a83h          ;0296 f2 83 2a
-    ld a,b              ;0299 78
-    or 08h              ;029a f6 08
-    ld b,a              ;029c 47
-    ret                 ;029d c9
-    call 2050h          ;029e cd 50 20
-    inc b               ;02a1 04
-    ld a,05h            ;02a2 3e 05
-    call 2bceh          ;02a4 cd ce 2b
-    ld a,b              ;02a7 78
-    and 08h             ;02a8 e6 08
-    jp z,2a9bh          ;02aa ca 9b 2a
-    db 0cdh             ;02ad cd
+    dw 1bcah            ;022a
 
 ; Start of BASIC variables ==================================================
+
+scrtab:
+;Array of 64 integers
+    dw 0cd2ah,  4ea8h, 0eacdh, 0c34dh,  2a27h,  7ccdh,  214eh,  12bbh
+    dw  2ecdh, 0cd4dh,  4d7dh, 0a7e1h,  48c2h, 0f12ah,  40f6h,  5df5h
+    dw  1b54h, 0a37dh,  7c5fh, 0b3a2h,  48c2h,  062ah,  0510h, 0d229h
+    dw  2a3eh, 0b0f1h,  10f6h, 0f1f5h, 0f1c9h, 0c9afh,  71cdh, 0fe2eh
+    dw 0cce5h,  2730h,  2ec3h,  3e23h, 0cd34h,  2abah,  3ec3h,  1130h
+    dw  1222h, 0d579h, 0c23dh,  2a64h,  50cdh,  1420h,  6fcdh, 0c92fh
+    dw  7e23h, 0fe2bh, 0c207h,  2a8ch,  8778h,  83f2h,  782ah,  08f6h
+    dw 0c947h,  50cdh,  0420h,  053eh, 0cecdh,  782bh,  08e6h,  9bcah
+
+    db 2ah, 0cdh
 
 bias:
     dw 2050h            ;Offset used to calculate start of buffer that
@@ -717,7 +635,7 @@ l0569h:
     push hl             ;0578 e5
     ld hl,(l02d0h)      ;0579 2a d0 02
     add hl,hl           ;057c 29
-    ld de,022ch         ;057d 11 2c 02
+    ld de,scrtab        ;057d 11 2c 02
     add hl,de           ;0580 19
     pop de              ;0581 d1
     ld (hl),e           ;0582 73
@@ -2905,7 +2823,7 @@ l15ech:
 l1629h:
     ld hl,(l02d0h)      ;1629 2a d0 02
     add hl,hl           ;162c 29
-    ld de,022ch         ;162d 11 2c 02
+    ld de,scrtab        ;162d 11 2c 02
     add hl,de           ;1630 19
     ld e,(hl)           ;1631 5e
     inc hl              ;1632 23
@@ -3401,154 +3319,155 @@ l19dfh:
     ld hl,0001h         ;19fe 21 01 00
     ld (order),hl       ;1a01 22 ca 02
 
-    ld hl,008bh         ;1a04 21 8b 00
-    ld (022ch),hl       ;1a07 22 2c 02
-    ld hl,000bh         ;1a0a 21 0b 00
-    ld (022eh),hl       ;1a0d 22 2e 02
-    ld hl,008ch         ;1a10 21 8c 00
-    ld (l0230h),hl      ;1a13 22 30 02
-    ld hl,000ch         ;1a16 21 0c 00
-    ld (l0230h+2),hl    ;1a19 22 32 02
-    ld hl,008fh         ;1a1c 21 8f 00
-    ld (0234h),hl       ;1a1f 22 34 02
-    ld hl,0013h         ;1a22 21 13 00
-    ld (l0236h),hl      ;1a25 22 36 02
-    ld hl,0091h         ;1a28 21 91 00
-    ld (l0236h+2),hl    ;1a2b 22 38 02
-    ld hl,001bh         ;1a2e 21 1b 00
-    ld (023ah),hl       ;1a31 22 3a 02
-    ld hl,0092h         ;1a34 21 92 00
-    ld (l023ch),hl      ;1a37 22 3c 02
-    ld hl,001eh         ;1a3a 21 1e 00
-    ld (l023ch+2),hl    ;1a3d 22 3e 02
-    ld hl,0093h         ;1a40 21 93 00
-    ld (0240h),hl       ;1a43 22 40 02
-    ld hl,0012h         ;1a46 21 12 00
-    ld (l0242h),hl      ;1a49 22 42 02
-    ld hl,0097h         ;1a4c 21 97 00
-    ld (l0244h),hl      ;1a4f 22 44 02
-    ld hl,0014h         ;1a52 21 14 00
-    ld (l0244h+2),hl    ;1a55 22 46 02
-    ld hl,0098h         ;1a58 21 98 00
-    ld (l0248h),hl      ;1a5b 22 48 02
-    ld hl,0014h         ;1a5e 21 14 00
-    ld (l024ah),hl      ;1a61 22 4a 02
-    ld hl,009ah         ;1a64 21 9a 00
-    ld (l024ch),hl      ;1a67 22 4c 02
-    ld hl,0011h         ;1a6a 21 11 00
-    ld (l024eh),hl      ;1a6d 22 4e 02
-    ld hl,009ch         ;1a70 21 9c 00
-    ld (l0250h),hl      ;1a73 22 50 02
-    ld hl,001ah         ;1a76 21 1a 00
-    ld (l0252h),hl      ;1a79 22 52 02
-    ld hl,009dh         ;1a7c 21 9d 00
-    ld (l0254h),hl      ;1a7f 22 54 02
-    ld hl,001ah         ;1a82 21 1a 00
-    ld (l0254h+2),hl    ;1a85 22 56 02
-    ld hl,0099h         ;1a88 21 99 00
-    ld (0258h),hl       ;1a8b 22 58 02
-    ld hl,0000h         ;1a8e 21 00 00
-    ld (l025ah),hl      ;1a91 22 5a 02
-    ld hl,009fh         ;1a94 21 9f 00
-    ld (025ch),hl       ;1a97 22 5c 02
-    ld hl,0000h         ;1a9a 21 00 00
-    ld (l025eh),hl      ;1a9d 22 5e 02
-    ld (l0260h),hl      ;1aa0 22 60 02
-    jp l1743h           ;1aa3 c3 43 17
+    ld hl,008bh
+    ld (scrtab+0),hl
+    ld hl,000bh
+    ld (scrtab+2),hl
+    ld hl,008ch
+    ld (scrtab+4),hl
+    ld hl,000ch
+    ld (scrtab+6),hl
+    ld hl,008fh
+    ld (scrtab+8),hl
+    ld hl,0013h
+    ld (scrtab+10),hl
+    ld hl,0091h
+    ld (scrtab+12),hl
+    ld hl,001bh
+    ld (scrtab+14),hl
+    ld hl,0092h
+    ld (scrtab+16),hl
+    ld hl,001eh
+    ld (scrtab+18),hl
+    ld hl,0093h
+    ld (scrtab+20),hl
+    ld hl,0012h
+    ld (scrtab+22),hl
+    ld hl,0097h
+    ld (scrtab+24),hl
+    ld hl,0014h
+    ld (scrtab+26),hl
+    ld hl,0098h
+    ld (scrtab+28),hl
+    ld hl,0014h
+    ld (scrtab+30),hl
+    ld hl,009ah
+    ld (scrtab+32),hl
+    ld hl,0011h
+    ld (scrtab+34),hl
+    ld hl,009ch
+    ld (scrtab+36),hl
+    ld hl,001ah
+    ld (scrtab+38),hl
+    ld hl,009dh
+    ld (scrtab+40),hl
+    ld hl,001ah
+    ld (scrtab+42),hl
+    ld hl,0099h
+    ld (scrtab+44),hl
+    ld hl,0000h
+    ld (scrtab+46),hl
+    ld hl,009fh
+    ld (scrtab+48),hl
+    ld hl,0000h
+    ld (scrtab+50),hl
+    ld (scrtab+52),hl
+    jp l1743h
+
 l1aa6h:
-    ld hl,001bh         ;1aa6 21 1b 00
-    ld (l02c8h),hl      ;1aa9 22 c8 02
-    ld hl,0020h         ;1aac 21 20 00
-    ld (rowoff),hl      ;1aaf 22 cc 02
-    ld (coloff),hl      ;1ab2 22 ce 02
-    ld hl,0000h         ;1ab5 21 00 00
-    ld (order),hl       ;1ab8 22 ca 02
-    ld hl,00b1h         ;1abb 21 b1 00
-    ld (022ch),hl       ;1abe 22 2c 02
-    ld hl,0004h         ;1ac1 21 04 00
-    ld (022eh),hl       ;1ac4 22 2e 02
-    ld hl,00b2h         ;1ac7 21 b2 00
-    ld (l0230h),hl      ;1aca 22 30 02
-    ld hl,0005h         ;1acd 21 05 00
-    ld (l0230h+2),hl    ;1ad0 22 32 02
-    ld hl,00b3h         ;1ad3 21 b3 00
-    ld (0234h),hl       ;1ad6 22 34 02
-    ld hl,0006h         ;1ad9 21 06 00
-    ld (l0236h),hl      ;1adc 22 36 02
-    ld hl,00eah         ;1adf 21 ea 00
-    ld (l0236h+2),hl    ;1ae2 22 38 02
-    ld hl,000eh         ;1ae5 21 0e 00
-    ld (023ah),hl       ;1ae8 22 3a 02
-    ld hl,00ebh         ;1aeb 21 eb 00
-    ld (l023ch),hl      ;1aee 22 3c 02
-    ld hl,000fh         ;1af1 21 0f 00
-    ld (l023ch+2),hl    ;1af4 22 3e 02
-    ld hl,00d1h         ;1af7 21 d1 00
-    ld (0240h),hl       ;1afa 22 40 02
-    ld hl,001ch         ;1afd 21 1c 00
-    ld (l0242h),hl      ;1b00 22 42 02
-    ld hl,00d7h         ;1b03 21 d7 00
-    ld (l0244h),hl      ;1b06 22 44 02
-    ld hl,001dh         ;1b09 21 1d 00
-    ld (l0244h+2),hl    ;1b0c 22 46 02
-    ld hl,00c5h         ;1b0f 21 c5 00
-    ld (l0248h),hl      ;1b12 22 48 02
-    ld hl,0011h         ;1b15 21 11 00
-    ld (l024ah),hl      ;1b18 22 4a 02
-    ld hl,00d2h         ;1b1b 21 d2 00
-    ld (l024ch),hl      ;1b1e 22 4c 02
-    ld hl,0012h         ;1b21 21 12 00
-    ld (l024eh),hl      ;1b24 22 4e 02
-    ld hl,00d4h         ;1b27 21 d4 00
-    ld (l0250h),hl      ;1b2a 22 50 02
-    ld hl,0013h         ;1b2d 21 13 00
-    ld (l0252h),hl      ;1b30 22 52 02
-    ld hl,00f4h         ;1b33 21 f4 00
-    ld (l0254h),hl      ;1b36 22 54 02
-    ld hl,0013h         ;1b39 21 13 00
-    ld (l0254h+2),hl    ;1b3c 22 56 02
-    ld hl,00d9h         ;1b3f 21 d9 00
-    ld (0258h),hl       ;1b42 22 58 02
-    ld hl,0014h         ;1b45 21 14 00
-    ld (l025ah),hl      ;1b48 22 5a 02
-    ld hl,00f9h         ;1b4b 21 f9 00
-    ld (025ch),hl       ;1b4e 22 5c 02
-    ld hl,0014h         ;1b51 21 14 00
-    ld (l025eh),hl      ;1b54 22 5e 02
-    ld hl,00abh         ;1b57 21 ab 00
-    ld (l0260h),hl      ;1b5a 22 60 02
-    ld hl,001ah         ;1b5d 21 1a 00
-    ld (l0262h),hl      ;1b60 22 62 02
-    ld hl,00aah         ;1b63 21 aa 00
-    ld (l0264h),hl      ;1b66 22 64 02
-    ld hl,001ah         ;1b69 21 1a 00
-    ld (l0266h),hl      ;1b6c 22 66 02
-    ld hl,00bah         ;1b6f 21 ba 00
-    ld (l0268h),hl      ;1b72 22 68 02
-    ld hl,001ah         ;1b75 21 1a 00
-    ld (l0268h+2),hl    ;1b78 22 6a 02
-    ld hl,00bbh         ;1b7b 21 bb 00
-    ld (026ch),hl       ;1b7e 22 6c 02
-    ld hl,001ah         ;1b81 21 1a 00
-    ld (026eh),hl       ;1b84 22 6e 02
-    ld hl,00dah         ;1b87 21 da 00
-    ld (l0270h),hl      ;1b8a 22 70 02
-    ld hl,001ah         ;1b8d 21 1a 00
-    ld (l0270h+2),hl    ;1b90 22 72 02
-    ld hl,00bdh         ;1b93 21 bd 00
-    ld (0274h),hl       ;1b96 22 74 02
-    ld hl,001bh         ;1b99 21 1b 00
-    ld (0276h),hl       ;1b9c 22 76 02
-    ld hl,00a8h         ;1b9f 21 a8 00
-    ld (l0278h),hl      ;1ba2 22 78 02
-    ld hl,0000h         ;1ba5 21 00 00
-    ld (l0278h+2),hl    ;1ba8 22 7a 02
-    ld hl,00a9h         ;1bab 21 a9 00
-    ld (027ch),hl       ;1bae 22 7c 02
-    ld hl,0000h         ;1bb1 21 00 00
-    ld (l027eh),hl      ;1bb4 22 7e 02
-    ld (l0280h),hl      ;1bb7 22 80 02
-    jp l1743h           ;1bba c3 43 17
+    ld hl,001bh
+    ld (l02c8h),hl
+    ld hl,0020h
+    ld (rowoff),hl
+    ld (coloff),hl
+    ld hl,0000h
+    ld (order),hl
+    ld hl,00b1h
+    ld (scrtab+0),hl
+    ld hl,0004h
+    ld (scrtab+2),hl
+    ld hl,00b2h
+    ld (scrtab+4),hl
+    ld hl,0005h
+    ld (scrtab+6),hl
+    ld hl,00b3h
+    ld (scrtab+8),hl
+    ld hl,0006h
+    ld (scrtab+10),hl
+    ld hl,00eah
+    ld (scrtab+12),hl
+    ld hl,000eh
+    ld (scrtab+14),hl
+    ld hl,00ebh
+    ld (scrtab+16),hl
+    ld hl,000fh
+    ld (scrtab+18),hl
+    ld hl,00d1h
+    ld (scrtab+20),hl
+    ld hl,001ch
+    ld (scrtab+22),hl
+    ld hl,00d7h
+    ld (scrtab+24),hl
+    ld hl,001dh
+    ld (scrtab+26),hl
+    ld hl,00c5h
+    ld (scrtab+28),hl
+    ld hl,0011h
+    ld (scrtab+30),hl
+    ld hl,00d2h
+    ld (scrtab+32),hl
+    ld hl,0012h
+    ld (scrtab+34),hl
+    ld hl,00d4h
+    ld (scrtab+36),hl
+    ld hl,0013h
+    ld (scrtab+38),hl
+    ld hl,00f4h
+    ld (scrtab+40),hl
+    ld hl,0013h
+    ld (scrtab+42),hl
+    ld hl,00d9h
+    ld (scrtab+44),hl
+    ld hl,0014h
+    ld (scrtab+46),hl
+    ld hl,00f9h
+    ld (scrtab+48),hl
+    ld hl,0014h
+    ld (scrtab+50),hl
+    ld hl,00abh
+    ld (scrtab+52),hl
+    ld hl,001ah
+    ld (scrtab+54),hl
+    ld hl,00aah
+    ld (scrtab+56),hl
+    ld hl,001ah
+    ld (scrtab+58),hl
+    ld hl,00bah
+    ld (scrtab+60),hl
+    ld hl,001ah
+    ld (scrtab+62),hl
+    ld hl,00bbh
+    ld (scrtab+64),hl
+    ld hl,001ah
+    ld (scrtab+66),hl
+    ld hl,00dah
+    ld (scrtab+68),hl
+    ld hl,001ah
+    ld (scrtab+70),hl
+    ld hl,00bdh
+    ld (scrtab+72),hl
+    ld hl,001bh
+    ld (scrtab+74),hl
+    ld hl,00a8h
+    ld (scrtab+76),hl
+    ld hl,0000h
+    ld (scrtab+78),hl
+    ld hl,00a9h
+    ld (scrtab+80),hl
+    ld hl,0000h
+    ld (scrtab+82),hl
+    ld (scrtab+84),hl
+    jp l1743h
 
 clear_screen:
     call pr0a
