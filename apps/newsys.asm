@@ -245,12 +245,14 @@ l02bch:
     ld a,04h            ;02bf 3e 04
     jp 2bceh            ;02c1 c3 ce 2b
 l02c4h:
-    ld a,b              ;02c4 78
-    and 04h             ;02c5 e6 04
-    ret z               ;02c7 c8
+    db 78h
+    db 0e6h
 
 ; Start of BASIC variables ==================================================
 
+termtype:
+    dw 0c804h           ;Terminal type: 0=ADM3A, 1=HZ1500, 2=TV912
+                        ;  Bit 7 of low byte is set if uppercase mode
 leadin:
     dw 7e23h            ;Terminal command lead-in: 1bh=escape, 7eh=tilde
 order:
@@ -514,7 +516,7 @@ l0430h:
     add hl,de           ;049e 19
     ld l,(hl)           ;049f 6e
     ld h,00h            ;04a0 26 00
-    ld (02c6h),hl       ;04a2 22 c6 02
+    ld (termtype),hl    ;04a2 22 c6 02
     ld de,4a68h         ;04a5 11 68 4a
     ld hl,(bias)        ;04a8 2a ae 02
     add hl,de           ;04ab 19
@@ -2735,7 +2737,7 @@ l152fh:
     add hl,de           ;158d 19
     pop de              ;158e d1
     ld (hl),e           ;158f 73
-    ld hl,(02c6h)       ;1590 2a c6 02
+    ld hl,(termtype)    ;1590 2a c6 02
     ld de,4a67h         ;1593 11 67 4a
     push hl             ;1596 e5
     ld hl,(bias)        ;1597 2a ae 02
@@ -3025,7 +3027,7 @@ l179fh:
     call pr0a           ;17a8 cd 3d 2d
     ld hl,crt_in_upper  ;17ab 21 1a 1e
     call pv1d           ;17ae cd 3c 2c
-    ld hl,(02c6h)       ;17b1 2a c6 02
+    ld hl,(termtype)    ;17b1 2a c6 02
     ld a,l              ;17b4 7d
     and 80h             ;17b5 e6 80
     ld l,a              ;17b7 6f
@@ -3050,7 +3052,7 @@ l17d6h:
     call pr0a           ;17df cd 3d 2d
     ld hl,crt_term_emu  ;17e2 21 ed 1d
     call pv1d           ;17e5 cd 3c 2c
-    ld hl,(02c6h)       ;17e8 2a c6 02
+    ld hl,(termtype)    ;17e8 2a c6 02
     ld a,l              ;17eb 7d
     and 7fh             ;17ec e6 7f
     ld l,a              ;17ee 6f
@@ -3065,7 +3067,7 @@ l17d6h:
     call pv2d           ;17fe cd 31 2c
     jp l1871h           ;1801 c3 71 18
 l1804h:
-    ld hl,(02c6h)       ;1804 2a c6 02
+    ld hl,(termtype)    ;1804 2a c6 02
     ld a,l              ;1807 7d
     and 7fh             ;1808 e6 7f
     ld l,a              ;180a 6f
@@ -3082,7 +3084,7 @@ l1804h:
     call pv2d           ;181e cd 31 2c
     jp l1871h           ;1821 c3 71 18
 l1824h:
-    ld hl,(02c6h)       ;1824 2a c6 02
+    ld hl,(termtype)    ;1824 2a c6 02
     ld a,l              ;1827 7d
     and 7fh             ;1828 e6 7f
     ld l,a              ;182a 6f
@@ -3152,14 +3154,14 @@ l1871h:
     ld a,h              ;18b9 7c
     or l                ;18ba b5
     jp nz,l18cfh        ;18bb c2 cf 18
-    ld hl,(02c6h)       ;18be 2a c6 02
+    ld hl,(termtype)    ;18be 2a c6 02
     ld a,l              ;18c1 7d
     xor 80h             ;18c2 ee 80
     ld l,a              ;18c4 6f
     ld a,h              ;18c5 7c
     xor 00h             ;18c6 ee 00
     ld h,a              ;18c8 67
-    ld (02c6h),hl       ;18c9 22 c6 02
+    ld (termtype),hl    ;18c9 22 c6 02
     jp l1743h           ;18cc c3 43 17
 l18cfh:
     ld hl,(02b2h)       ;18cf 2a b2 02
@@ -3232,14 +3234,14 @@ l194ch:
     ld a,h              ;195f 7c
     or l                ;1960 b5
     jp nz,l1975h        ;1961 c2 75 19
-    ld hl,(02c6h)       ;1964 2a c6 02
+    ld hl,(termtype)    ;1964 2a c6 02
     ld a,l              ;1967 7d
     and 80h             ;1968 e6 80
     ld l,a              ;196a 6f
     ld a,h              ;196b 7c
     and 00h             ;196c e6 00
     ld h,a              ;196e 67
-    ld (02c6h),hl       ;196f 22 c6 02
+    ld (termtype),hl    ;196f 22 c6 02
     jp l1aa6h           ;1972 c3 a6 1a
 l1975h:
     ld hl,(02b2h)       ;1975 2a b2 02
@@ -3248,7 +3250,7 @@ l1975h:
     ld a,h              ;197c 7c
     or l                ;197d b5
     jp nz,l199ah        ;197e c2 9a 19
-    ld hl,(02c6h)       ;1981 2a c6 02
+    ld hl,(termtype)    ;1981 2a c6 02
     ld a,l              ;1984 7d
     and 80h             ;1985 e6 80
     ld l,a              ;1987 6f
@@ -3261,7 +3263,7 @@ l1975h:
     ld a,h              ;1990 7c
     or 00h              ;1991 f6 00
     ld h,a              ;1993 67
-    ld (02c6h),hl       ;1994 22 c6 02
+    ld (termtype),hl    ;1994 22 c6 02
     jp l1aa6h           ;1997 c3 a6 1a
 l199ah:
     ld hl,(02b2h)       ;199a 2a b2 02
@@ -3296,7 +3298,7 @@ l19c7h:
 l19dch:
     jp l1743h           ;19dc c3 43 17
 l19dfh:
-    ld hl,(02c6h)       ;19df 2a c6 02
+    ld hl,(termtype)    ;19df 2a c6 02
     ld a,l              ;19e2 7d
     and 80h             ;19e3 e6 80
     ld l,a              ;19e5 6f
@@ -3309,7 +3311,7 @@ l19dfh:
     ld a,h              ;19ee 7c
     or 00h              ;19ef f6 00
     ld h,a              ;19f1 67
-    ld (02c6h),hl       ;19f2 22 c6 02
+    ld (termtype),hl    ;19f2 22 c6 02
 
     ld hl,0000h         ;19f5 21 00 00
     ld (rowoff),hl      ;19f8 22 cc 02
