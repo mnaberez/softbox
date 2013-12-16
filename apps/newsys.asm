@@ -333,12 +333,18 @@ l02c4h:
 l02c8h:
     inc hl              ;02c8 23
     ld a,(hl)           ;02c9 7e
-l02cah:
-    dec hl              ;02ca 2b
-    cp 04h              ;02cb fe 04
-    ret nz              ;02cd c0
-l02ceh:
-    ld a,05h            ;02ce 3e 05
+
+; Start of BASIC variables ==================================================
+
+order:
+    dw 0fe2bh           ;X,Y order when sending move-to: 0=Y first, 1=X first
+rowoff:
+    dw 0c004h           ;Offset added to Y when sending move-to sequence
+coloff:
+    dw 053eh            ;Offset added to X when sending move-to sequence
+
+; End of BASIC variables ====================================================
+
 l02d0h:
     jp 2bceh            ;02d0 c3 ce 2b
     ld a,58h            ;02d3 3e 58
@@ -603,19 +609,19 @@ l0430h:
     add hl,de           ;04b8 19
     ld l,(hl)           ;04b9 6e
     ld h,00h            ;04ba 26 00
-    ld (l02cah),hl      ;04bc 22 ca 02
+    ld (order),hl       ;04bc 22 ca 02
     ld de,4a6ah         ;04bf 11 6a 4a
     ld hl,(bias)        ;04c2 2a ae 02
     add hl,de           ;04c5 19
     ld l,(hl)           ;04c6 6e
     ld h,00h            ;04c7 26 00
-    ld (02cch),hl       ;04c9 22 cc 02
+    ld (rowoff),hl      ;04c9 22 cc 02
     ld de,4a6bh         ;04cc 11 6b 4a
     ld hl,(bias)        ;04cf 2a ae 02
     add hl,de           ;04d2 19
     ld l,(hl)           ;04d3 6e
     ld h,00h            ;04d4 26 00
-    ld (l02ceh),hl      ;04d6 22 ce 02
+    ld (coloff),hl      ;04d6 22 ce 02
     ld hl,0000h         ;04d9 21 00 00
     jp l0517h           ;04dc c3 17 05
 l04dfh:
@@ -2873,21 +2879,21 @@ l15ech:
     add hl,de           ;15f9 19
     pop de              ;15fa d1
     ld (hl),e           ;15fb 73
-    ld hl,(l02cah)      ;15fc 2a ca 02
+    ld hl,(order)       ;15fc 2a ca 02
     ld de,4a69h         ;15ff 11 69 4a
     push hl             ;1602 e5
     ld hl,(bias)        ;1603 2a ae 02
     add hl,de           ;1606 19
     pop de              ;1607 d1
     ld (hl),e           ;1608 73
-    ld hl,(02cch)       ;1609 2a cc 02
+    ld hl,(rowoff)      ;1609 2a cc 02
     ld de,4a6ah         ;160c 11 6a 4a
     push hl             ;160f e5
     ld hl,(bias)        ;1610 2a ae 02
     add hl,de           ;1613 19
     pop de              ;1614 d1
     ld (hl),e           ;1615 73
-    ld hl,(l02ceh)      ;1616 2a ce 02
+    ld hl,(coloff)      ;1616 2a ce 02
     ld de,4a6bh         ;1619 11 6b 4a
     push hl             ;161c e5
     ld hl,(bias)        ;161d 2a ae 02
@@ -3387,11 +3393,14 @@ l19dfh:
     or 00h              ;19ef f6 00
     ld h,a              ;19f1 67
     ld (02c6h),hl       ;19f2 22 c6 02
+
     ld hl,0000h         ;19f5 21 00 00
-    ld (02cch),hl       ;19f8 22 cc 02
-    ld (l02ceh),hl      ;19fb 22 ce 02
+    ld (rowoff),hl      ;19f8 22 cc 02
+    ld (coloff),hl      ;19fb 22 ce 02
+
     ld hl,0001h         ;19fe 21 01 00
-    ld (l02cah),hl      ;1a01 22 ca 02
+    ld (order),hl       ;1a01 22 ca 02
+
     ld hl,008bh         ;1a04 21 8b 00
     ld (022ch),hl       ;1a07 22 2c 02
     ld hl,000bh         ;1a0a 21 0b 00
@@ -3450,10 +3459,10 @@ l1aa6h:
     ld hl,001bh         ;1aa6 21 1b 00
     ld (l02c8h),hl      ;1aa9 22 c8 02
     ld hl,0020h         ;1aac 21 20 00
-    ld (02cch),hl       ;1aaf 22 cc 02
-    ld (l02ceh),hl      ;1ab2 22 ce 02
+    ld (rowoff),hl      ;1aaf 22 cc 02
+    ld (coloff),hl      ;1ab2 22 ce 02
     ld hl,0000h         ;1ab5 21 00 00
-    ld (l02cah),hl      ;1ab8 22 ca 02
+    ld (order),hl       ;1ab8 22 ca 02
     ld hl,00b1h         ;1abb 21 b1 00
     ld (022ch),hl       ;1abe 22 2c 02
     ld hl,0004h         ;1ac1 21 04 00
