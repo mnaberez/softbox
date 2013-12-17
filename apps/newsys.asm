@@ -230,15 +230,13 @@ loader:
     dw 3e04h            ;Start address of the buffer that holds the
                         ;  "loader" (terminal program "K" for the PET)
 
-; End of BASIC variables ====================================================
-
-    db 07h
-    jp 2bceh            ;02b3 c3 ce 2b
-l02b6h:
-    db 78h
-    db 0e6h
-
-; Start of BASIC variables ==================================================
+rr:
+    dw 0c307h           ;First char of user input from any prompt,
+                        ;  also used to store CP/M drive number
+dt:
+    dw 2bceh            ;Drive type (from dtypes table)
+ee:
+    dw 0e678h           ;Last error code from CBM DOS
 
 dirsize:
     dw 47bfh            ;CCP directory width: 0=1 col, 1=2 cols, 3=4 cols
@@ -269,9 +267,12 @@ coloff:
 ; End of BASIC variables ====================================================
 
 l02d0h:
-    jp 2bceh            ;02d0 c3 ce 2b
-    ld a,58h            ;02d3 3e 58
-    ld bc,0007h         ;02d5 01 07 00
+    dw 0cec3h
+clock:
+    dw 3e2bh
+lptype:
+    dw 0158h
+    dw 0007h
 l02d8h:
     call 2716h          ;02d8 cd 16 27
     ld (hl),e           ;02db 73
@@ -279,8 +280,10 @@ l02dch:
     inc hl              ;02dc 23
     ld (hl),d           ;02dd 72
 l02deh:
-    dec hl              ;02de 2b
-    jp 275dh            ;02df c3 5d 27
+    db 2bh
+    db 0c3h
+buf:
+    db 5dh, 27h
 l02e2h:
     push de             ;02e2 d5
     ld d,a              ;02e3 57
@@ -326,7 +329,8 @@ main:
     ld (loader),hl
 
 l031dh:
-    call clear_screen   ;031d cd bd 1b
+    ;GOSUB clear_screen
+    call clear_screen
 
     ;PRINT
     call pr0a
@@ -348,12 +352,13 @@ l031dh:
     ld hl,empty_string
     call pv2d
 
-    ld hl,(mini)        ;0344 2a 0a 01
-    ld de,0ffffh        ;0347 11 ff ff
-    add hl,de           ;034a 19
-    ld a,h              ;034b 7c
-    or l                ;034c b5
-    jp nz,l0359h        ;034d c2 59 03
+    ;IF MINI <> 1 THEN GOTO l0359h
+    ld hl,(mini)
+    ld de,0ffffh
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0359h
 
     ;PRINT "Mini-winchester version"
     call pr0a
@@ -381,63 +386,77 @@ l0359h:
     ld hl,source_drv_a_p
     call pv1d
 
-    call sub_1bcah      ;037d cd ca 1b
-    ld hl,(02b2h)       ;0380 2a b2 02
-    ld a,h              ;0383 7c
-    or l                ;0384 b5
-    jp z,l0430h         ;0385 ca 30 04
-    ld hl,(02b2h)       ;0388 2a b2 02
-    ld de,0ffbfh        ;038b 11 bf ff
-    ld a,h              ;038e 7c
-    rla                 ;038f 17
-    jp c,l0395h         ;0390 da 95 03
-    add hl,de           ;0393 19
-    add hl,hl           ;0394 29
+    ;GOSUB readline
+    call readline
+
+    ;IF R=0 THEN GOTO l0430h
+    ld hl,(rr)
+    ld a,h
+    or l
+    jp z,l0430h
+
+    ;IF (R<&H41) or (R>&H50) THEN GOTO l031dh
+    ld hl,(rr)
+    ld de,0ffbfh
+    ld a,h
+    rla
+    jp c,l0395h
+    add hl,de
+    add hl,hl
 l0395h:
-    sbc a,a             ;0395 9f
-    ld h,a              ;0396 67
-    ld l,a              ;0397 6f
-    push hl             ;0398 e5
-    ld hl,(02b2h)       ;0399 2a b2 02
-    ld de,0ffafh        ;039c 11 af ff
-    ld a,h              ;039f 7c
-    rla                 ;03a0 17
-    jp c,l03a6h         ;03a1 da a6 03
-    add hl,de           ;03a4 19
-    add hl,hl           ;03a5 29
+    sbc a,a
+    ld h,a
+    ld l,a
+    push hl
+    ld hl,(rr)
+    ld de,0ffafh
+    ld a,h
+    rla
+    jp c,l03a6h
+    add hl,de
+    add hl,hl
 l03a6h:
-    ccf                 ;03a6 3f
-    sbc a,a             ;03a7 9f
-    ld h,a              ;03a8 67
-    ld l,a              ;03a9 6f
-    pop de              ;03aa d1
-    ld a,h              ;03ab 7c
-    or d                ;03ac b2
-    ld h,a              ;03ad 67
-    ld a,l              ;03ae 7d
-    or e                ;03af b3
-    ld l,a              ;03b0 6f
-    ld a,h              ;03b1 7c
-    or l                ;03b2 b5
-    jp nz,l031dh        ;03b3 c2 1d 03
-    ld de,0ffbfh        ;03b6 11 bf ff
-    ld hl,(02b2h)       ;03b9 2a b2 02
-    add hl,de           ;03bc 19
-    ld (02b2h),hl       ;03bd 22 b2 02
-    ld hl,(02b2h)       ;03c0 2a b2 02
-    ld (02b4h),hl       ;03c3 22 b4 02
-    ld hl,02b4h         ;03c6 21 b4 02
-    call dtype          ;03c9 cd 90 29
-    ld hl,(02b4h)       ;03cc 2a b4 02
-    ld de,0ff7fh        ;03cf 11 7f ff
-    ld a,h              ;03d2 7c
-    rla                 ;03d3 17
-    jp c,l03d9h         ;03d4 da d9 03
-    add hl,de           ;03d7 19
-    add hl,hl           ;03d8 29
+    ccf
+    sbc a,a
+    ld h,a
+    ld l,a
+    pop de
+    ld a,h
+    or d
+    ld h,a
+    ld a,l
+    or e
+    ld l,a
+    ld a,h
+    or l
+    jp nz,l031dh
+
+    ;R = R - &H41
+    ld de,0ffbfh
+    ld hl,(rr)
+    add hl,de
+    ld (rr),hl
+
+    ;DT = R
+    ld hl,(rr)
+    ld (dt),hl
+
+    ;CALL DTYPE (DT)
+    ld hl,dt
+    call dtype
+
+    ;IF DT > 128 THEN GOTO l031dh
+    ld hl,(dt)
+    ld de,0ff7fh
+    ld a,h
+    rla
+    jp c,l03d9h
+    add hl,de
+    add hl,hl
 l03d9h:
-    jp nc,l031dh        ;03d9 d2 1d 03
-    ld hl,(02b4h)       ;03dc 2a b4 02
+    jp nc,l031dh
+
+    ld hl,(dt)          ;03dc 2a b4 02
     ld de,0fffeh        ;03df 11 fe ff
     ld a,h              ;03e2 7c
     rla                 ;03e3 17
@@ -451,7 +470,7 @@ l03e9h:
     ld h,a              ;03eb 67
     ld l,a              ;03ec 6f
     push hl             ;03ed e5
-    ld hl,(02b4h)       ;03ee 2a b4 02
+    ld hl,(dt)          ;03ee 2a b4 02
     ld de,0fff6h        ;03f1 11 f6 ff
     ld a,h              ;03f4 7c
     rla                 ;03f5 17
@@ -472,85 +491,110 @@ l03fbh:
     ld a,h              ;0405 7c
     or l                ;0406 b5
     jp z,l0413h         ;0407 ca 13 04
-    ld hl,02b2h         ;040a 21 b2 02
-    call cread_         ;040d cd 22 29
-    jp l0430h           ;0410 c3 30 04
+
+    ;CALL CREAD(R)
+    ld hl,rr
+    call cread_
+
+    ;GOTO l0430h
+    jp l0430h
+
 l0413h:
-    ld hl,02b2h         ;0413 21 b2 02
-    call idisk          ;0416 cd 99 29
-    ld hl,02b2h         ;0419 21 b2 02
-    call rdsys          ;041c cd b7 28
-    ld hl,l02b6h        ;041f 21 b6 02
-    call dskerr         ;0422 cd 9d 29
-    ld hl,(l02b6h)      ;0425 2a b6 02
-    ld a,h              ;0428 7c
-    or l                ;0429 b5
-    jp z,l0430h         ;042a ca 30 04
-    call end            ;042d cd 24 2d
+    ;CALL IDISK(R)
+    ld hl,rr
+    call idisk
+
+    ;CALL RDSYS(R)
+    ld hl,rr
+    call rdsys
+
+    ;CALL DSKERR (E)
+    ld hl,ee
+    call dskerr
+
+    ;IF E = 0 THEN GOTO l0430h
+    ld hl,(ee)
+    ld a,h
+    or l
+    jp z,l0430h
+
+    ;END
+    call end
+
 l0430h:
-    ld de,38b2h         ;0430 11 b2 38
-    ld hl,(bias)        ;0433 2a ae 02
-    add hl,de           ;0436 19
-    ld l,(hl)           ;0437 6e
-    ld h,00h            ;0438 26 00
-    ld (dirsize),hl     ;043a 22 b8 02
+    ;DIRSIZE = PEEK (BIAS+&H38B2)
+    ld de,38b2h
+    ld hl,(bias)
+    add hl,de
+    ld l,(hl)
+    ld h,00h
+    ld (dirsize),hl
 
-    ld de,4a60h         ;043d 11 60 4a
-    ld hl,(bias)        ;0440 2a ae 02
-    add hl,de           ;0443 19
-    ld l,(hl)           ;0444 6e
-    ld h,00h            ;0445 26 00
-    ld (iobyte),hl      ;0447 22 0c 01
+    ;IOBYTE = PEEK (BIAS+&H4A60)
+    ld de,4a60h
+    ld hl,(bias)
+    add hl,de
+    ld l,(hl)
+    ld h,00h
+    ld (iobyte),hl
 
-    ld de,4a61h         ;044a 11 61 4a
-    ld hl,(bias)        ;044d 2a ae 02
-    add hl,de           ;0450 19
-    ld l,(hl)           ;0451 6e
-    ld h,00h            ;0452 26 00
-    ld (lpt),hl         ;0454 22 ba 02
+    ;LPT = PEEK (BIAS+&H4A61)
+    ld de,4a61h
+    ld hl,(bias)
+    add hl,de
+    ld l,(hl)
+    ld h,00h
+    ld (lpt),hl
 
-    ld de,4a62h         ;0457 11 62 4a
-    ld hl,(bias)        ;045a 2a ae 02
-    add hl,de           ;045d 19
-    ld l,(hl)           ;045e 6e
-    ld h,00h            ;045f 26 00
-    ld (rdr),hl         ;0461 22 bc 02
+    ;RDR = PEEK (BIAS+&H4A62)
+    ld de,4a62h
+    ld hl,(bias)
+    add hl,de
+    ld l,(hl)
+    ld h,00h
+    ld (rdr),hl
 
-    ld de,4a63h         ;0464 11 63 4a
-    ld hl,(bias)        ;0467 2a ae 02
-    add hl,de           ;046a 19
-    ld l,(hl)           ;046b 6e
-    ld h,00h            ;046c 26 00
-    ld (pun),hl         ;046e 22 be 02
+    ;PUN = PEEK (BIAS+&H4A63)
+    ld de,4a63h
+    ld hl,(bias)
+    add hl,de
+    ld l,(hl)
+    ld h,00h
+    ld (pun),hl
 
-    ld de,4a64h         ;0471 11 64 4a
-    ld hl,(bias)        ;0474 2a ae 02
-    add hl,de           ;0477 19
-    ld l,(hl)           ;0478 6e
-    ld h,00h            ;0479 26 00
-    ld (mode),hl        ;047b 22 c0 02
+    ;U = PEEK (BIAS+&H4A64)
+    ld de,4a64h
+    ld hl,(bias)
+    add hl,de
+    ld l,(hl)
+    ld h,00h
+    ld (mode),hl
 
-    ld de,4a65h         ;047e 11 65 4a
-    ld hl,(bias)        ;0481 2a ae 02
-    add hl,de           ;0484 19
-    ld l,(hl)           ;0485 6e
-    ld h,00h            ;0486 26 00
-    ld (baud),hl        ;0488 22 c2 02
+    ;BAUD = PEEK (BIAS+&H4A65)
+    ld de,4a65h
+    ld hl,(bias)
+    add hl,de
+    ld l,(hl)
+    ld h,00h
+    ld (baud),hl
 
-    ld de,4a66h         ;048b 11 66 4a
-    ld hl,(bias)        ;048e 2a ae 02
-    add hl,de           ;0491 19
-    ld l,(hl)           ;0492 6e
-    ld h,00h            ;0493 26 00
-    ld (ul1),hl         ;0495 22 c4 02
+    ;UL1 = PEEK (BIAS+&H4A66)
+    ld de,4a66h
+    ld hl,(bias)
+    add hl,de
+    ld l,(hl)
+    ld h,00h
+    ld (ul1),hl
 
-    ld de,4a67h         ;0498 11 67 4a
-    ld hl,(bias)        ;049b 2a ae 02
-    add hl,de           ;049e 19
-    ld l,(hl)           ;049f 6e
-    ld h,00h            ;04a0 26 00
-    ld (termtype),hl    ;04a2 22 c6 02
+    ;TERMTYPE = PEEK (BIAS+&H4A67)
+    ld de,4a67h
+    ld hl,(bias)
+    add hl,de
+    ld l,(hl)
+    ld h,00h
+    ld (termtype),hl
 
+    ;LEADIN = PEEK (BIAS+&H4A68)
     ld de,4a68h         ;04a5 11 68 4a
     ld hl,(bias)        ;04a8 2a ae 02
     add hl,de           ;04ab 19
@@ -558,6 +602,7 @@ l0430h:
     ld h,00h            ;04ad 26 00
     ld (leadin),hl      ;04af 22 c8 02
 
+    ;ORDER = PEEK (BIAS+&H4A69)
     ld de,4a69h         ;04b2 11 69 4a
     ld hl,(bias)        ;04b5 2a ae 02
     add hl,de           ;04b8 19
@@ -565,6 +610,7 @@ l0430h:
     ld h,00h            ;04ba 26 00
     ld (order),hl       ;04bc 22 ca 02
 
+    ;ROWOFF = PEEK (BIAS+&H4A6A)
     ld de,4a6ah         ;04bf 11 6a 4a
     ld hl,(bias)        ;04c2 2a ae 02
     add hl,de           ;04c5 19
@@ -572,6 +618,7 @@ l0430h:
     ld h,00h            ;04c7 26 00
     ld (rowoff),hl      ;04c9 22 cc 02
 
+    ;COLOFF = PEEK (BIAS+&H4A6B)
     ld de,4a6bh         ;04cc 11 6b 4a
     ld hl,(bias)        ;04cf 2a ae 02
     add hl,de           ;04d2 19
@@ -693,19 +740,24 @@ l0589h:
     add hl,hl           ;0598 29
 l0599h:
     jp c,l0569h         ;0599 da 69 05
-    ld hl,(loader)      ;059c 2a b0 02
-    inc hl              ;059f 23
-    inc hl              ;05a0 23
-    inc hl              ;05a1 23
-    ld l,(hl)           ;05a2 6e
-    ld h,00h            ;05a3 26 00
-    ld (l02d0h+2),hl    ;05a5 22 d2 02
-    ld de,4a6dh         ;05a8 11 6d 4a
-    ld hl,(bias)        ;05ab 2a ae 02
-    add hl,de           ;05ae 19
-    ld l,(hl)           ;05af 6e
-    ld h,00h            ;05b0 26 00
-    ld (02d4h),hl       ;05b2 22 d4 02
+
+    ;POKE LOADER+3, CLOCK
+    ld hl,(loader)
+    inc hl
+    inc hl
+    inc hl
+    ld l,(hl)
+    ld h,00h
+    ld (clock),hl
+
+    ;POKE BIAS+&H4A6D, LPTYPE
+    ld de,4a6dh
+    ld hl,(bias)
+    add hl,de
+    ld l,(hl)
+    ld h,00h
+    ld (lptype),hl
+
 l05b5h:
     call clear_screen   ;05b5 cd bd 1b
 
@@ -814,14 +866,14 @@ l05b5h:
     ld hl,pls_letter
     call pv1d
 
-    call sub_1bcah      ;0675 cd ca 1b
-    ld hl,(02b2h)       ;0678 2a b2 02
+    call readline       ;0675 cd ca 1b
+    ld hl,(rr)          ;0678 2a b2 02
     ld de,0ffaeh        ;067b 11 ae ff
     add hl,de           ;067e 19
     ld a,h              ;067f 7c
     or l                ;0680 b5
     jp z,l06deh         ;0681 ca de 06
-    ld hl,(02b2h)       ;0684 2a b2 02
+    ld hl,(rr)          ;0684 2a b2 02
     ld de,0ffafh        ;0687 11 af ff
     add hl,de           ;068a 19
     ld a,h              ;068b 7c
@@ -829,37 +881,37 @@ l05b5h:
     jp nz,l0693h        ;068d c2 93 06
     call end            ;0690 cd 24 2d
 l0693h:
-    ld hl,(02b2h)       ;0693 2a b2 02
+    ld hl,(rr)          ;0693 2a b2 02
     ld de,0ffb7h        ;0696 11 b7 ff
     add hl,de           ;0699 19
     ld a,h              ;069a 7c
     or l                ;069b b5
     jp z,l0a7bh         ;069c ca 7b 0a
-    ld hl,(02b2h)       ;069f 2a b2 02
+    ld hl,(rr)          ;069f 2a b2 02
     ld de,0ffbch        ;06a2 11 bc ff
     add hl,de           ;06a5 19
     ld a,h              ;06a6 7c
     or l                ;06a7 b5
     jp z,l0eadh         ;06a8 ca ad 0e
-    ld hl,(02b2h)       ;06ab 2a b2 02
+    ld hl,(rr)          ;06ab 2a b2 02
     ld de,0ffbfh        ;06ae 11 bf ff
     add hl,de           ;06b1 19
     ld a,h              ;06b2 7c
     or l                ;06b3 b5
     jp z,l1362h         ;06b4 ca 62 13
-    ld hl,(02b2h)       ;06b7 2a b2 02
+    ld hl,(rr)          ;06b7 2a b2 02
     ld de,0ffbbh        ;06ba 11 bb ff
     add hl,de           ;06bd 19
     ld a,h              ;06be 7c
     or l                ;06bf b5
     jp z,l1494h         ;06c0 ca 94 14
-    ld hl,(02b2h)       ;06c3 2a b2 02
+    ld hl,(rr)          ;06c3 2a b2 02
     ld de,0ffadh        ;06c6 11 ad ff
     add hl,de           ;06c9 19
     ld a,h              ;06ca 7c
     or l                ;06cb b5
     jp z,l1668h         ;06cc ca 68 16
-    ld hl,(02b2h)       ;06cf 2a b2 02
+    ld hl,(rr)          ;06cf 2a b2 02
     ld de,0ffb0h        ;06d2 11 b0 ff
     add hl,de           ;06d5 19
     ld a,h              ;06d6 7c
@@ -1137,30 +1189,30 @@ l0887h:
     ld hl,alter_chr_1_4
     call pv1d
 
-    call sub_1bcah      ;0899 cd ca 1b
-    ld hl,(02b2h)       ;089c 2a b2 02
+    call readline       ;0899 cd ca 1b
+    ld hl,(rr)          ;089c 2a b2 02
     ld de,0ffcfh        ;089f 11 cf ff
     add hl,de           ;08a2 19
     ld a,h              ;08a3 7c
     or l                ;08a4 b5
     jp z,l08d7h         ;08a5 ca d7 08
-    ld hl,(02b2h)       ;08a8 2a b2 02
+    ld hl,(rr)          ;08a8 2a b2 02
     ld a,h              ;08ab 7c
     or l                ;08ac b5
     jp z,l05b5h         ;08ad ca b5 05
-    ld hl,(02b2h)       ;08b0 2a b2 02
+    ld hl,(rr)          ;08b0 2a b2 02
     ld de,0ffceh        ;08b3 11 ce ff
     add hl,de           ;08b6 19
     ld a,h              ;08b7 7c
     or l                ;08b8 b5
     jp z,l0930h         ;08b9 ca 30 09
-    ld hl,(02b2h)       ;08bc 2a b2 02
+    ld hl,(rr)          ;08bc 2a b2 02
     ld de,0ffcdh        ;08bf 11 cd ff
     add hl,de           ;08c2 19
     ld a,h              ;08c3 7c
     or l                ;08c4 b5
     jp z,l0983h         ;08c5 ca 83 09
-    ld hl,(02b2h)       ;08c8 2a b2 02
+    ld hl,(rr)          ;08c8 2a b2 02
     ld de,0ffcch        ;08cb 11 cc ff
     add hl,de           ;08ce 19
     ld a,h              ;08cf 7c
@@ -1173,19 +1225,19 @@ l08d7h:
     ld hl,new_char_len
     call pv1d
 
-    call sub_1bcah      ;08e0 cd ca 1b
+    call readline       ;08e0 cd ca 1b
     ld de,0ffcbh        ;08e3 11 cb ff
-    ld hl,(02b2h)       ;08e6 2a b2 02
+    ld hl,(rr)          ;08e6 2a b2 02
     add hl,de           ;08e9 19
-    ld (02b2h),hl       ;08ea 22 b2 02
-    ld hl,(02b2h)       ;08ed 2a b2 02
+    ld (rr),hl          ;08ea 22 b2 02
+    ld hl,(rr)          ;08ed 2a b2 02
     add hl,hl           ;08f0 29
     ccf                 ;08f1 3f
     sbc a,a             ;08f2 9f
     ld h,a              ;08f3 67
     ld l,a              ;08f4 6f
     push hl             ;08f5 e5
-    ld hl,(02b2h)       ;08f6 2a b2 02
+    ld hl,(rr)          ;08f6 2a b2 02
     ld de,0fffch        ;08f9 11 fc ff
     ld a,h              ;08fc 7c
     rla                 ;08fd 17
@@ -1214,7 +1266,7 @@ l0903h:
     and 00h             ;091a e6 00
     ld h,a              ;091c 67
     push hl             ;091d e5
-    ld hl,(02b2h)       ;091e 2a b2 02
+    ld hl,(rr)          ;091e 2a b2 02
     add hl,hl           ;0921 29
     add hl,hl           ;0922 29
     pop de              ;0923 d1
@@ -1233,8 +1285,8 @@ l0930h:
     ld hl,num_stop_bits
     call pv1d
 
-    call sub_1bcah      ;0939 cd ca 1b
-    ld hl,(02b2h)       ;093c 2a b2 02
+    call readline       ;0939 cd ca 1b
+    ld hl,(rr)          ;093c 2a b2 02
     ld de,0ffcfh        ;093f 11 cf ff
     add hl,de           ;0942 19
     ld a,h              ;0943 7c
@@ -1255,7 +1307,7 @@ l0930h:
     ld h,a              ;095a 67
     ld (mode),hl        ;095b 22 c0 02
 l095eh:
-    ld hl,(02b2h)       ;095e 2a b2 02
+    ld hl,(rr)          ;095e 2a b2 02
     ld de,0ffceh        ;0961 11 ce ff
     add hl,de           ;0964 19
     ld a,h              ;0965 7c
@@ -1283,8 +1335,8 @@ l0983h:
     ld hl,odd_even_none
     call pv1d
 
-    call sub_1bcah      ;098c cd ca 1b
-    ld hl,(02b2h)       ;098f 2a b2 02
+    call readline       ;098c cd ca 1b
+    ld hl,(rr)          ;098f 2a b2 02
     ld de,0ffb1h        ;0992 11 b1 ff
     add hl,de           ;0995 19
     ld a,h              ;0996 7c
@@ -1305,7 +1357,7 @@ l0983h:
     ld h,a              ;09ad 67
     ld (mode),hl        ;09ae 22 c0 02
 l09b1h:
-    ld hl,(02b2h)       ;09b1 2a b2 02
+    ld hl,(rr)          ;09b1 2a b2 02
     ld de,0ffbbh        ;09b4 11 bb ff
     add hl,de           ;09b7 19
     ld a,h              ;09b8 7c
@@ -1320,7 +1372,7 @@ l09b1h:
     ld h,a              ;09c7 67
     ld (mode),hl        ;09c8 22 c0 02
 l09cbh:
-    ld hl,(02b2h)       ;09cb 2a b2 02
+    ld hl,(rr)          ;09cb 2a b2 02
     ld de,0ffb2h        ;09ce 11 b2 ff
     add hl,de           ;09d1 19
     ld a,h              ;09d2 7c
@@ -1352,7 +1404,7 @@ l09e8h:
     ld hl,ask_19200
     call pv1d
 
-    call sub_1bcah      ;0a03 cd ca 1b
+    call readline       ;0a03 cd ca 1b
     ld hl,(l02d8h)      ;0a06 2a d8 02
     ld de,0ff92h        ;0a09 11 92 ff
     add hl,de           ;0a0c 19
@@ -1428,59 +1480,55 @@ l0a7bh:
     ld hl,empty_string
     call pv2d
 
-    ;PRINT "1.  Pet printer device # :    ";
+    ;PRINT "1.  Pet printer device # :    "; LPT
     call pr0a
     ld hl,io_lpt_device
     call pv1d
-
-    ld hl,(lpt)         ;0aa2 2a ba 02
-    call pv2c           ;0aa5 cd c8 2c
+    ld hl,(lpt)
+    call pv2c
 
     ;PRINT
     call pr0a
     ld hl,empty_string
     call pv2d
 
-    ;PRINT "2.  ASCII printer device # :  ";
+    ;PRINT "2.  ASCII printer device # :  "; UL1
     call pr0a
     ld hl,io_ul1_device
     call pv1d
-
-    ld hl,(ul1)         ;0aba 2a c4 02
-    call pv2c           ;0abd cd c8 2c
+    ld hl,(ul1)
+    call pv2c
 
     ;PRINT
     call pr0a
     ld hl,empty_string
     call pv2d
 
-    ;PRINT "3.  Reader device # :         ";
+    ;PRINT "3.  Reader device # :         "; RDR
     call pr0a
     ld hl,io_rdr_device
     call pv1d
-
-    ld hl,(rdr)         ;0ad2 2a bc 02
-    call pv2c           ;0ad5 cd c8 2c
+    ld hl,(rdr)
+    call pv2c
 
     ;PRINT
     call pr0a
     ld hl,empty_string
     call pv2d
 
-    ;PRINT "4.  Punch device # :          "
+    ;PRINT "4.  Punch device # :          "; PUN
     call pr0a
     ld hl,io_pun_device
     call pv1d
-
-    ld hl,(pun)         ;0aea 2a be 02
-    call pv2c           ;0aed cd c8 2c
+    ld hl,(pun)
+    call pv2c
 
     ;PRINT
     call pr0a
     ld hl,empty_string
     call pv2d
 
-    ;PRINT "5.  Default LST: device :     "
+    ;PRINT "5.  Default LST: device :     ";
     call pr0a
     ld hl,io_lst_device
     call pv1d
@@ -1636,7 +1684,7 @@ l0be0h:
     ld hl,pet_prtr_type
     call pv1d
 
-    ld hl,(02d4h)       ;0bf2 2a d4 02
+    ld hl,(lptype)      ;0bf2 2a d4 02
     ld a,h              ;0bf5 7c
     or l                ;0bf6 b5
     jp nz,l0c03h        ;0bf7 c2 03 0c
@@ -1647,7 +1695,7 @@ l0be0h:
     call pv2d
 
 l0c03h:
-    ld hl,(02d4h)       ;0c03 2a d4 02
+    ld hl,(lptype)      ;0c03 2a d4 02
     ld de,0ffffh        ;0c06 11 ff ff
     add hl,de           ;0c09 19
     ld a,h              ;0c0a 7c
@@ -1660,7 +1708,7 @@ l0c03h:
     call pv2d
 
 l0c18h:
-    ld hl,(02d4h)       ;0c18 2a d4 02
+    ld hl,(lptype)      ;0c18 2a d4 02
     ld de,0fffeh        ;0c1b 11 fe ff
     add hl,de           ;0c1e 19
     ld a,h              ;0c1f 7c
@@ -1688,36 +1736,36 @@ l0c2dh:
     ld hl,alter_which_1_8
     call pv1d
 
-    call sub_1bcah      ;0c48 cd ca 1b
-    ld hl,(02b2h)       ;0c4b 2a b2 02
+    call readline       ;0c48 cd ca 1b
+    ld hl,(rr)          ;0c4b 2a b2 02
     ld a,h              ;0c4e 7c
     or l                ;0c4f b5
     jp z,l05b5h         ;0c50 ca b5 05
-    ld hl,(02b2h)       ;0c53 2a b2 02
+    ld hl,(rr)          ;0c53 2a b2 02
     ld de,0ffcah        ;0c56 11 ca ff
     add hl,de           ;0c59 19
     ld a,h              ;0c5a 7c
     or l                ;0c5b b5
     jp z,l0da5h         ;0c5c ca a5 0d
-    ld hl,(02b2h)       ;0c5f 2a b2 02
+    ld hl,(rr)          ;0c5f 2a b2 02
     ld de,0ffc9h        ;0c62 11 c9 ff
     add hl,de           ;0c65 19
     ld a,h              ;0c66 7c
     or l                ;0c67 b5
     jp z,l0df0h         ;0c68 ca f0 0d
-    ld hl,(02b2h)       ;0c6b 2a b2 02
+    ld hl,(rr)          ;0c6b 2a b2 02
     ld de,0ffcbh        ;0c6e 11 cb ff
     add hl,de           ;0c71 19
     ld a,h              ;0c72 7c
     or l                ;0c73 b5
     jp z,l0ce0h         ;0c74 ca e0 0c
-    ld hl,(02b2h)       ;0c77 2a b2 02
+    ld hl,(rr)          ;0c77 2a b2 02
     ld de,0ffc8h        ;0c7a 11 c8 ff
     add hl,de           ;0c7d 19
     ld a,h              ;0c7e 7c
     or l                ;0c7f b5
     jp z,l0e3bh         ;0c80 ca 3b 0e
-    ld hl,(02b2h)       ;0c83 2a b2 02
+    ld hl,(rr)          ;0c83 2a b2 02
     ld (l02d8h+2),hl    ;0c86 22 da 02
 
     ;PRINT "New device # ? "
@@ -1725,7 +1773,7 @@ l0c2dh:
     ld hl,new_dev_num
     call pv1d
 
-    call sub_1bcah      ;0c92 cd ca 1b
+    call readline       ;0c92 cd ca 1b
     ld hl,(l02d8h+2)    ;0c95 2a da 02
     ld de,0ffcfh        ;0c98 11 cf ff
     add hl,de           ;0c9b 19
@@ -1799,8 +1847,8 @@ l0ce0h:
     ld hl,which_list_dev
     call pv1d
 
-    call sub_1bcah      ;0d1f cd ca 1b
-    ld hl,(02b2h)       ;0d22 2a b2 02
+    call readline       ;0d1f cd ca 1b
+    ld hl,(rr)          ;0d22 2a b2 02
     ld de,0ffach        ;0d25 11 ac ff
     add hl,de           ;0d28 19
     ld a,h              ;0d29 7c
@@ -1815,7 +1863,7 @@ l0ce0h:
     ld h,a              ;0d38 67
     ld (iobyte),hl      ;0d39 22 0c 01
 l0d3ch:
-    ld hl,(02b2h)       ;0d3c 2a b2 02
+    ld hl,(rr)          ;0d3c 2a b2 02
     ld de,0ffbdh        ;0d3f 11 bd ff
     add hl,de           ;0d42 19
     ld a,h              ;0d43 7c
@@ -1836,7 +1884,7 @@ l0d3ch:
     ld h,a              ;0d5a 67
     ld (iobyte),hl      ;0d5b 22 0c 01
 l0d5eh:
-    ld hl,(02b2h)       ;0d5e 2a b2 02
+    ld hl,(rr)          ;0d5e 2a b2 02
     ld de,0ffb4h        ;0d61 11 b4 ff
     add hl,de           ;0d64 19
     ld a,h              ;0d65 7c
@@ -1857,7 +1905,7 @@ l0d5eh:
     ld h,a              ;0d7c 67
     ld (iobyte),hl      ;0d7d 22 0c 01
 l0d80h:
-    ld hl,(02b2h)       ;0d80 2a b2 02
+    ld hl,(rr)          ;0d80 2a b2 02
     ld de,0ffabh        ;0d83 11 ab ff
     add hl,de           ;0d86 19
     ld a,h              ;0d87 7c
@@ -1885,8 +1933,8 @@ l0da5h:
     ld hl,tty_or_ptr
     call pv1d
 
-    call sub_1bcah      ;0dae cd ca 1b
-    ld hl,(02b2h)       ;0db1 2a b2 02
+    call readline       ;0dae cd ca 1b
+    ld hl,(rr)          ;0db1 2a b2 02
     ld de,0ffach        ;0db4 11 ac ff
     add hl,de           ;0db7 19
     ld a,h              ;0db8 7c
@@ -1901,7 +1949,7 @@ l0da5h:
     ld h,a              ;0dc7 67
     ld (iobyte),hl      ;0dc8 22 0c 01
 l0dcbh:
-    ld hl,(02b2h)       ;0dcb 2a b2 02
+    ld hl,(rr)          ;0dcb 2a b2 02
     ld de,0ffb0h        ;0dce 11 b0 ff
     add hl,de           ;0dd1 19
     ld a,h              ;0dd2 7c
@@ -1929,8 +1977,8 @@ l0df0h:
     ld hl,tty_or_ptp
     call pv1d
 
-    call sub_1bcah      ;0df9 cd ca 1b
-    ld hl,(02b2h)       ;0dfc 2a b2 02
+    call readline       ;0df9 cd ca 1b
+    ld hl,(rr)          ;0dfc 2a b2 02
     ld de,0ffach        ;0dff 11 ac ff
     add hl,de           ;0e02 19
     ld a,h              ;0e03 7c
@@ -1945,7 +1993,7 @@ l0df0h:
     ld h,a              ;0e12 67
     ld (iobyte),hl      ;0e13 22 0c 01
 l0e16h:
-    ld hl,(02b2h)       ;0e16 2a b2 02
+    ld hl,(rr)          ;0e16 2a b2 02
     ld de,0ffb0h        ;0e19 11 b0 ff
     add hl,de           ;0e1c 19
     ld a,h              ;0e1d 7c
@@ -1998,33 +2046,33 @@ l0e3bh:
     ld hl,which_printer
     call pv1d
 
-    call sub_1bcah      ;0e71 cd ca 1b
-    ld hl,(02b2h)       ;0e74 2a b2 02
+    call readline       ;0e71 cd ca 1b
+    ld hl,(rr)          ;0e74 2a b2 02
     ld de,0ffcdh        ;0e77 11 cd ff
     add hl,de           ;0e7a 19
     ld a,h              ;0e7b 7c
     or l                ;0e7c b5
     jp nz,l0e86h        ;0e7d c2 86 0e
     ld hl,0000h         ;0e80 21 00 00
-    ld (02d4h),hl       ;0e83 22 d4 02
+    ld (lptype),hl       ;0e83 22 d4 02
 l0e86h:
-    ld hl,(02b2h)       ;0e86 2a b2 02
+    ld hl,(rr)          ;0e86 2a b2 02
     ld de,0ffc8h        ;0e89 11 c8 ff
     add hl,de           ;0e8c 19
     ld a,h              ;0e8d 7c
     or l                ;0e8e b5
     jp nz,l0e98h        ;0e8f c2 98 0e
     ld hl,0002h         ;0e92 21 02 00
-    ld (02d4h),hl       ;0e95 22 d4 02
+    ld (lptype),hl      ;0e95 22 d4 02
 l0e98h:
-    ld hl,(02b2h)       ;0e98 2a b2 02
+    ld hl,(rr)          ;0e98 2a b2 02
     ld de,0ffbch        ;0e9b 11 bc ff
     add hl,de           ;0e9e 19
     ld a,h              ;0e9f 7c
     or l                ;0ea0 b5
     jp nz,l0eaah        ;0ea1 c2 aa 0e
     ld hl,0001h         ;0ea4 21 01 00
-    ld (02d4h),hl       ;0ea7 22 d4 02
+    ld (lptype),hl      ;0ea7 22 d4 02
 l0eaah:
     jp l0a7bh           ;0eaa c3 7b 0a
 l0eadh:
@@ -2100,9 +2148,9 @@ l0eadh:
     call sub_119ah      ;0f34 cd 9a 11
 
     ;PRINT "M, N :     ";
-    call pr0a           ;0f37 cd 3d 2d
-    ld hl,drives_m_n    ;0f3a 21 65 21
-    call pv1d           ;0f3d cd 3c 2c
+    call pr0a
+    ld hl,drives_m_n
+    call pv1d
 
     ld hl,0006h         ;0f40 21 06 00
     ld (l02dch),hl      ;0f43 22 dc 02
@@ -2127,12 +2175,12 @@ l0eadh:
     ld hl,alter_which_pair
     call pv1d
 
-    call sub_1bcah      ;0f6d cd ca 1b
-    ld hl,(02b2h)       ;0f70 2a b2 02
+    call readline       ;0f6d cd ca 1b
+    ld hl,(rr)          ;0f70 2a b2 02
     ld a,h              ;0f73 7c
     or l                ;0f74 b5
     jp z,l05b5h         ;0f75 ca b5 05
-    ld hl,(02b2h)       ;0f78 2a b2 02
+    ld hl,(rr)          ;0f78 2a b2 02
     ld de,0ffbfh        ;0f7b 11 bf ff
     ld a,h              ;0f7e 7c
     rla                 ;0f7f 17
@@ -2144,7 +2192,7 @@ l0f85h:
     ld h,a              ;0f86 67
     ld l,a              ;0f87 6f
     push hl             ;0f88 e5
-    ld hl,(02b2h)       ;0f89 2a b2 02
+    ld hl,(rr)          ;0f89 2a b2 02
     ld de,0ffafh        ;0f8c 11 af ff
     ld a,h              ;0f8f 7c
     rla                 ;0f90 17
@@ -2167,7 +2215,7 @@ l0f96h:
     or l                ;0fa2 b5
     jp nz,l0eadh        ;0fa3 c2 ad 0e
     ld de,0ffbfh        ;0fa6 11 bf ff
-    ld hl,(02b2h)       ;0fa9 2a b2 02
+    ld hl,(rr)          ;0fa9 2a b2 02
     add hl,de           ;0fac 19
     call idva           ;0fad cd 64 2c
     ld (bc),a           ;0fb0 02
@@ -2184,8 +2232,8 @@ l0f96h:
     ld hl,cbm_hard_unused
     call pv1d
 
-    call sub_1bcah      ;0fc7 cd ca 1b
-    ld hl,(02b2h)       ;0fca 2a b2 02
+    call readline       ;0fc7 cd ca 1b
+    ld hl,(rr)          ;0fca 2a b2 02
     ld de,0ffcdh        ;0fcd 11 cd ff
     add hl,de           ;0fd0 19
     ld a,h              ;0fd1 7c
@@ -2201,7 +2249,7 @@ l0f96h:
     ld (hl),d           ;0fe3 72
     jp l109fh           ;0fe4 c3 9f 10
 l0fe7h:
-    ld hl,(02b2h)       ;0fe7 2a b2 02
+    ld hl,(rr)          ;0fe7 2a b2 02
     ld de,0ffc8h        ;0fea 11 c8 ff
     add hl,de           ;0fed 19
     ld a,h              ;0fee 7c
@@ -2217,7 +2265,7 @@ l0fe7h:
     ld (hl),d           ;1000 72
     jp l109fh           ;1001 c3 9f 10
 l1004h:
-    ld hl,(02b2h)       ;1004 2a b2 02
+    ld hl,(rr)          ;1004 2a b2 02
     ld de,0ffabh        ;1007 11 ab ff
     add hl,de           ;100a 19
     ld a,h              ;100b 7c
@@ -2233,7 +2281,7 @@ l1004h:
     ld (hl),d           ;101d 72
     jp l0eadh           ;101e c3 ad 0e
 l1021h:
-    ld hl,(02b2h)       ;1021 2a b2 02
+    ld hl,(rr)          ;1021 2a b2 02
     ld de,0ffb8h        ;1024 11 b8 ff
     add hl,de           ;1027 19
     ld a,h              ;1028 7c
@@ -2251,8 +2299,8 @@ l1021h:
     ld hl,drv_5_10_20
     call pv1d
 
-    call sub_1bcah      ;1042 cd ca 1b
-    ld hl,(02b2h)       ;1045 2a b2 02
+    call readline       ;1042 cd ca 1b
+    ld hl,(rr)          ;1045 2a b2 02
     ld de,0ffcbh        ;1048 11 cb ff
     add hl,de           ;104b 19
     ld a,h              ;104c 7c
@@ -2268,7 +2316,7 @@ l1021h:
     ld (hl),d           ;105e 72
     jp l109fh           ;105f c3 9f 10
 l1062h:
-    ld hl,(02b2h)       ;1062 2a b2 02
+    ld hl,(rr)          ;1062 2a b2 02
     ld de,0ffcfh        ;1065 11 cf ff
     add hl,de           ;1068 19
     ld a,h              ;1069 7c
@@ -2284,7 +2332,7 @@ l1062h:
     ld (hl),d           ;107b 72
     jp l109fh           ;107c c3 9f 10
 l107fh:
-    ld hl,(02b2h)       ;107f 2a b2 02
+    ld hl,(rr)          ;107f 2a b2 02
     ld de,0ffceh        ;1082 11 ce ff
     add hl,de           ;1085 19
     ld a,h              ;1086 7c
@@ -2307,7 +2355,7 @@ l109fh:
     ld hl,dev_num_for_drv
     call pv1d
 
-    call sub_1bcah      ;10a8 cd ca 1b
+    call readline       ;10a8 cd ca 1b
     ld hl,(l02dch)      ;10ab 2a dc 02
     add hl,hl           ;10ae 29
     ld de,l0124h        ;10af 11 24 01
@@ -2339,8 +2387,8 @@ l109fh:
     ld hl,config_as_1_or_2
     call pv1d
 
-    call sub_1bcah      ;10db cd ca 1b
-    ld hl,(02b2h)       ;10de 2a b2 02
+    call readline       ;10db cd ca 1b
+    ld hl,(rr)          ;10de 2a b2 02
     ld de,0ffceh        ;10e1 11 ce ff
     add hl,de           ;10e4 19
     ld a,h              ;10e5 7c
@@ -2362,7 +2410,7 @@ l10fbh:
     ld hl,drv_3_6_12
     call pv1d
 
-    call sub_1bcah      ;1104 cd ca 1b
+    call readline       ;1104 cd ca 1b
     ld hl,(l02d8h)      ;1107 2a d8 02
     ld de,0fffdh        ;110a 11 fd ff
     add hl,de           ;110d 19
@@ -2423,8 +2471,8 @@ l1161h:
     ld hl,use_first_half
     call pv1d
 
-    call sub_1bcah      ;1173 cd ca 1b
-    ld hl,(02b2h)       ;1176 2a b2 02
+    call readline       ;1173 cd ca 1b
+    ld hl,(rr)          ;1176 2a b2 02
     ld de,0ffb8h        ;1179 11 b8 ff
     add hl,de           ;117c 19
     ld a,h              ;117d 7c
@@ -2516,26 +2564,29 @@ l11f0h:
 
     ret                 ;11fc c9
 l11fdh:
-    ld hl,(mini)        ;11fd 2a 0a 01
-    ld de,0ffffh        ;1200 11 ff ff
-    add hl,de           ;1203 19
-    ld a,h              ;1204 7c
-    or l                ;1205 b5
-    jp z,l129eh         ;1206 ca 9e 12
-    ld hl,(l02dch)      ;1209 2a dc 02
-    add hl,hl           ;120c 29
-    ld de,l010eh        ;120d 11 0e 01
-    add hl,de           ;1210 19
-    ld e,(hl)           ;1211 5e
-    inc hl              ;1212 23
-    ld d,(hl)           ;1213 56
-    push de             ;1214 d5
-    pop hl              ;1215 e1
-    ld de,0fffeh        ;1216 11 fe ff
-    add hl,de           ;1219 19
-    ld a,h              ;121a 7c
-    or l                ;121b b5
-    jp nz,l1228h        ;121c c2 28 12
+    ;IF MINI = 1 THEN GOTO l129eh
+    ld hl,(mini)
+    ld de,0ffffh
+    add hl,de
+    ld a,h
+    or l
+    jp z,l129eh
+
+    ;IF DRV (D) = 2 THEN GOTO l1228h
+    ld hl,(l02dch)
+    add hl,hl
+    ld de,l010eh
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    push de
+    pop hl
+    ld de,0fffeh
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1228h
 
     ;PRINT "Corvus 10Mb"
     call pr0a
@@ -2813,8 +2864,8 @@ l13bfh:
     ld hl,new_aload_yn
     call pv1d
 
-    call sub_1bcah      ;13d1 cd ca 1b
-    ld hl,(02b2h)       ;13d4 2a b2 02
+    call readline       ;13d1 cd ca 1b
+    ld hl,(rr)          ;13d4 2a b2 02
     ld de,0ffa7h        ;13d7 11 a7 ff
     add hl,de           ;13da 19
     ld a,h              ;13db 7c
@@ -2826,8 +2877,8 @@ l13bfh:
     ld hl,new_command
     call pv2d
 
-    call sub_1bcah      ;13e9 cd ca 1b
-    ld hl,(02e0h)       ;13ec 2a e0 02
+    call readline       ;13e9 cd ca 1b
+    ld hl,(buf)         ;13ec 2a e0 02
     inc hl              ;13ef 23
     ld l,(hl)           ;13f0 6e
     ld h,00h            ;13f1 26 00
@@ -2835,7 +2886,7 @@ l13bfh:
     ld hl,0001h         ;13f6 21 01 00
     jp l145ah           ;13f9 c3 5a 14
 l13fch:
-    ld hl,(02e0h)       ;13fc 2a e0 02
+    ld hl,(buf)         ;13fc 2a e0 02
     ex de,hl            ;13ff eb
     ld hl,(l02d0h)      ;1400 2a d0 02
     add hl,de           ;1403 19
@@ -3115,7 +3166,7 @@ l152fh:
     add hl,de           ;159a 19
     pop de              ;159b d1
     ld (hl),e           ;159c 73
-    ld hl,(02d4h)       ;159d 2a d4 02
+    ld hl,(lptype)      ;159d 2a d4 02
     ld de,4a6dh         ;15a0 11 6d 4a
     push hl             ;15a3 e5
     ld hl,(bias)        ;15a4 2a ae 02
@@ -3223,7 +3274,8 @@ l1648h:
     add hl,hl           ;1657 29
 l1658h:
     jp c,l1629h         ;1658 da 29 16
-    ld hl,(l02d0h+2)    ;165b 2a d2 02
+
+    ld hl,(clock)       ;165b 2a d2 02
     push hl             ;165e e5
     ld hl,(loader)      ;165f 2a b0 02
     inc hl              ;1662 23
@@ -3231,15 +3283,18 @@ l1658h:
     inc hl              ;1664 23
     pop de              ;1665 d1
     ld (hl),e           ;1666 73
-    ret                 ;1667 c9
+
+    ;RETURN
+    ret
+
 l1668h:
     ;PRINT "Save on which drive (A to P) ? "
     call pr0a
     ld hl,save_on_which
     call pv1d
 
-    call sub_1bcah      ;1671 cd ca 1b
-    ld hl,(02b2h)       ;1674 2a b2 02
+    call readline       ;1671 cd ca 1b
+    ld hl,(rr)          ;1674 2a b2 02
     ld de,0ffbfh        ;1677 11 bf ff
     ld a,h              ;167a 7c
     rla                 ;167b 17
@@ -3251,7 +3306,7 @@ l1681h:
     ld h,a              ;1682 67
     ld l,a              ;1683 6f
     push hl             ;1684 e5
-    ld hl,(02b2h)       ;1685 2a b2 02
+    ld hl,(rr)          ;1685 2a b2 02
     ld de,0ffafh        ;1688 11 af ff
     ld a,h              ;168b 7c
     rla                 ;168c 17
@@ -3274,14 +3329,14 @@ l1692h:
     or l                ;169e b5
     jp nz,l05b5h        ;169f c2 b5 05
     ld de,0ffbfh        ;16a2 11 bf ff
-    ld hl,(02b2h)       ;16a5 2a b2 02
+    ld hl,(rr)          ;16a5 2a b2 02
     add hl,de           ;16a8 19
     ld (l02dch),hl      ;16a9 22 dc 02
     ld hl,(l02dch)      ;16ac 2a dc 02
-    ld (02b4h),hl       ;16af 22 b4 02
-    ld hl,02b4h         ;16b2 21 b4 02
+    ld (dt),hl          ;16af 22 b4 02
+    ld hl,dt            ;16b2 21 b4 02
     call dtype          ;16b5 cd 90 29
-    ld hl,(02b4h)       ;16b8 2a b4 02
+    ld hl,(dt)          ;16b8 2a b4 02
     ld de,0ff80h        ;16bb 11 80 ff
     ld a,h              ;16be 7c
     rla                 ;16bf 17
@@ -3300,7 +3355,7 @@ l16c5h:
     jp l1668h           ;16d1 c3 68 16
 l16d4h:
     call sub_149ah      ;16d4 cd 9a 14
-    ld hl,(02b4h)       ;16d7 2a b4 02
+    ld hl,(dt)          ;16d7 2a b4 02
     ld de,0fffeh        ;16da 11 fe ff
     ld a,h              ;16dd 7c
     rla                 ;16de 17
@@ -3313,7 +3368,7 @@ l16e4h:
     ld h,a              ;16e6 67
     ld l,a              ;16e7 6f
     push hl             ;16e8 e5
-    ld hl,(02b4h)       ;16e9 2a b4 02
+    ld hl,(dt)          ;16e9 2a b4 02
     ld de,0fff6h        ;16ec 11 f6 ff
     ld a,h              ;16ef 7c
     rla                 ;16f0 17
@@ -3342,9 +3397,9 @@ l170eh:
     call idisk          ;1711 cd 99 29
     ld hl,l02dch        ;1714 21 dc 02
     call savesy         ;1717 cd 02 2a
-    ld hl,l02b6h        ;171a 21 b6 02
+    ld hl,ee            ;171a 21 b6 02
     call dskerr         ;171d cd 9d 29
-    ld hl,(l02b6h)      ;1720 2a b6 02
+    ld hl,(ee)          ;1720 2a b6 02
     ld a,h              ;1723 7c
     or l                ;1724 b5
     jp z,l05b5h         ;1725 ca b5 05
@@ -3354,8 +3409,8 @@ l170eh:
     ld hl,retry_yn
     call pv1d
 
-    call sub_1bcah      ;1731 cd ca 1b
-    ld hl,(02b2h)       ;1734 2a b2 02
+    call readline       ;1731 cd ca 1b
+    ld hl,(rr)          ;1734 2a b2 02
     ld de,0ffa7h        ;1737 11 a7 ff
     add hl,de           ;173a 19
     ld a,h              ;173b 7c
@@ -3385,17 +3440,20 @@ l1743h:
     ld hl,cols_in_dir
     call pv1d
 
-    ld hl,(dirsize)     ;176a 2a b8 02
-    ld a,h              ;176d 7c
-    or l                ;176e b5
-    jp nz,l177eh        ;176f c2 7e 17
+    ;IF DIRSIZE <> 0 THEN GOTO l177eh
+    ld hl,(dirsize)
+    ld a,h
+    or l
+    jp nz,l177eh
 
     ;PRINT "1"
     call pr0a
     ld hl,one
     call pv2d
 
-    jp l179fh           ;177b c3 9f 17
+    ;GOTO l179fh
+    jp l179fh
+
 l177eh:
     ld hl,(dirsize)     ;177e 2a b8 02
     ld de,0ffffh        ;1781 11 ff ff
@@ -3427,23 +3485,25 @@ l179fh:
     ld hl,crt_in_upper
     call pv1d
 
-    ld hl,(termtype)    ;17b1 2a c6 02
-    ld a,l              ;17b4 7d
-    and 80h             ;17b5 e6 80
-    ld l,a              ;17b7 6f
-    ld a,h              ;17b8 7c
-    and 00h             ;17b9 e6 00
-    ld h,a              ;17bb 67
-    ld a,h              ;17bc 7c
-    or l                ;17bd b5
-    jp z,l17cdh         ;17be ca cd 17
+    ;IF (TERMTYPE AND &H80) = 0 THEN GOTO l17cdh
+    ld hl,(termtype)
+    ld a,l
+    and 80h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,h
+    or l
+    jp z,l17cdh
 
     ;PRINT "yes"
     call pr0a
     ld hl,yes
     call pv2d
 
-    jp l17d6h           ;17ca c3 d6 17
+    ;GOTO l17d6h
+    jp l17d6h
 
 l17cdh:
     ;PRINT "no"
@@ -3462,36 +3522,39 @@ l17d6h:
     ld hl,crt_term_emu
     call pv1d
 
-    ld hl,(termtype)    ;17e8 2a c6 02
-    ld a,l              ;17eb 7d
-    and 7fh             ;17ec e6 7f
-    ld l,a              ;17ee 6f
-    ld a,h              ;17ef 7c
-    and 00h             ;17f0 e6 00
-    ld h,a              ;17f2 67
-    ld a,h              ;17f3 7c
-    or l                ;17f4 b5
-    jp nz,l1804h        ;17f5 c2 04 18
+    ;IF (TERMTYPE AND &H7F) <> 0 THEN GOTO l1804h
+    ld hl,(termtype)
+    ld a,l
+    and 7fh
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,h
+    or l
+    jp nz,l1804h
 
     ;PRINT "ADM3A"
     call pr0a
     ld hl,adm3a
     call pv2d
 
-    jp l1871h           ;1801 c3 71 18
+    ;GOTO l1871h
+    jp l1871h
+
 l1804h:
-    ld hl,(termtype)    ;1804 2a c6 02
-    ld a,l              ;1807 7d
-    and 7fh             ;1808 e6 7f
-    ld l,a              ;180a 6f
-    ld a,h              ;180b 7c
-    and 00h             ;180c e6 00
-    ld h,a              ;180e 67
-    ld de,0fffeh        ;180f 11 fe ff
-    add hl,de           ;1812 19
-    ld a,h              ;1813 7c
-    or l                ;1814 b5
-    jp nz,l1824h        ;1815 c2 24 18
+    ld hl,(termtype)
+    ld a,l
+    and 7fh
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld de,0fffeh
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1824h
 
     ;PRINT "TV912"
     call pr0a
@@ -3553,13 +3616,12 @@ l1871h:
     ld hl,empty_string
     call pv2d
 
-    ;PRINT "4.  Clock frequency (Hz) :     ";
+    ;PRINT "4.  Clock frequency (Hz) :     "; CLOCK
     call pr0a
     ld hl,clock_freq
     call pv1d
-
-    ld hl,(l02d0h+2)    ;1883 2a d2 02
-    call pv2c           ;1886 cd c8 2c
+    ld hl,(clock)
+    call pv2c
 
     ;PRINT
     call pr0a
@@ -3571,18 +3633,18 @@ l1871h:
     ld hl,alter_which_1_4
     call pv1d
 
-    call sub_1bcah      ;189b cd ca 1b
-    ld hl,(02b2h)       ;189e 2a b2 02
+    call readline       ;189b cd ca 1b
+    ld hl,(rr)          ;189e 2a b2 02
     ld a,h              ;18a1 7c
     or l                ;18a2 b5
     jp z,l05b5h         ;18a3 ca b5 05
-    ld hl,(02b2h)       ;18a6 2a b2 02
+    ld hl,(rr)          ;18a6 2a b2 02
     ld de,0ffcfh        ;18a9 11 cf ff
     add hl,de           ;18ac 19
     ld a,h              ;18ad 7c
     or l                ;18ae b5
     jp z,l18eah         ;18af ca ea 18
-    ld hl,(02b2h)       ;18b2 2a b2 02
+    ld hl,(rr)          ;18b2 2a b2 02
     ld de,0ffceh        ;18b5 11 ce ff
     add hl,de           ;18b8 19
     ld a,h              ;18b9 7c
@@ -3598,13 +3660,13 @@ l1871h:
     ld (termtype),hl    ;18c9 22 c6 02
     jp l1743h           ;18cc c3 43 17
 l18cfh:
-    ld hl,(02b2h)       ;18cf 2a b2 02
+    ld hl,(rr)          ;18cf 2a b2 02
     ld de,0ffcdh        ;18d2 11 cd ff
     add hl,de           ;18d5 19
     ld a,h              ;18d6 7c
     or l                ;18d7 b5
     jp z,l194ch         ;18d8 ca 4c 19
-    ld hl,(02b2h)       ;18db 2a b2 02
+    ld hl,(rr)          ;18db 2a b2 02
     ld de,0ffcch        ;18de 11 cc ff
     add hl,de           ;18e1 19
     ld a,h              ;18e2 7c
@@ -3617,8 +3679,8 @@ l18eah:
     ld hl,num_of_cols
     call pv1d
 
-    call sub_1bcah      ;18f3 cd ca 1b
-    ld hl,(02b2h)       ;18f6 2a b2 02
+    call readline       ;18f3 cd ca 1b
+    ld hl,(rr)          ;18f6 2a b2 02
     ld de,0ffcfh        ;18f9 11 cf ff
     add hl,de           ;18fc 19
     ld a,h              ;18fd 7c
@@ -3627,7 +3689,7 @@ l18eah:
     ld hl,0000h         ;1902 21 00 00
     ld (dirsize),hl     ;1905 22 b8 02
 l1908h:
-    ld hl,(02b2h)       ;1908 2a b2 02
+    ld hl,(rr)          ;1908 2a b2 02
     ld de,0ffceh        ;190b 11 ce ff
     add hl,de           ;190e 19
     ld a,h              ;190f 7c
@@ -3636,7 +3698,7 @@ l1908h:
     ld hl,0001h         ;1914 21 01 00
     ld (dirsize),hl     ;1917 22 b8 02
 l191ah:
-    ld hl,(02b2h)       ;191a 2a b2 02
+    ld hl,(rr)          ;191a 2a b2 02
     ld de,0ffcch        ;191d 11 cc ff
     add hl,de           ;1920 19
     ld a,h              ;1921 7c
@@ -3652,13 +3714,13 @@ l192fh:
     ld hl,new_clock
     call pv1d
 
-    call sub_1bcah      ;1938 cd ca 1b
-    ld hl,(02b2h)       ;193b 2a b2 02
+    call readline       ;1938 cd ca 1b
+    ld hl,(rr)          ;193b 2a b2 02
     ld a,h              ;193e 7c
     or l                ;193f b5
     jp z,l1949h         ;1940 ca 49 19
     ld hl,(l02d8h)      ;1943 2a d8 02
-    ld (l02d0h+2),hl    ;1946 22 d2 02
+    ld (clock),hl       ;1946 22 d2 02
 l1949h:
     jp l1743h           ;1949 c3 43 17
 l194ch:
@@ -3667,8 +3729,8 @@ l194ch:
     ld hl,screen_type
     call pv1d
 
-    call sub_1bcah      ;1955 cd ca 1b
-    ld hl,(02b2h)       ;1958 2a b2 02
+    call readline       ;1955 cd ca 1b
+    ld hl,(rr)          ;1958 2a b2 02
     ld de,0ffbfh        ;195b 11 bf ff
     add hl,de           ;195e 19
     ld a,h              ;195f 7c
@@ -3684,7 +3746,7 @@ l194ch:
     ld (termtype),hl    ;196f 22 c6 02
     jp l1aa6h           ;1972 c3 a6 1a
 l1975h:
-    ld hl,(02b2h)       ;1975 2a b2 02
+    ld hl,(rr)          ;1975 2a b2 02
     ld de,0ffach        ;1978 11 ac ff
     add hl,de           ;197b 19
     ld a,h              ;197c 7c
@@ -3706,7 +3768,7 @@ l1975h:
     ld (termtype),hl    ;1994 22 c6 02
     jp l1aa6h           ;1997 c3 a6 1a
 l199ah:
-    ld hl,(02b2h)       ;199a 2a b2 02
+    ld hl,(rr)          ;199a 2a b2 02
     ld de,0ffb8h        ;199d 11 b8 ff
     add hl,de           ;19a0 19
     ld a,h              ;19a1 7c
@@ -3718,8 +3780,8 @@ l199ah:
     ld hl,esc_or_tilde
     call pv1d
 
-    call sub_1bcah      ;19af cd ca 1b
-    ld hl,(02b2h)       ;19b2 2a b2 02
+    call readline       ;19af cd ca 1b
+    ld hl,(rr)          ;19b2 2a b2 02
     ld de,0ffbbh        ;19b5 11 bb ff
     add hl,de           ;19b8 19
     ld a,h              ;19b9 7c
@@ -3729,7 +3791,7 @@ l199ah:
     ld (leadin),hl      ;19c1 22 c8 02
     jp l19dfh           ;19c4 c3 df 19
 l19c7h:
-    ld hl,(02b2h)       ;19c7 2a b2 02
+    ld hl,(rr)          ;19c7 2a b2 02
     ld de,0ffach        ;19ca 11 ac ff
     add hl,de           ;19cd 19
     ld a,h              ;19ce 7c
@@ -3740,199 +3802,355 @@ l19c7h:
     jp l19dfh           ;19d9 c3 df 19
 l19dch:
     jp l1743h           ;19dc c3 43 17
+
 l19dfh:
-    ld hl,(termtype)    ;19df 2a c6 02
-    ld a,l              ;19e2 7d
-    and 80h             ;19e3 e6 80
-    ld l,a              ;19e5 6f
-    ld a,h              ;19e6 7c
-    and 00h             ;19e7 e6 00
-    ld h,a              ;19e9 67
-    ld a,l              ;19ea 7d
-    or 01h              ;19eb f6 01
-    ld l,a              ;19ed 6f
-    ld a,h              ;19ee 7c
-    or 00h              ;19ef f6 00
-    ld h,a              ;19f1 67
-    ld (termtype),hl    ;19f2 22 c6 02
+    ;TERMTYPE = (TERMTYPE AND &H80) OR 1
+    ld hl,(termtype)
+    ld a,l
+    and 80h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,l
+    or 01h
+    ld l,a
+    ld a,h
+    or 00h
+    ld h,a
+    ld (termtype),hl
 
-    ld hl,0000h         ;19f5 21 00 00
-    ld (rowoff),hl      ;19f8 22 cc 02
-    ld (coloff),hl      ;19fb 22 ce 02
+    ;ROWOFF = 0 : COLOFF = 0
+    ld hl,0000h
+    ld (rowoff),hl
+    ld (coloff),hl
 
-    ld hl,0001h         ;19fe 21 01 00
-    ld (order),hl       ;1a01 22 ca 02
+    ;ORDER = 1
+    ld hl,0001h
+    ld (order),hl
 
+    ;SCRTAB(0) = &H8B
     ld hl,008bh
     ld (scrtab+0),hl
+
+    ;SCRTAB(1) = &H0B
     ld hl,000bh
     ld (scrtab+2),hl
+
+    ;SCRTAB(2) = &H8C
     ld hl,008ch
     ld (scrtab+4),hl
+
+    ;SCRTAB(3) = &H0C
     ld hl,000ch
     ld (scrtab+6),hl
+
+    ;SCRTAB(4) = &H8F
     ld hl,008fh
     ld (scrtab+8),hl
+
+    ;SCRTAB(5) = &H13
     ld hl,0013h
     ld (scrtab+10),hl
+
+    ;SCRTAB(6) = &H91
     ld hl,0091h
     ld (scrtab+12),hl
+
+    ;SCRTAB(7) = &H1B
     ld hl,001bh
     ld (scrtab+14),hl
+
+    ;SCRTAB(8) = &H92
     ld hl,0092h
     ld (scrtab+16),hl
+
+    ;SCRTAB(9) = &H1E
     ld hl,001eh
     ld (scrtab+18),hl
+
+    ;SCRTAB(10) = &H93
     ld hl,0093h
     ld (scrtab+20),hl
+
+    ;SCRTAB(11) = &H12
     ld hl,0012h
     ld (scrtab+22),hl
+
+    ;SCRTAB(12) = &H97
     ld hl,0097h
     ld (scrtab+24),hl
+
+    ;SCRTAB(13) = &H14
     ld hl,0014h
     ld (scrtab+26),hl
+
+    ;SCRTAB(14) = &H98
     ld hl,0098h
     ld (scrtab+28),hl
+
+    ;SCRTAB(15) = &H14
     ld hl,0014h
     ld (scrtab+30),hl
+
+    ;SCRTAB(16) = &H9A
     ld hl,009ah
     ld (scrtab+32),hl
+
+    ;SCRTAB(17) = &H11
     ld hl,0011h
     ld (scrtab+34),hl
+
+    ;SCRTAB(18) = &H9C
     ld hl,009ch
     ld (scrtab+36),hl
+
+    ;SCRTAB(19) = &H1A
     ld hl,001ah
     ld (scrtab+38),hl
+
+    ;SCRTAB(20) = &H9D
     ld hl,009dh
     ld (scrtab+40),hl
+
+    ;SCRTAB(21) = &H1A
     ld hl,001ah
     ld (scrtab+42),hl
+
+    ;SCRTAB(22) = &H99
     ld hl,0099h
     ld (scrtab+44),hl
+
+    ;SCRTAB(23) = &H00
     ld hl,0000h
     ld (scrtab+46),hl
+
+    ;SCRTAB(24) = &H9F
     ld hl,009fh
     ld (scrtab+48),hl
+
+    ;SCRTAB(25) = &H00 : SCRTAB(26) = &H00
     ld hl,0000h
     ld (scrtab+50),hl
     ld (scrtab+52),hl
+
+    ;GOTO l1743h
     jp l1743h
 
 l1aa6h:
+    ;LEADIN = &H1B
     ld hl,001bh
     ld (leadin),hl
+
+    ;ROWOFF = &H20 : COLOFF = &H20
     ld hl,0020h
     ld (rowoff),hl
     ld (coloff),hl
+
+    ;ORDER = 0
     ld hl,0000h
     ld (order),hl
+
+    ;SCRTAB(0) = &HB1
     ld hl,00b1h
     ld (scrtab+0),hl
+
+    ;SCRTAB(1) = &H04
     ld hl,0004h
     ld (scrtab+2),hl
+
+    ;SCRTAB(2) = &HB2
     ld hl,00b2h
     ld (scrtab+4),hl
+
+    ;SCRTAB(3) = &H05
     ld hl,0005h
     ld (scrtab+6),hl
+
+    ;SCRTAB(4) = &HB3
     ld hl,00b3h
     ld (scrtab+8),hl
+
+    ;SCRTAB(5) = &H06
     ld hl,0006h
     ld (scrtab+10),hl
+
+    ;SCRTAB(6) = &HEA
     ld hl,00eah
     ld (scrtab+12),hl
+
+    ;SCRTAB(7) = &H0E
     ld hl,000eh
     ld (scrtab+14),hl
+
+    ;SCRTAB(8) = &HEB
     ld hl,00ebh
     ld (scrtab+16),hl
+
+    ;SCRTAB(9) = &H0F
     ld hl,000fh
     ld (scrtab+18),hl
+
+    ;SCRTAB(10) = &HD1
     ld hl,00d1h
     ld (scrtab+20),hl
+
+    ;SCRTAB(11) = &H1C
     ld hl,001ch
     ld (scrtab+22),hl
+
+    ;SCRTAB(12) = &HD7
     ld hl,00d7h
     ld (scrtab+24),hl
+
+    ;SCRTAB(13) = &H1D
     ld hl,001dh
     ld (scrtab+26),hl
+
+    ;SCRTAB(14) = &HC5
     ld hl,00c5h
     ld (scrtab+28),hl
+
+    ;SCRTAB(15) = &H11
     ld hl,0011h
     ld (scrtab+30),hl
+
+    ;SCRTAB(16) = &HD2
     ld hl,00d2h
     ld (scrtab+32),hl
+
+    ;SCRTAB(17) = &H12
     ld hl,0012h
     ld (scrtab+34),hl
+
+    ;SCRTAB(18) = &HD4
     ld hl,00d4h
     ld (scrtab+36),hl
+
+    ;SCRTAB(19) = &H13
     ld hl,0013h
     ld (scrtab+38),hl
+
+    ;SCRTAB(20) = &HF4
     ld hl,00f4h
     ld (scrtab+40),hl
+
+    ;SCRTAB(21) = &H13
     ld hl,0013h
     ld (scrtab+42),hl
+
+    ;SCRTAB(22) = &HD9
     ld hl,00d9h
     ld (scrtab+44),hl
+
+    ;SCRTAB(23) = &H14
     ld hl,0014h
     ld (scrtab+46),hl
+
+    ;SCRTAB(24) = &HF9
     ld hl,00f9h
     ld (scrtab+48),hl
+
+    ;SCRTAB(25) = &H14
     ld hl,0014h
     ld (scrtab+50),hl
+
+    ;SCRTAB(26) = &HAB
     ld hl,00abh
     ld (scrtab+52),hl
+
+    ;SCRTAB(27) = &H1A
     ld hl,001ah
     ld (scrtab+54),hl
+
+    ;SCRTAB(28) = &HAA
     ld hl,00aah
     ld (scrtab+56),hl
+
+    ;SCRTAB(29) = &H1A
     ld hl,001ah
     ld (scrtab+58),hl
+
+    ;SCRTAB(30) = &HBA
     ld hl,00bah
     ld (scrtab+60),hl
+
+    ;SCRTAB(31) = &H1A
     ld hl,001ah
     ld (scrtab+62),hl
+
+    ;SCRTAB(32) = &HBB
     ld hl,00bbh
     ld (scrtab+64),hl
+
+    ;SCRTAB(33) = &H1A
     ld hl,001ah
     ld (scrtab+66),hl
+
+    ;SCRTAB(34) = &HDA
     ld hl,00dah
     ld (scrtab+68),hl
+
+    ;SCRTAB(35) = &H1A
     ld hl,001ah
     ld (scrtab+70),hl
+
+    ;SCRTAB(36) = &HBD
     ld hl,00bdh
     ld (scrtab+72),hl
+
+    ;SCRTAB(37) = &H1B
     ld hl,001bh
     ld (scrtab+74),hl
+
+    ;SCRTAB(38) = &HA8
     ld hl,00a8h
     ld (scrtab+76),hl
+
+    ;SCRTAB(39) = &H00
     ld hl,0000h
     ld (scrtab+78),hl
+
+    ;SCRTAB(40) = &HA9
     ld hl,00a9h
     ld (scrtab+80),hl
+
+    ;SCRTAB(41) = &H00 : SCRTAB(42) = &H00
     ld hl,0000h
     ld (scrtab+82),hl
     ld (scrtab+84),hl
+
+    ;GOTO l1743h
     jp l1743h
 
 clear_screen:
+    ;PRINT CHR$(26)
     call pr0a
     ld hl,001ah
     call chr
     call pv2d
+
+    ;RETURN
     ret
 
-sub_1bcah:
-    ld hl,0080h         ;1bca 21 80 00
-    ld (02e0h),hl       ;1bcd 22 e0 02
-    ld hl,(02e0h)       ;1bd0 2a e0 02
-    ld (hl),50h         ;1bd3 36 50
-    call buffin         ;1bd5 cd a1 28
+readline:
+    ;BUF = &H80
+    ld hl,0080h
+    ld (buf),hl
+
+    ;POKE BUF, 80
+    ld hl,(buf)
+    ld (hl),50h
+
+    ;CALL BUFFIN
+    call buffin
 
     ;PRINT
     call pr0a           ;1bd8 cd 3d 2d
     ld hl,empty_string  ;1bdb 21 98 28
     call pv2d           ;1bde cd 31 2c
 
-    ld hl,(02e0h)       ;1be1 2a e0 02
+    ld hl,(buf)         ;1be1 2a e0 02
     inc hl              ;1be4 23
     ld l,(hl)           ;1be5 6e
     ld h,00h            ;1be6 26 00
@@ -3940,16 +4158,16 @@ sub_1bcah:
     or l                ;1be9 b5
     jp nz,l1bf4h        ;1bea c2 f4 1b
     ld hl,0000h         ;1bed 21 00 00
-    ld (02b2h),hl       ;1bf0 22 b2 02
+    ld (rr),hl          ;1bf0 22 b2 02
     ret                 ;1bf3 c9
 l1bf4h:
-    ld hl,(02e0h)       ;1bf4 2a e0 02
+    ld hl,(buf)         ;1bf4 2a e0 02
     inc hl              ;1bf7 23
     inc hl              ;1bf8 23
     ld l,(hl)           ;1bf9 6e
     ld h,00h            ;1bfa 26 00
-    ld (02b2h),hl       ;1bfc 22 b2 02
-    ld hl,(02b2h)       ;1bff 2a b2 02
+    ld (rr),hl          ;1bfc 22 b2 02
+    ld hl,(rr)          ;1bff 2a b2 02
     ld de,0ff9fh        ;1c02 11 9f ff
     ld a,h              ;1c05 7c
     rla                 ;1c06 17
@@ -3962,7 +4180,7 @@ l1c0ch:
     ld h,a              ;1c0e 67
     ld l,a              ;1c0f 6f
     push hl             ;1c10 e5
-    ld hl,(02b2h)       ;1c11 2a b2 02
+    ld hl,(rr)          ;1c11 2a b2 02
     ld de,0ff85h        ;1c14 11 85 ff
     ld a,h              ;1c17 7c
     rla                 ;1c18 17
@@ -3984,16 +4202,16 @@ l1c1eh:
     or l                ;1c29 b5
     jp z,l1c37h         ;1c2a ca 37 1c
     ld de,0ffe0h        ;1c2d 11 e0 ff
-    ld hl,(02b2h)       ;1c30 2a b2 02
+    ld hl,(rr)          ;1c30 2a b2 02
     add hl,de           ;1c33 19
-    ld (02b2h),hl       ;1c34 22 b2 02
+    ld (rr),hl          ;1c34 22 b2 02
 l1c37h:
     ld hl,0000h         ;1c37 21 00 00
     ld (l02d8h),hl      ;1c3a 22 d8 02
     ld hl,0002h         ;1c3d 21 02 00
     ld (l02d0h),hl      ;1c40 22 d0 02
 l1c43h:
-    ld hl,(02e0h)       ;1c43 2a e0 02
+    ld hl,(buf)         ;1c43 2a e0 02
     ex de,hl            ;1c46 eb
     ld hl,(l02d0h)      ;1c47 2a d0 02
     add hl,de           ;1c4a 19
@@ -4034,7 +4252,7 @@ l1c6bh:
     and e               ;1c78 a3
     ld l,a              ;1c79 6f
     push hl             ;1c7a e5
-    ld hl,(02e0h)       ;1c7b 2a e0 02
+    ld hl,(buf)         ;1c7b 2a e0 02
     inc hl              ;1c7e 23
     ld l,(hl)           ;1c7f 6e
     ld h,00h            ;1c80 26 00
@@ -4067,11 +4285,11 @@ l1c93h:
     or l                ;1c9f b5
     jp z,l1ccah         ;1ca0 ca ca 1c
     ld hl,(l02d8h)      ;1ca3 2a d8 02
-    call imug      ;1ca6 cd 9a 2c
+    call imug           ;1ca6 cd 9a 2c
     ld a,(bc)           ;1ca9 0a
     nop                 ;1caa 00
     push hl             ;1cab e5
-    ld hl,(02e0h)       ;1cac 2a e0 02
+    ld hl,(buf)         ;1cac 2a e0 02
     ex de,hl            ;1caf eb
     ld hl,(l02d0h)      ;1cb0 2a d0 02
     add hl,de           ;1cb3 19
