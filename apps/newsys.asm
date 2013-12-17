@@ -246,7 +246,7 @@ rdr:
     dw 0a9cah           ;Paper Tape Reader (PTR:) IEEE-488 primary address
 pun:
     dw 3e2ah            ;Paper Tape Punch (PTP:) IEEE-488 primary address
-mode:
+uu:
     dw 0c304h           ;Byte that is written to 8251 USART mode register
 baud:
     dw 2bceh            ;Byte that is written to COM8116 baud rate generator
@@ -264,26 +264,32 @@ rowoff:
 coloff:
     dw 053eh            ;Offset added to X when sending move-to sequence
 
-; End of BASIC variables ====================================================
-
 l02d0h:
     dw 0cec3h
+
 clock:
-    dw 3e2bh
+    dw 3e2bh            ;Frequency of PET system interrupt in Hz (50 or 60)
 lptype:
-    dw 0158h
-    dw 0007h
+    dw 0158h            ;CBM printer (LPT:) type: 0=3022, 3023, 4022, 4023
+                        ;                         1=8026, 8027 (daisywheel)
+                        ;                         2=8024
+u1:
+    dw 0007h            ;Temp variable used compare 8251 stop bits setting
+
 l02d8h:
-    call 2716h          ;02d8 cd 16 27
-    ld (hl),e           ;02db 73
+    dw 16cdh
+l02dah:
+    dw 7327h
 l02dch:
-    inc hl              ;02dc 23
-    ld (hl),d           ;02dd 72
+    dw 7223h
 l02deh:
-    db 2bh
-    db 0c3h
+    dw 0c32bh
+
 buf:
-    db 5dh, 27h
+    dw 275dh            ;Address of buffer used in readline
+
+; End of BASIC variables ====================================================
+
 l02e2h:
     push de             ;02e2 d5
     ld d,a              ;02e3 57
@@ -568,7 +574,7 @@ l0430h:
     add hl,de
     ld l,(hl)
     ld h,00h
-    ld (mode),hl
+    ld (uu),hl
 
     ;BAUD = PEEK (BIAS+&H4A65)
     ld de,4a65h
@@ -759,7 +765,8 @@ l0599h:
     ld (lptype),hl
 
 l05b5h:
-    call clear_screen   ;05b5 cd bd 1b
+    ;GOSUB clear_screen
+    call clear_screen
 
     ;PRINT
     call pr0a
@@ -942,7 +949,7 @@ l06deh:
     call pv1d
 
     call pr0a           ;0705 cd 3d 2d
-    ld hl,(mode)        ;0708 2a c0 02
+    ld hl,(uu)          ;0708 2a c0 02
     ld a,l              ;070b 7d
     and 0ch             ;070c e6 0c
     ld l,a              ;070e 6f
@@ -967,15 +974,17 @@ l06deh:
     ld hl,rs232_2_stop
     call pv1d
 
-    ld hl,(mode)        ;0734 2a c0 02
-    ld a,l              ;0737 7d
-    and 0c0h            ;0738 e6 c0
-    ld l,a              ;073a 6f
-    ld a,h              ;073b 7c
-    and 00h             ;073c e6 00
-    ld h,a              ;073e 67
-    ld (02d6h),hl       ;073f 22 d6 02
-    ld hl,(02d6h)       ;0742 2a d6 02
+    ;U1 = U AND &HC0
+    ld hl,(uu)
+    ld a,l
+    and 0c0h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld (u1),hl
+
+    ld hl,(u1)          ;0742 2a d6 02
     ld a,h              ;0745 7c
     or l                ;0746 b5
     jp nz,l0753h        ;0747 c2 53 07
@@ -986,7 +995,7 @@ l06deh:
     call pv2d
 
 l0753h:
-    ld hl,(02d6h)       ;0753 2a d6 02
+    ld hl,(u1)          ;0753 2a d6 02
     ld de,0ffc0h        ;0756 11 c0 ff
     add hl,de           ;0759 19
     ld a,h              ;075a 7c
@@ -999,7 +1008,7 @@ l0753h:
     call pv2d
 
 l0768h:
-    ld hl,(02d6h)       ;0768 2a d6 02
+    ld hl,(u1)          ;0768 2a d6 02
     ld de,0ff80h        ;076b 11 80 ff
     add hl,de           ;076e 19
     ld a,h              ;076f 7c
@@ -1012,7 +1021,7 @@ l0768h:
     call pv2d
 
 l077dh:
-    ld hl,(02d6h)       ;077d 2a d6 02
+    ld hl,(u1)          ;077d 2a d6 02
     ld de,0ff40h        ;0780 11 40 ff
     add hl,de           ;0783 19
     ld a,h              ;0784 7c
@@ -1035,7 +1044,7 @@ l0792h:
     ld hl,rs232_3_par
     call pv1d
 
-    ld hl,(mode)        ;07a4 2a c0 02
+    ld hl,(uu)          ;07a4 2a c0 02
     ld a,l              ;07a7 7d
     and 10h             ;07a8 e6 10
     ld l,a              ;07aa 6f
@@ -1052,7 +1061,7 @@ l0792h:
     call pv2d
 
 l07bdh:
-    ld hl,(mode)        ;07bd 2a c0 02
+    ld hl,(uu)          ;07bd 2a c0 02
     ld a,l              ;07c0 7d
     and 30h             ;07c1 e6 30
     ld l,a              ;07c3 6f
@@ -1071,7 +1080,7 @@ l07bdh:
     call pv2d
 
 l07dah:
-    ld hl,(mode)        ;07da 2a c0 02
+    ld hl,(uu)          ;07da 2a c0 02
     ld a,l              ;07dd 7d
     and 30h             ;07de e6 30
     ld l,a              ;07e0 6f
@@ -1258,7 +1267,7 @@ l0903h:
     ld a,h              ;090d 7c
     or l                ;090e b5
     jp z,l092dh         ;090f ca 2d 09
-    ld hl,(mode)        ;0912 2a c0 02
+    ld hl,(uu)          ;0912 2a c0 02
     ld a,l              ;0915 7d
     and 0f3h            ;0916 e6 f3
     ld l,a              ;0918 6f
@@ -1276,7 +1285,7 @@ l0903h:
     ld a,l              ;0927 7d
     or e                ;0928 b3
     ld l,a              ;0929 6f
-    ld (mode),hl        ;092a 22 c0 02
+    ld (uu),hl          ;092a 22 c0 02
 l092dh:
     jp l06deh           ;092d c3 de 06
 l0930h:
@@ -1292,7 +1301,7 @@ l0930h:
     ld a,h              ;0943 7c
     or l                ;0944 b5
     jp nz,l095eh        ;0945 c2 5e 09
-    ld hl,(mode)        ;0948 2a c0 02
+    ld hl,(uu)          ;0948 2a c0 02
     ld a,l              ;094b 7d
     and 3fh             ;094c e6 3f
     ld l,a              ;094e 6f
@@ -1305,7 +1314,7 @@ l0930h:
     ld a,h              ;0957 7c
     or 00h              ;0958 f6 00
     ld h,a              ;095a 67
-    ld (mode),hl        ;095b 22 c0 02
+    ld (uu),hl          ;095b 22 c0 02
 l095eh:
     ld hl,(rr)          ;095e 2a b2 02
     ld de,0ffceh        ;0961 11 ce ff
@@ -1313,7 +1322,7 @@ l095eh:
     ld a,h              ;0965 7c
     or l                ;0966 b5
     jp nz,l0980h        ;0967 c2 80 09
-    ld hl,(mode)        ;096a 2a c0 02
+    ld hl,(uu)          ;096a 2a c0 02
     ld a,l              ;096d 7d
     and 3fh             ;096e e6 3f
     ld l,a              ;0970 6f
@@ -1326,7 +1335,7 @@ l095eh:
     ld a,h              ;0979 7c
     or 00h              ;097a f6 00
     ld h,a              ;097c 67
-    ld (mode),hl        ;097d 22 c0 02
+    ld (uu),hl          ;097d 22 c0 02
 l0980h:
     jp l06deh           ;0980 c3 de 06
 l0983h:
@@ -1342,7 +1351,7 @@ l0983h:
     ld a,h              ;0996 7c
     or l                ;0997 b5
     jp nz,l09b1h        ;0998 c2 b1 09
-    ld hl,(mode)        ;099b 2a c0 02
+    ld hl,(uu)          ;099b 2a c0 02
     ld a,l              ;099e 7d
     and 0cfh            ;099f e6 cf
     ld l,a              ;09a1 6f
@@ -1355,7 +1364,7 @@ l0983h:
     ld a,h              ;09aa 7c
     or 00h              ;09ab f6 00
     ld h,a              ;09ad 67
-    ld (mode),hl        ;09ae 22 c0 02
+    ld (uu),hl          ;09ae 22 c0 02
 l09b1h:
     ld hl,(rr)          ;09b1 2a b2 02
     ld de,0ffbbh        ;09b4 11 bb ff
@@ -1363,14 +1372,14 @@ l09b1h:
     ld a,h              ;09b8 7c
     or l                ;09b9 b5
     jp nz,l09cbh        ;09ba c2 cb 09
-    ld hl,(mode)        ;09bd 2a c0 02
+    ld hl,(uu)          ;09bd 2a c0 02
     ld a,l              ;09c0 7d
     or 30h              ;09c1 f6 30
     ld l,a              ;09c3 6f
     ld a,h              ;09c4 7c
     or 00h              ;09c5 f6 00
     ld h,a              ;09c7 67
-    ld (mode),hl        ;09c8 22 c0 02
+    ld (uu),hl          ;09c8 22 c0 02
 l09cbh:
     ld hl,(rr)          ;09cb 2a b2 02
     ld de,0ffb2h        ;09ce 11 b2 ff
@@ -1378,14 +1387,14 @@ l09cbh:
     ld a,h              ;09d2 7c
     or l                ;09d3 b5
     jp nz,l09e5h        ;09d4 c2 e5 09
-    ld hl,(mode)        ;09d7 2a c0 02
+    ld hl,(uu)          ;09d7 2a c0 02
     ld a,l              ;09da 7d
     and 0efh            ;09db e6 ef
     ld l,a              ;09dd 6f
     ld a,h              ;09de 7c
     and 00h             ;09df e6 00
     ld h,a              ;09e1 67
-    ld (mode),hl        ;09e2 22 c0 02
+    ld (uu),hl          ;09e2 22 c0 02
 l09e5h:
     jp l06deh           ;09e5 c3 de 06
 l09e8h:
@@ -1774,7 +1783,7 @@ l0c2dh:
     call pv1d
 
     call readline       ;0c92 cd ca 1b
-    ld hl,(l02d8h+2)    ;0c95 2a da 02
+    ld hl,(l02dah)      ;0c95 2a da 02
     ld de,0ffcfh        ;0c98 11 cf ff
     add hl,de           ;0c9b 19
     ld a,h              ;0c9c 7c
@@ -1783,7 +1792,7 @@ l0c2dh:
     ld hl,(l02d8h)      ;0ca1 2a d8 02
     ld (lpt),hl         ;0ca4 22 ba 02
 l0ca7h:
-    ld hl,(l02d8h+2)    ;0ca7 2a da 02
+    ld hl,(l02dah)      ;0ca7 2a da 02
     ld de,0ffceh        ;0caa 11 ce ff
     add hl,de           ;0cad 19
     ld a,h              ;0cae 7c
@@ -1792,7 +1801,7 @@ l0ca7h:
     ld hl,(l02d8h)      ;0cb3 2a d8 02
     ld (ul1),hl         ;0cb6 22 c4 02
 l0cb9h:
-    ld hl,(l02d8h+2)    ;0cb9 2a da 02
+    ld hl,(l02dah)      ;0cb9 2a da 02
     ld de,0ffcdh        ;0cbc 11 cd ff
     add hl,de           ;0cbf 19
     ld a,h              ;0cc0 7c
@@ -1801,7 +1810,7 @@ l0cb9h:
     ld hl,(l02d8h)      ;0cc5 2a d8 02
     ld (rdr),hl         ;0cc8 22 bc 02
 l0ccbh:
-    ld hl,(l02d8h+2)    ;0ccb 2a da 02
+    ld hl,(l02dah)      ;0ccb 2a da 02
     ld de,0ffcch        ;0cce 11 cc ff
     add hl,de           ;0cd1 19
     ld a,h              ;0cd2 7c
@@ -3126,7 +3135,7 @@ l152fh:
     add hl,de           ;1556 19
     pop de              ;1557 d1
     ld (hl),e           ;1558 73
-    ld hl,(mode)        ;1559 2a c0 02
+    ld hl,(uu)          ;1559 2a c0 02
     ld a,l              ;155c 7d
     and 0fch            ;155d e6 fc
     ld l,a              ;155f 6f
@@ -3275,6 +3284,7 @@ l1648h:
 l1658h:
     jp c,l1629h         ;1658 da 29 16
 
+    ;CLOCK = PEEK (LOADER+3)
     ld hl,(clock)       ;165b 2a d2 02
     push hl             ;165e e5
     ld hl,(loader)      ;165f 2a b0 02
