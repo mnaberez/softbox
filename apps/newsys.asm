@@ -27,9 +27,6 @@ l010eh:
     nop                 ;0111 00
     nop                 ;0112 00
     nop                 ;0113 00
-
-; End of BASIC variables ====================================================
-
     nop                 ;0114 00
     nop                 ;0115 00
     nop                 ;0116 00
@@ -61,153 +58,27 @@ l0124h:
     dec hl              ;0136 2b
     and a               ;0137 a7
     ret nz              ;0138 c0
-    jp 2761h            ;0139 c3 61 27
-l013ch:
-    ld a,(hl)           ;013c 7e
-    cp 01h              ;013d fe 01
-    scf                 ;013f 37
-    ret nz              ;0140 c0
-    push de             ;0141 d5
-    push hl             ;0142 e5
-    ld de,0005h         ;0143 11 05 00
-    add hl,de           ;0146 19
-    ld e,(hl)           ;0147 5e
-    inc hl              ;0148 23
-    ld d,(hl)           ;0149 56
-    ld a,(de)           ;014a 1a
-    cp 0ebh             ;014b fe eb
-    jp nz,l2945h        ;014d c2 45 29
-    inc de              ;0150 13
-    ld a,(de)           ;0151 1a
-    cp 07h              ;0152 fe 07
-    jp z,l2945h         ;0154 ca 45 29
-    ld hl,0004h         ;0157 21 04 00
-    add hl,de           ;015a 19
-    ld a,(hl)           ;015b 7e
-    pop hl              ;015c e1
-    pop de              ;015d d1
-    and a               ;015e a7
-    ret                 ;015f c9
-    pop hl              ;0160 e1
-    pop de              ;0161 d1
-    scf                 ;0162 37
-    ret                 ;0163 c9
-    call 2e71h          ;0164 cd 71 2e
-    sub 0e7h            ;0167 d6 e7
-    and a               ;0169 a7
-    ret nz              ;016a c0
-    call 2730h          ;016b cd 30 27
-    xor a               ;016e af
-    ret                 ;016f c9
-    call 2e71h          ;0170 cd 71 2e
-    cp 9fh              ;0173 fe 9f
-    ret z               ;0175 c8
-    cp 9dh              ;0176 fe 9d
-    ret                 ;0178 c9
-    ld a,(hl)           ;0179 7e
-    cp 01h              ;017a fe 01
-    scf                 ;017c 37
-    ret nz              ;017d c0
-    push de             ;017e d5
-    ex de,hl            ;017f eb
-    ld hl,0005h         ;0180 21 05 00
-    add hl,de           ;0183 19
-    ld a,(hl)           ;0184 7e
-    inc hl              ;0185 23
-    ld h,(hl)           ;0186 66
-    ld l,a              ;0187 6f
-    ld a,(hl)           ;0188 7e
-    cp 0edh             ;0189 fe ed
-    jp z,2981h          ;018b ca 81 29
-    cp 0ebh             ;018e fe eb
-    scf                 ;0190 37
-    jp nz,2981h         ;0191 c2 81 29
-    inc hl              ;0194 23
-    ld a,(hl)           ;0195 7e
-    dec hl              ;0196 2b
-    xor 07h             ;0197 ee 07
-    sub 01h             ;0199 d6 01
-    ld a,(hl)           ;019b 7e
-    ex de,hl            ;019c eb
-    pop de              ;019d d1
-    ret                 ;019e c9
-    ld a,(de)           ;019f 1a
-    ld (hl),a           ;01a0 77
-    ld a,l              ;01a1 7d
-    ld (de),a           ;01a2 12
-    ld b,h              ;01a3 44
-    inc de              ;01a4 13
-    inc hl              ;01a5 23
-    ld a,(de)           ;01a6 1a
-    ld (hl),a           ;01a7 77
-    ld a,b              ;01a8 78
-    ld (de),a           ;01a9 12
-    inc hl              ;01aa 23
-    ret                 ;01ab c9
-    call 2ecah          ;01ac cd ca 2e
-    rst 20h             ;01af e7
-    ret                 ;01b0 c9
-    push af             ;01b1 f5
-    ex de,hl            ;01b2 eb
-    call 273dh          ;01b3 cd 3d 27
-    pop af              ;01b6 f1
-    call 48beh          ;01b7 cd be 48
-    jp l2984h           ;01ba c3 84 29
-    push hl             ;01bd e5
-    push de             ;01be d5
-    ld hl,0ffd8h        ;01bf 21 d8 ff
-    add hl,sp           ;01c2 39
-    ex de,hl            ;01c3 eb
-    ld hl,(l16c3h)      ;01c4 2a c3 16
-    add hl,de           ;01c7 19
-    ccf                 ;01c8 3f
-    pop de              ;01c9 d1
-    pop hl              ;01ca e1
-    ret nc              ;01cb d0
-    ld a,05h            ;01cc 3e 05
-    jp 1fc2h            ;01ce c3 c2 1f
-    ld a,(12c4h)        ;01d1 3a c4 12
-    sub 01h             ;01d4 d6 01
-    jp nz,29c6h         ;01d6 c2 c6 29
-    ld (12b6h),a        ;01d9 32 b6 12
-    ld a,02h            ;01dc 3e 02
-    ld (12c4h),a        ;01de 32 c4 12
-    ld a,(12c4h)        ;01e1 3a c4 12
-    ld b,00h            ;01e4 06 00
-    cp 02h              ;01e6 fe 02
-    jp z,29d2h          ;01e8 ca d2 29
-    ld b,20h            ;01eb 06 20
-    push bc             ;01ed c5
-    call 4cfdh          ;01ee cd fd 4c
-    jp z,l2a4ah         ;01f1 ca 4a 2a
-    jp p,l29e3h         ;01f4 f2 e3 29
-    pop af              ;01f7 f1
-    or 80h              ;01f8 f6 80
-    push af             ;01fa f5
-    call 4ce2h          ;01fb cd e2 4c
-    ld a,(12c4h)        ;01fe 3a c4 12
-    cp 02h              ;0201 fe 02
-    jp z,l2a2ch         ;0203 ca 2c 2a
-    push af             ;0206 f5
-    ld hl,12bbh         ;0207 21 bb 12
-    call 4d6bh          ;020a cd 6b 4d
-    call 1f5eh          ;020d cd 5e 1f
-    jp nc,29fbh         ;0210 d2 fb 29
-    call 4e86h          ;0213 cd 86 4e
-    ld hl,2a07h         ;0216 21 07 2a
-    push hl             ;0219 e5
-    call 4e57h          ;021a cd 57 4e
-    pop hl              ;021d e1
-    pop bc              ;021e c1
-    jp 2a48h            ;021f c3 48 2a
-    pop bc              ;0222 c1
-    ld hl,(12b5h)       ;0223 2a b5 12
-    push hl             ;0226 e5
-    ld a,b              ;0227 78
-    cp 04h              ;0228 fe 04
-    dw 1bcah            ;022a
+    db 0c3h
 
-; Start of BASIC variables ==================================================
+autoload:
+;Array of 120 integers
+    dw  2761h, 0fe7eh,  3701h, 0d5c0h,  11e5h,  0005h,  5e19h,  5623h
+    dw 0fe1ah, 0c2ebh,  2945h,  1a13h,  07feh,  45cah,  2129h,  0004h
+    dw  7e19h, 0d1e1h, 0c9a7h, 0d1e1h, 0c937h,  71cdh, 0d62eh, 0a7e7h
+    dw 0cdc0h,  2730h, 0c9afh,  71cdh, 0fe2eh, 0c89fh,  9dfeh,  7ec9h
+    dw  01feh, 0c037h, 0ebd5h,  0521h,  1900h,  237eh,  6f66h, 0fe7eh
+    dw 0caedh,  2981h, 0ebfeh, 0c237h,  2981h,  7e23h, 0ee2bh, 0d607h
+    dw  7e01h, 0d1ebh,  1ac9h,  7d77h,  4412h,  2313h,  771ah,  1278h
+    dw 0c923h, 0cacdh, 0e72eh, 0f5c9h, 0cdebh,  273dh, 0cdf1h,  48beh
+    dw  84c3h, 0e529h,  21d5h, 0ffd8h, 0eb39h, 0c32ah,  1916h, 0d13fh
+    dw 0d0e1h,  053eh, 0c2c3h,  3a1fh,  12c4h,  01d6h, 0c6c2h,  3229h
+    dw  12b6h,  023eh, 0c432h,  3a12h,  12c4h,  0006h,  02feh, 0d2cah
+    dw  0629h, 0c520h, 0fdcdh, 0ca4ch,  2a4ah, 0e3f2h, 0f129h,  80f6h
+    dw 0cdf5h,  4ce2h, 0c43ah, 0fe12h, 0ca02h,  2a2ch,  21f5h,  12bbh
+    dw  6bcdh, 0cd4dh,  1f5eh, 0fbd2h, 0cd29h,  4e86h,  0721h, 0e52ah
+    dw  57cdh, 0e14eh, 0c3c1h,  2a48h,  2ac1h,  12b5h,  78e5h,  04feh
+
+    db 0cah, 1bh
 
 scrtab:
 ;Array of 64 integers
@@ -694,7 +565,7 @@ l0530h:
     push hl             ;053f e5
     ld hl,(l02d0h)      ;0540 2a d0 02
     add hl,hl           ;0543 29
-    ld de,013ah         ;0544 11 3a 01
+    ld de,autoload      ;0544 11 3a 01
     add hl,de           ;0547 19
     pop de              ;0548 d1
     ld (hl),e           ;0549 73
@@ -2810,11 +2681,14 @@ l1361h:
     ret                 ;1361 c9
 
 l1362h:
-    call clear_screen   ;1362 cd bd 1b
-    ld hl,(013ah)       ;1365 2a 3a 01
-    ld a,h              ;1368 7c
-    or l                ;1369 b5
-    jp nz,l1379h        ;136a c2 79 13
+    ;GOSUB clear_screen
+    call clear_screen
+
+    ;IF AUTOLOAD(0) <> 0 THEN GOTO l1379h
+    ld hl,(autoload)
+    ld a,h
+    or l
+    jp nz,l1379h
 
     ;PRINT "No current autoload command"
     call pr0a
@@ -2828,7 +2702,7 @@ l1379h:
     ld hl,cur_aload_is
     call pv2d
 
-    ld hl,(013ah)       ;1382 2a 3a 01
+    ld hl,(autoload)    ;1382 2a 3a 01
     ld (l02deh),hl      ;1385 22 de 02
     ld hl,0001h         ;1388 21 01 00
     jp l13a7h           ;138b c3 a7 13
@@ -2836,7 +2710,7 @@ l138eh:
     call pr0a           ;138e cd 3d 2d
     ld hl,(l02d0h)      ;1391 2a d0 02
     add hl,hl           ;1394 29
-    ld de,013ah         ;1395 11 3a 01
+    ld de,autoload      ;1395 11 3a 01
     add hl,de           ;1398 19
     ld e,(hl)           ;1399 5e
     inc hl              ;139a 23
@@ -2891,7 +2765,7 @@ l13bfh:
     inc hl              ;13ef 23
     ld l,(hl)           ;13f0 6e
     ld h,00h            ;13f1 26 00
-    ld (013ah),hl       ;13f3 22 3a 01
+    ld (autoload),hl    ;13f3 22 3a 01
     ld hl,0001h         ;13f6 21 01 00
     jp l145ah           ;13f9 c3 5a 14
 l13fch:
@@ -2905,7 +2779,7 @@ l13fch:
     push hl             ;1408 e5
     ld hl,(l02d0h)      ;1409 2a d0 02
     add hl,hl           ;140c 29
-    ld de,013ah         ;140d 11 3a 01
+    ld de,autoload      ;140d 11 3a 01
     add hl,de           ;1410 19
     pop de              ;1411 d1
     ld (hl),e           ;1412 73
@@ -2913,7 +2787,7 @@ l13fch:
     ld (hl),d           ;1414 72
     ld hl,(l02d0h)      ;1415 2a d0 02
     add hl,hl           ;1418 29
-    ld de,013ah         ;1419 11 3a 01
+    ld de,autoload      ;1419 11 3a 01
     add hl,de           ;141c 19
     ld e,(hl)           ;141d 5e
     inc hl              ;141e 23
@@ -2972,9 +2846,9 @@ l145ah:
     add hl,hl           ;1469 29
 l146ah:
     jp c,l13fch         ;146a da fc 13
-    ld hl,(013ah)       ;146d 2a 3a 01
+    ld hl,(autoload)    ;146d 2a 3a 01
     add hl,hl           ;1470 29
-    ld de,l013ch        ;1471 11 3c 01
+    ld de,autoload+2    ;1471 11 3c 01
     add hl,de           ;1474 19
     ld de,0000h         ;1475 11 00 00
     ld (hl),e           ;1478 73
@@ -2984,7 +2858,7 @@ l146ah:
 sub_147eh:
     ld hl,(l02d0h)      ;147e 2a d0 02
     add hl,hl           ;1481 29
-    ld de,013ah         ;1482 11 3a 01
+    ld de,autoload      ;1482 11 3a 01
     add hl,de           ;1485 19
     push hl             ;1486 e5
     ld e,(hl)           ;1487 5e
@@ -3194,7 +3068,7 @@ l152fh:
 l15bdh:
     ld hl,(l02d0h)      ;15bd 2a d0 02
     add hl,hl           ;15c0 29
-    ld de,013ah         ;15c1 11 3a 01
+    ld de,autoload      ;15c1 11 3a 01
     add hl,de           ;15c4 19
     ld e,(hl)           ;15c5 5e
     inc hl              ;15c6 23
@@ -4156,20 +4030,22 @@ readline:
     call buffin
 
     ;PRINT
-    call pr0a           ;1bd8 cd 3d 2d
-    ld hl,empty_string  ;1bdb 21 98 28
-    call pv2d           ;1bde cd 31 2c
+    call pr0a
+    ld hl,empty_string
+    call pv2d
 
-    ld hl,(buf)         ;1be1 2a e0 02
-    inc hl              ;1be4 23
-    ld l,(hl)           ;1be5 6e
-    ld h,00h            ;1be6 26 00
-    ld a,h              ;1be8 7c
-    or l                ;1be9 b5
-    jp nz,l1bf4h        ;1bea c2 f4 1b
-    ld hl,0000h         ;1bed 21 00 00
-    ld (rr),hl          ;1bf0 22 b2 02
-    ret                 ;1bf3 c9
+    ;IF PEEK (BUF+1) = 0 THEN R = 0 : RETURN
+    ld hl,(buf)
+    inc hl
+    ld l,(hl)
+    ld h,00h
+    ld a,h
+    or l
+    jp nz,l1bf4h
+    ld hl,0000h
+    ld (rr),hl
+    ret
+
 l1bf4h:
     ld hl,(buf)         ;1bf4 2a e0 02
     inc hl              ;1bf7 23
