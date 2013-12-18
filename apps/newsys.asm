@@ -20,45 +20,18 @@ mini:
     dw 0                ;Mini-Winchester flag: 1=MW, 0=Corvus
 iobyte:
     dw 0                ;Value to be stored in the CP/M IOBYTE
-l010eh:
-    nop                 ;010e 00
-    nop                 ;010f 00
-    nop                 ;0110 00
-    nop                 ;0111 00
-    nop                 ;0112 00
-    nop                 ;0113 00
-    nop                 ;0114 00
-    nop                 ;0115 00
-    nop                 ;0116 00
-    nop                 ;0117 00
-    nop                 ;0118 00
-    nop                 ;0119 00
-    nop                 ;011a 00
-    ld (hl),a           ;011b 77
-    dec hl              ;011c 2b
-    ld a,b              ;011d 78
-    and a               ;011e a7
-    jp z,2910h          ;011f ca 10 29
-    pop de              ;0122 d1
-    dec hl              ;0123 2b
-l0124h:
-    ld (hl),d           ;0124 72
-    dec hl              ;0125 2b
-    ld (hl),e           ;0126 73
-    dec a               ;0127 3d
-    jp nz,l2907h        ;0128 c2 07 29
-    pop bc              ;012b c1
-    ld de,0fffbh        ;012c 11 fb ff
-    add hl,de           ;012f 19
-    pop af              ;0130 f1
-    ld (hl),a           ;0131 77
-    ld a,00h            ;0132 3e 00
-    inc hl              ;0134 23
-    ld (hl),a           ;0135 77
-    dec hl              ;0136 2b
-    and a               ;0137 a7
-    ret nz              ;0138 c0
-    db 0c3h
+
+drv:
+;Array of 10 integers
+    dw  0000h,  0000h,  0000h,  0000h,  0000h,  0000h,  7700h,  782bh
+    dw 0caa7h,  2910h,  2bd1h
+
+diskdev:
+;Array of 10 integers
+    dw  2b72h,  3d73h,  07c2h, 0c129h, 0fb11h,  19ffh,  77f1h,  003eh
+    dw  7723h, 0a72bh
+
+    db 0c0h, 0c3h
 
 autoload:
 ;Array of 120 integers
@@ -519,7 +492,7 @@ l04dfh:
     ld hl,(l02d0h)      ;04f0 2a d0 02
     add hl,hl           ;04f3 29
     ld (02eah),hl       ;04f4 22 ea 02
-    ld de,l010eh        ;04f7 11 0e 01
+    ld de,drv           ;04f7 11 0e 01
     add hl,de           ;04fa 19
     pop de              ;04fb d1
     ld (hl),e           ;04fc 73
@@ -532,7 +505,7 @@ l04dfh:
     ld h,00h            ;0505 26 00
     push hl             ;0507 e5
     ld hl,(02eah)       ;0508 2a ea 02
-    ld de,l0124h        ;050b 11 24 01
+    ld de,diskdev       ;050b 11 24 01
     add hl,de           ;050e 19
     pop de              ;050f d1
     ld (hl),e           ;0510 73
@@ -2121,7 +2094,7 @@ l0f96h:
     jp nz,l0fe7h        ;0fd3 c2 e7 0f
     ld hl,(l02dch)      ;0fd6 2a dc 02
     add hl,hl           ;0fd9 29
-    ld de,l010eh        ;0fda 11 0e 01
+    ld de,drv           ;0fda 11 0e 01
     add hl,de           ;0fdd 19
     ld de,0000h         ;0fde 11 00 00
     ld (hl),e           ;0fe1 73
@@ -2137,7 +2110,7 @@ l0fe7h:
     jp nz,l1004h        ;0ff0 c2 04 10
     ld hl,(l02dch)      ;0ff3 2a dc 02
     add hl,hl           ;0ff6 29
-    ld de,l010eh        ;0ff7 11 0e 01
+    ld de,drv           ;0ff7 11 0e 01
     add hl,de           ;0ffa 19
     ld de,0001h         ;0ffb 11 01 00
     ld (hl),e           ;0ffe 73
@@ -2153,7 +2126,7 @@ l1004h:
     jp nz,l1021h        ;100d c2 21 10
     ld hl,(l02dch)      ;1010 2a dc 02
     add hl,hl           ;1013 29
-    ld de,l010eh        ;1014 11 0e 01
+    ld de,drv           ;1014 11 0e 01
     add hl,de           ;1017 19
     ld de,00ffh         ;1018 11 ff 00
     ld (hl),e           ;101b 73
@@ -2188,7 +2161,7 @@ l1021h:
     jp nz,l1062h        ;104e c2 62 10
     ld hl,(l02dch)      ;1051 2a dc 02
     add hl,hl           ;1054 29
-    ld de,l010eh        ;1055 11 0e 01
+    ld de,drv           ;1055 11 0e 01
     add hl,de           ;1058 19
     ld de,0004h         ;1059 11 04 00
     ld (hl),e           ;105c 73
@@ -2204,7 +2177,7 @@ l1062h:
     jp nz,l107fh        ;106b c2 7f 10
     ld hl,(l02dch)      ;106e 2a dc 02
     add hl,hl           ;1071 29
-    ld de,l010eh        ;1072 11 0e 01
+    ld de,drv           ;1072 11 0e 01
     add hl,de           ;1075 19
     ld de,0002h         ;1076 11 02 00
     ld (hl),e           ;1079 73
@@ -2220,7 +2193,7 @@ l107fh:
     jp nz,l109ch        ;1088 c2 9c 10
     ld hl,(l02dch)      ;108b 2a dc 02
     add hl,hl           ;108e 29
-    ld de,l010eh        ;108f 11 0e 01
+    ld de,drv           ;108f 11 0e 01
     add hl,de           ;1092 19
     ld de,0003h         ;1093 11 03 00
     ld (hl),e           ;1096 73
@@ -2238,7 +2211,7 @@ l109fh:
     call readline       ;10a8 cd ca 1b
     ld hl,(l02dch)      ;10ab 2a dc 02
     add hl,hl           ;10ae 29
-    ld de,l0124h        ;10af 11 24 01
+    ld de,diskdev       ;10af 11 24 01
     add hl,de           ;10b2 19
     push hl             ;10b3 e5
     ld hl,(l02d8h)      ;10b4 2a d8 02
@@ -2249,7 +2222,7 @@ l109fh:
     ld (hl),d           ;10bb 72
     ld hl,(l02dch)      ;10bc 2a dc 02
     add hl,hl           ;10bf 29
-    ld de,l010eh        ;10c0 11 0e 01
+    ld de,drv           ;10c0 11 0e 01
     add hl,de           ;10c3 19
     ld e,(hl)           ;10c4 5e
     inc hl              ;10c5 23
@@ -2276,7 +2249,7 @@ l109fh:
     jp nz,l10f8h        ;10e7 c2 f8 10
     ld hl,(l02dch)      ;10ea 2a dc 02
     add hl,hl           ;10ed 29
-    ld de,l010eh        ;10ee 11 0e 01
+    ld de,drv           ;10ee 11 0e 01
     add hl,de           ;10f1 19
     ld de,0005h         ;10f2 11 05 00
     ld (hl),e           ;10f5 73
@@ -2299,7 +2272,7 @@ l10fbh:
     jp nz,l1124h        ;1110 c2 24 11
     ld hl,(l02dch)      ;1113 2a dc 02
     add hl,hl           ;1116 29
-    ld de,l010eh        ;1117 11 0e 01
+    ld de,drv           ;1117 11 0e 01
     add hl,de           ;111a 19
     ld de,0002h         ;111b 11 02 00
     ld (hl),e           ;111e 73
@@ -2315,7 +2288,7 @@ l1124h:
     jp nz,l1141h        ;112d c2 41 11
     ld hl,(l02dch)      ;1130 2a dc 02
     add hl,hl           ;1133 29
-    ld de,l010eh        ;1134 11 0e 01
+    ld de,drv           ;1134 11 0e 01
     add hl,de           ;1137 19
     ld de,0003h         ;1138 11 03 00
     ld (hl),e           ;113b 73
@@ -2331,7 +2304,7 @@ l1141h:
     jp nz,l115eh        ;114a c2 5e 11
     ld hl,(l02dch)      ;114d 2a dc 02
     add hl,hl           ;1150 29
-    ld de,l010eh        ;1151 11 0e 01
+    ld de,drv           ;1151 11 0e 01
     add hl,de           ;1154 19
     ld de,0004h         ;1155 11 04 00
     ld (hl),e           ;1158 73
@@ -2360,7 +2333,7 @@ l1161h:
     jp nz,l1197h        ;117f c2 97 11
     ld hl,(l02dch)      ;1182 2a dc 02
     add hl,hl           ;1185 29
-    ld de,l010eh        ;1186 11 0e 01
+    ld de,drv           ;1186 11 0e 01
     add hl,de           ;1189 19
     push hl             ;118a e5
     ld e,(hl)           ;118b 5e
@@ -2380,7 +2353,7 @@ l1197h:
 sub_119ah:
     ld hl,(l02dch)      ;119a 2a dc 02
     add hl,hl           ;119d 29
-    ld de,l010eh        ;119e 11 0e 01
+    ld de,drv           ;119e 11 0e 01
     add hl,de           ;11a1 19
     ld e,(hl)           ;11a2 5e
     inc hl              ;11a3 23
@@ -2399,7 +2372,7 @@ sub_119ah:
 l11b7h:
     ld hl,(l02dch)      ;11b7 2a dc 02
     add hl,hl           ;11ba 29
-    ld de,l010eh        ;11bb 11 0e 01
+    ld de,drv           ;11bb 11 0e 01
     add hl,de           ;11be 19
     ld e,(hl)           ;11bf 5e
     inc hl              ;11c0 23
@@ -2421,7 +2394,7 @@ l11b7h:
 l11d9h:
     ld hl,(l02dch)      ;11d9 2a dc 02
     add hl,hl           ;11dc 29
-    ld de,l010eh        ;11dd 11 0e 01
+    ld de,drv           ;11dd 11 0e 01
     add hl,de           ;11e0 19
     ld e,(hl)           ;11e1 5e
     inc hl              ;11e2 23
@@ -2455,7 +2428,7 @@ l11fdh:
     ;IF DRV (D) = 2 THEN GOTO l1228h
     ld hl,(l02dch)
     add hl,hl
-    ld de,l010eh
+    ld de,drv
     add hl,de
     ld e,(hl)
     inc hl
@@ -2476,7 +2449,7 @@ l11fdh:
 l1228h:
     ld hl,(l02dch)      ;1228 2a dc 02
     add hl,hl           ;122b 29
-    ld de,l010eh        ;122c 11 0e 01
+    ld de,drv           ;122c 11 0e 01
     add hl,de           ;122f 19
     ld e,(hl)           ;1230 5e
     inc hl              ;1231 23
@@ -2497,7 +2470,7 @@ l1228h:
 l1247h:
     ld hl,(l02dch)      ;1247 2a dc 02
     add hl,hl           ;124a 29
-    ld de,l010eh        ;124b 11 0e 01
+    ld de,drv           ;124b 11 0e 01
     add hl,de           ;124e 19
     ld e,(hl)           ;124f 5e
     inc hl              ;1250 23
@@ -2518,7 +2491,7 @@ l1247h:
 l1266h:
     ld hl,(l02dch)      ;1266 2a dc 02
     add hl,hl           ;1269 29
-    ld de,l010eh        ;126a 11 0e 01
+    ld de,drv           ;126a 11 0e 01
     add hl,de           ;126d 19
     ld e,(hl)           ;126e 5e
     inc hl              ;126f 23
@@ -2544,7 +2517,7 @@ l1285h:
 
     ld hl,(l02dch)      ;128e 2a dc 02
     add hl,hl           ;1291 29
-    ld de,l0124h        ;1292 11 24 01
+    ld de,diskdev       ;1292 11 24 01
     add hl,de           ;1295 19
     ld e,(hl)           ;1296 5e
     inc hl              ;1297 23
@@ -2561,7 +2534,7 @@ l129eh:
 
     ld hl,(l02dch)      ;12a7 2a dc 02
     add hl,hl           ;12aa 29
-    ld de,l010eh        ;12ab 11 0e 01
+    ld de,drv           ;12ab 11 0e 01
     add hl,de           ;12ae 19
     ld e,(hl)           ;12af 5e
     inc hl              ;12b0 23
@@ -2581,7 +2554,7 @@ l129eh:
 l12c6h:
     ld hl,(l02dch)      ;12c6 2a dc 02
     add hl,hl           ;12c9 29
-    ld de,l010eh        ;12ca 11 0e 01
+    ld de,drv           ;12ca 11 0e 01
     add hl,de           ;12cd 19
     ld e,(hl)           ;12ce 5e
     inc hl              ;12cf 23
@@ -2599,7 +2572,7 @@ l12c6h:
 l12e5h:
     ld hl,(l02dch)      ;12e5 2a dc 02
     add hl,hl           ;12e8 29
-    ld de,l010eh        ;12e9 11 0e 01
+    ld de,drv           ;12e9 11 0e 01
     add hl,de           ;12ec 19
     ld e,(hl)           ;12ed 5e
     inc hl              ;12ee 23
@@ -2617,7 +2590,7 @@ l12e5h:
 l1304h:
     ld hl,(l02dch)      ;1304 2a dc 02
     add hl,hl           ;1307 29
-    ld de,l010eh        ;1308 11 0e 01
+    ld de,drv           ;1308 11 0e 01
     add hl,de           ;130b 19
     ld e,(hl)           ;130c 5e
     inc hl              ;130d 23
@@ -2638,7 +2611,7 @@ l1304h:
 l1323h:
     ld hl,(l02dch)      ;1323 2a dc 02
     add hl,hl           ;1326 29
-    ld de,l010eh        ;1327 11 0e 01
+    ld de,drv           ;1327 11 0e 01
     add hl,de           ;132a 19
     ld e,(hl)           ;132b 5e
     inc hl              ;132c 23
@@ -2659,7 +2632,7 @@ l1323h:
 l1342h:
     ld hl,(l02dch)      ;1342 2a dc 02
     add hl,hl           ;1345 29
-    ld de,l010eh        ;1346 11 0e 01
+    ld de,drv           ;1346 11 0e 01
     add hl,de           ;1349 19
     ld e,(hl)           ;134a 5e
     inc hl              ;134b 23
@@ -2881,7 +2854,7 @@ sub_149ah:
 l14a0h:
     ld hl,(l02d0h)      ;14a0 2a d0 02
     add hl,hl           ;14a3 29
-    ld de,l010eh        ;14a4 11 0e 01
+    ld de,drv           ;14a4 11 0e 01
     add hl,de           ;14a7 19
     ld e,(hl)           ;14a8 5e
     inc hl              ;14a9 23
@@ -2898,7 +2871,7 @@ l14a0h:
     ld (hl),e           ;14ba 73
     ld hl,(l02d0h)      ;14bb 2a d0 02
     add hl,hl           ;14be 29
-    ld de,l0124h        ;14bf 11 24 01
+    ld de,diskdev       ;14bf 11 24 01
     add hl,de           ;14c2 19
     ld e,(hl)           ;14c3 5e
     inc hl              ;14c4 23
