@@ -3805,15 +3805,18 @@ l1871h:
     or l
     jp nz,l18cfh
 
-    ld hl,(termtype)    ;18be 2a c6 02
-    ld a,l              ;18c1 7d
-    xor 80h             ;18c2 ee 80
-    ld l,a              ;18c4 6f
-    ld a,h              ;18c5 7c
-    xor 00h             ;18c6 ee 00
-    ld h,a              ;18c8 67
-    ld (termtype),hl    ;18c9 22 c6 02
-    jp l1743h           ;18cc c3 43 17
+    ;TERMTYPE = (TERMTYPE XOR &H80)
+    ld hl,(termtype)
+    ld a,l
+    xor 80h
+    ld l,a
+    ld a,h
+    xor 00h
+    ld h,a
+    ld (termtype),hl
+
+    ;GOTO l1743h
+    jp l1743h
 
 l18cfh:
     ;IF R = &H33 THEN GOTO l192fh
@@ -3915,79 +3918,109 @@ l194ch:
     ld hl,screen_type
     call pv1d
 
-    call readline       ;1955 cd ca 1b
-    ld hl,(rr)          ;1958 2a b2 02
-    ld de,0ffbfh        ;195b 11 bf ff
-    add hl,de           ;195e 19
-    ld a,h              ;195f 7c
-    or l                ;1960 b5
-    jp nz,l1975h        ;1961 c2 75 19
-    ld hl,(termtype)    ;1964 2a c6 02
-    ld a,l              ;1967 7d
-    and 80h             ;1968 e6 80
-    ld l,a              ;196a 6f
-    ld a,h              ;196b 7c
-    and 00h             ;196c e6 00
-    ld h,a              ;196e 67
-    ld (termtype),hl    ;196f 22 c6 02
-    jp l1aa6h           ;1972 c3 a6 1a
+    ;GOSUB readline
+    call readline
+
+    ;IF R <> &H41 THEN GOTO l1975h
+    ld hl,(rr)
+    ld de,0-'A'
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1975h
+
+    ;TERMTYPE = (TERMTYPE AND &H80)
+    ld hl,(termtype)
+    ld a,l
+    and 80h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld (termtype),hl
+
+    ;GOTO l1aa6h
+    jp l1aa6h
+
 l1975h:
-    ld hl,(rr)          ;1975 2a b2 02
-    ld de,0ffach        ;1978 11 ac ff
-    add hl,de           ;197b 19
-    ld a,h              ;197c 7c
-    or l                ;197d b5
-    jp nz,l199ah        ;197e c2 9a 19
-    ld hl,(termtype)    ;1981 2a c6 02
-    ld a,l              ;1984 7d
-    and 80h             ;1985 e6 80
-    ld l,a              ;1987 6f
-    ld a,h              ;1988 7c
-    and 00h             ;1989 e6 00
-    ld h,a              ;198b 67
-    ld a,l              ;198c 7d
-    or 02h              ;198d f6 02
-    ld l,a              ;198f 6f
-    ld a,h              ;1990 7c
-    or 00h              ;1991 f6 00
-    ld h,a              ;1993 67
-    ld (termtype),hl    ;1994 22 c6 02
-    jp l1aa6h           ;1997 c3 a6 1a
+    ;IF R <> &H54 THEN GOTO l199ah
+    ld hl,(rr)
+    ld de,0-'T'
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l199ah
+
+    ;TERMTYPE = (TERMTYPE AND &H80) OR 2
+    ld hl,(termtype)
+    ld a,l
+    and 80h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,l
+    or 02h
+    ld l,a
+    ld a,h
+    or 00h
+    ld h,a
+    ld (termtype),hl
+
+    ;GOTO l1aa6h
+    jp l1aa6h
+
 l199ah:
-    ld hl,(rr)          ;199a 2a b2 02
-    ld de,0ffb8h        ;199d 11 b8 ff
-    add hl,de           ;19a0 19
-    ld a,h              ;19a1 7c
-    or l                ;19a2 b5
-    jp nz,l1743h        ;19a3 c2 43 17
+    ;IF R <> &H48 THEN GOTO l1743h
+    ld hl,(rr)
+    ld de,0ffb8h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1743h
 
     ;PRINT "Lead-in code E(scape) or T(ilde) ? ";
     call pr0a
     ld hl,esc_or_tilde
     call pv1d
 
-    call readline       ;19af cd ca 1b
-    ld hl,(rr)          ;19b2 2a b2 02
-    ld de,0ffbbh        ;19b5 11 bb ff
-    add hl,de           ;19b8 19
-    ld a,h              ;19b9 7c
-    or l                ;19ba b5
-    jp nz,l19c7h        ;19bb c2 c7 19
-    ld hl,001bh         ;19be 21 1b 00
-    ld (leadin),hl      ;19c1 22 c8 02
-    jp l19dfh           ;19c4 c3 df 19
+    ;GOSUB readline
+    call readline
+
+    ;IF R <> &H45 THEN GOTO l19c7h
+    ld hl,(rr)
+    ld de,0ffbbh
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l19c7h
+
+    ;LEADIN = &H1B
+    ld hl,001bh
+    ld (leadin),hl
+
+    ;GOTO l19dfh
+    jp l19dfh
+
 l19c7h:
-    ld hl,(rr)          ;19c7 2a b2 02
-    ld de,0ffach        ;19ca 11 ac ff
-    add hl,de           ;19cd 19
-    ld a,h              ;19ce 7c
-    or l                ;19cf b5
-    jp nz,l19dch        ;19d0 c2 dc 19
-    ld hl,007eh         ;19d3 21 7e 00
-    ld (leadin),hl      ;19d6 22 c8 02
-    jp l19dfh           ;19d9 c3 df 19
+    ;IF R <> &H54 THEN GOTO l19dch
+    ld hl,(rr)
+    ld de,0-'T'
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l19dch
+
+    ;LEADIN = &H7E
+    ld hl,007eh
+    ld (leadin),hl
+
+    ;GOTO l19dfh
+    jp l19dfh
+
 l19dch:
-    jp l1743h           ;19dc c3 43 17
+    ;GOTO l1743h
+    jp l1743h
 
 l19dfh:
     ;TERMTYPE = (TERMTYPE AND &H80) OR 1
