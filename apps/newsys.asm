@@ -119,13 +119,13 @@ lptype:
                         ;                         2=8024
 u1:
     dw 0007h            ;Temp variable used compare 8251 stop bits setting
-
-l02d8h:
-    dw 16cdh
-l02dah:
-    dw 7327h
-l02dch:
-    dw 7223h
+nn:
+    dw 16cdh            ;Integer parsed from user input
+r1:
+    dw 7327h            ;Temp variable that holds a copy of R
+                        ;  (first char of user input)
+dd:
+    dw 7223h            ;CP/M drive number of current drive
 l02deh:
     dw 0c32bh
 
@@ -1258,8 +1258,8 @@ l09e8h:
     call pv1d
 
     call readline       ;0a03 cd ca 1b
-    ld hl,(l02d8h)      ;0a06 2a d8 02
-    ld de,0ff92h        ;0a09 11 92 ff
+    ld hl,(nn)          ;0a06 2a d8 02
+    ld de,0-110         ;0a09 11 92 ff
     add hl,de           ;0a0c 19
     ld a,h              ;0a0d 7c
     or l                ;0a0e b5
@@ -1268,7 +1268,7 @@ l09e8h:
     ld (baud),hl        ;0a15 22 c2 02
     jp l0a2dh           ;0a18 c3 2d 0a
 l0a1bh:
-    ld hl,(l02d8h)      ;0a1b 2a d8 02
+    ld hl,(nn)          ;0a1b 2a d8 02
     ld de,0fed4h        ;0a1e 11 d4 fe
     add hl,de           ;0a21 19
     ld a,h              ;0a22 7c
@@ -1277,8 +1277,8 @@ l0a1bh:
     ld hl,0055h         ;0a27 21 55 00
     ld (baud),hl        ;0a2a 22 c2 02
 l0a2dh:
-    ld hl,(l02d8h)      ;0a2d 2a d8 02
-    ld de,0fb50h        ;0a30 11 50 fb
+    ld hl,(nn)          ;0a2d 2a d8 02
+    ld de,0-1200        ;0a30 11 50 fb
     add hl,de           ;0a33 19
     ld a,h              ;0a34 7c
     or l                ;0a35 b5
@@ -1287,7 +1287,7 @@ l0a2dh:
     ld (baud),hl        ;0a3c 22 c2 02
     jp l0a54h           ;0a3f c3 54 0a
 l0a42h:
-    ld hl,(l02d8h)      ;0a42 2a d8 02
+    ld hl,(nn)          ;0a42 2a d8 02
     ld de,0da80h        ;0a45 11 80 da
     add hl,de           ;0a48 19
     ld a,h              ;0a49 7c
@@ -1296,8 +1296,8 @@ l0a42h:
     ld hl,00eeh         ;0a4e 21 ee 00
     ld (baud),hl        ;0a51 22 c2 02
 l0a54h:
-    ld hl,(l02d8h)      ;0a54 2a d8 02
-    ld de,0ed40h        ;0a57 11 40 ed
+    ld hl,(nn)          ;0a54 2a d8 02
+    ld de,0-4800        ;0a57 11 40 ed
     add hl,de           ;0a5a 19
     ld a,h              ;0a5b 7c
     or l                ;0a5c b5
@@ -1305,8 +1305,8 @@ l0a54h:
     ld hl,00cch         ;0a60 21 cc 00
     ld (baud),hl        ;0a63 22 c2 02
 l0a66h:
-    ld hl,(l02d8h)      ;0a66 2a d8 02
-    ld de,0b500h        ;0a69 11 00 b5
+    ld hl,(nn)          ;0a66 2a d8 02
+    ld de,0-19200       ;0a69 11 00 b5
     add hl,de           ;0a6c 19
     ld a,h              ;0a6d 7c
     or l                ;0a6e b5
@@ -1619,7 +1619,7 @@ l0c2dh:
     or l                ;0c7f b5
     jp z,l0e3bh         ;0c80 ca 3b 0e
     ld hl,(rr)          ;0c83 2a b2 02
-    ld (l02d8h+2),hl    ;0c86 22 da 02
+    ld (r1)    ,hl      ;0c86 22 da 02
 
     ;PRINT "New device # ? "
     call pr0a
@@ -1627,40 +1627,40 @@ l0c2dh:
     call pv1d
 
     call readline       ;0c92 cd ca 1b
-    ld hl,(l02dah)      ;0c95 2a da 02
+    ld hl,(r1)          ;0c95 2a da 02
     ld de,0ffcfh        ;0c98 11 cf ff
     add hl,de           ;0c9b 19
     ld a,h              ;0c9c 7c
     or l                ;0c9d b5
     jp nz,l0ca7h        ;0c9e c2 a7 0c
-    ld hl,(l02d8h)      ;0ca1 2a d8 02
+    ld hl,(nn)          ;0ca1 2a d8 02
     ld (lpt),hl         ;0ca4 22 ba 02
 l0ca7h:
-    ld hl,(l02dah)      ;0ca7 2a da 02
+    ld hl,(r1)          ;0ca7 2a da 02
     ld de,0ffceh        ;0caa 11 ce ff
     add hl,de           ;0cad 19
     ld a,h              ;0cae 7c
     or l                ;0caf b5
     jp nz,l0cb9h        ;0cb0 c2 b9 0c
-    ld hl,(l02d8h)      ;0cb3 2a d8 02
+    ld hl,(nn)          ;0cb3 2a d8 02
     ld (ul1),hl         ;0cb6 22 c4 02
 l0cb9h:
-    ld hl,(l02dah)      ;0cb9 2a da 02
+    ld hl,(r1)          ;0cb9 2a da 02
     ld de,0ffcdh        ;0cbc 11 cd ff
     add hl,de           ;0cbf 19
     ld a,h              ;0cc0 7c
     or l                ;0cc1 b5
     jp nz,l0ccbh        ;0cc2 c2 cb 0c
-    ld hl,(l02d8h)      ;0cc5 2a d8 02
+    ld hl,(nn)          ;0cc5 2a d8 02
     ld (rdr),hl         ;0cc8 22 bc 02
 l0ccbh:
-    ld hl,(l02dah)      ;0ccb 2a da 02
+    ld hl,(r1)          ;0ccb 2a da 02
     ld de,0ffcch        ;0cce 11 cc ff
     add hl,de           ;0cd1 19
     ld a,h              ;0cd2 7c
     or l                ;0cd3 b5
     jp nz,l0cddh        ;0cd4 c2 dd 0c
-    ld hl,(l02d8h)      ;0cd7 2a d8 02
+    ld hl,(nn)          ;0cd7 2a d8 02
     ld (pun),hl         ;0cda 22 be 02
 l0cddh:
     jp l0a7bh           ;0cdd c3 7b 0a
@@ -1952,7 +1952,7 @@ l0eadh:
     call pv1d
 
     ld hl,0000h         ;0ed4 21 00 00
-    ld (l02dch),hl      ;0ed7 22 dc 02
+    ld (dd),hl          ;0ed7 22 dc 02
     call sub_119ah      ;0eda cd 9a 11
 
     ;PRINT "C, D :     "
@@ -1961,7 +1961,7 @@ l0eadh:
     call pv1d
 
     ld hl,0001h         ;0ee6 21 01 00
-    ld (l02dch),hl      ;0ee9 22 dc 02
+    ld (dd),hl          ;0ee9 22 dc 02
     call sub_119ah      ;0eec cd 9a 11
 
     ;PRINT "E, F :     ";
@@ -1970,7 +1970,7 @@ l0eadh:
     call pv1d
 
     ld hl,0002h         ;0ef8 21 02 00
-    ld (l02dch),hl      ;0efb 22 dc 02
+    ld (dd),hl          ;0efb 22 dc 02
     call sub_119ah      ;0efe cd 9a 11
 
     ;PRINT "G, H :     ";
@@ -1979,7 +1979,7 @@ l0eadh:
     call pv1d
 
     ld hl,0003h         ;0f0a 21 03 00
-    ld (l02dch),hl      ;0f0d 22 dc 02
+    ld (dd),hl          ;0f0d 22 dc 02
     call sub_119ah      ;0f10 cd 9a 11
 
     ;PRINT "I, J :     ";
@@ -1988,7 +1988,7 @@ l0eadh:
     call pv1d
 
     ld hl,0004h         ;0f1c 21 04 00
-    ld (l02dch),hl      ;0f1f 22 dc 02
+    ld (dd),hl          ;0f1f 22 dc 02
     call sub_119ah      ;0f22 cd 9a 11
 
     ;PRINT "K, L :     ";
@@ -1997,7 +1997,7 @@ l0eadh:
     call pv1d
 
     ld hl,0005h         ;0f2e 21 05 00
-    ld (l02dch),hl      ;0f31 22 dc 02
+    ld (dd),hl          ;0f31 22 dc 02
     call sub_119ah      ;0f34 cd 9a 11
 
     ;PRINT "M, N :     ";
@@ -2006,7 +2006,7 @@ l0eadh:
     call pv1d
 
     ld hl,0006h         ;0f40 21 06 00
-    ld (l02dch),hl      ;0f43 22 dc 02
+    ld (dd),hl          ;0f43 22 dc 02
     call sub_119ah      ;0f46 cd 9a 11
 
     ;"O, P :     ";
@@ -2015,7 +2015,7 @@ l0eadh:
     call pv1d
 
     ld hl,0007h         ;0f52 21 07 00
-    ld (l02dch),hl      ;0f55 22 dc 02
+    ld (dd),hl          ;0f55 22 dc 02
     call sub_119ah      ;0f58 cd 9a 11
 
     ;PRINT
@@ -2073,7 +2073,7 @@ l0f96h:
     call idva           ;0fad cd 64 2c
     ld (bc),a           ;0fb0 02
     nop                 ;0fb1 00
-    ld (l02dch),hl      ;0fb2 22 dc 02
+    ld (dd),hl          ;0fb2 22 dc 02
 
     ;PRINT
     call pr0a
@@ -2092,7 +2092,7 @@ l0f96h:
     ld a,h              ;0fd1 7c
     or l                ;0fd2 b5
     jp nz,l0fe7h        ;0fd3 c2 e7 0f
-    ld hl,(l02dch)      ;0fd6 2a dc 02
+    ld hl,(dd)          ;0fd6 2a dc 02
     add hl,hl           ;0fd9 29
     ld de,drv           ;0fda 11 0e 01
     add hl,de           ;0fdd 19
@@ -2108,7 +2108,7 @@ l0fe7h:
     ld a,h              ;0fee 7c
     or l                ;0fef b5
     jp nz,l1004h        ;0ff0 c2 04 10
-    ld hl,(l02dch)      ;0ff3 2a dc 02
+    ld hl,(dd)          ;0ff3 2a dc 02
     add hl,hl           ;0ff6 29
     ld de,drv           ;0ff7 11 0e 01
     add hl,de           ;0ffa 19
@@ -2124,7 +2124,7 @@ l1004h:
     ld a,h              ;100b 7c
     or l                ;100c b5
     jp nz,l1021h        ;100d c2 21 10
-    ld hl,(l02dch)      ;1010 2a dc 02
+    ld hl,(dd)          ;1010 2a dc 02
     add hl,hl           ;1013 29
     ld de,drv           ;1014 11 0e 01
     add hl,de           ;1017 19
@@ -2159,7 +2159,7 @@ l1021h:
     ld a,h              ;104c 7c
     or l                ;104d b5
     jp nz,l1062h        ;104e c2 62 10
-    ld hl,(l02dch)      ;1051 2a dc 02
+    ld hl,(dd)          ;1051 2a dc 02
     add hl,hl           ;1054 29
     ld de,drv           ;1055 11 0e 01
     add hl,de           ;1058 19
@@ -2175,7 +2175,7 @@ l1062h:
     ld a,h              ;1069 7c
     or l                ;106a b5
     jp nz,l107fh        ;106b c2 7f 10
-    ld hl,(l02dch)      ;106e 2a dc 02
+    ld hl,(dd)          ;106e 2a dc 02
     add hl,hl           ;1071 29
     ld de,drv           ;1072 11 0e 01
     add hl,de           ;1075 19
@@ -2191,7 +2191,7 @@ l107fh:
     ld a,h              ;1086 7c
     or l                ;1087 b5
     jp nz,l109ch        ;1088 c2 9c 10
-    ld hl,(l02dch)      ;108b 2a dc 02
+    ld hl,(dd)          ;108b 2a dc 02
     add hl,hl           ;108e 29
     ld de,drv           ;108f 11 0e 01
     add hl,de           ;1092 19
@@ -2209,18 +2209,18 @@ l109fh:
     call pv1d
 
     call readline       ;10a8 cd ca 1b
-    ld hl,(l02dch)      ;10ab 2a dc 02
+    ld hl,(dd)          ;10ab 2a dc 02
     add hl,hl           ;10ae 29
     ld de,diskdev       ;10af 11 24 01
     add hl,de           ;10b2 19
     push hl             ;10b3 e5
-    ld hl,(l02d8h)      ;10b4 2a d8 02
+    ld hl,(nn)          ;10b4 2a d8 02
     ex de,hl            ;10b7 eb
     pop hl              ;10b8 e1
     ld (hl),e           ;10b9 73
     inc hl              ;10ba 23
     ld (hl),d           ;10bb 72
-    ld hl,(l02dch)      ;10bc 2a dc 02
+    ld hl,(dd)          ;10bc 2a dc 02
     add hl,hl           ;10bf 29
     ld de,drv           ;10c0 11 0e 01
     add hl,de           ;10c3 19
@@ -2247,7 +2247,7 @@ l109fh:
     ld a,h              ;10e5 7c
     or l                ;10e6 b5
     jp nz,l10f8h        ;10e7 c2 f8 10
-    ld hl,(l02dch)      ;10ea 2a dc 02
+    ld hl,(dd)          ;10ea 2a dc 02
     add hl,hl           ;10ed 29
     ld de,drv           ;10ee 11 0e 01
     add hl,de           ;10f1 19
@@ -2264,13 +2264,13 @@ l10fbh:
     call pv1d
 
     call readline       ;1104 cd ca 1b
-    ld hl,(l02d8h)      ;1107 2a d8 02
+    ld hl,(nn)          ;1107 2a d8 02
     ld de,0fffdh        ;110a 11 fd ff
     add hl,de           ;110d 19
     ld a,h              ;110e 7c
     or l                ;110f b5
     jp nz,l1124h        ;1110 c2 24 11
-    ld hl,(l02dch)      ;1113 2a dc 02
+    ld hl,(dd)          ;1113 2a dc 02
     add hl,hl           ;1116 29
     ld de,drv           ;1117 11 0e 01
     add hl,de           ;111a 19
@@ -2280,13 +2280,13 @@ l10fbh:
     ld (hl),d           ;1120 72
     jp l1161h           ;1121 c3 61 11
 l1124h:
-    ld hl,(l02d8h)      ;1124 2a d8 02
+    ld hl,(nn)          ;1124 2a d8 02
     ld de,0fffah        ;1127 11 fa ff
     add hl,de           ;112a 19
     ld a,h              ;112b 7c
     or l                ;112c b5
     jp nz,l1141h        ;112d c2 41 11
-    ld hl,(l02dch)      ;1130 2a dc 02
+    ld hl,(dd)          ;1130 2a dc 02
     add hl,hl           ;1133 29
     ld de,drv           ;1134 11 0e 01
     add hl,de           ;1137 19
@@ -2296,13 +2296,13 @@ l1124h:
     ld (hl),d           ;113d 72
     jp l1161h           ;113e c3 61 11
 l1141h:
-    ld hl,(l02d8h)      ;1141 2a d8 02
+    ld hl,(nn)          ;1141 2a d8 02
     ld de,0fff4h        ;1144 11 f4 ff
     add hl,de           ;1147 19
     ld a,h              ;1148 7c
     or l                ;1149 b5
     jp nz,l115eh        ;114a c2 5e 11
-    ld hl,(l02dch)      ;114d 2a dc 02
+    ld hl,(dd)          ;114d 2a dc 02
     add hl,hl           ;1150 29
     ld de,drv           ;1151 11 0e 01
     add hl,de           ;1154 19
@@ -2331,7 +2331,7 @@ l1161h:
     ld a,h              ;117d 7c
     or l                ;117e b5
     jp nz,l1197h        ;117f c2 97 11
-    ld hl,(l02dch)      ;1182 2a dc 02
+    ld hl,(dd)          ;1182 2a dc 02
     add hl,hl           ;1185 29
     ld de,drv           ;1186 11 0e 01
     add hl,de           ;1189 19
@@ -2351,7 +2351,7 @@ l1161h:
 l1197h:
     jp l0eadh           ;1197 c3 ad 0e
 sub_119ah:
-    ld hl,(l02dch)      ;119a 2a dc 02
+    ld hl,(dd)          ;119a 2a dc 02
     add hl,hl           ;119d 29
     ld de,drv           ;119e 11 0e 01
     add hl,de           ;11a1 19
@@ -2370,7 +2370,7 @@ sub_119ah:
 
     jp l1285h           ;11b4 c3 85 12
 l11b7h:
-    ld hl,(l02dch)      ;11b7 2a dc 02
+    ld hl,(dd)          ;11b7 2a dc 02
     add hl,hl           ;11ba 29
     ld de,drv           ;11bb 11 0e 01
     add hl,de           ;11be 19
@@ -2392,7 +2392,7 @@ l11b7h:
 
     jp l1285h           ;11d6 c3 85 12
 l11d9h:
-    ld hl,(l02dch)      ;11d9 2a dc 02
+    ld hl,(dd)          ;11d9 2a dc 02
     add hl,hl           ;11dc 29
     ld de,drv           ;11dd 11 0e 01
     add hl,de           ;11e0 19
@@ -2426,7 +2426,7 @@ l11fdh:
     jp z,l129eh
 
     ;IF DRV (D) = 2 THEN GOTO l1228h
-    ld hl,(l02dch)
+    ld hl,(dd)
     add hl,hl
     ld de,drv
     add hl,de
@@ -2447,7 +2447,7 @@ l11fdh:
     call pv1d
 
 l1228h:
-    ld hl,(l02dch)      ;1228 2a dc 02
+    ld hl,(dd)          ;1228 2a dc 02
     add hl,hl           ;122b 29
     ld de,drv           ;122c 11 0e 01
     add hl,de           ;122f 19
@@ -2468,7 +2468,7 @@ l1228h:
     call pv1d
 
 l1247h:
-    ld hl,(l02dch)      ;1247 2a dc 02
+    ld hl,(dd)          ;1247 2a dc 02
     add hl,hl           ;124a 29
     ld de,drv           ;124b 11 0e 01
     add hl,de           ;124e 19
@@ -2489,7 +2489,7 @@ l1247h:
     call pv1d
 
 l1266h:
-    ld hl,(l02dch)      ;1266 2a dc 02
+    ld hl,(dd)          ;1266 2a dc 02
     add hl,hl           ;1269 29
     ld de,drv           ;126a 11 0e 01
     add hl,de           ;126d 19
@@ -2515,7 +2515,7 @@ l1285h:
     ld hl,device_num
     call pv0d
 
-    ld hl,(l02dch)      ;128e 2a dc 02
+    ld hl,(dd)          ;128e 2a dc 02
     add hl,hl           ;1291 29
     ld de,diskdev       ;1292 11 24 01
     add hl,de           ;1295 19
@@ -2532,7 +2532,7 @@ l129eh:
     ld hl,winchester
     call pv1d
 
-    ld hl,(l02dch)      ;12a7 2a dc 02
+    ld hl,(dd)          ;12a7 2a dc 02
     add hl,hl           ;12aa 29
     ld de,drv           ;12ab 11 0e 01
     add hl,de           ;12ae 19
@@ -2552,7 +2552,7 @@ l129eh:
     call pv2d           ;12c3 cd 31 2c
 
 l12c6h:
-    ld hl,(l02dch)      ;12c6 2a dc 02
+    ld hl,(dd)          ;12c6 2a dc 02
     add hl,hl           ;12c9 29
     ld de,drv           ;12ca 11 0e 01
     add hl,de           ;12cd 19
@@ -2570,7 +2570,7 @@ l12c6h:
     ld hl,mw_6mb        ;12df 21 af 1f
     call pv2d           ;12e2 cd 31 2c
 l12e5h:
-    ld hl,(l02dch)      ;12e5 2a dc 02
+    ld hl,(dd)          ;12e5 2a dc 02
     add hl,hl           ;12e8 29
     ld de,drv           ;12e9 11 0e 01
     add hl,de           ;12ec 19
@@ -2588,7 +2588,7 @@ l12e5h:
     ld hl,mw_12mb       ;12fe 21 9f 1f
     call pv2d           ;1301 cd 31 2c
 l1304h:
-    ld hl,(l02dch)      ;1304 2a dc 02
+    ld hl,(dd)          ;1304 2a dc 02
     add hl,hl           ;1307 29
     ld de,drv           ;1308 11 0e 01
     add hl,de           ;130b 19
@@ -2609,7 +2609,7 @@ l1304h:
     call pv2d
 
 l1323h:
-    ld hl,(l02dch)      ;1323 2a dc 02
+    ld hl,(dd)          ;1323 2a dc 02
     add hl,hl           ;1326 29
     ld de,drv           ;1327 11 0e 01
     add hl,de           ;132a 19
@@ -2630,7 +2630,7 @@ l1323h:
     call pv2d
 
 l1342h:
-    ld hl,(l02dch)      ;1342 2a dc 02
+    ld hl,(dd)          ;1342 2a dc 02
     add hl,hl           ;1345 29
     ld de,drv           ;1346 11 0e 01
     add hl,de           ;1349 19
@@ -3188,8 +3188,8 @@ l1692h:
     ld de,0ffbfh        ;16a2 11 bf ff
     ld hl,(rr)          ;16a5 2a b2 02
     add hl,de           ;16a8 19
-    ld (l02dch),hl      ;16a9 22 dc 02
-    ld hl,(l02dch)      ;16ac 2a dc 02
+    ld (dd),hl          ;16a9 22 dc 02
+    ld hl,(dd)          ;16ac 2a dc 02
     ld (dt),hl          ;16af 22 b4 02
     ld hl,dt            ;16b2 21 b4 02
     call dtype          ;16b5 cd 90 29
@@ -3246,13 +3246,13 @@ l16f6h:
     ld a,h              ;1700 7c
     or l                ;1701 b5
     jp z,l170eh         ;1702 ca 0e 17
-    ld hl,l02dch        ;1705 21 dc 02
+    ld hl,dd            ;1705 21 dc 02
     call cwrite_        ;1708 cd 56 29
     jp l05b5h           ;170b c3 b5 05
 l170eh:
-    ld hl,l02dch        ;170e 21 dc 02
+    ld hl,dd            ;170e 21 dc 02
     call idisk          ;1711 cd 99 29
-    ld hl,l02dch        ;1714 21 dc 02
+    ld hl,dd            ;1714 21 dc 02
     call savesy         ;1717 cd 02 2a
     ld hl,ee            ;171a 21 b6 02
     call dskerr         ;171d cd 9d 29
@@ -3576,7 +3576,7 @@ l192fh:
     ld a,h              ;193e 7c
     or l                ;193f b5
     jp z,l1949h         ;1940 ca 49 19
-    ld hl,(l02d8h)      ;1943 2a d8 02
+    ld hl,(nn)          ;1943 2a d8 02
     ld (clock),hl       ;1946 22 d2 02
 l1949h:
     jp l1743h           ;1949 c3 43 17
@@ -4066,7 +4066,7 @@ l1c1eh:
     ld (rr),hl          ;1c34 22 b2 02
 l1c37h:
     ld hl,0000h         ;1c37 21 00 00
-    ld (l02d8h),hl      ;1c3a 22 d8 02
+    ld (nn),hl          ;1c3a 22 d8 02
     ld hl,0002h         ;1c3d 21 02 00
     ld (l02d0h),hl      ;1c40 22 d0 02
 l1c43h:
@@ -4143,7 +4143,7 @@ l1c93h:
     ld a,h              ;1c9e 7c
     or l                ;1c9f b5
     jp z,l1ccah         ;1ca0 ca ca 1c
-    ld hl,(l02d8h)      ;1ca3 2a d8 02
+    ld hl,(nn)          ;1ca3 2a d8 02
     call imug           ;1ca6 cd 9a 2c
     ld a,(bc)           ;1ca9 0a
     nop                 ;1caa 00
@@ -4158,7 +4158,7 @@ l1c93h:
     add hl,de           ;1cb8 19
     ld de,0ffd0h        ;1cb9 11 d0 ff
     add hl,de           ;1cbc 19
-    ld (l02d8h),hl      ;1cbd 22 d8 02
+    ld (nn),hl          ;1cbd 22 d8 02
     ld hl,(l02d0h)      ;1cc0 2a d0 02
     inc hl              ;1cc3 23
     ld (l02d0h),hl      ;1cc4 22 d0 02
