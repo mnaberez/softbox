@@ -1076,11 +1076,13 @@ l0887h:
     or l
     jp z,l08d7h
 
-    ;IF R=&H32 THEN GOTO l0930h
+    ;IF R=0 THEN GOTO l05b5h
     ld hl,(rr)
     ld a,h
     or l
     jp z,l05b5h
+
+    ;IF R=&H32 THEN GOTO l0930h
     ld hl,(rr)
     ld de,0-'2'
     add hl,de
@@ -1728,44 +1730,64 @@ l0c2dh:
     ld hl,new_dev_num
     call pv1d
 
-    call readline       ;0c92 cd ca 1b
-    ld hl,(r1)          ;0c95 2a da 02
-    ld de,0ffcfh        ;0c98 11 cf ff
-    add hl,de           ;0c9b 19
-    ld a,h              ;0c9c 7c
-    or l                ;0c9d b5
-    jp nz,l0ca7h        ;0c9e c2 a7 0c
-    ld hl,(nn)          ;0ca1 2a d8 02
-    ld (lpt),hl         ;0ca4 22 ba 02
+    ;GOSUB readline
+    call readline
+
+    ;IF R1 <> &H31 THEN GOTO l0ca7h
+    ld hl,(r1)
+    ld de,0-"1"
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0ca7h
+
+    ;LPT = N
+    ld hl,(nn)
+    ld (lpt),hl
+
 l0ca7h:
-    ld hl,(r1)          ;0ca7 2a da 02
-    ld de,0ffceh        ;0caa 11 ce ff
-    add hl,de           ;0cad 19
-    ld a,h              ;0cae 7c
-    or l                ;0caf b5
-    jp nz,l0cb9h        ;0cb0 c2 b9 0c
-    ld hl,(nn)          ;0cb3 2a d8 02
-    ld (ul1),hl         ;0cb6 22 c4 02
+    ;IF R1 <> &H32 THEN GOTO l0cb9h
+    ld hl,(r1)
+    ld de,0-"2"
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0cb9h
+
+    ;UL1 = N
+    ld hl,(nn)
+    ld (ul1),hl
+
 l0cb9h:
-    ld hl,(r1)          ;0cb9 2a da 02
-    ld de,0ffcdh        ;0cbc 11 cd ff
-    add hl,de           ;0cbf 19
-    ld a,h              ;0cc0 7c
-    or l                ;0cc1 b5
-    jp nz,l0ccbh        ;0cc2 c2 cb 0c
-    ld hl,(nn)          ;0cc5 2a d8 02
-    ld (rdr),hl         ;0cc8 22 bc 02
+    ;IF R1 <> &H33 THEN GOTO l0ccbh
+    ld hl,(r1)
+    ld de,0-'3'
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0ccbh
+
+    ;RDR = N
+    ld hl,(nn)
+    ld (rdr),hl
+
 l0ccbh:
-    ld hl,(r1)          ;0ccb 2a da 02
-    ld de,0ffcch        ;0cce 11 cc ff
-    add hl,de           ;0cd1 19
-    ld a,h              ;0cd2 7c
-    or l                ;0cd3 b5
-    jp nz,l0cddh        ;0cd4 c2 dd 0c
-    ld hl,(nn)          ;0cd7 2a d8 02
-    ld (pun),hl         ;0cda 22 be 02
+    ;IF R1 <> &H34 THEN GOTO l0cddh
+    ld hl,(r1)
+    ld de,0-'4'
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0cddh
+
+    ;PUN = N
+    ld hl,(nn)
+    ld (pun),hl
+
 l0cddh:
-    jp l0a7bh           ;0cdd c3 7b 0a
+    ;GOTO l0a7bh
+    jp l0a7bh
+
 l0ce0h:
     ;PRINT
     call pr0a
