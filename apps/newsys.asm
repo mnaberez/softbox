@@ -851,10 +851,11 @@ l06deh:
     ld h,a
     ld (u1),hl
 
-    ld hl,(u1)          ;0742 2a d6 02
-    ld a,h              ;0745 7c
-    or l                ;0746 b5
-    jp nz,l0753h        ;0747 c2 53 07
+    ;IF U1 <> 0 THEN GOTO l0753h
+    ld hl,(u1)
+    ld a,h
+    or l
+    jp nz,l0753h
 
     ;PRINT "undefined"
     call pr0a
@@ -862,12 +863,13 @@ l06deh:
     call pv2d
 
 l0753h:
-    ld hl,(u1)          ;0753 2a d6 02
-    ld de,0ffc0h        ;0756 11 c0 ff
-    add hl,de           ;0759 19
-    ld a,h              ;075a 7c
-    or l                ;075b b5
-    jp nz,l0768h        ;075c c2 68 07
+    ;IF U1 <> &H40 THEN GOTO l0768h
+    ld hl,(u1)
+    ld de,0-&H40
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0768h
 
     ;PRINT "1"
     call pr0a
@@ -875,12 +877,13 @@ l0753h:
     call pv2d
 
 l0768h:
-    ld hl,(u1)          ;0768 2a d6 02
-    ld de,0ff80h        ;076b 11 80 ff
-    add hl,de           ;076e 19
-    ld a,h              ;076f 7c
-    or l                ;0770 b5
-    jp nz,l077dh        ;0771 c2 7d 07
+    ;IF U1 <> &H80 THEN GOTO l077dh
+    ld hl,(u1)
+    ld de,0-0x80
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l077dh
 
     ;PRINT "1.5"
     call pr0a
@@ -888,12 +891,13 @@ l0768h:
     call pv2d
 
 l077dh:
-    ld hl,(u1)          ;077d 2a d6 02
-    ld de,0ff40h        ;0780 11 40 ff
-    add hl,de           ;0783 19
-    ld a,h              ;0784 7c
-    or l                ;0785 b5
-    jp nz,l0792h        ;0786 c2 92 07
+    ;IF U1 <> &HC0 THEN GOTO l0792h
+    ld hl,(u1)
+    ld de,0-&HC0
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0792h
 
     ;PRINT "2"
     call pr0a
@@ -911,16 +915,17 @@ l0792h:
     ld hl,rs232_3_par
     call pv1d
 
-    ld hl,(uu)          ;07a4 2a c0 02
-    ld a,l              ;07a7 7d
-    and 10h             ;07a8 e6 10
-    ld l,a              ;07aa 6f
-    ld a,h              ;07ab 7c
-    and 00h             ;07ac e6 00
-    ld h,a              ;07ae 67
-    ld a,h              ;07af 7c
-    or l                ;07b0 b5
-    jp nz,l07bdh        ;07b1 c2 bd 07
+    ;IF (U AND &H10) <> 0 THEN GOTO l07bdh
+    ld hl,(uu)
+    ld a,l
+    and 10h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,h
+    or l
+    jp nz,l07bdh
 
     ;PRINT "none"
     call pr0a
@@ -928,18 +933,19 @@ l0792h:
     call pv2d
 
 l07bdh:
-    ld hl,(uu)          ;07bd 2a c0 02
-    ld a,l              ;07c0 7d
-    and 30h             ;07c1 e6 30
-    ld l,a              ;07c3 6f
-    ld a,h              ;07c4 7c
-    and 00h             ;07c5 e6 00
-    ld h,a              ;07c7 67
-    ld de,0ffd0h        ;07c8 11 d0 ff
-    add hl,de           ;07cb 19
-    ld a,h              ;07cc 7c
-    or l                ;07cd b5
-    jp nz,l07dah        ;07ce c2 da 07
+    ;IF (U AND &H30) <> &H30 THEN GOTO l07dah
+    ld hl,(uu)
+    ld a,l
+    and 30h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld de,0-30h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l07dah
 
     ;PRINT "even"
     call pr0a
@@ -947,18 +953,19 @@ l07bdh:
     call pv2d
 
 l07dah:
-    ld hl,(uu)          ;07da 2a c0 02
-    ld a,l              ;07dd 7d
-    and 30h             ;07de e6 30
-    ld l,a              ;07e0 6f
-    ld a,h              ;07e1 7c
-    and 00h             ;07e2 e6 00
-    ld h,a              ;07e4 67
-    ld de,0fff0h        ;07e5 11 f0 ff
-    add hl,de           ;07e8 19
-    ld a,h              ;07e9 7c
-    or l                ;07ea b5
-    jp nz,l07f7h        ;07eb c2 f7 07
+    ;IF (U AND &H30) <> &H10 THEN GOTO l07f7h
+    ld hl,(uu)
+    ld a,l
+    and 30h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld de,0-10h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l07f7h
 
     ;PRINT "odd"
     call pr0a
@@ -977,12 +984,13 @@ l0800h:
     ld hl,rs232_4_baud
     call pv1d
 
-    ld hl,(baud)        ;0809 2a c2 02
-    ld de,0ffdeh        ;080c 11 de ff
-    add hl,de           ;080f 19
-    ld a,h              ;0810 7c
-    or l                ;0811 b5
-    jp nz,l081eh        ;0812 c2 1e 08
+    ;IF BAUD <> &H22 THEN GOTO l081eh
+    ld hl,(baud)
+    ld de,0-22h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l081eh
 
     ;PRINT "110"
     call pr0a
@@ -990,12 +998,13 @@ l0800h:
     call pv2d
 
 l081eh:
-    ld hl,(baud)        ;081e 2a c2 02
-    ld de,0ffabh        ;0821 11 ab ff
-    add hl,de           ;0824 19
-    ld a,h              ;0825 7c
-    or l                ;0826 b5
-    jp nz,l0833h        ;0827 c2 33 08
+    ;IF BAUD <> &H55 THEN GOTO l0833h
+    ld hl,(baud)
+    ld de,0-55h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0833h
 
     ;PRINT "300"
     call pr0a
@@ -1003,12 +1012,13 @@ l081eh:
     call pv2d
 
 l0833h:
-    ld hl,(baud)        ;0833 2a c2 02
-    ld de,0ff89h        ;0836 11 89 ff
-    add hl,de           ;0839 19
-    ld a,h              ;083a 7c
-    or l                ;083b b5
-    jp nz,l0848h        ;083c c2 48 08
+    ;IF BAUD <> &H77 THEN GOTO l0848h
+    ld hl,(baud)
+    ld de,0-77h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0848h
 
     ;PRINT "1200"
     call pr0a
@@ -1016,12 +1026,13 @@ l0833h:
     call pv2d
 
 l0848h:
-    ld hl,(baud)        ;0848 2a c2 02
-    ld de,0ff12h        ;084b 11 12 ff
-    add hl,de           ;084e 19
-    ld a,h              ;084f 7c
-    or l                ;0850 b5
-    jp nz,l085dh        ;0851 c2 5d 08
+    ;IF BAUD <> &HEE THEN GOTO l085dh
+    ld hl,(baud)
+    ld de,0-0eeh
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l085dh
 
     ;PRINT "9600"
     call pr0a
@@ -1029,12 +1040,13 @@ l0848h:
     call pv2d
 
 l085dh:
-    ld hl,(baud)        ;085d 2a c2 02
-    ld de,0ff01h        ;0860 11 01 ff
-    add hl,de           ;0863 19
-    ld a,h              ;0864 7c
-    or l                ;0865 b5
-    jp nz,l0872h        ;0866 c2 72 08
+    ;IF BAUD <> &HFF THEN GOTO l0872h
+    ld hl,(baud)
+    ld de,0-0ffh
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0872h
 
     ;PRINT "19200"
     call pr0a
@@ -1042,12 +1054,13 @@ l085dh:
     call pv2d
 
 l0872h:
-    ld hl,(baud)        ;0872 2a c2 02
-    ld de,0ff34h        ;0875 11 34 ff
-    add hl,de           ;0878 19
-    ld a,h              ;0879 7c
-    or l                ;087a b5
-    jp nz,l0887h        ;087b c2 87 08
+    ;IF BAUD <> &HCC THEN GOTO l0887h
+    ld hl,(baud)
+    ld de,0-0cch
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0887h
 
     ;PRINT "4800"
     call pr0a
@@ -1226,8 +1239,11 @@ l095eh:
     or 00h              ;097a f6 00
     ld h,a              ;097c 67
     ld (uu),hl          ;097d 22 c0 02
+
 l0980h:
-    jp l06deh           ;0980 c3 de 06
+    ;GOTO l06deh
+    jp l06deh
+
 l0983h:
     ;PRINT "O(dd), E(ven) or N(o parity) ? ";
     call pr0a
