@@ -3589,19 +3589,22 @@ l1743h:
     jp l179fh
 
 l177eh:
-    ld hl,(dirsize)     ;177e 2a b8 02
-    ld de,0ffffh        ;1781 11 ff ff
-    add hl,de           ;1784 19
-    ld a,h              ;1785 7c
-    or l                ;1786 b5
-    jp nz,l1796h        ;1787 c2 96 17
+    ;IF DIRSIZE <> 1 THEN GOTO l1796h
+    ld hl,(dirsize)
+    ld de,0-1
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1796h
 
     ;PRINT "2"
     call pr0a
     ld hl,two
     call pv2d
 
-    jp l179fh           ;1793 c3 9f 17
+    ;GOTO l179fh
+    jp l179fh
+
 l1796h:
     ;PRINT "4"
     call pr0a
@@ -3838,50 +3841,74 @@ l18eah:
     ld hl,num_of_cols
     call pv1d
 
-    call readline       ;18f3 cd ca 1b
-    ld hl,(rr)          ;18f6 2a b2 02
-    ld de,0ffcfh        ;18f9 11 cf ff
-    add hl,de           ;18fc 19
-    ld a,h              ;18fd 7c
-    or l                ;18fe b5
-    jp nz,l1908h        ;18ff c2 08 19
-    ld hl,0000h         ;1902 21 00 00
-    ld (dirsize),hl     ;1905 22 b8 02
+    ;GOSUB readline
+    call readline
+
+    ;IF R <> &H31 THEN GOTO l1908h
+    ld hl,(rr)
+    ld de,0-'1'
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1908h
+
+    ;DIRSIZE = 0
+    ld hl,0000h
+    ld (dirsize),hl
+
 l1908h:
-    ld hl,(rr)          ;1908 2a b2 02
-    ld de,0ffceh        ;190b 11 ce ff
-    add hl,de           ;190e 19
-    ld a,h              ;190f 7c
-    or l                ;1910 b5
-    jp nz,l191ah        ;1911 c2 1a 19
-    ld hl,0001h         ;1914 21 01 00
-    ld (dirsize),hl     ;1917 22 b8 02
+    ;IF R <> &H32 THEN GOTO l191ah
+    ld hl,(rr)
+    ld de,0-'2'
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l191ah
+
+    ;DIRSIZE = 1
+    ld hl,0001h
+    ld (dirsize),hl
+
 l191ah:
-    ld hl,(rr)          ;191a 2a b2 02
-    ld de,0ffcch        ;191d 11 cc ff
-    add hl,de           ;1920 19
-    ld a,h              ;1921 7c
-    or l                ;1922 b5
-    jp nz,l192ch        ;1923 c2 2c 19
-    ld hl,0003h         ;1926 21 03 00
-    ld (dirsize),hl     ;1929 22 b8 02
+    ;IF R <> &H34 THEN GOTO l192ch
+    ld hl,(rr)
+    ld de,0-'4'
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l192ch
+
+    ;DIRSIZE = 3
+    ld hl,0003h
+    ld (dirsize),hl
+
 l192ch:
-    jp l1743h           ;192c c3 43 17
+    ;GOTO l1743h
+    jp l1743h
+
 l192fh:
     ;PRINT "New clock frequency ? "
     call pr0a
     ld hl,new_clock
     call pv1d
 
-    call readline       ;1938 cd ca 1b
-    ld hl,(rr)          ;193b 2a b2 02
-    ld a,h              ;193e 7c
-    or l                ;193f b5
-    jp z,l1949h         ;1940 ca 49 19
-    ld hl,(nn)          ;1943 2a d8 02
-    ld (clock),hl       ;1946 22 d2 02
+    ;GOSUB readline
+    call readline
+
+    ;IF R = 0 THEN GOTO l1949h
+    ld hl,(rr)
+    ld a,h
+    or l
+    jp z,l1949h
+
+    ;CLOCK = N
+    ld hl,(nn)
+    ld (clock),hl
+
 l1949h:
-    jp l1743h           ;1949 c3 43 17
+    ;GOTO l1743h
+    jp l1743h
+
 l194ch:
     ;PRINT "Screen type (ADM3A, HZ1500, TV912) ? ";
     call pr0a
