@@ -1477,16 +1477,17 @@ l0a7bh:
     ld hl,io_lst_device
     call pv1d
 
-    ld hl,(iobyte)      ;0b02 2a 0c 01
-    ld a,l              ;0b05 7d
-    and 0c0h            ;0b06 e6 c0
-    ld l,a              ;0b08 6f
-    ld a,h              ;0b09 7c
-    and 00h             ;0b0a e6 00
-    ld h,a              ;0b0c 67
-    ld a,h              ;0b0d 7c
-    or l                ;0b0e b5
-    jp nz,l0b1bh        ;0b0f c2 1b 0b
+    ;IF (IOBYTE AND &HC0) <> 0 THEN GOTO l0b1bh
+    ld hl,(iobyte)
+    ld a,l
+    and 0c0h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,h
+    or l
+    jp nz,l0b1bh
 
     ;PRINT "TTY:"
     call pr0a
@@ -1494,18 +1495,19 @@ l0a7bh:
     call pv2d
 
 l0b1bh:
-    ld hl,(iobyte)      ;0b1b 2a 0c 01
-    ld a,l              ;0b1e 7d
-    and 0c0h            ;0b1f e6 c0
-    ld l,a              ;0b21 6f
-    ld a,h              ;0b22 7c
-    and 00h             ;0b23 e6 00
-    ld h,a              ;0b25 67
-    ld de,0ffc0h        ;0b26 11 c0 ff
-    add hl,de           ;0b29 19
-    ld a,h              ;0b2a 7c
-    or l                ;0b2b b5
-    jp nz,l0b38h        ;0b2c c2 38 0b
+    ;IF (IOBYTE AND &HC0) <> &H40 THEN GOTO l0b38h
+    ld hl,(iobyte)
+    ld a,l
+    and 0c0h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld de,0-&H40
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0b38h
 
     ;PRINT "CRT:"
     call pr0a
@@ -1513,18 +1515,19 @@ l0b1bh:
     call pv2d
 
 l0b38h:
-    ld hl,(iobyte)      ;0b38 2a 0c 01
-    ld a,l              ;0b3b 7d
-    and 0c0h            ;0b3c e6 c0
-    ld l,a              ;0b3e 6f
-    ld a,h              ;0b3f 7c
-    and 00h             ;0b40 e6 00
-    ld h,a              ;0b42 67
-    ld de,0ff80h        ;0b43 11 80 ff
-    add hl,de           ;0b46 19
-    ld a,h              ;0b47 7c
-    or l                ;0b48 b5
-    jp nz,l0b55h        ;0b49 c2 55 0b
+    ;IF (IOBYTE AND &HC0) <> &H80 THEN GOTO l0b55h
+    ld hl,(iobyte)
+    ld a,l
+    and 0c0h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld de,0-&H80
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0b55h
 
     ;PRINT "LPT:"
     call pr0a
@@ -1532,23 +1535,24 @@ l0b38h:
     call pv2d
 
 l0b55h:
-    ld hl,(iobyte)      ;0b55 2a 0c 01
-    ld a,l              ;0b58 7d
-    and 0c0h            ;0b59 e6 c0
-    ld l,a              ;0b5b 6f
-    ld a,h              ;0b5c 7c
-    and 00h             ;0b5d e6 00
-    ld h,a              ;0b5f 67
-    ld de,0ff40h        ;0b60 11 40 ff
-    add hl,de           ;0b63 19
-    ld a,h              ;0b64 7c
-    or l                ;0b65 b5
-    jp nz,l0b72h        ;0b66 c2 72 0b
+    ;IF (IOBYTE AND &HC) <> &HC0 THEN GOTO l0b72h
+    ld hl,(iobyte)
+    ld a,l
+    and 0c0h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld de,0-&HC0
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0b72h
 
     ;PRINT "UL1:"
-    call pr0a           ;0b69 cd 3d 2d
-    ld hl,ul1_colon     ;0b6c 21 fc 23
-    call pv2d           ;0b6f cd 31 2c
+    call pr0a
+    ld hl,ul1_colon
+    call pv2d
 
 l0b72h:
     ;PRINT
@@ -1561,27 +1565,32 @@ l0b72h:
     ld hl,default_rdr
     call pv1d
 
-    ld hl,(iobyte)      ;0b84 2a 0c 01
-    ld a,l              ;0b87 7d
-    and 0ch             ;0b88 e6 0c
-    ld l,a              ;0b8a 6f
-    ld a,h              ;0b8b 7c
-    and 00h             ;0b8c e6 00
-    ld h,a              ;0b8e 67
-    ld a,h              ;0b8f 7c
-    or l                ;0b90 b5
-    jp nz,l0ba0h        ;0b91 c2 a0 0b
+    ;IF (IOBYTE AND &H0C) <> 0 THEN GOTO l0ba0h
+    ld hl,(iobyte)
+    ld a,l
+    and 0ch
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,h
+    or l
+    jp nz,l0ba0h
 
     ;PRINT "TTY:"
     call pr0a
     ld hl,tty
     call pv2d
 
-    jp l0ba9h           ;0b9d c3 a9 0b
+    ;GOTO l0ba9h
+    jp l0ba9h
+
 l0ba0h:
-    call pr0a           ;0ba0 cd 3d 2d
-    ld hl,ptr           ;0ba3 21 d4 23
-    call pv2d           ;0ba6 cd 31 2c
+    ;PRINT "PTR:"
+    call pr0a
+    ld hl,ptr
+    call pv2d
+
 l0ba9h:
     ;PRINT
     call pr0a
@@ -1593,23 +1602,25 @@ l0ba9h:
     ld hl,default_pun
     call pv1d
 
-    ld hl,(iobyte)      ;0bbb 2a 0c 01
-    ld a,l              ;0bbe 7d
-    and 30h             ;0bbf e6 30
-    ld l,a              ;0bc1 6f
-    ld a,h              ;0bc2 7c
-    and 00h             ;0bc3 e6 00
-    ld h,a              ;0bc5 67
-    ld a,h              ;0bc6 7c
-    or l                ;0bc7 b5
-    jp nz,l0bd7h        ;0bc8 c2 d7 0b
+    ;IF (IOBYTE AND &H30) <> 0 THEN GOTO l0bd7h
+    ld hl,(iobyte)
+    ld a,l
+    and 30h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,h
+    or l
+    jp nz,l0bd7h
 
     ;PRINT "TTY:"
     call pr0a
     ld hl,tty
     call pv2d
 
-    jp l0be0h           ;0bd4 c3 e0 0b
+    ;GOTO l0be0h
+    jp l0be0h
 
 l0bd7h:
     ;PRINT "PTP:"
@@ -1835,14 +1846,15 @@ l0ce0h:
     or l
     jp nz,l0d3ch
 
-    ld hl,(iobyte)      ;0d2e 2a 0c 01
-    ld a,l              ;0d31 7d
-    and 3fh             ;0d32 e6 3f
-    ld l,a              ;0d34 6f
-    ld a,h              ;0d35 7c
-    and 00h             ;0d36 e6 00
-    ld h,a              ;0d38 67
-    ld (iobyte),hl      ;0d39 22 0c 01
+    ;IOBYTE = (IOBYTE AND &H3F)
+    ld hl,(iobyte)
+    ld a,l
+    and 3fh
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld (iobyte),hl
 
 l0d3ch:
     ;IF R<>&H43 THEN GOTO l0d5eh
@@ -1853,20 +1865,21 @@ l0d3ch:
     or l
     jp nz,l0d5eh
 
-    ld hl,(iobyte)      ;0d48 2a 0c 01
-    ld a,l              ;0d4b 7d
-    and 3fh             ;0d4c e6 3f
-    ld l,a              ;0d4e 6f
-    ld a,h              ;0d4f 7c
-    and 00h             ;0d50 e6 00
-    ld h,a              ;0d52 67
-    ld a,l              ;0d53 7d
-    or 40h              ;0d54 f6 40
-    ld l,a              ;0d56 6f
-    ld a,h              ;0d57 7c
-    or 00h              ;0d58 f6 00
-    ld h,a              ;0d5a 67
-    ld (iobyte),hl      ;0d5b 22 0c 01
+    ;IOBYTE = (IOBYTE AND &H3F) OR &H40
+    ld hl,(iobyte)
+    ld a,l
+    and 3fh
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,l
+    or 40h
+    ld l,a
+    ld a,h
+    or 00h
+    ld h,a
+    ld (iobyte),hl
 
 l0d5eh:
     ;IF R<>&H4C THEN GOTO l0d80h
@@ -1877,20 +1890,21 @@ l0d5eh:
     or l
     jp nz,l0d80h
 
-    ld hl,(iobyte)      ;0d6a 2a 0c 01
-    ld a,l              ;0d6d 7d
-    and 3fh             ;0d6e e6 3f
-    ld l,a              ;0d70 6f
-    ld a,h              ;0d71 7c
-    and 00h             ;0d72 e6 00
-    ld h,a              ;0d74 67
-    ld a,l              ;0d75 7d
-    or 80h              ;0d76 f6 80
-    ld l,a              ;0d78 6f
-    ld a,h              ;0d79 7c
-    or 00h              ;0d7a f6 00
-    ld h,a              ;0d7c 67
-    ld (iobyte),hl      ;0d7d 22 0c 01
+    ;IOBYTE = (IOBYTE AND &H3F) OR &H80
+    ld hl,(iobyte)
+    ld a,l
+    and 3fh
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,l
+    or 80h
+    ld l,a
+    ld a,h
+    or 00h
+    ld h,a
+    ld (iobyte),hl
 
 l0d80h:
     ;IF R<>&H55 THEN GOTO l0da2h
@@ -1901,23 +1915,25 @@ l0d80h:
     or l
     jp nz,l0da2h
 
-    ld hl,(iobyte)      ;0d8c 2a 0c 01
-    ld a,l              ;0d8f 7d
-    and 3fh             ;0d90 e6 3f
-    ld l,a              ;0d92 6f
-    ld a,h              ;0d93 7c
-    and 00h             ;0d94 e6 00
-    ld h,a              ;0d96 67
-    ld a,l              ;0d97 7d
-    or 0c0h             ;0d98 f6 c0
-    ld l,a              ;0d9a 6f
-    ld a,h              ;0d9b 7c
-    or 00h              ;0d9c f6 00
-    ld h,a              ;0d9e 67
-    ld (iobyte),hl      ;0d9f 22 0c 01
+    ;IOBYTE = (IOBYTE AND &H3F) OR &HC0
+    ld hl,(iobyte)
+    ld a,l
+    and 3fh
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,l
+    or 0c0h
+    ld l,a
+    ld a,h
+    or 00h
+    ld h,a
+    ld (iobyte),hl
 
 l0da2h:
-    jp l0a7bh           ;0da2 c3 7b 0a
+    ;GOTO l0a7bh
+    jp l0a7bh
 
 l0da5h:
     ;PRINT "T(TY:) or P(TR:) ? "
@@ -1936,14 +1952,15 @@ l0da5h:
     or l
     jp nz,l0dcbh
 
-    ld hl,(iobyte)      ;0dbd 2a 0c 01
-    ld a,l              ;0dc0 7d
-    and 0f3h            ;0dc1 e6 f3
-    ld l,a              ;0dc3 6f
-    ld a,h              ;0dc4 7c
-    and 00h             ;0dc5 e6 00
-    ld h,a              ;0dc7 67
-    ld (iobyte),hl      ;0dc8 22 0c 01
+    ;IOBYTE = (IOBYTE AND &H3F)
+    ld hl,(iobyte)
+    ld a,l
+    and 0f3h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld (iobyte),hl
 
 l0dcbh:
     ;IF R<>&H50 THEN GOTO l0dcbh
@@ -1954,20 +1971,21 @@ l0dcbh:
     or l                ;0dd3 b5
     jp nz,l0dedh        ;0dd4 c2 ed 0d
 
-    ld hl,(iobyte)      ;0dd7 2a 0c 01
-    ld a,l              ;0dda 7d
-    and 0f3h            ;0ddb e6 f3
-    ld l,a              ;0ddd 6f
-    ld a,h              ;0dde 7c
-    and 00h             ;0ddf e6 00
-    ld h,a              ;0de1 67
-    ld a,l              ;0de2 7d
-    or 04h              ;0de3 f6 04
-    ld l,a              ;0de5 6f
-    ld a,h              ;0de6 7c
-    or 00h              ;0de7 f6 00
-    ld h,a              ;0de9 67
-    ld (iobyte),hl      ;0dea 22 0c 01
+    ;IOBYTE = (IOBYTE AND &HF3) OR &H04
+    ld hl,(iobyte)
+    ld a,l
+    and 0f3h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,l
+    or 04h
+    ld l,a
+    ld a,h
+    or 00h
+    ld h,a
+    ld (iobyte),hl
 
 l0dedh:
     jp l0a7bh           ;0ded c3 7b 0a
@@ -1989,14 +2007,15 @@ l0df0h:
     or l
     jp nz,l0e16h
 
-    ld hl,(iobyte)      ;0e08 2a 0c 01
-    ld a,l              ;0e0b 7d
-    and 0cfh            ;0e0c e6 cf
-    ld l,a              ;0e0e 6f
-    ld a,h              ;0e0f 7c
-    and 00h             ;0e10 e6 00
-    ld h,a              ;0e12 67
-    ld (iobyte),hl      ;0e13 22 0c 01
+    ;IOBYTE = (IOBYTE AND &HCF)
+    ld hl,(iobyte)
+    ld a,l
+    and 0cfh
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld (iobyte),hl
 
 l0e16h:
     ;IF R<>&H50 THEN GOTO l0e38h
@@ -2007,20 +2026,21 @@ l0e16h:
     or l
     jp nz,l0e38h
 
-    ld hl,(iobyte)      ;0e22 2a 0c 01
-    ld a,l              ;0e25 7d
-    and 0cfh            ;0e26 e6 cf
-    ld l,a              ;0e28 6f
-    ld a,h              ;0e29 7c
-    and 00h             ;0e2a e6 00
-    ld h,a              ;0e2c 67
-    ld a,l              ;0e2d 7d
-    or 10h              ;0e2e f6 10
-    ld l,a              ;0e30 6f
-    ld a,h              ;0e31 7c
-    or 00h              ;0e32 f6 00
-    ld h,a              ;0e34 67
-    ld (iobyte),hl      ;0e35 22 0c 01
+    ;IOBYTE = (IOBYTE AND &HCF) OR &H10
+    ld hl,(iobyte)
+    ld a,l
+    and 0cfh
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,l
+    or 10h
+    ld l,a
+    ld a,h
+    or 00h
+    ld h,a
+    ld (iobyte),hl
 
 l0e38h:
     jp l0a7bh           ;0e38 c3 7b 0a
@@ -3531,7 +3551,8 @@ l170eh:
     jp l05b5h
 
 l1743h:
-    call clear_screen   ;1743 cd bd 1b
+    ;GOSUB clear_screen
+    call clear_screen
 
     ;PRINT "      Pet terminal parameters"
     call pr0a
