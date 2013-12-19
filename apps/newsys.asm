@@ -2542,55 +2542,75 @@ l10fbh:
     ;GOSUB readline
     call readline
 
-    ld hl,(nn)          ;1107 2a d8 02
-    ld de,0fffdh        ;110a 11 fd ff
-    add hl,de           ;110d 19
-    ld a,h              ;110e 7c
-    or l                ;110f b5
-    jp nz,l1124h        ;1110 c2 24 11
-    ld hl,(dd)          ;1113 2a dc 02
-    add hl,hl           ;1116 29
-    ld de,drv           ;1117 11 0e 01
-    add hl,de           ;111a 19
-    ld de,0002h         ;111b 11 02 00
-    ld (hl),e           ;111e 73
-    inc hl              ;111f 23
-    ld (hl),d           ;1120 72
-    jp l1161h           ;1121 c3 61 11
+    ;IF N <> 3 THEN GOTO l1124h
+    ld hl,(nn)
+    ld de,0-3
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1124h
+
+    ;DRV(D) = 2  ' MW-1000 3 Mbyte
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld de,0002h
+    ld (hl),e
+    inc hl
+    ld (hl),d
+
+    ;GOTO l1161h
+    jp l1161h
+
 l1124h:
-    ld hl,(nn)          ;1124 2a d8 02
-    ld de,0fffah        ;1127 11 fa ff
-    add hl,de           ;112a 19
-    ld a,h              ;112b 7c
-    or l                ;112c b5
-    jp nz,l1141h        ;112d c2 41 11
-    ld hl,(dd)          ;1130 2a dc 02
-    add hl,hl           ;1133 29
-    ld de,drv           ;1134 11 0e 01
-    add hl,de           ;1137 19
-    ld de,0003h         ;1138 11 03 00
-    ld (hl),e           ;113b 73
-    inc hl              ;113c 23
-    ld (hl),d           ;113d 72
-    jp l1161h           ;113e c3 61 11
+    ;IF N <> 6 THEN GOTO l1141h
+    ld hl,(nn)
+    ld de,0-6
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1141h
+
+    ;DRV(D) = 3  ' MW-1000 6 Mbyte
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld de,0003h
+    ld (hl),e
+    inc hl
+    ld (hl),d
+
+    ;GOTO l1161h
+    jp l1161h
+
 l1141h:
-    ld hl,(nn)          ;1141 2a d8 02
-    ld de,0fff4h        ;1144 11 f4 ff
-    add hl,de           ;1147 19
-    ld a,h              ;1148 7c
-    or l                ;1149 b5
-    jp nz,l115eh        ;114a c2 5e 11
-    ld hl,(dd)          ;114d 2a dc 02
-    add hl,hl           ;1150 29
-    ld de,drv           ;1151 11 0e 01
-    add hl,de           ;1154 19
-    ld de,0004h         ;1155 11 04 00
-    ld (hl),e           ;1158 73
-    inc hl              ;1159 23
-    ld (hl),d           ;115a 72
-    jp l1161h           ;115b c3 61 11
+    ;IF N <> 12 THEN GOTO l115eh
+    ld hl,(nn)
+    ld de,0-12
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l115eh
+
+    ;DRV(D) = 4  ' MW-1000 12 Mbyte
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld de,0004h
+    ld (hl),e
+    inc hl
+    ld (hl),d
+
+    ;GOTO l1161h
+    jp l1161h
+
 l115eh:
-    jp l0eadh           ;115e c3 ad 0e
+    ;GOTO l0eadh
+    jp l0eadh
+
 l1161h:
     ;PRINT "Use the ENTIRE drive for CP/M,  or just"
     call pr0a
@@ -2613,91 +2633,104 @@ l1161h:
     or l
     jp nz,l1197h
 
-    ld hl,(dd)          ;1182 2a dc 02
-    add hl,hl           ;1185 29
-    ld de,drv           ;1186 11 0e 01
-    add hl,de           ;1189 19
-    push hl             ;118a e5
-    ld e,(hl)           ;118b 5e
-    inc hl              ;118c 23
-    ld d,(hl)           ;118d 56
-    ex de,hl            ;118e eb
-    inc hl              ;118f 23
-    inc hl              ;1190 23
-    inc hl              ;1191 23
-    ex de,hl            ;1192 eb
-    pop hl              ;1193 e1
-    ld (hl),e           ;1194 73
-    inc hl              ;1195 23
-    ld (hl),d           ;1196 72
+    ;DRV(D) = DRV(D) + 3
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    push hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    ex de,hl
+    inc hl
+    inc hl
+    inc hl
+    ex de,hl
+    pop hl
+    ld (hl),e
+    inc hl
+    ld (hl),d
+
 l1197h:
-    jp l0eadh           ;1197 c3 ad 0e
+    ;GOTO l0eadh
+    jp l0eadh
+
 sub_119ah:
-    ld hl,(dd)          ;119a 2a dc 02
-    add hl,hl           ;119d 29
-    ld de,drv           ;119e 11 0e 01
-    add hl,de           ;11a1 19
-    ld e,(hl)           ;11a2 5e
-    inc hl              ;11a3 23
-    ld d,(hl)           ;11a4 56
-    ex de,hl            ;11a5 eb
-    ld a,h              ;11a6 7c
-    or l                ;11a7 b5
-    jp nz,l11b7h        ;11a8 c2 b7 11
+    ;IF DRV(D) <> 0 THEN GOTO l11b7h
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    ex de,hl
+    ld a,h
+    or l
+    jp nz,l11b7h
 
     ;PRINT "3040/4040  ";
     call pr0a
     ld hl,cbm_3040
     call pv1d
 
-    jp l1285h           ;11b4 c3 85 12
+    ;GOTO l1285h
+    jp l1285h
+
 l11b7h:
-    ld hl,(dd)          ;11b7 2a dc 02
-    add hl,hl           ;11ba 29
-    ld de,drv           ;11bb 11 0e 01
-    add hl,de           ;11be 19
-    ld e,(hl)           ;11bf 5e
-    inc hl              ;11c0 23
-    ld d,(hl)           ;11c1 56
-    push de             ;11c2 d5
-    pop hl              ;11c3 e1
-    ld de,0ffffh        ;11c4 11 ff ff
-    add hl,de           ;11c7 19
-    ld a,h              ;11c8 7c
-    or l                ;11c9 b5
-    jp nz,l11d9h        ;11ca c2 d9 11
+    ;IF DRV(D) <> 1 THEN GOTO l11d9h
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    push de
+    pop hl
+    ld de,0-1
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l11d9h
 
     ;PRINT "8050       ";
     call pr0a
     ld hl,cbm_8050
     call pv1d
 
-    jp l1285h           ;11d6 c3 85 12
+    ;GOTO l1285h
+    jp l1285h
+
 l11d9h:
-    ld hl,(dd)          ;11d9 2a dc 02
-    add hl,hl           ;11dc 29
-    ld de,drv           ;11dd 11 0e 01
-    add hl,de           ;11e0 19
-    ld e,(hl)           ;11e1 5e
-    inc hl              ;11e2 23
-    ld d,(hl)           ;11e3 56
-    push de             ;11e4 d5
-    pop hl              ;11e5 e1
-    ld de,0ff7fh        ;11e6 11 7f ff
-    ld a,h              ;11e9 7c
-    rla                 ;11ea 17
-    jp c,l11f0h         ;11eb da f0 11
-    add hl,de           ;11ee 19
-    add hl,hl           ;11ef 29
+    ; IF DRV(D) < 129 THEN GOTO l11fdh
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    push de
+    pop hl
+    ld de,0-81h
+    ld a,h
+    rla
+    jp c,l11f0h
+    add hl,de
+    add hl,hl
 l11f0h:
-    jp c,l11fdh         ;11f0 da fd 11
+    jp c,l11fdh
 
     ;PRINT "not used"
     call pr0a
     ld hl,not_used
     call pv2d
 
+    ;RETURN
     ret                 ;11fc c9
+
 l11fdh:
     ;IF MINI = 1 THEN GOTO l129eh
     ld hl,(mini)
@@ -2707,7 +2740,7 @@ l11fdh:
     or l
     jp z,l129eh
 
-    ;IF DRV (D) = 2 THEN GOTO l1228h
+    ;IF DRV(D) <> 2 THEN GOTO l1228h
     ld hl,(dd)
     add hl,hl
     ld de,drv
@@ -2729,20 +2762,21 @@ l11fdh:
     call pv1d
 
 l1228h:
-    ld hl,(dd)          ;1228 2a dc 02
-    add hl,hl           ;122b 29
-    ld de,drv           ;122c 11 0e 01
-    add hl,de           ;122f 19
-    ld e,(hl)           ;1230 5e
-    inc hl              ;1231 23
-    ld d,(hl)           ;1232 56
-    push de             ;1233 d5
-    pop hl              ;1234 e1
-    ld de,0fffdh        ;1235 11 fd ff
-    add hl,de           ;1238 19
-    ld a,h              ;1239 7c
-    or l                ;123a b5
-    jp nz,l1247h        ;123b c2 47 12
+    ;IF DRV(D) <> 3 THEN GOTO l1247h
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    push de
+    pop hl
+    ld de,0-3
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1247h
 
     ;PRINT "Corvus 20Mb"
     call pr0a
@@ -2750,20 +2784,21 @@ l1228h:
     call pv1d
 
 l1247h:
-    ld hl,(dd)          ;1247 2a dc 02
-    add hl,hl           ;124a 29
-    ld de,drv           ;124b 11 0e 01
-    add hl,de           ;124e 19
-    ld e,(hl)           ;124f 5e
-    inc hl              ;1250 23
-    ld d,(hl)           ;1251 56
-    push de             ;1252 d5
-    pop hl              ;1253 e1
-    ld de,0fffch        ;1254 11 fc ff
-    add hl,de           ;1257 19
-    ld a,h              ;1258 7c
-    or l                ;1259 b5
-    jp nz,l1266h        ;125a c2 66 12
+    ;IF DRV(D) <> 4 THEN GOTO l1266h
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    push de
+    pop hl
+    ld de,0-4
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1266h
 
     ;PRINT "Corvus 5Mb ";
     call pr0a
@@ -2771,20 +2806,21 @@ l1247h:
     call pv1d
 
 l1266h:
-    ld hl,(dd)          ;1266 2a dc 02
-    add hl,hl           ;1269 29
-    ld de,drv           ;126a 11 0e 01
-    add hl,de           ;126d 19
-    ld e,(hl)           ;126e 5e
-    inc hl              ;126f 23
-    ld d,(hl)           ;1270 56
-    push de             ;1271 d5
-    pop hl              ;1272 e1
-    ld de,0fffbh        ;1273 11 fb ff
-    add hl,de           ;1276 19
-    ld a,h              ;1277 7c
-    or l                ;1278 b5
-    jp nz,l1285h        ;1279 c2 85 12
+    ;IF DRV(D) <> 5 THEN GOTO l1285h
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    push de
+    pop hl
+    ld de,0-5
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1285h
 
     ;PRINT "Corvus 5Mb*";
     call pr0a
@@ -2792,21 +2828,22 @@ l1266h:
     call pv1d
 
 l1285h:
-    ;PRINT"   Device #";
+    ;PRINT"   Device #", DISKDEV (D)
     call pr0a
     ld hl,device_num
     call pv0d
+    ld hl,(dd)
+    add hl,hl
+    ld de,diskdev
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    ex de,hl
+    call pv2c
 
-    ld hl,(dd)          ;128e 2a dc 02
-    add hl,hl           ;1291 29
-    ld de,diskdev       ;1292 11 24 01
-    add hl,de           ;1295 19
-    ld e,(hl)           ;1296 5e
-    inc hl              ;1297 23
-    ld d,(hl)           ;1298 56
-    ex de,hl            ;1299 eb
-    call pv2c           ;129a cd c8 2c
-    ret                 ;129d c9
+    ;RETURN
+    ret
 
 l129eh:
     ;PRINT "Winchester    ";
@@ -2814,97 +2851,109 @@ l129eh:
     ld hl,winchester
     call pv1d
 
-    ld hl,(dd)          ;12a7 2a dc 02
-    add hl,hl           ;12aa 29
-    ld de,drv           ;12ab 11 0e 01
-    add hl,de           ;12ae 19
-    ld e,(hl)           ;12af 5e
-    inc hl              ;12b0 23
-    ld d,(hl)           ;12b1 56
-    push de             ;12b2 d5
-    pop hl              ;12b3 e1
-    ld de,0fffeh        ;12b4 11 fe ff
-    add hl,de           ;12b7 19
-    ld a,h              ;12b8 7c
-    or l                ;12b9 b5
-    jp nz,l12c6h        ;12ba c2 c6 12
-
-    call pr0a           ;12bd cd 3d 2d
-    ld hl,mw_3mb        ;12c0 21 b9 1f
-    call pv2d           ;12c3 cd 31 2c
-
-l12c6h:
-    ld hl,(dd)          ;12c6 2a dc 02
-    add hl,hl           ;12c9 29
-    ld de,drv           ;12ca 11 0e 01
-    add hl,de           ;12cd 19
-    ld e,(hl)           ;12ce 5e
-    inc hl              ;12cf 23
-    ld d,(hl)           ;12d0 56
-    push de             ;12d1 d5
-    pop hl              ;12d2 e1
-    ld de,0fffdh        ;12d3 11 fd ff
-    add hl,de           ;12d6 19
-    ld a,h              ;12d7 7c
-    or l                ;12d8 b5
-    jp nz,l12e5h        ;12d9 c2 e5 12
-    call pr0a           ;12dc cd 3d 2d
-    ld hl,mw_6mb        ;12df 21 af 1f
-    call pv2d           ;12e2 cd 31 2c
-l12e5h:
-    ld hl,(dd)          ;12e5 2a dc 02
-    add hl,hl           ;12e8 29
-    ld de,drv           ;12e9 11 0e 01
-    add hl,de           ;12ec 19
-    ld e,(hl)           ;12ed 5e
-    inc hl              ;12ee 23
-    ld d,(hl)           ;12ef 56
-    push de             ;12f0 d5
-    pop hl              ;12f1 e1
-    ld de,0fffch        ;12f2 11 fc ff
-    add hl,de           ;12f5 19
-    ld a,h              ;12f6 7c
-    or l                ;12f7 b5
-    jp nz,l1304h        ;12f8 c2 04 13
-    call pr0a           ;12fb cd 3d 2d
-    ld hl,mw_12mb       ;12fe 21 9f 1f
-    call pv2d           ;1301 cd 31 2c
-l1304h:
-    ld hl,(dd)          ;1304 2a dc 02
-    add hl,hl           ;1307 29
-    ld de,drv           ;1308 11 0e 01
-    add hl,de           ;130b 19
-    ld e,(hl)           ;130c 5e
-    inc hl              ;130d 23
-    ld d,(hl)           ;130e 56
-    push de             ;130f d5
-    pop hl              ;1310 e1
-    ld de,0fffbh        ;1311 11 fb ff
-    add hl,de           ;1314 19
-    ld a,h              ;1315 7c
-    or l                ;1316 b5
-    jp nz,l1323h        ;1317 c2 23 13
+    ;IF DRV(D) <> 2 THEN GOTO l12c6h
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    push de
+    pop hl
+    ld de,0-2
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l12c6h
 
     ;PRINT "3 Mbyte     "
+    call pr0a
+    ld hl,mw_3mb
+    call pv2d
+
+l12c6h:
+    ;IF DRV(D) <> 3 THEN GOTO l12e5h
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    push de
+    pop hl
+    ld de,0-3
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l12e5h
+
+    ;PRINT "6 Mbyte"
+    call pr0a
+    ld hl,mw_6mb
+    call pv2d
+
+l12e5h:
+    ;IF DRV(D) <> 4 THEN GOTO l1304h
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    push de
+    pop hl
+    ld de,0-4
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1304h
+
+    ;PRINT "12 Mbyte     "
+    call pr0a
+    ld hl,mw_12mb
+    call pv2d
+
+l1304h:
+    ;IF DRV(D) <> 5 THEN GOTO l1323h
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    push de
+    pop hl
+    ld de,0-5
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1323h
+
+    ;PRINT "3 Mbyte (half)"
     call pr0a
     ld hl,mw_3mb_half
     call pv2d
 
 l1323h:
-    ld hl,(dd)          ;1323 2a dc 02
-    add hl,hl           ;1326 29
-    ld de,drv           ;1327 11 0e 01
-    add hl,de           ;132a 19
-    ld e,(hl)           ;132b 5e
-    inc hl              ;132c 23
-    ld d,(hl)           ;132d 56
-    push de             ;132e d5
-    pop hl              ;132f e1
-    ld de,0fffah        ;1330 11 fa ff
-    add hl,de           ;1333 19
-    ld a,h              ;1334 7c
-    or l                ;1335 b5
-    jp nz,l1342h        ;1336 c2 42 13
+    ;IF DRV(D) <> 6 THEN GOTO l1342h
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    push de
+    pop hl
+    ld de,0-6
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1342h
 
     ;PRINT "6 Mbyte (half)"
     call pr0a
@@ -2912,20 +2961,21 @@ l1323h:
     call pv2d
 
 l1342h:
-    ld hl,(dd)          ;1342 2a dc 02
-    add hl,hl           ;1345 29
-    ld de,drv           ;1346 11 0e 01
-    add hl,de           ;1349 19
-    ld e,(hl)           ;134a 5e
-    inc hl              ;134b 23
-    ld d,(hl)           ;134c 56
-    push de             ;134d d5
-    pop hl              ;134e e1
-    ld de,0fff9h        ;134f 11 f9 ff
-    add hl,de           ;1352 19
-    ld a,h              ;1353 7c
-    or l                ;1354 b5
-    jp nz,l1361h        ;1355 c2 61 13
+    ;IF DRV(D) <> 7 THEN GOTO l1361h
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    push de
+    pop hl
+    ld de,0-7
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l1361h
 
     ;PRINT "12Mbyte (half)"
     call pr0a
@@ -2933,7 +2983,8 @@ l1342h:
     call pv2d
 
 l1361h:
-    ret                 ;1361 c9
+    ;RETURN
+    ret
 
 l1362h:
     ;GOSUB clear_screen
@@ -2950,7 +3001,9 @@ l1362h:
     ld hl,no_aload_cmd
     call pv2d
 
-    jp l13bfh           ;1376 c3 bf 13
+    ;GOTO l13bfh
+    jp l13bfh
+
 l1379h:
     ;PRINT "Current autoload command is :"
     call pr0a
