@@ -107,10 +107,8 @@ rowoff:
     dw 0c004h           ;Offset added to Y when sending move-to sequence
 coloff:
     dw 053eh            ;Offset added to X when sending move-to sequence
-
-l02d0h:
-    dw 0cec3h
-
+jj:
+    dw 0cec3h           ;Loop index
 clock:
     dw 3e2bh            ;Frequency of PET system interrupt in Hz (50 or 60)
 lptype:
@@ -481,7 +479,7 @@ l0430h:
 l04dfh:
     ld hl,(bias)        ;04df 2a ae 02
     ex de,hl            ;04e2 eb
-    ld hl,(l02d0h)      ;04e3 2a d0 02
+    ld hl,(jj)          ;04e3 2a d0 02
     add hl,de           ;04e6 19
     ld de,4a70h         ;04e7 11 70 4a
     push hl             ;04ea e5
@@ -489,7 +487,7 @@ l04dfh:
     ld l,(hl)           ;04ec 6e
     ld h,00h            ;04ed 26 00
     push hl             ;04ef e5
-    ld hl,(l02d0h)      ;04f0 2a d0 02
+    ld hl,(jj)          ;04f0 2a d0 02
     add hl,hl           ;04f3 29
     ld (02eah),hl       ;04f4 22 ea 02
     ld de,drv           ;04f7 11 0e 01
@@ -511,11 +509,11 @@ l04dfh:
     ld (hl),e           ;0510 73
     inc hl              ;0511 23
     ld (hl),d           ;0512 72
-    ld hl,(l02d0h)      ;0513 2a d0 02
+    ld hl,(jj)          ;0513 2a d0 02
     inc hl              ;0516 23
 l0517h:
-    ld (l02d0h),hl      ;0517 22 d0 02
-    ld hl,(l02d0h)      ;051a 2a d0 02
+    ld (jj),hl          ;0517 22 d0 02
+    ld hl,(jj)          ;051a 2a d0 02
     ld de,0fff8h        ;051d 11 f8 ff
     ld a,h              ;0520 7c
     rla                 ;0521 17
@@ -529,14 +527,14 @@ l0527h:
 l0530h:
     ld hl,(bias)        ;0530 2a ae 02
     ex de,hl            ;0533 eb
-    ld hl,(l02d0h)      ;0534 2a d0 02
+    ld hl,(jj)          ;0534 2a d0 02
     add hl,de           ;0537 19
     ld de,3407h         ;0538 11 07 34
     add hl,de           ;053b 19
     ld l,(hl)           ;053c 6e
     ld h,00h            ;053d 26 00
     push hl             ;053f e5
-    ld hl,(l02d0h)      ;0540 2a d0 02
+    ld hl,(jj)          ;0540 2a d0 02
     add hl,hl           ;0543 29
     ld de,autoload      ;0544 11 3a 01
     add hl,de           ;0547 19
@@ -544,11 +542,11 @@ l0530h:
     ld (hl),e           ;0549 73
     inc hl              ;054a 23
     ld (hl),d           ;054b 72
-    ld hl,(l02d0h)      ;054c 2a d0 02
+    ld hl,(jj)          ;054c 2a d0 02
     inc hl              ;054f 23
 l0550h:
-    ld (l02d0h),hl      ;0550 22 d0 02
-    ld hl,(l02d0h)      ;0553 2a d0 02
+    ld (jj),hl          ;0550 22 d0 02
+    ld hl,(jj)          ;0553 2a d0 02
     ld de,0ffafh        ;0556 11 af ff
     ld a,h              ;0559 7c
     rla                 ;055a 17
@@ -562,14 +560,14 @@ l0560h:
 l0569h:
     ld hl,(bias)        ;0569 2a ae 02
     ex de,hl            ;056c eb
-    ld hl,(l02d0h)      ;056d 2a d0 02
+    ld hl,(jj)          ;056d 2a d0 02
     add hl,de           ;0570 19
     ld de,4a80h         ;0571 11 80 4a
     add hl,de           ;0574 19
     ld l,(hl)           ;0575 6e
     ld h,00h            ;0576 26 00
     push hl             ;0578 e5
-    ld hl,(l02d0h)      ;0579 2a d0 02
+    ld hl,(jj)          ;0579 2a d0 02
     add hl,hl           ;057c 29
     ld de,scrtab        ;057d 11 2c 02
     add hl,de           ;0580 19
@@ -577,11 +575,11 @@ l0569h:
     ld (hl),e           ;0582 73
     inc hl              ;0583 23
     ld (hl),d           ;0584 72
-    ld hl,(l02d0h)      ;0585 2a d0 02
+    ld hl,(jj)          ;0585 2a d0 02
     inc hl              ;0588 23
 l0589h:
-    ld (l02d0h),hl      ;0589 22 d0 02
-    ld hl,(l02d0h)      ;058c 2a d0 02
+    ld (jj),hl          ;0589 22 d0 02
+    ld hl,(jj)          ;058c 2a d0 02
     ld de,0ffc0h        ;058f 11 c0 ff
     ld a,h              ;0592 7c
     rla                 ;0593 17
@@ -2962,7 +2960,7 @@ l1379h:
     jp l13a7h           ;138b c3 a7 13
 l138eh:
     call pr0a           ;138e cd 3d 2d
-    ld hl,(l02d0h)      ;1391 2a d0 02
+    ld hl,(jj)          ;1391 2a d0 02
     add hl,hl           ;1394 29
     ld de,autoload      ;1395 11 3a 01
     add hl,de           ;1398 19
@@ -2972,11 +2970,11 @@ l138eh:
     ex de,hl            ;139c eb
     call chr            ;139d cd 24 2c
     call pv1d           ;13a0 cd 3c 2c
-    ld hl,(l02d0h)      ;13a3 2a d0 02
+    ld hl,(jj)          ;13a3 2a d0 02
     inc hl              ;13a6 23
 l13a7h:
-    ld (l02d0h),hl      ;13a7 22 d0 02
-    ld hl,(l02d0h)      ;13aa 2a d0 02
+    ld (jj),hl          ;13a7 22 d0 02
+    ld hl,(jj)          ;13aa 2a d0 02
     ex de,hl            ;13ad eb
     ld hl,(l02deh)      ;13ae 2a de 02
     ld a,d              ;13b1 7a
@@ -3030,13 +3028,13 @@ l13bfh:
 l13fch:
     ld hl,(buf)         ;13fc 2a e0 02
     ex de,hl            ;13ff eb
-    ld hl,(l02d0h)      ;1400 2a d0 02
+    ld hl,(jj)          ;1400 2a d0 02
     add hl,de           ;1403 19
     inc hl              ;1404 23
     ld l,(hl)           ;1405 6e
     ld h,00h            ;1406 26 00
     push hl             ;1408 e5
-    ld hl,(l02d0h)      ;1409 2a d0 02
+    ld hl,(jj)          ;1409 2a d0 02
     add hl,hl           ;140c 29
     ld de,autoload      ;140d 11 3a 01
     add hl,de           ;1410 19
@@ -3044,7 +3042,7 @@ l13fch:
     ld (hl),e           ;1412 73
     inc hl              ;1413 23
     ld (hl),d           ;1414 72
-    ld hl,(l02d0h)      ;1415 2a d0 02
+    ld hl,(jj)          ;1415 2a d0 02
     add hl,hl           ;1418 29
     ld de,autoload      ;1419 11 3a 01
     add hl,de           ;141c 19
@@ -3092,11 +3090,11 @@ l143fh:
     jp z,l1456h         ;1450 ca 56 14
     call sub_147eh      ;1453 cd 7e 14
 l1456h:
-    ld hl,(l02d0h)      ;1456 2a d0 02
+    ld hl,(jj)          ;1456 2a d0 02
     inc hl              ;1459 23
 l145ah:
-    ld (l02d0h),hl      ;145a 22 d0 02
-    ld hl,(l02d0h)      ;145d 2a d0 02
+    ld (jj),hl          ;145a 22 d0 02
+    ld hl,(jj)          ;145d 2a d0 02
     ld de,0ffafh        ;1460 11 af ff
     ld a,h              ;1463 7c
     rla                 ;1464 17
@@ -3115,7 +3113,7 @@ l146ah:
     ld (hl),d           ;147a 72
     jp l05b5h           ;147b c3 b5 05
 sub_147eh:
-    ld hl,(l02d0h)      ;147e 2a d0 02
+    ld hl,(jj)          ;147e 2a d0 02
     add hl,hl           ;1481 29
     ld de,autoload      ;1482 11 3a 01
     add hl,de           ;1485 19
@@ -3138,7 +3136,7 @@ sub_149ah:
     ld hl,0000h         ;149a 21 00 00
     jp l14dah           ;149d c3 da 14
 l14a0h:
-    ld hl,(l02d0h)      ;14a0 2a d0 02
+    ld hl,(jj)          ;14a0 2a d0 02
     add hl,hl           ;14a3 29
     ld de,drv           ;14a4 11 0e 01
     add hl,de           ;14a7 19
@@ -3149,13 +3147,13 @@ l14a0h:
     push hl             ;14ac e5
     ld hl,(bias)        ;14ad 2a ae 02
     ex de,hl            ;14b0 eb
-    ld hl,(l02d0h)      ;14b1 2a d0 02
+    ld hl,(jj)          ;14b1 2a d0 02
     add hl,de           ;14b4 19
     ld de,4a70h         ;14b5 11 70 4a
     add hl,de           ;14b8 19
     pop de              ;14b9 d1
     ld (hl),e           ;14ba 73
-    ld hl,(l02d0h)      ;14bb 2a d0 02
+    ld hl,(jj)          ;14bb 2a d0 02
     add hl,hl           ;14be 29
     ld de,diskdev       ;14bf 11 24 01
     add hl,de           ;14c2 19
@@ -3166,17 +3164,17 @@ l14a0h:
     push hl             ;14c7 e5
     ld hl,(bias)        ;14c8 2a ae 02
     ex de,hl            ;14cb eb
-    ld hl,(l02d0h)      ;14cc 2a d0 02
+    ld hl,(jj)          ;14cc 2a d0 02
     add hl,de           ;14cf 19
     ld de,4a78h         ;14d0 11 78 4a
     add hl,de           ;14d3 19
     pop de              ;14d4 d1
     ld (hl),e           ;14d5 73
-    ld hl,(l02d0h)      ;14d6 2a d0 02
+    ld hl,(jj)          ;14d6 2a d0 02
     inc hl              ;14d9 23
 l14dah:
-    ld (l02d0h),hl      ;14da 22 d0 02
-    ld hl,(l02d0h)      ;14dd 2a d0 02
+    ld (jj),hl          ;14da 22 d0 02
+    ld hl,(jj)          ;14dd 2a d0 02
     ld de,0fff8h        ;14e0 11 f8 ff
     ld a,h              ;14e3 7c
     rla                 ;14e4 17
@@ -3325,7 +3323,7 @@ l152fh:
     ld hl,0000h         ;15b7 21 00 00
     jp l15dch           ;15ba c3 dc 15
 l15bdh:
-    ld hl,(l02d0h)      ;15bd 2a d0 02
+    ld hl,(jj)          ;15bd 2a d0 02
     add hl,hl           ;15c0 29
     ld de,autoload      ;15c1 11 3a 01
     add hl,de           ;15c4 19
@@ -3336,17 +3334,17 @@ l15bdh:
     push hl             ;15c9 e5
     ld hl,(bias)        ;15ca 2a ae 02
     ex de,hl            ;15cd eb
-    ld hl,(l02d0h)      ;15ce 2a d0 02
+    ld hl,(jj)          ;15ce 2a d0 02
     add hl,de           ;15d1 19
     ld de,3407h         ;15d2 11 07 34
     add hl,de           ;15d5 19
     pop de              ;15d6 d1
     ld (hl),e           ;15d7 73
-    ld hl,(l02d0h)      ;15d8 2a d0 02
+    ld hl,(jj)          ;15d8 2a d0 02
     inc hl              ;15db 23
 l15dch:
-    ld (l02d0h),hl      ;15dc 22 d0 02
-    ld hl,(l02d0h)      ;15df 2a d0 02
+    ld (jj),hl          ;15dc 22 d0 02
+    ld hl,(jj)          ;15df 2a d0 02
     ld de,0ffafh        ;15e2 11 af ff
     ld a,h              ;15e5 7c
     rla                 ;15e6 17
@@ -3386,7 +3384,7 @@ l15ech:
     ld hl,0000h         ;1623 21 00 00
     jp l1648h           ;1626 c3 48 16
 l1629h:
-    ld hl,(l02d0h)      ;1629 2a d0 02
+    ld hl,(jj)          ;1629 2a d0 02
     add hl,hl           ;162c 29
     ld de,scrtab        ;162d 11 2c 02
     add hl,de           ;1630 19
@@ -3397,17 +3395,17 @@ l1629h:
     push hl             ;1635 e5
     ld hl,(bias)        ;1636 2a ae 02
     ex de,hl            ;1639 eb
-    ld hl,(l02d0h)      ;163a 2a d0 02
+    ld hl,(jj)          ;163a 2a d0 02
     add hl,de           ;163d 19
     ld de,4a80h         ;163e 11 80 4a
     add hl,de           ;1641 19
     pop de              ;1642 d1
     ld (hl),e           ;1643 73
-    ld hl,(l02d0h)      ;1644 2a d0 02
+    ld hl,(jj)          ;1644 2a d0 02
     inc hl              ;1647 23
 l1648h:
-    ld (l02d0h),hl      ;1648 22 d0 02
-    ld hl,(l02d0h)      ;164b 2a d0 02
+    ld (jj),hl          ;1648 22 d0 02
+    ld hl,(jj)          ;164b 2a d0 02
     ld de,0ffc0h        ;164e 11 c0 ff
     ld a,h              ;1651 7c
     rla                 ;1652 17
@@ -4398,14 +4396,16 @@ readline:
     ret
 
 l1bf4h:
-    ld hl,(buf)         ;1bf4 2a e0 02
-    inc hl              ;1bf7 23
-    inc hl              ;1bf8 23
-    ld l,(hl)           ;1bf9 6e
-    ld h,00h            ;1bfa 26 00
-    ld (rr),hl          ;1bfc 22 b2 02
+    ;R = PEEK (BUF+2)
+    ld hl,(buf)
+    inc hl
+    inc hl
+    ld l,(hl)
+    ld h,00h
+    ld (rr),hl
+
     ld hl,(rr)          ;1bff 2a b2 02
-    ld de,0ff9fh        ;1c02 11 9f ff
+    ld de,0-61h         ;1c02 11 9f ff
     ld a,h              ;1c05 7c
     rla                 ;1c06 17
     jp c,l1c0ch         ;1c07 da 0c 1c
@@ -4418,7 +4418,7 @@ l1c0ch:
     ld l,a              ;1c0f 6f
     push hl             ;1c10 e5
     ld hl,(rr)          ;1c11 2a b2 02
-    ld de,0ff85h        ;1c14 11 85 ff
+    ld de,0-7bh         ;1c14 11 85 ff
     ld a,h              ;1c17 7c
     rla                 ;1c18 17
     jp c,l1c1eh         ;1c19 da 1e 1c
@@ -4438,24 +4438,31 @@ l1c1eh:
     ld a,h              ;1c28 7c
     or l                ;1c29 b5
     jp z,l1c37h         ;1c2a ca 37 1c
-    ld de,0ffe0h        ;1c2d 11 e0 ff
-    ld hl,(rr)          ;1c30 2a b2 02
-    add hl,de           ;1c33 19
-    ld (rr),hl          ;1c34 22 b2 02
+
+    ;R = R - &H20
+    ld de,0-20h
+    ld hl,(rr)
+    add hl,de
+    ld (rr),hl
+
 l1c37h:
-    ld hl,0000h         ;1c37 21 00 00
-    ld (nn),hl          ;1c3a 22 d8 02
-    ld hl,0002h         ;1c3d 21 02 00
-    ld (l02d0h),hl      ;1c40 22 d0 02
+    ;N = 0
+    ld hl,0000h
+    ld (nn),hl
+
+    ;J = 2
+    ld hl,0002h
+    ld (jj),hl
+
 l1c43h:
     ld hl,(buf)         ;1c43 2a e0 02
     ex de,hl            ;1c46 eb
-    ld hl,(l02d0h)      ;1c47 2a d0 02
+    ld hl,(jj)          ;1c47 2a d0 02
     add hl,de           ;1c4a 19
     ld l,(hl)           ;1c4b 6e
     ld h,00h            ;1c4c 26 00
     push hl             ;1c4e e5
-    ld de,0ffd0h        ;1c4f 11 d0 ff
+    ld de,0-30h         ;1c4f 11 d0 ff
     ld a,h              ;1c52 7c
     rla                 ;1c53 17
     jp c,l1c59h         ;1c54 da 59 1c
@@ -4494,7 +4501,7 @@ l1c6bh:
     ld l,(hl)           ;1c7f 6e
     ld h,00h            ;1c80 26 00
     push hl             ;1c82 e5
-    ld hl,(l02d0h)      ;1c83 2a d0 02
+    ld hl,(jj)          ;1c83 2a d0 02
     dec hl              ;1c86 2b
     dec hl              ;1c87 2b
     pop de              ;1c88 d1
@@ -4528,7 +4535,7 @@ l1c93h:
     push hl             ;1cab e5
     ld hl,(buf)         ;1cac 2a e0 02
     ex de,hl            ;1caf eb
-    ld hl,(l02d0h)      ;1cb0 2a d0 02
+    ld hl,(jj)          ;1cb0 2a d0 02
     add hl,de           ;1cb3 19
     ld l,(hl)           ;1cb4 6e
     ld h,00h            ;1cb5 26 00
@@ -4537,9 +4544,9 @@ l1c93h:
     ld de,0ffd0h        ;1cb9 11 d0 ff
     add hl,de           ;1cbc 19
     ld (nn),hl          ;1cbd 22 d8 02
-    ld hl,(l02d0h)      ;1cc0 2a d0 02
+    ld hl,(jj)          ;1cc0 2a d0 02
     inc hl              ;1cc3 23
-    ld (l02d0h),hl      ;1cc4 22 d0 02
+    ld (jj),hl          ;1cc4 22 d0 02
     jp l1c43h           ;1cc7 c3 43 1c
 l1ccah:
     ret                 ;1cca c9
