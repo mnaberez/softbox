@@ -1341,7 +1341,7 @@ l09e8h:
     or l
     jp nz,l0a1bh
 
-    ;POKE BAUD, &H22
+    ;BAUD = &H22
     ld hl,0022h
     ld (baud),hl
 
@@ -1357,7 +1357,7 @@ l0a1bh:
     or l
     jp nz,l0a2dh
 
-    ;POKE BAUD, &H55
+    ;BAUD = &H55
     ld hl,0055h
     ld (baud),hl
 
@@ -1370,7 +1370,7 @@ l0a2dh:
     or l
     jp nz,l0a42h
 
-    ;POKE BAUD, &H77
+    ;BAUD = &H77
     ld hl,0077h
     ld (baud),hl
 
@@ -1386,7 +1386,7 @@ l0a42h:
     or l
     jp nz,l0a54h
 
-    ;POKE BAUD, &HEE
+    ;BAUD = &HEE
     ld hl,00eeh
     ld (baud),hl
 
@@ -1399,7 +1399,7 @@ l0a54h:
     or l
     jp nz,l0a66h
 
-    ;POKE BAUD, &HCC
+    ;BAUD = &HCC
     ld hl,00cch
     ld (baud),hl
 
@@ -1412,7 +1412,7 @@ l0a66h:
     or l
     jp nz,l0a78h
 
-    ;POKE BAUD, &HFF
+    ;BAUD = &HFF
     ld hl,00ffh
     ld (baud),hl
 
@@ -2322,15 +2322,18 @@ l0f96h:
     or l
     jp nz,l0fe7h
 
-    ld hl,(dd)          ;0fd6 2a dc 02
-    add hl,hl           ;0fd9 29
-    ld de,drv           ;0fda 11 0e 01
-    add hl,de           ;0fdd 19
-    ld de,0000h         ;0fde 11 00 00
-    ld (hl),e           ;0fe1 73
-    inc hl              ;0fe2 23
-    ld (hl),d           ;0fe3 72
-    jp l109fh           ;0fe4 c3 9f 10
+    ;DRV(D) = 0  ' 3040
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld de,0000h
+    ld (hl),e
+    inc hl
+    ld (hl),d
+
+    ;GOTO l109fh
+    jp l109fh
 
 l0fe7h:
     ;IF R <> &H38 THEN GOTO l1004h
@@ -2341,7 +2344,7 @@ l0fe7h:
     or l
     jp nz,l1004h
 
-    ;POKE DRV(D), 1
+    ;DRV(D) = 1  ' 8050
     ld hl,(dd)
     add hl,hl
     ld de,drv
@@ -2363,7 +2366,7 @@ l1004h:
     or l
     jp nz,l1021h
 
-    ;POKE DRV(D), 255
+    ;DRV(D) = 255  ' unused
     ld hl,(dd)
     add hl,hl
     ld de,drv
@@ -2409,7 +2412,7 @@ l1021h:
     or l
     jp nz,l1062h
 
-    ;POKE DRV(D), 4
+    ;DRV(D) = 4  ' Corvus 5 Mbyte
     ld hl,(dd)
     add hl,hl
     ld de,drv
@@ -2431,7 +2434,7 @@ l1062h:
     or l
     jp nz,l107fh
 
-    ;POKE DRV(D), 2
+    ;DRV(D) = 2  ' Corvus 10 Mbyte
     ld hl,(dd)
     add hl,hl
     ld de,drv
@@ -2453,7 +2456,7 @@ l107fh:
     or l
     jp nz,l109ch
 
-    ;POKE DRV(D), 3
+    ;DRV(D) = 3  ' Corvus 20 Mbyte
     ld hl,(dd)
     add hl,hl
     ld de,drv
