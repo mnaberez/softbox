@@ -813,21 +813,22 @@ l06deh:
     ld hl,rs232_1_chr
     call pv1d
 
-    call pr0a           ;0705 cd 3d 2d
-    ld hl,(uu)          ;0708 2a c0 02
-    ld a,l              ;070b 7d
-    and 0ch             ;070c e6 0c
-    ld l,a              ;070e 6f
-    ld a,h              ;070f 7c
-    and 00h             ;0710 e6 00
-    ld h,a              ;0712 67
-    call idva           ;0713 cd 64 2c
-    inc b               ;0716 04
-    nop                 ;0717 00
-    ld de,0035h         ;0718 11 35 00
-    add hl,de           ;071b 19
-    call chr            ;071c cd 24 2c
-    call pv2d           ;071f cd 31 2c
+    ;PRINT CHR$((U AND 12) \4 + &H35)
+    call pr0a
+    ld hl,(uu)
+    ld a,l
+    and 0ch
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    call idva
+    inc b
+    nop
+    ld de,0035h
+    add hl,de
+    call chr
+    call pv2d
 
     ;PRINT
     call pr0a
@@ -1129,10 +1130,12 @@ l08d7h:
     ;GOSUB readline
     call readline
 
-    ld de,0ffcbh        ;08e3 11 cb ff
-    ld hl,(rr)          ;08e6 2a b2 02
-    add hl,de           ;08e9 19
-    ld (rr),hl          ;08ea 22 b2 02
+    ;R = R - &H35
+    ld de,0-35h
+    ld hl,(rr)
+    add hl,de
+    ld (rr),hl
+
     ld hl,(rr)          ;08ed 2a b2 02
     add hl,hl           ;08f0 29
     ccf                 ;08f1 3f
@@ -1259,20 +1262,21 @@ l0983h:
     or l
     jp nz,l09b1h
 
-    ld hl,(uu)          ;099b 2a c0 02
-    ld a,l              ;099e 7d
-    and 0cfh            ;099f e6 cf
-    ld l,a              ;09a1 6f
-    ld a,h              ;09a2 7c
-    and 00h             ;09a3 e6 00
-    ld h,a              ;09a5 67
-    ld a,l              ;09a6 7d
-    or 10h              ;09a7 f6 10
-    ld l,a              ;09a9 6f
-    ld a,h              ;09aa 7c
-    or 00h              ;09ab f6 00
-    ld h,a              ;09ad 67
-    ld (uu),hl          ;09ae 22 c0 02
+    ;U = (U AND &HCF) OR &H10
+    ld hl,(uu)
+    ld a,l
+    and 0cfh
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,l
+    or 10h
+    ld l,a
+    ld a,h
+    or 00h
+    ld h,a
+    ld (uu),hl
 
 l09b1h:
     ;IF R <> &H45 THEN GOTO l09cbh
@@ -1283,14 +1287,15 @@ l09b1h:
     or l
     jp nz,l09cbh
 
-    ld hl,(uu)          ;09bd 2a c0 02
-    ld a,l              ;09c0 7d
-    or 30h              ;09c1 f6 30
-    ld l,a              ;09c3 6f
-    ld a,h              ;09c4 7c
-    or 00h              ;09c5 f6 00
-    ld h,a              ;09c7 67
-    ld (uu),hl          ;09c8 22 c0 02
+    ;U = U OR &H30
+    ld hl,(uu)
+    ld a,l
+    or 30h
+    ld l,a
+    ld a,h
+    or 00h
+    ld h,a
+    ld (uu),hl
 
 l09cbh:
     ;IF R <> &H4E THEN GOTO l09e5h
@@ -1301,14 +1306,15 @@ l09cbh:
     or l
     jp nz,l09e5h
 
-    ld hl,(uu)          ;09d7 2a c0 02
-    ld a,l              ;09da 7d
-    and 0efh            ;09db e6 ef
-    ld l,a              ;09dd 6f
-    ld a,h              ;09de 7c
-    and 00h             ;09df e6 00
-    ld h,a              ;09e1 67
-    ld (uu),hl          ;09e2 22 c0 02
+    ;U = U AND &HEF
+    ld hl,(uu)
+    ld a,l
+    and 0efh
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld (uu),hl
 
 l09e5h:
     ;GOTO l06deh
