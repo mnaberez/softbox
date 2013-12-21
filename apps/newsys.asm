@@ -443,36 +443,36 @@ l0430h:
     ld (termtype),hl
 
     ;LEADIN = PEEK (BIAS+&H4A68)
-    ld de,4a68h         ;04a5 11 68 4a
-    ld hl,(bias)        ;04a8 2a ae 02
-    add hl,de           ;04ab 19
-    ld l,(hl)           ;04ac 6e
-    ld h,00h            ;04ad 26 00
-    ld (leadin),hl      ;04af 22 c8 02
+    ld de,4a68h
+    ld hl,(bias)
+    add hl,de
+    ld l,(hl)
+    ld h,00h
+    ld (leadin),hl
 
     ;ORDER = PEEK (BIAS+&H4A69)
-    ld de,4a69h         ;04b2 11 69 4a
-    ld hl,(bias)        ;04b5 2a ae 02
-    add hl,de           ;04b8 19
-    ld l,(hl)           ;04b9 6e
-    ld h,00h            ;04ba 26 00
-    ld (order),hl       ;04bc 22 ca 02
+    ld de,4a69h
+    ld hl,(bias)
+    add hl,de
+    ld l,(hl)
+    ld h,00h
+    ld (order),hl
 
     ;ROWOFF = PEEK (BIAS+&H4A6A)
-    ld de,4a6ah         ;04bf 11 6a 4a
-    ld hl,(bias)        ;04c2 2a ae 02
-    add hl,de           ;04c5 19
-    ld l,(hl)           ;04c6 6e
-    ld h,00h            ;04c7 26 00
-    ld (rowoff),hl      ;04c9 22 cc 02
+    ld de,4a6ah
+    ld hl,(bias)
+    add hl,de
+    ld l,(hl)
+    ld h,00h
+    ld (rowoff),hl
 
     ;COLOFF = PEEK (BIAS+&H4A6B)
-    ld de,4a6bh         ;04cc 11 6b 4a
-    ld hl,(bias)        ;04cf 2a ae 02
-    add hl,de           ;04d2 19
-    ld l,(hl)           ;04d3 6e
-    ld h,00h            ;04d4 26 00
-    ld (coloff),hl      ;04d6 22 ce 02
+    ld de,4a6bh
+    ld hl,(bias)
+    add hl,de
+    ld l,(hl)
+    ld h,00h
+    ld (coloff),hl
 
     ld hl,0000h         ;04d9 21 00 00
     jp l0517h           ;04dc c3 17 05
@@ -1185,6 +1185,7 @@ l0903h:
     ld (uu),hl          ;092a 22 c0 02
 l092dh:
     jp l06deh           ;092d c3 de 06
+
 l0930h:
     ;PRINT "Number of stop bits (1 or 2)  ? ";
     call pr0a
@@ -1202,20 +1203,21 @@ l0930h:
     or l
     jp nz,l095eh
 
-    ld hl,(uu)          ;0948 2a c0 02
-    ld a,l              ;094b 7d
-    and 3fh             ;094c e6 3f
-    ld l,a              ;094e 6f
-    ld a,h              ;094f 7c
-    and 00h             ;0950 e6 00
-    ld h,a              ;0952 67
-    ld a,l              ;0953 7d
-    or 40h              ;0954 f6 40
-    ld l,a              ;0956 6f
-    ld a,h              ;0957 7c
-    or 00h              ;0958 f6 00
-    ld h,a              ;095a 67
-    ld (uu),hl          ;095b 22 c0 02
+    ;U = (U AND &H3F) OR &H40
+    ld hl,(uu)
+    ld a,l
+    and 3fh
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,l
+    or 40h
+    ld l,a
+    ld a,h
+    or 00h
+    ld h,a
+    ld (uu),hl
 
 l095eh:
     ;IF R<>&H32 THEN GOTO l0980h
@@ -1226,20 +1228,21 @@ l095eh:
     or l
     jp nz,l0980h
 
-    ld hl,(uu)          ;096a 2a c0 02
-    ld a,l              ;096d 7d
-    and 3fh             ;096e e6 3f
-    ld l,a              ;0970 6f
-    ld a,h              ;0971 7c
-    and 00h             ;0972 e6 00
-    ld h,a              ;0974 67
-    ld a,l              ;0975 7d
-    or 0c0h             ;0976 f6 c0
-    ld l,a              ;0978 6f
-    ld a,h              ;0979 7c
-    or 00h              ;097a f6 00
-    ld h,a              ;097c 67
-    ld (uu),hl          ;097d 22 c0 02
+    ;U = (U AND &H3F) OR &HC0
+    ld hl,(uu)
+    ld a,l
+    and 3fh
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,l
+    or 0c0h
+    ld l,a
+    ld a,h
+    or 00h
+    ld h,a
+    ld (uu),hl
 
 l0980h:
     ;GOTO l06deh
@@ -1427,7 +1430,8 @@ l0a78h:
     jp l06deh
 
 l0a7bh:
-    call clear_screen   ;0a7b cd bd 1b
+    ;GOSUB clear_screen
+    call clear_screen
 
     ;PRINT "             I/O device assignment"
     call pr0a
@@ -1659,10 +1663,11 @@ l0be0h:
     ld hl,pet_prtr_type
     call pv1d
 
-    ld hl,(lptype)      ;0bf2 2a d4 02
-    ld a,h              ;0bf5 7c
-    or l                ;0bf6 b5
-    jp nz,l0c03h        ;0bf7 c2 03 0c
+    ;IF LPTYPE <> 0 THEN GOTO l0c03h
+    ld hl,(lptype)
+    ld a,h
+    or l
+    jp nz,l0c03h
 
     ;PRINT "3022/4022"
     call pr0a
@@ -1670,12 +1675,13 @@ l0be0h:
     call pv2d
 
 l0c03h:
-    ld hl,(lptype)      ;0c03 2a d4 02
-    ld de,0ffffh        ;0c06 11 ff ff
-    add hl,de           ;0c09 19
-    ld a,h              ;0c0a 7c
-    or l                ;0c0b b5
-    jp nz,l0c18h        ;0c0c c2 18 0c
+    ;IF LPTYPE <> 1 THEN GOTO l0c18h
+    ld hl,(lptype)
+    ld de,0-1
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0c18h
 
     ;PRINT "8026/8027"
     call pr0a
@@ -1683,12 +1689,13 @@ l0c03h:
     call pv2d
 
 l0c18h:
-    ld hl,(lptype)      ;0c18 2a d4 02
-    ld de,0fffeh        ;0c1b 11 fe ff
-    add hl,de           ;0c1e 19
-    ld a,h              ;0c1f 7c
-    or l                ;0c20 b5
-    jp nz,l0c2dh        ;0c21 c2 2d 0c
+    ;IF LPTYPE <> 2 THEN GOTO l0c2dh
+    ld hl,(lptype)
+    ld de,0-2
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0c2dh
 
     ;PRINT "8024"
     call pr0a
@@ -1984,12 +1991,12 @@ l0da5h:
 
 l0dcbh:
     ;IF R<>&H50 THEN GOTO l0dcbh
-    ld hl,(rr)          ;0dcb 2a b2 02
-    ld de,0-'P'        ;0dce 11 b0 ff
-    add hl,de           ;0dd1 19
-    ld a,h              ;0dd2 7c
-    or l                ;0dd3 b5
-    jp nz,l0dedh        ;0dd4 c2 ed 0d
+    ld hl,(rr)
+    ld de,0-'P'
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0dedh
 
     ;IOBYTE = (IOBYTE AND &HF3) OR &H04
     ld hl,(iobyte)
@@ -2063,7 +2070,8 @@ l0e16h:
     ld (iobyte),hl
 
 l0e38h:
-    jp l0a7bh           ;0e38 c3 7b 0a
+    ;GOTO l0a7bh
+    jp l0a7bh
 
 l0e3bh:
     ;PRINT
@@ -2167,7 +2175,8 @@ l0eadh:
     ld hl,0000h
     ld (dd),hl
 
-    call sub_119ah      ;0eda cd 9a 11
+    ;GOSUB sub_119ah
+    call sub_119ah
 
     ;PRINT "C, D :     "
     call pr0a
@@ -2178,7 +2187,8 @@ l0eadh:
     ld hl,0001h
     ld (dd),hl
 
-    call sub_119ah      ;0eec cd 9a 11
+    ;GOSUB sub_119ah
+    call sub_119ah
 
     ;PRINT "E, F :     ";
     call pr0a
@@ -2189,7 +2199,8 @@ l0eadh:
     ld hl,0002h
     ld (dd),hl
 
-    call sub_119ah      ;0efe cd 9a 11
+    ;GOSUB sub_119ah
+    call sub_119ah
 
     ;PRINT "G, H :     ";
     call pr0a
@@ -2200,7 +2211,8 @@ l0eadh:
     ld hl,0003h
     ld (dd),hl
 
-    call sub_119ah      ;0f10 cd 9a 11
+    ;GOSUB sub_119ah
+    call sub_119ah
 
     ;PRINT "I, J :     ";
     call pr0a
@@ -2211,7 +2223,8 @@ l0eadh:
     ld hl,0004h
     ld (dd),hl
 
-    call sub_119ah      ;0f22 cd 9a 11
+    ;GOSUB sub_119ah
+    call sub_119ah
 
     ;PRINT "K, L :     ";
     call pr0a
@@ -2222,7 +2235,8 @@ l0eadh:
     ld hl,0005h
     ld (dd),hl
 
-    call sub_119ah      ;0f34 cd 9a 11
+    ;GOSUB sub_119ah
+    call sub_119ah
 
     ;PRINT "M, N :     ";
     call pr0a
@@ -2233,7 +2247,8 @@ l0eadh:
     ld hl,0006h
     ld (dd),hl
 
-    call sub_119ah      ;0f46 cd 9a 11
+    ;GOSUB sub_119ah
+    call sub_119ah
 
     ;"O, P :     ";
     call pr0a
@@ -2244,7 +2259,8 @@ l0eadh:
     ld hl,0007h
     ld (dd),hl
 
-    call sub_119ah      ;0f58 cd 9a 11
+    ;GOSUB sub_119ah
+    call sub_119ah
 
     ;PRINT
     call pr0a
@@ -2257,7 +2273,7 @@ l0eadh:
     call pv1d
 
     ;GOSUB readline
-    call readline       ;0f6d cd ca 1b
+    call readline
 
     ;IF R=0 THEN GOTO l05b5h
     ld hl,(rr)
@@ -2485,32 +2501,37 @@ l109fh:
     ld hl,dev_num_for_drv
     call pv1d
 
-    call readline       ;10a8 cd ca 1b
-    ld hl,(dd)          ;10ab 2a dc 02
-    add hl,hl           ;10ae 29
-    ld de,diskdev       ;10af 11 24 01
-    add hl,de           ;10b2 19
-    push hl             ;10b3 e5
-    ld hl,(nn)          ;10b4 2a d8 02
-    ex de,hl            ;10b7 eb
-    pop hl              ;10b8 e1
-    ld (hl),e           ;10b9 73
-    inc hl              ;10ba 23
-    ld (hl),d           ;10bb 72
-    ld hl,(dd)          ;10bc 2a dc 02
-    add hl,hl           ;10bf 29
-    ld de,drv           ;10c0 11 0e 01
-    add hl,de           ;10c3 19
-    ld e,(hl)           ;10c4 5e
-    inc hl              ;10c5 23
-    ld d,(hl)           ;10c6 56
-    push de             ;10c7 d5
-    pop hl              ;10c8 e1
-    ld de,0fffch        ;10c9 11 fc ff
-    add hl,de           ;10cc 19
-    ld a,h              ;10cd 7c
-    or l                ;10ce b5
-    jp nz,l0eadh        ;10cf c2 ad 0e
+    ;GOSUB readline
+    call readline
+
+    ;DISKDEV(D) = N
+    ld hl,(dd)
+    add hl,hl
+    ld de,diskdev
+    add hl,de
+    push hl
+    ld hl,(nn)
+    ex de,hl
+    pop hl
+    ld (hl),e
+    inc hl
+    ld (hl),d
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    push de
+    pop hl
+
+    ;IF DRV(D) <> 4 THEN GOTO l0eadh
+    ld de,0-4
+    add hl,de
+    ld a,h
+    or l
+    jp nz,l0eadh
 
     ;PRINT "Configure as 1 or 2 CP/M drives ? ";
     call pr0a
@@ -2528,16 +2549,19 @@ l109fh:
     or l
     jp nz,l10f8h
 
-    ld hl,(dd)          ;10ea 2a dc 02
-    add hl,hl           ;10ed 29
-    ld de,drv           ;10ee 11 0e 01
-    add hl,de           ;10f1 19
-    ld de,0005h         ;10f2 11 05 00
-    ld (hl),e           ;10f5 73
-    inc hl              ;10f6 23
-    ld (hl),d           ;10f7 72
+    ;DRV(D) = 5
+    ld hl,(dd)
+    add hl,hl
+    ld de,drv
+    add hl,de
+    ld de,0005h
+    ld (hl),e
+    inc hl
+    ld (hl),d
+
 l10f8h:
-    jp l0eadh           ;10f8 c3 ad 0e
+    ;GOTO l0eadh
+    jp l0eadh
 
 l10fbh:
     ;PRINT "3, 6 or 12 Mbyte drive ? ";
@@ -2710,7 +2734,7 @@ l11b7h:
     jp l1285h
 
 l11d9h:
-    ; IF DRV(D) < 129 THEN GOTO l11fdh
+    ;IF DRV(D) < 129 THEN GOTO l11fdh
     ld hl,(dd)
     add hl,hl
     ld de,drv
@@ -2735,7 +2759,7 @@ l11f0h:
     call pv2d
 
     ;RETURN
-    ret                 ;11fc c9
+    ret
 
 l11fdh:
     ;IF MINI = 1 THEN GOTO l129eh
@@ -3050,6 +3074,7 @@ l13a7h:
 l13bbh:
     rla                 ;13bb 17
     jp nc,l138eh        ;13bc d2 8e 13
+
 l13bfh:
     ;PRINT
     call pr0a
@@ -3478,14 +3503,14 @@ l1658h:
     jp c,l1629h         ;1658 da 29 16
 
     ;CLOCK = PEEK (LOADER+3)
-    ld hl,(clock)       ;165b 2a d2 02
-    push hl             ;165e e5
-    ld hl,(loader)      ;165f 2a b0 02
-    inc hl              ;1662 23
-    inc hl              ;1663 23
-    inc hl              ;1664 23
-    pop de              ;1665 d1
-    ld (hl),e           ;1666 73
+    ld hl,(clock)
+    push hl
+    ld hl,(loader)
+    inc hl
+    inc hl
+    inc hl
+    pop de
+    ld (hl),e
 
     ;RETURN
     ret
@@ -3496,7 +3521,9 @@ l1668h:
     ld hl,save_on_which
     call pv1d
 
-    call readline       ;1671 cd ca 1b
+    ;GOSUB readline
+    call readline
+
     ld hl,(rr)          ;1674 2a b2 02
     ld de,0ffbfh        ;1677 11 bf ff
     ld a,h              ;167a 7c
@@ -3531,31 +3558,41 @@ l1692h:
     ld a,h              ;169d 7c
     or l                ;169e b5
     jp nz,l05b5h        ;169f c2 b5 05
-    ld de,0ffbfh        ;16a2 11 bf ff
-    ld hl,(rr)          ;16a5 2a b2 02
-    add hl,de           ;16a8 19
-    ld (dd),hl          ;16a9 22 dc 02
-    ld hl,(dd)          ;16ac 2a dc 02
-    ld (dt),hl          ;16af 22 b4 02
-    ld hl,dt            ;16b2 21 b4 02
-    call dtype          ;16b5 cd 90 29
-    ld hl,(dt)          ;16b8 2a b4 02
-    ld de,0ff80h        ;16bb 11 80 ff
-    ld a,h              ;16be 7c
-    rla                 ;16bf 17
-    jp c,l16c5h         ;16c0 da c5 16
+
+    ;D = R - &H41
+    ld de,0-41h
+    ld hl,(rr)
+    add hl,de
+    ld (dd),hl
+
+    ;DT = D
+    ld hl,(dd)
+    ld (dt),hl
+
+    ;CALL DTYPE (DT)
+    ld hl,dt
+    call dtype
+
+    ;IF DT < 128 THEN GOTO l16d4h
+    ld hl,(dt)
+    ld de,0-80h
+    ld a,h
+    rla
+    jp c,l16c5h
 l16c3h:
-    add hl,de           ;16c3 19
-    add hl,hl           ;16c4 29
+    add hl,de
+    add hl,hl
 l16c5h:
-    jp c,l16d4h         ;16c5 da d4 16
+    jp c,l16d4h
 
     ;PRINT "Drive not in system"
     call pr0a
     ld hl,no_drive
     call pv2d
 
-    jp l1668h           ;16d1 c3 68 16
+    ;GOTO l1668h
+    jp l1668h
+
 l16d4h:
     call sub_149ah      ;16d4 cd 9a 14
     ld hl,(dt)          ;16d7 2a b4 02
@@ -3592,20 +3629,32 @@ l16f6h:
     ld a,h              ;1700 7c
     or l                ;1701 b5
     jp z,l170eh         ;1702 ca 0e 17
-    ld hl,dd            ;1705 21 dc 02
-    call cwrite_        ;1708 cd 56 29
-    jp l05b5h           ;170b c3 b5 05
+
+    ;CALL CWRITE (D)
+    ld hl,dd
+    call cwrite_
+
+    ;GOTO l05b5h
+    jp l05b5h
+
 l170eh:
-    ld hl,dd            ;170e 21 dc 02
-    call idisk          ;1711 cd 99 29
-    ld hl,dd            ;1714 21 dc 02
-    call savesy         ;1717 cd 02 2a
-    ld hl,ee            ;171a 21 b6 02
-    call dskerr         ;171d cd 9d 29
-    ld hl,(ee)          ;1720 2a b6 02
-    ld a,h              ;1723 7c
-    or l                ;1724 b5
-    jp z,l05b5h         ;1725 ca b5 05
+    ;CALL IDISK (D)
+    ld hl,dd
+    call idisk
+
+    ;CALL SAVESY (D)
+    ld hl,dd
+    call savesy
+
+    ;CALL DSKERR (E)
+    ld hl,ee
+    call dskerr
+
+    ;IF E = 0 THEN GOTO l05b5h
+    ld hl,(ee)
+    ld a,h
+    or l
+    jp z,l05b5h
 
     ;PRINT "Re-try (Y/N) ? ";
     call pr0a
@@ -4611,8 +4660,11 @@ l1c93h:
     ld (jj),hl          ;1cc4 22 d0 02
     jp l1c43h           ;1cc7 c3 43 1c
 l1ccah:
-    ret                 ;1cca c9
-    call end            ;1ccb cd 24 2d
+    ;RETURN
+    ret
+
+    ;END
+    call end
 
 esc_or_tilde:
     db 23h
