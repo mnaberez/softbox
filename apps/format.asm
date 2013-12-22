@@ -112,64 +112,79 @@ main:
 ;Print the welcome banner.
 ;
     call n5_0
+
+    ;PRINT
     call pr0a
     ld hl,empty_string
-    call pv2d           ;Print newline
-
-    call pr0a
-    ld hl,empty_string
-    call pv2d           ;Print newline
-
-    call pr0a
-    ld hl,format_prog
-    call pv2d           ;Print "Disk formatting program"
-
-    call pr0a
-    ld hl,for_pet_cpm   ;Print "For PET CP/M "
     call pv2d
 
+    ;PRINT
+    call pr0a
+    ld hl,empty_string
+    call pv2d
+
+    ;PRINT "Disk formatting program"
+    call pr0a
+    ld hl,format_prog
+    call pv2d
+
+    ;PRINT "For PET CP/M "
+    call pr0a
+    ld hl,for_pet_cpm
+    call pv2d
+
+    ;PRINT "=== === ===="
     call pr0a
     ld hl,dashes
-    call pv2d           ;Print "=== === ===="
+    call pv2d
 
 next_disk:
 ;Prompt for a drive letter.  If no letter is entered,
 ;warm start back to CP/M.
 ;
+    ;PRINT
     call pr0a
     ld hl,empty_string
-    call pv2d           ;Print newline
+    call pv2d
 
+    ;PRINT "Format disk on which drive"
     call pr0a
     ld hl,on_which_drv
-    call pv2d           ;Print "Format disk on which drive"
+    call pv2d
 
+    ;Print "(A to P, or RETURN to reboot) ? ";
     call pr0a
     ld hl,a_to_p
-    call pv1d           ;Print "(A to P, or RETURN to reboot) ? "
+    call pv1d
 
-    call get_char       ;Get a character from the user
+    ;GOSUB get_char
+    call get_char
 
+    ;PRINT
     call pr0a
     ld hl,empty_string
-    call pv2d           ;Print newline
+    call pv2d
 
+    ;IF R <> 0 THEN GOTO check_letter
     ld hl,(first_char)
     ld a,h
     or l
     jp nz,check_letter  ;Jump to check drive if a letter was entered
+
+    ;END
     call end            ;No letter: call END to warm start (never returns)
 
 check_letter:
 ;Check that the letter is in the range of valid letters (A-P).
 ;
-                        ;Convert ASCII char from input to CP/M drive number:
-    ld de,0-"A"         ;  DE = 0ffbfh (0 - 41h)
-    ld hl,(first_char)  ;  HL = first char from user input
-    add hl,de           ;  HL = HL + DE
-    ld (drv_num),hl     ;  Store HL in drv_num
-    ld hl,(drv_num)     ;  HL = Read value back from drv_num
+    ;D = R - &H41
+    ld de,0-"A"         ;DE = 0ffbfh (0 - 41h)
+    ld hl,(first_char)  ;HL = first char from user input
+    add hl,de           ;HL = HL + DE
+    ld (drv_num),hl     ;Store HL in drv_num
+    ld hl,(drv_num)     ;HL = Read value back from drv_num
 
+    ;IF (D >= 0) AND (D <= 15) THEN GOTO check_type
     add hl,hl
     sbc a,a
     ld h,a
@@ -187,7 +202,6 @@ l01b3h:
     sbc a,a             ;Sets A=0, carry flag stays cleared
     ld h,a              ;H = 0
     ld l,a              ;L = 0
-
     pop de
     ld a,h
     or d
@@ -199,39 +213,44 @@ l01b3h:
     or l
     jp z,check_type
 
+    ;PRINT "Drive doesn't exist !"
     call pr0a
     ld hl,doesnt_exist
-    call pv2d           ;Print "Drive doesn't exist !"
+    call pv2d
 
-    jp next_disk        ;Loop back to beginning ("Format disk in which...")
+    ;GOTO next_disk
+    jp next_disk
 
 check_type:
 ;Check that a drive has been configured at the drive letter entered.
 ;
+    ;DT = D
     ld hl,(drv_num)     ;HL = CP/M drive number
     ld (drv_typ),hl     ;Store drive number in drv_type to pass it to dtype
 
+    ;CALL DTYPE (DT)
     ld hl,drv_typ       ;HL = address of drv_type
     call dtype          ;Get drive type for CP/M drive number
                         ;  Before the call, drv_type holds a drive number
                         ;  After the call, drv_type holds its drive type
 
-    ld hl,(drv_typ)     ;HL = drive type returned by dtype
-    ld de,0ff80h
-
+    ;IF DT < 128 THEN GOTO floppy_or_hard
+    ld hl,(drv_typ)
+    ld de,0-80h
     ld a,h
     rla
     jp c,l01e8h
-
     add hl,de
     add hl,hl
 l01e8h:
     jp c,floppy_or_hard
 
+    ;PRINT "Drive not in system"
     call pr0a
     ld hl,not_in_sys
-    call pv2d           ;Print "Drive not in system"
+    call pv2d
 
+    ;GOTO next_disk
     jp next_disk        ;Loop back to beginning ("Format disk in which...")
 
 floppy_or_hard:
@@ -276,92 +295,116 @@ l0215h:
                         ;Drive must be a Corvus hard disk.
                         ;Prompt for confirmation to format the hard disk.
 
+    ;PRINT CHR$(7)
     call pr0a
     ld hl,bell
     call chr            ;Temp string = bell character
     call pv1d           ;Print temp string
 
+    ;PRINT "Data on hard disk ";
     ld hl,data_on_hd
-    call pv1d           ;Print "Data on hard disk "
+    call pv1d
 
+    ;PRINT CHR$(R);
     ld hl,(first_char)
     call chr            ;Temp string = drive letter
     call pv1d           ;Print temp string
 
+    ;PRINT ": will be erased"
     ld hl,will_be_eras
-    call pv2d           ;Print ": will be erased"
+    call pv2d
 
+    ;PRINT "Proceed (Y/N) ? "
     call pr0a
     ld hl,proceed_yn
-    call pv1d           ;Print "Proceed (Y/N) ? "
+    call pv1d
 
-    call get_char       ;Get a character from the user
+    ;GOSUB get_char
+    call get_char
 
-                        ;Jump to format if char is "Y":
-    ld hl,(first_char)  ;  HL = char typed by user ("Y" = 59h)
-    ld de,0-"Y"         ;  DE = 0ffa7h (0 - 59h)
-    add hl,de           ;  HL = HL + DE
+    ;IF R=&H59 THEN GOTO format_hard
+    ld hl,(first_char)  ;HL = char typed by user ("Y" = 59h)
+    ld de,0-"Y"         ;DE = 0ffa7h (0 - 59h)
+    add hl,de           ;HL = HL + DE
     ld a,h              ;
-    or l                ;  Is the result zero?
-    jp z,format_hard    ;    Yes: jump to format
+    or l                ;Is the result zero?
+    jp z,format_hard    ;  Yes: jump to format
 
-    call end            ;Call END to warm start (never returns)
+    ;END
+    call end            ;Never returns
 
 format_hard:
 ;Perform the Corvus hard disk format.
 ;
+    ;PRINT
     call pr0a
     ld hl,empty_string
-    call pv2d           ;Print newline
+    call pv2d
 
+    ;PRINT "Formatting hard disk"
     call pr0a
     ld hl,formatting_hd
-    call pv2d           ;Print "Formatting hard disk"
+    call pv2d
 
+    ;CALL CFORM (D)
     ld hl,drv_num       ;HL = address of CP/M drive number of Corvus
     call cform          ;Format the Corvus hard disk
+
+    ;GOTO format_done
     jp format_done
 
 prompt_floppy:
 ;Prompt for confirmation to format the floppy disk.
 ;
+    ;PRINT "Disk on drive "
     call pr0a
     ld hl,disk_on_drv
-    call pv1d           ;Print "Disk on drive "
+    call pv1d
 
+    ;PRINT CHR$(R)
     ld hl,(first_char)
     call chr            ;Temp string = drive letter
     call pv1d           ;Print temp string
 
+    ;PRINT ": is to be formatted"
     ld hl,be_formatted
-    call pv2d           ;Print ": is to be formatted"
+    call pv2d
 
+    ;PRINT "Press RETURN to continue, ^C to abort : "
     call pr0a
     ld hl,press_return
-    call pv1d           ;Print "Press RETURN to continue, ^C to abort : "
+    call pv1d
 
-    call get_char       ;Get a character from the user
+    ;GOSUB get_char
+    call get_char
 
+    ;IF R=0 THEN GOTO format_floppy
     ld hl,(first_char)
     ld a,h
     or l
     jp z,format_floppy
-    call end            ;Call END to warm start (never returns)
+
+    ;END
+    call end            ;Never returns
 
 format_floppy:
 ;Perform the CBM floppy disk format.
 ;
+    ;PRINT
     call pr0a
     ld hl,empty_string
-    call pv2d           ;Print newline
+    call pv2d
 
+    ;PRINT "Formatting..."
     call pr0a
     ld hl,formatting
-    call pv2d           ;Print "Formatting..."
+    call pv2d
 
+    ;CALL FORMAT (D)
     ld hl,drv_num       ;HL = address of CP/M drive number of CBM floppy
     call format         ;Format the CBM floppy disk
 
+    ;CALL DSKERR (E)
     ld hl,cbm_err       ;HL = address to receive CBM DOS error code
     call dskerr         ;Check CBM DOS error
 
@@ -371,66 +414,77 @@ format_done:
 ;Formatting complete (either hard disk or floppy disk).
 ;Check if an error occurred and then loop back.
 ;
+    ;PRINT
     call pr0a
     ld hl,empty_string
-    call pv2d           ;Print newline
+    call pv2d
 
-                        ;Handle CBM DOS error:
-    ld hl,(cbm_err)     ;  HL = last error code from CBM DOS
+    ;IF E<>0 THEN GOTO format_failed
+    ld hl,(cbm_err)     ;HL = last error code from CBM DOS
     ld a,h              ;
-    or l                ;  Error code = 0 (OK)?
-    jp nz,format_failed ;    No: jump to format failed
+    or l                ;Error code = 0 (OK)?
+    jp nz,format_failed ;  No: jump to format failed
 
+    ;PRINT "Format complete"
     call pr0a
     ld hl,complete
-    call pv2d           ;Print "Format complete"
+    call pv2d
 
+    ;GOTO next_disk
     jp next_disk        ;Loop back to beginning ("Format disk in which...")
 
 format_failed:
+    ;PRINT "Do not use diskette - try again..."
     call pr0a
     ld hl,bad_disk
-    call pv2d           ;Print "Do not use diskette - try again..."
+    call pv2d
 
+    ;GOTO next_disk
     jp next_disk        ;Loop back to beginning ("Format disk in which...")
 
-    call end            ;Call END to warm start (never returns)
+    ;END
+    call end            ;Never returns
 
 get_char:
 ;Get a line of input from the user and save the first character
 ;in first_char.  If the char is alphabetic, it will be normalized
 ;to uppercase.  If nothing was entered, first_char will be zero.
 ;
+    ;BUF = &H80
     ld hl,dma_buf       ;HL = address of CP/M default DMA buffer area
     ld (buf_addr),hl    ;Store it in buf_addr
 
+    ;POKE BUF,80
     ld hl,(buf_addr)    ;HL = address of buffer area
     ld (hl),50h         ;Store buffer size (80 bytes) in buf_addr+0
 
+    ;CALL BUFFIN
     call buffin         ;Perform buffered console input via BDOS call
                         ;  0Ah (CREADSTR).
 
+    ;IF PEEK(BUF+1)<>0 THEN GOTO l0318h
     ld hl,(buf_addr)    ;HL = address of CP/M DMA buffer area
     inc hl              ;Increment HL so it points to buf_addr+1
     ld l,(hl)           ;L = number of valid chars in buffer
-
     ld h,00h
     ld a,h
     or l                ;Is there any data in the buffer?
     jp nz,l0318h        ;  Yes: jump to l0318h
 
-                        ;Nothing was entered, store 0 in first_char:
-    ld hl,0000h         ;  HL = 0
-    ld (first_char),hl  ;  Store HL in first_char
-    jp l0323h           ;  Jump to l0323h
+    ;R = 0
+    ld hl,0000h         ;HL = 0
+    ld (first_char),hl  ;Store HL in first_char
+
+    ;GOTO l0323h
+    jp l0323h
 
 l0318h:
 ;A character was entered.  Store it in first_char.
 ;
+    ;R = PEEK(BUF+2)
     ld hl,(buf_addr)    ;HL = buf_addr + 2 (first char in the buffer)
     inc hl
     inc hl
-
     ld l,(hl)           ;Store the first char in the buffer in first_char
     ld h,00h
     ld (first_char),hl
