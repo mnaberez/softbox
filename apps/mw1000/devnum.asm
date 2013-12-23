@@ -23,21 +23,17 @@ l010ch:
 l010eh:
     nop                 ;010e 00
     nop                 ;010f 00
-l0110h:
-    nop                 ;0110 00
-    nop                 ;0111 00
-l0112h:
-    nop                 ;0112 00
-    nop                 ;0113 00
+rr:
+    dw 0                ;First char of user input from any prompt
+nn:
+    dw 0                ;Integer parsed from user input
 l0114h:
     nop                 ;0114 00
     nop                 ;0115 00
-l0116h:
-    nop                 ;0116 00
-    nop                 ;0117 00
-l0118h:
-    nop                 ;0118 00
-    nop                 ;0119 00
+buf:
+    dw 0                ;Address of buffer used in readline
+jj:
+    dw 0                ;Loop index
 l011ah:
     nop                 ;011a 00
     nop                 ;011b 00
@@ -149,8 +145,8 @@ main:
     ;GOSUB readline
     call readline
 
-    ;IF l0110h <> 0 THEN GOTO l01c8h
-    ld hl,(l0110h)
+    ;IF R <> 0 THEN GOTO l01c8h
+    ld hl,(rr)
     ld a,h
     or l
     jp nz,l01c8h
@@ -174,16 +170,16 @@ l01c8h:
     ld hl,chg_dev_num
     call pv1d
 
-    ;PRINT l0112h
-    ld hl,(l0112h)
+    ;PRINT N
+    ld hl,(nn)
     call sub_06ceh
 
     ;PRINT " ..."
     ld hl,ellipsis
     call pv2d
 
-    ;POKE &H4036, l0112h
-    ld hl,(l0112h)
+    ;POKE &H4036, N
+    ld hl,(nn)
     ld a,l
     ld (4036h),a
 
@@ -338,10 +334,10 @@ unknown_error:
 readline:
     ;BUF = &H80
     ld hl,0080h
-    ld (l0116h),hl
+    ld (buf),hl
 
     ;POKE BUF, 80
-    ld hl,(l0116h)
+    ld hl,(buf)
     ld (hl),50h
 
     ;CALL BUFFIN
@@ -352,25 +348,33 @@ readline:
     ld hl,empty_string
     call pv2d
 
-    ld hl,(l0116h)      ;02db 2a 16 01
-    inc hl              ;02de 23
-    ld l,(hl)           ;02df 6e
-    ld h,00h            ;02e0 26 00
-    ld a,h              ;02e2 7c
-    or l                ;02e3 b5
-    jp nz,l02eeh        ;02e4 c2 ee 02
-    ld hl,0000h         ;02e7 21 00 00
-    ld (l0110h),hl      ;02ea 22 10 01
-    ret                 ;02ed c9
+    ;IF PEEK (BUF+1) <> 0 GOTO l02eeh
+    ld hl,(buf)
+    inc hl
+    ld l,(hl)
+    ld h,00h
+    ld a,h
+    or l
+    jp nz,l02eeh
+
+    ;R = 0
+    ld hl,0000h
+    ld (rr),hl
+
+    ;RETURN
+    ret
+
 l02eeh:
-    ld hl,(l0116h)      ;02ee 2a 16 01
+    ;R = PEEK (BUF+2)
+    ld hl,(buf)         ;02ee 2a 16 01
     inc hl              ;02f1 23
     inc hl              ;02f2 23
     ld l,(hl)           ;02f3 6e
     ld h,00h            ;02f4 26 00
-    ld (l0110h),hl      ;02f6 22 10 01
-    ld hl,(l0110h)      ;02f9 2a 10 01
-    ld de,0ff9fh        ;02fc 11 9f ff
+    ld (rr),hl          ;02f6 22 10 01
+
+    ld hl,(rr)          ;02f9 2a 10 01
+    ld de,0-61h         ;02fc 11 9f ff
     ld a,h              ;02ff 7c
     rla                 ;0300 17
     jp c,l0306h         ;0301 da 06 03
@@ -382,8 +386,8 @@ l0306h:
     ld h,a              ;0308 67
     ld l,a              ;0309 6f
     push hl             ;030a e5
-    ld hl,(l0110h)      ;030b 2a 10 01
-    ld de,0ff85h        ;030e 11 85 ff
+    ld hl,(rr)          ;030b 2a 10 01
+    ld de,0-7bh         ;030e 11 85 ff
     ld a,h              ;0311 7c
     rla                 ;0312 17
     jp c,l0318h         ;0313 da 18 03
@@ -403,19 +407,26 @@ l0318h:
     ld a,h              ;0322 7c
     or l                ;0323 b5
     jp z,l0331h         ;0324 ca 31 03
-    ld de,0ffe0h        ;0327 11 e0 ff
-    ld hl,(l0110h)      ;032a 2a 10 01
-    add hl,de           ;032d 19
-    ld (l0110h),hl      ;032e 22 10 01
+
+    ;R = R - &H20
+    ld de,0-20h
+    ld hl,(rr)
+    add hl,de
+    ld (rr),hl
+
 l0331h:
-    ld hl,0000h         ;0331 21 00 00
-    ld (l0112h),hl      ;0334 22 12 01
-    ld hl,0002h         ;0337 21 02 00
-    ld (l0118h),hl      ;033a 22 18 01
+	;N = 0
+    ld hl,0000h
+    ld (nn),hl
+
+    ;J = 2
+    ld hl,0002h
+    ld (jj),hl
+
 l033dh:
-    ld hl,(l0116h)      ;033d 2a 16 01
+    ld hl,(buf)         ;033d 2a 16 01
     ex de,hl            ;0340 eb
-    ld hl,(l0118h)      ;0341 2a 18 01
+    ld hl,(jj)          ;0341 2a 18 01
     add hl,de           ;0344 19
     ld l,(hl)           ;0345 6e
     ld h,00h            ;0346 26 00
@@ -454,12 +465,12 @@ l0365h:
     and e               ;0372 a3
     ld l,a              ;0373 6f
     push hl             ;0374 e5
-    ld hl,(l0116h)      ;0375 2a 16 01
+    ld hl,(buf)         ;0375 2a 16 01
     inc hl              ;0378 23
     ld l,(hl)           ;0379 6e
     ld h,00h            ;037a 26 00
     push hl             ;037c e5
-    ld hl,(l0118h)      ;037d 2a 18 01
+    ld hl,(jj)      ;037d 2a 18 01
     dec hl              ;0380 2b
     dec hl              ;0381 2b
     pop de              ;0382 d1
@@ -486,14 +497,14 @@ l038dh:
     ld a,h              ;0398 7c
     or l                ;0399 b5
     jp z,l03c4h         ;039a ca c4 03
-    ld hl,(l0112h)      ;039d 2a 12 01
+    ld hl,(nn)          ;039d 2a 12 01
     call sub_06a9h      ;03a0 cd a9 06
     ld a,(bc)           ;03a3 0a
     nop                 ;03a4 00
     push hl             ;03a5 e5
-    ld hl,(l0116h)      ;03a6 2a 16 01
+    ld hl,(buf)         ;03a6 2a 16 01
     ex de,hl            ;03a9 eb
-    ld hl,(l0118h)      ;03aa 2a 18 01
+    ld hl,(jj)          ;03aa 2a 18 01
     add hl,de           ;03ad 19
     ld l,(hl)           ;03ae 6e
     ld h,00h            ;03af 26 00
@@ -501,13 +512,14 @@ l038dh:
     add hl,de           ;03b2 19
     ld de,0ffd0h        ;03b3 11 d0 ff
     add hl,de           ;03b6 19
-    ld (l0112h),hl      ;03b7 22 12 01
-    ld hl,(l0118h)      ;03ba 2a 18 01
+    ld (nn),hl          ;03b7 22 12 01
+    ld hl,(jj)          ;03ba 2a 18 01
     inc hl              ;03bd 23
-    ld (l0118h),hl      ;03be 22 18 01
+    ld (jj),hl          ;03be 22 18 01
     jp l033dh           ;03c1 c3 3d 03
 l03c4h:
-    ret                 ;03c4 c9
+    ;RETURN
+    ret
 
     ;END
     call end
