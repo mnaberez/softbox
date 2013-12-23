@@ -104,16 +104,23 @@ main:
     ld hl,empty_string
     call pv2d
 
-    ld a,01h            ;0176 3e 01
-    ld (4033h),a        ;0178 32 33 40
-    ld hl,4000h         ;017b 21 00 40
-    ld (l010ah),hl      ;017e 22 0a 01
-    ld hl,0020h         ;0181 21 20 00
-    ld (l010ch),hl      ;0184 22 0c 01
-    ld bc,l010ah        ;0187 01 0a 01
-    ld de,l010ch        ;018a 11 0c 01
-    ld hl,l010eh        ;018d 21 0e 01
-    call sub_0546h      ;0190 cd 46 05
+    ;POKE &H4033, 1
+    ld a,01h
+    ld (4033h),a
+
+    ;l010ah = &H4000
+    ld hl,4000h
+    ld (l010ah),hl
+
+    ;l010ch = &H20
+    ld hl,0020h
+    ld (l010ch),hl
+
+    ;CALL mw_read (l010ah, l010ch, l010eh)
+    ld bc,l010ah
+    ld de,l010ch
+    ld hl,l010eh
+    call mw_read
 
     ;GOSUB check_error
     call check_error
@@ -123,10 +130,11 @@ main:
     ld hl,cur_dev_num
     call pv1d
 
-    ld a,(4036h)        ;019f 3a 36 40
-    ld l,a              ;01a2 6f
-    ld h,00h            ;01a3 26 00
-    call sub_06d7h      ;01a5 cd d7 06
+    ;PRINT PEEK (&H4036)
+    ld a,(4036h)
+    ld l,a
+    ld h,00h
+    call sub_06d7h
 
     ;PRINT
     call pr0a
@@ -141,10 +149,11 @@ main:
     ;GOSUB readline
     call readline
 
-    ld hl,(l0110h)      ;01bd 2a 10 01
-    ld a,h              ;01c0 7c
-    or l                ;01c1 b5
-    jp nz,l01c8h        ;01c2 c2 c8 01
+    ;IF l0110h <> 0 THEN GOTO l01c8h
+    ld hl,(l0110h)
+    ld a,h
+    or l
+    jp nz,l01c8h
 
     ;END
     call end
@@ -160,27 +169,33 @@ l01c8h:
     ld hl,empty_string
     call pv2d
 
-    ;PRINT "changing device number to "
+    ;PRINT "changing device number to ";
     call pr0a
     ld hl,chg_dev_num
     call pv1d
 
-    ld hl,(l0112h)      ;01e3 2a 12 01
-    call sub_06ceh      ;01e6 cd ce 06
+    ;PRINT l0112h
+    ld hl,(l0112h)
+    call sub_06ceh
 
     ;PRINT " ..."
     ld hl,ellipsis
     call pv2d
 
-    ld hl,(l0112h)      ;01ef 2a 12 01
-    ld a,l              ;01f2 7d
-    ld (4036h),a        ;01f3 32 36 40
-    ld hl,0020h         ;01f6 21 20 00
-    ld (l010ch),hl      ;01f9 22 0c 01
-    ld bc,l010ah        ;01fc 01 0a 01
-    ld de,l010ch        ;01ff 11 0c 01
-    ld hl,l010eh        ;0202 21 0e 01
-    call sub_0583h      ;0205 cd 83 05
+    ;POKE &H4036, l0112h
+    ld hl,(l0112h)
+    ld a,l
+    ld (4036h),a
+
+    ;l010ch = &H20
+    ld hl,0020h
+    ld (l010ch),hl
+
+    ;CALL mw_write (l010ah, l010ch, l010eh)
+    ld bc,l010ah
+    ld de,l010ch
+    ld hl,l010eh
+    call mw_write
 
     ;GOSUB check_error
     call check_error
@@ -321,11 +336,16 @@ unknown_error:
     call end
 
 readline:
-    ld hl,0080h         ;02c4 21 80 00
-    ld (l0116h),hl      ;02c7 22 16 01
-    ld hl,(l0116h)      ;02ca 2a 16 01
-    ld (hl),50h         ;02cd 36 50
-    call buffin         ;02cf cd 3e 05
+    ;BUF = &H80
+    ld hl,0080h
+    ld (l0116h),hl
+
+    ;POKE BUF, 80
+    ld hl,(l0116h)
+    ld (hl),50h
+
+    ;CALL BUFFIN
+    call buffin
 
     ;PRINT
     call pr0a
@@ -488,7 +508,9 @@ l038dh:
     jp l033dh           ;03c1 c3 3d 03
 l03c4h:
     ret                 ;03c4 c9
-    call end            ;03c5 cd 33 07
+
+    ;END
+    call end
 
 unknown_err:
     db 17h
@@ -575,7 +597,7 @@ buffin:
     ld de,0080h
     jp 0005h
 
-sub_0546h:
+mw_read:
     ld (l0631h+1),hl    ;0546 22 32 06
     xor a               ;0549 af
     ld (hl),a           ;054a 77
@@ -596,13 +618,13 @@ l0559h:
     push hl             ;055e e5
     ld a,21h            ;055f 3e 21
 l0561h:
-    call sub_05c0h      ;0561 cd c0 05
-    call sub_05f9h      ;0564 cd f9 05
-    call sub_05ddh      ;0567 cd dd 05
+    call mw_sub_05c0h   ;0561 cd c0 05
+    call mw_sub_05f9h   ;0564 cd f9 05
+    call mw_sub_05ddh   ;0567 cd dd 05
     pop hl              ;056a e1
     jr nz,l05bbh        ;056b 20 4e
     ld a,41h            ;056d 3e 41
-    call sub_05c0h      ;056f cd c0 05
+    call mw_sub_05c0h   ;056f cd c0 05
     ld b,00h            ;0572 06 00
 l0574h:
     in a,(18h)          ;0574 db 18
@@ -612,10 +634,11 @@ l0577h:
     ex (sp),hl          ;0578 e3
     ex (sp),hl          ;0579 e3
     djnz l0574h         ;057a 10 f8
-    call sub_05ddh      ;057c cd dd 05
+    call mw_sub_05ddh   ;057c cd dd 05
     ret z               ;057f c8
     jp l05bbh           ;0580 c3 bb 05
-sub_0583h:
+
+mw_write:
     ld (l0631h+1),hl    ;0583 22 32 06
     xor a               ;0586 af
     ld (hl),a           ;0587 77
@@ -635,7 +658,7 @@ l0596h:
     ld a,(bc)           ;0599 0a
     ld h,a              ;059a 67
     ld a,42h            ;059b 3e 42
-    call sub_05c0h      ;059d cd c0 05
+    call mw_sub_05c0h   ;059d cd c0 05
     ld b,00h            ;05a0 06 00
 l05a2h:
     ld a,(hl)           ;05a2 7e
@@ -644,18 +667,19 @@ l05a2h:
     ex (sp),hl          ;05a6 e3
     ex (sp),hl          ;05a7 e3
     djnz l05a2h         ;05a8 10 f8
-    call sub_05ddh      ;05aa cd dd 05
+    call mw_sub_05ddh   ;05aa cd dd 05
     jr nz,l05bbh        ;05ad 20 0c
     ld a,22h            ;05af 3e 22
-    call sub_05c0h      ;05b1 cd c0 05
-    call sub_05f9h      ;05b4 cd f9 05
-    call sub_05ddh      ;05b7 cd dd 05
+    call mw_sub_05c0h   ;05b1 cd c0 05
+    call mw_sub_05f9h   ;05b4 cd f9 05
+    call mw_sub_05ddh   ;05b7 cd dd 05
     ret z               ;05ba c8
 l05bbh:
     ld hl,(l0631h+1)    ;05bb 2a 32 06
     ld (hl),a           ;05be 77
     ret                 ;05bf c9
-sub_05c0h:
+
+mw_sub_05c0h:
     ld b,a              ;05c0 47
     xor a               ;05c1 af
     out (18h),a         ;05c2 d3 18
@@ -676,7 +700,8 @@ l05d9h:
     nop                 ;05d9 00
     djnz l05d9h         ;05da 10 fd
     ret                 ;05dc c9
-sub_05ddh:
+
+mw_sub_05ddh:
     ld a,0ffh           ;05dd 3e ff
     out (18h),a         ;05df d3 18
 l05e1h:
@@ -696,7 +721,8 @@ l05eah:
     out (18h),a         ;05f5 d3 18
     pop af              ;05f7 f1
     ret                 ;05f8 c9
-sub_05f9h:
+
+mw_sub_05f9h:
     xor a               ;05f9 af
     out (18h),a         ;05fa d3 18
     ld hl,(l062fh)      ;05fc 2a 2f 06
@@ -729,6 +755,7 @@ l0612h:
     out (18h),a         ;062a d3 18
     out (18h),a         ;062c d3 18
     ret                 ;062e c9
+
 l062fh:
     jr nz,$+4           ;062f 20 02
 l0631h:
