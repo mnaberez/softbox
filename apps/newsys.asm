@@ -4494,7 +4494,7 @@ readline:
     ld hl,empty_string
     call pv2d
 
-    ;IF PEEK (BUF+1) = 0 THEN R = 0 : RETURN
+    ;IF PEEK (BUF+1) <> 0 GOTO l1bf4h
     ld hl,(buf)
     inc hl
     ld l,(hl)
@@ -4502,8 +4502,12 @@ readline:
     ld a,h
     or l
     jp nz,l1bf4h
+
+    ;R = 0
     ld hl,0000h
     ld (rr),hl
+
+    ;RETURN
     ret
 
 l1bf4h:
