@@ -610,17 +610,17 @@ buffin:
     jp 0005h
 
 mw_read:
-    ld (l0631h+1),hl    ;0546 22 32 06
+    ld (var_4),hl       ;0546 22 32 06
     xor a               ;0549 af
     ld (hl),a           ;054a 77
     inc hl              ;054b 23
     ld (hl),a           ;054c 77
-    ld (l0631h),a       ;054d 32 31 06
+    ld (var_3),a        ;054d 32 31 06
     ld a,(de)           ;0550 1a
-    ld (l062fh),a       ;0551 32 2f 06
+    ld (var_1),a        ;0551 32 2f 06
     inc de              ;0554 13
     ld a,(de)           ;0555 1a
-    ld (l062fh+1),a     ;0556 32 30 06
+    ld (var_2),a        ;0556 32 30 06
 l0559h:
     ld a,(bc)           ;0559 0a
     ld l,a              ;055a 6f
@@ -651,18 +651,18 @@ l0577h:
     jp l05bbh           ;0580 c3 bb 05
 
 mw_write:
-    ld (l0631h+1),hl    ;0583 22 32 06
+    ld (var_4),hl       ;0583 22 32 06
     xor a               ;0586 af
     ld (hl),a           ;0587 77
     inc hl              ;0588 23
     ld (hl),a           ;0589 77
-    ld (l0631h),a       ;058a 32 31 06
+    ld (var_3),a        ;058a 32 31 06
     ld a,(de)           ;058d 1a
 l058eh:
-    ld (l062fh),a       ;058e 32 2f 06
+    ld (var_1),a        ;058e 32 2f 06
     inc de              ;0591 13
     ld a,(de)           ;0592 1a
-    ld (l062fh+1),a     ;0593 32 30 06
+    ld (var_2),a        ;0593 32 30 06
 l0596h:
     ld a,(bc)           ;0596 0a
     ld l,a              ;0597 6f
@@ -687,7 +687,7 @@ l05a2h:
     call mw_sub_05ddh   ;05b7 cd dd 05
     ret z               ;05ba c8
 l05bbh:
-    ld hl,(l0631h+1)    ;05bb 2a 32 06
+    ld hl,(var_4)       ;05bb 2a 32 06
     ld (hl),a           ;05be 77
     ret                 ;05bf c9
 
@@ -737,8 +737,8 @@ l05eah:
 mw_sub_05f9h:
     xor a               ;05f9 af
     out (18h),a         ;05fa d3 18
-    ld hl,(l062fh)      ;05fc 2a 2f 06
-    ld a,(l0631h)       ;05ff 3a 31 06
+    ld hl,(var_1)       ;05fc 2a 2f 06
+    ld a,(var_3)        ;05ff 3a 31 06
     ld b,05h            ;0602 06 05
 l0604h:
     rra                 ;0604 1f
@@ -759,7 +759,7 @@ l0612h:
     out (18h),a         ;061b d3 18
     ld a,h              ;061d 7c
     out (18h),a         ;061e d3 18
-    ld a,(l062fh)       ;0620 3a 2f 06
+    ld a,(var_1)        ;0620 3a 2f 06
     and 1fh             ;0623 e6 1f
     out (18h),a         ;0625 d3 18
     xor a               ;0627 af
@@ -768,10 +768,14 @@ l0612h:
     out (18h),a         ;062c d3 18
     ret                 ;062e c9
 
-l062fh:
-    jr nz,$+4           ;062f 20 02
-l0631h:
-    ld hl,0000h         ;0631 21 00 00
+var_1:
+    db 20h
+var_2:
+    db 02h
+var_3:
+    db 21h
+var_4:
+    dw 0
 
 ; Start of KLIB.REL =========================================================
 
