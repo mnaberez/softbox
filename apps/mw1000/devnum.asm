@@ -11,6 +11,9 @@
     nop                 ;0107 00
     nop                 ;0108 00
     nop                 ;0109 00
+
+; Start of BASIC variables ==================================================
+
 l010ah:
     nop                 ;010a 00
     nop                 ;010b 00
@@ -49,6 +52,9 @@ l0122h:
     nop                 ;0123 00
     nop                 ;0124 00
     nop                 ;0125 00
+
+; End of BASIC variables ====================================================
+
 start:
     ld hl,main          ;0126 21 3a 01
     jp ini              ;0129 c3 36 07
@@ -63,27 +69,41 @@ start:
     nop                 ;0136 00
     nop                 ;0137 00
     ld h,01h            ;0138 26 01
+
 main:
-    call n5_0           ;013a cd 37 07
-    call pr0a           ;013d cd 4c 07
-    ld hl,001ah         ;0140 21 1a 00
-    call chr            ;0143 cd 71 06
-    call pv2d           ;0146 cd 7e 06
-    call pr0a           ;0149 cd 4c 07
-    ld hl,alter_pet_dos ;014c 21 07 05
-    call pv2d           ;014f cd 7e 06
-    call pr0a           ;0152 cd 4c 07
-    ld hl,dashes        ;0155 21 d6 04
-    call pv2d           ;0158 cd 7e 06
-    call pr0a           ;015b cd 4c 07
-    ld hl,empty_string  ;015e 21 38 05
-    call pv2d           ;0161 cd 7e 06
-    call pr0a           ;0164 cd 4c 07
-    ld hl,empty_string  ;0167 21 38 05
-    call pv2d           ;016a cd 7e 06
-    call pr0a           ;016d cd 4c 07
-    ld hl,empty_string  ;0170 21 38 05
-    call pv2d           ;0173 cd 7e 06
+    call n5_0
+
+    ;PRINT CHR$(26) ' Clear screen
+    call pr0a
+    ld hl,001ah
+    call chr
+    call pv2d
+
+    ;PRINT "Alter PET DOS device number of Mini-Winchester"
+    call pr0a
+    ld hl,alter_pet_dos
+    call pv2d
+
+    ;PRINT "----- --- --- ------ ------ -- ---------------"
+    call pr0a
+    ld hl,dashes
+    call pv2d
+
+    ;PRINT
+    call pr0a
+    ld hl,empty_string
+    call pv2d
+
+    ;PRINT
+    call pr0a
+    ld hl,empty_string
+    call pv2d
+
+    ;PRINT
+    call pr0a
+    ld hl,empty_string
+    call pv2d
+
     ld a,01h            ;0176 3e 01
     ld (4033h),a        ;0178 32 33 40
     ld hl,4000h         ;017b 21 00 40
@@ -95,39 +115,59 @@ main:
     ld hl,l010eh        ;018d 21 0e 01
     call sub_0546h      ;0190 cd 46 05
     call sub_020eh      ;0193 cd 0e 02
-    call pr0a           ;0196 cd 4c 07
-    ld hl,04b7h         ;0199 21 b7 04
-    call pv1d           ;019c cd 89 06
+
+    ;PRINT "current device number is :  "
+    call pr0a
+    ld hl,cur_dev_num
+    call pv1d
+
     ld a,(4036h)        ;019f 3a 36 40
     ld l,a              ;01a2 6f
     ld h,00h            ;01a3 26 00
     call sub_06d7h      ;01a5 cd d7 06
-    call pr0a           ;01a8 cd 4c 07
-    ld hl,empty_string  ;01ab 21 38 05
-    call pv2d           ;01ae cd 7e 06
-    call pr0a           ;01b1 cd 4c 07
-    ld hl,new_dev_num   ;01b4 21 a0 04
-    call pv1d           ;01b7 cd 89 06
+
+    ;PRINT
+    call pr0a
+    ld hl,empty_string
+    call pv2d
+
+    ;PRINT "new device number ? "
+    call pr0a
+    ld hl,new_dev_num
+    call pv1d
+
     call sub_02c4h      ;01ba cd c4 02
     ld hl,(l0110h)      ;01bd 2a 10 01
     ld a,h              ;01c0 7c
     or l                ;01c1 b5
     jp nz,l01c8h        ;01c2 c2 c8 01
-    call end            ;01c5 cd 33 07
+
+    ;END
+    call end
+
 l01c8h:
-    call pr0a           ;01c8 cd 4c 07
-    ld hl,empty_string  ;01cb 21 38 05
-    call pv2d           ;01ce cd 7e 06
-    call pr0a           ;01d1 cd 4c 07
-    ld hl,empty_string  ;01d4 21 38 05
-    call pv2d           ;01d7 cd 7e 06
-    call pr0a           ;01da cd 4c 07
-    ld hl,chg_dev_num   ;01dd 21 83 04
-    call pv1d           ;01e0 cd 89 06
+    ;PRINT
+    call pr0a
+    ld hl,empty_string
+    call pv2d
+
+    ;PRINT
+    call pr0a
+    ld hl,empty_string
+    call pv2d
+
+    ;PRINT "changing device number to "
+    call pr0a
+    ld hl,chg_dev_num
+    call pv1d
+
     ld hl,(l0112h)      ;01e3 2a 12 01
     call sub_06ceh      ;01e6 cd ce 06
-    ld hl,ellipsis      ;01e9 21 7c 04
-    call pv2d           ;01ec cd 7e 06
+
+    ;PRINT " ..."
+    ld hl,ellipsis
+    call pv2d
+
     ld hl,(l0112h)      ;01ef 2a 12 01
     ld a,l              ;01f2 7d
     ld (4036h),a        ;01f3 32 36 40
@@ -138,7 +178,10 @@ l01c8h:
     ld hl,l010eh        ;0202 21 0e 01
     call sub_0583h      ;0205 cd 83 05
     call sub_020eh      ;0208 cd 0e 02
-    call end            ;020b cd 33 07
+
+    ;END
+    call end
+
 sub_020eh:
     ld hl,(l010eh)      ;020e 2a 0e 01
     ld a,l              ;0211 7d
@@ -151,20 +194,28 @@ sub_020eh:
     or l                ;021a b5
     jp nz,l021fh        ;021b c2 1f 02
     ret                 ;021e c9
+
 l021fh:
-    call pr0a           ;021f cd 4c 07
-    ld hl,drive_err_num ;0222 21 6c 04
-    call pv1d           ;0225 cd 89 06
+    ;PRINT "DRIVE ERROR #";
+    call pr0a
+    ld hl,drive_err_num
+    call pv1d
+
     ld hl,(l0114h)      ;0228 2a 14 01
     ld de,0ffc0h        ;022b 11 c0 ff
     add hl,de           ;022e 19
     ld a,h              ;022f 7c
     or l                ;0230 b5
     jp nz,l0240h        ;0231 c2 40 02
-    call pr0a           ;0234 cd 4c 07
-    ld hl,head_writ_err ;0237 21 52 04
-    call pv2d           ;023a cd 7e 06
-    call end            ;023d cd 33 07
+
+    ;PRINT "40 - header write error"
+    call pr0a
+    ld hl,head_writ_err
+    call pv2d
+
+    ;END
+    call end
+
 l0240h:
     ld hl,(l0114h)      ;0240 2a 14 01
     ld de,0ffbeh        ;0243 11 be ff
@@ -172,10 +223,15 @@ l0240h:
     ld a,h              ;0247 7c
     or l                ;0248 b5
     jp nz,l0258h        ;0249 c2 58 02
-    call pr0a           ;024c cd 4c 07
-    ld hl,head_read_err ;024f 21 39 04
-    call pv2d           ;0252 cd 7e 06
-    call end            ;0255 cd 33 07
+
+    ;PRINT "42 - header read error"
+    call pr0a
+    ld hl,head_read_err
+    call pv2d
+
+    ;END
+    call end
+
 l0258h:
     ld hl,(l0114h)      ;0258 2a 14 01
     ld de,0ffbch        ;025b 11 bc ff
@@ -183,10 +239,15 @@ l0258h:
     ld a,h              ;025f 7c
     or l                ;0260 b5
     jp nz,l0270h        ;0261 c2 70 02
-    call pr0a           ;0264 cd 4c 07
-    ld hl,data_read_err ;0267 21 22 04
-    call pv2d           ;026a cd 7e 06
-    call end            ;026d cd 33 07
+
+    ;PRINT "44 - data read error"
+    call pr0a
+    ld hl,data_read_err
+    call pv2d
+
+    ;END
+    call end
+
 l0270h:
     ld hl,(l0114h)      ;0270 2a 14 01
     ld de,0ffbah        ;0273 11 ba ff
@@ -194,10 +255,15 @@ l0270h:
     ld a,h              ;0277 7c
     or l                ;0278 b5
     jp nz,l0288h        ;0279 c2 88 02
-    call pr0a           ;027c cd 4c 07
-    ld hl,write_fault   ;027f 21 0f 04
-    call pv2d           ;0282 cd 7e 06
-    call end            ;0285 cd 33 07
+
+    ;PRINT "46 - write fault"
+    call pr0a
+    ld hl,write_fault
+    call pv2d
+
+    ;END
+    call end
+
 l0288h:
     ld hl,(l0114h)      ;0288 2a 14 01
     ld de,0ffb9h        ;028b 11 b9 ff
@@ -205,10 +271,15 @@ l0288h:
     ld a,h              ;028f 7c
     or l                ;0290 b5
     jp nz,l02a0h        ;0291 c2 a0 02
-    call pr0a           ;0294 cd 4c 07
-    ld hl,not_ready     ;0297 21 f9 03
-    call pv2d           ;029a cd 7e 06
-    call end            ;029d cd 33 07
+
+    ;PRINT "47 - disk not ready"
+    call pr0a
+    ld hl,not_ready
+    call pv2d
+
+    ;END
+    call end
+
 l02a0h:
     ld hl,(l0114h)      ;02a0 2a 14 01
     ld de,0ffb7h        ;02a3 11 b7 ff
@@ -216,24 +287,36 @@ l02a0h:
     ld a,h              ;02a7 7c
     or l                ;02a8 b5
     jp nz,l02b8h        ;02a9 c2 b8 02
-    call pr0a           ;02ac cd 4c 07
-    ld hl,illegal_cmd   ;02af 21 e2 03
-    call pv2d           ;02b2 cd 7e 06
-    call end            ;02b5 cd 33 07
+
+    ;PRINT "49 - illegal command"
+    call pr0a
+    ld hl,illegal_cmd
+    call pv2d
+
+    ;END
+    call end
+
 l02b8h:
+    ;PRINT "xx - unknown error code"
     call pr0a           ;02b8 cd 4c 07
     ld hl,unknown_err   ;02bb 21 c8 03
     call pv2d           ;02be cd 7e 06
+
+    ;END
     call end            ;02c1 cd 33 07
+
 sub_02c4h:
     ld hl,0080h         ;02c4 21 80 00
     ld (l0116h),hl      ;02c7 22 16 01
     ld hl,(l0116h)      ;02ca 2a 16 01
     ld (hl),50h         ;02cd 36 50
     call buffin         ;02cf cd 3e 05
-    call pr0a           ;02d2 cd 4c 07
-    ld hl,empty_string  ;02d5 21 38 05
-    call pv2d           ;02d8 cd 7e 06
+
+    ;PRINT
+    call pr0a
+    ld hl,empty_string
+    call pv2d
+
     ld hl,(l0116h)      ;02db 2a 16 01
     inc hl              ;02de 23
     ld l,(hl)           ;02df 6e
@@ -447,9 +530,9 @@ new_dev_num:
     dw new_dev_num+3
     db "new device number ? "
 
-cur_dev_num_is:
+cur_dev_num:
     db 1ch
-    dw cur_dev_num_is+3
+    dw cur_dev_num+3
     db "current device number is :  "
 
 dashes:
