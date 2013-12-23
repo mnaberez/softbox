@@ -114,7 +114,9 @@ main:
     ld de,l010ch        ;018a 11 0c 01
     ld hl,l010eh        ;018d 21 0e 01
     call sub_0546h      ;0190 cd 46 05
-    call sub_020eh      ;0193 cd 0e 02
+
+    ;GOSUB check_error
+    call check_error
 
     ;PRINT "current device number is :  "
     call pr0a
@@ -136,7 +138,9 @@ main:
     ld hl,new_dev_num
     call pv1d
 
-    call sub_02c4h      ;01ba cd c4 02
+    ;GOSUB readline
+    call readline
+
     ld hl,(l0110h)      ;01bd 2a 10 01
     ld a,h              ;01c0 7c
     or l                ;01c1 b5
@@ -177,36 +181,42 @@ l01c8h:
     ld de,l010ch        ;01ff 11 0c 01
     ld hl,l010eh        ;0202 21 0e 01
     call sub_0583h      ;0205 cd 83 05
-    call sub_020eh      ;0208 cd 0e 02
+
+    ;GOSUB check_error
+    call check_error
 
     ;END
     call end
 
-sub_020eh:
-    ld hl,(l010eh)      ;020e 2a 0e 01
-    ld a,l              ;0211 7d
-    and 40h             ;0212 e6 40
-    ld l,a              ;0214 6f
-    ld a,h              ;0215 7c
-    and 00h             ;0216 e6 00
-    ld h,a              ;0218 67
-    ld a,h              ;0219 7c
-    or l                ;021a b5
-    jp nz,l021fh        ;021b c2 1f 02
-    ret                 ;021e c9
+check_error:
+    ;IF (l010eh AND &H40) <> 0 THEN GOTO got_error
+    ld hl,(l010eh)
+    ld a,l
+    and 40h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,h
+    or l
+    jp nz,got_error
 
-l021fh:
+    ;RETURN
+    ret
+
+got_error:
     ;PRINT "DRIVE ERROR #";
     call pr0a
     ld hl,drive_err_num
     call pv1d
 
-    ld hl,(l0114h)      ;0228 2a 14 01
-    ld de,0ffc0h        ;022b 11 c0 ff
-    add hl,de           ;022e 19
-    ld a,h              ;022f 7c
-    or l                ;0230 b5
-    jp nz,l0240h        ;0231 c2 40 02
+    ;IF l0114h <> &H40 THEN GOTO is_err_42h
+    ld hl,(l0114h)
+    ld de,0-40h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,is_err_42h
 
     ;PRINT "40 - header write error"
     call pr0a
@@ -216,13 +226,14 @@ l021fh:
     ;END
     call end
 
-l0240h:
-    ld hl,(l0114h)      ;0240 2a 14 01
-    ld de,0ffbeh        ;0243 11 be ff
-    add hl,de           ;0246 19
-    ld a,h              ;0247 7c
-    or l                ;0248 b5
-    jp nz,l0258h        ;0249 c2 58 02
+is_err_42h:
+    ;IF l0114h <> &H42 THEN GOTO is_err_44h
+    ld hl,(l0114h)
+    ld de,0-42h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,is_err_44h
 
     ;PRINT "42 - header read error"
     call pr0a
@@ -232,13 +243,14 @@ l0240h:
     ;END
     call end
 
-l0258h:
-    ld hl,(l0114h)      ;0258 2a 14 01
-    ld de,0ffbch        ;025b 11 bc ff
-    add hl,de           ;025e 19
-    ld a,h              ;025f 7c
-    or l                ;0260 b5
-    jp nz,l0270h        ;0261 c2 70 02
+is_err_44h:
+    ;IF l0114h <> &H44 THEN GOTO is_err_46h
+    ld hl,(l0114h)
+    ld de,0-44h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,is_err_46h
 
     ;PRINT "44 - data read error"
     call pr0a
@@ -248,13 +260,14 @@ l0258h:
     ;END
     call end
 
-l0270h:
-    ld hl,(l0114h)      ;0270 2a 14 01
-    ld de,0ffbah        ;0273 11 ba ff
-    add hl,de           ;0276 19
-    ld a,h              ;0277 7c
-    or l                ;0278 b5
-    jp nz,l0288h        ;0279 c2 88 02
+is_err_46h:
+    ;IF l0114h <> &H46 THEN GOTO is_err_47h
+    ld hl,(l0114h)
+    ld de,0-46h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,is_err_47h
 
     ;PRINT "46 - write fault"
     call pr0a
@@ -264,13 +277,14 @@ l0270h:
     ;END
     call end
 
-l0288h:
-    ld hl,(l0114h)      ;0288 2a 14 01
-    ld de,0ffb9h        ;028b 11 b9 ff
-    add hl,de           ;028e 19
-    ld a,h              ;028f 7c
-    or l                ;0290 b5
-    jp nz,l02a0h        ;0291 c2 a0 02
+is_err_47h:
+    ;IF l0114h <> &H47 THEN GOTO is_err_49h
+    ld hl,(l0114h)
+    ld de,0-47h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,is_err_49h
 
     ;PRINT "47 - disk not ready"
     call pr0a
@@ -280,13 +294,14 @@ l0288h:
     ;END
     call end
 
-l02a0h:
-    ld hl,(l0114h)      ;02a0 2a 14 01
-    ld de,0ffb7h        ;02a3 11 b7 ff
-    add hl,de           ;02a6 19
-    ld a,h              ;02a7 7c
-    or l                ;02a8 b5
-    jp nz,l02b8h        ;02a9 c2 b8 02
+is_err_49h:
+    ;IF l0114h <> &H49 THEN GOTO unknown_error
+    ld hl,(l0114h)
+    ld de,0-49h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,unknown_error
 
     ;PRINT "49 - illegal command"
     call pr0a
@@ -296,16 +311,16 @@ l02a0h:
     ;END
     call end
 
-l02b8h:
+unknown_error:
     ;PRINT "xx - unknown error code"
-    call pr0a           ;02b8 cd 4c 07
-    ld hl,unknown_err   ;02bb 21 c8 03
-    call pv2d           ;02be cd 7e 06
+    call pr0a
+    ld hl,unknown_err
+    call pv2d
 
     ;END
-    call end            ;02c1 cd 33 07
+    call end
 
-sub_02c4h:
+readline:
     ld hl,0080h         ;02c4 21 80 00
     ld (l0116h),hl      ;02c7 22 16 01
     ld hl,(l0116h)      ;02ca 2a 16 01
