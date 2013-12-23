@@ -3,7 +3,7 @@
 
     org 0100h
 
-    jp l0126h           ;0100 c3 26 01
+    jp start            ;0100 c3 26 01
     nop                 ;0103 00
     nop                 ;0104 00
     nop                 ;0105 00
@@ -49,9 +49,9 @@ l0122h:
     nop                 ;0123 00
     nop                 ;0124 00
     nop                 ;0125 00
-l0126h:
-    ld hl,l013ah        ;0126 21 3a 01
-    jp l0736h           ;0129 c3 36 07
+start:
+    ld hl,main          ;0126 21 3a 01
+    jp ini              ;0129 c3 36 07
     dec sp              ;012c 3b
     dec b               ;012d 05
     nop                 ;012e 00
@@ -63,27 +63,27 @@ l0126h:
     nop                 ;0136 00
     nop                 ;0137 00
     ld h,01h            ;0138 26 01
-l013ah:
-    call sub_0737h      ;013a cd 37 07
-    call sub_074ch      ;013d cd 4c 07
+main:
+    call n5_0           ;013a cd 37 07
+    call pr0a           ;013d cd 4c 07
     ld hl,001ah         ;0140 21 1a 00
-    call sub_0671h      ;0143 cd 71 06
-    call sub_067eh      ;0146 cd 7e 06
-    call sub_074ch      ;0149 cd 4c 07
+    call chr            ;0143 cd 71 06
+    call pv2d           ;0146 cd 7e 06
+    call pr0a           ;0149 cd 4c 07
     ld hl,alter_pet_dos ;014c 21 07 05
-    call sub_067eh      ;014f cd 7e 06
-    call sub_074ch      ;0152 cd 4c 07
+    call pv2d           ;014f cd 7e 06
+    call pr0a           ;0152 cd 4c 07
     ld hl,dashes        ;0155 21 d6 04
-    call sub_067eh      ;0158 cd 7e 06
-    call sub_074ch      ;015b cd 4c 07
+    call pv2d           ;0158 cd 7e 06
+    call pr0a           ;015b cd 4c 07
     ld hl,empty_string  ;015e 21 38 05
-    call sub_067eh      ;0161 cd 7e 06
-    call sub_074ch      ;0164 cd 4c 07
+    call pv2d           ;0161 cd 7e 06
+    call pr0a           ;0164 cd 4c 07
     ld hl,empty_string  ;0167 21 38 05
-    call sub_067eh      ;016a cd 7e 06
-    call sub_074ch      ;016d cd 4c 07
+    call pv2d           ;016a cd 7e 06
+    call pr0a           ;016d cd 4c 07
     ld hl,empty_string  ;0170 21 38 05
-    call sub_067eh      ;0173 cd 7e 06
+    call pv2d           ;0173 cd 7e 06
     ld a,01h            ;0176 3e 01
     ld (4033h),a        ;0178 32 33 40
     ld hl,4000h         ;017b 21 00 40
@@ -95,39 +95,39 @@ l013ah:
     ld hl,l010eh        ;018d 21 0e 01
     call sub_0546h      ;0190 cd 46 05
     call sub_020eh      ;0193 cd 0e 02
-    call sub_074ch      ;0196 cd 4c 07
+    call pr0a           ;0196 cd 4c 07
     ld hl,04b7h         ;0199 21 b7 04
-    call sub_0689h      ;019c cd 89 06
+    call pv1d           ;019c cd 89 06
     ld a,(4036h)        ;019f 3a 36 40
     ld l,a              ;01a2 6f
     ld h,00h            ;01a3 26 00
     call sub_06d7h      ;01a5 cd d7 06
-    call sub_074ch      ;01a8 cd 4c 07
+    call pr0a           ;01a8 cd 4c 07
     ld hl,empty_string  ;01ab 21 38 05
-    call sub_067eh      ;01ae cd 7e 06
-    call sub_074ch      ;01b1 cd 4c 07
+    call pv2d           ;01ae cd 7e 06
+    call pr0a           ;01b1 cd 4c 07
     ld hl,new_dev_num   ;01b4 21 a0 04
-    call sub_0689h      ;01b7 cd 89 06
+    call pv1d           ;01b7 cd 89 06
     call sub_02c4h      ;01ba cd c4 02
     ld hl,(l0110h)      ;01bd 2a 10 01
     ld a,h              ;01c0 7c
     or l                ;01c1 b5
     jp nz,l01c8h        ;01c2 c2 c8 01
-    call sub_0733h      ;01c5 cd 33 07
+    call end            ;01c5 cd 33 07
 l01c8h:
-    call sub_074ch      ;01c8 cd 4c 07
+    call pr0a           ;01c8 cd 4c 07
     ld hl,empty_string  ;01cb 21 38 05
-    call sub_067eh      ;01ce cd 7e 06
-    call sub_074ch      ;01d1 cd 4c 07
+    call pv2d           ;01ce cd 7e 06
+    call pr0a           ;01d1 cd 4c 07
     ld hl,empty_string  ;01d4 21 38 05
-    call sub_067eh      ;01d7 cd 7e 06
-    call sub_074ch      ;01da cd 4c 07
+    call pv2d           ;01d7 cd 7e 06
+    call pr0a           ;01da cd 4c 07
     ld hl,chg_dev_num   ;01dd 21 83 04
-    call sub_0689h      ;01e0 cd 89 06
+    call pv1d           ;01e0 cd 89 06
     ld hl,(l0112h)      ;01e3 2a 12 01
     call sub_06ceh      ;01e6 cd ce 06
     ld hl,ellipsis      ;01e9 21 7c 04
-    call sub_067eh      ;01ec cd 7e 06
+    call pv2d           ;01ec cd 7e 06
     ld hl,(l0112h)      ;01ef 2a 12 01
     ld a,l              ;01f2 7d
     ld (4036h),a        ;01f3 32 36 40
@@ -138,7 +138,7 @@ l01c8h:
     ld hl,l010eh        ;0202 21 0e 01
     call sub_0583h      ;0205 cd 83 05
     call sub_020eh      ;0208 cd 0e 02
-    call sub_0733h      ;020b cd 33 07
+    call end            ;020b cd 33 07
 sub_020eh:
     ld hl,(l010eh)      ;020e 2a 0e 01
     ld a,l              ;0211 7d
@@ -152,19 +152,19 @@ sub_020eh:
     jp nz,l021fh        ;021b c2 1f 02
     ret                 ;021e c9
 l021fh:
-    call sub_074ch      ;021f cd 4c 07
+    call pr0a           ;021f cd 4c 07
     ld hl,drive_err_num ;0222 21 6c 04
-    call sub_0689h      ;0225 cd 89 06
+    call pv1d           ;0225 cd 89 06
     ld hl,(l0114h)      ;0228 2a 14 01
     ld de,0ffc0h        ;022b 11 c0 ff
     add hl,de           ;022e 19
     ld a,h              ;022f 7c
     or l                ;0230 b5
     jp nz,l0240h        ;0231 c2 40 02
-    call sub_074ch      ;0234 cd 4c 07
+    call pr0a           ;0234 cd 4c 07
     ld hl,head_writ_err ;0237 21 52 04
-    call sub_067eh      ;023a cd 7e 06
-    call sub_0733h      ;023d cd 33 07
+    call pv2d           ;023a cd 7e 06
+    call end            ;023d cd 33 07
 l0240h:
     ld hl,(l0114h)      ;0240 2a 14 01
     ld de,0ffbeh        ;0243 11 be ff
@@ -172,10 +172,10 @@ l0240h:
     ld a,h              ;0247 7c
     or l                ;0248 b5
     jp nz,l0258h        ;0249 c2 58 02
-    call sub_074ch      ;024c cd 4c 07
+    call pr0a           ;024c cd 4c 07
     ld hl,head_read_err ;024f 21 39 04
-    call sub_067eh      ;0252 cd 7e 06
-    call sub_0733h      ;0255 cd 33 07
+    call pv2d           ;0252 cd 7e 06
+    call end            ;0255 cd 33 07
 l0258h:
     ld hl,(l0114h)      ;0258 2a 14 01
     ld de,0ffbch        ;025b 11 bc ff
@@ -183,10 +183,10 @@ l0258h:
     ld a,h              ;025f 7c
     or l                ;0260 b5
     jp nz,l0270h        ;0261 c2 70 02
-    call sub_074ch      ;0264 cd 4c 07
+    call pr0a           ;0264 cd 4c 07
     ld hl,data_read_err ;0267 21 22 04
-    call sub_067eh      ;026a cd 7e 06
-    call sub_0733h      ;026d cd 33 07
+    call pv2d           ;026a cd 7e 06
+    call end            ;026d cd 33 07
 l0270h:
     ld hl,(l0114h)      ;0270 2a 14 01
     ld de,0ffbah        ;0273 11 ba ff
@@ -194,10 +194,10 @@ l0270h:
     ld a,h              ;0277 7c
     or l                ;0278 b5
     jp nz,l0288h        ;0279 c2 88 02
-    call sub_074ch      ;027c cd 4c 07
+    call pr0a           ;027c cd 4c 07
     ld hl,write_fault   ;027f 21 0f 04
-    call sub_067eh      ;0282 cd 7e 06
-    call sub_0733h      ;0285 cd 33 07
+    call pv2d           ;0282 cd 7e 06
+    call end            ;0285 cd 33 07
 l0288h:
     ld hl,(l0114h)      ;0288 2a 14 01
     ld de,0ffb9h        ;028b 11 b9 ff
@@ -205,10 +205,10 @@ l0288h:
     ld a,h              ;028f 7c
     or l                ;0290 b5
     jp nz,l02a0h        ;0291 c2 a0 02
-    call sub_074ch      ;0294 cd 4c 07
+    call pr0a           ;0294 cd 4c 07
     ld hl,not_ready     ;0297 21 f9 03
-    call sub_067eh      ;029a cd 7e 06
-    call sub_0733h      ;029d cd 33 07
+    call pv2d           ;029a cd 7e 06
+    call end            ;029d cd 33 07
 l02a0h:
     ld hl,(l0114h)      ;02a0 2a 14 01
     ld de,0ffb7h        ;02a3 11 b7 ff
@@ -216,24 +216,24 @@ l02a0h:
     ld a,h              ;02a7 7c
     or l                ;02a8 b5
     jp nz,l02b8h        ;02a9 c2 b8 02
-    call sub_074ch      ;02ac cd 4c 07
+    call pr0a           ;02ac cd 4c 07
     ld hl,illegal_cmd   ;02af 21 e2 03
-    call sub_067eh      ;02b2 cd 7e 06
-    call sub_0733h      ;02b5 cd 33 07
+    call pv2d           ;02b2 cd 7e 06
+    call end            ;02b5 cd 33 07
 l02b8h:
-    call sub_074ch      ;02b8 cd 4c 07
+    call pr0a           ;02b8 cd 4c 07
     ld hl,unknown_err   ;02bb 21 c8 03
-    call sub_067eh      ;02be cd 7e 06
-    call sub_0733h      ;02c1 cd 33 07
+    call pv2d           ;02be cd 7e 06
+    call end            ;02c1 cd 33 07
 sub_02c4h:
     ld hl,0080h         ;02c4 21 80 00
     ld (l0116h),hl      ;02c7 22 16 01
     ld hl,(l0116h)      ;02ca 2a 16 01
     ld (hl),50h         ;02cd 36 50
-    call sub_053eh      ;02cf cd 3e 05
-    call sub_074ch      ;02d2 cd 4c 07
+    call buffin         ;02cf cd 3e 05
+    call pr0a           ;02d2 cd 4c 07
     ld hl,empty_string  ;02d5 21 38 05
-    call sub_067eh      ;02d8 cd 7e 06
+    call pv2d           ;02d8 cd 7e 06
     ld hl,(l0116h)      ;02db 2a 16 01
     inc hl              ;02de 23
     ld l,(hl)           ;02df 6e
@@ -390,7 +390,7 @@ l038dh:
     jp l033dh           ;03c1 c3 3d 03
 l03c4h:
     ret                 ;03c4 c9
-    call sub_0733h      ;03c5 cd 33 07
+    call end            ;03c5 cd 33 07
 
 unknown_err:
     db 17h
@@ -467,10 +467,16 @@ empty_string:
     dw empty_string+3
     db 0, 0, 0
 
-sub_053eh:
-    ld c,0ah            ;053e 0e 0a
-    ld de,0080h         ;0540 11 80 00
-    jp 0005h            ;0543 c3 05 00
+; Start of Unknown Library ==================================================
+
+buffin:
+;Buffered Console Input.  Caller must store buffer size at 80h.  On
+;return, 81h will contain the number of data bytes and the data
+;will start at 82h.
+    ld c,0ah
+    ld de,0080h
+    jp 0005h
+
 sub_0546h:
     ld (l0631h+1),hl    ;0546 22 32 06
     xor a               ;0549 af
@@ -629,79 +635,119 @@ l062fh:
     jr nz,$+4           ;062f 20 02
 l0631h:
     ld hl,0000h         ;0631 21 00 00
-l0634h:
-    ret                 ;0634 c9
-    call 2050h          ;0635 cd 50 20
-l0638h:
-    ld b,3eh            ;0638 06 3e
-    jr nz,l0609h        ;063a 20 cd
-    ld a,07h            ;063c 3e 07
-    ret                 ;063e c9
-l063fh:
-    ld a,0ah            ;063f 3e 0a
-    call sub_073eh      ;0641 cd 3e 07
-    ld a,0dh            ;0644 3e 0d
-    call sub_073eh      ;0646 cd 3e 07
-    ret                 ;0649 c9
-    ld a,02h            ;064a 3e 02
-    ld (l0634h),a       ;064c 32 34 06
-    ld a,l              ;064f 7d
-    call sub_0661h      ;0650 cd 61 06
-    ld (0637h),a        ;0653 32 37 06
-    ld a,l              ;0656 7d
-    call sub_0665h      ;0657 cd 65 06
-    ld (l0638h),a       ;065a 32 38 06
-    ld hl,l0634h        ;065d 21 34 06
-    ret                 ;0660 c9
-sub_0661h:
-    rrca                ;0661 0f
-    rrca                ;0662 0f
-    rrca                ;0663 0f
-    rrca                ;0664 0f
-sub_0665h:
-    and 0fh             ;0665 e6 0f
-    cp 0ah              ;0667 fe 0a
-    jp m,l066eh         ;0669 fa 6e 06
-    add a,07h           ;066c c6 07
-l066eh:
-    add a,30h           ;066e c6 30
-    ret                 ;0670 c9
-sub_0671h:
-    ld a,01h            ;0671 3e 01
-    ld (l0634h),a       ;0673 32 34 06
-    ld a,l              ;0676 7d
-    ld (0637h),a        ;0677 32 37 06
-    ld hl,l0634h        ;067a 21 34 06
-    ret                 ;067d c9
-sub_067eh:
-    ld a,(hl)           ;067e 7e
-    or a                ;067f b7
-    jp z,l063fh         ;0680 ca 3f 06
-    call sub_069bh      ;0683 cd 9b 06
-    jp l063fh           ;0686 c3 3f 06
-sub_0689h:
-    ld a,(hl)           ;0689 7e
-    or a                ;068a b7
-    ret z               ;068b c8
-    call sub_069bh      ;068c cd 9b 06
-    ret                 ;068f c9
-    ld a,(hl)           ;0690 7e
-    or a                ;0691 b7
-    jp z,l0638h+1       ;0692 ca 39 06
-    call sub_069bh      ;0695 cd 9b 06
-    jp l0638h+1         ;0698 c3 39 06
-sub_069bh:
-    ld b,a              ;069b 47
-    inc hl              ;069c 23
-    inc hl              ;069d 23
-    inc hl              ;069e 23
+
+; Start of KLIB.REL =========================================================
+
+; XSTRIN --------------------------------------------------------------------
+
+tmp:
+    db 0c9h             ;header: string length
+    dw 50cdh            ;header: start address of string
+    db 20h, 06h         ;string data (not at start address ??)
+
+print_spc:
+    ld a,' '
+    call conout
+    ret
+
+print_eol:
+    ld a,0ah
+    call conout
+    ld a,0dh
+    call conout
+    ret
+
+hex:
+;XSTRIN: HEX
+;Make a temporary string (length 2 bytes) with the hexadecimal
+;representation of the byte in HL and return a pointer to it in HL.
+;Implements BASIC function: HEX$(x)
+;
+    ld a,02h            ;A = 2 bytes in string
+    ld (tmp),a          ;Store length in temp string header
+    ld a,l              ;A = L
+    call xstrin_3       ;Convert high nibble in A to ASCII
+    ld (tmp+3),a        ;Save it as first char of string
+    ld a,l              ;A = L
+    call xstrin_4       ;Convert low nibble in A to ASCII
+    ld (tmp+4),a        ;Save it as second char of string
+    ld hl,tmp           ;HL = address of the string
+    ret
+
+xstrin_3:
+    rrca
+    rrca
+    rrca
+    rrca
+xstrin_4:
+    and 0fh
+    cp 0ah
+    jp m,xstrin_5
+    add a,07h
+xstrin_5:
+    add a,30h
+    ret
+
+chr:
+;XSTRIN: CHR
+;Make a temporary string from the char in L and
+;return a pointer to it in HL.
+;Implements BASIC function: CHR$(x)
+;
+    ld a,01h            ;A = 1 byte in string
+    ld (tmp),a          ;Store length in temp string header
+    ld a,l              ;A = L
+    ld (tmp+3),a        ;Store A as the temp string data
+    ld hl,tmp           ;HL = address of the string
+    ret
+
+pv2d:
+;XSTRIN: PV2D
+;Print string in HL followed by CR+LF
+;Implements BASIC command: PRINT"foo"
+;
+    ld a,(hl)
+    or a
+    jp z,print_eol
+    call print_str
+    jp print_eol
+
+pv1d:
+;XSTRIN: PV1D
+;Print string in HL but do not send CR+LF
+;Implements BASIC command: PRINT"foo";
+;
+    ld a,(hl)
+    or a
+    ret z
+    call print_str
+    ret
+
+pv0d:
+;XSTRIN: PV0D
+;Print string in HL followed by a space
+;
+    ld a,(hl)
+    or a
+    jp z,print_spc
+    call print_str
+    jp print_spc
+
+print_str:
+;Print string of length A at pointer HL.
+;
+    ld b,a
+    inc hl
+    inc hl
+    inc hl
 l069fh:
-    ld a,(hl)           ;069f 7e
-    call sub_073eh      ;06a0 cd 3e 07
-    dec b               ;06a3 05
-    inc hl              ;06a4 23
-    jp nz,l069fh        ;06a5 c2 9f 06
-    ret                 ;06a8 c9
+    ld a,(hl)
+    call conout
+    dec b
+    inc hl
+    jp nz,l069fh
+    ret
+
 sub_06a9h:
     ld b,h              ;06a9 44
     ld c,l              ;06aa 4d
@@ -738,14 +784,14 @@ l06c9h:
 sub_06ceh:
     call sub_06e5h      ;06ce cd e5 06
     ld a,20h            ;06d1 3e 20
-    call sub_073eh      ;06d3 cd 3e 07
+    call conout         ;06d3 cd 3e 07
     ret                 ;06d6 c9
 sub_06d7h:
     call sub_06e5h      ;06d7 cd e5 06
     ld a,0ah            ;06da 3e 0a
-    call sub_073eh      ;06dc cd 3e 07
+    call conout         ;06dc cd 3e 07
     ld a,0dh            ;06df 3e 0d
-    call sub_073eh      ;06e1 cd 3e 07
+    call conout         ;06e1 cd 3e 07
     ret                 ;06e4 c9
 sub_06e5h:
     push hl             ;06e5 e5
@@ -760,7 +806,7 @@ sub_06e5h:
     ld h,a              ;06f1 67
     inc hl              ;06f2 23
     ld a,2dh            ;06f3 3e 2d
-    call sub_073eh      ;06f5 cd 3e 07
+    call conout         ;06f5 cd 3e 07
 l06f8h:
     ld c,30h            ;06f8 0e 30
     ld de,2710h         ;06fa 11 10 27
@@ -782,7 +828,7 @@ sub_071ah:
     jp sub_071ah        ;0721 c3 1a 07
 l0724h:
     ld a,c              ;0724 79
-    call sub_073eh      ;0725 cd 3e 07
+    call conout         ;0725 cd 3e 07
     add hl,de           ;0728 19
     ld c,30h            ;0729 0e 30
     ret                 ;072b c9
@@ -794,29 +840,54 @@ sub_072ch:
     sbc a,d             ;0730 9a
     ld h,a              ;0731 67
     ret                 ;0732 c9
-sub_0733h:
-    jp 0000h            ;0733 c3 00 00
-l0736h:
-    jp (hl)             ;0736 e9
-sub_0737h:
-    ret                 ;0737 c9
-    ld hl,0fffeh        ;0738 21 fe ff
-    jp l074dh           ;073b c3 4d 07
-sub_073eh:
-    push hl             ;073e e5
-    push de             ;073f d5
-    push bc             ;0740 c5
-    push af             ;0741 f5
-    ld c,02h            ;0742 0e 02
-    ld e,a              ;0744 5f
-    call 0005h          ;0745 cd 05 00
-    pop af              ;0748 f1
-    pop bc              ;0749 c1
-    pop de              ;074a d1
-    pop hl              ;074b e1
-sub_074ch:
-    ret                 ;074c c9
-l074dh:
+
+; XXXLIB --------------------------------------------------------------------
+
+end:
+;XXXLIB: $END
+;Jump to CP/M warm start
+;Implements BASIC command: END
+    jp 0000h
+
+ini:
+;XXXLIB: INI
+;Jump to the address in HL
+    jp (hl)
+
+n5_0:
+;XXXLIB: $5.0
+;Do nothing and return
+    ret
+
+; CPMIO ---------------------------------------------------------------------
+
+charin:
+;CPMIO: CHARIN
+    ld hl,0fffeh
+    jp conin
+
+conout:
+;CPMIO: CONOUT
+;Write the char in A to the console
+    push hl
+    push de
+    push bc
+    push af
+    ld c,02h
+    ld e,a
+    call 0005h
+    pop af
+    pop bc
+    pop de
+    pop hl
+
+pr0a:
+;CPMIO: $PR0A
+;Do nothing and return
+    ret
+
+conin:
+;CPMIO: CONIN
     push de             ;074d d5
     push bc             ;074e c5
     push hl             ;074f e5
@@ -829,9 +900,13 @@ l074dh:
     pop bc              ;075a c1
     pop de              ;075b d1
     ret                 ;075c c9
-    ld a,(hl)           ;075d 7e
-    jp sub_073eh        ;075e c3 3e 07
-    call sub_073eh      ;0761 cd 3e 07
+
+char:
+;CPMIO: CHAR
+    ld a,(hl)
+    jp conout
+
+    call conout         ;0761 cd 3e 07
     ret                 ;0764 c9
     push hl             ;0765 e5
     ld a,h              ;0766 7c
@@ -845,7 +920,7 @@ l074dh:
     ld h,a              ;0771 67
     inc hl              ;0772 23
     ld a,2dh            ;0773 3e 2d
-    call sub_073eh      ;0775 cd 3e 07
+    call conout         ;0775 cd 3e 07
     ld c,30h            ;0778 0e 30
     ld de,2710h         ;077a 11 10 27
     call sub_071ah      ;077d cd 1a 07
