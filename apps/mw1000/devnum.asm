@@ -1,6 +1,8 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=devnum.asm devnum.com
 
+corvus:        equ  18h   ;Corvus data bus
+
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
 
@@ -637,7 +639,7 @@ l0561h:
     call mw_sub_05c0h   ;056f cd c0 05
     ld b,00h            ;0572 06 00
 l0574h:
-    in a,(18h)          ;0574 db 18
+    in a,(corvus)       ;0574 db 18
     ld (hl),a           ;0576 77
 l0577h:
     inc hl              ;0577 23
@@ -672,7 +674,7 @@ l0596h:
     ld b,00h            ;05a0 06 00
 l05a2h:
     ld a,(hl)           ;05a2 7e
-    out (18h),a         ;05a3 d3 18
+    out (corvus),a      ;05a3 d3 18
     inc hl              ;05a5 23
     ex (sp),hl          ;05a6 e3
     ex (sp),hl          ;05a7 e3
@@ -692,19 +694,19 @@ l05bbh:
 mw_sub_05c0h:
     ld b,a              ;05c0 47
     xor a               ;05c1 af
-    out (18h),a         ;05c2 d3 18
+    out (corvus),a      ;05c2 d3 18
 l05c4h:
-    in a,(18h)          ;05c4 db 18
+    in a,(corvus)       ;05c4 db 18
     cp 0a0h             ;05c6 fe a0
     jr nz,l05c4h        ;05c8 20 fa
     ld a,b              ;05ca 78
-    out (18h),a         ;05cb d3 18
+    out (corvus),a      ;05cb d3 18
 l05cdh:
-    in a,(18h)          ;05cd db 18
+    in a,(corvus)       ;05cd db 18
     cp 0a1h             ;05cf fe a1
     jr nz,l05cdh        ;05d1 20 fa
     ld a,0ffh           ;05d3 3e ff
-    out (18h),a         ;05d5 d3 18
+    out (corvus),a      ;05d5 d3 18
     ld b,14h            ;05d7 06 14
 l05d9h:
     nop                 ;05d9 00
@@ -713,28 +715,28 @@ l05d9h:
 
 mw_sub_05ddh:
     ld a,0ffh           ;05dd 3e ff
-    out (18h),a         ;05df d3 18
+    out (corvus),a      ;05df d3 18
 l05e1h:
-    in a,(18h)          ;05e1 db 18
+    in a,(corvus)       ;05e1 db 18
     inc a               ;05e3 3c
     jr nz,l05e1h        ;05e4 20 fb
     ld a,0feh           ;05e6 3e fe
-    out (18h),a         ;05e8 d3 18
+    out (corvus),a      ;05e8 d3 18
 l05eah:
-    in a,(18h)          ;05ea db 18
+    in a,(corvus)       ;05ea db 18
     rla                 ;05ec 17
     jr c,l05eah         ;05ed 38 fb
-    in a,(18h)          ;05ef db 18
+    in a,(corvus)       ;05ef db 18
     bit 6,a             ;05f1 cb 77
     push af             ;05f3 f5
     xor a               ;05f4 af
-    out (18h),a         ;05f5 d3 18
+    out (corvus),a      ;05f5 d3 18
     pop af              ;05f7 f1
     ret                 ;05f8 c9
 
 mw_sub_05f9h:
     xor a               ;05f9 af
-    out (18h),a         ;05fa d3 18
+    out (corvus),a      ;05fa d3 18
     ld hl,(var_1)       ;05fc 2a 2f 06
     ld a,(var_3)        ;05ff 3a 31 06
     ld b,05h            ;0602 06 05
@@ -747,23 +749,23 @@ l0609h:
     ld a,(4033h)        ;060b 3a 33 40
     ld b,a              ;060e 47
     and l               ;060f a5
-    out (18h),a         ;0610 d3 18
+    out (corvus),a      ;0610 d3 18
 l0612h:
     srl h               ;0612 cb 3c
     rr l                ;0614 cb 1d
     srl b               ;0616 cb 38
     jr nz,l0612h        ;0618 20 f8
     ld a,l              ;061a 7d
-    out (18h),a         ;061b d3 18
+    out (corvus),a      ;061b d3 18
     ld a,h              ;061d 7c
-    out (18h),a         ;061e d3 18
+    out (corvus),a      ;061e d3 18
     ld a,(var_1)        ;0620 3a 2f 06
     and 1fh             ;0623 e6 1f
-    out (18h),a         ;0625 d3 18
+    out (corvus),a      ;0625 d3 18
     xor a               ;0627 af
-    out (18h),a         ;0628 d3 18
-    out (18h),a         ;062a d3 18
-    out (18h),a         ;062c d3 18
+    out (corvus),a      ;0628 d3 18
+    out (corvus),a      ;062a d3 18
+    out (corvus),a      ;062c d3 18
     ret                 ;062e c9
 
 var_1:
