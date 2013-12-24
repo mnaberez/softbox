@@ -1,28 +1,30 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=devnum.asm devnum.com
 
+warm:          equ  0000h ;Warm start entry point
+bdos:          equ  0005h ;BDOS entry point
+
     org 0100h
 
-    jp start            ;0100 c3 26 01
-    nop                 ;0103 00
-    nop                 ;0104 00
-    nop                 ;0105 00
-    nop                 ;0106 00
-    nop                 ;0107 00
-    nop                 ;0108 00
-    nop                 ;0109 00
+    jp start
+
+unused_1:
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
 
 ; Start of BASIC variables ==================================================
 
 l010ah:
-    nop                 ;010a 00
-    nop                 ;010b 00
+    dw 0
 l010ch:
-    nop                 ;010c 00
-    nop                 ;010d 00
+    dw 0
 l010eh:
-    nop                 ;010e 00
-    nop                 ;010f 00
+    dw 0
 rr:
     dw 0                ;First char of user input from any prompt
 nn:
@@ -35,25 +37,21 @@ buf:
 jj:
     dw 0                ;Loop index
 l011ah:
-    nop                 ;011a 00
-    nop                 ;011b 00
-    nop                 ;011c 00
-    nop                 ;011d 00
-    nop                 ;011e 00
-    nop                 ;011f 00
-    nop                 ;0120 00
-    nop                 ;0121 00
+    dw 0
+    dw 0
+    dw 0
+    dw 0
 l0122h:
-    nop                 ;0122 00
-    nop                 ;0123 00
-    nop                 ;0124 00
-    nop                 ;0125 00
+    dw 0
+    dw 0
 
 ; End of BASIC variables ====================================================
 
 start:
-    ld hl,main          ;0126 21 3a 01
-    jp ini              ;0129 c3 36 07
+    ld hl,main
+    jp ini              ;Perform JP (main)
+
+unused_2:
     dec sp              ;012c 3b
     dec b               ;012d 05
     nop                 ;012e 00
@@ -130,7 +128,7 @@ main:
     ld a,(4036h)
     ld l,a
     ld h,00h
-    call sub_06d7h
+    call pv2c
 
     ;PRINT
     call pr0a
@@ -366,12 +364,12 @@ readline:
 
 l02eeh:
     ;R = PEEK (BUF+2)
-    ld hl,(buf)         ;02ee 2a 16 01
-    inc hl              ;02f1 23
-    inc hl              ;02f2 23
-    ld l,(hl)           ;02f3 6e
-    ld h,00h            ;02f4 26 00
-    ld (rr),hl          ;02f6 22 10 01
+    ld hl,(buf)
+    inc hl
+    inc hl
+    ld l,(hl)
+    ld h,00h
+    ld (rr),hl
 
     ld hl,(rr)          ;02f9 2a 10 01
     ld de,0-61h         ;02fc 11 9f ff
@@ -470,7 +468,7 @@ l0365h:
     ld l,(hl)           ;0379 6e
     ld h,00h            ;037a 26 00
     push hl             ;037c e5
-    ld hl,(jj)      ;037d 2a 18 01
+    ld hl,(jj)          ;037d 2a 18 01
     dec hl              ;0380 2b
     dec hl              ;0381 2b
     pop de              ;0382 d1
@@ -498,7 +496,7 @@ l038dh:
     or l                ;0399 b5
     jp z,l03c4h         ;039a ca c4 03
     ld hl,(nn)          ;039d 2a 12 01
-    call sub_06a9h      ;03a0 cd a9 06
+    call imug           ;03a0 cd a9 06
     ld a,(bc)           ;03a3 0a
     nop                 ;03a4 00
     push hl             ;03a5 e5
@@ -607,7 +605,7 @@ buffin:
 ;will start at 82h.
     ld c,0ah
     ld de,0080h
-    jp 0005h
+    jp bdos
 
 mw_read:
     ld (var_4),hl       ;0546 22 32 06
@@ -889,98 +887,116 @@ l069fh:
     jp nz,l069fh
     ret
 
-sub_06a9h:
-    ld b,h              ;06a9 44
-    ld c,l              ;06aa 4d
-    pop hl              ;06ab e1
-    ld e,(hl)           ;06ac 5e
-    inc hl              ;06ad 23
-    ld d,(hl)           ;06ae 56
-    inc hl              ;06af 23
-    push hl             ;06b0 e5
-    ld l,c              ;06b1 69
-    ld h,b              ;06b2 60
-    ld a,h              ;06b3 7c
-    or l                ;06b4 b5
-    ret z               ;06b5 c8
-    ex de,hl            ;06b6 eb
-    ld a,h              ;06b7 7c
-    or l                ;06b8 b5
-    ret z               ;06b9 c8
-    ld b,h              ;06ba 44
-    ld c,l              ;06bb 4d
-    ld hl,0000h         ;06bc 21 00 00
-    ld a,10h            ;06bf 3e 10
+; MUL1 ----------------------------------------------------------------------
+
+imug:
+;MUL1: IMUG
+    ld b,h
+    ld c,l
+    pop hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    inc hl
+    push hl
+    ld l,c
+    ld h,b
+
+imuh:
+;MUL1: IMUH
+    ld a,h
+    or l
+    ret z
+    ex de,hl
+    ld a,h
+    or l
+    ret z
+    ld b,h
+    ld c,l
+    ld hl,0000h
+    ld a,10h
 l06c1h:
-    add hl,hl           ;06c1 29
-    ex de,hl            ;06c2 eb
-    add hl,hl           ;06c3 29
-    ex de,hl            ;06c4 eb
-    jp nc,l06c9h        ;06c5 d2 c9 06
-    add hl,bc           ;06c8 09
+    add hl,hl
+    ex de,hl
+    add hl,hl
+    ex de,hl
+    jp nc,l06c9h
+    add hl,bc
 l06c9h:
-    dec a               ;06c9 3d
-    jp nz,l06c1h        ;06ca c2 c1 06
-    ret                 ;06cd c9
+    dec a
+    jp nz,l06c1h
+    ret
 sub_06ceh:
-    call sub_06e5h      ;06ce cd e5 06
-    ld a,20h            ;06d1 3e 20
-    call conout         ;06d3 cd 3e 07
-    ret                 ;06d6 c9
-sub_06d7h:
-    call sub_06e5h      ;06d7 cd e5 06
-    ld a,0ah            ;06da 3e 0a
-    call conout         ;06dc cd 3e 07
-    ld a,0dh            ;06df 3e 0d
-    call conout         ;06e1 cd 3e 07
-    ret                 ;06e4 c9
+    call sub_06e5h
+
+; N16 -----------------------------------------------------------------------
+
+pv0c:
+pv1c:
+;N16: PV0C and PV1C
+    ld a,20h
+    call conout
+    ret
+
+pv2c:
+;N16: PV2C
+    call sub_06e5h
+    ld a,0ah
+    call conout
+    ld a,0dh
+    call conout
+    ret
+
 sub_06e5h:
-    push hl             ;06e5 e5
-    ld a,h              ;06e6 7c
-    and 80h             ;06e7 e6 80
-    jp z,l06f8h         ;06e9 ca f8 06
-    ld a,l              ;06ec 7d
-    cpl                 ;06ed 2f
-    ld l,a              ;06ee 6f
-    ld a,h              ;06ef 7c
-    cpl                 ;06f0 2f
-    ld h,a              ;06f1 67
-    inc hl              ;06f2 23
-    ld a,2dh            ;06f3 3e 2d
-    call conout         ;06f5 cd 3e 07
+    push hl
+    ld a,h
+    and 80h
+    jp z,l06f8h
+    ld a,l
+    cpl
+    ld l,a
+    ld a,h
+    cpl
+    ld h,a
+    inc hl
+    ld a,2dh
+    call conout
 l06f8h:
-    ld c,30h            ;06f8 0e 30
-    ld de,2710h         ;06fa 11 10 27
-    call sub_071ah      ;06fd cd 1a 07
-    ld de,03e8h         ;0700 11 e8 03
-    call sub_071ah      ;0703 cd 1a 07
-    ld de,0064h         ;0706 11 64 00
-    call sub_071ah      ;0709 cd 1a 07
-    ld de,000ah         ;070c 11 0a 00
-    call sub_071ah      ;070f cd 1a 07
-    ld de,0001h         ;0712 11 01 00
-    call sub_071ah      ;0715 cd 1a 07
-    pop hl              ;0718 e1
-    ret                 ;0719 c9
+    ld c,'0'
+    ld de,10000
+    call sub_071ah
+    ld de,1000
+    call sub_071ah
+    ld de,100
+    call sub_071ah
+    ld de,10
+    call sub_071ah
+    ld de,1
+    call sub_071ah
+    pop hl
+    ret
+
 sub_071ah:
-    call sub_072ch      ;071a cd 2c 07
-    jp c,l0724h         ;071d da 24 07
-    inc c               ;0720 0c
-    jp sub_071ah        ;0721 c3 1a 07
+    call sub_072ch
+    jp c,l0724h
+    inc c
+    jp sub_071ah
+
 l0724h:
-    ld a,c              ;0724 79
-    call conout         ;0725 cd 3e 07
-    add hl,de           ;0728 19
-    ld c,30h            ;0729 0e 30
-    ret                 ;072b c9
+    ld a,c
+    call conout
+    add hl,de
+    ld c,30h
+    ret
+
 sub_072ch:
-    ld a,l              ;072c 7d
-    sub e               ;072d 93
-    ld l,a              ;072e 6f
-    ld a,h              ;072f 7c
-    sbc a,d             ;0730 9a
-    ld h,a              ;0731 67
-    ret                 ;0732 c9
+    ld a,l
+    sub e
+    ld l,a
+    ld a,h
+    sbc a,d
+    ld h,a
+    ret
 
 ; XXXLIB --------------------------------------------------------------------
 
@@ -988,7 +1004,7 @@ end:
 ;XXXLIB: $END
 ;Jump to CP/M warm start
 ;Implements BASIC command: END
-    jp 0000h
+    jp warm
 
 ini:
 ;XXXLIB: INI
@@ -1016,7 +1032,7 @@ conout:
     push af
     ld c,02h
     ld e,a
-    call 0005h
+    call bdos
     pop af
     pop bc
     pop de
@@ -1029,23 +1045,25 @@ pr0a:
 
 conin:
 ;CPMIO: CONIN
-    push de             ;074d d5
-    push bc             ;074e c5
-    push hl             ;074f e5
-    ld c,01h            ;0750 0e 01
-    call 0005h          ;0752 cd 05 00
-    pop hl              ;0755 e1
-    ld (hl),a           ;0756 77
-    inc hl              ;0757 23
-    ld (hl),00h         ;0758 36 00
-    pop bc              ;075a c1
-    pop de              ;075b d1
-    ret                 ;075c c9
+    push de
+    push bc
+    push hl
+    ld c,01h
+    call bdos
+    pop hl
+    ld (hl),a
+    inc hl
+    ld (hl),00h
+    pop bc
+    pop de
+    ret
 
 char:
 ;CPMIO: CHAR
     ld a,(hl)
     jp conout
+
+;TODO: Unknown code below ---------------------------------------------------
 
     call conout         ;0761 cd 3e 07
     ret                 ;0764 c9
@@ -1065,3 +1083,5 @@ char:
     ld c,30h            ;0778 0e 30
     ld de,2710h         ;077a 11 10 27
     call sub_071ah      ;077d cd 1a 07
+
+; End of KLIB.REL ===========================================================
