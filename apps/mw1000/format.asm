@@ -1024,7 +1024,7 @@ sub_075dh:
     ld a,(l08b3h)       ;0764 3a b3 08
     and 01h             ;0767 e6 01
     add a,30h           ;0769 c6 30
-    ld (l0875h),a       ;076b 32 75 08
+    ld (l0874h+1),a     ;076b 32 75 08
     ld e,0fh            ;076e 1e 0f
     ld c,14h            ;0770 0e 14
     ld hl,0874h         ;0772 21 74 08
@@ -1096,6 +1096,7 @@ l0800h:
     call 0f04eh         ;0818 cd 4e f0
     call 0f048h         ;081b cd 48 f0
     jp 0f036h           ;081e c3 36 f0
+
 sub_0821h:
     call 0f01bh         ;0821 cd 1b f0
     ld hl,0080h         ;0824 21 80 00
@@ -1118,92 +1119,46 @@ l0835h:
     cp 40h              ;0843 fe 40
     jr nz,l0835h        ;0845 20 ee
     ret                 ;0847 c9
+
 l0848h:
-    ld de,l0855h        ;0848 11 55 08
-    ld c,09h            ;084b 0e 09
-    call 0005h          ;084d cd 05 00
-    ld c,01h            ;0850 0e 01
-    jp 0005h            ;0852 c3 05 00
+;Display "Hit any key to abort" message, wait for a key, and then return.
+    ld de,l0855h
+    ld c,09h
+    call 0005h
+    ld c,01h
+    jp 0005h
+
 l0855h:
-    dec c               ;0855 0d
-    ld a,(bc)           ;0856 0a
-    ld c,b              ;0857 48
-    ld l,c              ;0858 69
-    ld (hl),h           ;0859 74
-    jr nz,l08bdh        ;085a 20 61
-    ld l,(hl)           ;085c 6e
-    ld a,c              ;085d 79
-    jr nz,l08cbh        ;085e 20 6b
-    ld h,l              ;0860 65
-    ld a,c              ;0861 79
-    jr nz,l08d8h        ;0862 20 74
-    ld l,a              ;0864 6f
-    jr nz,l08c8h        ;0865 20 61
-    ld h,d              ;0867 62
-    ld l,a              ;0868 6f
-    ld (hl),d           ;0869 72
-    ld (hl),h           ;086a 74
-    jr nz,l08a7h        ;086b 20 3a
-    jr nz,l0893h        ;086d 20 24
+    db 0dh,0ah,"Hit any key to abort : $"
+
 l086fh:
-    ld d,l              ;086f 55
-    ld (3220h),a        ;0870 32 20 32
-    jr nz,l08c3h        ;0873 20 4e
-l0875h:
-    jr nc,$+60          ;0875 30 3a
-    ld b,e              ;0877 43
-    ld d,b              ;0878 50
-    cpl                 ;0879 2f
-    ld c,l              ;087a 4d
-    jr nz,l08d3h        ;087b 20 56
-    ld (322eh),a        ;087d 32 2e 32
-    jr nz,l08c6h        ;0880 20 44
-    ld c,c              ;0882 49
-    ld d,e              ;0883 53
-    ld c,e              ;0884 4b
-    inc l               ;0885 2c
-    ld e,b              ;0886 58
-    ld e,b              ;0887 58
+    db "U2 2 "
+l0874h:
+    db "N0:CP/M V2.2 DISK,XX"
 l0888h:
-    ld b,d              ;0888 42
-    dec l               ;0889 2d
-    ld d,b              ;088a 50
-    jr nz,l08bfh        ;088b 20 32
-    jr nz,l08c0h        ;088d 20 31
+    db "B-P 2 1"
 l088fh:
-    ld c,l              ;088f 4d
-    dec l               ;0890 2d
-    ld d,a              ;0891 57
-    nop                 ;0892 00
-l0893h:
-    inc de              ;0893 13
-    ld bc,3223h         ;0894 01 23 32
+    db "M-W",00h,13h,01h
+    db "#2"
 l0897h:
-    nop                 ;0897 00
+    db 0
 l0898h:
-    nop                 ;0898 00
+    db 0
 l0899h:
-    ld d,e              ;0899 53
-    jr nc,l08d6h        ;089a 30 3a
-    ld hl,(3153h)       ;089c 2a 53 31
-    ld a,(l302ah)       ;089f 3a 2a 30
-    ld a,(5043h)        ;08a2 3a 43 50
-    cpl                 ;08a5 2f
-    ld c,l              ;08a6 4d
+    db "S0:*"
+    db "S1:*"
+    db "0:CP/M"
 l08a7h:
-    ld sp,433ah         ;08a7 31 3a 43
-    ld d,b              ;08aa 50
-    cpl                 ;08ab 2f
-    ld c,l              ;08ac 4d
+    db "1:CP/M"
 l08adh:
-    jr nc,l08e9h        ;08ad 30 3a
-    ld c,e              ;08af 4b
+    db "0:K"
 l08b0h:
-    ld sp,4b3ah         ;08b0 31 3a 4b
+    db "1:K"
 l08b3h:
-    nop                 ;08b3 00
+    db 0
 l08b4h:
-    nop                 ;08b4 00
+    db 0
+
     nop                 ;08b5 00
     nop                 ;08b6 00
     nop                 ;08b7 00
