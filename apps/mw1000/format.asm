@@ -1,6 +1,32 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=format.asm format.com
 
+warm:          equ  0000h ;Warm start entry point
+bdos:          equ  0005h ;BDOS entry point
+seldsk:        equ 0f01bh ;Select disk drive
+settrk:        equ 0f01eh ;Set track number
+setsec:        equ 0f021h ;Set sector number
+read:          equ 0f027h ;Read selected sector
+write:         equ 0f02ah ;Write selected sector
+listen:        equ 0f033h ;Send LISTEN to an IEEE-488 device
+unlisten:      equ 0f036h ;Send UNLISTEN to all IEEE-488 devices
+talk:          equ 0f039h ;Send TALK to an IEEE-488 device
+untalk:        equ 0f03ch ;Send UNTALK to all IEEE-488 devices
+rdieee:        equ 0f03fh ;Read byte from an IEEE-488 device
+wrieee:        equ 0f042h ;Send byte to an IEEE-488 device
+wreoi:         equ 0f045h ;Send byte to IEEE-488 device with EOI asserted
+creoi:         equ 0f048h ;Send carriage return to IEEE-488 dev with EOI
+ieeemsg:       equ 0f04bh ;Send string to the current IEEE-488 device
+ieeenum:       equ 0f04eh ;Send number as decimal string to IEEE-488 dev
+tstdrv:        equ 0f051h ;Get drive type for a CP/M drive number
+dskdev:        equ 0f054h ;BIOS Get device address for a CP/M drive number
+diskcmd:       equ 0f057h ;Open the command channel on IEEE-488 device
+dsksta:        equ 0f05ah ;Read the error channel of an IEEE-488 device
+open:          equ 0f05dh ;BIOS Open a file on an IEEE-488 device
+close:         equ 0f060h ;Close an open file on an IEEE-488 device
+runcpm:        equ 0f075h ;Perform system init and then run CP/M
+idrive:        equ 0f078h ;Initialize an IEEE-488 disk drive
+
     org 0100h
 
     jp l0300h           ;0100 c3 00 03
@@ -8,7 +34,7 @@ sub_0103h:
     ld hl,l30aah        ;0103 21 aa 30
     ld (hl),c           ;0106 71
     ld a,(l30aah)       ;0107 3a aa 30
-    call 0f051h         ;010a cd 51 f0
+    call tstdrv         ;010a cd 51 f0
     ld a,c              ;010d 79
     ret                 ;010e c9
     ld a,00h            ;010f 3e 00
@@ -17,7 +43,7 @@ sub_0103h:
     ld hl,l30abh        ;0113 21 ab 30
     ld (hl),c           ;0116 71
     ld a,(l30abh)       ;0117 3a ab 30
-    call 0f078h         ;011a cd 78 f0
+    call idrive         ;011a cd 78 f0
     ret                 ;011d c9
 sub_011eh:
     ld a,(l3002h)       ;011e 3a 02 30
@@ -61,7 +87,7 @@ l0162h:
     ret                 ;0165 c9
     ret                 ;0166 c9
 sub_0167h:
-    jp 0000h            ;0167 c3 00 00
+    jp warm             ;0167 c3 00 00
     ret                 ;016a c9
 sub_016bh:
     ld hl,l30adh        ;016b 21 ad 30
@@ -69,7 +95,7 @@ sub_016bh:
     ld c,02h            ;016f 0e 02
     ld a,(l30adh)       ;0171 3a ad 30
     ld e,a              ;0174 5f
-    call 0005h          ;0175 cd 05 00
+    call bdos           ;0175 cd 05 00
     ret                 ;0178 c9
 sub_0179h:
     ld c,0dh            ;0179 0e 0d
@@ -166,7 +192,7 @@ sub_0216h:
     ld (hl),50h         ;0219 36 50
     ld de,l3008h        ;021b 11 08 30
     ld c,0ah            ;021e 0e 0a
-    call 0005h          ;0220 cd 05 00
+    call bdos           ;0220 cd 05 00
     ld hl,0000h         ;0223 21 00 00
     ld (l3004h),hl      ;0226 22 04 30
     ld (l3006h),hl      ;0229 22 06 30
@@ -805,15 +831,15 @@ l05c4h:
     ld de,0d400h        ;05ce 11 00 d4
     ldir                ;05d1 ed b0
 l05d3h:
-    jp 0f075h           ;05d3 c3 75 f0
+    jp runcpm           ;05d3 c3 75 f0
     ld a,c              ;05d6 79
     ld (l08b3h),a       ;05d7 32 b3 08
-    call 0f054h         ;05da cd 54 f0
+    call dskdev         ;05da cd 54 f0
     ld e,00h            ;05dd 1e 00
     push de             ;05df d5
     call sub_06adh      ;05e0 cd ad 06
     ld a,(l08b3h)       ;05e3 3a b3 08
-    call 0f05ah         ;05e6 cd 5a f0
+    call dsksta         ;05e6 cd 5a f0
     ld (l08b4h),a       ;05e9 32 b4 08
     ld hl,4000h         ;05ec 21 00 40
     ld bc,l1c00h        ;05ef 01 00 1c
@@ -821,9 +847,9 @@ l05d3h:
     or a                ;05f3 b7
     ret nz              ;05f4 c0
     push de             ;05f5 d5
-    call 0f039h         ;05f6 cd 39 f0
+    call talk           ;05f6 cd 39 f0
 l05f9h:
-    call 0f03fh         ;05f9 cd 3f f0
+    call rdieee         ;05f9 cd 3f f0
     ld (hl),a           ;05fc 77
     inc hl              ;05fd 23
     dec bc              ;05fe 0b
@@ -831,15 +857,15 @@ l05f9h:
     or c                ;0600 b1
 l0601h:
     jr nz,l05f9h        ;0601 20 f6
-    call 0f03ch         ;0603 cd 3c f0
+    call untalk         ;0603 cd 3c f0
     pop de              ;0606 d1
     push de             ;0607 d5
-    call 0f060h         ;0608 cd 60 f0
+    call close          ;0608 cd 60 f0
     pop de              ;060b d1
     push de             ;060c d5
     call sub_06bfh      ;060d cd bf 06
     ld a,(l08b3h)       ;0610 3a b3 08
-    call 0f05ah         ;0613 cd 5a f0
+    call dsksta         ;0613 cd 5a f0
 l0616h:
     ld (l08b4h),a       ;0616 32 b4 08
     ld hl,6000h         ;0619 21 00 60
@@ -850,34 +876,34 @@ l0616h:
 l0622h:
     push de             ;0622 d5
 l0623h:
-    call 0f039h         ;0623 cd 39 f0
+    call talk           ;0623 cd 39 f0
 l0626h:
-    call 0f03fh         ;0626 cd 3f f0
+    call rdieee         ;0626 cd 3f f0
     ld (hl),a           ;0629 77
     inc hl              ;062a 23
     dec bc              ;062b 0b
     ld a,b              ;062c 78
     or c                ;062d b1
     jr nz,l0626h        ;062e 20 f6
-    call 0f03ch         ;0630 cd 3c f0
+    call untalk         ;0630 cd 3c f0
     pop de              ;0633 d1
-    call 0f060h         ;0634 cd 60 f0
+    call close          ;0634 cd 60 f0
     ld a,(l08b3h)       ;0637 3a b3 08
-    call 0f05ah         ;063a cd 5a f0
+    call dsksta         ;063a cd 5a f0
     ld (l08b4h),a       ;063d 32 b4 08
     ret                 ;0640 c9
-    call 0f01bh         ;0641 cd 1b f0
+    call seldsk         ;0641 cd 1b f0
     ld de,4000h         ;0644 11 00 40
     ld bc,0000h         ;0647 01 00 00
 l064ah:
-    call 0f01eh         ;064a cd 1e f0
+    call settrk         ;064a cd 1e f0
     push bc             ;064d c5
     ld bc,0000h         ;064e 01 00 00
 l0651h:
-    call 0f021h         ;0651 cd 21 f0
+    call setsec         ;0651 cd 21 f0
     push bc             ;0654 c5
     push de             ;0655 d5
-    call 0f027h         ;0656 cd 27 f0
+    call read           ;0656 cd 27 f0
     or a                ;0659 b7
     jr nz,l06a7h        ;065a 20 4b
     pop de              ;065c d1
@@ -895,21 +921,21 @@ l0651h:
     cp 02h              ;066f fe 02
     jr nz,l064ah        ;0671 20 d7
     ret                 ;0673 c9
-    call 0f01bh         ;0674 cd 1b f0
+    call seldsk         ;0674 cd 1b f0
     ld hl,4000h         ;0677 21 00 40
     ld bc,0000h         ;067a 01 00 00
 l067dh:
-    call 0f01eh         ;067d cd 1e f0
+    call settrk         ;067d cd 1e f0
     push bc             ;0680 c5
     ld bc,0000h         ;0681 01 00 00
 l0684h:
-    call 0f021h         ;0684 cd 21 f0
+    call setsec         ;0684 cd 21 f0
     push bc             ;0687 c5
     ld bc,0080h         ;0688 01 80 00
     ld de,0080h         ;068b 11 80 00
     ldir                ;068e ed b0
     push hl             ;0690 e5
-    call 0f02ah         ;0691 cd 2a f0
+    call write          ;0691 cd 2a f0
     or a                ;0694 b7
     jr nz,l06a7h        ;0695 20 10
     pop hl              ;0697 e1
@@ -934,20 +960,20 @@ sub_06adh:
     ld hl,08a1h         ;06af 21 a1 08
     ld a,(l08b3h)       ;06b2 3a b3 08
     rra                 ;06b5 1f
-    jp nc,0f05dh        ;06b6 d2 5d f0
+    jp nc,open          ;06b6 d2 5d f0
     ld hl,l08a7h        ;06b9 21 a7 08
-    jp 0f05dh           ;06bc c3 5d f0
+    jp open             ;06bc c3 5d f0
 sub_06bfh:
     ld c,03h            ;06bf 0e 03
     ld hl,l08adh        ;06c1 21 ad 08
     ld a,(l08b3h)       ;06c4 3a b3 08
     rra                 ;06c7 1f
-    jp nc,0f05dh        ;06c8 d2 5d f0
+    jp nc,open          ;06c8 d2 5d f0
     ld hl,l08b0h        ;06cb 21 b0 08
-    jp 0f05dh           ;06ce c3 5d f0
+    jp open             ;06ce c3 5d f0
     ld a,c              ;06d1 79
     ld (l08b3h),a       ;06d2 32 b3 08
-    call 0f054h         ;06d5 cd 54 f0
+    call dskdev         ;06d5 cd 54 f0
     push de             ;06d8 d5
     ld e,0fh            ;06d9 1e 0f
     ld hl,l0899h        ;06db 21 99 08
@@ -957,9 +983,9 @@ sub_06bfh:
     ld hl,089dh         ;06e4 21 9d 08
 l06e7h:
     ld c,04h            ;06e7 0e 04
-    call 0f05dh         ;06e9 cd 5d f0
+    call open           ;06e9 cd 5d f0
     ld a,(l08b3h)       ;06ec 3a b3 08
-    call 0f05ah         ;06ef cd 5a f0
+    call dsksta         ;06ef cd 5a f0
     ld (l08b4h),a       ;06f2 32 b4 08
     pop de              ;06f5 d1
     cp 01h              ;06f6 fe 01
@@ -968,59 +994,59 @@ l06e7h:
     push de             ;06fb d5
     call sub_06bfh      ;06fc cd bf 06
     ld a,(l08b3h)       ;06ff 3a b3 08
-    call 0f05ah         ;0702 cd 5a f0
+    call dsksta         ;0702 cd 5a f0
     ld (l08b4h),a       ;0705 32 b4 08
     pop de              ;0708 d1
     or a                ;0709 b7
     ret nz              ;070a c0
     push de             ;070b d5
-    call 0f033h         ;070c cd 33 f0
+    call listen         ;070c cd 33 f0
     ld hl,6000h         ;070f 21 00 60
     ld bc,l0800h        ;0712 01 00 08
 l0715h:
     ld a,(hl)           ;0715 7e
-    call 0f042h         ;0716 cd 42 f0
+    call wrieee         ;0716 cd 42 f0
     inc hl              ;0719 23
     dec bc              ;071a 0b
     ld a,b              ;071b 78
     or c                ;071c b1
     jr nz,l0715h        ;071d 20 f6
-    call 0f036h         ;071f cd 36 f0
+    call unlisten       ;071f cd 36 f0
     pop de              ;0722 d1
     push de             ;0723 d5
-    call 0f060h         ;0724 cd 60 f0
+    call close          ;0724 cd 60 f0
     pop de              ;0727 d1
     push de             ;0728 d5
     call sub_06adh      ;0729 cd ad 06
     ld a,(l08b3h)       ;072c 3a b3 08
-    call 0f05ah         ;072f cd 5a f0
+    call dsksta         ;072f cd 5a f0
     ld (l08b4h),a       ;0732 32 b4 08
     pop de              ;0735 d1
     or a                ;0736 b7
     ret nz              ;0737 c0
     push de             ;0738 d5
-    call 0f033h         ;0739 cd 33 f0
+    call listen         ;0739 cd 33 f0
     ld hl,4000h         ;073c 21 00 40
     ld bc,l1c00h        ;073f 01 00 1c
 l0742h:
     ld a,(hl)           ;0742 7e
-    call 0f042h         ;0743 cd 42 f0
+    call wrieee         ;0743 cd 42 f0
     inc hl              ;0746 23
     dec bc              ;0747 0b
     ld a,b              ;0748 78
     or c                ;0749 b1
     jr nz,l0742h        ;074a 20 f6
-    call 0f036h         ;074c cd 36 f0
+    call unlisten       ;074c cd 36 f0
     pop de              ;074f d1
-    call 0f060h         ;0750 cd 60 f0
+    call close          ;0750 cd 60 f0
     ld a,(l08b3h)       ;0753 3a b3 08
-    call 0f05ah         ;0756 cd 5a f0
+    call dsksta         ;0756 cd 5a f0
     ld (l08b4h),a       ;0759 32 b4 08
     ret                 ;075c c9
 sub_075dh:
     ld a,c              ;075d 79
     ld (l08b3h),a       ;075e 32 b3 08
-    call 0f054h         ;0761 cd 54 f0
+    call dskdev         ;0761 cd 54 f0
     ld a,(l08b3h)       ;0764 3a b3 08
     and 01h             ;0767 e6 01
     add a,30h           ;0769 c6 30
@@ -1028,14 +1054,14 @@ sub_075dh:
     ld e,0fh            ;076e 1e 0f
     ld c,14h            ;0770 0e 14
     ld hl,0874h         ;0772 21 74 08
-    call 0f05dh         ;0775 cd 5d f0
+    call open           ;0775 cd 5d f0
     ld a,(l08b3h)       ;0778 3a b3 08
-    call 0f05ah         ;077b cd 5a f0
+    call dsksta         ;077b cd 5a f0
     ld (l08b4h),a       ;077e 32 b4 08
     or a                ;0781 b7
     ret nz              ;0782 c0
     ld a,(l08b3h)       ;0783 3a b3 08
-    call 0f078h         ;0786 cd 78 f0
+    call idrive         ;0786 cd 78 f0
     ld hl,4000h         ;0789 21 00 40
     ld de,4001h         ;078c 11 01 40
     ld bc,00ffh         ;078f 01 ff 00
@@ -1048,7 +1074,7 @@ sub_075dh:
 l07a0h:
     call sub_07b6h      ;07a0 cd b6 07
     ld a,(l08b3h)       ;07a3 3a b3 08
-    call 0f05ah         ;07a6 cd 5a f0
+    call dsksta         ;07a6 cd 5a f0
     ld (l08b4h),a       ;07a9 32 b4 08
     or a                ;07ac b7
     ret nz              ;07ad c0
@@ -1060,57 +1086,57 @@ sub_07b6h:
     ld hl,l088fh        ;07b6 21 8f 08
     ld c,06h            ;07b9 0e 06
     ld a,(l08b3h)       ;07bb 3a b3 08
-    call 0f057h         ;07be cd 57 f0
-    call 0f04bh         ;07c1 cd 4b f0
+    call diskcmd        ;07be cd 57 f0
+    call ieeemsg        ;07c1 cd 4b f0
     ld a,(4000h)        ;07c4 3a 00 40
-    call 0f045h         ;07c7 cd 45 f0
-    call 0f036h         ;07ca cd 36 f0
+    call wreoi          ;07c7 cd 45 f0
+    call unlisten       ;07ca cd 36 f0
     ld hl,l0888h        ;07cd 21 88 08
     ld c,07h            ;07d0 0e 07
     ld a,(l08b3h)       ;07d2 3a b3 08
-    call 0f057h         ;07d5 cd 57 f0
-    call 0f04bh         ;07d8 cd 4b f0
-    call 0f048h         ;07db cd 48 f0
-    call 0f036h         ;07de cd 36 f0
+    call diskcmd        ;07d5 cd 57 f0
+    call ieeemsg        ;07d8 cd 4b f0
+    call creoi          ;07db cd 48 f0
+    call unlisten       ;07de cd 36 f0
     ld a,(l08b3h)       ;07e1 3a b3 08
-    call 0f054h         ;07e4 cd 54 f0
+    call dskdev         ;07e4 cd 54 f0
     ld e,02h            ;07e7 1e 02
-    call 0f033h         ;07e9 cd 33 f0
+    call listen         ;07e9 cd 33 f0
     ld hl,4001h         ;07ec 21 01 40
     ld c,0ffh           ;07ef 0e ff
-    call 0f04bh         ;07f1 cd 4b f0
-    call 0f036h         ;07f4 cd 36 f0
+    call ieeemsg        ;07f1 cd 4b f0
+    call unlisten       ;07f4 cd 36 f0
     ld a,(l08b3h)       ;07f7 3a b3 08
-    call 0f057h         ;07fa cd 57 f0
+    call diskcmd        ;07fa cd 57 f0
     ld hl,l086fh        ;07fd 21 6f 08
 l0800h:
     ld c,05h            ;0800 0e 05
-    call 0f04bh         ;0802 cd 4b f0
+    call ieeemsg        ;0802 cd 4b f0
     ld a,(l08b3h)       ;0805 3a b3 08
     and 01h             ;0808 e6 01
     add a,30h           ;080a c6 30
-    call 0f042h         ;080c cd 42 f0
+    call wrieee         ;080c cd 42 f0
     ld a,(l0897h)       ;080f 3a 97 08
-    call 0f04eh         ;0812 cd 4e f0
+    call ieeenum        ;0812 cd 4e f0
     ld a,(l0898h)       ;0815 3a 98 08
-    call 0f04eh         ;0818 cd 4e f0
-    call 0f048h         ;081b cd 48 f0
-    jp 0f036h           ;081e c3 36 f0
+    call ieeenum        ;0818 cd 4e f0
+    call creoi          ;081b cd 48 f0
+    jp unlisten         ;081e c3 36 f0
 
 sub_0821h:
-    call 0f01bh         ;0821 cd 1b f0
+    call seldsk         ;0821 cd 1b f0
     ld hl,0080h         ;0824 21 80 00
 l0827h:
     ld (hl),0e5h        ;0827 36 e5
     inc l               ;0829 2c
     jr nz,l0827h        ;082a 20 fb
     ld bc,0002h         ;082c 01 02 00
-    call 0f01eh         ;082f cd 1e f0
+    call settrk         ;082f cd 1e f0
     ld bc,0000h         ;0832 01 00 00
 l0835h:
     push bc             ;0835 c5
-    call 0f021h         ;0836 cd 21 f0
-    call 0f02ah         ;0839 cd 2a f0
+    call setsec         ;0836 cd 21 f0
+    call write          ;0839 cd 2a f0
     pop bc              ;083c c1
     or a                ;083d b7
     jp nz,l0848h        ;083e c2 48 08
@@ -1124,9 +1150,9 @@ l0848h:
 ;Display "Hit any key to abort" message, wait for a key, and then return.
     ld de,l0855h
     ld c,09h
-    call 0005h
+    call bdos
     ld c,01h
-    jp 0005h
+    jp bdos
 
 l0855h:
     db 0dh,0ah,"Hit any key to abort : $"
