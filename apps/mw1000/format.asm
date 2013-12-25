@@ -321,7 +321,7 @@ l02ffh:
 l0300h:
     call sub_0179h      ;0300 cd 79 01
     call sub_0179h      ;0303 cd 79 01
-    ld bc,l042bh+2      ;0306 01 2d 04
+    ld bc,l042dh        ;0306 01 2d 04
     call sub_01a9h      ;0309 cd a9 01
     ld bc,l0445h        ;030c 01 45 04
     call sub_01a9h      ;030f cd a9 01
@@ -335,7 +335,7 @@ l0321h:
     call sub_0179h      ;0324 cd 79 01
     ld bc,l0480h        ;0327 01 80 04
     call sub_01a9h      ;032a cd a9 01
-    ld bc,l049bh        ;032d 01 9b 04
+    ld bc,049bh         ;032d 01 9b 04
     call sub_0184h      ;0330 cd 84 01
     call sub_0216h      ;0333 cd 16 02
     call sub_0179h      ;0336 cd 79 01
@@ -352,7 +352,7 @@ l0344h:
     cp 10h              ;0350 fe 10
     jp m,l035eh         ;0352 fa 5e 03
 l0355h:
-    ld bc,l04bbh+1      ;0355 01 bc 04
+    ld bc,l04bch        ;0355 01 bc 04
     call sub_01a9h      ;0358 cd a9 01
     jp l0321h           ;035b c3 21 03
 l035eh:
@@ -379,7 +379,7 @@ l0376h:
     add a,41h           ;0391 c6 41
     ld c,a              ;0393 4f
     call sub_016bh      ;0394 cd 6b 01
-    ld bc,04f9h         ;0397 01 f9 04
+    ld bc,l04f9h        ;0397 01 f9 04
     call sub_01a9h      ;039a cd a9 01
     ld bc,l050ah        ;039d 01 0a 05
     call sub_0184h      ;03a0 cd 84 01
@@ -391,7 +391,7 @@ l0376h:
 l03b1h:
     call sub_0179h      ;03b1 cd 79 01
     call sub_0179h      ;03b4 cd 79 01
-    ld bc,051bh         ;03b7 01 1b 05
+    ld bc,l051bh        ;03b7 01 1b 05
     call sub_01a9h      ;03ba cd a9 01
     ld hl,l3000h        ;03bd 21 00 30
     ld c,(hl)           ;03c0 4e
@@ -404,7 +404,7 @@ l03c7h:
     add a,41h           ;03d0 c6 41
     ld c,a              ;03d2 4f
     call sub_016bh      ;03d3 cd 6b 01
-    ld bc,l0548h+1      ;03d6 01 49 05
+    ld bc,l054ah        ;03d6 01 49 05
     call sub_01a9h      ;03d9 cd a9 01
     ld bc,l055eh        ;03dc 01 5e 05
     call sub_0184h      ;03df cd 84 01
@@ -415,7 +415,7 @@ l03c7h:
     call sub_0167h      ;03ed cd 67 01
 l03f0h:
     call sub_0179h      ;03f0 cd 79 01
-    ld bc,0587h         ;03f3 01 87 05
+    ld bc,l0587h        ;03f3 01 87 05
     call sub_0184h      ;03f6 cd 84 01
     ld hl,l3000h        ;03f9 21 00 30
     ld c,(hl)           ;03fc 4e
@@ -424,7 +424,7 @@ l03f0h:
     call sub_011eh      ;0403 cd 1e 01
     or a                ;0406 b7
     jp nz,l0413h        ;0407 c2 13 04
-    ld bc,0595h         ;040a 01 95 05
+    ld bc,l0595h        ;040a 01 95 05
     call sub_01a9h      ;040d cd a9 01
     jp l0419h           ;0410 c3 19 04
 l0413h:
@@ -432,399 +432,66 @@ l0413h:
     call sub_01a9h      ;0416 cd a9 01
 l0419h:
     jp l0321h           ;0419 c3 21 03
+
 l041ch:
-    ld c,44h            ;041c 0e 44
-    ld l,c              ;041e 69
-    ld (hl),e           ;041f 73
-    ld l,e              ;0420 6b
-    jr nz,$+103         ;0421 20 65
-    ld (hl),d           ;0423 72
-    ld (hl),d           ;0424 72
-    ld l,a              ;0425 6f
-    ld (hl),d           ;0426 72
-    jr nz,$+60          ;0427 20 3a
-    jr nz,l044bh        ;0429 20 20
+    db 0eh
+    db "Disk error :  "
 l042bh:
-    ld bc,l1730h        ;042b 01 30 17
-    ld b,h              ;042e 44
-    ld l,c              ;042f 69
-    ld (hl),e           ;0430 73
-    ld l,e              ;0431 6b
-    jr nz,l049ah        ;0432 20 66
-    ld l,a              ;0434 6f
-    ld (hl),d           ;0435 72
-    ld l,l              ;0436 6d
-    ld h,c              ;0437 61
-    ld (hl),h           ;0438 74
-    ld (hl),h           ;0439 74
-    ld l,c              ;043a 69
-    ld l,(hl)           ;043b 6e
-    ld h,a              ;043c 67
-    jr nz,$+114         ;043d 20 70
-    ld (hl),d           ;043f 72
-    ld l,a              ;0440 6f
-    ld h,a              ;0441 67
-    ld (hl),d           ;0442 72
-    ld h,c              ;0443 61
-    ld l,l              ;0444 6d
+    db 01h
+    db "0"
+l042dh:
+    db 17h
+    db "Disk formatting program"
 l0445h:
-    djnz $+72           ;0445 10 46
-    ld l,a              ;0447 6f
-    ld (hl),d           ;0448 72
-    jr nz,l049eh        ;0449 20 53
-l044bh:
-    ld l,a              ;044b 6f
-    ld h,(hl)           ;044c 66
-    ld (hl),h           ;044d 74
-    ld h,d              ;044e 62
-    ld l,a              ;044f 6f
-    ld a,b              ;0450 78
-    jr nz,$+69          ;0451 20 43
-    ld d,b              ;0453 50
-    cpl                 ;0454 2f
-    ld c,l              ;0455 4d
+    db 10h
+    db "For Softbox CP/M"
 l0456h:
-    djnz l0495h         ;0456 10 3d
-    dec a               ;0458 3d
-    dec a               ;0459 3d
-    jr nz,l0499h        ;045a 20 3d
-    dec a               ;045c 3d
-    dec a               ;045d 3d
-    dec a               ;045e 3d
-    dec a               ;045f 3d
-    dec a               ;0460 3d
-    dec a               ;0461 3d
-    jr nz,l04a1h        ;0462 20 3d
-    dec a               ;0464 3d
-    dec a               ;0465 3d
-    dec a               ;0466 3d
+    db 10h
+    db "=== ======= ===="
 l0467h:
-    jr l04bbh           ;0467 18 52
-    ld h,l              ;0469 65
-    halt                ;046a 76
-    ld l,c              ;046b 69
-    ld (hl),e           ;046c 73
-    ld l,c              ;046d 69
-    ld l,a              ;046e 6f
-    ld l,(hl)           ;046f 6e
-    jr nz,l04a4h        ;0470 20 32
-    ld l,32h            ;0472 2e 32
-    jr nz,$+34          ;0474 20 20
-    add hl,sp           ;0476 39
-    dec l               ;0477 2d
-    ld c,l              ;0478 4d
-    ld h,c              ;0479 61
-    ld (hl),d           ;047a 72
-    dec l               ;047b 2d
-    ld sp,3839h         ;047c 31 39 38
-    inc (hl)            ;047f 34
+    db 18h
+    db "Revision 2.2  9-Mar-1984"
 l0480h:
-    ld a,(de)           ;0480 1a
-    ld b,(hl)           ;0481 46
-    ld l,a              ;0482 6f
-    ld (hl),d           ;0483 72
-    ld l,l              ;0484 6d
-    ld h,c              ;0485 61
-    ld (hl),h           ;0486 74
-    jr nz,l04edh        ;0487 20 64
-    ld l,c              ;0489 69
-    ld (hl),e           ;048a 73
-    ld l,e              ;048b 6b
-    jr nz,l04fdh        ;048c 20 6f
-    ld l,(hl)           ;048e 6e
-    jr nz,l0508h        ;048f 20 77
-    ld l,b              ;0491 68
-    ld l,c              ;0492 69
-    ld h,e              ;0493 63
-    ld l,b              ;0494 68
-l0495h:
-    jr nz,$+102         ;0495 20 64
-    ld (hl),d           ;0497 72
-    ld l,c              ;0498 69
-l0499h:
-    halt                ;0499 76
-l049ah:
-    ld h,l              ;049a 65
-l049bh:
-    jr nz,l04c5h        ;049b 20 28
-    ld b,c              ;049d 41
-l049eh:
-    jr nz,l0514h        ;049e 20 74
-    ld l,a              ;04a0 6f
-l04a1h:
-    jr nz,l04f3h        ;04a1 20 50
-    inc l               ;04a3 2c
-l04a4h:
-    jr nz,l0515h        ;04a4 20 6f
-    ld (hl),d           ;04a6 72
-    jr nz,$+84          ;04a7 20 52
-    ld b,l              ;04a9 45
-    ld d,h              ;04aa 54
-    ld d,l              ;04ab 55
-    ld d,d              ;04ac 52
-    ld c,(hl)           ;04ad 4e
-    jr nz,l0524h        ;04ae 20 74
-    ld l,a              ;04b0 6f
-    jr nz,l0525h        ;04b1 20 72
-    ld h,l              ;04b3 65
-    ld h,d              ;04b4 62
-    ld l,a              ;04b5 6f
-    ld l,a              ;04b6 6f
-    ld (hl),h           ;04b7 74
-    add hl,hl           ;04b8 29
-    jr nz,l04fah        ;04b9 20 3f
-l04bbh:
-    jr nz,l04d2h        ;04bb 20 15
-    ld b,h              ;04bd 44
-    ld (hl),d           ;04be 72
-    ld l,c              ;04bf 69
-    halt                ;04c0 76
-    ld h,l              ;04c1 65
-    jr nz,l0528h        ;04c2 20 64
-    ld l,a              ;04c4 6f
-l04c5h:
-    ld h,l              ;04c5 65
-    ld (hl),e           ;04c6 73
-    ld l,(hl)           ;04c7 6e
-    daa                 ;04c8 27
-    ld (hl),h           ;04c9 74
-    jr nz,$+103         ;04ca 20 65
-    ld a,b              ;04cc 78
-    ld l,c              ;04cd 69
-    ld (hl),e           ;04ce 73
-    ld (hl),h           ;04cf 74
-    jr nz,l04f3h        ;04d0 20 21
+    db 1ah
+    db "Format disk on which drive (A to P, or RETURN to reboot) ? "
+l04bch:
+    db 15h
+    db "Drive doesn't exist !"
 l04d2h:
-    inc de              ;04d2 13
-    ld b,h              ;04d3 44
-    ld (hl),d           ;04d4 72
-    ld l,c              ;04d5 69
-    halt                ;04d6 76
-    ld h,l              ;04d7 65
-    jr nz,l0548h        ;04d8 20 6e
-    ld l,a              ;04da 6f
-    ld (hl),h           ;04db 74
-    jr nz,l0547h        ;04dc 20 69
-    ld l,(hl)           ;04de 6e
-    jr nz,l0554h        ;04df 20 73
-    ld a,c              ;04e1 79
-    ld (hl),e           ;04e2 73
-    ld (hl),h           ;04e3 74
-    ld h,l              ;04e4 65
-    ld l,l              ;04e5 6d
+    db 13h
+    db "Drive not in system"
 l04e6h:
-    ld (de),a           ;04e6 12
-    ld b,h              ;04e7 44
-    ld h,c              ;04e8 61
-    ld (hl),h           ;04e9 74
-    ld h,c              ;04ea 61
-    jr nz,l055ch        ;04eb 20 6f
-l04edh:
-    ld l,(hl)           ;04ed 6e
-    jr nz,l0558h        ;04ee 20 68
-    ld h,c              ;04f0 61
-    ld (hl),d           ;04f1 72
-    ld h,h              ;04f2 64
-l04f3h:
-    jr nz,l0559h        ;04f3 20 64
-    ld l,c              ;04f5 69
-    ld (hl),e           ;04f6 73
-    ld l,e              ;04f7 6b
-    jr nz,l050ah        ;04f8 20 10
-l04fah:
-    ld a,(7720h)        ;04fa 3a 20 77
-l04fdh:
-    ld l,c              ;04fd 69
-    ld l,h              ;04fe 6c
-    ld l,h              ;04ff 6c
-    jr nz,l0564h        ;0500 20 62
-    ld h,l              ;0502 65
-    jr nz,l056ah        ;0503 20 65
-    ld (hl),d           ;0505 72
-    ld h,c              ;0506 61
-    ld (hl),e           ;0507 73
-l0508h:
-    ld h,l              ;0508 65
-    ld h,h              ;0509 64
+    db 12h
+    db "Data on hard disk "
+l04f9h:
+    db 10h
+    db ": will be erased"
 l050ah:
-    djnz l055ch         ;050a 10 50
-    ld (hl),d           ;050c 72
-    ld l,a              ;050d 6f
-    ld h,e              ;050e 63
-    ld h,l              ;050f 65
-    ld h,l              ;0510 65
-    ld h,h              ;0511 64
-    jr nz,l053ch        ;0512 20 28
-l0514h:
-    ld e,c              ;0514 59
-l0515h:
-    cpl                 ;0515 2f
-    ld c,(hl)           ;0516 4e
-    add hl,hl           ;0517 29
-    jr nz,l0559h        ;0518 20 3f
-    jr nz,l053ah        ;051a 20 1e
-    ld b,(hl)           ;051c 46
-    ld l,a              ;051d 6f
-    ld (hl),d           ;051e 72
-    ld l,l              ;051f 6d
-    ld h,c              ;0520 61
-    ld (hl),h           ;0521 74
-    ld (hl),h           ;0522 74
-    ld l,c              ;0523 69
-l0524h:
-    ld l,(hl)           ;0524 6e
-l0525h:
-    ld h,a              ;0525 67
-    jr nz,l0590h        ;0526 20 68
-l0528h:
-    ld h,c              ;0528 61
-    ld (hl),d           ;0529 72
-    ld h,h              ;052a 64
-    jr nz,l0591h        ;052b 20 64
-    ld l,c              ;052d 69
-    ld (hl),e           ;052e 73
-    ld l,e              ;052f 6b
-    jr nz,l0596h        ;0530 20 64
-    ld l,c              ;0532 69
-    ld (hl),d           ;0533 72
-    ld h,l              ;0534 65
-    ld h,e              ;0535 63
-    ld (hl),h           ;0536 74
-    ld l,a              ;0537 6f
-    ld (hl),d           ;0538 72
-    ld a,c              ;0539 79
+    db 10h
+    db "Proceed (Y/N) ? "
+l051bh:
+    db 1eh
+    db "Formatting hard disk directory"
 l053ah:
-    ld c,44h            ;053a 0e 44
-l053ch:
-    ld l,c              ;053c 69
-    ld (hl),e           ;053d 73
-    ld l,e              ;053e 6b
-    jr nz,l05b0h        ;053f 20 6f
-    ld l,(hl)           ;0541 6e
-    jr nz,l05a8h        ;0542 20 64
-    ld (hl),d           ;0544 72
-    ld l,c              ;0545 69
-    halt                ;0546 76
-l0547h:
-    ld h,l              ;0547 65
-l0548h:
-    jr nz,l055eh        ;0548 20 14
-    ld a,(6920h)        ;054a 3a 20 69
-    ld (hl),e           ;054d 73
-    jr nz,l05c4h        ;054e 20 74
-    ld l,a              ;0550 6f
-    jr nz,l05b5h        ;0551 20 62
-    ld h,l              ;0553 65
-l0554h:
-    jr nz,$+104         ;0554 20 66
-    ld l,a              ;0556 6f
-    ld (hl),d           ;0557 72
-l0558h:
-    ld l,l              ;0558 6d
-l0559h:
-    ld h,c              ;0559 61
-    ld (hl),h           ;055a 74
-    ld (hl),h           ;055b 74
-l055ch:
-    ld h,l              ;055c 65
-    ld h,h              ;055d 64
+    db 0eh
+    db "Disk on drive "
+l054ah:
+    db 14h
+    db ": is to be formatted"
 l055eh:
-    jr z,l05b0h         ;055e 28 50
-    ld (hl),d           ;0560 72
-    ld h,l              ;0561 65
-    ld (hl),e           ;0562 73
-    ld (hl),e           ;0563 73
-l0564h:
-    jr nz,l05b8h        ;0564 20 52
-    ld b,l              ;0566 45
-    ld d,h              ;0567 54
-    ld d,l              ;0568 55
-    ld d,d              ;0569 52
-l056ah:
-    ld c,(hl)           ;056a 4e
-    jr nz,$+118         ;056b 20 74
-    ld l,a              ;056d 6f
-    jr nz,l05d3h        ;056e 20 63
-    ld l,a              ;0570 6f
-    ld l,(hl)           ;0571 6e
-    ld (hl),h           ;0572 74
-    ld l,c              ;0573 69
-    ld l,(hl)           ;0574 6e
-    ld (hl),l           ;0575 75
-    ld h,l              ;0576 65
-    inc l               ;0577 2c
-    jr nz,$+96          ;0578 20 5e
-    ld b,e              ;057a 43
-    jr nz,$+118         ;057b 20 74
-    ld l,a              ;057d 6f
-    jr nz,$+99          ;057e 20 61
-    ld h,d              ;0580 62
-    ld l,a              ;0581 6f
-    ld (hl),d           ;0582 72
-    ld (hl),h           ;0583 74
-    jr nz,$+60          ;0584 20 3a
-    jr nz,$+15          ;0586 20 0d
-    ld b,(hl)           ;0588 46
-    ld l,a              ;0589 6f
-    ld (hl),d           ;058a 72
-    ld l,l              ;058b 6d
-    ld h,c              ;058c 61
-    ld (hl),h           ;058d 74
-    ld (hl),h           ;058e 74
-    ld l,c              ;058f 69
-l0590h:
-    ld l,(hl)           ;0590 6e
-l0591h:
-    ld h,a              ;0591 67
-    ld l,2eh            ;0592 2e 2e
-    ld l,0fh            ;0594 2e 0f
-l0596h:
-    ld b,(hl)           ;0596 46
-    ld l,a              ;0597 6f
-    ld (hl),d           ;0598 72
-    ld l,l              ;0599 6d
-    ld h,c              ;059a 61
-    ld (hl),h           ;059b 74
-    jr nz,l0601h        ;059c 20 63
-    ld l,a              ;059e 6f
-    ld l,l              ;059f 6d
-    ld (hl),b           ;05a0 70
-    ld l,h              ;05a1 6c
-    ld h,l              ;05a2 65
-    ld (hl),h           ;05a3 74
-    ld h,l              ;05a4 65
+    db 28h
+    db "Press RETURN to continue, ^C to abort : "
+l0587h:
+    db 0dh
+    db "Formatting..."
+l0595h:
+    db 0fh
+    db "Format complete"
 l05a5h:
-    ld (6f44h),hl       ;05a5 22 44 6f
-l05a8h:
-    jr nz,$+112         ;05a8 20 6e
-    ld l,a              ;05aa 6f
-    ld (hl),h           ;05ab 74
-    jr nz,l0623h        ;05ac 20 75
-    ld (hl),e           ;05ae 73
-    ld h,l              ;05af 65
-l05b0h:
-    jr nz,l0616h        ;05b0 20 64
-    ld l,c              ;05b2 69
-    ld (hl),e           ;05b3 73
-    ld l,e              ;05b4 6b
-l05b5h:
-    ld h,l              ;05b5 65
-    ld (hl),h           ;05b6 74
-    ld (hl),h           ;05b7 74
-l05b8h:
-    ld h,l              ;05b8 65
-    jr nz,$+47          ;05b9 20 2d
-    jr nz,$+118         ;05bb 20 74
-    ld (hl),d           ;05bd 72
-    ld a,c              ;05be 79
-    jr nz,l0622h        ;05bf 20 61
-    ld h,a              ;05c1 67
-    ld h,c              ;05c2 61
-    ld l,c              ;05c3 69
-l05c4h:
-    ld l,(hl)           ;05c4 6e
-    ld l,2eh            ;05c5 2e 2e
-    ld l,01h            ;05c7 2e 01
+    db 22h
+    db "Do not use diskette - try again..."
+
+    db 01h
     nop                 ;05c9 00
     inc e               ;05ca 1c
     ld hl,4000h         ;05cb 21 00 40
