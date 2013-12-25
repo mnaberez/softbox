@@ -508,7 +508,7 @@ bad_disk:
     call dsksta         ;05e6 cd 5a f0
     ld (l08b4h),a       ;05e9 32 b4 08
     ld hl,4000h         ;05ec 21 00 40
-    ld bc,l1c00h        ;05ef 01 00 1c
+    ld bc,1c00h         ;05ef 01 00 1c
     pop de              ;05f2 d1
     or a                ;05f3 b7
     ret nz              ;05f4 c0
@@ -533,7 +533,7 @@ l05f9h:
     call dsksta         ;0613 cd 5a f0
     ld (l08b4h),a       ;0616 32 b4 08
     ld hl,6000h         ;0619 21 00 60
-    ld bc,l0800h        ;061c 01 00 08
+    ld bc,0800h         ;061c 01 00 08
     pop de              ;061f d1
     or a                ;0620 b7
     ret nz              ;0621 c0
@@ -664,7 +664,7 @@ l06e7h:
     push de             ;070b d5
     call listen         ;070c cd 33 f0
     ld hl,6000h         ;070f 21 00 60
-    ld bc,l0800h        ;0712 01 00 08
+    ld bc,0800h         ;0712 01 00 08
 l0715h:
     ld a,(hl)           ;0715 7e
     call wrieee         ;0716 cd 42 f0
@@ -689,7 +689,7 @@ l0715h:
     push de             ;0738 d5
     call listen         ;0739 cd 33 f0
     ld hl,4000h         ;073c 21 00 40
-    ld bc,l1c00h        ;073f 01 00 1c
+    ld bc,1c00h         ;073f 01 00 1c
 l0742h:
     ld a,(hl)           ;0742 7e
     call wrieee         ;0743 cd 42 f0
@@ -771,7 +771,6 @@ sub_07b6h:
     ld a,(l08b3h)       ;07f7 3a b3 08
     call diskcmd        ;07fa cd 57 f0
     ld hl,l086fh        ;07fd 21 6f 08
-l0800h:
     ld c,05h            ;0800 0e 05
     call ieeemsg        ;0802 cd 4b f0
     ld a,(l08b3h)       ;0805 3a b3 08
@@ -5744,7 +5743,6 @@ l0aa6h:
     nop                 ;1bfd 00
     nop                 ;1bfe 00
     nop                 ;1bff 00
-l1c00h:
     nop                 ;1c00 00
     nop                 ;1c01 00
     nop                 ;1c02 00
