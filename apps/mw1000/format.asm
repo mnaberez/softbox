@@ -49,7 +49,7 @@ sub_011eh:
     ld a,(l3002h)       ;011e 3a 02 30
     or a                ;0121 b7
     jp z,l0162h         ;0122 ca 62 01
-    ld bc,l041ch        ;0125 01 1c 04
+    ld bc,disk_error    ;0125 01 1c 04
     call sub_0184h      ;0128 cd 84 01
     ld hl,l30ach        ;012b 21 ac 30
     ld (hl),00h         ;012e 36 00
@@ -177,7 +177,7 @@ l01f0h:
     ld a,l              ;01ff 7d
     or h                ;0200 b4
     jp nz,l020dh        ;0201 c2 0d 02
-    ld bc,l042bh        ;0204 01 2b 04
+    ld bc,zero          ;0204 01 2b 04
     call sub_0184h      ;0207 cd 84 01
     jp l0215h           ;020a c3 15 02
 l020dh:
@@ -321,19 +321,19 @@ l02ffh:
 l0300h:
     call sub_0179h      ;0300 cd 79 01
     call sub_0179h      ;0303 cd 79 01
-    ld bc,l042dh        ;0306 01 2d 04
+    ld bc,format_prog   ;0306 01 2d 04
     call sub_01a9h      ;0309 cd a9 01
-    ld bc,l0445h        ;030c 01 45 04
+    ld bc,for_softbox   ;030c 01 45 04
     call sub_01a9h      ;030f cd a9 01
-    ld bc,l0456h        ;0312 01 56 04
+    ld bc,dashes        ;0312 01 56 04
     call sub_01a9h      ;0315 cd a9 01
     call sub_0179h      ;0318 cd 79 01
-    ld bc,l0467h        ;031b 01 67 04
+    ld bc,revision      ;031b 01 67 04
     call sub_01a9h      ;031e cd a9 01
 l0321h:
     call sub_0179h      ;0321 cd 79 01
     call sub_0179h      ;0324 cd 79 01
-    ld bc,l0480h        ;0327 01 80 04
+    ld bc,on_which_drv  ;0327 01 80 04
     call sub_01a9h      ;032a cd a9 01
     ld bc,049bh         ;032d 01 9b 04
     call sub_0184h      ;0330 cd 84 01
@@ -352,7 +352,7 @@ l0344h:
     cp 10h              ;0350 fe 10
     jp m,l035eh         ;0352 fa 5e 03
 l0355h:
-    ld bc,l04bch        ;0355 01 bc 04
+    ld bc,doesnt_exist  ;0355 01 bc 04
     call sub_01a9h      ;0358 cd a9 01
     jp l0321h           ;035b c3 21 03
 l035eh:
@@ -362,7 +362,7 @@ l035eh:
     ld (l3001h),a       ;0365 32 01 30
     and 80h             ;0368 e6 80
     jp z,l0376h         ;036a ca 76 03
-    ld bc,l04d2h        ;036d 01 d2 04
+    ld bc,not_in_sys    ;036d 01 d2 04
     call sub_01a9h      ;0370 cd a9 01
     jp l0321h           ;0373 c3 21 03
 l0376h:
@@ -373,15 +373,15 @@ l0376h:
     jp p,l03c7h         ;0380 f2 c7 03
     ld c,07h            ;0383 0e 07
     call sub_016bh      ;0385 cd 6b 01
-    ld bc,l04e6h        ;0388 01 e6 04
+    ld bc,data_on_hd    ;0388 01 e6 04
     call sub_0184h      ;038b cd 84 01
     ld a,(l3000h)       ;038e 3a 00 30
     add a,41h           ;0391 c6 41
     ld c,a              ;0393 4f
     call sub_016bh      ;0394 cd 6b 01
-    ld bc,l04f9h        ;0397 01 f9 04
+    ld bc,will_be_eras  ;0397 01 f9 04
     call sub_01a9h      ;039a cd a9 01
-    ld bc,l050ah        ;039d 01 0a 05
+    ld bc,proceed_yn    ;039d 01 0a 05
     call sub_0184h      ;03a0 cd 84 01
     call sub_0216h      ;03a3 cd 16 02
     ld a,(l3003h)       ;03a6 3a 03 30
@@ -391,22 +391,22 @@ l0376h:
 l03b1h:
     call sub_0179h      ;03b1 cd 79 01
     call sub_0179h      ;03b4 cd 79 01
-    ld bc,l051bh        ;03b7 01 1b 05
+    ld bc,formatting_hd ;03b7 01 1b 05
     call sub_01a9h      ;03ba cd a9 01
     ld hl,l3000h        ;03bd 21 00 30
     ld c,(hl)           ;03c0 4e
     call sub_0821h      ;03c1 cd 21 08
     jp l0419h           ;03c4 c3 19 04
 l03c7h:
-    ld bc,l053ah        ;03c7 01 3a 05
+    ld bc,disk_on_drv   ;03c7 01 3a 05
     call sub_0184h      ;03ca cd 84 01
     ld a,(l3000h)       ;03cd 3a 00 30
     add a,41h           ;03d0 c6 41
     ld c,a              ;03d2 4f
     call sub_016bh      ;03d3 cd 6b 01
-    ld bc,l054ah        ;03d6 01 49 05
+    ld bc,be_formatted  ;03d6 01 49 05
     call sub_01a9h      ;03d9 cd a9 01
-    ld bc,l055eh        ;03dc 01 5e 05
+    ld bc,press_return  ;03dc 01 5e 05
     call sub_0184h      ;03df cd 84 01
     call sub_0216h      ;03e2 cd 16 02
     ld a,(l3003h)       ;03e5 3a 03 30
@@ -415,7 +415,7 @@ l03c7h:
     call sub_0167h      ;03ed cd 67 01
 l03f0h:
     call sub_0179h      ;03f0 cd 79 01
-    ld bc,l0587h        ;03f3 01 87 05
+    ld bc,formatting    ;03f3 01 87 05
     call sub_0184h      ;03f6 cd 84 01
     ld hl,l3000h        ;03f9 21 00 30
     ld c,(hl)           ;03fc 4e
@@ -424,70 +424,70 @@ l03f0h:
     call sub_011eh      ;0403 cd 1e 01
     or a                ;0406 b7
     jp nz,l0413h        ;0407 c2 13 04
-    ld bc,l0595h        ;040a 01 95 05
+    ld bc,complete      ;040a 01 95 05
     call sub_01a9h      ;040d cd a9 01
     jp l0419h           ;0410 c3 19 04
 l0413h:
-    ld bc,l05a5h        ;0413 01 a5 05
+    ld bc,bad_disk      ;0413 01 a5 05
     call sub_01a9h      ;0416 cd a9 01
 l0419h:
     jp l0321h           ;0419 c3 21 03
 
-l041ch:
+disk_error:
     db 0eh
     db "Disk error :  "
-l042bh:
+zero:
     db 01h
     db "0"
-l042dh:
+format_prog:
     db 17h
     db "Disk formatting program"
-l0445h:
+for_softbox:
     db 10h
     db "For Softbox CP/M"
-l0456h:
+dashes:
     db 10h
     db "=== ======= ===="
-l0467h:
+revision:
     db 18h
     db "Revision 2.2  9-Mar-1984"
-l0480h:
+on_which_drv:
     db 1ah
     db "Format disk on which drive (A to P, or RETURN to reboot) ? "
-l04bch:
+doesnt_exist:
     db 15h
     db "Drive doesn't exist !"
-l04d2h:
+not_in_sys:
     db 13h
     db "Drive not in system"
-l04e6h:
+data_on_hd:
     db 12h
     db "Data on hard disk "
-l04f9h:
+will_be_eras:
     db 10h
     db ": will be erased"
-l050ah:
+proceed_yn:
     db 10h
     db "Proceed (Y/N) ? "
-l051bh:
+formatting_hd:
     db 1eh
     db "Formatting hard disk directory"
-l053ah:
+disk_on_drv:
     db 0eh
     db "Disk on drive "
-l054ah:
+be_formatted:
     db 14h
     db ": is to be formatted"
-l055eh:
+press_return:
     db 28h
     db "Press RETURN to continue, ^C to abort : "
-l0587h:
+formatting:
     db 0dh
     db "Formatting..."
-l0595h:
+complete:
     db 0fh
     db "Format complete"
-l05a5h:
+bad_disk:
     db 22h
     db "Do not use diskette - try again..."
 
