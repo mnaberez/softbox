@@ -491,9 +491,7 @@ bad_disk:
     db 22h
     db "Do not use diskette - try again..."
 
-    db 01h
-    nop                 ;05c9 00
-    inc e               ;05ca 1c
+    ld bc,1c00h         ;05c8 01 00 1c
     ld hl,4000h         ;05cb 21 00 40
     ld de,0d400h        ;05ce 11 00 d4
     ldir                ;05d1 ed b0
