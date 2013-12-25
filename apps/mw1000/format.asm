@@ -497,7 +497,6 @@ l05a5h:
     ld hl,4000h         ;05cb 21 00 40
     ld de,0d400h        ;05ce 11 00 d4
     ldir                ;05d1 ed b0
-l05d3h:
     jp runcpm           ;05d3 c3 75 f0
     ld a,c              ;05d6 79
     ld (l08b3h),a       ;05d7 32 b3 08
@@ -522,7 +521,6 @@ l05f9h:
     dec bc              ;05fe 0b
     ld a,b              ;05ff 78
     or c                ;0600 b1
-l0601h:
     jr nz,l05f9h        ;0601 20 f6
     call untalk         ;0603 cd 3c f0
     pop de              ;0606 d1
@@ -533,16 +531,13 @@ l0601h:
     call sub_06bfh      ;060d cd bf 06
     ld a,(l08b3h)       ;0610 3a b3 08
     call dsksta         ;0613 cd 5a f0
-l0616h:
     ld (l08b4h),a       ;0616 32 b4 08
     ld hl,6000h         ;0619 21 00 60
     ld bc,l0800h        ;061c 01 00 08
     pop de              ;061f d1
     or a                ;0620 b7
     ret nz              ;0621 c0
-l0622h:
     push de             ;0622 d5
-l0623h:
     call talk           ;0623 cd 39 f0
 l0626h:
     call rdieee         ;0626 cd 3f f0
@@ -860,27 +855,20 @@ l08b4h:
     nop                 ;08ba 00
     nop                 ;08bb 00
     nop                 ;08bc 00
-l08bdh:
     nop                 ;08bd 00
     nop                 ;08be 00
-l08bfh:
     nop                 ;08bf 00
-l08c0h:
     nop                 ;08c0 00
     nop                 ;08c1 00
     nop                 ;08c2 00
-l08c3h:
     nop                 ;08c3 00
     nop                 ;08c4 00
     nop                 ;08c5 00
-l08c6h:
     nop                 ;08c6 00
     nop                 ;08c7 00
-l08c8h:
     nop                 ;08c8 00
     nop                 ;08c9 00
     nop                 ;08ca 00
-l08cbh:
     nop                 ;08cb 00
     nop                 ;08cc 00
     nop                 ;08cd 00
@@ -889,14 +877,11 @@ l08cbh:
     nop                 ;08d0 00
     nop                 ;08d1 00
     nop                 ;08d2 00
-l08d3h:
     nop                 ;08d3 00
     nop                 ;08d4 00
     nop                 ;08d5 00
-l08d6h:
     nop                 ;08d6 00
     nop                 ;08d7 00
-l08d8h:
     nop                 ;08d8 00
     nop                 ;08d9 00
     nop                 ;08da 00
@@ -914,7 +899,6 @@ l08d8h:
     nop                 ;08e6 00
     nop                 ;08e7 00
     nop                 ;08e8 00
-l08e9h:
     nop                 ;08e9 00
     nop                 ;08ea 00
     nop                 ;08eb 00
@@ -4528,7 +4512,6 @@ l0aa6h:
     nop                 ;172d 00
     nop                 ;172e 00
     nop                 ;172f 00
-l1730h:
     nop                 ;1730 00
     nop                 ;1731 00
     nop                 ;1732 00
@@ -10933,7 +10916,6 @@ l300ah:
     nop                 ;3027 00
     nop                 ;3028 00
     nop                 ;3029 00
-l302ah:
     nop                 ;302a 00
     nop                 ;302b 00
     nop                 ;302c 00
