@@ -34,10 +34,10 @@ creoi:         equ 0f048h ;Send carriage return to IEEE-488 dev with EOI
 ieeemsg:       equ 0f04bh ;Send string to the current IEEE-488 device
 ieeenum:       equ 0f04eh ;Send number as decimal string to IEEE-488 dev
 tstdrv:        equ 0f051h ;Get drive type for a CP/M drive number
-dskdev:        equ 0f054h ;BIOS Get device address for a CP/M drive number
+dskdev:        equ 0f054h ;Get device address for a CP/M drive number
 diskcmd:       equ 0f057h ;Open the command channel on IEEE-488 device
 dsksta:        equ 0f05ah ;Read the error channel of an IEEE-488 device
-open:          equ 0f05dh ;BIOS Open a file on an IEEE-488 device
+open:          equ 0f05dh ;Open a file on an IEEE-488 device
 close:         equ 0f060h ;Close an open file on an IEEE-488 device
 runcpm:        equ 0f075h ;Perform system init and then run CP/M
 idrive:        equ 0f078h ;Initialize an IEEE-488 disk drive
