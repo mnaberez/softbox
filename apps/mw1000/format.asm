@@ -59,8 +59,11 @@ sub_011eh:
     ld a,(l3002h)       ;011e 3a 02 30
     or a                ;0121 b7
     jp z,l0162h         ;0122 ca 62 01
-    ld bc,disk_error    ;0125 01 1c 04
-    call sub_0184h      ;0128 cd 84 01
+
+    ;PRINT "Disk error :  ";
+    ld bc,disk_error
+    call print_str
+
     ld hl,l30ach        ;012b 21 ac 30
     ld (hl),00h         ;012e 36 00
     jp l0157h           ;0130 c3 57 01
@@ -73,7 +76,7 @@ l0133h:
     ld h,a              ;013c 67
     add hl,bc           ;013d 09
     ld c,(hl)           ;013e 4e
-    call sub_016bh      ;013f cd 6b 01
+    call print_char     ;013f cd 6b 01
     ld a,(l30ach)       ;0142 3a ac 30
     ld l,a              ;0145 6f
     rla                 ;0146 17
@@ -90,8 +93,11 @@ l0157h:
     ld a,(l30ach)       ;0157 3a ac 30
     cp 40h              ;015a fe 40
     jp m,l0133h         ;015c fa 33 01
+
 l015fh:
-    call sub_0179h      ;015f cd 79 01
+    ;PRINT
+    call print_eol
+
 l0162h:
     ld a,(l3002h)       ;0162 3a 02 30
     ret                 ;0165 c9
@@ -103,52 +109,60 @@ end:
     jp warm
     ret
 
-sub_016bh:
-    ld hl,l30adh        ;016b 21 ad 30
-    ld (hl),c           ;016e 71
-    ld c,cwrite         ;016f 0e 02
-    ld a,(l30adh)       ;0171 3a ad 30
-    ld e,a              ;0174 5f
-    call bdos           ;0175 cd 05 00
-    ret                 ;0178 c9
-sub_0179h:
-    ld c,cr             ;0179 0e 0d
-    call sub_016bh      ;017b cd 6b 01
-    ld c,lf             ;017e 0e 0a
-    call sub_016bh      ;0180 cd 6b 01
-    ret                 ;0183 c9
-sub_0184h:
-    ld hl,l30afh        ;0184 21 af 30
-    ld (hl),b           ;0187 70
-    dec hl              ;0188 2b
-    ld (hl),c           ;0189 71
-    ld hl,(l30aeh)      ;018a 2a ae 30
-    ld a,(hl)           ;018d 7e
-    ld (l30b0h),a       ;018e 32 b0 30
+print_char:
+;Print character in C
+    ld hl,l30adh
+    ld (hl),c
+    ld c,cwrite
+    ld a,(l30adh)
+    ld e,a
+    call bdos
+    ret
+
+print_eol:
+;Print end of line (CR+LF)
+    ld c,cr
+    call print_char
+    ld c,lf
+    call print_char
+    ret
+
+print_str:
+;Print string at BC
+    ld hl,l30afh
+    ld (hl),b
+    dec hl
+    ld (hl),c
+    ld hl,(l30aeh)
+    ld a,(hl)
+    ld (l30b0h),a
 l0191h:
-    ld hl,(l30aeh)      ;0191 2a ae 30
-    inc hl              ;0194 23
-    ld (l30aeh),hl      ;0195 22 ae 30
-    ld hl,(l30aeh)      ;0198 2a ae 30
-    ld c,(hl)           ;019b 4e
-    call sub_016bh      ;019c cd 6b 01
-    ld hl,l30b0h        ;019f 21 b0 30
-    dec (hl)            ;01a2 35
-    ld a,(hl)           ;01a3 7e
-    or a                ;01a4 b7
-    jp nz,l0191h        ;01a5 c2 91 01
-    ret                 ;01a8 c9
-sub_01a9h:
-    ld hl,l30b2h        ;01a9 21 b2 30
-    ld (hl),b           ;01ac 70
-    dec hl              ;01ad 2b
-    ld (hl),c           ;01ae 71
-    ld hl,(l30b1h)      ;01af 2a b1 30
-    ld b,h              ;01b2 44
-    ld c,l              ;01b3 4d
-    call sub_0184h      ;01b4 cd 84 01
-    call sub_0179h      ;01b7 cd 79 01
-    ret                 ;01ba c9
+    ld hl,(l30aeh)
+    inc hl
+    ld (l30aeh),hl
+    ld hl,(l30aeh)
+    ld c,(hl)
+    call print_char
+    ld hl,l30b0h
+    dec (hl)
+    ld a,(hl)
+    or a
+    jp nz,l0191h
+    ret
+
+print_str_eol:
+;Print string at BC followed by CR+LF
+    ld hl,l30b2h
+    ld (hl),b
+    dec hl
+    ld (hl),c
+    ld hl,(l30b1h)
+    ld b,h
+    ld c,l
+    call print_str
+    call print_eol
+    ret
+
 sub_01bbh:
     call sub_0a46h      ;01bb cd 46 0a
     nop                 ;01be 00
@@ -177,7 +191,7 @@ sub_01bbh:
     ld a,l              ;01e9 7d
     add a,30h           ;01ea c6 30
     ld c,a              ;01ec 4f
-    call sub_016bh      ;01ed cd 6b 01
+    call print_char     ;01ed cd 6b 01
 l01f0h:
     call sub_0a89h      ;01f0 cd 89 0a
     ld (bc),a           ;01f3 02
@@ -191,8 +205,11 @@ l01f0h:
     ld a,l              ;01ff 7d
     or h                ;0200 b4
     jp nz,l020dh        ;0201 c2 0d 02
-    ld bc,zero          ;0204 01 2b 04
-    call sub_0184h      ;0207 cd 84 01
+
+    ;PRINT "0";
+    ld bc,zero
+    call print_str
+
     jp l0215h           ;020a c3 15 02
 l020dh:
     ld hl,(l30b5h)      ;020d 2a b5 30
@@ -334,29 +351,53 @@ l02ffh:
     ret                 ;02ff c9
 
 start:
-    call sub_0179h      ;0300 cd 79 01
-    call sub_0179h      ;0303 cd 79 01
-    ld bc,format_prog   ;0306 01 2d 04
-    call sub_01a9h      ;0309 cd a9 01
-    ld bc,for_softbox   ;030c 01 45 04
-    call sub_01a9h      ;030f cd a9 01
-    ld bc,dashes        ;0312 01 56 04
-    call sub_01a9h      ;0315 cd a9 01
-    call sub_0179h      ;0318 cd 79 01
-    ld bc,revision      ;031b 01 67 04
-    call sub_01a9h      ;031e cd a9 01
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Disk formatting program"
+    ld bc,format_prog
+    call print_str_eol
+
+    ;PRINT "For Softbox CP/M"
+    ld bc,for_softbox
+    call print_str_eol
+
+    ;PRINT "=== ======= ===="
+    ld bc,dashes
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Revision 2.2  9-Mar-1984"
+    ld bc,revision
+    call print_str_eol
+
 l0321h:
-    call sub_0179h      ;0321 cd 79 01
-    call sub_0179h      ;0324 cd 79 01
-    ld bc,on_which_drv  ;0327 01 80 04
-    call sub_01a9h      ;032a cd a9 01
-    ld bc,049bh         ;032d 01 9b 04
-    call sub_0184h      ;0330 cd 84 01
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Format disk on which drive"
+    ld bc,on_which_drv
+    call print_str_eol
+
+    ;PRINT "(A to P, or RETURN to reboot) ? ";
+    ld bc,a_to_p
+    call print_str
+
     call sub_0216h      ;0333 cd 16 02
-    call sub_0179h      ;0336 cd 79 01
+    call print_eol      ;0336 cd 79 01
     ld a,(l3003h)       ;0339 3a 03 30
     cp cr               ;033c fe 0d
     jp nz,l0344h        ;033e c2 44 03
+
+    ;END
     call end            ;Never returns
 
 l0344h:
@@ -368,8 +409,10 @@ l0344h:
     cp 10h              ;0350 fe 10
     jp m,l035eh         ;0352 fa 5e 03
 l0355h:
-    ld bc,doesnt_exist  ;0355 01 bc 04
-    call sub_01a9h      ;0358 cd a9 01
+    ;PRINT "Drive doesn't exist !"
+    ld bc,doesnt_exist
+    call print_str_eol
+
     jp l0321h           ;035b c3 21 03
 l035eh:
     ld hl,l3000h        ;035e 21 00 30
@@ -378,8 +421,11 @@ l035eh:
     ld (l3001h),a       ;0365 32 01 30
     and 80h             ;0368 e6 80
     jp z,l0376h         ;036a ca 76 03
-    ld bc,not_in_sys    ;036d 01 d2 04
-    call sub_01a9h      ;0370 cd a9 01
+
+    ;PRINT "Drive not in system"
+    ld bc,not_in_sys
+    call print_str_eol
+
     jp l0321h           ;0373 c3 21 03
 l0376h:
     ld a,(l3001h)       ;0376 3a 01 30
@@ -388,66 +434,98 @@ l0376h:
     cp 06h              ;037e fe 06
     jp p,l03c7h         ;0380 f2 c7 03
     ld c,bell           ;0383 0e 07
-    call sub_016bh      ;0385 cd 6b 01
+    call print_char     ;0385 cd 6b 01
     ld bc,data_on_hd    ;0388 01 e6 04
-    call sub_0184h      ;038b cd 84 01
+    call print_str      ;038b cd 84 01
     ld a,(l3000h)       ;038e 3a 00 30
     add a,41h           ;0391 c6 41
     ld c,a              ;0393 4f
-    call sub_016bh      ;0394 cd 6b 01
-    ld bc,will_be_eras  ;0397 01 f9 04
-    call sub_01a9h      ;039a cd a9 01
-    ld bc,proceed_yn    ;039d 01 0a 05
-    call sub_0184h      ;03a0 cd 84 01
+    call print_char     ;0394 cd 6b 01
+
+    ;PRINT ": will be erased"
+    ld bc,will_be_eras
+    call print_str_eol
+
+    ;PRINT "Proceed (Y/N) ? ";
+    ld bc,proceed_yn
+    call print_str
+
     call sub_0216h      ;03a3 cd 16 02
     ld a,(l3003h)       ;03a6 3a 03 30
-    cp 59h              ;03a9 fe 59
+    cp 'Y'              ;03a9 fe 59
     jp z,l03b1h         ;03ab ca b1 03
+
+    ;END
     call end            ;Never returns
 
 l03b1h:
-    call sub_0179h      ;03b1 cd 79 01
-    call sub_0179h      ;03b4 cd 79 01
-    ld bc,formatting_hd ;03b7 01 1b 05
-    call sub_01a9h      ;03ba cd a9 01
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Formatting..."
+    ld bc,formatting_hd
+    call print_str_eol
+
     ld hl,l3000h        ;03bd 21 00 30
     ld c,(hl)           ;03c0 4e
     call cform          ;03c1 cd 21 08
     jp l0419h           ;03c4 c3 19 04
 l03c7h:
-    ld bc,disk_on_drv   ;03c7 01 3a 05
-    call sub_0184h      ;03ca cd 84 01
+    ;PRINT "Disk on drive ";
+    ld bc,disk_on_drv
+    call print_str
+
     ld a,(l3000h)       ;03cd 3a 00 30
     add a,41h           ;03d0 c6 41
     ld c,a              ;03d2 4f
-    call sub_016bh      ;03d3 cd 6b 01
-    ld bc,be_formatted  ;03d6 01 49 05
-    call sub_01a9h      ;03d9 cd a9 01
-    ld bc,press_return  ;03dc 01 5e 05
-    call sub_0184h      ;03df cd 84 01
+    call print_char     ;03d3 cd 6b 01
+
+    ;PRINT ": is to be formatted"
+    ld bc,be_formatted
+    call print_str_eol
+
+    ;PRINT "Press RETURN to continue, ^C to abort : ";
+    ld bc,press_return
+    call print_str
+
     call sub_0216h      ;03e2 cd 16 02
     ld a,(l3003h)       ;03e5 3a 03 30
     cp cr               ;03e8 fe 0d
     jp z,l03f0h         ;03ea ca f0 03
+
+    ;END
     call end            ;Never returns
 
 l03f0h:
-    call sub_0179h      ;03f0 cd 79 01
-    ld bc,formatting    ;03f3 01 87 05
-    call sub_0184h      ;03f6 cd 84 01
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Formatting..."
+    ld bc,formatting
+    call print_str
+
     ld hl,l3000h        ;03f9 21 00 30
     ld c,(hl)           ;03fc 4e
     call format         ;03fd cd 5d 07
-    call sub_0179h      ;0400 cd 79 01
+    call print_eol      ;0400 cd 79 01
     call sub_011eh      ;0403 cd 1e 01
     or a                ;0406 b7
     jp nz,l0413h        ;0407 c2 13 04
-    ld bc,complete      ;040a 01 95 05
-    call sub_01a9h      ;040d cd a9 01
+
+    ;PRINT "Format complete"
+    ld bc,complete
+    call print_str_eol
+
     jp l0419h           ;0410 c3 19 04
+
 l0413h:
-    ld bc,bad_disk      ;0413 01 a5 05
-    call sub_01a9h      ;0416 cd a9 01
+    ;PRINT "Do not use diskette - try again..."
+    ld bc,bad_disk
+    call print_str_eol
+
 l0419h:
     jp l0321h           ;0419 c3 21 03
 
@@ -471,7 +549,10 @@ revision:
     db "Revision 2.2  9-Mar-1984"
 on_which_drv:
     db 1ah
-    db "Format disk on which drive (A to P, or RETURN to reboot) ? "
+    db "Format disk on which drive"
+a_to_p:
+    db 20h
+    db "(A to P, or RETURN to reboot) ? "
 doesnt_exist:
     db 15h
     db "Drive doesn't exist !"
