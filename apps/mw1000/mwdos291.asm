@@ -136,7 +136,7 @@ l01abh:
     ld bc,l010eh        ;01c7 01 0e 01
     ld de,l0110h        ;01ca 11 10 01
     ld hl,l0112h        ;01cd 21 12 01
-    call sub_0527h      ;01d0 cd 27 05
+    call mw_write       ;01d0 cd 27 05
     call sub_01f0h      ;01d3 cd f0 01
     ld hl,(l010ch)      ;01d6 2a 0c 01
     inc hl              ;01d9 23
@@ -245,7 +245,7 @@ sub_02a6h:
     ld (l0116h),hl      ;02a9 22 16 01
     ld hl,(l0116h)      ;02ac 2a 16 01
     ld (hl),50h         ;02af 36 50
-    call sub_04e2h      ;02b1 cd e2 04
+    call buffin         ;02b1 cd e2 04
     call pr0a           ;02b4 cd 8b 06
     ld hl,l04dch        ;02b7 21 dc 04
     call pv2d           ;02ba cd 22 06
@@ -484,21 +484,29 @@ l04dch:
     nop                 ;04df 00
     nop                 ;04e0 00
     nop                 ;04e1 00
-sub_04e2h:
+
+; Start of Unknown Library ==================================================
+
+buffin:
+;Buffered Console Input.  Caller must store buffer size at 80h.  On
+;return, 81h will contain the number of data bytes and the data
+;will start at 82h.
     ld c,0ah            ;04e2 0e 0a
     ld de,0080h         ;04e4 11 80 00
     jp 0005h            ;04e7 c3 05 00
-    ld (l05d5h+1),hl    ;04ea 22 d6 05
+
+mw_read:
+    ld (var_4),hl       ;04ea 22 d6 05
     xor a               ;04ed af
     ld (hl),a           ;04ee 77
     inc hl              ;04ef 23
     ld (hl),a           ;04f0 77
-    ld (l05d5h),a       ;04f1 32 d5 05
+    ld (var_3),a        ;04f1 32 d5 05
     ld a,(de)           ;04f4 1a
-    ld (l05d3h),a       ;04f5 32 d3 05
+    ld (var_1),a        ;04f5 32 d3 05
     inc de              ;04f8 13
     ld a,(de)           ;04f9 1a
-    ld (l05d4h),a       ;04fa 32 d4 05
+    ld (var_2),a        ;04fa 32 d4 05
     ld a,(bc)           ;04fd 0a
     ld l,a              ;04fe 6f
     inc bc              ;04ff 03
@@ -506,14 +514,14 @@ sub_04e2h:
     ld h,a              ;0501 67
     push hl             ;0502 e5
     ld a,21h            ;0503 3e 21
-    call sub_0564h      ;0505 cd 64 05
+    call mw_sub_0564h   ;0505 cd 64 05
 sub_0508h:
-    call sub_059dh      ;0508 cd 9d 05
-    call sub_0581h      ;050b cd 81 05
+    call mw_sub_059dh   ;0508 cd 9d 05
+    call mw_sub_0581h   ;050b cd 81 05
     pop hl              ;050e e1
     jr nz,l055fh        ;050f 20 4e
     ld a,41h            ;0511 3e 41
-    call sub_0564h      ;0513 cd 64 05
+    call mw_sub_0564h   ;0513 cd 64 05
     ld b,00h            ;0516 06 00
 l0518h:
     in a,(18h)          ;0518 db 18
@@ -522,30 +530,31 @@ l0518h:
     ex (sp),hl          ;051c e3
     ex (sp),hl          ;051d e3
     djnz l0518h         ;051e 10 f8
-    call sub_0581h      ;0520 cd 81 05
+    call mw_sub_0581h   ;0520 cd 81 05
     ret z               ;0523 c8
     jp l055fh           ;0524 c3 5f 05
-sub_0527h:
-    ld (l05d5h+1),hl    ;0527 22 d6 05
+
+mw_write:
+    ld (var_4),hl       ;0527 22 d6 05
 l052ah:
     xor a               ;052a af
 l052bh:
     ld (hl),a           ;052b 77
     inc hl              ;052c 23
     ld (hl),a           ;052d 77
-    ld (l05d5h),a       ;052e 32 d5 05
+    ld (var_3),a        ;052e 32 d5 05
     ld a,(de)           ;0531 1a
-    ld (l05d3h),a       ;0532 32 d3 05
+    ld (var_1),a        ;0532 32 d3 05
     inc de              ;0535 13
     ld a,(de)           ;0536 1a
-    ld (l05d4h),a       ;0537 32 d4 05
+    ld (var_2),a        ;0537 32 d4 05
     ld a,(bc)           ;053a 0a
     ld l,a              ;053b 6f
     inc bc              ;053c 03
     ld a,(bc)           ;053d 0a
     ld h,a              ;053e 67
     ld a,42h            ;053f 3e 42
-    call sub_0564h      ;0541 cd 64 05
+    call mw_sub_0564h   ;0541 cd 64 05
     ld b,00h            ;0544 06 00
 l0546h:
     ld a,(hl)           ;0546 7e
@@ -554,19 +563,20 @@ l0546h:
     ex (sp),hl          ;054a e3
     ex (sp),hl          ;054b e3
     djnz l0546h         ;054c 10 f8
-    call sub_0581h      ;054e cd 81 05
+    call mw_sub_0581h   ;054e cd 81 05
     jr nz,l055fh        ;0551 20 0c
     ld a,22h            ;0553 3e 22
-    call sub_0564h      ;0555 cd 64 05
-    call sub_059dh      ;0558 cd 9d 05
-    call sub_0581h      ;055b cd 81 05
+    call mw_sub_0564h   ;0555 cd 64 05
+    call mw_sub_059dh   ;0558 cd 9d 05
+    call mw_sub_0581h   ;055b cd 81 05
     ret z               ;055e c8
 l055fh:
-    ld hl,(l05d5h+1)    ;055f 2a d6 05
+    ld hl,(var_4)       ;055f 2a d6 05
 l0562h:
     ld (hl),a           ;0562 77
     ret                 ;0563 c9
-sub_0564h:
+
+mw_sub_0564h:
     ld b,a              ;0564 47
     xor a               ;0565 af
     out (18h),a         ;0566 d3 18
@@ -588,7 +598,8 @@ l057dh:
     nop                 ;057d 00
     djnz l057dh         ;057e 10 fd
     ret                 ;0580 c9
-sub_0581h:
+
+mw_sub_0581h:
     ld a,0ffh           ;0581 3e ff
     out (18h),a         ;0583 d3 18
 l0585h:
@@ -610,11 +621,12 @@ l0599h:
     out (18h),a         ;0599 d3 18
     pop af              ;059b f1
     ret                 ;059c c9
-sub_059dh:
+
+mw_sub_059dh:
     xor a               ;059d af
     out (18h),a         ;059e d3 18
-    ld hl,(l05d3h)      ;05a0 2a d3 05
-    ld a,(l05d5h)       ;05a3 3a d5 05
+    ld hl,(var_1)       ;05a0 2a d3 05
+    ld a,(var_3)        ;05a3 3a d5 05
     ld b,05h            ;05a6 06 05
 l05a8h:
     rra                 ;05a8 1f
@@ -636,7 +648,7 @@ l05b6h:
     out (18h),a         ;05bf d3 18
     ld a,h              ;05c1 7c
     out (18h),a         ;05c2 d3 18
-    ld a,(l05d3h)       ;05c4 3a d3 05
+    ld a,(var_1)        ;05c4 3a d3 05
     and 1fh             ;05c7 e6 1f
     out (18h),a         ;05c9 d3 18
     xor a               ;05cb af
@@ -644,13 +656,17 @@ l05b6h:
     out (18h),a         ;05ce d3 18
     out (18h),a         ;05d0 d3 18
     ret                 ;05d2 c9
-l05d3h:
-    inc d               ;05d3 14
-l05d4h:
-    nop                 ;05d4 00
-l05d5h:
-    djnz l05d4h         ;05d5 10 fd
-    ret                 ;05d7 c9
+
+var_1:
+    db 14h
+var_2:
+    db 00h
+var_3:
+    db 10h
+var_4:
+    db 0fdh
+
+    db 0c9h
 
 ; Start of KLIB.REL =========================================================
 
