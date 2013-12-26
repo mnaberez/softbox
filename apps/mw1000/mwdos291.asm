@@ -74,48 +74,72 @@ start:
     jr z,$+3            ;013a 28 01
 
 main:
-    call n5_0           ;013c cd 76 06
-sub_013fh:
-    call pr0a           ;013f cd 8b 06
-    ld hl,001ah         ;0142 21 1a 00
-    call chr            ;0145 cd 15 06
-    call pv2d           ;0148 cd 22 06
-    call pr0a           ;014b cd 8b 06
-    ld hl,dos_firm_upd  ;014e 21 bc 04
-    call pv2d           ;0151 cd 22 06
-    call pr0a           ;0154 cd 8b 06
-    ld hl,for_mw        ;0157 21 a6 04
-sub_015ah:
-    call pv2d           ;015a cd 22 06
-    call pr0a           ;015d cd 8b 06
-    ld hl,0490h         ;0160 21 90 04
-    call pv2d           ;0163 cd 22 06
-    call pr0a           ;0166 cd 8b 06
-    ld hl,l04dch        ;0169 21 dc 04
-    call pv2d           ;016c cd 22 06
-    call pr0a           ;016f cd 8b 06
-    ld hl,l04dch        ;0172 21 dc 04
-    call pv2d           ;0175 cd 22 06
-    call pr0a           ;0178 cd 8b 06
-    ld hl,continue_yn   ;017b 21 7c 04
-    call pv1d           ;017e cd 2d 06
-    call sub_02a6h      ;0181 cd a6 02
-    ld hl,(l010ah)      ;0184 2a 0a 01
-    ld de,0-'Y'         ;0187 11 a7 ff
-    add hl,de           ;018a 19
-    ld a,h              ;018b 7c
-    or l                ;018c b5
-    jp z,l0193h         ;018d ca 93 01
-    call end            ;0190 cd 72 06
+    call n5_0
+
+    ;PRINT CHR$(26) ' Clear screen
+    call pr0a
+    ld hl,001ah
+    call chr
+    call pv2d
+
+    ;PRINT "DOS firmware updating program"
+    call pr0a
+    ld hl,dos_firm_upd
+    call pv2d
+
+    ;PRINT "for Mini-Winchester"
+    call pr0a
+    ld hl,for_mw
+    call pv2d
+
+    ;PRINT "--- ---------------"
+    call pr0a
+    ld hl,dashes
+    call pv2d
+
+    ;PRINT
+    call pr0a
+    ld hl,empty_string
+    call pv2d
+
+    ;PRINT
+    call pr0a
+    ld hl,empty_string
+    call pv2d
+
+    ;PRINT "Continue (Y/N) ? ";
+    call pr0a
+    ld hl,continue_yn
+    call pv1d
+
+    ;GOSUB readline
+    call readline
+
+    ;IF R = &H59 THEN GOTO l0193h
+    ld hl,(l010ah)
+    ld de,0-'Y'
+    add hl,de
+    ld a,h
+    or l
+    jp z,l0193h
+
+    ;END
+    call end
+
 l0193h:
-    call pr0a           ;0193 cd 8b 06
-    ld hl,l04dch        ;0196 21 dc 04
-    call pv2d           ;0199 cd 22 06
-    call pr0a           ;019c cd 8b 06
-    ld hl,writing_code  ;019f 21 5e 04
-    call pv2d           ;01a2 cd 22 06
+    ;PRINT
+    call pr0a
+    ld hl,empty_string
+    call pv2d
+
+    ;PRINT "writing controller code ..."
+    call pr0a
+    ld hl,writing_code
+    call pv2d
+
     ld hl,0001h         ;01a5 21 01 00
     jp l01dah           ;01a8 c3 da 01
+
 l01abh:
     ld hl,(l010ch)      ;01ab 2a 0c 01
     add hl,hl           ;01ae 29
@@ -152,6 +176,7 @@ l01dah:
 l01eah:
     jp c,l01abh         ;01ea da ab 01
     call end            ;01ed cd 72 06
+
 sub_01f0h:
     ld hl,(l0112h)      ;01f0 2a 12 01
     ld a,l              ;01f3 7d
@@ -165,10 +190,13 @@ sub_01f0h:
     jp nz,l0201h        ;01fd c2 01 02
 l0200h:
     ret                 ;0200 c9
+
 l0201h:
-    call pr0a           ;0201 cd 8b 06
-    ld hl,drive_err_num ;0204 21 4e 04
-    call pv1d           ;0207 cd 2d 06
+    ;PRINT "DRIVE ERROR #"
+    call pr0a
+    ld hl,drive_err_num
+    call pv1d
+
     ld hl,(l0114h)      ;020a 2a 14 01
 l020dh:
     ld de,0ffc0h        ;020d 11 c0 ff
@@ -176,10 +204,15 @@ l020dh:
     ld a,h              ;0211 7c
     or l                ;0212 b5
     jp nz,l0222h        ;0213 c2 22 02
-    call pr0a           ;0216 cd 8b 06
-    ld hl,head_writ_err ;0219 21 34 04
-    call pv2d           ;021c cd 22 06
-    call end            ;021f cd 72 06
+
+    ;PRINT "40 - header write error"
+    call pr0a
+    ld hl,head_writ_err
+    call pv2d
+
+    ;END
+    call end
+
 l0222h:
     ld hl,(l0114h)      ;0222 2a 14 01
     ld de,0ffbeh        ;0225 11 be ff
@@ -187,10 +220,15 @@ l0222h:
     ld a,h              ;0229 7c
     or l                ;022a b5
     jp nz,l023ah        ;022b c2 3a 02
-    call pr0a           ;022e cd 8b 06
-    ld hl,head_read_err ;0231 21 1b 04
-    call pv2d           ;0234 cd 22 06
-    call end            ;0237 cd 72 06
+
+    ;PRINT "42 - header read error"
+    call pr0a
+    ld hl,head_read_err
+    call pv2d
+
+    ;END
+    call end
+
 l023ah:
     ld hl,(l0114h)      ;023a 2a 14 01
     ld de,0ffbch        ;023d 11 bc ff
@@ -198,10 +236,15 @@ l023ah:
     ld a,h              ;0241 7c
     or l                ;0242 b5
     jp nz,l0252h        ;0243 c2 52 02
-    call pr0a           ;0246 cd 8b 06
-    ld hl,data_read_err ;0249 21 04 04
-    call pv2d           ;024c cd 22 06
-    call end            ;024f cd 72 06
+
+    ;PRINT "44 - data read error"
+    call pr0a
+    ld hl,data_read_err
+    call pv2d
+
+    ;END
+    call end
+
 l0252h:
     ld hl,(l0114h)      ;0252 2a 14 01
     ld de,0ffbah        ;0255 11 ba ff
@@ -209,10 +252,15 @@ l0252h:
     ld a,h              ;0259 7c
     or l                ;025a b5
     jp nz,l026ah        ;025b c2 6a 02
-    call pr0a           ;025e cd 8b 06
-    ld hl,write_fault   ;0261 21 f1 03
-    call pv2d           ;0264 cd 22 06
-    call end            ;0267 cd 72 06
+
+    ;PRINT "46 - write fault"
+    call pr0a
+    ld hl,write_fault
+    call pv2d
+
+    ;END
+    call end
+
 l026ah:
     ld hl,(l0114h)      ;026a 2a 14 01
     ld de,0ffb9h        ;026d 11 b9 ff
@@ -220,10 +268,15 @@ l026ah:
     ld a,h              ;0271 7c
     or l                ;0272 b5
     jp nz,l0282h        ;0273 c2 82 02
-    call pr0a           ;0276 cd 8b 06
-    ld hl,not_ready     ;0279 21 db 03
-    call pv2d           ;027c cd 22 06
-    call end            ;027f cd 72 06
+
+    ;PRINT "47 - disk not ready"
+    call pr0a
+    ld hl,not_ready
+    call pv2d
+
+    ;END
+    call end
+
 l0282h:
     ld hl,(l0114h)      ;0282 2a 14 01
     ld de,0ffb7h        ;0285 11 b7 ff
@@ -231,24 +284,36 @@ l0282h:
     ld a,h              ;0289 7c
     or l                ;028a b5
     jp nz,l029ah        ;028b c2 9a 02
-    call pr0a           ;028e cd 8b 06
-    ld hl,illegal_cmd   ;0291 21 c4 03
-    call pv2d           ;0294 cd 22 06
-    call end            ;0297 cd 72 06
+
+    ;PRINT "49 - illegal command"
+    call pr0a
+    ld hl,illegal_cmd
+    call pv2d
+
+    ;END
+    call end
+
 l029ah:
-    call pr0a           ;029a cd 8b 06
-    ld hl,unknown_err   ;029d 21 aa 03
-    call pv2d           ;02a0 cd 22 06
-    call end            ;02a3 cd 72 06
-sub_02a6h:
+    ;PRINT "xx - unknown error code"
+    call pr0a
+    ld hl,unknown_err
+    call pv2d
+
+    ;END
+    call end
+
+readline:
     ld hl,0080h         ;02a6 21 80 00
     ld (l0116h),hl      ;02a9 22 16 01
     ld hl,(l0116h)      ;02ac 2a 16 01
     ld (hl),50h         ;02af 36 50
     call buffin         ;02b1 cd e2 04
-    call pr0a           ;02b4 cd 8b 06
-    ld hl,l04dch        ;02b7 21 dc 04
-    call pv2d           ;02ba cd 22 06
+
+    ;PRINT
+    call pr0a
+    ld hl,empty_string
+    call pv2d
+
     ld hl,(l0116h)      ;02bd 2a 16 01
     inc hl              ;02c0 23
     ld l,(hl)           ;02c1 6e
@@ -389,7 +454,7 @@ l0376h:
     or l                ;037b b5
     jp z,l03a6h         ;037c ca a6 03
     ld hl,(l0118h)      ;037f 2a 18 01
-    call imug      ;0382 cd 4d 06
+    call imug           ;0382 cd 4d 06
     ld a,(bc)           ;0385 0a
     nop                 ;0386 00
     push hl             ;0387 e5
@@ -410,7 +475,7 @@ l0376h:
     jp l031fh           ;03a3 c3 1f 03
 l03a6h:
     ret                 ;03a6 c9
-    call end      ;03a7 cd 72 06
+    call end            ;03a7 cd 72 06
 
 unknown_err:
     db 17h
@@ -477,13 +542,10 @@ dos_firm_upd:
     dw dos_firm_upd+3
     db "DOS firmware updating program"
 
-l04dch:
-    nop                 ;04dc 00
-    rst 18h             ;04dd df
-    inc b               ;04de 04
-    nop                 ;04df 00
-    nop                 ;04e0 00
-    nop                 ;04e1 00
+empty_string:
+    db 0
+    dw empty_string+3
+    db 0, 0, 0
 
 ; Start of Unknown Library ==================================================
 
@@ -981,7 +1043,7 @@ l070bh:
     call sub_0338h      ;072b cd 38 03
     ld (0011h),hl       ;072e 22 11 00
     call 0689h      ;0731 cd 89 06
-    call sub_015ah      ;0734 cd 5a 01
+    call 015ah      ;0734 cd 5a 01
 l0737h:
     ld hl,(0011h)       ;0737 2a 11 00
     ld (000ch),hl       ;073a 22 0c 00
@@ -1424,7 +1486,7 @@ l0980h:
     ret                 ;0994 c9
     ld a,01h            ;0995 3e 01
     ld (l174dh+1),a     ;0997 32 4e 17
-    ld hl,0680h        ;099a 21 80 06
+    ld hl,0680h         ;099a 21 80 06
     ld (0006h),hl       ;099d 22 06 00
     ld (17b1h),hl       ;09a0 22 b1 17
     ret                 ;09a3 c9
