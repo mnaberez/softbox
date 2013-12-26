@@ -29,7 +29,8 @@ idrive:        equ 0f078h ;Initialize an IEEE-488 disk drive
 
     org 0100h
 
-    jp l0300h           ;0100 c3 00 03
+    jp start
+
 sub_0103h:
     ld hl,l30aah        ;0103 21 aa 30
     ld (hl),c           ;0106 71
@@ -86,9 +87,13 @@ l0162h:
     ld a,(l3002h)       ;0162 3a 02 30
     ret                 ;0165 c9
     ret                 ;0166 c9
-sub_0167h:
-    jp warm             ;0167 c3 00 00
-    ret                 ;016a c9
+
+end:
+;Jump to CP/M warm start
+;Implements END command
+    jp warm
+    ret
+
 sub_016bh:
     ld hl,l30adh        ;016b 21 ad 30
     ld (hl),c           ;016e 71
@@ -318,7 +323,8 @@ l02efh:
     ld (l3003h),a       ;02fc 32 03 30
 l02ffh:
     ret                 ;02ff c9
-l0300h:
+
+start:
     call sub_0179h      ;0300 cd 79 01
     call sub_0179h      ;0303 cd 79 01
     ld bc,format_prog   ;0306 01 2d 04
@@ -342,7 +348,8 @@ l0321h:
     ld a,(l3003h)       ;0339 3a 03 30
     cp 0dh              ;033c fe 0d
     jp nz,l0344h        ;033e c2 44 03
-    call sub_0167h      ;0341 cd 67 01
+    call end            ;Never returns
+
 l0344h:
     ld a,(l3003h)       ;0344 3a 03 30
     add a,0bfh          ;0347 c6 bf
@@ -387,7 +394,8 @@ l0376h:
     ld a,(l3003h)       ;03a6 3a 03 30
     cp 59h              ;03a9 fe 59
     jp z,l03b1h         ;03ab ca b1 03
-    call sub_0167h      ;03ae cd 67 01
+    call end            ;Never returns
+
 l03b1h:
     call sub_0179h      ;03b1 cd 79 01
     call sub_0179h      ;03b4 cd 79 01
@@ -412,7 +420,8 @@ l03c7h:
     ld a,(l3003h)       ;03e5 3a 03 30
     cp 0dh              ;03e8 fe 0d
     jp z,l03f0h         ;03ea ca f0 03
-    call sub_0167h      ;03ed cd 67 01
+    call end            ;Never returns
+
 l03f0h:
     call sub_0179h      ;03f0 cd 79 01
     ld bc,formatting    ;03f3 01 87 05
