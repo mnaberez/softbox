@@ -218,7 +218,8 @@ l020dh:
     call sub_01bbh      ;0212 cd bb 01
 l0215h:
     ret                 ;0215 c9
-sub_0216h:
+
+readline:
     ld hl,l3008h        ;0216 21 08 30
     ld (hl),50h         ;0219 36 50
     ld de,l3008h        ;021b 11 08 30
@@ -391,8 +392,12 @@ l0321h:
     ld bc,a_to_p
     call print_str
 
-    call sub_0216h      ;0333 cd 16 02
-    call print_eol      ;0336 cd 79 01
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l3003h)       ;0339 3a 03 30
     cp cr               ;033c fe 0d
     jp nz,l0344h        ;033e c2 44 03
@@ -450,7 +455,9 @@ l0376h:
     ld bc,proceed_yn
     call print_str
 
-    call sub_0216h      ;03a3 cd 16 02
+    ;GOSUB readline
+    call readline
+
     ld a,(l3003h)       ;03a6 3a 03 30
     cp 'Y'              ;03a9 fe 59
     jp z,l03b1h         ;03ab ca b1 03
@@ -491,7 +498,9 @@ l03c7h:
     ld bc,press_return
     call print_str
 
-    call sub_0216h      ;03e2 cd 16 02
+    ;GOSUB readline
+    call readline
+
     ld a,(l3003h)       ;03e5 3a 03 30
     cp cr               ;03e8 fe 0d
     jp z,l03f0h         ;03ea ca f0 03
