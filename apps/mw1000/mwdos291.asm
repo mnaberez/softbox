@@ -79,10 +79,10 @@ sub_013fh:
     call sub_0615h      ;0145 cd 15 06
     call sub_0622h      ;0148 cd 22 06
     call sub_068bh      ;014b cd 8b 06
-    ld hl,l04bch        ;014e 21 bc 04
+    ld hl,dos_firm_upd  ;014e 21 bc 04
     call sub_0622h      ;0151 cd 22 06
     call sub_068bh      ;0154 cd 8b 06
-    ld hl,l04a6h        ;0157 21 a6 04
+    ld hl,for_mw        ;0157 21 a6 04
 sub_015ah:
     call sub_0622h      ;015a cd 22 06
     call sub_068bh      ;015d cd 8b 06
@@ -95,7 +95,7 @@ sub_015ah:
     ld hl,l04dch        ;0172 21 dc 04
     call sub_0622h      ;0175 cd 22 06
     call sub_068bh      ;0178 cd 8b 06
-    ld hl,l047ch        ;017b 21 7c 04
+    ld hl,continue_yn   ;017b 21 7c 04
     call sub_062dh      ;017e cd 2d 06
     call sub_02a6h      ;0181 cd a6 02
     ld hl,(l010ah)      ;0184 2a 0a 01
@@ -110,7 +110,7 @@ l0193h:
     ld hl,l04dch        ;0196 21 dc 04
     call sub_0622h      ;0199 cd 22 06
     call sub_068bh      ;019c cd 8b 06
-    ld hl,l045eh        ;019f 21 5e 04
+    ld hl,writing_code  ;019f 21 5e 04
     call sub_0622h      ;01a2 cd 22 06
     ld hl,0001h         ;01a5 21 01 00
     jp l01dah           ;01a8 c3 da 01
@@ -165,7 +165,7 @@ l0200h:
     ret                 ;0200 c9
 l0201h:
     call sub_068bh      ;0201 cd 8b 06
-    ld hl,l044eh        ;0204 21 4e 04
+    ld hl,drive_err_num ;0204 21 4e 04
     call sub_062dh      ;0207 cd 2d 06
     ld hl,(l0114h)      ;020a 2a 14 01
 l020dh:
@@ -175,7 +175,7 @@ l020dh:
     or l                ;0212 b5
     jp nz,l0222h        ;0213 c2 22 02
     call sub_068bh      ;0216 cd 8b 06
-    ld hl,l0434h        ;0219 21 34 04
+    ld hl,head_writ_err ;0219 21 34 04
     call sub_0622h      ;021c cd 22 06
     call sub_0672h      ;021f cd 72 06
 l0222h:
@@ -186,7 +186,7 @@ l0222h:
     or l                ;022a b5
     jp nz,l023ah        ;022b c2 3a 02
     call sub_068bh      ;022e cd 8b 06
-    ld hl,l041bh        ;0231 21 1b 04
+    ld hl,head_read_err ;0231 21 1b 04
     call sub_0622h      ;0234 cd 22 06
     call sub_0672h      ;0237 cd 72 06
 l023ah:
@@ -197,7 +197,7 @@ l023ah:
     or l                ;0242 b5
     jp nz,l0252h        ;0243 c2 52 02
     call sub_068bh      ;0246 cd 8b 06
-    ld hl,l0404h        ;0249 21 04 04
+    ld hl,data_read_err ;0249 21 04 04
     call sub_0622h      ;024c cd 22 06
     call sub_0672h      ;024f cd 72 06
 l0252h:
@@ -208,7 +208,7 @@ l0252h:
     or l                ;025a b5
     jp nz,l026ah        ;025b c2 6a 02
     call sub_068bh      ;025e cd 8b 06
-    ld hl,l03f1h        ;0261 21 f1 03
+    ld hl,write_fault   ;0261 21 f1 03
     call sub_0622h      ;0264 cd 22 06
     call sub_0672h      ;0267 cd 72 06
 l026ah:
@@ -219,7 +219,7 @@ l026ah:
     or l                ;0272 b5
     jp nz,l0282h        ;0273 c2 82 02
     call sub_068bh      ;0276 cd 8b 06
-    ld hl,l03dbh        ;0279 21 db 03
+    ld hl,not_ready     ;0279 21 db 03
     call sub_0622h      ;027c cd 22 06
     call sub_0672h      ;027f cd 72 06
 l0282h:
@@ -230,12 +230,12 @@ l0282h:
     or l                ;028a b5
     jp nz,l029ah        ;028b c2 9a 02
     call sub_068bh      ;028e cd 8b 06
-    ld hl,l03c4h        ;0291 21 c4 03
+    ld hl,illegal_cmd   ;0291 21 c4 03
     call sub_0622h      ;0294 cd 22 06
     call sub_0672h      ;0297 cd 72 06
 l029ah:
     call sub_068bh      ;029a cd 8b 06
-    ld hl,l03aah        ;029d 21 aa 03
+    ld hl,unknown_err   ;029d 21 aa 03
     call sub_0622h      ;02a0 cd 22 06
     call sub_0672h      ;02a3 cd 72 06
 sub_02a6h:
@@ -409,313 +409,72 @@ l0376h:
 l03a6h:
     ret                 ;03a6 c9
     call sub_0672h      ;03a7 cd 72 06
-l03aah:
-    rla                 ;03aa 17
-    xor l               ;03ab ad
-    inc bc              ;03ac 03
-    ld a,b              ;03ad 78
-    ld a,b              ;03ae 78
-    jr nz,l03deh        ;03af 20 2d
-    jr nz,l0428h        ;03b1 20 75
-    ld l,(hl)           ;03b3 6e
-    ld l,e              ;03b4 6b
-    ld l,(hl)           ;03b5 6e
-    ld l,a              ;03b6 6f
-    ld (hl),a           ;03b7 77
-    ld l,(hl)           ;03b8 6e
-    jr nz,$+103         ;03b9 20 65
-    ld (hl),d           ;03bb 72
-    ld (hl),d           ;03bc 72
-    ld l,a              ;03bd 6f
-    ld (hl),d           ;03be 72
-    jr nz,l0424h        ;03bf 20 63
-    ld l,a              ;03c1 6f
-    ld h,h              ;03c2 64
-    ld h,l              ;03c3 65
-l03c4h:
-    inc d               ;03c4 14
-    rst 0               ;03c5 c7
-    inc bc              ;03c6 03
-    inc (hl)            ;03c7 34
-    add hl,sp           ;03c8 39
-    jr nz,l03f8h        ;03c9 20 2d
-    jr nz,l0436h        ;03cb 20 69
-    ld l,h              ;03cd 6c
-    ld l,h              ;03ce 6c
-    ld h,l              ;03cf 65
-    ld h,a              ;03d0 67
-    ld h,c              ;03d1 61
-    ld l,h              ;03d2 6c
-    jr nz,l0438h        ;03d3 20 63
-    ld l,a              ;03d5 6f
-    ld l,l              ;03d6 6d
-    ld l,l              ;03d7 6d
-    ld h,c              ;03d8 61
-    ld l,(hl)           ;03d9 6e
-    ld h,h              ;03da 64
-l03dbh:
-    inc de              ;03db 13
-    sbc a,03h           ;03dc de 03
-l03deh:
-    inc (hl)            ;03de 34
-    scf                 ;03df 37
-    jr nz,l040fh        ;03e0 20 2d
-    jr nz,l0448h        ;03e2 20 64
-    ld l,c              ;03e4 69
-    ld (hl),e           ;03e5 73
-    ld l,e              ;03e6 6b
-l03e7h:
-    jr nz,$+112         ;03e7 20 6e
-    ld l,a              ;03e9 6f
-    ld (hl),h           ;03ea 74
-    jr nz,l045fh        ;03eb 20 72
-    ld h,l              ;03ed 65
-    ld h,c              ;03ee 61
-    ld h,h              ;03ef 64
-    ld a,c              ;03f0 79
-l03f1h:
-    djnz l03e7h         ;03f1 10 f4
-    inc bc              ;03f3 03
-    inc (hl)            ;03f4 34
-    ld (hl),20h         ;03f5 36 20
-    dec l               ;03f7 2d
-l03f8h:
-    jr nz,l0471h        ;03f8 20 77
-    ld (hl),d           ;03fa 72
-    ld l,c              ;03fb 69
-    ld (hl),h           ;03fc 74
-    ld h,l              ;03fd 65
-    jr nz,l0466h        ;03fe 20 66
-    ld h,c              ;0400 61
-l0401h:
-    ld (hl),l           ;0401 75
-    ld l,h              ;0402 6c
-    ld (hl),h           ;0403 74
-l0404h:
-    inc d               ;0404 14
-    rlca                ;0405 07
-    inc b               ;0406 04
-    inc (hl)            ;0407 34
-    inc (hl)            ;0408 34
-    jr nz,l0438h        ;0409 20 2d
-    jr nz,l0471h        ;040b 20 64
-    ld h,c              ;040d 61
-    ld (hl),h           ;040e 74
-l040fh:
-    ld h,c              ;040f 61
-    jr nz,l0484h        ;0410 20 72
-    ld h,l              ;0412 65
-    ld h,c              ;0413 61
-    ld h,h              ;0414 64
-l0415h:
-    jr nz,l047ch        ;0415 20 65
-    ld (hl),d           ;0417 72
-    ld (hl),d           ;0418 72
-    ld l,a              ;0419 6f
-    ld (hl),d           ;041a 72
-l041bh:
-    ld d,1eh            ;041b 16 1e
-    inc b               ;041d 04
-sub_041eh:
-    inc (hl)            ;041e 34
-    ld (l2d20h),a       ;041f 32 20 2d
-    jr nz,l048ch        ;0422 20 68
-l0424h:
-    ld h,l              ;0424 65
-    ld h,c              ;0425 61
-    ld h,h              ;0426 64
-    ld h,l              ;0427 65
-l0428h:
-    ld (hl),d           ;0428 72
-    jr nz,l049dh        ;0429 20 72
-    ld h,l              ;042b 65
-    ld h,c              ;042c 61
-    ld h,h              ;042d 64
-    jr nz,l0495h        ;042e 20 65
-    ld (hl),d           ;0430 72
-    ld (hl),d           ;0431 72
-    ld l,a              ;0432 6f
-    ld (hl),d           ;0433 72
-l0434h:
-    rla                 ;0434 17
-    scf                 ;0435 37
-l0436h:
-    inc b               ;0436 04
-    inc (hl)            ;0437 34
-l0438h:
-    jr nc,l045ah        ;0438 30 20
-    dec l               ;043a 2d
-    jr nz,l04a5h        ;043b 20 68
-    ld h,l              ;043d 65
-    ld h,c              ;043e 61
-    ld h,h              ;043f 64
-l0440h:
-    ld h,l              ;0440 65
-    ld (hl),d           ;0441 72
-    jr nz,l04bbh        ;0442 20 77
-    ld (hl),d           ;0444 72
-    ld l,c              ;0445 69
-    ld (hl),h           ;0446 74
-    ld h,l              ;0447 65
-l0448h:
-    jr nz,l04afh        ;0448 20 65
-    ld (hl),d           ;044a 72
-    ld (hl),d           ;044b 72
-    ld l,a              ;044c 6f
-    ld (hl),d           ;044d 72
-l044eh:
-    dec c               ;044e 0d
-    ld d,c              ;044f 51
-    inc b               ;0450 04
-    ld b,h              ;0451 44
-    ld d,d              ;0452 52
-    ld c,c              ;0453 49
-    ld d,(hl)           ;0454 56
-    ld b,l              ;0455 45
-    jr nz,l049dh        ;0456 20 45
-    ld d,d              ;0458 52
-    ld d,d              ;0459 52
-l045ah:
-    ld c,a              ;045a 4f
-    ld d,d              ;045b 52
-    jr nz,l0481h        ;045c 20 23
-l045eh:
-    dec de              ;045e 1b
-l045fh:
-    ld h,c              ;045f 61
-    inc b               ;0460 04
-    ld (hl),a           ;0461 77
-    ld (hl),d           ;0462 72
-    ld l,c              ;0463 69
-    ld (hl),h           ;0464 74
-    ld l,c              ;0465 69
-l0466h:
-    ld l,(hl)           ;0466 6e
-    ld h,a              ;0467 67
-    jr nz,l04cdh        ;0468 20 63
-    ld l,a              ;046a 6f
-    ld l,(hl)           ;046b 6e
-    ld (hl),h           ;046c 74
-    ld (hl),d           ;046d 72
-    ld l,a              ;046e 6f
-    ld l,h              ;046f 6c
-    ld l,h              ;0470 6c
-l0471h:
-    ld h,l              ;0471 65
-    ld (hl),d           ;0472 72
-    jr nz,l04d8h        ;0473 20 63
-    ld l,a              ;0475 6f
-    ld h,h              ;0476 64
-    ld h,l              ;0477 65
-    jr nz,l04a8h        ;0478 20 2e
-    ld l,2eh            ;047a 2e 2e
-l047ch:
-    ld de,l047fh        ;047c 11 7f 04
-l047fh:
-    ld b,e              ;047f 43
-    ld l,a              ;0480 6f
-l0481h:
-    ld l,(hl)           ;0481 6e
-    ld (hl),h           ;0482 74
-    ld l,c              ;0483 69
-l0484h:
-    ld l,(hl)           ;0484 6e
-    ld (hl),l           ;0485 75
-    ld h,l              ;0486 65
-    jr nz,l04b1h        ;0487 20 28
-    ld e,c              ;0489 59
-    cpl                 ;048a 2f
-    ld c,(hl)           ;048b 4e
-l048ch:
-    add hl,hl           ;048c 29
-    jr nz,l04ceh        ;048d 20 3f
-    jr nz,l04a4h        ;048f 20 13
-    sub e               ;0491 93
-    inc b               ;0492 04
-    dec l               ;0493 2d
-    dec l               ;0494 2d
-l0495h:
-    dec l               ;0495 2d
-    jr nz,l04c5h        ;0496 20 2d
-    dec l               ;0498 2d
-    dec l               ;0499 2d
-    dec l               ;049a 2d
-l049bh:
-    dec l               ;049b 2d
-    dec l               ;049c 2d
-l049dh:
-    dec l               ;049d 2d
-    dec l               ;049e 2d
-    dec l               ;049f 2d
-    dec l               ;04a0 2d
-    dec l               ;04a1 2d
-    dec l               ;04a2 2d
-    dec l               ;04a3 2d
-l04a4h:
-    dec l               ;04a4 2d
-l04a5h:
-    dec l               ;04a5 2d
-l04a6h:
-    inc de              ;04a6 13
-    xor c               ;04a7 a9
-l04a8h:
-    inc b               ;04a8 04
-    ld h,(hl)           ;04a9 66
-    ld l,a              ;04aa 6f
-    ld (hl),d           ;04ab 72
-    jr nz,$+79          ;04ac 20 4d
-    ld l,c              ;04ae 69
-l04afh:
-    ld l,(hl)           ;04af 6e
-    ld l,c              ;04b0 69
-l04b1h:
-    dec l               ;04b1 2d
-    ld d,a              ;04b2 57
-    ld l,c              ;04b3 69
-    ld l,(hl)           ;04b4 6e
-    ld h,e              ;04b5 63
-    ld l,b              ;04b6 68
-    ld h,l              ;04b7 65
-    ld (hl),e           ;04b8 73
-    ld (hl),h           ;04b9 74
-    ld h,l              ;04ba 65
-l04bbh:
-    ld (hl),d           ;04bb 72
-l04bch:
-    dec e               ;04bc 1d
-    cp a                ;04bd bf
-    inc b               ;04be 04
-    ld b,h              ;04bf 44
-    ld c,a              ;04c0 4f
-sub_04c1h:
-    ld d,e              ;04c1 53
-    jr nz,l052ah        ;04c2 20 66
-    ld l,c              ;04c4 69
-l04c5h:
-    ld (hl),d           ;04c5 72
-    ld l,l              ;04c6 6d
-    ld (hl),a           ;04c7 77
-    ld h,c              ;04c8 61
-    ld (hl),d           ;04c9 72
-    ld h,l              ;04ca 65
-    jr nz,$+119         ;04cb 20 75
-l04cdh:
-    ld (hl),b           ;04cd 70
-l04ceh:
-    ld h,h              ;04ce 64
-    ld h,c              ;04cf 61
-    ld (hl),h           ;04d0 74
-    ld l,c              ;04d1 69
-    ld l,(hl)           ;04d2 6e
-    ld h,a              ;04d3 67
-    jr nz,l0546h        ;04d4 20 70
-    ld (hl),d           ;04d6 72
-    ld l,a              ;04d7 6f
-l04d8h:
-    ld h,a              ;04d8 67
-    ld (hl),d           ;04d9 72
-    ld h,c              ;04da 61
-    ld l,l              ;04db 6d
+
+unknown_err:
+    db 17h
+    dw unknown_err+3
+    db "xx - unknown error code"
+
+illegal_cmd:
+    db 14h
+    dw illegal_cmd+3
+    db "49 - illegal command"
+
+not_ready:
+    db 13h
+    dw not_ready+3
+    db "47 - disk not ready"
+
+write_fault:
+    db 10h
+    dw write_fault+3
+    db "46 - write fault"
+
+data_read_err:
+    db 14h
+    dw data_read_err+3
+    db "44 - data read error"
+
+head_read_err:
+    db 16h
+    dw head_read_err+3
+    db "42 - header read error"
+
+head_writ_err:
+    db 17h
+    dw head_writ_err+3
+    db "40 - header write error"
+
+drive_err_num:
+    db 0dh
+    dw drive_err_num+3
+    db "DRIVE ERROR #"
+
+writing_code:
+    db 1bh
+    dw writing_code+3
+    db "writing controller code ..."
+
+continue_yn:
+    db 11h
+    dw continue_yn+3
+    db "Continue (Y/N) ? "
+
+dashes:
+    db 13h
+    dw dashes+3
+    db "--- ---------------"
+
+for_mw:
+    db 13h
+    dw for_mw+3
+    db "for Mini-Winchester"
+
+dos_firm_upd:
+    db 1dh
+    dw dos_firm_upd+3
+    db "DOS firmware updating program"
+
 l04dch:
     nop                 ;04dc 00
     rst 18h             ;04dd df
@@ -4292,7 +4051,7 @@ l1ae4h:
 l1b22h:
     ld b,h              ;1b22 44
     ld b,h              ;1b23 44
-    ld (l0440h),hl      ;1b24 22 40 04
+    ld (0440h),hl       ;1b24 22 40 04
 l1b27h:
     add a,b             ;1b27 80
     ld (bc),a           ;1b28 02
@@ -14195,7 +13954,7 @@ l4293h:
     in a,(14h)          ;4299 db 14
     and 01h             ;429b e6 01
     jr nz,l4293h        ;429d 20 f4
-    jp l0415h           ;429f c3 15 04
+    jp 0415h            ;429f c3 15 04
 l42a2h:
     ld hl,l2af0h        ;42a2 21 f0 2a
     in a,(15h)          ;42a5 db 15
@@ -14304,11 +14063,11 @@ l4355h:
     cp 02h              ;4362 fe 02
     call nc,l05d8h      ;4364 d4 d8 05
     pop af              ;4367 f1
-    jp p,l049bh         ;4368 f2 9b 04
+    jp p,049bh          ;4368 f2 9b 04
     ld hl,l2c75h        ;436b 21 75 2c
     ld b,7fh            ;436e 06 7f
 l4370h:
-    call sub_04c1h      ;4370 cd c1 04
+    call 04c1h          ;4370 cd c1 04
     jp c,l0376h         ;4373 da 76 03
     bit 7,b             ;4376 cb 78
     jr nz,l437dh        ;4378 20 03
@@ -14333,7 +14092,7 @@ l437dh:
     jp nz,0a48h         ;43a0 c2 48 0a
     ld hl,(l2af3h)      ;43a3 2a f3 2a
 l43a6h:
-    call sub_04c1h      ;43a6 cd c1 04
+    call 04c1h          ;43a6 cd c1 04
     jp c,l0376h         ;43a9 da 76 03
     ld (hl),a           ;43ac 77
     ld a,l              ;43ad 7d
@@ -15087,7 +14846,7 @@ l496fh:
     ld hl,(l2aech)      ;4978 2a ec 2a
     add hl,de           ;497b 19
 l497ch:
-    call sub_04c1h      ;497c cd c1 04
+    call 04c1h          ;497c cd c1 04
     jp c,l0376h         ;497f da 76 03
     ld (hl),a           ;4982 77
     set 7,(iy+27h)      ;4983 fd cb 27 fe
@@ -15109,7 +14868,7 @@ l49a6h:
     res 7,(iy+27h)      ;49a9 fd cb 27 be
     jr l496fh           ;49ad 18 c0
 l49afh:
-    call sub_04c1h      ;49af cd c1 04
+    call 04c1h          ;49af cd c1 04
     jp c,l0376h         ;49b2 da 76 03
     push af             ;49b5 f5
     call l05d8h         ;49b6 cd d8 05
@@ -15192,7 +14951,7 @@ l4a2bh:
     pop af              ;4a58 f1
     jr l4a66h           ;4a59 18 0b
 l4a5bh:
-    call sub_04c1h      ;4a5b cd c1 04
+    call 04c1h          ;4a5b cd c1 04
     jr nc,l4a66h        ;4a5e 30 06
     call 17ebh          ;4a60 cd eb 17
     jp l0376h           ;4a63 c3 76 03
@@ -15238,7 +14997,7 @@ l4aa5h:
     ld hl,(l2aech)      ;4ab1 2a ec 2a
     ret                 ;4ab4 c9
 l4ab5h:
-    call sub_04c1h      ;4ab5 cd c1 04
+    call 04c1h          ;4ab5 cd c1 04
     jp c,l0376h         ;4ab8 da 76 03
     ld hl,(l2aech)      ;4abb 2a ec 2a
     ld c,(iy+20h)       ;4abe fd 4e 20
@@ -16293,7 +16052,7 @@ l527dh:
     ld (hl),00h         ;52e3 36 00
     inc hl              ;52e5 23
     ld (l45f1h+1),hl    ;52e6 22 f2 45
-    ld de,l0401h        ;52e9 11 01 04
+    ld de,0401h         ;52e9 11 01 04
     add hl,de           ;52ec 19
     ld de,l4570h+2      ;52ed 11 72 45
     or a                ;52f0 b7
@@ -17275,7 +17034,7 @@ l597ah:
     ld b,e              ;59a0 43
     ld d,h              ;59a1 54
     ld b,l              ;59a2 45
-    call nz,sub_041eh   ;59a3 c4 1e 04
+    call nz,041eh       ;59a3 c4 1e 04
     add a,e             ;59a6 83
     rra                 ;59a7 1f
     inc b               ;59a8 04
