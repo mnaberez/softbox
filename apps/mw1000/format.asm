@@ -19,13 +19,22 @@ creoi:         equ 0f048h ;Send carriage return to IEEE-488 dev with EOI
 ieeemsg:       equ 0f04bh ;Send string to the current IEEE-488 device
 ieeenum:       equ 0f04eh ;Send number as decimal string to IEEE-488 dev
 tstdrv:        equ 0f051h ;Get drive type for a CP/M drive number
-dskdev:        equ 0f054h ;BIOS Get device address for a CP/M drive number
+dskdev:        equ 0f054h ;Get device address for a CP/M drive number
 diskcmd:       equ 0f057h ;Open the command channel on IEEE-488 device
 dsksta:        equ 0f05ah ;Read the error channel of an IEEE-488 device
-open:          equ 0f05dh ;BIOS Open a file on an IEEE-488 device
+open:          equ 0f05dh ;Open a file on an IEEE-488 device
 close:         equ 0f060h ;Close an open file on an IEEE-488 device
 runcpm:        equ 0f075h ;Perform system init and then run CP/M
 idrive:        equ 0f078h ;Initialize an IEEE-488 disk drive
+
+cread:         equ 01h    ;Console Input
+cwrite:        equ 02h    ;Console Output
+cwritestr:     equ 09h    ;Output String
+creadstr:      equ 0ah    ;Buffered Console Input
+
+bell:          equ 07h    ;Bell
+lf:            equ 0ah    ;Line Feed
+cr:            equ 0dh    ;Carriage Return
 
     org 0100h
 
@@ -73,7 +82,7 @@ l0133h:
     ld h,a              ;014b 67
     add hl,bc           ;014c 09
     ld a,(hl)           ;014d 7e
-    cp 0dh              ;014e fe 0d
+    cp cr               ;014e fe 0d
     jp z,l015fh         ;0150 ca 5f 01
     ld hl,l30ach        ;0153 21 ac 30
     inc (hl)            ;0156 34
@@ -97,15 +106,15 @@ end:
 sub_016bh:
     ld hl,l30adh        ;016b 21 ad 30
     ld (hl),c           ;016e 71
-    ld c,02h            ;016f 0e 02
+    ld c,cwrite         ;016f 0e 02
     ld a,(l30adh)       ;0171 3a ad 30
     ld e,a              ;0174 5f
     call bdos           ;0175 cd 05 00
     ret                 ;0178 c9
 sub_0179h:
-    ld c,0dh            ;0179 0e 0d
+    ld c,cr             ;0179 0e 0d
     call sub_016bh      ;017b cd 6b 01
-    ld c,0ah            ;017e 0e 0a
+    ld c,lf             ;017e 0e 0a
     call sub_016bh      ;0180 cd 6b 01
     ret                 ;0183 c9
 sub_0184h:
@@ -196,7 +205,7 @@ sub_0216h:
     ld hl,l3008h        ;0216 21 08 30
     ld (hl),50h         ;0219 36 50
     ld de,l3008h        ;021b 11 08 30
-    ld c,0ah            ;021e 0e 0a
+    ld c,creadstr       ;021e 0e 0a
     call bdos           ;0220 cd 05 00
     ld hl,0000h         ;0223 21 00 00
     ld (l3004h),hl      ;0226 22 04 30
@@ -346,7 +355,7 @@ l0321h:
     call sub_0216h      ;0333 cd 16 02
     call sub_0179h      ;0336 cd 79 01
     ld a,(l3003h)       ;0339 3a 03 30
-    cp 0dh              ;033c fe 0d
+    cp cr               ;033c fe 0d
     jp nz,l0344h        ;033e c2 44 03
     call end            ;Never returns
 
@@ -378,7 +387,7 @@ l0376h:
     jp m,l03c7h         ;037b fa c7 03
     cp 06h              ;037e fe 06
     jp p,l03c7h         ;0380 f2 c7 03
-    ld c,07h            ;0383 0e 07
+    ld c,bell           ;0383 0e 07
     call sub_016bh      ;0385 cd 6b 01
     ld bc,data_on_hd    ;0388 01 e6 04
     call sub_0184h      ;038b cd 84 01
@@ -418,7 +427,7 @@ l03c7h:
     call sub_0184h      ;03df cd 84 01
     call sub_0216h      ;03e2 cd 16 02
     ld a,(l3003h)       ;03e5 3a 03 30
-    cp 0dh              ;03e8 fe 0d
+    cp cr               ;03e8 fe 0d
     jp z,l03f0h         ;03ea ca f0 03
     call end            ;Never returns
 
@@ -844,13 +853,13 @@ l0835h:
 l0848h:
 ;Display "Hit any key to abort" message, wait for a key, and then return.
     ld de,l0855h
-    ld c,09h
+    ld c,cwritestr
     call bdos
-    ld c,01h
+    ld c,cread
     jp bdos
 
 l0855h:
-    db 0dh,0ah,"Hit any key to abort : $"
+    db cr,lf,"Hit any key to abort : $"
 
 l086fh:
     db "U2 2 "
