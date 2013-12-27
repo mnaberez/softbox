@@ -32,8 +32,7 @@ rr:
 nn:
     dw 0                ;Integer parsed from user input
 l0114h:
-    nop                 ;0114 00
-    nop                 ;0115 00
+    dw 0
 buf:
     dw 0                ;Address of buffer used in readline
 jj:

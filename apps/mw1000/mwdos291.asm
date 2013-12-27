@@ -6,7 +6,7 @@
 l0100h:
     jp start
 
-l0103h:
+unused_1:
     nop                 ;0103 00
     nop                 ;0104 00
     nop                 ;0105 00
@@ -14,53 +14,45 @@ l0103h:
     nop                 ;0107 00
     nop                 ;0108 00
     nop                 ;0109 00
+
+; Start of BASIC variables ==================================================
+
 l010ah:
-    nop                 ;010a 00
-    nop                 ;010b 00
+    dw 0
 l010ch:
-    nop                 ;010c 00
-    nop                 ;010d 00
+    dw 0
 l010eh:
-    nop                 ;010e 00
-    nop                 ;010f 00
+    dw 0
 l0110h:
-    nop                 ;0110 00
-    nop                 ;0111 00
+    dw 0
 l0112h:
-    nop                 ;0112 00
-    nop                 ;0113 00
+    dw 0
 l0114h:
-    nop                 ;0114 00
-    nop                 ;0115 00
+    dw 0
 l0116h:
-    nop                 ;0116 00
-    nop                 ;0117 00
+    dw 0
 l0118h:
-    nop                 ;0118 00
-    nop                 ;0119 00
+    dw 0
 l011ah:
-    nop                 ;011a 00
-    nop                 ;011b 00
+    dw 0
 l011ch:
-    nop                 ;011c 00
-    nop                 ;011d 00
-    nop                 ;011e 00
-    nop                 ;011f 00
-    nop                 ;0120 00
-    nop                 ;0121 00
-    nop                 ;0122 00
+    dw 0
+    dw 0
+    dw 0
+    db 0
 l0123h:
-    nop                 ;0123 00
+    db 0
 l0124h:
-    nop                 ;0124 00
-    nop                 ;0125 00
-    nop                 ;0126 00
-    nop                 ;0127 00
+    dw 0
+    dw 0
+
+; End of BASIC variables ====================================================
 
 start:
     ld hl,main
     jp ini
 
+unused_2:
     rst 18h             ;012e df
     inc b               ;012f 04
     nop                 ;0130 00
@@ -68,7 +60,7 @@ start:
     pop hl              ;0132 e1
     inc b               ;0133 04
     inc bc              ;0134 03
-    ld bc,l011ch        ;0135 01 1c 01
+    ld bc,011ch         ;0135 01 1c 01
     nop                 ;0138 00
     nop                 ;0139 00
     jr z,$+3            ;013a 28 01
@@ -13942,15 +13934,15 @@ l4110h:
     ld (l460ch),a       ;4123 32 0c 46
     ld hl,l2bf5h        ;4126 21 f5 2b
     ld (l2af3h),hl      ;4129 22 f3 2a
-    ld hl,l0103h        ;412c 21 03 01
-    ld de,l2004h        ;412f 11 04 20
+    ld hl,0103h         ;412c 21 03 01
+    ld de,2004h         ;412f 11 04 20
     ld bc,0020h         ;4132 01 20 00
     ldir                ;4135 ed b0
     ld hl,l0123h        ;4137 21 23 01
     ld de,l203eh        ;413a 11 3e 20
     ld bc,0010h         ;413d 01 10 00
     ldir                ;4140 ed b0
-    call tmp         ;4142 cd d8 05
+    call tmp            ;4142 cd d8 05
     call sub_192dh      ;4145 cd 2d 19
     ld hl,(l200bh)      ;4148 2a 0b 20
     ld (l202ah),hl      ;414b 22 2a 20
@@ -14182,7 +14174,7 @@ l42fah:
     ld (l2ae7h),a       ;42ff 32 e7 2a
     push af             ;4302 f5
     cp 02h              ;4303 fe 02
-    call nc,tmp      ;4305 d4 d8 05
+    call nc,tmp         ;4305 d4 d8 05
     pop af              ;4308 f1
     cp 0fh              ;4309 fe 0f
     push af             ;430b f5
@@ -14230,7 +14222,7 @@ l4355h:
     and 0fh             ;435d e6 0f
     ld (l2ae7h),a       ;435f 32 e7 2a
     cp 02h              ;4362 fe 02
-    call nc,tmp      ;4364 d4 d8 05
+    call nc,tmp         ;4364 d4 d8 05
     pop af              ;4367 f1
     jp p,049bh          ;4368 f2 9b 04
     ld hl,l2c75h        ;436b 21 75 2c
@@ -14383,7 +14375,7 @@ l445ah:
     xor a               ;4466 af
     out (11h),a         ;4467 d3 11
     ret                 ;4469 c9
-    call tmp         ;446a cd d8 05
+    call tmp            ;446a cd d8 05
     ld de,l0599h        ;446d 11 99 05
     ld hl,l2bf5h        ;4470 21 f5 2b
     ld (l2af3h),hl      ;4473 22 f3 2a
@@ -14589,7 +14581,7 @@ l459eh:
     nop                 ;45b6 00
     nop                 ;45b7 00
     ld bc,0000h         ;45b8 01 00 00
-    call tmp         ;45bb cd d8 05
+    call tmp            ;45bb cd d8 05
     call sub_1689h      ;45be cd 89 16
     bit 7,(iy+28h)      ;45c1 fd cb 28 7e
     call nz,sub_08e7h   ;45c5 c4 e7 08
@@ -15040,7 +15032,7 @@ l49afh:
     call 04c1h          ;49af cd c1 04
     jp c,l0376h         ;49b2 da 76 03
     push af             ;49b5 f5
-    call tmp         ;49b6 cd d8 05
+    call tmp            ;49b6 cd d8 05
     call 0bcah          ;49b9 cd ca 0b
     call sub_10afh+1    ;49bc cd b0 10
     jp c,0b4bh          ;49bf da 4b 0b
@@ -15863,7 +15855,7 @@ l5049h:
     djnz l5049h         ;504a 10 fd
     ld (hl),a           ;504c 77
     call sub_1955h      ;504d cd 55 19
-    jp tmp           ;5050 c3 d8 05
+    jp tmp              ;5050 c3 d8 05
 l5053h:
     inc b               ;5053 04
 l5054h:
