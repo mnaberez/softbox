@@ -16,364 +16,136 @@ l0103h:
     ld c,l              ;010e 4d
     nop                 ;010f 00
     dec e               ;0110 1d
-    nop                 ;0111 00
-    nop                 ;0112 00
-    nop                 ;0113 00
-    nop                 ;0114 00
-    nop                 ;0115 00
-    nop                 ;0116 00
-    nop                 ;0117 00
-    nop                 ;0118 00
-    nop                 ;0119 00
-    nop                 ;011a 00
-    nop                 ;011b 00
-    nop                 ;011c 00
-    nop                 ;011d 00
-    nop                 ;011e 00
-    nop                 ;011f 00
-    nop                 ;0120 00
-    nop                 ;0121 00
-    nop                 ;0122 00
-l0123h:
-    ld c,b              ;0123 48
-    ld b,c              ;0124 41
-    ld d,d              ;0125 52
-    ld b,h              ;0126 44
-    jr nz,l016dh        ;0127 20 44
-    ld c,c              ;0129 49
-    ld d,e              ;012a 53
-    ld c,e              ;012b 4b
-    jr nz,l014eh        ;012c 20 20
-    jr nz,l0150h        ;012e 20 20
-    jr nz,l0152h        ;0130 20 20
-    jr nz,l013bh        ;0132 20 07
-l0134h:
-    ld h,b              ;0134 60
-    nop                 ;0135 00
-l0136h:
-    ex af,af'           ;0136 08
-    nop                 ;0137 00
-    nop                 ;0138 00
-    nop                 ;0139 00
-    nop                 ;013a 00
-l013bh:
-    nop                 ;013b 00
-    nop                 ;013c 00
-    nop                 ;013d 00
-    nop                 ;013e 00
-sub_013fh:
-    nop                 ;013f 00
-    nop                 ;0140 00
-    nop                 ;0141 00
-    nop                 ;0142 00
-    nop                 ;0143 00
-    nop                 ;0144 00
-    nop                 ;0145 00
-    nop                 ;0146 00
-    nop                 ;0147 00
-    nop                 ;0148 00
-    nop                 ;0149 00
-    nop                 ;014a 00
-    nop                 ;014b 00
-    nop                 ;014c 00
-    nop                 ;014d 00
-l014eh:
-    nop                 ;014e 00
-    nop                 ;014f 00
-l0150h:
-    nop                 ;0150 00
-    nop                 ;0151 00
-l0152h:
-    nop                 ;0152 00
-    nop                 ;0153 00
-    nop                 ;0154 00
-    nop                 ;0155 00
-    nop                 ;0156 00
-    nop                 ;0157 00
-    nop                 ;0158 00
-    nop                 ;0159 00
-    nop                 ;015a 00
-    nop                 ;015b 00
-    nop                 ;015c 00
-    nop                 ;015d 00
-    nop                 ;015e 00
-    nop                 ;015f 00
-    nop                 ;0160 00
-    nop                 ;0161 00
-    nop                 ;0162 00
-    nop                 ;0163 00
-    nop                 ;0164 00
-    nop                 ;0165 00
-    nop                 ;0166 00
-    nop                 ;0167 00
-    nop                 ;0168 00
-    nop                 ;0169 00
-    nop                 ;016a 00
-    nop                 ;016b 00
-    nop                 ;016c 00
-l016dh:
-    nop                 ;016d 00
-    nop                 ;016e 00
-    nop                 ;016f 00
-    nop                 ;0170 00
-    nop                 ;0171 00
-    nop                 ;0172 00
-    nop                 ;0173 00
-    nop                 ;0174 00
-    nop                 ;0175 00
-    nop                 ;0176 00
-    nop                 ;0177 00
-    nop                 ;0178 00
-    nop                 ;0179 00
-    nop                 ;017a 00
-    nop                 ;017b 00
-    nop                 ;017c 00
-    nop                 ;017d 00
-    nop                 ;017e 00
-    nop                 ;017f 00
-    nop                 ;0180 00
-    nop                 ;0181 00
-    nop                 ;0182 00
-    nop                 ;0183 00
-    nop                 ;0184 00
-    nop                 ;0185 00
-    nop                 ;0186 00
-    nop                 ;0187 00
-    nop                 ;0188 00
-    nop                 ;0189 00
-    nop                 ;018a 00
-    nop                 ;018b 00
-    nop                 ;018c 00
-    nop                 ;018d 00
-    nop                 ;018e 00
-    nop                 ;018f 00
-    nop                 ;0190 00
-    nop                 ;0191 00
-    nop                 ;0192 00
-    nop                 ;0193 00
-    nop                 ;0194 00
-    nop                 ;0195 00
-    nop                 ;0196 00
-    nop                 ;0197 00
-    nop                 ;0198 00
-    nop                 ;0199 00
-    nop                 ;019a 00
-    nop                 ;019b 00
-    nop                 ;019c 00
-    nop                 ;019d 00
-    nop                 ;019e 00
-    nop                 ;019f 00
-    nop                 ;01a0 00
-    nop                 ;01a1 00
-    nop                 ;01a2 00
-    nop                 ;01a3 00
-    nop                 ;01a4 00
-    nop                 ;01a5 00
-    nop                 ;01a6 00
-    nop                 ;01a7 00
-    nop                 ;01a8 00
-    nop                 ;01a9 00
-    nop                 ;01aa 00
-    nop                 ;01ab 00
-    nop                 ;01ac 00
-    nop                 ;01ad 00
-    nop                 ;01ae 00
-    nop                 ;01af 00
-    nop                 ;01b0 00
-    nop                 ;01b1 00
-    nop                 ;01b2 00
-    nop                 ;01b3 00
-    nop                 ;01b4 00
-    nop                 ;01b5 00
-    nop                 ;01b6 00
-    nop                 ;01b7 00
-    nop                 ;01b8 00
-    nop                 ;01b9 00
-    nop                 ;01ba 00
-    nop                 ;01bb 00
-    nop                 ;01bc 00
-    nop                 ;01bd 00
-    nop                 ;01be 00
-    nop                 ;01bf 00
-    nop                 ;01c0 00
-    nop                 ;01c1 00
-    nop                 ;01c2 00
-    nop                 ;01c3 00
-    nop                 ;01c4 00
-    nop                 ;01c5 00
-    nop                 ;01c6 00
-    nop                 ;01c7 00
-    nop                 ;01c8 00
-    nop                 ;01c9 00
-    nop                 ;01ca 00
-    nop                 ;01cb 00
-    nop                 ;01cc 00
-    nop                 ;01cd 00
-    nop                 ;01ce 00
-    nop                 ;01cf 00
-    nop                 ;01d0 00
-    nop                 ;01d1 00
-    nop                 ;01d2 00
-    nop                 ;01d3 00
-    nop                 ;01d4 00
-    nop                 ;01d5 00
-    nop                 ;01d6 00
-    nop                 ;01d7 00
-    nop                 ;01d8 00
-    nop                 ;01d9 00
-    nop                 ;01da 00
-    nop                 ;01db 00
-    nop                 ;01dc 00
-    nop                 ;01dd 00
-    nop                 ;01de 00
-    nop                 ;01df 00
-    nop                 ;01e0 00
-    nop                 ;01e1 00
-    nop                 ;01e2 00
-    nop                 ;01e3 00
-    nop                 ;01e4 00
-    nop                 ;01e5 00
-    nop                 ;01e6 00
-    nop                 ;01e7 00
-    nop                 ;01e8 00
-    nop                 ;01e9 00
-    nop                 ;01ea 00
-    nop                 ;01eb 00
-    nop                 ;01ec 00
-    nop                 ;01ed 00
-    nop                 ;01ee 00
-    nop                 ;01ef 00
-    nop                 ;01f0 00
-    nop                 ;01f1 00
-    nop                 ;01f2 00
-    nop                 ;01f3 00
-    nop                 ;01f4 00
-    nop                 ;01f5 00
-    nop                 ;01f6 00
-    nop                 ;01f7 00
-    nop                 ;01f8 00
-    nop                 ;01f9 00
-    nop                 ;01fa 00
-    nop                 ;01fb 00
-    nop                 ;01fc 00
-    nop                 ;01fd 00
-    nop                 ;01fe 00
-    nop                 ;01ff 00
+
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db "HARD DISK       ",07h,60h,00h,08h
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0
+
 l0200h:
     xor a               ;0200 af
     out (11h),a         ;0201 d3 11
     ld a,80h            ;0203 3e 80
     out (15h),a         ;0205 d3 15
-    ld a,(l0136h)       ;0207 3a 36 01
-    ld (l2000h),a       ;020a 32 00 20
+    ld a,(0136h)        ;0207 3a 36 01
+    ld (2000h),a        ;020a 32 00 20
 l020dh:
     ld sp,4a93h         ;020d 31 93 4a
-    ld hl,l2004h        ;0210 21 04 20
-    ld de,l2005h        ;0213 11 05 20
+    ld hl,2004h         ;0210 21 04 20
+    ld de,2005h         ;0213 11 05 20
     ld bc,2a0eh         ;0216 01 0e 2a
     ld (hl),00h         ;0219 36 00
     ldir                ;021b ed b0
     xor a               ;021d af
-    ld (l2002h),a       ;021e 32 02 20
+    ld (2002h),a        ;021e 32 02 20
     ld a,01h            ;0221 3e 01
     ld (460ch),a        ;0223 32 0c 46
     ld hl,2bf5h         ;0226 21 f5 2b
     ld (2af3h),hl       ;0229 22 f3 2a
     ld hl,l0103h        ;022c 21 03 01
-    ld de,l2004h        ;022f 11 04 20
+    ld de,2004h         ;022f 11 04 20
     ld bc,0020h         ;0232 01 20 00
     ldir                ;0235 ed b0
-    ld hl,l0123h        ;0237 21 23 01
-    ld de,l203eh        ;023a 11 3e 20
+    ld hl,0123h         ;0237 21 23 01
+    ld de,203eh         ;023a 11 3e 20
     ld bc,0010h         ;023d 01 10 00
     ldir                ;0240 ed b0
     call sub_05d8h      ;0242 cd d8 05
     call sub_192dh      ;0245 cd 2d 19
-    ld hl,(l200bh)      ;0248 2a 0b 20
-    ld (l202ah),hl      ;024b 22 2a 20
-    ld a,(l2009h)       ;024e 3a 09 20
+    ld hl,(200bh)       ;0248 2a 0b 20
+    ld (202ah),hl       ;024b 22 2a 20
+    ld a,(2009h)        ;024e 3a 09 20
     ld e,a              ;0251 5f
     ld d,00h            ;0252 16 00
     add hl,de           ;0254 19
-    ld (l202fh),hl      ;0255 22 2f 20
-    ld hl,(l200dh)      ;0258 2a 0d 20
+    ld (202fh),hl       ;0255 22 2f 20
+    ld hl,(200dh)       ;0258 2a 0d 20
     ld a,h              ;025b 7c
     ld b,09h            ;025c 06 09
     call sub_1a7ah      ;025e cd 7a 1a
     inc hl              ;0261 23
-    ld (l2039h),hl      ;0262 22 39 20
-    ld hl,(l200bh)      ;0265 2a 0b 20
+    ld (2039h),hl       ;0262 22 39 20
+    ld hl,(200bh)       ;0265 2a 0b 20
     ld b,05h            ;0268 06 05
     call sub_1a7ah      ;026a cd 7a 1a
     inc hl              ;026d 23
     ex de,hl            ;026e eb
-    ld hl,(l202ah)      ;026f 2a 2a 20
+    ld hl,(202ah)       ;026f 2a 2a 20
     ld b,03h            ;0272 06 03
     call sub_1a7ah      ;0274 cd 7a 1a
     inc hl              ;0277 23
     add hl,de           ;0278 19
     ex de,hl            ;0279 eb
-    ld hl,(l202fh)      ;027a 2a 2f 20
+    ld hl,(202fh)       ;027a 2a 2f 20
     ld b,02h            ;027d 06 02
     call sub_1a7ah      ;027f cd 7a 1a
     inc hl              ;0282 23
     add hl,de           ;0283 19
-    ld de,(l200dh)      ;0284 ed 5b 0d 20
+    ld de,(200dh)       ;0284 ed 5b 0d 20
     add hl,de           ;0288 19
-    ld de,(l2039h)      ;0289 ed 5b 39 20
+    ld de,(2039h)       ;0289 ed 5b 39 20
     add hl,de           ;028d 19
     ex de,hl            ;028e eb
-    ld hl,(l2008h)      ;028f 2a 08 20
+    ld hl,(2008h)       ;028f 2a 08 20
     scf                 ;0292 37
     sbc hl,de           ;0293 ed 52
     srl h               ;0295 cb 3c
     rr l                ;0297 cb 1d
-    ld (l2034h),hl      ;0299 22 34 20
-    ld hl,(l2005h)      ;029c 2a 05 20
-    ld a,(l2007h)       ;029f 3a 07 20
+    ld (2034h),hl       ;0299 22 34 20
+    ld hl,(2005h)       ;029c 2a 05 20
+    ld a,(2007h)        ;029f 3a 07 20
     ld de,0004h         ;02a2 11 04 00
     add hl,de           ;02a5 19
     adc a,00h           ;02a6 ce 00
-    ld (l2024h),hl      ;02a8 22 24 20
-    ld (l2026h),a       ;02ab 32 26 20
+    ld (2024h),hl       ;02a8 22 24 20
+    ld (2026h),a        ;02ab 32 26 20
     ex de,hl            ;02ae eb
-    ld hl,(l200bh)      ;02af 2a 0b 20
+    ld hl,(200bh)       ;02af 2a 0b 20
     ld b,03h            ;02b2 06 03
     call sub_1a7ah      ;02b4 cd 7a 1a
     inc hl              ;02b7 23
     add hl,de           ;02b8 19
     adc a,00h           ;02b9 ce 00
-    ld (l2027h),hl      ;02bb 22 27 20
-    ld (l2029h),a       ;02be 32 29 20
-    ld de,(l202ah)      ;02c1 ed 5b 2a 20
+    ld (2027h),hl       ;02bb 22 27 20
+    ld (2029h),a        ;02be 32 29 20
+    ld de,(202ah)       ;02c1 ed 5b 2a 20
     srl d               ;02c5 cb 3a
     rr e                ;02c7 cb 1b
     inc de              ;02c9 13
     add hl,de           ;02ca 19
     adc a,00h           ;02cb ce 00
-    ld (l202ch),hl      ;02cd 22 2c 20
-    ld (l202eh),a       ;02d0 32 2e 20
-    ld de,(l202fh)      ;02d3 ed 5b 2f 20
+    ld (202ch),hl       ;02cd 22 2c 20
+    ld (202eh),a        ;02d0 32 2e 20
+    ld de,(202fh)       ;02d3 ed 5b 2f 20
     add hl,de           ;02d7 19
     adc a,00h           ;02d8 ce 00
-    ld (l2031h),hl      ;02da 22 31 20
-    ld (l2033h),a       ;02dd 32 33 20
-    ld de,(l2034h)      ;02e0 ed 5b 34 20
+    ld (2031h),hl       ;02da 22 31 20
+    ld (2033h),a        ;02dd 32 33 20
+    ld de,(2034h)       ;02e0 ed 5b 34 20
     ld b,08h            ;02e4 06 08
 l02e6h:
     add hl,de           ;02e6 19
     adc a,00h           ;02e7 ce 00
     djnz l02e6h         ;02e9 10 fb
-    ld (l203bh),hl      ;02eb 22 3b 20
-    ld (l203dh),a       ;02ee 32 3d 20
+    ld (203bh),hl       ;02eb 22 3b 20
+    ld (203dh),a        ;02ee 32 3d 20
     ex de,hl            ;02f1 eb
-    ld hl,(l2039h)      ;02f2 2a 39 20
+    ld hl,(2039h)       ;02f2 2a 39 20
     add hl,hl           ;02f5 29
     add hl,hl           ;02f6 29
     add hl,de           ;02f7 19
     adc a,00h           ;02f8 ce 00
-    ld (l2036h),hl      ;02fa 22 36 20
-    ld (l2038h),a       ;02fd 32 38 20
+    ld (2036h),hl       ;02fa 22 36 20
+    ld (2038h),a        ;02fd 32 38 20
     ld a,0fh            ;0300 3e 0f
     ld (2ae7h),a        ;0302 32 e7 2a
     call sub_1689h      ;0305 cd 89 16
@@ -390,7 +162,7 @@ l030eh:
 l0322h:
     ld l,(ix+00h)       ;0322 dd 6e 00
     ld h,(ix+01h)       ;0325 dd 66 01
-    ld de,l2057h        ;0328 11 57 20
+    ld de,2057h         ;0328 11 57 20
     call sub_1733h      ;032b cd 33 17
     inc ix              ;032e dd 23
     inc ix              ;0330 dd 23
@@ -398,7 +170,7 @@ l0322h:
     jr l030eh           ;0334 18 d8
 l0336h:
     ld de,0000h         ;0336 11 00 00
-    ld hl,l2057h        ;0339 21 57 20
+    ld hl,2057h         ;0339 21 57 20
 l033ch:
     ld b,08h            ;033c 06 08
     ld c,(hl)           ;033e 4e
@@ -425,10 +197,10 @@ l0350h:
     pop bc              ;0364 c1
 l0365h:
     inc de              ;0365 13
-    ld a,(l202fh)       ;0366 3a 2f 20
+    ld a,(202fh)        ;0366 3a 2f 20
     cp e                ;0369 bb
     jr nz,l0372h        ;036a 20 06
-    ld a,(l2030h)       ;036c 3a 30 20
+    ld a,(2030h)        ;036c 3a 30 20
     cp d                ;036f ba
     jr z,l0376h         ;0370 28 04
 l0372h:
@@ -470,7 +242,7 @@ l03a2h:
     in a,(15h)          ;03ae db 15
     and 0fbh            ;03b0 e6 fb
     out (15h),a         ;03b2 d3 15
-    ld a,(l2000h)       ;03b4 3a 00 20
+    ld a,(2000h)        ;03b4 3a 00 20
     or 20h              ;03b7 f6 20
     cp c                ;03b9 b9
     jr z,l03e2h         ;03ba 28 26
@@ -745,26 +517,10 @@ l058ch:
 sub_0598h:
     jp (hl)             ;0598 e9
 l0599h:
-    ld c,(hl)           ;0599 4e
-    ld d,e              ;059a 53
-    ld b,h              ;059b 44
-    ld c,c              ;059c 49
-    ld d,d              ;059d 52
-    ld b,a              ;059e 47
-    ld c,b              ;059f 48
-    ld d,a              ;05a0 57
-    dec l               ;05a1 2d
-    ld d,(hl)           ;05a2 56
-l05a3h:
-    ld c,h              ;05a3 4c
-    ld d,h              ;05a4 54
-    ld hl,4250h         ;05a5 21 50 42
-    ld d,l              ;05a8 55
-    ld b,c              ;05a9 41
-    ld b,e              ;05aa 43
+    db "NSDIRGHW-VLT!PBUAC"
 l05abh:
     ld (bc),a           ;05ab 02
-    djnz l05a3h         ;05ac 10 f5
+    djnz 05a3h          ;05ac 10 f5
     dec bc              ;05ae 0b
     ld l,e              ;05af 6b
     rrca                ;05b0 0f
@@ -796,8 +552,8 @@ l05abh:
 sub_05d8h:
     call sub_064ch      ;05d8 cd 4c 06
 sub_05dbh:
-    ld (l2050h),a       ;05db 32 50 20
-    ld hl,l1a81h        ;05de 21 81 1a
+    ld (2050h),a        ;05db 32 50 20
+    ld hl,1a81h         ;05de 21 81 1a
 l05e1h:
     bit 7,(hl)          ;05e1 cb 7e
     jr nz,l05f0h        ;05e3 20 0b
@@ -826,7 +582,7 @@ l0600h:
     cp 20h              ;0604 fe 20
     jr nc,l0623h        ;0606 30 1b
     push de             ;0608 d5
-    ld de,l1baah        ;0609 11 aa 1b
+    ld de,1baah         ;0609 11 aa 1b
     ld b,a              ;060c 47
 l060dh:
     dec b               ;060d 05
@@ -856,13 +612,13 @@ l0623h:
     jr nc,l0600h        ;0627 30 d7
     ld (hl),2ch         ;0629 36 2c
     inc hl              ;062b 23
-    ld a,(l2051h)       ;062c 3a 51 20
-    ld de,(l2052h)      ;062f ed 5b 52 20
+    ld a,(2051h)        ;062c 3a 51 20
+    ld de,(2052h)       ;062f ed 5b 52 20
     call sub_0660h      ;0633 cd 60 06
     ld (hl),2ch         ;0636 36 2c
     inc hl              ;0638 23
-    ld a,(l2054h)       ;0639 3a 54 20
-    ld de,(l2055h)      ;063c ed 5b 55 20
+    ld a,(2054h)        ;0639 3a 54 20
+    ld de,(2055h)       ;063c ed 5b 55 20
     call sub_0660h      ;0640 cd 60 06
     ld (hl),0dh         ;0643 36 0d
     ld hl,2cf5h         ;0645 21 f5 2c
@@ -870,12 +626,12 @@ l0623h:
     ret                 ;064b c9
 sub_064ch:
     xor a               ;064c af
-    ld (l2051h),a       ;064d 32 51 20
-    ld (l2052h),a       ;0650 32 52 20
-    ld (l2053h),a       ;0653 32 53 20
-    ld (l2054h),a       ;0656 32 54 20
-    ld (l2055h),a       ;0659 32 55 20
-    ld (l2056h),a       ;065c 32 56 20
+    ld (2051h),a        ;064d 32 51 20
+    ld (2052h),a        ;0650 32 52 20
+    ld (2053h),a        ;0653 32 53 20
+    ld (2054h),a        ;0656 32 54 20
+    ld (2055h),a        ;0659 32 55 20
+    ld (2056h),a        ;065c 32 56 20
     ret                 ;065f c9
 sub_0660h:
     ld ix,l06a9h        ;0660 dd 21 a9 06
@@ -1558,7 +1314,7 @@ l0c10h:
     jr nz,l0c2ch        ;0c14 20 16
     bit 7,(ix+00h)      ;0c16 dd cb 00 7e
     jr nz,l0c2ch        ;0c1a 20 10
-    ld hl,l2051h        ;0c1c 21 51 20
+    ld hl,2051h         ;0c1c 21 51 20
     inc (hl)            ;0c1f 34
     ld (ix+01h),0ffh    ;0c20 dd 36 01 ff
     push de             ;0c24 d5
@@ -1815,12 +1571,12 @@ l0e0dh:
     adc a,a             ;0e30 8f
     add hl,de           ;0e31 19
     ld b,a              ;0e32 47
-    ld de,(l2031h)      ;0e33 ed 5b 31 20
-    ld a,(l2033h)       ;0e37 3a 33 20
+    ld de,(2031h)       ;0e33 ed 5b 31 20
+    ld a,(2033h)        ;0e37 3a 33 20
     add hl,de           ;0e3a 19
     add a,b             ;0e3b 80
     ex de,hl            ;0e3c eb
-    ld hl,l2004h        ;0e3d 21 04 20
+    ld hl,2004h         ;0e3d 21 04 20
     ld b,(hl)           ;0e40 46
     ld hl,4710h         ;0e41 21 10 47
     call sub_1982h      ;0e44 cd 82 19
@@ -1953,19 +1709,19 @@ l0f28h:
     jr l0f28h           ;0f34 18 f2
     call sub_164dh      ;0f36 cd 4d 16
     jr c,l0f3fh         ;0f39 38 04
-    ld (l2000h),a       ;0f3b 32 00 20
+    ld (2000h),a        ;0f3b 32 00 20
     ret                 ;0f3e c9
 l0f3fh:
     ld a,1eh            ;0f3f 3e 1e
     jp 05cfh            ;0f41 c3 cf 05
-    ld a,(l2002h)       ;0f44 3a 02 20
-    ld (l2051h),a       ;0f47 32 51 20
+    ld a,(2002h)        ;0f44 3a 02 20
+    ld (2051h),a        ;0f47 32 51 20
     ld a,59h            ;0f4a 3e 59
     jp 05cfh            ;0f4c c3 cf 05
     ld a,02h            ;0f4f 3e 02
-    ld (l2051h),a       ;0f51 32 51 20
+    ld (2051h),a        ;0f51 32 51 20
     ld a,04h            ;0f54 3e 04
-    ld (l2054h),a       ;0f56 32 54 20
+    ld (2054h),a        ;0f56 32 54 20
     ld a,63h            ;0f59 3e 63
     jp 05cfh            ;0f5b c3 cf 05
     call sub_164dh      ;0f5e cd 4d 16
@@ -1980,7 +1736,7 @@ l0f3fh:
     call sub_1682h      ;0f6f cd 82 16
     jr nc,l0f7ah        ;0f72 30 06
     sub 30h             ;0f74 d6 30
-    ld (l204fh),a       ;0f76 32 4f 20
+    ld (204fh),a        ;0f76 32 4f 20
     ret                 ;0f79 c9
 l0f7ah:
     ld a,1eh            ;0f7a 3e 1e
@@ -1997,7 +1753,7 @@ l0f86h:
     call sub_1789h      ;0f95 cd 89 17
     jr l0f86h           ;0f98 18 ec
 l0f9ah:
-    ld a,(l2002h)       ;0f9a 3a 02 20
+    ld a,(2002h)        ;0f9a 3a 02 20
     jp l020dh           ;0f9d c3 0d 02
     call sub_1625h      ;0fa0 cd 25 16
     call sub_15e3h      ;0fa3 cd e3 15
@@ -2227,33 +1983,33 @@ l1153h:
     inc b               ;1153 04
 l1154h:
     push af             ;1154 f5
-    ld ix,l2054h        ;1155 dd 21 54 20
+    ld ix,2054h         ;1155 dd 21 54 20
     inc (ix+00h)        ;1159 dd 34 00
     jr nz,l1166h        ;115c 20 08
     inc (ix+01h)        ;115e dd 34 01
     jr nz,l1166h        ;1161 20 03
     inc (ix+02h)        ;1163 dd 34 02
 l1166h:
-    ld a,(l2011h)       ;1166 3a 11 20
+    ld a,(2011h)        ;1166 3a 11 20
     cp (ix+00h)         ;1169 dd be 00
     jr nz,l11b1h        ;116c 20 43
-    ld a,(l2012h)       ;116e 3a 12 20
+    ld a,(2012h)        ;116e 3a 12 20
     cp (ix+01h)         ;1171 dd be 01
     jr nz,l11b1h        ;1174 20 3b
-    ld a,(l2013h)       ;1176 3a 13 20
+    ld a,(2013h)        ;1176 3a 13 20
     cp (ix+02h)         ;1179 dd be 02
     jr nz,l11b1h        ;117c 20 33
     ld (ix+00h),000h    ;117e dd 36 00 00
     ld (ix+01h),000h    ;1182 dd 36 01 00
     ld (ix+02h),000h    ;1186 dd 36 02 00
-    ld ix,l2051h        ;118a dd 21 51 20
+    ld ix,2051h         ;118a dd 21 51 20
     inc (ix+00h)        ;118e dd 34 00
     jr nz,l1196h        ;1191 20 03
     inc (ix+01h)        ;1193 dd 34 01
 l1196h:
-    ld a,(l200fh)       ;1196 3a 0f 20
+    ld a,(200fh)        ;1196 3a 0f 20
     sub (ix+00h)        ;1199 dd 96 00
-    ld a,(l2010h)       ;119c 3a 10 20
+    ld a,(2010h)        ;119c 3a 10 20
     sbc a,(ix+01h)      ;119f dd 9e 01
     jr nc,l11b1h        ;11a2 30 0d
     ld (ix+00h),000h    ;11a4 dd 36 00 00
@@ -2267,7 +2023,7 @@ l11b1h:
     ld a,l              ;11b5 7d
     cp 10h              ;11b6 fe 10
     jr nz,l11c4h        ;11b8 20 0a
-    ld hl,l204eh        ;11ba 21 4e 20
+    ld hl,204eh         ;11ba 21 4e 20
     inc (hl)            ;11bd 34
     call sub_194fh      ;11be cd 4f 19
     ld hl,4910h         ;11c1 21 10 49
@@ -2291,7 +2047,7 @@ l11d6h:
     djnz l11d6h         ;11db 10 f9
     push de             ;11dd d5
     ld a,d              ;11de 7a
-    ld (l204eh),a       ;11df 32 4e 20
+    ld (204eh),a        ;11df 32 4e 20
     call sub_194fh      ;11e2 cd 4f 19
     pop de              ;11e5 d1
     ld d,00h            ;11e6 16 00
@@ -2334,19 +2090,19 @@ sub_1226h:
     jp c,05cfh          ;122b da cf 05
     call sub_1245h      ;122e cd 45 12
     call sub_064ch      ;1231 cd 4c 06
-    ld hl,(l2036h)      ;1234 2a 36 20
-    ld a,(l2038h)       ;1237 3a 38 20
+    ld hl,(2036h)       ;1234 2a 36 20
+    ld a,(2038h)        ;1237 3a 38 20
     add hl,de           ;123a 19
     adc a,b             ;123b 88
     ex de,hl            ;123c eb
-    ld hl,l2004h        ;123d 21 04 20
+    ld hl,2004h         ;123d 21 04 20
     ld b,(hl)           ;1240 46
     ld hl,(2aech)       ;1241 2a ec 2a
     ret                 ;1244 c9
 sub_1245h:
     call sub_164dh      ;1245 cd 4d 16
     jp c,l12d0h         ;1248 da d0 12
-    ld de,(l200fh)      ;124b ed 5b 0f 20
+    ld de,(200fh)       ;124b ed 5b 0f 20
     push hl             ;124f e5
     ld hl,0000h         ;1250 21 00 00
     ld b,08h            ;1253 06 08
@@ -2365,9 +2121,9 @@ l125ah:
     jr nz,l12cbh        ;1264 20 65
     ld d,e              ;1266 53
     ld e,a              ;1267 5f
-    ld (l2051h),de      ;1268 ed 53 51 20
+    ld (2051h),de       ;1268 ed 53 51 20
     dec de              ;126c 1b
-    ld bc,(l200fh)      ;126d ed 4b 0f 20
+    ld bc,(200fh)       ;126d ed 4b 0f 20
     ld a,e              ;1271 7b
     sub c               ;1272 91
     ld a,d              ;1273 7a
@@ -2376,8 +2132,8 @@ l125ah:
     ex (sp),hl          ;1277 e3
     add hl,de           ;1278 19
     ex de,hl            ;1279 eb
-    ld ix,(l2011h)      ;127a dd 2a 11 20
-    ld bc,(l2013h)      ;127e ed 4b 13 20
+    ld ix,(2011h)       ;127a dd 2a 11 20
+    ld bc,(2013h)       ;127e ed 4b 13 20
     ld b,18h            ;1282 06 18
     xor a               ;1284 af
     ld hl,0000h         ;1285 21 00 00
@@ -2395,10 +2151,10 @@ l1293h:
     push af             ;1296 f5
     call sub_164dh      ;1297 cd 4d 16
     jr c,l12d0h         ;129a 38 34
-    ld (l2054h),a       ;129c 32 54 20
-    ld (l2055h),de      ;129f ed 53 55 20
+    ld (2054h),a        ;129c 32 54 20
+    ld (2055h),de       ;129f ed 53 55 20
     ld b,a              ;12a3 47
-    ld hl,l2011h        ;12a4 21 11 20
+    ld hl,2011h         ;12a4 21 11 20
     cp (hl)             ;12a7 be
     inc hl              ;12a8 23
     ld a,e              ;12a9 7b
@@ -2416,7 +2172,7 @@ l1293h:
     adc a,b             ;12b6 88
     ex de,hl            ;12b7 eb
     ld b,a              ;12b8 47
-    ld hl,(l200dh)      ;12b9 2a 0d 20
+    ld hl,(200dh)       ;12b9 2a 0d 20
     ld c,00h            ;12bc 0e 00
     add hl,hl           ;12be 29
     rl c                ;12bf cb 11
@@ -2480,7 +2236,7 @@ l1318h:
     ld a,1eh            ;1318 3e 1e
     jp 05cfh            ;131a c3 cf 05
 l131dh:
-    ld a,(l2002h)       ;131d 3a 02 20
+    ld a,(2002h)        ;131d 3a 02 20
     or a                ;1320 b7
     ld a,5ch            ;1321 3e 5c
     jp nz,05cfh         ;1323 c2 cf 05
@@ -2497,7 +2253,7 @@ l132ch:
     cp 0ch              ;133c fe 0c
     jr c,l1349h         ;133e 38 09
 l1340h:
-    ld a,(l2002h)       ;1340 3a 02 20
+    ld a,(2002h)        ;1340 3a 02 20
     or a                ;1343 b7
     ld a,5ch            ;1344 3e 5c
     jp nz,05cfh         ;1346 c2 cf 05
@@ -2582,7 +2338,7 @@ l137dh:
     ld bc,0001h         ;13d2 01 01 00
     ldir                ;13d5 ed b0
     ex de,hl            ;13d7 eb
-    ld a,(l2002h)       ;13d8 3a 02 20
+    ld a,(2002h)        ;13d8 3a 02 20
     push de             ;13db d5
     ld de,0000h         ;13dc 11 00 00
     call sub_0660h      ;13df cd 60 06
@@ -2730,7 +2486,7 @@ l14dch:
     ld hl,l152eh+1      ;14eb 21 2f 15
     ld bc,000eh         ;14ee 01 0e 00
     ldir                ;14f1 ed b0
-    ld hl,l203eh        ;14f3 21 3e 20
+    ld hl,203eh         ;14f3 21 3e 20
     ld b,10h            ;14f6 06 10
 l14f8h:
     ld a,(hl)           ;14f8 7e
@@ -2838,10 +2594,10 @@ l158ch:
     bit 7,(ix+01h)      ;158f dd cb 01 7e
     ret nz              ;1593 c0
     inc de              ;1594 13
-    ld a,(l200bh)       ;1595 3a 0b 20
+    ld a,(200bh)        ;1595 3a 0b 20
     cp e                ;1598 bb
     jr nz,l158ch        ;1599 20 f1
-    ld a,(l200ch)       ;159b 3a 0c 20
+    ld a,(200ch)        ;159b 3a 0c 20
     cp d                ;159e ba
     jr nz,l158ch        ;159f 20 eb
     ld a,48h            ;15a1 3e 48
@@ -2856,10 +2612,10 @@ sub_15a6h:
     ld d,h              ;15b3 54
     inc hl              ;15b4 23
     ld (2d68h),hl       ;15b5 22 68 2d
-    ld a,(l200bh)       ;15b8 3a 0b 20
+    ld a,(200bh)        ;15b8 3a 0b 20
     cp e                ;15bb bb
     jr nz,l15c4h        ;15bc 20 06
-    ld a,(l200ch)       ;15be 3a 0c 20
+    ld a,(200ch)        ;15be 3a 0c 20
     cp d                ;15c1 ba
     scf                 ;15c2 37
     ret z               ;15c3 c8
@@ -2884,7 +2640,7 @@ l15cch:
     scf                 ;15e1 37
     ret                 ;15e2 c9
 sub_15e3h:
-    ld a,(l204fh)       ;15e3 3a 4f 20
+    ld a,(204fh)        ;15e3 3a 4f 20
     ld (2d67h),a        ;15e6 32 67 2d
     ld a,(hl)           ;15e9 7e
     ld e,a              ;15ea 5f
@@ -3086,7 +2842,7 @@ l170bh:
     inc iy              ;1719 fd 23
     djnz l170bh         ;171b 10 ee
     pop hl              ;171d e1
-    ld de,l2057h        ;171e 11 57 20
+    ld de,2057h         ;171e 11 57 20
     call sub_173ch      ;1721 cd 3c 17
     pop bc              ;1724 c1
 l1725h:
@@ -3134,7 +2890,7 @@ l175ah:
     ret                 ;175b c9
 sub_175ch:
     ld ix,2457h         ;175c dd 21 57 24
-    ld de,(l2034h)      ;1760 ed 5b 34 20
+    ld de,(2034h)       ;1760 ed 5b 34 20
     ld hl,0000h         ;1764 21 00 00
 l1767h:
     ld b,08h            ;1767 06 08
@@ -3172,7 +2928,7 @@ sub_1789h:
     pop de              ;1795 d1
     ret                 ;1796 c9
 sub_1797h:
-    ld a,(l2004h)       ;1797 3a 04 20
+    ld a,(2004h)        ;1797 3a 04 20
     ld b,a              ;179a 47
     srl d               ;179b cb 3a
     rr e                ;179d cb 1b
@@ -3180,10 +2936,10 @@ sub_1797h:
     rr e                ;17a1 cb 1b
     srl d               ;17a3 cb 3a
     rr e                ;17a5 cb 1b
-    ld hl,(l2024h)      ;17a7 2a 24 20
+    ld hl,(2024h)       ;17a7 2a 24 20
     add hl,de           ;17aa 19
     ex de,hl            ;17ab eb
-    ld a,(l2026h)       ;17ac 3a 26 20
+    ld a,(2026h)        ;17ac 3a 26 20
     adc a,00h           ;17af ce 00
     ld hl,2af5h         ;17b1 21 f5 2a
     ret                 ;17b4 c9
@@ -3205,10 +2961,10 @@ sub_17c0h:
     pop hl              ;17cc e1
     ret                 ;17cd c9
 sub_17ceh:
-    ld a,(l2004h)       ;17ce 3a 04 20
+    ld a,(2004h)        ;17ce 3a 04 20
     ld b,a              ;17d1 47
-    ld hl,(l202ch)      ;17d2 2a 2c 20
-    ld a,(l202eh)       ;17d5 3a 2e 20
+    ld hl,(202ch)       ;17d2 2a 2c 20
+    ld a,(202eh)        ;17d5 3a 2e 20
     add hl,de           ;17d8 19
     ex de,hl            ;17d9 eb
     adc a,00h           ;17da ce 00
@@ -3252,8 +3008,8 @@ sub_17f6h:
     call nz,sub_17b5h   ;181e c4 b5 17
     pop af              ;1821 f1
     jr nz,l1847h        ;1822 20 23
-    ld de,l2057h        ;1824 11 57 20
-    ld bc,(l202fh)      ;1827 ed 4b 2f 20
+    ld de,2057h         ;1824 11 57 20
+    ld bc,(202fh)       ;1827 ed 4b 2f 20
     call sub_16bah      ;182b cd ba 16
     ld (ix+00h),l       ;182e dd 75 00
     ld (ix+01h),h       ;1831 dd 74 01
@@ -3280,7 +3036,7 @@ l1847h:
     inc a               ;185d 3c
     jr nz,l1886h        ;185e 20 26
     ld de,2457h         ;1860 11 57 24
-    ld bc,(l2034h)      ;1863 ed 4b 34 20
+    ld bc,(2034h)       ;1863 ed 4b 34 20
     call sub_16bah      ;1867 cd ba 16
     ld (ix+00h),l       ;186a dd 75 00
     ld (ix+01h),h       ;186d dd 74 01
@@ -3310,13 +3066,13 @@ l189ch:
     ld de,(2d6ch)       ;18a0 ed 5b 6c 2d
     ld d,00h            ;18a4 16 00
     add hl,de           ;18a6 19
-    ld de,(l2031h)      ;18a7 ed 5b 31 20
+    ld de,(2031h)       ;18a7 ed 5b 31 20
     add hl,de           ;18ab 19
     ex de,hl            ;18ac eb
     ld b,a              ;18ad 47
-    ld a,(l2033h)       ;18ae 3a 33 20
+    ld a,(2033h)        ;18ae 3a 33 20
     adc a,b             ;18b1 88
-    ld hl,l2004h        ;18b2 21 04 20
+    ld hl,2004h         ;18b2 21 04 20
     ld b,(hl)           ;18b5 46
     ld hl,(2aech)       ;18b6 2a ec 2a
     pop iy              ;18b9 fd e1
@@ -3329,12 +3085,12 @@ sub_18beh:
     srl d               ;18c1 cb 3a
     rr e                ;18c3 cb 1b
     push af             ;18c5 f5
-    ld hl,(l2027h)      ;18c6 2a 27 20
-    ld a,(l2029h)       ;18c9 3a 29 20
+    ld hl,(2027h)       ;18c6 2a 27 20
+    ld a,(2029h)        ;18c9 3a 29 20
     add hl,de           ;18cc 19
     adc a,00h           ;18cd ce 00
     ex de,hl            ;18cf eb
-    ld hl,l2004h        ;18d0 21 04 20
+    ld hl,2004h         ;18d0 21 04 20
     ld b,(hl)           ;18d3 46
     ld hl,4710h         ;18d4 21 10 47
     call sub_1982h      ;18d7 cd 82 19
@@ -3358,12 +3114,12 @@ sub_18eeh:
     srl d               ;18f4 cb 3a
     rr e                ;18f6 cb 1b
     ex af,af'           ;18f8 08
-    ld hl,(l2027h)      ;18f9 2a 27 20
-    ld a,(l2029h)       ;18fc 3a 29 20
+    ld hl,(2027h)       ;18f9 2a 27 20
+    ld a,(2029h)        ;18fc 3a 29 20
     add hl,de           ;18ff 19
     adc a,00h           ;1900 ce 00
     ex de,hl            ;1902 eb
-    ld hl,l2004h        ;1903 21 04 20
+    ld hl,2004h         ;1903 21 04 20
     ld b,(hl)           ;1906 46
     ld hl,4710h         ;1907 21 10 47
     push af             ;190a f5
@@ -3389,17 +3145,17 @@ l191ah:
     pop hl              ;192b e1
     ret                 ;192c c9
 sub_192dh:
-    ld a,(l2004h)       ;192d 3a 04 20
+    ld a,(2004h)        ;192d 3a 04 20
     ld b,a              ;1930 47
-    ld de,(l2005h)      ;1931 ed 5b 05 20
-    ld a,(l2007h)       ;1935 3a 07 20
+    ld de,(2005h)       ;1931 ed 5b 05 20
+    ld a,(2007h)        ;1935 3a 07 20
     ld hl,4610h         ;1938 21 10 46
     jp sub_1982h        ;193b c3 82 19
 l193eh:
-    ld a,(l2004h)       ;193e 3a 04 20
+    ld a,(2004h)        ;193e 3a 04 20
     ld b,a              ;1941 47
-    ld de,(l2005h)      ;1942 ed 5b 05 20
-    ld a,(l2007h)       ;1946 3a 07 20
+    ld de,(2005h)       ;1942 ed 5b 05 20
+    ld a,(2007h)        ;1946 3a 07 20
     ld hl,4610h         ;1949 21 10 46
     jp l19b3h           ;194c c3 b3 19
 sub_194fh:
@@ -3409,22 +3165,22 @@ sub_1955h:
     call sub_195bh      ;1955 cd 5b 19
     jp l19b3h           ;1958 c3 b3 19
 sub_195bh:
-    ld de,(l204eh)      ;195b ed 5b 4e 20
+    ld de,(204eh)       ;195b ed 5b 4e 20
     ld d,00h            ;195f 16 00
-    ld hl,(l203bh)      ;1961 2a 3b 20
-    ld a,(l203dh)       ;1964 3a 3d 20
+    ld hl,(203bh)       ;1961 2a 3b 20
+    ld a,(203dh)        ;1964 3a 3d 20
     add hl,de           ;1967 19
     adc a,00h           ;1968 ce 00
     ex de,hl            ;196a eb
-    ld hl,l2004h        ;196b 21 04 20
+    ld hl,2004h         ;196b 21 04 20
     ld b,(hl)           ;196e 46
     ld hl,4910h         ;196f 21 10 49
     ret                 ;1972 c9
 sub_1973h:
-    ld a,(l200ah)       ;1973 3a 0a 20
+    ld a,(200ah)        ;1973 3a 0a 20
     or a                ;1976 b7
     ret z               ;1977 c8
-    ld a,(l2002h)       ;1978 3a 02 20
+    ld a,(2002h)        ;1978 3a 02 20
     or a                ;197b b7
     ret z               ;197c c8
     ld a,5ch            ;197d 3e 5c
@@ -3451,7 +3207,7 @@ l199fh:
     djnz l199fh         ;19a5 10 f8
     call sub_1a0dh      ;19a7 cd 0d 1a
     ret z               ;19aa c8
-    ld (l2051h),a       ;19ab 32 51 20
+    ld (2051h),a        ;19ab 32 51 20
     ld a,16h            ;19ae 3e 16
     jp l19dfh           ;19b0 c3 df 19
 l19b3h:
@@ -3474,14 +3230,14 @@ l19c1h:
     call sub_1a29h      ;19d3 cd 29 1a
     call sub_1a0dh      ;19d6 cd 0d 1a
     ret z               ;19d9 c8
-    ld (l2051h),a       ;19da 32 51 20
+    ld (2051h),a        ;19da 32 51 20
     ld a,19h            ;19dd 3e 19
 l19dfh:
     push af             ;19df f5
     ld hl,(4a10h)       ;19e0 2a 10 4a
-    ld (l2054h),hl      ;19e3 22 54 20
+    ld (2054h),hl       ;19e3 22 54 20
     ld a,(4a12h)        ;19e6 3a 12 4a
-    ld (l2056h),a       ;19e9 32 56 20
+    ld (2056h),a        ;19e9 32 56 20
     pop af              ;19ec f1
     jp sub_05dbh        ;19ed c3 db 05
 sub_19f0h:
@@ -3564,7 +3320,7 @@ l1a57h:
     jr nz,l1a4bh        ;1a5c 20 ed
     ld a,l              ;1a5e 7d
     out (18h),a         ;1a5f d3 18
-    ld hl,(l0134h)      ;1a61 2a 34 01
+    ld hl,(0134h)       ;1a61 2a 34 01
     add hl,de           ;1a64 19
     ld a,l              ;1a65 7d
     out (18h),a         ;1a66 d3 18
@@ -3583,1908 +3339,182 @@ sub_1a7ah:
     rr l                ;1a7c cb 1d
     djnz sub_1a7ah      ;1a7e 10 fa
     ret                 ;1a80 c9
-l1a81h:
-    nop                 ;1a81 00
-    jr nz,$+81          ;1a82 20 4f
-    rlc c               ;1a84 cb 01
-    ld bc,l2053h        ;1a86 01 53 20
-    ld d,e              ;1a89 53
-    ld b,e              ;1a8a 43
-    ld d,d              ;1a8b 52
-    ld b,c              ;1a8c 41
-    ld d,h              ;1a8d 54
-    ld b,e              ;1a8e 43
-    ld c,b              ;1a8f 48
-    ld b,l              ;1a90 45
-    call nz,sub_0716h   ;1a91 c4 16 07
-    add a,e             ;1a94 83
-    add hl,de           ;1a95 19
-    ld (bc),a           ;1a96 02
-    add a,e             ;1a97 83
-    ld a,(de)           ;1a98 1a
-    ld (bc),a           ;1a99 02
-    jr nz,l1aech        ;1a9a 20 50
-    ld d,d              ;1a9c 52
-    ld c,a              ;1a9d 4f
-    ld d,h              ;1a9e 54
-    ld b,l              ;1a9f 45
-    ld b,e              ;1aa0 43
-    ld d,h              ;1aa1 54
-    ld b,l              ;1aa2 45
-    call nz,sub_041eh   ;1aa3 c4 1e 04
-    add a,e             ;1aa6 83
-    rra                 ;1aa7 1f
-    inc b               ;1aa8 04
-    inc bc              ;1aa9 03
-    jr nz,$+42          ;1aaa 20 28
-    dec b               ;1aac 05
-    jr nz,l1ab5h        ;1aad 20 06
-    xor c               ;1aaf a9
-    jr nz,l1ab6h        ;1ab0 20 04
-    inc bc              ;1ab2 03
-    jr nz,$+42          ;1ab3 20 28
-l1ab5h:
-    ld c,h              ;1ab5 4c
-l1ab6h:
-    ld c,a              ;1ab6 4f
-    ld c,(hl)           ;1ab7 4e
-    ld b,a              ;1ab8 47
-    jr nz,l1b07h        ;1ab9 20 4c
-    ld c,c              ;1abb 49
-    ld c,(hl)           ;1abc 4e
-    ld b,l              ;1abd 45
-    xor c               ;1abe a9
-    ld hl,0304h         ;1abf 21 04 03
-    jr z,$+7            ;1ac2 28 05
-    jr nz,l1ac7h        ;1ac4 20 01
-    ex af,af'           ;1ac6 08
-l1ac7h:
-    xor c               ;1ac7 a9
-    ld (0304h),hl       ;1ac8 22 04 03
-    jr z,l1b1bh         ;1acb 28 4e
-    ld c,a              ;1acd 4f
-    jr nz,l1ad1h        ;1ace 20 01
-    ex af,af'           ;1ad0 08
-l1ad1h:
-    xor c               ;1ad1 a9
-    ld (0b09h),a        ;1ad2 32 09 0b
-    jr nz,l1b27h        ;1ad5 20 50
-    ld d,d              ;1ad7 52
-    ld b,l              ;1ad8 45
-    ld d,e              ;1ad9 53
-    ld b,l              ;1ada 45
-    ld c,(hl)           ;1adb 4e
-    call nc,4f33h       ;1adc d4 33 4f
-    ld d,(hl)           ;1adf 56
-    ld b,l              ;1ae0 45
-    ld d,d              ;1ae1 52
-    ld b,(hl)           ;1ae2 46
-    ld c,h              ;1ae3 4c
-    ld c,a              ;1ae4 4f
-    ld d,a              ;1ae5 57
-    jr nz,l1b31h        ;1ae6 20 49
-    ld c,(hl)           ;1ae8 4e
-    jr nz,$-117         ;1ae9 20 89
-    inc (hl)            ;1aeb 34
-l1aech:
-    ld bc,5420h         ;1aec 01 20 54
-    ld c,a              ;1aef 4f
-    ld c,a              ;1af0 4f
-    jr nz,l1b3fh        ;1af1 20 4c
-    ld b,c              ;1af3 41
-    ld d,d              ;1af4 52
-    ld b,a              ;1af5 47
-    push bc             ;1af6 c5
-    inc a               ;1af7 3c
-    ld (bc),a           ;1af8 02
-    jr nz,l1afch        ;1af9 20 01
-    adc a,d             ;1afb 8a
-l1afch:
-    dec a               ;1afc 3d
-    ld bc,8a0bh         ;1afd 01 0b 8a
-    ld a,01h            ;1b00 3e 01
-l1b02h:
-    dec bc              ;1b02 0b
-    jr nz,l1b4bh        ;1b03 20 46
-    ld c,a              ;1b05 4f
-    ld d,l              ;1b06 55
-l1b07h:
-    ld c,(hl)           ;1b07 4e
-    call nz,sub_013fh   ;1b08 c4 3f 01
-l1b0bh:
-    jr nz,l1b52h        ;1b0b 20 45
-    ld e,b              ;1b0d 58
-    ld c,c              ;1b0e 49
-    ld d,e              ;1b0f 53
-    ld d,h              ;1b10 54
-    out (40h),a         ;1b11 d3 40
-    ld bc,5420h         ;1b13 01 20 54
-    ld e,c              ;1b16 59
-    ld d,b              ;1b17 50
-    ld b,l              ;1b18 45
-    jr nz,l1b68h        ;1b19 20 4d
-l1b1bh:
-    ld c,c              ;1b1b 49
-    ld d,e              ;1b1c 53
-    ld c,l              ;1b1d 4d
-    ld b,c              ;1b1e 41
-    ld d,h              ;1b1f 54
-    ld b,e              ;1b20 43
-    ret z               ;1b21 c8
-    ld b,c              ;1b22 41
-    ld c,(hl)           ;1b23 4e
-    ld c,a              ;1b24 4f
-    jr nz,l1b69h        ;1b25 20 42
-l1b27h:
-    ld c,h              ;1b27 4c
-    ld c,a              ;1b28 4f
-    ld b,e              ;1b29 43
-    bit 0,d             ;1b2a cb 42
-    ld c,c              ;1b2c 49
-    ld c,h              ;1b2d 4c
-    ld c,h              ;1b2e 4c
-    ld b,l              ;1b2f 45
-    ld b,a              ;1b30 47
-l1b31h:
-    ld b,c              ;1b31 41
-    ld c,h              ;1b32 4c
-    jr nz,l1b89h        ;1b33 20 54
-    ld d,d              ;1b35 52
-    ld b,c              ;1b36 41
-    ld b,e              ;1b37 43
-    ld c,e              ;1b38 4b
-    jr nz,l1b8ah        ;1b39 20 4f
-    ld d,d              ;1b3b 52
-    jr nz,l1b91h        ;1b3c 20 53
-    ld b,l              ;1b3e 45
-l1b3fh:
-    ld b,e              ;1b3f 43
-    ld d,h              ;1b40 54
-    ld c,a              ;1b41 4f
-    jp nc,4448h         ;1b42 d2 48 44
-    ld c,c              ;1b45 49
-    ld d,e              ;1b46 53
-    ld c,e              ;1b47 4b
-    jr nz,l1b90h        ;1b48 20 46
-    ld d,l              ;1b4a 55
-l1b4bh:
-    ld c,h              ;1b4b 4c
-    call z,sub_0e54h    ;1b4c cc 54 0e
-    dec bc              ;1b4f 0b
-    jr nz,l1b95h        ;1b50 20 43
-l1b52h:
-    ld c,a              ;1b52 4f
-    ld c,(hl)           ;1b53 4e
-    ld b,(hl)           ;1b54 46
-    ld c,c              ;1b55 49
-    ld b,a              ;1b56 47
-    ld d,l              ;1b57 55
-    ld d,d              ;1b58 52
-    ld b,l              ;1b59 45
-    call nz,0c59h       ;1b5a c4 59 0c
-    jr nz,l1b02h        ;1b5d 20 a3
-    ld e,d              ;1b5f 5a
-    dec b               ;1b60 05
-    jr nz,$+14          ;1b61 20 0c
-    jr nz,$-118         ;1b63 20 88
-    ld e,e              ;1b65 5b
-    ld d,b              ;1b66 50
-    ld b,c              ;1b67 41
-l1b68h:
-    ld d,e              ;1b68 53
-l1b69h:
-    ld d,e              ;1b69 53
-    ld d,a              ;1b6a 57
-    ld c,a              ;1b6b 4f
-    ld d,d              ;1b6c 52
-    ld b,h              ;1b6d 44
-    jr nz,$+75          ;1b6e 20 49
-    ld c,(hl)           ;1b70 4e
-    ld b,e              ;1b71 43
-    ld c,a              ;1b72 4f
-    ld d,d              ;1b73 52
-    ld d,d              ;1b74 52
-    ld b,l              ;1b75 45
-    ld b,e              ;1b76 43
-    call nc,505ch       ;1b77 d4 5c 50
-    ld d,d              ;1b7a 52
-    ld c,c              ;1b7b 49
-    ld d,(hl)           ;1b7c 56
-    ld c,c              ;1b7d 49
-    ld c,h              ;1b7e 4c
-    ld b,l              ;1b7f 45
-    ld b,a              ;1b80 47
-    ld b,l              ;1b81 45
-    ld b,h              ;1b82 44
-    jr nz,l1b0bh        ;1b83 20 86
-    ld h,e              ;1b85 63
-    ld d,e              ;1b86 53
-    ld c,l              ;1b87 4d
-    ld b,c              ;1b88 41
-l1b89h:
-    ld c,h              ;1b89 4c
-l1b8ah:
-    ld c,h              ;1b8a 4c
-    jr nz,$+85          ;1b8b 20 53
-    ld e,c              ;1b8d 59
-    ld d,e              ;1b8e 53
-    ld d,h              ;1b8f 54
-l1b90h:
-    ld b,l              ;1b90 45
-l1b91h:
-    ld c,l              ;1b91 4d
-    ld d,e              ;1b92 53
-    jr nz,l1bddh        ;1b93 20 48
-l1b95h:
-    ld b,c              ;1b95 41
-    ld d,d              ;1b96 52
-    ld b,h              ;1b97 44
-    ld b,d              ;1b98 42
-    ld c,a              ;1b99 4f
-    ld e,b              ;1b9a 58
-    adc a,l             ;1b9b 8d
-    rst 38h             ;1b9c ff
-    ld d,l              ;1b9d 55
-    ld c,(hl)           ;1b9e 4e
-    ld c,e              ;1b9f 4b
-    ld c,(hl)           ;1ba0 4e
-    ld c,a              ;1ba1 4f
-    ld d,a              ;1ba2 57
-    ld c,(hl)           ;1ba3 4e
-    inc bc              ;1ba4 03
-    jr nz,l1beah        ;1ba5 20 43
-    ld c,a              ;1ba7 4f
-    ld b,h              ;1ba8 44
-    push bc             ;1ba9 c5
-l1baah:
-    ld b,(hl)           ;1baa 46
-    ld c,c              ;1bab 49
-    ld c,h              ;1bac 4c
-    push bc             ;1bad c5
-    ld d,a              ;1bae 57
-    ld d,d              ;1baf 52
-    ld c,c              ;1bb0 49
-    ld d,h              ;1bb1 54
-    push bc             ;1bb2 c5
-    jr nz,l1bfah        ;1bb3 20 45
-    ld d,d              ;1bb5 52
-    ld d,d              ;1bb6 52
-    ld c,a              ;1bb7 4f
-    jp nc,5953h         ;1bb8 d2 53 59
-    ld c,(hl)           ;1bbb 4e
-    ld d,h              ;1bbc 54
-    ld b,c              ;1bbd 41
-    ret c               ;1bbe d8
-    ld c,c              ;1bbf 49
-    ld c,(hl)           ;1bc0 4e
-    ld d,(hl)           ;1bc1 56
-    ld b,c              ;1bc2 41
-    ld c,h              ;1bc3 4c
-    ld c,c              ;1bc4 49
-    call nz,4f43h       ;1bc5 c4 43 4f
-    ld c,l              ;1bc8 4d
-    ld c,l              ;1bc9 4d
-    ld b,c              ;1bca 41
-    ld c,(hl)           ;1bcb 4e
-    call nz,4552h       ;1bcc c4 52 45
-    ld b,c              ;1bcf 41
-    call nz,414eh       ;1bd0 c4 4e 41
-    ld c,l              ;1bd3 4d
-    push bc             ;1bd4 c5
-    ld d,d              ;1bd5 52
-    ld b,l              ;1bd6 45
-    ld b,e              ;1bd7 43
-    ld c,a              ;1bd8 4f
-    ld d,d              ;1bd9 52
-    call nz,4f20h       ;1bda c4 20 4f
-l1bddh:
-    ld d,b              ;1bdd 50
-    ld b,l              ;1bde 45
-    adc a,20h           ;1bdf ce 20
-    ld c,(hl)           ;1be1 4e
-    ld c,a              ;1be2 4f
-    call nc,5355h       ;1be3 d4 55 53
-    ld b,l              ;1be6 45
-    jp nc,5620h         ;1be7 d2 20 56
-l1beah:
-    ld b,l              ;1bea 45
-    ld d,d              ;1beb 52
-    ld d,e              ;1bec 53
-    ld c,c              ;1bed 49
-    ld c,a              ;1bee 4f
-    ld c,(hl)           ;1bef 4e
-    jr nz,l1b95h        ;1bf0 20 a3
-    ld b,h              ;1bf2 44
-    ld d,d              ;1bf3 52
-    ld c,c              ;1bf4 49
-    ld d,(hl)           ;1bf5 56
-    push bc             ;1bf6 c5
-    ld b,e              ;1bf7 43
-    ld c,a              ;1bf8 4f
-    ld d,d              ;1bf9 52
-l1bfah:
-    ld d,(hl)           ;1bfa 56
-    ld d,l              ;1bfb 55
-    out (00h),a         ;1bfc d3 00
-    nop                 ;1bfe 00
-    nop                 ;1bff 00
-    nop                 ;1c00 00
-    nop                 ;1c01 00
-    nop                 ;1c02 00
-    nop                 ;1c03 00
-    nop                 ;1c04 00
-    nop                 ;1c05 00
-    nop                 ;1c06 00
-    nop                 ;1c07 00
-    nop                 ;1c08 00
-    nop                 ;1c09 00
-    nop                 ;1c0a 00
-    nop                 ;1c0b 00
-    nop                 ;1c0c 00
-    nop                 ;1c0d 00
-    nop                 ;1c0e 00
-    nop                 ;1c0f 00
-    nop                 ;1c10 00
-    nop                 ;1c11 00
-    nop                 ;1c12 00
-    nop                 ;1c13 00
-    nop                 ;1c14 00
-    nop                 ;1c15 00
-    nop                 ;1c16 00
-    nop                 ;1c17 00
-    nop                 ;1c18 00
-    nop                 ;1c19 00
-    nop                 ;1c1a 00
-    nop                 ;1c1b 00
-    nop                 ;1c1c 00
-    nop                 ;1c1d 00
-    nop                 ;1c1e 00
-    nop                 ;1c1f 00
-    nop                 ;1c20 00
-    nop                 ;1c21 00
-    nop                 ;1c22 00
-    nop                 ;1c23 00
-    nop                 ;1c24 00
-    nop                 ;1c25 00
-    nop                 ;1c26 00
-    nop                 ;1c27 00
-    nop                 ;1c28 00
-    nop                 ;1c29 00
-    nop                 ;1c2a 00
-    nop                 ;1c2b 00
-    nop                 ;1c2c 00
-    nop                 ;1c2d 00
-    nop                 ;1c2e 00
-    nop                 ;1c2f 00
-    nop                 ;1c30 00
-    nop                 ;1c31 00
-    nop                 ;1c32 00
-    nop                 ;1c33 00
-    nop                 ;1c34 00
-    nop                 ;1c35 00
-    nop                 ;1c36 00
-    nop                 ;1c37 00
-    nop                 ;1c38 00
-    nop                 ;1c39 00
-    nop                 ;1c3a 00
-    nop                 ;1c3b 00
-    nop                 ;1c3c 00
-    nop                 ;1c3d 00
-    nop                 ;1c3e 00
-    nop                 ;1c3f 00
-    nop                 ;1c40 00
-    nop                 ;1c41 00
-    nop                 ;1c42 00
-    nop                 ;1c43 00
-    nop                 ;1c44 00
-    nop                 ;1c45 00
-    nop                 ;1c46 00
-    nop                 ;1c47 00
-    nop                 ;1c48 00
-    nop                 ;1c49 00
-    nop                 ;1c4a 00
-    nop                 ;1c4b 00
-    nop                 ;1c4c 00
-    nop                 ;1c4d 00
-    nop                 ;1c4e 00
-    nop                 ;1c4f 00
-    nop                 ;1c50 00
-    nop                 ;1c51 00
-    nop                 ;1c52 00
-    nop                 ;1c53 00
-    nop                 ;1c54 00
-    nop                 ;1c55 00
-    nop                 ;1c56 00
-    nop                 ;1c57 00
-    nop                 ;1c58 00
-    nop                 ;1c59 00
-    nop                 ;1c5a 00
-    nop                 ;1c5b 00
-    nop                 ;1c5c 00
-    nop                 ;1c5d 00
-    nop                 ;1c5e 00
-    nop                 ;1c5f 00
-    nop                 ;1c60 00
-    nop                 ;1c61 00
-    nop                 ;1c62 00
-    nop                 ;1c63 00
-    nop                 ;1c64 00
-    nop                 ;1c65 00
-    nop                 ;1c66 00
-    nop                 ;1c67 00
-    nop                 ;1c68 00
-    nop                 ;1c69 00
-    nop                 ;1c6a 00
-    nop                 ;1c6b 00
-    nop                 ;1c6c 00
-    nop                 ;1c6d 00
-    nop                 ;1c6e 00
-    nop                 ;1c6f 00
-    nop                 ;1c70 00
-    nop                 ;1c71 00
-    nop                 ;1c72 00
-    nop                 ;1c73 00
-    nop                 ;1c74 00
-    nop                 ;1c75 00
-    nop                 ;1c76 00
-    nop                 ;1c77 00
-    nop                 ;1c78 00
-    nop                 ;1c79 00
-    nop                 ;1c7a 00
-    nop                 ;1c7b 00
-    nop                 ;1c7c 00
-    nop                 ;1c7d 00
-    nop                 ;1c7e 00
-    nop                 ;1c7f 00
-    nop                 ;1c80 00
-    nop                 ;1c81 00
-    nop                 ;1c82 00
-    nop                 ;1c83 00
-    nop                 ;1c84 00
-    nop                 ;1c85 00
-    nop                 ;1c86 00
-    nop                 ;1c87 00
-    nop                 ;1c88 00
-    nop                 ;1c89 00
-    nop                 ;1c8a 00
-    nop                 ;1c8b 00
-    nop                 ;1c8c 00
-    nop                 ;1c8d 00
-    nop                 ;1c8e 00
-    nop                 ;1c8f 00
-    nop                 ;1c90 00
-    nop                 ;1c91 00
-    nop                 ;1c92 00
-    nop                 ;1c93 00
-    nop                 ;1c94 00
-    nop                 ;1c95 00
-    nop                 ;1c96 00
-    nop                 ;1c97 00
-    nop                 ;1c98 00
-    nop                 ;1c99 00
-    nop                 ;1c9a 00
-    nop                 ;1c9b 00
-    nop                 ;1c9c 00
-    nop                 ;1c9d 00
-    nop                 ;1c9e 00
-    nop                 ;1c9f 00
-    nop                 ;1ca0 00
-    nop                 ;1ca1 00
-    nop                 ;1ca2 00
-    nop                 ;1ca3 00
-    nop                 ;1ca4 00
-    nop                 ;1ca5 00
-    nop                 ;1ca6 00
-    nop                 ;1ca7 00
-    nop                 ;1ca8 00
-    nop                 ;1ca9 00
-    nop                 ;1caa 00
-    nop                 ;1cab 00
-    nop                 ;1cac 00
-    nop                 ;1cad 00
-    nop                 ;1cae 00
-    nop                 ;1caf 00
-    nop                 ;1cb0 00
-    nop                 ;1cb1 00
-    nop                 ;1cb2 00
-    nop                 ;1cb3 00
-    nop                 ;1cb4 00
-    nop                 ;1cb5 00
-    nop                 ;1cb6 00
-    nop                 ;1cb7 00
-    nop                 ;1cb8 00
-    nop                 ;1cb9 00
-    nop                 ;1cba 00
-    nop                 ;1cbb 00
-    nop                 ;1cbc 00
-    nop                 ;1cbd 00
-    nop                 ;1cbe 00
-    nop                 ;1cbf 00
-    nop                 ;1cc0 00
-    nop                 ;1cc1 00
-    nop                 ;1cc2 00
-    nop                 ;1cc3 00
-    nop                 ;1cc4 00
-    nop                 ;1cc5 00
-    nop                 ;1cc6 00
-    nop                 ;1cc7 00
-    nop                 ;1cc8 00
-    nop                 ;1cc9 00
-    nop                 ;1cca 00
-    nop                 ;1ccb 00
-    nop                 ;1ccc 00
-    nop                 ;1ccd 00
-    nop                 ;1cce 00
-    nop                 ;1ccf 00
-    nop                 ;1cd0 00
-    nop                 ;1cd1 00
-    nop                 ;1cd2 00
-    nop                 ;1cd3 00
-    nop                 ;1cd4 00
-    nop                 ;1cd5 00
-    nop                 ;1cd6 00
-    nop                 ;1cd7 00
-    nop                 ;1cd8 00
-    nop                 ;1cd9 00
-    nop                 ;1cda 00
-    nop                 ;1cdb 00
-    nop                 ;1cdc 00
-    nop                 ;1cdd 00
-    nop                 ;1cde 00
-    nop                 ;1cdf 00
-    nop                 ;1ce0 00
-    nop                 ;1ce1 00
-    nop                 ;1ce2 00
-    nop                 ;1ce3 00
-    nop                 ;1ce4 00
-    nop                 ;1ce5 00
-    nop                 ;1ce6 00
-    nop                 ;1ce7 00
-    nop                 ;1ce8 00
-    nop                 ;1ce9 00
-    nop                 ;1cea 00
-    nop                 ;1ceb 00
-    nop                 ;1cec 00
-    nop                 ;1ced 00
-    nop                 ;1cee 00
-    nop                 ;1cef 00
-    nop                 ;1cf0 00
-    nop                 ;1cf1 00
-    nop                 ;1cf2 00
-    nop                 ;1cf3 00
-    nop                 ;1cf4 00
-    nop                 ;1cf5 00
-    nop                 ;1cf6 00
-    nop                 ;1cf7 00
-    nop                 ;1cf8 00
-    nop                 ;1cf9 00
-    nop                 ;1cfa 00
-    nop                 ;1cfb 00
-    nop                 ;1cfc 00
-    nop                 ;1cfd 00
-    nop                 ;1cfe 00
-    nop                 ;1cff 00
-    nop                 ;1d00 00
-    nop                 ;1d01 00
-    nop                 ;1d02 00
-    nop                 ;1d03 00
-    nop                 ;1d04 00
-    nop                 ;1d05 00
-    nop                 ;1d06 00
-    nop                 ;1d07 00
-    nop                 ;1d08 00
-    nop                 ;1d09 00
-    nop                 ;1d0a 00
-    nop                 ;1d0b 00
-    nop                 ;1d0c 00
-    nop                 ;1d0d 00
-    nop                 ;1d0e 00
-    nop                 ;1d0f 00
-    nop                 ;1d10 00
-    nop                 ;1d11 00
-    nop                 ;1d12 00
-    nop                 ;1d13 00
-    nop                 ;1d14 00
-    nop                 ;1d15 00
-    nop                 ;1d16 00
-    nop                 ;1d17 00
-    nop                 ;1d18 00
-    nop                 ;1d19 00
-    nop                 ;1d1a 00
-    nop                 ;1d1b 00
-    nop                 ;1d1c 00
-    nop                 ;1d1d 00
-    nop                 ;1d1e 00
-    nop                 ;1d1f 00
-    nop                 ;1d20 00
-    nop                 ;1d21 00
-    nop                 ;1d22 00
-    nop                 ;1d23 00
-    nop                 ;1d24 00
-    nop                 ;1d25 00
-    nop                 ;1d26 00
-    nop                 ;1d27 00
-    nop                 ;1d28 00
-    nop                 ;1d29 00
-    nop                 ;1d2a 00
-    nop                 ;1d2b 00
-    nop                 ;1d2c 00
-    nop                 ;1d2d 00
-    nop                 ;1d2e 00
-    nop                 ;1d2f 00
-    nop                 ;1d30 00
-    nop                 ;1d31 00
-    nop                 ;1d32 00
-    nop                 ;1d33 00
-    nop                 ;1d34 00
-    nop                 ;1d35 00
-    nop                 ;1d36 00
-    nop                 ;1d37 00
-    nop                 ;1d38 00
-    nop                 ;1d39 00
-    nop                 ;1d3a 00
-    nop                 ;1d3b 00
-    nop                 ;1d3c 00
-    nop                 ;1d3d 00
-    nop                 ;1d3e 00
-    nop                 ;1d3f 00
-    nop                 ;1d40 00
-    nop                 ;1d41 00
-    nop                 ;1d42 00
-    nop                 ;1d43 00
-    nop                 ;1d44 00
-    nop                 ;1d45 00
-    nop                 ;1d46 00
-    nop                 ;1d47 00
-    nop                 ;1d48 00
-    nop                 ;1d49 00
-    nop                 ;1d4a 00
-    nop                 ;1d4b 00
-    nop                 ;1d4c 00
-    nop                 ;1d4d 00
-    nop                 ;1d4e 00
-    nop                 ;1d4f 00
-    nop                 ;1d50 00
-    nop                 ;1d51 00
-    nop                 ;1d52 00
-    nop                 ;1d53 00
-    nop                 ;1d54 00
-    nop                 ;1d55 00
-    nop                 ;1d56 00
-    nop                 ;1d57 00
-    nop                 ;1d58 00
-    nop                 ;1d59 00
-    nop                 ;1d5a 00
-    nop                 ;1d5b 00
-    nop                 ;1d5c 00
-    nop                 ;1d5d 00
-    nop                 ;1d5e 00
-    nop                 ;1d5f 00
-    nop                 ;1d60 00
-    nop                 ;1d61 00
-    nop                 ;1d62 00
-    nop                 ;1d63 00
-    nop                 ;1d64 00
-    nop                 ;1d65 00
-    nop                 ;1d66 00
-    nop                 ;1d67 00
-    nop                 ;1d68 00
-    nop                 ;1d69 00
-    nop                 ;1d6a 00
-    nop                 ;1d6b 00
-    nop                 ;1d6c 00
-    nop                 ;1d6d 00
-    nop                 ;1d6e 00
-    nop                 ;1d6f 00
-    nop                 ;1d70 00
-    nop                 ;1d71 00
-    nop                 ;1d72 00
-    nop                 ;1d73 00
-    nop                 ;1d74 00
-    nop                 ;1d75 00
-    nop                 ;1d76 00
-    nop                 ;1d77 00
-    nop                 ;1d78 00
-    nop                 ;1d79 00
-    nop                 ;1d7a 00
-    nop                 ;1d7b 00
-    nop                 ;1d7c 00
-    nop                 ;1d7d 00
-    nop                 ;1d7e 00
-    nop                 ;1d7f 00
-    nop                 ;1d80 00
-    nop                 ;1d81 00
-    nop                 ;1d82 00
-    nop                 ;1d83 00
-    nop                 ;1d84 00
-    nop                 ;1d85 00
-    nop                 ;1d86 00
-    nop                 ;1d87 00
-    nop                 ;1d88 00
-    nop                 ;1d89 00
-    nop                 ;1d8a 00
-    nop                 ;1d8b 00
-    nop                 ;1d8c 00
-    nop                 ;1d8d 00
-    nop                 ;1d8e 00
-    nop                 ;1d8f 00
-    nop                 ;1d90 00
-    nop                 ;1d91 00
-    nop                 ;1d92 00
-    nop                 ;1d93 00
-    nop                 ;1d94 00
-    nop                 ;1d95 00
-    nop                 ;1d96 00
-    nop                 ;1d97 00
-    nop                 ;1d98 00
-    nop                 ;1d99 00
-    nop                 ;1d9a 00
-    nop                 ;1d9b 00
-    nop                 ;1d9c 00
-    nop                 ;1d9d 00
-    nop                 ;1d9e 00
-    nop                 ;1d9f 00
-    nop                 ;1da0 00
-    nop                 ;1da1 00
-    nop                 ;1da2 00
-    nop                 ;1da3 00
-    nop                 ;1da4 00
-    nop                 ;1da5 00
-    nop                 ;1da6 00
-    nop                 ;1da7 00
-    nop                 ;1da8 00
-    nop                 ;1da9 00
-    nop                 ;1daa 00
-    nop                 ;1dab 00
-    nop                 ;1dac 00
-    nop                 ;1dad 00
-    nop                 ;1dae 00
-    nop                 ;1daf 00
-    nop                 ;1db0 00
-    nop                 ;1db1 00
-    nop                 ;1db2 00
-    nop                 ;1db3 00
-    nop                 ;1db4 00
-    nop                 ;1db5 00
-    nop                 ;1db6 00
-    nop                 ;1db7 00
-    nop                 ;1db8 00
-    nop                 ;1db9 00
-    nop                 ;1dba 00
-    nop                 ;1dbb 00
-    nop                 ;1dbc 00
-    nop                 ;1dbd 00
-    nop                 ;1dbe 00
-    nop                 ;1dbf 00
-    nop                 ;1dc0 00
-    nop                 ;1dc1 00
-    nop                 ;1dc2 00
-    nop                 ;1dc3 00
-    nop                 ;1dc4 00
-    nop                 ;1dc5 00
-    nop                 ;1dc6 00
-    nop                 ;1dc7 00
-    nop                 ;1dc8 00
-    nop                 ;1dc9 00
-    nop                 ;1dca 00
-    nop                 ;1dcb 00
-    nop                 ;1dcc 00
-    nop                 ;1dcd 00
-    nop                 ;1dce 00
-    nop                 ;1dcf 00
-    nop                 ;1dd0 00
-    nop                 ;1dd1 00
-    nop                 ;1dd2 00
-    nop                 ;1dd3 00
-    nop                 ;1dd4 00
-    nop                 ;1dd5 00
-    nop                 ;1dd6 00
-    nop                 ;1dd7 00
-    nop                 ;1dd8 00
-    nop                 ;1dd9 00
-    nop                 ;1dda 00
-    nop                 ;1ddb 00
-    nop                 ;1ddc 00
-    nop                 ;1ddd 00
-    nop                 ;1dde 00
-    nop                 ;1ddf 00
-    nop                 ;1de0 00
-    nop                 ;1de1 00
-    nop                 ;1de2 00
-    nop                 ;1de3 00
-    nop                 ;1de4 00
-    nop                 ;1de5 00
-    nop                 ;1de6 00
-    nop                 ;1de7 00
-    nop                 ;1de8 00
-    nop                 ;1de9 00
-    nop                 ;1dea 00
-    nop                 ;1deb 00
-    nop                 ;1dec 00
-    nop                 ;1ded 00
-    nop                 ;1dee 00
-    nop                 ;1def 00
-    nop                 ;1df0 00
-    nop                 ;1df1 00
-    nop                 ;1df2 00
-    nop                 ;1df3 00
-    nop                 ;1df4 00
-    nop                 ;1df5 00
-    nop                 ;1df6 00
-    nop                 ;1df7 00
-    nop                 ;1df8 00
-    nop                 ;1df9 00
-    nop                 ;1dfa 00
-    nop                 ;1dfb 00
-    nop                 ;1dfc 00
-    nop                 ;1dfd 00
-    nop                 ;1dfe 00
-    nop                 ;1dff 00
-    nop                 ;1e00 00
-    nop                 ;1e01 00
-    nop                 ;1e02 00
-    nop                 ;1e03 00
-    nop                 ;1e04 00
-    nop                 ;1e05 00
-    nop                 ;1e06 00
-    nop                 ;1e07 00
-    nop                 ;1e08 00
-    nop                 ;1e09 00
-    nop                 ;1e0a 00
-    nop                 ;1e0b 00
-    nop                 ;1e0c 00
-    nop                 ;1e0d 00
-    nop                 ;1e0e 00
-    nop                 ;1e0f 00
-    nop                 ;1e10 00
-    nop                 ;1e11 00
-    nop                 ;1e12 00
-    nop                 ;1e13 00
-    nop                 ;1e14 00
-    nop                 ;1e15 00
-    nop                 ;1e16 00
-    nop                 ;1e17 00
-    nop                 ;1e18 00
-    nop                 ;1e19 00
-    nop                 ;1e1a 00
-    nop                 ;1e1b 00
-    nop                 ;1e1c 00
-    nop                 ;1e1d 00
-    nop                 ;1e1e 00
-    nop                 ;1e1f 00
-    nop                 ;1e20 00
-    nop                 ;1e21 00
-    nop                 ;1e22 00
-    nop                 ;1e23 00
-    nop                 ;1e24 00
-    nop                 ;1e25 00
-    nop                 ;1e26 00
-    nop                 ;1e27 00
-    nop                 ;1e28 00
-    nop                 ;1e29 00
-    nop                 ;1e2a 00
-    nop                 ;1e2b 00
-    nop                 ;1e2c 00
-    nop                 ;1e2d 00
-    nop                 ;1e2e 00
-    nop                 ;1e2f 00
-    nop                 ;1e30 00
-    nop                 ;1e31 00
-    nop                 ;1e32 00
-    nop                 ;1e33 00
-    nop                 ;1e34 00
-    nop                 ;1e35 00
-    nop                 ;1e36 00
-    nop                 ;1e37 00
-    nop                 ;1e38 00
-    nop                 ;1e39 00
-    nop                 ;1e3a 00
-    nop                 ;1e3b 00
-    nop                 ;1e3c 00
-    nop                 ;1e3d 00
-    nop                 ;1e3e 00
-    nop                 ;1e3f 00
-    nop                 ;1e40 00
-    nop                 ;1e41 00
-    nop                 ;1e42 00
-    nop                 ;1e43 00
-    nop                 ;1e44 00
-    nop                 ;1e45 00
-    nop                 ;1e46 00
-    nop                 ;1e47 00
-    nop                 ;1e48 00
-    nop                 ;1e49 00
-    nop                 ;1e4a 00
-    nop                 ;1e4b 00
-    nop                 ;1e4c 00
-    nop                 ;1e4d 00
-    nop                 ;1e4e 00
-    nop                 ;1e4f 00
-    nop                 ;1e50 00
-    nop                 ;1e51 00
-    nop                 ;1e52 00
-    nop                 ;1e53 00
-    nop                 ;1e54 00
-    nop                 ;1e55 00
-    nop                 ;1e56 00
-    nop                 ;1e57 00
-    nop                 ;1e58 00
-    nop                 ;1e59 00
-    nop                 ;1e5a 00
-    nop                 ;1e5b 00
-    nop                 ;1e5c 00
-    nop                 ;1e5d 00
-    nop                 ;1e5e 00
-    nop                 ;1e5f 00
-    nop                 ;1e60 00
-    nop                 ;1e61 00
-    nop                 ;1e62 00
-    nop                 ;1e63 00
-    nop                 ;1e64 00
-    nop                 ;1e65 00
-    nop                 ;1e66 00
-    nop                 ;1e67 00
-    nop                 ;1e68 00
-    nop                 ;1e69 00
-    nop                 ;1e6a 00
-    nop                 ;1e6b 00
-    nop                 ;1e6c 00
-    nop                 ;1e6d 00
-    nop                 ;1e6e 00
-    nop                 ;1e6f 00
-    nop                 ;1e70 00
-    nop                 ;1e71 00
-    nop                 ;1e72 00
-    nop                 ;1e73 00
-    nop                 ;1e74 00
-    nop                 ;1e75 00
-    nop                 ;1e76 00
-    nop                 ;1e77 00
-    nop                 ;1e78 00
-    nop                 ;1e79 00
-    nop                 ;1e7a 00
-    nop                 ;1e7b 00
-    nop                 ;1e7c 00
-    nop                 ;1e7d 00
-    nop                 ;1e7e 00
-    nop                 ;1e7f 00
-    nop                 ;1e80 00
-    nop                 ;1e81 00
-    nop                 ;1e82 00
-    nop                 ;1e83 00
-    nop                 ;1e84 00
-    nop                 ;1e85 00
-    nop                 ;1e86 00
-    nop                 ;1e87 00
-    nop                 ;1e88 00
-    nop                 ;1e89 00
-    nop                 ;1e8a 00
-    nop                 ;1e8b 00
-    nop                 ;1e8c 00
-    nop                 ;1e8d 00
-    nop                 ;1e8e 00
-    nop                 ;1e8f 00
-    nop                 ;1e90 00
-    nop                 ;1e91 00
-    nop                 ;1e92 00
-    nop                 ;1e93 00
-    nop                 ;1e94 00
-    nop                 ;1e95 00
-    nop                 ;1e96 00
-    nop                 ;1e97 00
-    nop                 ;1e98 00
-    nop                 ;1e99 00
-    nop                 ;1e9a 00
-    nop                 ;1e9b 00
-    nop                 ;1e9c 00
-    nop                 ;1e9d 00
-    nop                 ;1e9e 00
-    nop                 ;1e9f 00
-    nop                 ;1ea0 00
-    nop                 ;1ea1 00
-    nop                 ;1ea2 00
-    nop                 ;1ea3 00
-    nop                 ;1ea4 00
-    nop                 ;1ea5 00
-    nop                 ;1ea6 00
-    nop                 ;1ea7 00
-    nop                 ;1ea8 00
-    nop                 ;1ea9 00
-    nop                 ;1eaa 00
-    nop                 ;1eab 00
-    nop                 ;1eac 00
-    nop                 ;1ead 00
-    nop                 ;1eae 00
-    nop                 ;1eaf 00
-    nop                 ;1eb0 00
-    nop                 ;1eb1 00
-    nop                 ;1eb2 00
-    nop                 ;1eb3 00
-    nop                 ;1eb4 00
-    nop                 ;1eb5 00
-    nop                 ;1eb6 00
-    nop                 ;1eb7 00
-    nop                 ;1eb8 00
-    nop                 ;1eb9 00
-    nop                 ;1eba 00
-    nop                 ;1ebb 00
-    nop                 ;1ebc 00
-    nop                 ;1ebd 00
-    nop                 ;1ebe 00
-    nop                 ;1ebf 00
-    nop                 ;1ec0 00
-    nop                 ;1ec1 00
-    nop                 ;1ec2 00
-    nop                 ;1ec3 00
-    nop                 ;1ec4 00
-    nop                 ;1ec5 00
-    nop                 ;1ec6 00
-    nop                 ;1ec7 00
-    nop                 ;1ec8 00
-    nop                 ;1ec9 00
-    nop                 ;1eca 00
-    nop                 ;1ecb 00
-    nop                 ;1ecc 00
-    nop                 ;1ecd 00
-    nop                 ;1ece 00
-    nop                 ;1ecf 00
-    nop                 ;1ed0 00
-    nop                 ;1ed1 00
-    nop                 ;1ed2 00
-    nop                 ;1ed3 00
-    nop                 ;1ed4 00
-    nop                 ;1ed5 00
-    nop                 ;1ed6 00
-    nop                 ;1ed7 00
-    nop                 ;1ed8 00
-    nop                 ;1ed9 00
-    nop                 ;1eda 00
-    nop                 ;1edb 00
-    nop                 ;1edc 00
-    nop                 ;1edd 00
-    nop                 ;1ede 00
-    nop                 ;1edf 00
-    nop                 ;1ee0 00
-    nop                 ;1ee1 00
-    nop                 ;1ee2 00
-    nop                 ;1ee3 00
-    nop                 ;1ee4 00
-    nop                 ;1ee5 00
-    nop                 ;1ee6 00
-    nop                 ;1ee7 00
-    nop                 ;1ee8 00
-    nop                 ;1ee9 00
-    nop                 ;1eea 00
-    nop                 ;1eeb 00
-    nop                 ;1eec 00
-    nop                 ;1eed 00
-    nop                 ;1eee 00
-    nop                 ;1eef 00
-    nop                 ;1ef0 00
-    nop                 ;1ef1 00
-    nop                 ;1ef2 00
-    nop                 ;1ef3 00
-    nop                 ;1ef4 00
-    nop                 ;1ef5 00
-    nop                 ;1ef6 00
-    nop                 ;1ef7 00
-    nop                 ;1ef8 00
-    nop                 ;1ef9 00
-    nop                 ;1efa 00
-    nop                 ;1efb 00
-    nop                 ;1efc 00
-    nop                 ;1efd 00
-    nop                 ;1efe 00
-    nop                 ;1eff 00
-    nop                 ;1f00 00
-    nop                 ;1f01 00
-    nop                 ;1f02 00
-    nop                 ;1f03 00
-    nop                 ;1f04 00
-    nop                 ;1f05 00
-    nop                 ;1f06 00
-    nop                 ;1f07 00
-    nop                 ;1f08 00
-    nop                 ;1f09 00
-    nop                 ;1f0a 00
-    nop                 ;1f0b 00
-    nop                 ;1f0c 00
-    nop                 ;1f0d 00
-    nop                 ;1f0e 00
-    nop                 ;1f0f 00
-    nop                 ;1f10 00
-    nop                 ;1f11 00
-    nop                 ;1f12 00
-    nop                 ;1f13 00
-    nop                 ;1f14 00
-    nop                 ;1f15 00
-    nop                 ;1f16 00
-    nop                 ;1f17 00
-    nop                 ;1f18 00
-    nop                 ;1f19 00
-    nop                 ;1f1a 00
-    nop                 ;1f1b 00
-    nop                 ;1f1c 00
-    nop                 ;1f1d 00
-    nop                 ;1f1e 00
-    nop                 ;1f1f 00
-    nop                 ;1f20 00
-    nop                 ;1f21 00
-    nop                 ;1f22 00
-    nop                 ;1f23 00
-    nop                 ;1f24 00
-    nop                 ;1f25 00
-    nop                 ;1f26 00
-    nop                 ;1f27 00
-    nop                 ;1f28 00
-    nop                 ;1f29 00
-    nop                 ;1f2a 00
-    nop                 ;1f2b 00
-    nop                 ;1f2c 00
-    nop                 ;1f2d 00
-    nop                 ;1f2e 00
-    nop                 ;1f2f 00
-    nop                 ;1f30 00
-    nop                 ;1f31 00
-    nop                 ;1f32 00
-    nop                 ;1f33 00
-    nop                 ;1f34 00
-    nop                 ;1f35 00
-    nop                 ;1f36 00
-    nop                 ;1f37 00
-    nop                 ;1f38 00
-    nop                 ;1f39 00
-    nop                 ;1f3a 00
-    nop                 ;1f3b 00
-    nop                 ;1f3c 00
-    nop                 ;1f3d 00
-    nop                 ;1f3e 00
-    nop                 ;1f3f 00
-    nop                 ;1f40 00
-    nop                 ;1f41 00
-    nop                 ;1f42 00
-    nop                 ;1f43 00
-    nop                 ;1f44 00
-    nop                 ;1f45 00
-    nop                 ;1f46 00
-    nop                 ;1f47 00
-    nop                 ;1f48 00
-    nop                 ;1f49 00
-    nop                 ;1f4a 00
-    nop                 ;1f4b 00
-    nop                 ;1f4c 00
-    nop                 ;1f4d 00
-    nop                 ;1f4e 00
-    nop                 ;1f4f 00
-    nop                 ;1f50 00
-    nop                 ;1f51 00
-    nop                 ;1f52 00
-    nop                 ;1f53 00
-    nop                 ;1f54 00
-    nop                 ;1f55 00
-    nop                 ;1f56 00
-    nop                 ;1f57 00
-    nop                 ;1f58 00
-    nop                 ;1f59 00
-    nop                 ;1f5a 00
-    nop                 ;1f5b 00
-    nop                 ;1f5c 00
-    nop                 ;1f5d 00
-    nop                 ;1f5e 00
-    nop                 ;1f5f 00
-    nop                 ;1f60 00
-    nop                 ;1f61 00
-    nop                 ;1f62 00
-    nop                 ;1f63 00
-    nop                 ;1f64 00
-    nop                 ;1f65 00
-    nop                 ;1f66 00
-    nop                 ;1f67 00
-    nop                 ;1f68 00
-    nop                 ;1f69 00
-    nop                 ;1f6a 00
-    nop                 ;1f6b 00
-    nop                 ;1f6c 00
-    nop                 ;1f6d 00
-    nop                 ;1f6e 00
-    nop                 ;1f6f 00
-    nop                 ;1f70 00
-    nop                 ;1f71 00
-    nop                 ;1f72 00
-    nop                 ;1f73 00
-    nop                 ;1f74 00
-    nop                 ;1f75 00
-    nop                 ;1f76 00
-    nop                 ;1f77 00
-    nop                 ;1f78 00
-    nop                 ;1f79 00
-    nop                 ;1f7a 00
-    nop                 ;1f7b 00
-    nop                 ;1f7c 00
-    nop                 ;1f7d 00
-    nop                 ;1f7e 00
-    nop                 ;1f7f 00
-    nop                 ;1f80 00
-    nop                 ;1f81 00
-    nop                 ;1f82 00
-    nop                 ;1f83 00
-    nop                 ;1f84 00
-    nop                 ;1f85 00
-    nop                 ;1f86 00
-    nop                 ;1f87 00
-    nop                 ;1f88 00
-    nop                 ;1f89 00
-    nop                 ;1f8a 00
-    nop                 ;1f8b 00
-    nop                 ;1f8c 00
-    nop                 ;1f8d 00
-    nop                 ;1f8e 00
-    nop                 ;1f8f 00
-    nop                 ;1f90 00
-    nop                 ;1f91 00
-    nop                 ;1f92 00
-    nop                 ;1f93 00
-    nop                 ;1f94 00
-    nop                 ;1f95 00
-    nop                 ;1f96 00
-    nop                 ;1f97 00
-    nop                 ;1f98 00
-    nop                 ;1f99 00
-    nop                 ;1f9a 00
-    nop                 ;1f9b 00
-    nop                 ;1f9c 00
-    nop                 ;1f9d 00
-    nop                 ;1f9e 00
-    nop                 ;1f9f 00
-    nop                 ;1fa0 00
-    nop                 ;1fa1 00
-    nop                 ;1fa2 00
-    nop                 ;1fa3 00
-    nop                 ;1fa4 00
-    nop                 ;1fa5 00
-    nop                 ;1fa6 00
-    nop                 ;1fa7 00
-    nop                 ;1fa8 00
-    nop                 ;1fa9 00
-    nop                 ;1faa 00
-    nop                 ;1fab 00
-    nop                 ;1fac 00
-    nop                 ;1fad 00
-    nop                 ;1fae 00
-    nop                 ;1faf 00
-    nop                 ;1fb0 00
-    nop                 ;1fb1 00
-    nop                 ;1fb2 00
-    nop                 ;1fb3 00
-    nop                 ;1fb4 00
-    nop                 ;1fb5 00
-    nop                 ;1fb6 00
-    nop                 ;1fb7 00
-    nop                 ;1fb8 00
-    nop                 ;1fb9 00
-    nop                 ;1fba 00
-    nop                 ;1fbb 00
-    nop                 ;1fbc 00
-    nop                 ;1fbd 00
-    nop                 ;1fbe 00
-    nop                 ;1fbf 00
-    nop                 ;1fc0 00
-    nop                 ;1fc1 00
-    nop                 ;1fc2 00
-    nop                 ;1fc3 00
-    nop                 ;1fc4 00
-    nop                 ;1fc5 00
-    nop                 ;1fc6 00
-    nop                 ;1fc7 00
-    nop                 ;1fc8 00
-    nop                 ;1fc9 00
-    nop                 ;1fca 00
-    nop                 ;1fcb 00
-    nop                 ;1fcc 00
-    nop                 ;1fcd 00
-    nop                 ;1fce 00
-    nop                 ;1fcf 00
-    nop                 ;1fd0 00
-    nop                 ;1fd1 00
-    nop                 ;1fd2 00
-    nop                 ;1fd3 00
-    nop                 ;1fd4 00
-    nop                 ;1fd5 00
-    nop                 ;1fd6 00
-    nop                 ;1fd7 00
-    nop                 ;1fd8 00
-    nop                 ;1fd9 00
-    nop                 ;1fda 00
-    nop                 ;1fdb 00
-    nop                 ;1fdc 00
-    nop                 ;1fdd 00
-    nop                 ;1fde 00
-    nop                 ;1fdf 00
-    nop                 ;1fe0 00
-    nop                 ;1fe1 00
-    nop                 ;1fe2 00
-    nop                 ;1fe3 00
-    nop                 ;1fe4 00
-    nop                 ;1fe5 00
-    nop                 ;1fe6 00
-    nop                 ;1fe7 00
-    nop                 ;1fe8 00
-    nop                 ;1fe9 00
-    nop                 ;1fea 00
-    nop                 ;1feb 00
-    nop                 ;1fec 00
-    nop                 ;1fed 00
-    nop                 ;1fee 00
-    nop                 ;1fef 00
-    nop                 ;1ff0 00
-    nop                 ;1ff1 00
-    nop                 ;1ff2 00
-    nop                 ;1ff3 00
-    nop                 ;1ff4 00
-    nop                 ;1ff5 00
-    nop                 ;1ff6 00
-    nop                 ;1ff7 00
-    nop                 ;1ff8 00
-    nop                 ;1ff9 00
-    nop                 ;1ffa 00
-    nop                 ;1ffb 00
-    nop                 ;1ffc 00
-    nop                 ;1ffd 00
-    nop                 ;1ffe 00
-    nop                 ;1fff 00
-l2000h:
-    nop                 ;2000 00
-    nop                 ;2001 00
-l2002h:
-    nop                 ;2002 00
-    nop                 ;2003 00
-l2004h:
-    nop                 ;2004 00
-l2005h:
-    nop                 ;2005 00
-    nop                 ;2006 00
-l2007h:
-    nop                 ;2007 00
-l2008h:
-    nop                 ;2008 00
-l2009h:
-    nop                 ;2009 00
-l200ah:
-    nop                 ;200a 00
-l200bh:
-    nop                 ;200b 00
-l200ch:
-    nop                 ;200c 00
-l200dh:
-    nop                 ;200d 00
-    nop                 ;200e 00
-l200fh:
-    nop                 ;200f 00
-l2010h:
-    nop                 ;2010 00
-l2011h:
-    nop                 ;2011 00
-l2012h:
-    nop                 ;2012 00
-l2013h:
-    nop                 ;2013 00
-    nop                 ;2014 00
-    nop                 ;2015 00
-    nop                 ;2016 00
-    nop                 ;2017 00
-    nop                 ;2018 00
-    nop                 ;2019 00
-    nop                 ;201a 00
-    nop                 ;201b 00
-    nop                 ;201c 00
-    nop                 ;201d 00
-    nop                 ;201e 00
-    nop                 ;201f 00
-    nop                 ;2020 00
-    nop                 ;2021 00
-    nop                 ;2022 00
-    nop                 ;2023 00
-l2024h:
-    nop                 ;2024 00
-    nop                 ;2025 00
-l2026h:
-    nop                 ;2026 00
-l2027h:
-    nop                 ;2027 00
-    nop                 ;2028 00
-l2029h:
-    nop                 ;2029 00
-l202ah:
-    nop                 ;202a 00
-    nop                 ;202b 00
-l202ch:
-    nop                 ;202c 00
-    nop                 ;202d 00
-l202eh:
-    nop                 ;202e 00
-l202fh:
-    nop                 ;202f 00
-l2030h:
-    nop                 ;2030 00
-l2031h:
-    nop                 ;2031 00
-    nop                 ;2032 00
-l2033h:
-    nop                 ;2033 00
-l2034h:
-    nop                 ;2034 00
-    nop                 ;2035 00
-l2036h:
-    nop                 ;2036 00
-    nop                 ;2037 00
-l2038h:
-    nop                 ;2038 00
-l2039h:
-    nop                 ;2039 00
-    nop                 ;203a 00
-l203bh:
-    nop                 ;203b 00
-    nop                 ;203c 00
-l203dh:
-    nop                 ;203d 00
-l203eh:
-    nop                 ;203e 00
-    nop                 ;203f 00
-    nop                 ;2040 00
-    nop                 ;2041 00
-    nop                 ;2042 00
-    nop                 ;2043 00
-    nop                 ;2044 00
-    nop                 ;2045 00
-    nop                 ;2046 00
-    nop                 ;2047 00
-    nop                 ;2048 00
-    nop                 ;2049 00
-    nop                 ;204a 00
-    nop                 ;204b 00
-    nop                 ;204c 00
-    nop                 ;204d 00
-l204eh:
-    nop                 ;204e 00
-l204fh:
-    nop                 ;204f 00
-l2050h:
-    nop                 ;2050 00
-l2051h:
-    nop                 ;2051 00
-l2052h:
-    nop                 ;2052 00
-l2053h:
-    nop                 ;2053 00
-l2054h:
-    nop                 ;2054 00
-l2055h:
-    nop                 ;2055 00
-l2056h:
-    nop                 ;2056 00
-l2057h:
-    nop                 ;2057 00
-    nop                 ;2058 00
-    nop                 ;2059 00
-    nop                 ;205a 00
-    nop                 ;205b 00
-    nop                 ;205c 00
-    nop                 ;205d 00
-    nop                 ;205e 00
-    nop                 ;205f 00
-    nop                 ;2060 00
-    nop                 ;2061 00
-    nop                 ;2062 00
-    nop                 ;2063 00
-    nop                 ;2064 00
-    nop                 ;2065 00
-    nop                 ;2066 00
-    nop                 ;2067 00
-    nop                 ;2068 00
-    nop                 ;2069 00
-    nop                 ;206a 00
-    nop                 ;206b 00
-    nop                 ;206c 00
-    nop                 ;206d 00
-    nop                 ;206e 00
-    nop                 ;206f 00
-    nop                 ;2070 00
-    nop                 ;2071 00
-    nop                 ;2072 00
-    nop                 ;2073 00
-    nop                 ;2074 00
-    nop                 ;2075 00
-    nop                 ;2076 00
-    nop                 ;2077 00
-    nop                 ;2078 00
-    nop                 ;2079 00
-    nop                 ;207a 00
-    nop                 ;207b 00
-    nop                 ;207c 00
-    nop                 ;207d 00
-    nop                 ;207e 00
-    nop                 ;207f 00
-    nop                 ;2080 00
-    nop                 ;2081 00
-    nop                 ;2082 00
-    nop                 ;2083 00
-    nop                 ;2084 00
-    nop                 ;2085 00
-    nop                 ;2086 00
-    nop                 ;2087 00
-    nop                 ;2088 00
-    nop                 ;2089 00
-    nop                 ;208a 00
-    nop                 ;208b 00
-    nop                 ;208c 00
-    nop                 ;208d 00
-    nop                 ;208e 00
-    nop                 ;208f 00
-    nop                 ;2090 00
-    nop                 ;2091 00
-    nop                 ;2092 00
-    nop                 ;2093 00
-    nop                 ;2094 00
-    nop                 ;2095 00
-    nop                 ;2096 00
-    nop                 ;2097 00
-    nop                 ;2098 00
-    nop                 ;2099 00
-    nop                 ;209a 00
-    nop                 ;209b 00
-    nop                 ;209c 00
-    nop                 ;209d 00
-    nop                 ;209e 00
-    nop                 ;209f 00
-    nop                 ;20a0 00
-    nop                 ;20a1 00
-    nop                 ;20a2 00
-    nop                 ;20a3 00
-    nop                 ;20a4 00
-    nop                 ;20a5 00
-    nop                 ;20a6 00
-    nop                 ;20a7 00
-    nop                 ;20a8 00
-    nop                 ;20a9 00
-    nop                 ;20aa 00
-    nop                 ;20ab 00
-    nop                 ;20ac 00
-    nop                 ;20ad 00
-    nop                 ;20ae 00
-    nop                 ;20af 00
-    nop                 ;20b0 00
-    nop                 ;20b1 00
-    nop                 ;20b2 00
-    nop                 ;20b3 00
-    nop                 ;20b4 00
-    nop                 ;20b5 00
-    nop                 ;20b6 00
-    nop                 ;20b7 00
-    nop                 ;20b8 00
-    nop                 ;20b9 00
-    nop                 ;20ba 00
-    nop                 ;20bb 00
-    nop                 ;20bc 00
-    nop                 ;20bd 00
-    nop                 ;20be 00
-    nop                 ;20bf 00
-    nop                 ;20c0 00
-    nop                 ;20c1 00
-    nop                 ;20c2 00
-    nop                 ;20c3 00
-    nop                 ;20c4 00
-    nop                 ;20c5 00
-    nop                 ;20c6 00
-    nop                 ;20c7 00
-    nop                 ;20c8 00
-    nop                 ;20c9 00
-    nop                 ;20ca 00
-    nop                 ;20cb 00
-    nop                 ;20cc 00
-    nop                 ;20cd 00
-    nop                 ;20ce 00
-    nop                 ;20cf 00
-    nop                 ;20d0 00
-    nop                 ;20d1 00
-    nop                 ;20d2 00
-    nop                 ;20d3 00
-    nop                 ;20d4 00
-    nop                 ;20d5 00
-    nop                 ;20d6 00
-    nop                 ;20d7 00
-    nop                 ;20d8 00
-    nop                 ;20d9 00
-    nop                 ;20da 00
-    nop                 ;20db 00
-    nop                 ;20dc 00
-    nop                 ;20dd 00
-    nop                 ;20de 00
-    nop                 ;20df 00
-    nop                 ;20e0 00
-    nop                 ;20e1 00
-    nop                 ;20e2 00
-    nop                 ;20e3 00
-    nop                 ;20e4 00
-    nop                 ;20e5 00
-    nop                 ;20e6 00
-    nop                 ;20e7 00
-    nop                 ;20e8 00
-    nop                 ;20e9 00
-    nop                 ;20ea 00
-    nop                 ;20eb 00
-    nop                 ;20ec 00
-    nop                 ;20ed 00
-    nop                 ;20ee 00
-    nop                 ;20ef 00
-    nop                 ;20f0 00
-    nop                 ;20f1 00
-    nop                 ;20f2 00
-    nop                 ;20f3 00
-    nop                 ;20f4 00
-    nop                 ;20f5 00
-    nop                 ;20f6 00
-    nop                 ;20f7 00
-    nop                 ;20f8 00
-    nop                 ;20f9 00
-    nop                 ;20fa 00
-    nop                 ;20fb 00
-    nop                 ;20fc 00
-    nop                 ;20fd 00
-    nop                 ;20fe 00
-    nop                 ;20ff 00
-    nop                 ;2100 00
-    nop                 ;2101 00
-    nop                 ;2102 00
-    nop                 ;2103 00
-    nop                 ;2104 00
-    nop                 ;2105 00
-    nop                 ;2106 00
-    nop                 ;2107 00
-    nop                 ;2108 00
-    nop                 ;2109 00
-    nop                 ;210a 00
-    nop                 ;210b 00
-    nop                 ;210c 00
-    nop                 ;210d 00
-    nop                 ;210e 00
-    nop                 ;210f 00
-    nop                 ;2110 00
-    nop                 ;2111 00
-    nop                 ;2112 00
-    nop                 ;2113 00
-    nop                 ;2114 00
-    nop                 ;2115 00
-    nop                 ;2116 00
-    nop                 ;2117 00
-    nop                 ;2118 00
-    nop                 ;2119 00
-    nop                 ;211a 00
-    nop                 ;211b 00
-    nop                 ;211c 00
-    nop                 ;211d 00
-    nop                 ;211e 00
-    nop                 ;211f 00
-    nop                 ;2120 00
-    nop                 ;2121 00
-    nop                 ;2122 00
-    nop                 ;2123 00
-    nop                 ;2124 00
-    nop                 ;2125 00
-    nop                 ;2126 00
-    nop                 ;2127 00
-    nop                 ;2128 00
-    nop                 ;2129 00
-    nop                 ;212a 00
-    nop                 ;212b 00
-    nop                 ;212c 00
-    nop                 ;212d 00
-    nop                 ;212e 00
-    nop                 ;212f 00
-    nop                 ;2130 00
-    nop                 ;2131 00
-    nop                 ;2132 00
-    nop                 ;2133 00
-    nop                 ;2134 00
-    nop                 ;2135 00
-    nop                 ;2136 00
-    nop                 ;2137 00
-    nop                 ;2138 00
-    nop                 ;2139 00
-    nop                 ;213a 00
-    nop                 ;213b 00
-    nop                 ;213c 00
-    nop                 ;213d 00
-    nop                 ;213e 00
-    nop                 ;213f 00
-    nop                 ;2140 00
-    nop                 ;2141 00
-    nop                 ;2142 00
-    nop                 ;2143 00
-    nop                 ;2144 00
-    nop                 ;2145 00
-    nop                 ;2146 00
-    nop                 ;2147 00
-    nop                 ;2148 00
-    nop                 ;2149 00
-    nop                 ;214a 00
-    nop                 ;214b 00
-    nop                 ;214c 00
-    nop                 ;214d 00
-    nop                 ;214e 00
-    nop                 ;214f 00
-    nop                 ;2150 00
-    nop                 ;2151 00
-    nop                 ;2152 00
-    nop                 ;2153 00
-    nop                 ;2154 00
-    nop                 ;2155 00
-    nop                 ;2156 00
-    nop                 ;2157 00
-    nop                 ;2158 00
-    nop                 ;2159 00
-    nop                 ;215a 00
-    nop                 ;215b 00
-    nop                 ;215c 00
-    nop                 ;215d 00
-    nop                 ;215e 00
-    nop                 ;215f 00
-    nop                 ;2160 00
-    nop                 ;2161 00
-    nop                 ;2162 00
-    nop                 ;2163 00
-    nop                 ;2164 00
-    nop                 ;2165 00
-    nop                 ;2166 00
-    nop                 ;2167 00
-    nop                 ;2168 00
-    nop                 ;2169 00
-    nop                 ;216a 00
-    nop                 ;216b 00
-    nop                 ;216c 00
-    nop                 ;216d 00
-    nop                 ;216e 00
-    nop                 ;216f 00
-    nop                 ;2170 00
-    nop                 ;2171 00
-    nop                 ;2172 00
-    nop                 ;2173 00
-    nop                 ;2174 00
-    nop                 ;2175 00
-    nop                 ;2176 00
-    nop                 ;2177 00
-    nop                 ;2178 00
-    nop                 ;2179 00
-    nop                 ;217a 00
-    nop                 ;217b 00
-    nop                 ;217c 00
-    nop                 ;217d 00
-    nop                 ;217e 00
-    nop                 ;217f 00
-    nop                 ;2180 00
-    nop                 ;2181 00
-    nop                 ;2182 00
-    nop                 ;2183 00
-    nop                 ;2184 00
-    nop                 ;2185 00
-    nop                 ;2186 00
-    nop                 ;2187 00
-    nop                 ;2188 00
-    nop                 ;2189 00
-    nop                 ;218a 00
-    nop                 ;218b 00
-    nop                 ;218c 00
-    nop                 ;218d 00
-    nop                 ;218e 00
-    nop                 ;218f 00
-    nop                 ;2190 00
-    nop                 ;2191 00
-    nop                 ;2192 00
-    nop                 ;2193 00
-    nop                 ;2194 00
-    nop                 ;2195 00
-    nop                 ;2196 00
-    nop                 ;2197 00
-    nop                 ;2198 00
-    nop                 ;2199 00
-    nop                 ;219a 00
-    nop                 ;219b 00
-    nop                 ;219c 00
-    nop                 ;219d 00
-    nop                 ;219e 00
-    nop                 ;219f 00
-    nop                 ;21a0 00
-    nop                 ;21a1 00
-    nop                 ;21a2 00
-    nop                 ;21a3 00
-    nop                 ;21a4 00
-    nop                 ;21a5 00
-    nop                 ;21a6 00
-    nop                 ;21a7 00
-    nop                 ;21a8 00
-    nop                 ;21a9 00
-    nop                 ;21aa 00
-    nop                 ;21ab 00
-    nop                 ;21ac 00
-    nop                 ;21ad 00
-    nop                 ;21ae 00
-    nop                 ;21af 00
-    nop                 ;21b0 00
-    nop                 ;21b1 00
-    nop                 ;21b2 00
-    nop                 ;21b3 00
-    nop                 ;21b4 00
-    nop                 ;21b5 00
-    nop                 ;21b6 00
-    nop                 ;21b7 00
-    nop                 ;21b8 00
-    nop                 ;21b9 00
-    nop                 ;21ba 00
-    nop                 ;21bb 00
-    nop                 ;21bc 00
-    nop                 ;21bd 00
-    nop                 ;21be 00
-    nop                 ;21bf 00
-    nop                 ;21c0 00
-    nop                 ;21c1 00
-    nop                 ;21c2 00
-    nop                 ;21c3 00
-    nop                 ;21c4 00
-    nop                 ;21c5 00
-    nop                 ;21c6 00
-    nop                 ;21c7 00
-    nop                 ;21c8 00
-    nop                 ;21c9 00
-    nop                 ;21ca 00
-    nop                 ;21cb 00
-    nop                 ;21cc 00
-    nop                 ;21cd 00
-    nop                 ;21ce 00
-    nop                 ;21cf 00
-    nop                 ;21d0 00
-    nop                 ;21d1 00
-    nop                 ;21d2 00
-    nop                 ;21d3 00
-    nop                 ;21d4 00
-    nop                 ;21d5 00
-    nop                 ;21d6 00
-    nop                 ;21d7 00
-    nop                 ;21d8 00
-    nop                 ;21d9 00
-    nop                 ;21da 00
-    nop                 ;21db 00
-    nop                 ;21dc 00
-    nop                 ;21dd 00
-    nop                 ;21de 00
-    nop                 ;21df 00
-    nop                 ;21e0 00
-    nop                 ;21e1 00
-    nop                 ;21e2 00
-    nop                 ;21e3 00
-    nop                 ;21e4 00
-    nop                 ;21e5 00
-    nop                 ;21e6 00
-    nop                 ;21e7 00
-    nop                 ;21e8 00
-    nop                 ;21e9 00
-    nop                 ;21ea 00
-    nop                 ;21eb 00
-    nop                 ;21ec 00
-    nop                 ;21ed 00
-    nop                 ;21ee 00
-    nop                 ;21ef 00
-    nop                 ;21f0 00
-    nop                 ;21f1 00
-    nop                 ;21f2 00
-    nop                 ;21f3 00
-    nop                 ;21f4 00
-    nop                 ;21f5 00
-    nop                 ;21f6 00
-    nop                 ;21f7 00
-    nop                 ;21f8 00
-    nop                 ;21f9 00
-    nop                 ;21fa 00
-    nop                 ;21fb 00
-    nop                 ;21fc 00
-    nop                 ;21fd 00
-    nop                 ;21fe 00
-    nop                 ;21ff 00
+
+    db 0                ;"OK"
+    db " O", 80h+'K'
+
+    db 01h              ;"FILES SCRATCHED"
+    db 01h,"S SCRATCHE",80h+'D'
+
+    db 16h              ;"READ ERROR"
+    db 07h,83h
+
+    db 19h              ;"WRITE ERROR"
+    db 02h,83h
+
+    db 1ah              ;"WRITE PROTECED"
+    db 02h," PROTECTE",80h+'D'
+    db 1eh,04h
+
+    db 83h              ;"SYNTAX ERROR"
+    db 1fh,04h
+
+    db 03h               ;"SYNTAX ERROR (INVALID COMMAND)"
+    db " (",05h," ",06h,80h+")"
+
+    db 20h              ;"SYNTAX ERROR (LONG LINE)"
+    db 04h,03h," (LONG LINE",80h+")"
+
+    db 21h              ;"SYNTAX ERROR(INVALID FILENAME)"
+    db 04h,03h,"(",05h," ",01h,08h,80h+")"
+
+    db 22h              ;"SYNTAX ERROR(NO FILENAME)"
+    db 04h,03h,28h,"NO ",01h,08h,80h+")"
+
+    db 32h              ;"RECORD NOT PRESENT"
+    db 09h,0bh," PRESEN",80h+"T"
+
+    db 33h              ;"OVERFLOW IN RECORD"
+    db "OVERFLOW IN ",89h
+
+    db 34h              ;"FILE TOO LARGE"
+    db 01h," TOO LARG",80h+"E"
+
+    db 3ch              ;"WRITE FILE OPEN"
+    db 02h," ", 01h,8ah
+
+    db 3dh              ;"FILE NOT OPEN"
+    db 01h,0bh,8ah
+
+    db 3eh              ;"FILE NOT FOUND"
+    db 01h,0bh," FOUN",80h+"D"
+
+    db 3fh              ;"FILE EXISTS"
+    db 01h," EXIST",80h+"S"
+
+    db 40h              ;"FILE TYPE MISMATCH"
+    db 01h," TYPE MISMATC",80h+"H"
+
+    db 41h              ;"NO BLOCK"
+    db "NO BLOC",80h+"K"
+
+    db 42h              ;"ILLEGAL TRACK OR SECTOR"
+    db "ILLEGAL TRACK OR SECTO",80h+"R"
+
+    db 48h              ;"DISK FULL"
+    db "DISK FUL",80h+"L"
+
+    db 54h              ;"DRIVE NOT CONFIGURED"
+    db 0eh,0bh," CONFIGURE",80h+"D"
+
+    db 59h              ;"USER #"
+    db 0ch," ",80h+"#"
+
+    db 5ah              ;"INVALID USER NAME"
+    db 05h," ",0ch," ",88h
+
+    db 5bh              ;"PASSWORD INCORRECT"
+    db "PASSWORD INCORREC",80h+"T"
+
+    db 5ch              ;"PRIVILEGED COMMAND"
+    db "PRIVILEGED ",86h
+
+    db 63h              ;"SMALL SYSTEMS HARDBOX VERSION #"
+    db "SMALL SYSTEMS HARDBOX",8dh
+
+    db 0ffh             ;"UNKNOWN ERROR CODE"
+    db "UNKNOWN",03h," COD",80h+"E"
+
+    db "FIL",80h+"E"    ;01h: "FILE"
+    db "WRIT",80h+"E"   ;02h: "WRITE"
+    db " ERRO",80h+"R"  ;03h: " ERROR"
+    db "SYNTA",80h+"X"  ;04h: "SYNTAX"
+    db "INVALI",80h+"D" ;05h: "INVALID"
+    db "COMMAN",80h+"D" ;06h: "COMMAND"
+    db "REA",80h+"D"    ;07h: "READ"
+    db "NAM",80h+"E"    ;08h: "NAME"
+    db "RECOR",80h+"D"  ;09h: "RECORD"
+    db " OPE",80h+"N"   ;0ah: " OPEN"
+    db " NO",80h+"T"    ;0bh: " NOT"
+    db "USE",80h+"R"    ;0ch: "USER"
+    db " VERSION ",80h+"#" ;0dh: " VERSION #"
+    db "DRIV",80h+"E"   ;0eh: " DRIVE"
+    db "CORVU",80h+"S"  ;0fh: "CORVUS"
+
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
