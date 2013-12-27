@@ -1412,7 +1412,7 @@ cmd_addr:
     dw cmd_flg          ;"-": Reset (Global | Hide a File | Write Protect)
     dw cmd_vfy          ;"V": Validate
     dw cmd_lgn          ;"L": Login
-    dw lebdfh           ;"T": Trasfer Files
+    dw lebdfh           ;"T": Transfer Files
     dw leeceh           ;"!"
     dw cmd_pos          ;"P": Record Position
     dw cmd_blk          ;"B": Block commands
@@ -5674,7 +5674,7 @@ ENDIF
     db error_99         ;"SMALL SYSTEMS HARDBOX VERSION #"
     db "SMALL SYSTEMS HARDBOX",80h+t_version
 
-    db 0ffh             ;"UNKNWON ERROR CODE"
+    db 0ffh             ;"UNKNOWN ERROR CODE"
     db "UNKNOWN",t_error," COD",80h+"E"
 
 error_tok:
