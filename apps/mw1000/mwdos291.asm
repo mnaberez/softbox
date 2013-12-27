@@ -157,11 +157,16 @@ l01abh:
     ld hl,(l010ch)      ;01c0 2a 0c 01
     add hl,de           ;01c3 19
     ld (l0110h),hl      ;01c4 22 10 01
-    ld bc,l010eh        ;01c7 01 0e 01
-    ld de,l0110h        ;01ca 11 10 01
-    ld hl,l0112h        ;01cd 21 12 01
-    call mw_write       ;01d0 cd 27 05
-    call sub_01f0h      ;01d3 cd f0 01
+
+    ;CALL mw_write (l010eh, l0110h, l0112h)
+    ld bc,l010eh
+    ld de,l0110h
+    ld hl,l0112h
+    call mw_write
+
+    ;GOSUB check_error
+    call check_error
+
     ld hl,(l010ch)      ;01d6 2a 0c 01
     inc hl              ;01d9 23
 l01dah:
@@ -175,35 +180,37 @@ l01dah:
     add hl,hl           ;01e9 29
 l01eah:
     jp c,l01abh         ;01ea da ab 01
-    call end            ;01ed cd 72 06
 
-sub_01f0h:
-    ld hl,(l0112h)      ;01f0 2a 12 01
-    ld a,l              ;01f3 7d
-    and 40h             ;01f4 e6 40
-    ld l,a              ;01f6 6f
-    ld a,h              ;01f7 7c
-    and 00h             ;01f8 e6 00
-    ld h,a              ;01fa 67
-    ld a,h              ;01fb 7c
-    or l                ;01fc b5
-    jp nz,l0201h        ;01fd c2 01 02
-l0200h:
-    ret                 ;0200 c9
+    ;END
+    call end
 
-l0201h:
+check_error:
+    ;IF (l010eh AND &H40) <> 0 THEN GOTO got_error
+    ld hl,(l0112h)
+    ld a,l
+    and 40h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a
+    ld a,h
+    or l
+    jp nz,got_error
+    ret
+
+got_error:
     ;PRINT "DRIVE ERROR #"
     call pr0a
     ld hl,drive_err_num
     call pv1d
 
-    ld hl,(l0114h)      ;020a 2a 14 01
-l020dh:
-    ld de,0ffc0h        ;020d 11 c0 ff
-    add hl,de           ;0210 19
-    ld a,h              ;0211 7c
-    or l                ;0212 b5
-    jp nz,l0222h        ;0213 c2 22 02
+    ;IF l0114h <> &H40 THEN GOTO is_err_42h
+    ld hl,(l0114h)
+    ld de,0-40h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,is_err_42h
 
     ;PRINT "40 - header write error"
     call pr0a
@@ -213,13 +220,14 @@ l020dh:
     ;END
     call end
 
-l0222h:
-    ld hl,(l0114h)      ;0222 2a 14 01
-    ld de,0ffbeh        ;0225 11 be ff
-    add hl,de           ;0228 19
-    ld a,h              ;0229 7c
-    or l                ;022a b5
-    jp nz,l023ah        ;022b c2 3a 02
+is_err_42h:
+    ;IF l0114h <> &H42 THEN GOTO is_err_44h
+    ld hl,(l0114h)
+    ld de,0-42h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,is_err_44h
 
     ;PRINT "42 - header read error"
     call pr0a
@@ -229,13 +237,14 @@ l0222h:
     ;END
     call end
 
-l023ah:
-    ld hl,(l0114h)      ;023a 2a 14 01
-    ld de,0ffbch        ;023d 11 bc ff
-    add hl,de           ;0240 19
-    ld a,h              ;0241 7c
-    or l                ;0242 b5
-    jp nz,l0252h        ;0243 c2 52 02
+is_err_44h:
+    ;IF l0114h <> &H46 THEN GOTO is_err_46h
+    ld hl,(l0114h)
+    ld de,0-44h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,is_err_46h
 
     ;PRINT "44 - data read error"
     call pr0a
@@ -245,13 +254,14 @@ l023ah:
     ;END
     call end
 
-l0252h:
-    ld hl,(l0114h)      ;0252 2a 14 01
-    ld de,0ffbah        ;0255 11 ba ff
-    add hl,de           ;0258 19
-    ld a,h              ;0259 7c
-    or l                ;025a b5
-    jp nz,l026ah        ;025b c2 6a 02
+is_err_46h:
+    ;IF l0114h <> &H46 THEN GOTO is_err_46h
+    ld hl,(l0114h)
+    ld de,0-46h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,is_err_47h
 
     ;PRINT "46 - write fault"
     call pr0a
@@ -261,13 +271,14 @@ l0252h:
     ;END
     call end
 
-l026ah:
-    ld hl,(l0114h)      ;026a 2a 14 01
-    ld de,0ffb9h        ;026d 11 b9 ff
-    add hl,de           ;0270 19
-    ld a,h              ;0271 7c
-    or l                ;0272 b5
-    jp nz,l0282h        ;0273 c2 82 02
+is_err_47h:
+    ;IF l0114h <> &H47 THEN GOTO is_err_49h
+    ld hl,(l0114h)
+    ld de,0-47h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,is_err_49h
 
     ;PRINT "47 - disk not ready"
     call pr0a
@@ -277,13 +288,14 @@ l026ah:
     ;END
     call end
 
-l0282h:
-    ld hl,(l0114h)      ;0282 2a 14 01
-    ld de,0ffb7h        ;0285 11 b7 ff
-    add hl,de           ;0288 19
-    ld a,h              ;0289 7c
-    or l                ;028a b5
-    jp nz,l029ah        ;028b c2 9a 02
+is_err_49h:
+    ;IF l0114h <> &H49 THEN GOTO unknown_error
+    ld hl,(l0114h)
+    ld de,0-49h
+    add hl,de
+    ld a,h
+    or l
+    jp nz,unknown_error
 
     ;PRINT "49 - illegal command"
     call pr0a
@@ -293,7 +305,7 @@ l0282h:
     ;END
     call end
 
-l029ah:
+unknown_error:
     ;PRINT "xx - unknown error code"
     call pr0a
     ld hl,unknown_err
@@ -4435,7 +4447,7 @@ l1c31h:
     ld c,c              ;1c37 49
     ld hl,8424h         ;1c38 21 24 84
     add a,d             ;1c3b 82
-    ld bc,l0201h        ;1c3c 01 01 02
+    ld bc,got_error        ;1c3c 01 01 02
     ld (0002h),hl       ;1c3f 22 02 00
     add a,h             ;1c42 84
     nop                 ;1c43 00
@@ -13658,7 +13670,7 @@ l3d6fh:
     nop                 ;3ffe 00
     nop                 ;3fff 00
 l4000h:
-    jp l0200h           ;4000 c3 00 02
+    jp 0200h            ;4000 c3 00 02
     ld bc,0000h         ;4003 01 00 00
     nop                 ;4006 00
     ret nz              ;4007 c0
@@ -15633,7 +15645,7 @@ l4e86h:
     jr l4e86h           ;4e98 18 ec
 l4e9ah:
     ld a,(l2002h)       ;4e9a 3a 02 20
-    jp l020dh           ;4e9d c3 0d 02
+    jp  020dh           ;4e9d c3 0d 02
     call sub_1625h      ;4ea0 cd 25 16
     call 15e3h          ;4ea3 cd e3 15
     ld a,(l2d67h)       ;4ea6 3a 67 2d
@@ -15946,7 +15958,7 @@ l50d6h:
     cp 02h              ;5106 fe 02
     jr z,l5120h         ;5108 28 16
     cp 0ah              ;510a fe 0a
-    jp z,l0200h         ;510c ca 00 02
+    jp z,0200h          ;510c ca 00 02
     jp l1106h           ;510f c3 06 11
 l5112h:
     call sub_1226h      ;5112 cd 26 12
@@ -15960,7 +15972,7 @@ l5120h:
     ld a,1eh            ;5129 3e 1e
     jp c,05cfh          ;512b da cf 05
     call sub_1245h      ;512e cd 45 12
-    call 064ch      ;5131 cd 4c 06
+    call 064ch          ;5131 cd 4c 06
     ld hl,(l2036h)      ;5134 2a 36 20
     ld a,(l2038h)       ;5137 3a 38 20
     add hl,de           ;513a 19
