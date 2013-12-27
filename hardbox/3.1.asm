@@ -1051,12 +1051,15 @@ le2dah:
     or 20h              ;Generate LISTEN address
     cp c
     jr z,do_listn       ;If found LISTEN execute do_listn
+
     xor 60h             ;Generate TALK address
     cp c
     jr z,do_talk        ;If found TALK execute do_talk
+
     ld a,c
     cp 3fh              ;3Fh=UNLISTEN
     jr z,do_unlst       ;If found UNLISTEN execute do_unlst
+
     cp 5fh              ;5Fh=UNTALK
     jr z,do_untlk       ;If found UNTALK execute do_untlk
     and 60h
@@ -1068,7 +1071,7 @@ le2dah:
 
     and 0f0h
     cp 0e0h             ;Is this byte a CLOSE?
-    jr z,sa_close         ;  YES: process a close
+    jr z,sa_close       ;  YES: process a close
 
 le312h:
     in a,(ppi2_pa)
