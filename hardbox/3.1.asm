@@ -80,7 +80,7 @@ error_00: equ 00h       ;"OK"
 error_01: equ 01h       ;"FILES SCRATED"
 error_22: equ 16h       ;"READ ERROR"
 error_25: equ 19h       ;"WRITE ERROR"
-error_26: equ 1ah       ;"WRITE PROTECED"
+error_26: equ 1ah       ;"WRITE PROTECTED"
 error_30: equ 1eh       ;"SYNTAX ERROR"
 error_31: equ 1fh       ;"SYNTAX ERROR (INVALID COMMAND)"
 error_32: equ 20h       ;"SYNTAX ERROR (LONG LINE)"
@@ -1190,7 +1190,7 @@ le3b5h:
     cp 0fh              ;Is Control Channel?
     jp nz,do_open       ;  NO: do a open file or channel
 
-                        ;Copy all 128 charcters from getbuf to command buffer (cmdbuf)
+                        ;Copy all 128 characters from getbuf to command buffer (cmdbuf)
     ld hl,getbuf        ;HL=getbuf
     ld de,cmdbuf        ;DE=cmdbuf
     ld bc,128           ;BC=0080h (128 bytes)
@@ -1465,11 +1465,11 @@ le528h:
 
     pop de
 le538h:
-    ld a,(de)           ;Get the charcter from error text
+    ld a,(de)           ;Get the character from error text
     and 01111111b       ;Mask off the highest bit (end marker bit)
     ld (hl),a           ;Store it into buffer
 
-    cp 020h             ;Is this a error token?
+    cp 020h             ;Is this an error token?
     jr nc,le55bh        ;  NO: leave unchanged
 
     push de
@@ -1481,27 +1481,27 @@ le545h:
     jr z,le54fh         ;Is error token found? YES: Put the token into buffer
 
 le548h:
-    ld a,(de)           ;Get the charcter from error token
+    ld a,(de)           ;Get the character from error token
     inc de
-    rla                 ;Is higest bit set (end marker bit)?
+    rla                 ;Is highest bit set (end marker bit)?
     jr nc,le548h        ;  NO: get next character
     jr le545h           ;  YES: Check next error token
 
 le54fh:
-    ld a,(de)           ;Get the charcter from error token
+    ld a,(de)           ;Get the character from error token
     and 01111111b       ;Mask off the highest bit (end marker bit)
     ld (hl),a           ;Store it into buffer
-    ld a,(de)           ;Get last charcter from error token
+    ld a,(de)           ;Get last character from error token
     inc hl
     inc de
-    rla                 ;Is higest bit set (end marker bit)?
+    rla                 ;Is highest bit set (end marker bit)?
     jr nc,le54fh        ;  NO: get next character
     pop de
     dec hl
 
 le55bh:
-    ld a,(de)           ;Get last charcter from error text
-    rla                 ;Is higest bit set (end marker bit)?
+    ld a,(de)           ;Get last character from error text
+    rla                 ;Is highest bit set (end marker bit)?
     inc hl
     inc de
     jr nc,le538h        ;  NO: get next character
@@ -1715,7 +1715,7 @@ le6b4h:
     jp z,error
 
     bit 6,(ix+f_attr)   ;is marker for "Write Protect" set?
-    ld a,error_26       ;"WRITE PROTECED"
+    ld a,error_26       ;"WRITE PROTECTED"
     jp nz,error         ;If yes, WRITE PROTECTED
 
     call sub_f82ah
@@ -2372,7 +2372,7 @@ leb62h:
 leb6eh:
     pop hl
 leb6fh:
-    ld a,(hl)           ;Get next charcter from command buffer
+    ld a,(hl)           ;Get next character from command buffer
     inc hl
     cp ","              ;Is there a comma?
     jr z,leb2eh         ;  YES: Look next file pattern
@@ -4094,7 +4094,7 @@ open_dir:
     call get_filename   ;Get a filename
 
 lf4bah:
-    ld a,(hl)           ;Get next charcter from command
+    ld a,(hl)           ;Get next character from command
     inc hl
     cp "H"              ;Is it a "H" for "show Hidden"?
     jr z,lf4c4h         ;  Yes: Jump and store
@@ -4250,7 +4250,7 @@ lf5a5h:
     ld a,(ix+f_name)
     or a
     jr z,lf5b1h         ;end marker reached?
-    ld (hl),a           ;put charcter from filename into buffer
+    ld (hl),a           ;put character from filename into buffer
     inc hl
     inc ix
     djnz lf5a5h
@@ -4287,7 +4287,7 @@ lf5c9h:
     ld b,00h            ;BC=(file type) * 3
     ld hl,filetypes
     add hl,bc
-    ld bc,3             ;file type has 3 charcters
+    ld bc,3             ;file type has 3 characters
     ldir                ;Copy BC bytes from (HL) to (DE)
                         ;Copy file type into buffer
     ex de,hl
@@ -4346,10 +4346,10 @@ lf623h:
     ld hl,usrnam        ;Current user name
     ld b,16             ;B=10h (16 characters for the user name)
 lf63fh:
-    ld a,(hl)           ;Get charcter from user name
+    ld a,(hl)           ;Get character from user name
     or a                ;Is end marker (ascii 0) detected?
     jr z,lf648h         ;  YES: break
-    ld (de),a           ;  NO: put charcter into buffer
+    ld (de),a           ;  NO: put character into buffer
     inc hl
     inc de
     djnz lf63fh         ;Next character
@@ -4557,7 +4557,7 @@ lf743h:
     ld (drvnum),a       ;Store it
 
 lf74ah:
-    ld b,16+1           ;B=11h (16 charcters plus end marker or delimiter)
+    ld b,16+1           ;B=11h (16 characters plus end marker or delimiter)
     ld de,filnam        ;DE=filnam
 lf74fh:
     ld a,(hl)           ;Get character of filename from buffer
@@ -4637,7 +4637,7 @@ get_numeric:
     ret z               ;  Yes: return with carry set
 
     call is_digit       ;Check if character is a digit
-    jr nc,get_numeric   ;  No: Jump, get next charcter
+    jr nc,get_numeric   ;  No: Jump, get next character
 
     ld de,0
     ld b,0              ;DEB=000000h
@@ -5576,7 +5576,7 @@ error_txt:
     db error_25         ;"WRITE ERROR"
     db t_write,80h+t_error
 
-    db error_26         ;"WRITE PROTECED"
+    db error_26         ;"WRITE PROTECTED"
     db t_write," PROTECTE",80h+"D"
 
     db error_30         ;"SYNTAX ERROR"
