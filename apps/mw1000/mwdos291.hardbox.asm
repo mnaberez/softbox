@@ -498,7 +498,7 @@ l056ah:
     ld hl,2bf5h         ;0570 21 f5 2b
     ld (2af3h),hl       ;0573 22 f3 2a
     ld b,12h            ;0576 06 12
-    ld ix,l05abh        ;0578 dd 21 ab 05
+    ld ix,05abh         ;0578 dd 21 ab 05
 l057ch:
     ld a,(de)           ;057c 1a
     cp (hl)             ;057d be
@@ -518,37 +518,32 @@ sub_0598h:
     jp (hl)             ;0598 e9
 l0599h:
     db "NSDIRGHW-VLT!PBUAC"
-l05abh:
-    ld (bc),a           ;05ab 02
-    djnz 05a3h          ;05ac 10 f5
-    dec bc              ;05ae 0b
-    ld l,e              ;05af 6b
-    rrca                ;05b0 0f
-    ld a,a              ;05b1 7f
-    rrca                ;05b2 0f
-    and b               ;05b3 a0
-    rrca                ;05b4 0f
-    ld c,b              ;05b5 48
-    inc c               ;05b6 0c
-    ld c,b              ;05b7 48
-    inc c               ;05b8 0c
-    ld c,b              ;05b9 48
-    inc c               ;05ba 0c
-    ld c,b              ;05bb 48
-    inc c               ;05bc 0c
-    add a,b             ;05bd 80
-    rrca                ;05be 0f
-    call pe,0a90eh      ;05bf ec 0e a9
-    inc c               ;05c2 0c
-    pop af              ;05c3 f1
-    ld c,3fh            ;05c4 0e 3f
-    djnz sub_0598h      ;05c6 10 d0
-    djnz $-3            ;05c8 10 fb
-    ld de,l12f1h        ;05ca 11 f1 12
-    jp po,0cd0ch        ;05cd e2 0c cd
-    in a,(05h)          ;05d0 db 05
-    ld sp,4a93h         ;05d2 31 93 4a
-    jp l0376h           ;05d5 c3 76 03
+
+cmd_addr:
+    dw cmd_new          ;"N": New Drive Name
+    dw cmd_del          ;"S": Scratch Files
+    dw cmd_drv          ;"D": Set Default Drive Number
+    dw cmd_ini          ;"I": Initialize
+    dw cmd_ren          ;"R": Rename File
+    dw cmd_flg          ;"G": Set Global
+    dw cmd_flg          ;"H": Set Hide a File
+    dw cmd_flg          ;"W": Set Write Protect
+    dw cmd_flg          ;"-": Reset (Global | Hide a File | Write Protect)
+    dw cmd_vfy          ;"V": Validate
+    dw cmd_lgn          ;"L": Login
+    dw l0ca9h           ;"T": Transfer Files
+    dw l0ef1h           ;"!"
+    dw cmd_pos          ;"P": Record Position
+    dw cmd_blk          ;"B": Block commands
+    dw cmd_usr          ;"U": User commands
+    dw cmd_abs          ;"A": Absolute commands
+    dw cmd_cpy          ;"C": Copy and Concat
+
+error:
+    call 05dbh          ;Write the error msg defined in A into status buffer
+    ld sp,4a93h
+    jp 0376h
+
 sub_05d8h:
     call sub_064ch      ;05d8 cd 4c 06
 sub_05dbh:
@@ -1297,6 +1292,10 @@ sub_0bcah:
     ld a,l              ;0bf0 7d
     ld (2d6dh),a        ;0bf1 32 6d 2d
     ret                 ;0bf4 c9
+
+cmd_del:
+;command for scratch files "S"
+;
     call sub_1625h      ;0bf5 cd 25 16
 l0bf8h:
     call sub_15e3h      ;0bf8 cd e3 15
@@ -1338,6 +1337,10 @@ l0c39h:
     jr nz,l0c39h        ;0c41 20 f6
     ld a,01h            ;0c43 3e 01
     jp sub_05dbh        ;0c45 c3 db 05
+
+cmd_flg:
+;Command set or reset a flag (Global, Hide a File, Write Protect)
+;
     call sub_1625h      ;0c48 cd 25 16
     call sub_15e3h      ;0c4b cd e3 15
     ld a,(2d67h)        ;0c4e 3a 67 2d
@@ -1386,6 +1389,7 @@ l0c9bh:
     ld a,(2d67h)        ;0ca1 3a 67 2d
     call sub_1544h      ;0ca4 cd 44 15
     jr l0c57h           ;0ca7 18 ae
+l0ca9h:
     call sub_1625h      ;0ca9 cd 25 16
     call sub_15e3h      ;0cac cd e3 15
     ld a,(hl)           ;0caf 7e
@@ -1415,6 +1419,10 @@ l0cc9h:
 l0cddh:
     ld a,1eh            ;0cdd 3e 1e
     jp 05cfh            ;0cdf c3 cf 05
+
+cmd_cpy:
+;command for copy and concat "C"
+;
     call sub_1625h      ;0ce2 cd 25 16
     call sub_15e3h      ;0ce5 cd e3 15
     push hl             ;0ce8 e5
@@ -1661,8 +1669,13 @@ l0ec5h:
     set 7,(iy+28h)      ;0ee1 fd cb 28 fe
     set 7,(iy+00h)      ;0ee5 fd cb 00 fe
     jp sub_08e7h        ;0ee9 c3 e7 08
+
+cmd_lgn:
+;command for login "L"
+;
     ld a,1fh            ;0eec 3e 1f
     jp 05cfh            ;0eee c3 cf 05
+l0ef1h:
     ld hl,2bf6h         ;0ef1 21 f6 2b
     ld a,(hl)           ;0ef4 7e
     inc hl              ;0ef5 23
@@ -1731,6 +1744,8 @@ l0f3fh:
     ld hl,5000h         ;0f66 21 00 50
     add hl,de           ;0f69 19
     jp (hl)             ;0f6a e9
+
+cmd_drv:
     call sub_1625h      ;0f6b cd 25 16
     ld a,(hl)           ;0f6e 7e
     call sub_1682h      ;0f6f cd 82 16
@@ -1741,7 +1756,11 @@ l0f3fh:
 l0f7ah:
     ld a,1eh            ;0f7a 3e 1e
     jp 05cfh            ;0f7c c3 cf 05
+
+cmd_ini:
     ret                 ;0f7f c9
+
+cmd_vfy:
     ld hl,0000h         ;0f80 21 00 00
     ld (2d68h),hl       ;0f83 22 68 2d
 l0f86h:
@@ -1755,6 +1774,8 @@ l0f86h:
 l0f9ah:
     ld a,(2002h)        ;0f9a 3a 02 20
     jp l020dh           ;0f9d c3 0d 02
+
+cmd_ren:
     call sub_1625h      ;0fa0 cd 25 16
     call sub_15e3h      ;0fa3 cd e3 15
     ld a,(2d67h)        ;0fa6 3a 67 2d
@@ -1799,6 +1820,8 @@ l0ff6h:
     inc ix              ;0ffb dd 23
     djnz l0ff6h         ;0ffd 10 f7
     jp sub_1789h        ;0fff c3 89 17
+
+cmd_new:
     call sub_1625h      ;1002 cd 25 16
     call sub_15e3h      ;1005 cd e3 15
     ld a,(hl)           ;1008 7e
@@ -1834,6 +1857,8 @@ l1038h:
     ldi                 ;1038 ed a0
     jp po,l193eh        ;103a e2 3e 19
     jr l1032h           ;103d 18 f3
+
+cmd_pos:
     ld a,(2bf6h)        ;103f 3a f6 2b
     and 0fh             ;1042 e6 0f
     ld (2ae7h),a        ;1044 32 e7 2a
@@ -1910,6 +1935,8 @@ l10c1h:
     pop hl              ;10cd e1
     pop bc              ;10ce c1
     ret                 ;10cf c9
+
+cmd_blk:
     ld hl,2bf5h         ;10d0 21 f5 2b
 l10d3h:
     ld a,(hl)           ;10d3 7e
@@ -2065,6 +2092,8 @@ l11f5h:
     dec c               ;11f6 0d
     jp p,l11f5h         ;11f7 f2 f5 11
     ret                 ;11fa c9
+
+cmd_usr:
     ld hl,2bf6h         ;11fb 21 f6 2b
     ld a,(hl)           ;11fe 7e
     inc hl              ;11ff 23
@@ -2210,7 +2239,8 @@ sub_12d5h:
     ret z               ;12ee c8
     or a                ;12ef b7
     ret                 ;12f0 c9
-l12f1h:
+
+cmd_abs:
     ld hl,2bf5h         ;12f1 21 f5 2b
 l12f4h:
     ld a,(hl)           ;12f4 7e
