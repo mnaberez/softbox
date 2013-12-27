@@ -8277,147 +8277,106 @@ hl_shr_b:
     djnz hl_shr_b       ;597e 10 fa
     ret                 ;5980 c9
 
-    db 0
-    db " O", 80h+'K'    ;"OK"
+    db 0                ;"OK"
+    db " O", 80h+'K'
 
     db 01h              ;"FILES SCRATCHED"
     db 01h,"S SCRATCHE",80h+'D'
 
     db 16h              ;"READ ERROR"
-    db 07h, 83h
+    db 07h,83h
 
     db 19h              ;"WRITE ERROR"
-    db 02h, 83h
+    db 02h,83h
 
     db 1ah              ;"WRITE PROTECED"
     db 02h," PROTECTE",80h+'D'
-    db 1eh, 04h
+    db 1eh,04h
 
     db 83h              ;"SYNTAX ERROR"
-    db 1fh, 04h
+    db 1fh,04h
 
-    inc bc              ;59a9 03
-    jr nz,$+42          ;59aa 20 28
-    dec b               ;59ac 05
-    jr nz,l59b5h        ;59ad 20 06
-    xor c               ;59af a9
-    jr nz,l59b6h        ;59b0 20 04
-    inc bc              ;59b2 03
-    jr nz,$+42          ;59b3 20 28
-l59b5h:
-    ld c,h              ;59b5 4c
-l59b6h:
-    ld c,a              ;59b6 4f
-    ld c,(hl)           ;59b7 4e
-    ld b,a              ;59b8 47
-    jr nz,l5a07h        ;59b9 20 4c
-    ld c,c              ;59bb 49
-    ld c,(hl)           ;59bc 4e
-    ld b,l              ;59bd 45
-    xor c               ;59be a9
-    ld hl,l0304h        ;59bf 21 04 03
-    jr z,$+7            ;59c2 28 05
-    jr nz,l59c7h        ;59c4 20 01
-    ex af,af'           ;59c6 08
-l59c7h:
-    xor c               ;59c7 a9
-    ld (l0304h),hl      ;59c8 22 04 03
-    jr z,5a1bh          ;59cb 28 4e
-    ld c,a              ;59cd 4f
-    jr nz,l59d1h        ;59ce 20 01
-    ex af,af'           ;59d0 08
-l59d1h:
-    xor c               ;59d1 a9
-    ld (l0b09h),a       ;59d2 32 09 0b
-    jr nz,5a27h         ;59d5 20 50
-    ld d,d              ;59d7 52
-    ld b,l              ;59d8 45
-    ld d,e              ;59d9 53
-    ld b,l              ;59da 45
-    ld c,(hl)           ;59db 4e
-    call nc,sub_4f33h   ;59dc d4 33 4f
-    ld d,(hl)           ;59df 56
-    ld b,l              ;59e0 45
-    ld d,d              ;59e1 52
-    ld b,(hl)           ;59e2 46
-    ld c,h              ;59e3 4c
-    ld c,a              ;59e4 4f
-    ld d,a              ;59e5 57
-    jr nz,5a31h         ;59e6 20 49
-    ld c,(hl)           ;59e8 4e
-    jr nz,$-117         ;59e9 20 89
-    inc (hl)            ;59eb 34
-l59ech:
-    ld bc,5420h         ;59ec 01 20 54
-    ld c,a              ;59ef 4f
-    ld c,a              ;59f0 4f
-    jr nz,5a3fh         ;59f1 20 4c
-    ld b,c              ;59f3 41
-    ld d,d              ;59f4 52
-    ld b,a              ;59f5 47
-    push bc             ;59f6 c5
-    inc a               ;59f7 3c
-    ld (bc),a           ;59f8 02
-    jr nz,l59fch        ;59f9 20 01
-    adc a,d             ;59fb 8a
-l59fch:
-    dec a               ;59fc 3d
-    ld bc,8a0bh         ;59fd 01 0b 8a
-    ld a,01h            ;5a00 3e 01
-l5a02h:
-    dec bc              ;5a02 0b
-    jr nz,5a4bh         ;5a03 20 46
-    ld c,a              ;5a05 4f
-    ld d,l              ;5a06 55
-l5a07h:
-    ld c,(hl)           ;5a07 4e
-    call nz,013fh       ;5a08 c4 3f 01
-l5a0bh:
-    db " EXIST",80h+"S"
-    db 40h, 01h
-    db 20h,"TYPE MISMATC",80h+"H"
-    db 41h,"NO BLOC",80h+"K"
-    db 42h,"ILLEGAL TRACK OR SECTO",80h+"R"
-    db 48h,"DISK FUL",80h+"L"
-    db 54h, 0eh
-    dec bc              ;5a4f 0b
-    jr nz,5a95h         ;5a50 20 43
-l5a52h:
-    ld c,a              ;5a52 4f
-    ld c,(hl)           ;5a53 4e
-    ld b,(hl)           ;5a54 46
-    ld c,c              ;5a55 49
-    ld b,a              ;5a56 47
-    ld d,l              ;5a57 55
-    ld d,d              ;5a58 52
-    ld b,l              ;5a59 45
-    call nz,sub_0c59h   ;5a5a c4 59 0c
-    jr nz,l5a02h        ;5a5d 20 a3
-    ld e,d              ;5a5f 5a
-    dec b               ;5a60 05
-    db 20h
+    db 03h               ;"SYNTAX ERROR (INVALID COMMAND)"
+    db " (",05h," ",06h,80h+")"
 
-    db 0ch," ",88h
-    db 5bh,"PASSWORD INCORREC",80h+"T"
-    db 5ch,"PRIVILEGED ",86h
-    db 63h,"SMALL SYSTEMS HARDBOX",8dh
-    db 0ffh,"UNKNOWN",03h," COD",80h+"E"
+    db 20h              ;"SYNTAX ERROR (LONG LINE)"
+    db 04h,03h," (LONG LINE",80h+")"
 
-    db "FIL",80h+"E"
-    db "WRIT",80h+"E"
-    db " ERRO",80h+"R"
-    db "SYNTA",80h+"X"
-    db "INVALI",80h+"D"
-    db "COMMAN",80h+"D"
-    db "REA",80h+"D"
-    db "NAM",80h+"E"
-    db "RECOR",80h+"D"
-    db " OPE",80h+"N"
-    db " NO",80h+"T"
-    db "USE",80h+"R"
-    db " VERSION ",80h+"#"
-    db "DRIV",80h+"E"
-    db "CORVU",80h+"S"
+    db 21h              ;"SYNTAX ERROR(INVALID FILENAME)"
+    db 04h,03h,"(",05h," ",01h,08h,80h+")"
+
+    db 22h              ;"SYNTAX ERROR(NO FILENAME)"
+    db 04h,03h,28h,"NO ",01h,08h,80h+")"
+
+    db 32h              ;"RECORD NOT PRESENT"
+    db 09h,0bh," PRESEN",80h+"T"
+
+    db 33h              ;"OVERFLOW IN RECORD"
+    db "OVERFLOW IN ",89h
+
+    db 34h              ;"FILE TOO LARGE"
+    db 01h," TOO LARG",80h+"E"
+
+    db 3ch              ;"WRITE FILE OPEN"
+    db 02h," ", 01h,8ah
+
+    db 3dh              ;"FILE NOT OPEN"
+    db 01h,0bh,8ah
+
+    db 3eh              ;"FILE NOT FOUND"
+    db 01h,0bh," FOUN",80h+"D"
+
+    db 3fh              ;"FILE EXISTS"
+    db 01h," EXIST",80h+"S"
+
+    db 40h              ;"FILE TYPE MISMATCH"
+    db 01h," TYPE MISMATC",80h+"H"
+
+    db 41h              ;"NO BLOCK"
+    db "NO BLOC",80h+"K"
+
+    db 42h              ;"ILLEGAL TRACK OR SECTOR"
+    db "ILLEGAL TRACK OR SECTO",80h+"R"
+
+    db 48h              ;"DISK FULL"
+    db "DISK FUL",80h+"L"
+
+    db 54h              ;"DRIVE NOT CONFIGURED"
+    db 0eh,0bh," CONFIGURE",80h+"D"
+
+    db 59h              ;"USER #"
+    db 0ch," ",80h+"#"
+
+    db 5ah              ;"INVALID USER NAME"
+    db 05h," ",0ch," ",88h
+
+    db 5bh              ;"PASSWORD INCORRECT"
+    db "PASSWORD INCORREC",80h+"T"
+
+    db 5ch              ;"PRIVILEGED COMMAND"
+    db "PRIVILEGED ",86h
+
+    db 63h              ;"SMALL SYSTEMS HARDBOX VERSION #"
+    db "SMALL SYSTEMS HARDBOX",8dh
+
+    db 0ffh             ;"UNKNOWN ERROR CODE"
+    db "UNKNOWN",03h," COD",80h+"E"
+
+    db "FIL",80h+"E"    ;01h: "FILE"
+    db "WRIT",80h+"E"   ;02h: "WRITE"
+    db " ERRO",80h+"R"  ;03h: " ERROR"
+    db "SYNTA",80h+"X"  ;04h: "SYNTAX"
+    db "INVALI",80h+"D" ;05h: "INVALID"
+    db "COMMAN",80h+"D" ;06h: "COMMAND"
+    db "REA",80h+"D"    ;07h: "READ"
+    db "NAM",80h+"E"    ;08h: "NAME"
+    db "RECOR",80h+"D"  ;09h: "RECORD"
+    db " OPE",80h+"N"   ;0ah: " OPEN"
+    db " NO",80h+"T"    ;0bh: " NOT"
+    db "USE",80h+"R"    ;0ch: "USER"
+    db " VERSION ",80h+"#" ;0dh: " VERSION #"
+    db "DRIV",80h+"E"   ;0eh: " DRIVE"
+    db "CORVU",80h+"S"  ;0fh: "CORVUS"
 
     db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
