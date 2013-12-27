@@ -5011,6 +5011,11 @@ l1cc0h:
 
 ; Start of code similar to HardBox ROM ======================================
 
+;Note: this code is not executed by MWDOS291.COM.  It is a data payload
+;      that gets written to the hard disk.  The addresses here (4000h+)
+;      are offset.  It is believed that the actual start address of this
+;      code in MW-100 memory is 0100h.
+
 l4000h:
     jp 0200h            ;4000 c3 00 02
     ld bc,0000h         ;4003 01 00 00
@@ -6739,6 +6744,13 @@ l4e3fh:
     ld hl,5000h         ;4e66 21 00 50
     add hl,de           ;4e69 19
     jp (hl)             ;4e6a e9
+
+cmd_drv:
+;command to set default drive number "D"
+;
+;This disassembly: 4e6bh
+;Real location:    0f6bh  OFFSET = 3F00h
+;
     call sub_1625h      ;4e6b cd 25 16
     ld a,(hl)           ;4e6e 7e
     call l1680h+2       ;4e6f cd 82 16
@@ -6749,7 +6761,18 @@ l4e3fh:
 l4e7ah:
     ld a,1eh            ;4e7a 3e 1e
     jp 05cfh            ;4e7c c3 cf 05
+
+;command for init "I"
+;
+;This disassembly: 4e7fh
+;Real location:    0f7fh  OFFSET = 3F00h
+;
+cmd_ini:
     ret                 ;4e7f c9
+
+cmd_vfy:
+;command for validate "V"
+;
     ld hl,0000h         ;4e80 21 00 00
     ld (2d68h),hl       ;4e83 22 68 2d
 l4e86h:
@@ -6763,6 +6786,14 @@ l4e86h:
 l4e9ah:
     ld a,(2002h)        ;4e9a 3a 02 20
     jp 020dh            ;4e9d c3 0d 02
+
+cmd_ren:
+;Command for rename "R"
+;Format: "R0:DESTINATION=SOURCE"
+;
+;This disassembly: 4ea0h
+;Real location:    0fa0h  OFFSET = 3F00h
+;
     call sub_1625h      ;4ea0 cd 25 16
     call 15e3h          ;4ea3 cd e3 15
     ld a,(2d67h)        ;4ea6 3a 67 2d
@@ -6807,6 +6838,13 @@ l4ef6h:
     inc ix              ;4efb dd 23
     djnz l4ef6h         ;4efd 10 f7
     jp sub_1789h        ;4eff c3 89 17
+
+cmd_new:
+;command for new drive name (header or format) "N"
+;
+;This disassembly: 4f02h
+;Real location:    1002h  OFFSET = 3F00h
+;
     call sub_1625h      ;4f02 cd 25 16
     call 15e3h          ;4f05 cd e3 15
     ld a,(hl)           ;4f08 7e
