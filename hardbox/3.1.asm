@@ -1,12 +1,21 @@
 ;HardBox Firmware
 ;Version 2.3 and 2.4 (Corvus)
+;Version 2.4 (Mini-Winchester 2.91)
 ;Version 3.1 (Sunol)
 
 ;version:  equ 23        ;for version 2.3 (Corvus)
 ;version:  equ 24        ;for version 2.4 (Corvus)
+;version:  equ 291       ;for version 2.4 (Mini-Winchester 2.91)
 ;version:  equ 31        ;for version 3.1 (Sunol)
 include "3.1_version.asm"
 
+IF version = 291
+;This is a disassembly of the HardBox code payload inside mwdos291.com.
+
+;MW-1000 Memory Map:
+;  F000-FFFF  ROM                   4096
+;  0000-EFFF  RAM (IC24-IC31)      61440 (Must be 4164)
+ELSE
 ;This is a disassembly of two original 2732 EPROMs from a HardBox,
 ;labeled "295" (IC3) and "296" (IC4) for version 2.3 and 3.1 and
 ;labeled "289" (IC3) and "290" (IC4) for version 2.4.
@@ -18,7 +27,7 @@ include "3.1_version.asm"
 ;  8000-BFFF  Mirror of 0000-3FFF  16384
 ;  4000-7FFF  Mirror of 0000-3FFF  16384
 ;  0000-3FFF  RAM (IC24-IC31)      16384 (Uses 4516 DRAMs instead of 4164)
-;
+ENDIF
 
 ppi1:     equ 10h       ;8255 PPI #1 (IC17)
 ppi1_pa:  equ ppi1+0    ;  Port A: IEEE-488 Data In
@@ -65,11 +74,13 @@ ndac:     equ 00000100b ;NDAC
 dav:      equ 00000010b ;DAV
 atn:      equ 00000001b ;ATN
 
+IF version != 291
 dirc:     equ 00100000b ;Corvus DIRC
 ready:    equ 00010000b ;Corvus READY
 ledrdy:   equ 00000100b ;LED "Ready"
 ledb:     equ 00000010b ;LED "B"
 leda:     equ 00000001b ;LED "A"
+ENDIF
 
 corvus:   equ 18h       ;Corvus data bus
 
@@ -103,6 +114,7 @@ error_89: equ 59h       ;"USER #"
 error_90: equ 5ah       ;"INVALID USER NAME"
 error_91: equ 5bh       ;"PASSWORD INCORRECT"
 error_92: equ 5ch       ;"PRIVILEGED COMMAND"
+IF version != 291
 error_93: equ 5dh       ;"BAD SECTORS CORRECTED" (only used in version 2.3 and 2.4)
 error_94: equ 5eh       ;"LOCK ALREADY IN USE"
 IF version = 31         ;This is for a SUNOL Hard Drive
@@ -114,6 +126,7 @@ error_95: equ 5fh       ;  "CORVUSDRIVE ERROR"
 error_96: equ 60h       ;  "CORVUSDRIVE SIZE"
 error_97: equ 61h       ;  "CORVUS REV A VERSION #"
 error_98: equ 62h       ;  "CORVUS REV B VERSION #"
+ENDIF
 ENDIF
 error_99: equ 63h       ;"SMALL SYSTEMS HARDBOX VERSION #"
 
@@ -138,6 +151,10 @@ t_drive:  equ 0eh       ;  "DRIVE"
 t_corvus: equ 0fh       ;  "CORVUS"
 ENDIF
 
+IF version = 291
+devnum:   equ 2000h     ;Read from header or set via command "!D" (8 .. 15)
+userid:   equ 2002h     ;Is constantly 0 (0 .. 63)
+ELSE
                         ;DIP Switch
                         ;==========
                         ;Switch SW1 SW2 SW3 SW4 SW5 SW6 SW7 SW8
@@ -147,6 +164,7 @@ ENDIF
 
 devnum:   equ 0000h     ;Read via DIP switch or set via command "!D" (8 .. 15)
 userid:   equ 0002h     ;Read via DIP switch (0 .. 31) or set via command "L" (0 .. 63)
+ENDIF
 
                         ;Disk layout on Drive Number 1
                         ;=============================
@@ -224,7 +242,11 @@ userid:   equ 0002h     ;Read via DIP switch (0 .. 31) or set via command "L" (0
                         ;Bytes 13 .. 15: Number of "Sectors per Track" for Direct Access
                         ;Bytes 16 .. 31: User Area Name (16 Characters)
 
+IF version = 291
+usrdat:   equ 2004h     ;usrdat (32 Bytes) are copied from header (offset 0103h to 0122h)
+ELSE
 usrdat:   equ 0004h     ;usrdat (32 Bytes) are copied from sectors 4, 5, 6, 7, 8, 9, 10 or 12) depends on userid
+ENDIF
 phydrv:   equ usrdat+ 0 ;Physical drive number (1 .. 4, 1 Byte)
 usrsrt:   equ usrdat+ 1 ;Starting sector number on drive (An Absolute Sector Number, 3 Bytes)
 usrsiz:   equ usrdat+ 4 ;User area size in kilobytes, there are 4 blocks (2 Bytes, Maximum is 64 Megabytes)
@@ -365,6 +387,146 @@ typ_rel:  equ 3         ;File Type for REL (Relative file)
                         ;Bytes 0 ..   1: (0 .. 32767 = Points to Data Sector, 32768 .. 65535 = Unused Entry)
                         ;Bytes 2 .. 255: Same as Bytes 0 .. 1
 
+IF version = 291
+dirsrt:   equ 2024h     ;Absolute sector where directory starts (3 bytes, 4 sector after the user area starts)
+al1srt:   equ 2027h     ;Absolute sector where allocation 1 (128 bytes) starts (3 bytes)
+al1max:   equ 202ah     ;Maximum number of Files for Allocation 1 Sectors (2 bytes)
+al2srt:   equ 202ch     ;Absolute sector where allocation 2 (256 bytes) starts (3 bytes)
+al2max:   equ 202fh     ;(2 bytes)
+filsrt:   equ 2031h     ;Absolute sector where the files starts (3 bytes)
+l0034h:   equ 2034h     ;Size (in kilobytes) usable for normal files, these are 4 blocks (2 bytes)
+l0036h:   equ 2036h     ;Starting sector number for direct access (3 bytes)
+l0039h:   equ 2039h     ;(2 bytes)
+bamsrt:   equ 203bh     ;Starting sector number where BAM for direct access starts (3 bytes)
+usrnam:   equ 203eh     ;User name is copied from sector 0, 1, 2 or 3 depends on userid (16 bytes)
+bamsec:   equ 204eh     ;BAM sector number currently in bambuf (1 byte)
+defdnu:   equ 204fh     ;Default Drive number (0 .. 9) set via command "D"
+errcod:   equ 2050h     ;Error code in error message
+errtrk:   equ 2051h     ;Track number in error message (3 bytes)
+errsec:   equ 2054h     ;Sector number in error message (3 bytes)
+
+l0057h:   equ 2057h     ;BAM table for allocation 2 sectors (1 bit for 1 sector, 1024 bytes are 8192 bits or 8192 sectors)
+l0457h:   equ 2457h     ;BAM table for data files (1 bit for 1 kilobyte, 1024 byte are 8192 bits or 8192 kilobyte) ???
+
+entbufs:  equ 2857h     ;(16 Directory entry buffer with 41 bytes)
+entbuf0:  equ entbufs+ 0*41;(Directory entry buffer for channel number  0 with 41 bytes)
+entbuf1:  equ entbufs+ 1*41;(Directory entry buffer for channel number  1 with 41 bytes)
+entbuf2:  equ entbufs+ 2*41;(Directory entry buffer for channel number  2 with 41 bytes)
+entbuf3:  equ entbufs+ 3*41;(Directory entry buffer for channel number  3 with 41 bytes)
+entbuf4:  equ entbufs+ 4*41;(Directory entry buffer for channel number  4 with 41 bytes)
+entbuf5:  equ entbufs+ 5*41;(Directory entry buffer for channel number  5 with 41 bytes)
+entbuf6:  equ entbufs+ 6*41;(Directory entry buffer for channel number  6 with 41 bytes)
+entbuf7:  equ entbufs+ 7*41;(Directory entry buffer for channel number  7 with 41 bytes)
+entbuf8:  equ entbufs+ 8*41;(Directory entry buffer for channel number  8 with 41 bytes)
+entbuf9:  equ entbufs+ 9*41;(Directory entry buffer for channel number  9 with 41 bytes)
+entbuf10: equ entbufs+10*41;(Directory entry buffer for channel number 10 with 41 bytes)
+entbuf11: equ entbufs+11*41;(Directory entry buffer for channel number 11 with 41 bytes)
+entbuf12: equ entbufs+12*41;(Directory entry buffer for channel number 12 with 41 bytes)
+entbuf13: equ entbufs+13*41;(Directory entry buffer for channel number 13 with 41 bytes)
+entbuf14: equ entbufs+14*41;(Directory entry buffer for channel number 14 with 41 bytes)
+entbuf15: equ entbufs+15*41;(Directory entry buffer for channel number 15 with 41 bytes)
+
+sa:       equ 2ae7h     ;Current channel number, comes with the secondary address (sa)
+entptr:   equ 2ae8h     ;Pointer to a buffer (entbufs) of directory entry with 41 bytes (2 bytes)
+al2ptr:   equ 2aeah     ;Pointer to a buffer (al2bufs) of a Allocation 2 sector with 256 bytes (2 bytes)
+bufptr:   equ 2aech     ;Pointer to a buffer (buffers) of a sector buffer with 256 bytes (2 bytes)
+al1ptr:   equ 2aeeh     ;Pointer to a buffer (al1bufs) of a Allocation 1 sector with 128 bytes (2 bytes)
+lsntlk:   equ 2af0h     ;State of ieee bus (1 byte: bit 1 = TALK active, bit 2 = LISTEN active)
+staptr:   equ 2af1h     ;Pointer to current position of stabuf when writing to control channel (2 bytes)
+cmdptr:   equ 2af3h     ;Pointer to current position of cmdbuf when reading from control channel(2 bytes)
+
+dirbuf:   equ 2af5h     ;Directory block buffer (256 bytes)
+cmdbuf:   equ 2bf5h     ;Command buffer for writing to control channel 15 (128 bytes)
+getbuf:   equ 2c75h     ;Buffer to read after SA or OPEN bytes, this stores commands (SA and OPEN) or filenames (OPEN) (128 bytes)
+stabuf:   equ 2cf5h     ;Status buffer for reading from control channel 15 (80 Bytes)
+
+filnam:   equ 2d45h     ;(17 bytes: 16 for the characters and one for end marker or delimiter)
+dstnam:   equ 2d56h     ;(17 bytes: 16 for the characters and one for end marker or delimiter)
+drvnum:   equ 2d67h     ;Drive number (1 byte: 0 .. 9)
+dirnum:   equ 2d68h     ;The number of directory entry to process (2 bytes)
+al2idx:   equ 2d6ah     ;Allocation 2 sector index (1 byte: 0 .. 127)
+secidx:   equ 2d6bh     ;Data sector index (1 byte: 0 .. 255)
+l0d6ch:   equ 2d6ch     ;??? (1 byte)
+al1idx:   equ 2d6dh     ;Allocation 1 sector index (1 byte: 0 .. 63)
+dirhid:   equ 2d6eh     ;Flag for show hidden files on directory ("H": Yes, else: no)
+
+al2bufs:  equ 2d6fh     ;(16 Allocation 2 sector buffers with 256 bytes)
+al2buf0:  equ al2bufs+ 0*256;(Allocation 2 sector buffer for channel number  0 with 256 bytes)
+al2buf1:  equ al2bufs+ 1*256;(Allocation 2 sector buffer for channel number  1 with 256 bytes)
+al2buf2:  equ al2bufs+ 2*256;(Allocation 2 sector buffer for channel number  2 with 256 bytes)
+al2buf3:  equ al2bufs+ 3*256;(Allocation 2 sector buffer for channel number  3 with 256 bytes)
+al2buf4:  equ al2bufs+ 4*256;(Allocation 2 sector buffer for channel number  4 with 256 bytes)
+al2buf5:  equ al2bufs+ 5*256;(Allocation 2 sector buffer for channel number  5 with 256 bytes)
+al2buf6:  equ al2bufs+ 6*256;(Allocation 2 sector buffer for channel number  6 with 256 bytes)
+al2buf7:  equ al2bufs+ 7*256;(Allocation 2 sector buffer for channel number  7 with 256 bytes)
+al2buf8:  equ al2bufs+ 8*256;(Allocation 2 sector buffer for channel number  8 with 256 bytes)
+al2buf9:  equ al2bufs+ 9*256;(Allocation 2 sector buffer for channel number  9 with 256 bytes)
+al2buf10: equ al2bufs+10*256;(Allocation 2 sector buffer for channel number 10 with 256 bytes)
+al2buf11: equ al2bufs+11*256;(Allocation 2 sector buffer for channel number 11 with 256 bytes)
+al2buf12: equ al2bufs+12*256;(Allocation 2 sector buffer for channel number 12 with 256 bytes)
+al2buf13: equ al2bufs+13*256;(Allocation 2 sector buffer for channel number 13 with 256 bytes)
+al2buf14: equ al2bufs+14*256;(Allocation 2 sector buffer for channel number 14 with 256 bytes)
+al2buf15: equ al2bufs+15*256;(Allocation 2 sector buffer for channel number 15 with 256 bytes)
+
+al1bufs:  equ 3d6fh     ;(16 Allocation 1 sector buffers with 128 bytes)
+al1buf0:  equ al1bufs+ 0*128;(Allocation 1 sector buffer for channel number  0 with 128 bytes)
+al1buf1:  equ al1bufs+ 1*128;(Allocation 1 sector buffer for channel number  1 with 128 bytes)
+al1buf2:  equ al1bufs+ 2*128;(Allocation 1 sector buffer for channel number  2 with 128 bytes)
+al1buf3:  equ al1bufs+ 3*128;(Allocation 1 sector buffer for channel number  3 with 128 bytes)
+al1buf4:  equ al1bufs+ 4*128;(Allocation 1 sector buffer for channel number  4 with 128 bytes)
+al1buf5:  equ al1bufs+ 5*128;(Allocation 1 sector buffer for channel number  5 with 128 bytes)
+al1buf6:  equ al1bufs+ 6*128;(Allocation 1 sector buffer for channel number  6 with 128 bytes)
+al1buf7:  equ al1bufs+ 7*128;(Allocation 1 sector buffer for channel number  7 with 128 bytes)
+al1buf8:  equ al1bufs+ 8*128;(Allocation 1 sector buffer for channel number  8 with 128 bytes)
+al1buf9:  equ al1bufs+ 9*128;(Allocation 1 sector buffer for channel number  9 with 128 bytes)
+al1buf10: equ al1bufs+10*128;(Allocation 1 sector buffer for channel number 10 with 128 bytes)
+al1buf11: equ al1bufs+11*128;(Allocation 1 sector buffer for channel number 11 with 128 bytes)
+al1buf12: equ al1bufs+12*128;(Allocation 1 sector buffer for channel number 12 with 128 bytes)
+al1buf13: equ al1bufs+13*128;(Allocation 1 sector buffer for channel number 13 with 128 bytes)
+al1buf14: equ al1bufs+14*128;(Allocation 1 sector buffer for channel number 14 with 128 bytes)
+al1buf15: equ al1bufs+15*128;(Allocation 1 sector buffer for channel number 15 with 128 bytes)
+
+eoisav:   equ 456fh
+dirout:   equ 4570h     ;Here where a directory output line stored before output (??? bytes)
+wrtprt:   equ 45f0h     ;Points to current position to writee to ieee (2 bytes)
+endbuf:   equ 45f2h     ;Points to end of buffer to write to ieee (2 bytes)
+l25f4h:   equ 45f4h     ;(2 bytes)
+dirdrv:   equ 45f6h     ;Save the Drive Number (drvnum) when Directory (open_dir) is processed (1 byte)
+dirnam:   equ 45f7h     ;open_dir parameter (17 bytes: 16 for the characters and one for end marker or delimiter)
+pattfn:   equ 4608h     ;Points to pattern for filename, used in find_first and find_next (2 bytes)
+tmpdrv:   equ 460ah     ;Temporary drive number, used in corv_read_sec und corv_writ_sec (2 bytes)
+drvcnf:   equ 460ch     ;Flag if drive is configured (0: Not Configured, 1: Configured)
+l260dh:   equ 460dh     ;Temporary in cmd_cpy (2 bytes)
+l260fh:   equ 460fh     ;Temporary in put_number (1 byte)
+hdrbuf:   equ 4610h     ;Buffer of header sector (first sector of user area with 256 bytes)
+drvnam:   equ hdrbuf+  0;Position   0 starts the drive names of the ten drives
+drvid:    equ hdrbuf+160;Position 160 starts the drive ids of the ten drives
+rdbuf:    equ 4710h     ;(256 bytes)
+cpybuf:   equ 4810h     ;Temporary buffer, only used for concat command (256 bytes)
+bambuf:   equ 4910h     ;Buffer of BAM sector bamsec used in bam_read_sec and bam_writ_sec or for B-A and B-F (256 bytes)
+
+l4a10h:   equ 4a10h     ;??? (3 Bytes)
+
+stack:    equ 4a93h
+
+buffers:  equ 5000h     ;(16 sector buffers with 256 bytes)
+buffer0:  equ buffers+ 0*256;(sector buffer for channel number  0 with 256 bytes)
+buffer1:  equ buffers+ 1*256;(sector buffer for channel number  1 with 256 bytes)
+buffer2:  equ buffers+ 2*256;(sector buffer for channel number  2 with 256 bytes)
+buffer3:  equ buffers+ 3*256;(sector buffer for channel number  3 with 256 bytes)
+buffer4:  equ buffers+ 4*256;(sector buffer for channel number  4 with 256 bytes)
+buffer5:  equ buffers+ 5*256;(sector buffer for channel number  5 with 256 bytes)
+buffer6:  equ buffers+ 6*256;(sector buffer for channel number  6 with 256 bytes)
+buffer7:  equ buffers+ 7*256;(sector buffer for channel number  7 with 256 bytes)
+buffer8:  equ buffers+ 8*256;(sector buffer for channel number  8 with 256 bytes)
+buffer9:  equ buffers+ 9*256;(sector buffer for channel number  9 with 256 bytes)
+buffer10: equ buffers+10*256;(sector buffer for channel number 10 with 256 bytes)
+buffer11: equ buffers+11*256;(sector buffer for channel number 11 with 256 bytes)
+buffer12: equ buffers+12*256;(sector buffer for channel number 12 with 256 bytes)
+buffer13: equ buffers+13*256;(sector buffer for channel number 13 with 256 bytes)
+buffer14: equ buffers+14*256;(sector buffer for channel number 14 with 256 bytes)
+buffer15: equ buffers+15*256;(sector buffer for channel number 15 with 256 bytes)
+ELSE
 dirsrt:   equ 0024h     ;Absolute sector where directory starts (3 bytes, 4 sector after the user area starts)
 al1srt:   equ 0027h     ;Absolute sector where allocation 1 (128 bytes) starts (3 bytes)
 al1max:   equ 002ah     ;Maximum number of Files for Allocation 1 Sectors (2 bytes)
@@ -501,7 +663,59 @@ buffer12: equ buffers+12*256;(sector buffer for channel number 12 with 256 bytes
 buffer13: equ buffers+13*256;(sector buffer for channel number 13 with 256 bytes)
 buffer14: equ buffers+14*256;(sector buffer for channel number 14 with 256 bytes)
 buffer15: equ buffers+15*256;(sector buffer for channel number 15 with 256 bytes)
+ENDIF
 
+IF version = 291
+    org 0100h
+
+    jp reset            ;0100 c3 00 02
+
+l0103h:                 ;user data block
+    db    1             ;Physical drive number (1 .. 4, 1 Byte)
+    dt    0             ;Starting sector number on drive (An Absolute Sector Number, 3 Bytes)
+    dw 6080             ;User area size in kilobytes, there are 4 blocks (2 Bytes, Maximum is 64 Megabytes)
+    db    0             ;Type of user area (Single user or Multi-user) (1 Byte) (Disallow write)
+    dw  992             ;Maximum numbers of files allowed (2 Bytes, Maximum is 65535)
+    dw 1017             ;Size (in kilobyte) allocated for direct access, these are 4 blocks (2 Bytes, Maximum is 64 Megabytes)
+    dw   77             ;# of "tracks per drive" for direct access (2 Bytes)
+    dt   29             ;# of "sectors per track" for direct access (3 Bytes)
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+l0123h:                 ;user name
+    db "HARD DISK       "
+
+l0133h:
+    db 07h
+l0134h:
+    dw 0060h
+l0136h:
+    db 08h              ;IEEE-488 primary address
+
+                        ;unused data (filler)
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+reset:
+    xor a               ;A=0
+    out (ppi1_pb),a     ;Clear IEEE data out
+
+    ld a,atna
+    out (ppi2_pb),a     ;Clear IEEE control out, except ATNA (inactive)
+
+    ld a,(l0136h)
+    ld (devnum),a       ;Store device number from header
+ELSE
     org    0e000h
 
 le000h:
@@ -700,6 +914,7 @@ le0c8h:
 
     ld a,c
     and 00011111b       ;Now we have ---04567
+ENDIF
 
 init_user:
 ;Init user with user data
@@ -708,13 +923,25 @@ init_user:
     ld sp,stack
 
                         ;Clear memory from 0004h .. 2a13h
-    ld hl,0004h         ;HL=0004h
-    ld de,0005h         ;DE=0005h
+    ld hl,usrdat        ;HL=0004h
+    ld de,usrdat+1      ;DE=0005h
     ld bc,2a0eh         ;BC=2a0eh
     ld (hl),00h         ;(0004h)=0
                         ;(0005h)=(0004h) or 00h .. (2a13h)=(2a12h) or 00h
     ldir                ;Copy BC bytes from (HL) to (DE)
 
+IF version = 291
+    xor a
+    ld (userid),a       ;(userid)=0
+
+    ld a,1
+    ld (drvcnf),a       ;(drvcnf)=1
+
+    ld hl,cmdbuf        ;When we start reading from control channel, we store it into command buffer (cmdbuf)
+    ld (cmdptr),hl      ;(cmdptr)=cmdbuf
+
+    ld hl,l0103h        ;Pointer to user data block from header
+ELSE
     ld (userid),a       ;Store User Number
 
     xor a
@@ -799,9 +1026,20 @@ le100h:
     ld b,0              ;BC=(userid)*32
     ld hl,rdbuf
     add hl,bc           ;HL=rdbuf+BC
+ENDIF
+
     ld de,phydrv
     ld bc,32            ;BC=0020h (32 bytes for the user parameter)
     ldir                ;Copy BC bytes from (HL) to (DE)
+
+IF version = 291
+    ld hl,l0123h        ;"HARD DISK       "
+    ld de,usrnam
+    ld bc,16            ;BC=0010h (16 bytes for the user name)
+    ldir                ;Copy the user name "HARD DISK"
+
+    call error_ok       ;0242 cd d8 05
+ENDIF
 
     call head_read_sec  ;Read the header sector into the header buffer (hdrbuf)
 
@@ -2515,7 +2753,7 @@ cmd_cpy:
     jr nz,lecbah
     ld b,10h
     ld hl,(entptr)
-    ld de,userid
+    ld de,0002h
     add hl,de
     ld de,filnam
 lec73h:
@@ -2553,7 +2791,7 @@ lec73h:
 
 lecbah:
     ld hl,(entptr)
-    ld de,userid
+    ld de,0002h
     add hl,de
     ld a,(iy+f_drvn)
     call find_first
@@ -2746,6 +2984,10 @@ ledfbh:
 cmd_lgn:
 ;command for login "L"
 ;
+IF version = 291
+    ld a,1fh            ;0eec 3e 1f
+    jp error            ;0eee c3 cf 05
+ELSE
     call find_delim     ;Search for delimiter '=' or ':', abort if cr readed
     ld a,error_30       ;"SYNTAX ERROR"
     jp c,error
@@ -2867,6 +3109,7 @@ leec9h:
     pop bc
     ld a,c
     jp init_user
+ENDIF
 
 leeceh:
     ld hl,cmdbuf+1
@@ -2904,6 +3147,7 @@ leef6h:
     db "E"              ;Execute
     dw cmd_exe
 
+IF version != 291
     db "P"              ;Set Password
     dw cmd_pwd
 
@@ -2932,8 +3176,10 @@ ELSE                    ;This is for a CORVUS Hard Drive
     db "S"              ;  Get Disk Size
     dw cmd_siz
 ENDIF
+ENDIF
 leef6h_end:
 
+IF version != 291
 cmd_pwd:
 ;command for set password "!P"
 ;
@@ -2985,6 +3231,7 @@ cmd_pwd:
     ld b,1              ;B=Corvus drive number (1)
     ld hl,rdbuf         ;HL=rdbuf (Address to write the sector)
     jp corv_writ_sec    ;Write a sector (256 bytes)
+ENDIF
 
 find_delim:
 ;Search for delimiter '=' or ':', abort if cr readed
@@ -3026,10 +3273,18 @@ cmd_uid:
 cmd_hbv:
 ;command for get hardbox version "!H"
 ;
+IF version = 291
+    ld a,2              ;Set major version
+ELSE
     ld a,version / 10   ;Set major version
+ENDIF
     ld (errtrk),a
 
+IF version = 291
+    ld a,4
+ELSE
     ld a,version mod 10 ;Set minor version
+ENDIF
     ld (errsec),a
 
     ld a,error_99       ;"SMALL SYSTEMS HARDBOX VERSION #"
@@ -3048,6 +3303,7 @@ cmd_exe:
 
     jp (hl)             ;jump to the code at the buffer
 
+IF version != 291
 cmd_ver:
 ;command for get version "!V"
 ;
@@ -3340,6 +3596,7 @@ lf0a9h:
 lf0adh:
     db 1ah,10h          ;Semaphore Initialize
     db 00h,00h,00h
+ENDIF
 
 cmd_drv:
     call find_drvlet    ;Find drive letter
@@ -4712,7 +4969,7 @@ sub_f7d0h:
     ld (al1ptr),hl      ;(al1ptr)=al1bufs+DE/2
 
     ld iy,entbufs
-    ld de,al1srt+2
+    ld de,0029h
 lf7f6h:
     ld (entptr),iy
     dec a
@@ -5300,6 +5557,7 @@ chk_wrt_rights:
     ld a,error_92       ;"PRIVILEGED COMMAND"
     jp error
 
+IF version != 291
 corv_init:
 ;Initialize the Corvus hard drive controller
 ;
@@ -5351,8 +5609,41 @@ lfaf2h:
 lfb09h:
     pop af
     ret
+ENDIF
 
 corv_read_sec:
+IF version = 291
+    ld (l4a10h),de      ;1982 ed 53 10 4a
+    ld (l4a10h+2),a     ;1986 32 12 4a
+    push hl             ;1989 e5
+
+    ld a,21h            ;198a 3e 21
+    call corv_send_cmd  ;198c cd f0 19
+
+    call sub_1a29h      ;198f cd 29 1a
+    call sub_1a0dh      ;1992 cd 0d 1a
+    pop hl              ;1995 e1
+    jr nz,corv_err      ;1996 20 47
+
+    ld a,41h            ;1998 3e 41
+    call corv_send_cmd  ;199a cd f0 19
+
+    ld b,00h            ;199d 06 00
+l199fh:
+    in a,(corvus)       ;199f db 18
+    ld (hl),a           ;19a1 77
+    inc hl              ;19a2 23
+    ex (sp),hl          ;19a3 e3
+    ex (sp),hl          ;19a4 e3
+    djnz l199fh         ;19a5 10 f8
+
+    call sub_1a0dh      ;19a7 cd 0d 1a
+    ret z               ;19aa c8
+
+    ld (errtrk),a       ;19ab 32 51 20
+    ld a,error_22       ;"READ ERROR"
+    jp corv_err         ;19b0 c3 df 19
+ELSE
 ;Reads a sector (256 bytes) from the Corvus hard drive
 ;
 ;  B = Drive number
@@ -5384,8 +5675,47 @@ read_err:
     ld (errsec),a       ;Store drive number as error sector
     ld a,error_22       ;"READ ERROR"
     jp error_out        ;Writes the error message "READ ERROR" into the status buffer
+ENDIF
 
 corv_writ_sec:
+IF version = 291
+    ld (l4a10h),de      ;19b3 ed 53 10 4a
+    ld (l4a10h+2),a     ;19b7 32 12 4a
+
+    ld a,42h            ;19ba 3e 42
+    call corv_send_cmd  ;19bc cd f0 19
+
+    ld b,00h            ;19bf 06 00
+l19c1h:
+    ld a,(hl)           ;19c1 7e
+    out (corvus),a      ;19c2 d3 18
+    inc hl              ;19c4 23
+    ex (sp),hl          ;19c5 e3
+    ex (sp),hl          ;19c6 e3
+    djnz l19c1h         ;19c7 10 f8
+
+    call sub_1a0dh      ;19c9 cd 0d 1a
+    jr nz,corv_err      ;19cc 20 11
+
+    ld a,22h            ;19ce 3e 22
+    call corv_send_cmd  ;19d0 cd f0 19
+
+    call sub_1a29h      ;19d3 cd 29 1a
+    call sub_1a0dh      ;19d6 cd 0d 1a
+    ret z               ;19d9 c8
+
+    ld (errtrk),a       ;19da 32 51 20
+    ld a,error_25       ;"WRITE ERROR"
+
+corv_err:
+    push af             ;19df f5
+    ld hl,(l4a10h)      ;19e0 2a 10 4a
+    ld (errsec),hl      ;19e3 22 54 20
+    ld a,(l4a10h+2)     ;19e6 3a 12 4a
+    ld (errsec+2),a     ;19e9 32 56 20
+    pop af              ;19ec f1
+    jp error_out        ;19ed c3 db 05
+ELSE
 ;Write a sector (256 bytes) to the Corvus hard drive
 ;
 ;  B = Drive Number
@@ -5415,7 +5745,127 @@ lfb43h:
     ld (errsec),a       ;Store drive Number as error sector
     ld a,error_25       ;"WRITE ERROR"
     jp error_out        ;Writes the error message "WRITE ERROR" into the status buffer
+ENDIF
 
+IF version = 291
+corv_send_cmd:
+    ld b,a              ;19f0 47
+    xor a               ;19f1 af
+    out (corvus),a      ;19f2 d3 18
+
+l19f4h:
+    in a,(corvus)       ;19f4 db 18
+    cp 0a0h             ;19f6 fe a0
+    jr nz,l19f4h        ;19f8 20 fa
+
+    ld a,b              ;19fa 78
+    out (corvus),a      ;19fb d3 18
+
+l19fdh:
+    in a,(corvus)       ;19fd db 18
+    cp 0a1h             ;19ff fe a1
+    jr nz,l19fdh        ;1a01 20 fa
+
+    ld a,0ffh           ;1a03 3e ff
+    out (corvus),a      ;1a05 d3 18
+
+    ld b,20             ;B=14h
+l1a09h:
+    nop
+    djnz l1a09h         ;Delay loop
+
+    ret                 ;1a0c c9
+
+sub_1a0dh:
+    ld a,0ffh           ;1a0d 3e ff
+    out (corvus),a      ;1a0f d3 18
+
+l1a11h:
+    in a,(corvus)       ;1a11 db 18
+    inc a               ;1a13 3c
+    jr nz,l1a11h        ;1a14 20 fb
+
+    ld a,0feh           ;1a16 3e fe
+    out (corvus),a      ;1a18 d3 18
+
+l1a1ah:
+    in a,(corvus)       ;1a1a db 18
+    rla                 ;1a1c 17
+    jr c,l1a1ah         ;1a1d 38 fb
+
+    in a,(corvus)       ;1a1f db 18
+    bit 6,a             ;1a21 cb 77
+    push af             ;1a23 f5
+
+    xor a               ;1a24 af
+    out (corvus),a      ;1a25 d3 18
+
+    pop af              ;1a27 f1
+    ret                 ;1a28 c9
+
+sub_1a29h:
+    xor a               ;1a29 af
+    out (corvus),a      ;1a2a d3 18
+
+    ld hl,(l4a10h)      ;1a2c 2a 10 4a
+    ld a,(l4a10h+2)     ;1a2f 3a 12 4a
+
+    ld b,05h            ;1a32 06 05
+l1a34h:
+    rra                 ;1a34 1f
+    rr h                ;1a35 cb 1c
+    rr l                ;1a37 cb 1d
+    djnz l1a34h         ;1a39 10 f9
+
+    ld a,(l0133h)       ;1a3b 3a 33 01
+    inc a               ;1a3e 3c
+    add a,a             ;1a3f 87
+    add a,a             ;1a40 87
+    add a,a             ;1a41 87
+    add a,a             ;1a42 87
+    ld b,a              ;1a43 47
+    ld c,00h            ;1a44 0e 00
+    ld de,0000h         ;1a46 11 00 00
+    ld a,0dh            ;1a49 3e 0d
+l1a4bh:
+    ex de,hl            ;1a4b eb
+    add hl,hl           ;1a4c 29
+    ex de,hl            ;1a4d eb
+    or a                ;1a4e b7
+    sbc hl,bc           ;1a4f ed 42
+    jr nc,l1a56h        ;1a51 30 03
+    add hl,bc           ;1a53 09
+    jr l1a57h           ;1a54 18 01
+l1a56h:
+    inc de              ;1a56 13
+l1a57h:
+    srl b               ;1a57 cb 38
+    rr c                ;1a59 cb 19
+    dec a               ;1a5b 3d
+    jr nz,l1a4bh        ;1a5c 20 ed
+
+    ld a,l              ;1a5e 7d
+    out (corvus),a      ;1a5f d3 18
+
+    ld hl,(l0134h)       ;1a61 2a 34 01
+    add hl,de           ;1a64 19
+    ld a,l              ;1a65 7d
+    out (corvus),a      ;1a66 d3 18
+
+    ld a,h              ;1a68 7c
+    out (corvus),a      ;1a69 d3 18
+
+    ld a,(l4a10h)       ;1a6b 3a 10 4a
+    and 1fh             ;1a6e e6 1f
+    out (corvus),a      ;1a70 d3 18
+
+    xor a               ;1a72 af
+    out (corvus),a      ;1a73 d3 18
+
+    out (corvus),a      ;1a75 d3 18
+    out (corvus),a      ;1a77 d3 18
+    ret                 ;1a79 c9
+ELSE
 corv_read_err:
 ;Read the error code from a Corvus hard drive.
 ;
@@ -5557,6 +6007,7 @@ corv_put_str:
     or b
     jr nz,corv_put_str  ;If not zero, loop
     ret
+ENDIF
 
 hl_shr_b:
 ;Shift B times HL right, so HL is divided by 2^B
@@ -5645,6 +6096,7 @@ error_txt:
     db error_92         ;"PRIVILEGED COMMAND"
     db "PRIVILEGED ",80h+t_command
 
+IF version != 291
     db error_93         ;"BAD SECTORS CORRECTED" (unused!)
     db "BAD SECTORS CORRECTE",80h+"D"
 
@@ -5672,6 +6124,7 @@ ELSE                    ;This is for a CORVUS Hard Drive
 
     db error_98         ;  "CORVUS REV B VERSION #"
     db t_corvus," REV B",80h+t_version
+ENDIF
 ENDIF
 
     db error_99         ;"SMALL SYSTEMS HARDBOX VERSION #"
@@ -5703,6 +6156,85 @@ ELSE                       ;This is for a CORVUS Hard Drive
 ENDIF
 
 filler:
+IF version = 291
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+ELSE
 IF version = 24
     db 0ffh,000h,0ffh
     db 000h,0ffh,000h,0ffh,000h,0ffh,000h,0ffh
@@ -6135,4 +6667,5 @@ ELSEIF version = 24
     db 85h
 ELSEIF version = 31
     db 32h
+ENDIF
 ENDIF
