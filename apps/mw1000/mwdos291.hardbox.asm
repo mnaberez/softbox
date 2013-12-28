@@ -264,28 +264,38 @@ l0376h:
     xor a               ;0376 af
     out (ppi2_pc),a     ;0377 d3 16
     out (ppi1_pb),a     ;0379 d3 11
-    in a,(ppi2_pb)      ;037b db 15
-    and 00h             ;037d e6 00
-    out (ppi2_pb),a     ;037f d3 15
+
+    in a,(ppi2_pb)
+    and 00h
+    out (ppi2_pb),a     ;ATNA=high (inactive), EOI_out=high, NRFD_out=high,
+                        ;  NDAC_out=high, DAV_out=high, ATN_out=high
+
 l0381h:
-    in a,(ppi2_pa)      ;0381 db 14
-    and 01h             ;0383 e6 01
-    jr z,l0381h         ;0385 28 fa
+    in a,(ppi2_pa)
+    and atn
+    jr z,l0381h         ;Wait until ATN=low
+
 l0387h:
-    in a,(ppi2_pb)      ;0387 db 15
-    or 84h              ;0389 f6 84
-    out (ppi2_pb),a     ;038b d3 15
-    in a,(ppi2_pb)      ;038d db 15
-    and 0f7h            ;038f e6 f7
-    out (ppi2_pb),a     ;0391 d3 15
+;After we detect a ATN=low, now we wait for DAV=low before we can read
+;
+    in a,(ppi2_pb)
+    or atna+ndac
+    out (ppi2_pb),a     ;ATNA=low (active), NDAC_OUT=low
+
+    in a,(ppi2_pb)
+    and 255-nrfd
+    out (ppi2_pb),a     ;NRFD_OUT=high
+
 l0393h:
-    in a,(ppi2_pa)      ;0393 db 14
-    and 02h             ;0395 e6 02
-    jr nz,l03a2h        ;0397 20 09
-    in a,(ppi2_pa)      ;0399 db 14
-    and 01h             ;039b e6 01
-    jr nz,l0393h        ;039d 20 f4
-    jp do_write         ;039f c3 15 04
+    in a,(ppi2_pa)
+    and dav
+    jr nz,l03a2h        ;If DAV=low, read attention data
+
+    in a,(ppi2_pa)
+    and atn
+    jr nz,l0393h        ;Wait until ATN=high
+
+    jp l1504h           ;Now we proceed the normal data exchange after ATN
 
 l03a2h:
 ;After detection an ATN=low, now is DAV=low.  So we must read the
@@ -374,217 +384,289 @@ sa_close:
     call nz,sub_08e7h
     jr l03dah
 
-do_write:
-    in a,(ppi2_pb)      ;0415 db 15
-    and 7fh             ;0417 e6 7f
-    out (ppi2_pb),a     ;0419 d3 15
-    ld a,(2af0h)        ;041b 3a f0 2a
-sub_041eh:
-    or a                ;041e b7
-    jp z,l0376h         ;041f ca 76 03
-    bit 2,a             ;0422 cb 57
-    jr nz,do_read       ;0424 20 2f
-    in a,(ppi2_pb)      ;0426 db 15
-    and 0fbh            ;0428 e6 fb
-    out (ppi2_pb),a     ;042a d3 15
-    ld a,(2ae7h)        ;042c 3a e7 2a
-    or a                ;042f b7
-    jp z,l0376h         ;0430 ca 76 03
-    and 0fh             ;0433 e6 0f
-    ld (2ae7h),a        ;0435 32 e7 2a
-    cp 0fh              ;0438 fe 0f
-    jp nz,l0941h        ;043a c2 41 09
+l1504h:
+    in a,(ppi2_pb)
+    and 7fh
+    out (ppi2_pb),a     ;ATNA=high (inactive)
+
+    ld a,(2af0h)        ;Is neither LISTEN nor TALK active set?
+    or a                ;
+    jp z,l0376h         ;  YES: Nothing to do
+
+    bit 2,a             ;Is marker for LISTEN active set?
+    jr nz,do_read       ;  YES: do reading from ieee
+                        ;  NO: do writing to ieee
+
+    in a,(ppi2_pb)
+    and 255-ndac
+    out (ppi2_pb),a     ;NDAC_OUT=high (inactive, we want to talk)
+
+    ld a,(2ae7h)
+    or a
+    jp z,l0376h
+    and 0fh
+    ld (2ae7h),a
+    cp 0fh              ;Is Control Channel?
+    jp nz,l0941h        ;  NO: We write from data channel to ieee
+                        ;  YES: We write the disk status from status buffer to ieee
+
 l043dh:
-    ld hl,(2af1h)       ;043d 2a f1 2a
-    ld a,(hl)           ;0440 7e
-    call sub_0510h      ;0441 cd 10 05
-    jp c,l0376h         ;0444 da 76 03
-    ld a,(hl)           ;0447 7e
-    inc hl              ;0448 23
-    cp 0dh              ;0449 fe 0d
-    jr nz,l0450h        ;044b 20 03
-    ld hl,2cf5h         ;044d 21 f5 2c
+    ld hl,(2af1h)       ;HL=(staptr) (staptr is current position in stabuf)
+    ld a,(hl)           ;Read the character from stabuf
+    call sub_0510h
+    jp c,l0376h
+    ld a,(hl)           ;Read the character from stabuf again
+    inc hl              ;Increment the position in stabuf
+    cp 0dh              ;Is the end marker (cr) reached?
+    jr nz,l0450h        ;  NO: continue
+                        ;  YES: Set the pointer to the start of status buffer
+    ld hl,2cf5h         ;HL=stabuf
+
 l0450h:
-    ld (2af1h),hl       ;0450 22 f1 2a
-    jr l043dh           ;0453 18 e8
+    ld (2af1h),hl       ;(staptr)=HL (Store the current position)
+    jr l043dh           ;Write the next character
+
 do_read:
-    ld a,(2ae7h)        ;0455 3a e7 2a
-    or a                ;0458 b7
-    jp z,l0376h         ;0459 ca 76 03
-    push af             ;045c f5
-    and 0fh             ;045d e6 0f
-    ld (2ae7h),a        ;045f 32 e7 2a
-    cp 02h              ;0462 fe 02
-    call nc,error_ok    ;0464 d4 d8 05
-    pop af              ;0467 f1
-    jp p,l049bh         ;0468 f2 9b 04
-    ld hl,2c75h         ;046b 21 75 2c
-    ld b,7fh            ;046e 06 7f
+    ld a,(2ae7h)
+    or a
+    jp z,l0376h
+    push af
+    and 0fh             ;Get only the channel number from the secondary address
+    ld (2ae7h),a        ;And store it
+    cp 02h              ;Is the channel number is 0 or 1?
+    call nc,error_ok    ;Set the error message to "OK"
+
+    pop af              ;Is the secondary address a OPEN or CLOSE
+    jp p,l049bh         ;No, this must be a command or data for a channel
+
+    ld hl,2c75h         ;HL=getbuf (Parameter for OPEN command, e.g. filename)
+    ld b,7fh            ;B=7fh (127 Characters of .... )
+
 l0470h:
-    call rdieee         ;0470 cd c1 04
-    jp c,l0376h         ;0473 da 76 03
-    bit 7,b             ;0476 cb 78
-    jr nz,l047dh        ;0478 20 03
-    ld (hl),a           ;047a 77
-    inc hl              ;047b 23
-    dec b               ;047c 05
+    call rdieee
+    jp c,l0376h
+    bit 7,b             ;Is bit 7 of B set, this means B is negative and we read more than 128 bytes
+    jr nz,l047dh        ;  YES: Don't store the readed character
+
+    ld (hl),a           ;Store the charcater in getbuf
+    inc hl              ;Increment the position in getbuf
+    dec b               ;Decrement the counter B
+
 l047dh:
-    ld a,(456fh)        ;047d 3a 6f 45
-    or a                ;0480 b7
-    jr z,l0470h         ;0481 28 ed
-    ld (hl),0dh         ;0483 36 0d
-    ld a,(2ae7h)        ;0485 3a e7 2a
-    cp 0fh              ;0488 fe 0f
-    jp nz,do_open       ;048a c2 bb 06
-    ld hl,2c75h         ;048d 21 75 2c
-    ld de,2bf5h         ;0490 11 f5 2b
-    ld bc,0080h         ;0493 01 80 00
-    ldir                ;0496 ed b0
-    jp l056ah           ;0498 c3 6a 05
+    ld a,(456fh)        ;Read the last state of EOI
+    or a                ;Is EOI detected?
+    jr z,l0470h         ;  NO: Read next characters
+
+    ld (hl),0dh         ;Save end marker in buffer getbuf
+
+    ld a,(2ae7h)        ;Get secondary address
+    cp 0fh              ;Is Control Channel?
+    jp nz,do_open       ;  NO: do a open file or channel
+
+                        ;Copy all 128 characters from getbuf to command buffer (cmdbuf)
+    ld hl,2c75h         ;HL=getbuf
+    ld de,2bf5h         ;DE=cmdbuf
+    ld bc,0080h         ;BC=0080h (128 bytes)
+    ldir                ;Copy BC bytes from (HL) to (DE)
+    jp l056ah
+
 l049bh:
-    ld a,(2ae7h)        ;049b 3a e7 2a
-    cp 0fh              ;049e fe 0f
-    jp nz,l0a48h        ;04a0 c2 48 0a
-    ld hl,(2af3h)       ;04a3 2a f3 2a
+    ld a,(2ae7h)
+    cp 0fh              ;Is Control Channel?
+    jp nz,do_rd_chan        ;  NO: We read from ieee to data channels
+                        ;  YES: We read the command from ieee to command buffer
+    ld hl,(2af3h)       ;HL=(cmdptr) (cmdptr is current position in cmdbuf)
+
 l04a6h:
-    call rdieee         ;04a6 cd c1 04
-    jp c,l0376h         ;04a9 da 76 03
-    ld (hl),a           ;04ac 77
-    ld a,l              ;04ad 7d
-    cp 74h              ;04ae fe 74
-    jr z,l04b6h         ;04b0 28 04
-    inc hl              ;04b2 23
-    ld (2af3h),hl       ;04b3 22 f3 2a
+    call rdieee
+    jp c,l0376h
+    ld (hl),a           ;Store the charcater in cmdbuf
+    ld a,l
+    cp 74h
+    jr z,l04b6h
+
+    inc hl              ;Increment the position in cmdbuf
+    ld (2af3h),hl       ;(cmdptr)=HL (Store the current position)
+
 l04b6h:
-    ld a,(456fh)        ;04b6 3a 6f 45
-    or a                ;04b9 b7
-    jr z,l04a6h         ;04ba 28 ea
-    ld (hl),0dh         ;04bc 36 0d
-    jp l056ah           ;04be c3 6a 05
+    ld a,(456fh)
+    or a
+    jr z,l04a6h
+    ld (hl),0dh
+    jp l056ah
+
 rdieee:
-    in a,(ppi2_pa)      ;04c1 db 14
-    and 01h             ;04c3 e6 01
-    jr nz,l0506h        ;04c5 20 3f
-    in a,(ppi2_pb)      ;04c7 db 15
-    and 0f7h            ;04c9 e6 f7
-    out (ppi2_pb),a     ;04cb d3 15
+;Read a byte from the current IEEE-488 device
+;No timeout; waits forever for DAV_IN=low.
+;
+;Returns the byte in A.
+;Stores ppi2_pa in eoisav so EOI state can be checked later.
+;
+    in a,(ppi2_pa)
+    and atn
+    jr nz,l0506h
+
+    in a,(ppi2_pb)
+    and 255-nrfd
+    out (ppi2_pb),a     ;NRFD_OUT=high
+
 l04cdh:
-    in a,(ppi2_pa)      ;04cd db 14
-    and 01h             ;04cf e6 01
-    jr nz,l0506h        ;04d1 20 33
-    in a,(ppi2_pa)      ;04d3 db 14
-    and 02h             ;04d5 e6 02
-    jr z,l04cdh         ;04d7 28 f4
-    in a,(ppi1_pa)      ;04d9 db 10
-    push af             ;04db f5
-    xor a               ;04dc af
-    ld (456fh),a        ;04dd 32 6f 45
-    in a,(ppi2_pa)      ;04e0 db 14
-    and 10h             ;04e2 e6 10
-    jr z,l04ebh         ;04e4 28 05
-    ld a,01h            ;04e6 3e 01
-    ld (456fh),a        ;04e8 32 6f 45
+    in a,(ppi2_pa)
+    and atn
+    jr nz,l0506h
+
+    in a,(ppi2_pa)
+    and dav
+    jr z,l04cdh         ;Wait until DAV_IN=low
+
+    in a,(ppi1_pa)
+    push af
+
+    xor a
+    ld (456fh),a        ;eoisav=0
+    in a,(ppi2_pa)
+    and eoi
+    jr z,l04ebh
+
+    ld a,01h
+    ld (456fh),a        ;eoisav=1
+
 l04ebh:
-    in a,(ppi2_pb)      ;04eb db 15
-    or 08h              ;04ed f6 08
-    out (ppi2_pb),a     ;04ef d3 15
-    in a,(ppi2_pb)      ;04f1 db 15
-    and 0fbh            ;04f3 e6 fb
-    out (ppi2_pb),a     ;04f5 d3 15
+    in a,(ppi2_pb)
+    or nrfd
+    out (ppi2_pb),a     ;NRFD_OUT=low
+
+    in a,(ppi2_pb)
+    and 255-ndac
+    out (ppi2_pb),a     ;NDAC_OUT=high
+
 l04f7h:
-    in a,(ppi2_pa)      ;04f7 db 14
-    and 02h             ;04f9 e6 02
-    jr nz,l04f7h        ;04fb 20 fa
-    in a,(ppi2_pb)      ;04fd db 15
-    or 04h              ;04ff f6 04
-    out (ppi2_pb),a     ;0501 d3 15
-    pop af              ;0503 f1
-    or a                ;0504 b7
-    ret                 ;0505 c9
+    in a,(ppi2_pa)
+    and dav
+    jr nz,l04f7h        ;Wait until DAV_IN=high
+
+    in a,(ppi2_pb)
+    or ndac
+    out (ppi2_pb),a     ;NDAC_OUT=low
+
+    pop af
+    or a
+    ret
 l0506h:
-    scf                 ;0506 37
-    ret                 ;0507 c9
+    scf
+    ret
+
 wreoi:
-    push af             ;0508 f5
-    in a,(ppi2_pb)      ;0509 db 15
-    or 10h              ;050b f6 10
-    out (ppi2_pb),a     ;050d d3 15
-    pop af              ;050f f1
+;Send the byte in A to IEEE-488 device with EOI asserted
+;
+    push af
+    in a,(ppi2_pb)
+    or eoi
+    out (ppi2_pb),a     ;EOI_OUT=low
+
+    pop af
 sub_0510h:
-    call wrieee         ;0510 cd 19 05
-    ret c               ;0513 d8
-    call sub_055ah      ;0514 cd 5a 05
-    or a                ;0517 b7
-    ret                 ;0518 c9
+    call wrieee         ;Send the byte
+    ret c
+    call sub_055ah
+    or a
+    ret
+
 wrieee:
-    push af             ;0519 f5
+;Send a byte to an IEEE-488 device
+;
+;A = byte to send
+;
+;Returns carry flag set if an error occurred, clear if OK.
+;
+    push af             ;Push data byte
 l051ah:
-    in a,(ppi2_pa)      ;051a db 14
-    and 01h             ;051c e6 01
-    jr nz,l0557h        ;051e 20 37
-    in a,(ppi2_pa)      ;0520 db 14
-    and 08h             ;0522 e6 08
-    jr nz,l051ah        ;0524 20 f4
-    in a,(ppi2_pa)      ;0526 db 14
-    and 01h             ;0528 e6 01
-    jr nz,l0557h        ;052a 20 2b
-    in a,(ppi2_pa)      ;052c db 14
-    and 04h             ;052e e6 04
-    jr z,l0557h         ;0530 28 25
-    pop af              ;0532 f1
-    out (ppi1_pb),a     ;0533 d3 11
-    in a,(ppi2_pb)      ;0535 db 15
-    or 02h              ;0537 f6 02
-    out (ppi2_pb),a     ;0539 d3 15
+    in a,(ppi2_pa)
+    and atn
+    jr nz,l0557h        ;Jump to error if ATN_IN=low
+
+    in a,(ppi2_pa)
+    and nrfd
+    jr nz,l051ah        ;Wait until NRFD_IN=high
+
+    in a,(ppi2_pa)
+    and atn
+    jr nz,l0557h        ;Jump to error if ATN_IN=low
+
+    in a,(ppi2_pa)
+    and ndac
+    jr z,l0557h         ;Jump to error if NDAC_IN=high
+
+    pop af              ;Push data byte
+    out (ppi1_pb),a     ;Write byte to IEEE-488 data lines
+
+    in a,(ppi2_pb)
+    or dav
+    out (ppi2_pb),a     ;DAV_OUT=low
+
 l053bh:
-    in a,(ppi2_pa)      ;053b db 14
-    and 08h             ;053d e6 08
-    jr nz,l0555h        ;053f 20 14
-    in a,(ppi2_pa)      ;0541 db 14
-    and 04h             ;0543 e6 04
-    jr nz,l053bh        ;0545 20 f4
-    in a,(ppi2_pa)      ;0547 db 14
-    and 08h             ;0549 e6 08
-    jr nz,l0555h        ;054b 20 08
-    in a,(ppi2_pb)      ;054d db 15
-    and 0fdh            ;054f e6 fd
-    out (ppi2_pb),a     ;0551 d3 15
-    scf                 ;0553 37
-    ret                 ;0554 c9
+    in a,(ppi2_pa)
+    and nrfd
+    jr nz,l0555h
+
+    in a,(ppi2_pa)
+    and ndac
+    jr nz,l053bh        ;Wait until NDAC_IN=high
+
+    in a,(ppi2_pa)
+    and nrfd
+    jr nz,l0555h
+
+    in a,(ppi2_pb)
+    and 255-dav
+    out (ppi2_pb),a     ;DAV_OUT=high
+
+    scf
+    ret
+
 l0555h:
-    or a                ;0555 b7
-    ret                 ;0556 c9
+    or a
+    ret
+
 l0557h:
-    pop af              ;0557 f1
-    scf                 ;0558 37
-    ret                 ;0559 c9
+    pop af
+    scf
+    ret
+
 sub_055ah:
-    in a,(ppi2_pa)      ;055a db 14
-    and 04h             ;055c e6 04
-    jr nz,sub_055ah     ;055e 20 fa
-    in a,(ppi2_pb)      ;0560 db 15
-    and 0edh            ;0562 e6 ed
-    out (ppi2_pb),a     ;0564 d3 15
-    xor a               ;0566 af
-    out (ppi1_pb),a     ;0567 d3 11
-    ret                 ;0569 c9
+    in a,(ppi2_pa)
+    and ndac
+    jr nz,sub_055ah     ;Wait until NDAC_IN=high
+
+    in a,(ppi2_pb)
+    and 255-eoi-dav
+    out (ppi2_pb),a     ;EOI_OUT=high, DAV_OUT=high
+
+    xor a               ;A=0
+    out (ppi1_pb),a
+    ret
+
 l056ah:
-    call error_ok       ;056a cd d8 05
-    ld de,cmd_char      ;056d 11 99 05
-    ld hl,2bf5h         ;0570 21 f5 2b
-    ld (2af3h),hl       ;0573 22 f3 2a
-    ld b,12h            ;0576 06 12
-    ld ix,05abh         ;0578 dd 21 ab 05
+    call error_ok
+    ld de,cmd_char
+
+    ld hl,2bf5h         ;When we start reading from control channel,
+                        ;  we store it into command buffer (cmdbuf)
+    ld (2af3h),hl       ;(cmdptr)=cmdbuf
+
+    ld b,12h            ;B=12h (18 Commands)
+    ld ix,05abh
+
 l057ch:
-    ld a,(de)           ;057c 1a
-    cp (hl)             ;057d be
-    jr z,cmd_found      ;057e 28 0c
-    inc de              ;0580 13
-    inc ix              ;0581 dd 23
-    inc ix              ;0583 dd 23
-    djnz l057ch         ;0585 10 f5
-    ld a,1fh            ;0587 3e 1f
-    jp error            ;0589 c3 cf 05
+    ld a,(de)
+    cp (hl)
+    jr z,cmd_found
+    inc de
+    inc ix
+    inc ix
+    djnz l057ch
+    ld a,1fh            ;"SYNTAX ERROR (INVALID COMMAND)"
+    jp error
 
 cmd_found:
     ld l,(ix+00h)
@@ -1213,7 +1295,7 @@ l0a3fh:
     call wreoi          ;0a40 cd 08 05
     jr nc,l0a3fh        ;0a43 30 fa
     jp l0376h           ;0a45 c3 76 03
-l0a48h:
+do_rd_chan:
     call sub_1689h      ;0a48 cd 89 16
     bit 7,(iy+28h)      ;0a4b fd cb 28 7e
     jp z,l0376h         ;0a4f ca 76 03
@@ -1463,99 +1545,104 @@ l0c39h:
 cmd_flg:
 ;Command set or reset a flag (Global, Hide a File, Write Protect)
 ;
-    call find_drvlet    ;0c48 cd 25 16
-    call get_filename   ;0c4b cd e3 15
-    ld a,(2d67h)        ;0c4e 3a 67 2d
-    ld hl,2d45h         ;0c51 21 45 2d
-    call find_first     ;0c54 cd 3d 15
+    call find_drvlet    ;Find drive letter
+    call get_filename   ;Get a filename
+    ld a,(2d67h)
+    ld hl,2d45h
+    call find_first     ;Search for first file entry in directory
 l0c57h:
-    ret c               ;0c57 d8
-    ld hl,2bf5h         ;0c58 21 f5 2b
+    ret c               ;If not found, return
+
+    ld hl,2bf5h
 l0c5bh:
-    ld a,(hl)           ;0c5b 7e
-    inc hl              ;0c5c 23
-    cp 0dh              ;0c5d fe 0d
-    ret z               ;0c5f c8
-    cp 2dh              ;0c60 fe 2d
-    jr z,l0c82h         ;0c62 28 1e
-    cp 48h              ;0c64 fe 48
-    jr nz,l0c6eh        ;0c66 20 06
-    set 5,(ix+00h)      ;0c68 dd cb 00 ee
-    jr l0c9bh           ;0c6c 18 2d
+    ld a,(hl)
+    inc hl
+    cp 0dh
+    ret z
+    cp "-"              ;check for "-" for negation
+    jr z,l0c82h
+    cp "H"              ;check for "Hide"
+    jr nz,l0c6eh
+    set 5,(ix+00h)      ;set marker for "Hide"
+    jr l0c9bh
 l0c6eh:
-    cp 57h              ;0c6e fe 57
-    jr nz,l0c78h        ;0c70 20 06
-    set 6,(ix+00h)      ;0c72 dd cb 00 f6
-    jr l0c9bh           ;0c76 18 23
+    cp "W"              ;check for "Write Protect"
+    jr nz,l0c78h
+    set 6,(ix+00h)      ;set marker for "Write Protect"
+    jr l0c9bh
 l0c78h:
-    cp 47h              ;0c78 fe 47
-    jr nz,l0c5bh        ;0c7a 20 df
-    set 4,(ix+00h)      ;0c7c dd cb 00 e6
-    jr l0c9bh           ;0c80 18 19
+    cp "G"              ;check for "Global"
+    jr nz,l0c5bh
+    set 4,(ix+00h)      ;set marker for "Global"
+    jr l0c9bh
 l0c82h:
-    ld a,(hl)           ;0c82 7e
-    cp 48h              ;0c83 fe 48
-    jr nz,l0c8bh        ;0c85 20 04
-    res 5,(ix+00h)      ;0c87 dd cb 00 ae
+    ld a,(hl)
+    cp "H"              ;check for "Hide"
+    jr nz,l0c8bh
+    res 5,(ix+00h)      ;reset marker for "Hide"
 l0c8bh:
-    cp 57h              ;0c8b fe 57
-    jr nz,l0c93h        ;0c8d 20 04
-    res 6,(ix+00h)      ;0c8f dd cb 00 b6
+    cp "W"              ;check for "Write Protect"
+    jr nz,l0c93h
+    res 6,(ix+00h)      ;reset marker for "Write Protect"
 l0c93h:
-    cp 47h              ;0c93 fe 47
-    jr nz,l0c9bh        ;0c95 20 04
-    res 4,(ix+00h)      ;0c97 dd cb 00 a6
+    cp "G"              ;check for "Global"
+    jr nz,l0c9bh
+    res 4,(ix+00h)      ;reset marker for "Global"
 l0c9bh:
-    call dir_writ_sec   ;0c9b cd 89 17
-    ld hl,2d45h         ;0c9e 21 45 2d
-    ld a,(2d67h)        ;0ca1 3a 67 2d
-    call find_next      ;0ca4 cd 44 15
-    jr l0c57h           ;0ca7 18 ae
+    call dir_writ_sec
+
+    ld hl,2d45h
+    ld a,(2d67h)
+    call find_next      ;Search for next file entry in directory
+    jr l0c57h           ;Loop
+
 l0ca9h:
-    call find_drvlet    ;0ca9 cd 25 16
-    call get_filename   ;0cac cd e3 15
-    ld a,(hl)           ;0caf 7e
-    inc hl              ;0cb0 23
-    cp 2ch              ;0cb1 fe 2c
-    jr nz,l0cddh        ;0cb3 20 28
-    ld a,(hl)           ;0cb5 7e
-    sub 30h             ;0cb6 d6 30
-    jr c,l0cddh         ;0cb8 38 23
-    cp 0ah              ;0cba fe 0a
-    jr nc,l0cddh        ;0cbc 30 1f
-    ld c,a              ;0cbe 4f
-    push bc             ;0cbf c5
-    ld a,(2d67h)        ;0cc0 3a 67 2d
-    ld hl,2d45h         ;0cc3 21 45 2d
-    call find_first     ;0cc6 cd 3d 15
+    call find_drvlet    ;Find drive letter
+    call get_filename   ;Get a filename
+
+    ld a,(hl)
+    inc hl
+    cp 2ch
+    jr nz,l0cddh
+    ld a,(hl)
+    sub 30h
+    jr c,l0cddh
+    cp 0ah
+    jr nc,l0cddh
+    ld c,a
+    push bc
+    ld a,(2d67h)
+    ld hl,2d45h
+    call find_first
 l0cc9h:
-    pop bc              ;0cc9 c1
-    ret c               ;0cca d8
-    ld (ix+01h),c       ;0ccb dd 71 01
-    push bc             ;0cce c5
-    call dir_writ_sec   ;0ccf cd 89 17
-    ld a,(2d67h)        ;0cd2 3a 67 2d
-    ld hl,2d45h         ;0cd5 21 45 2d
-    call find_next      ;0cd8 cd 44 15
-    jr l0cc9h           ;0cdb 18 ec
+    pop bc
+    ret c
+    ld (ix+01h),c
+    push bc
+    call dir_writ_sec
+    ld a,(2d67h)
+    ld hl,2d45h
+    call find_next
+    jr l0cc9h
 l0cddh:
-    ld a,1eh            ;0cdd 3e 1e
-    jp error            ;0cdf c3 cf 05
+    ld a,1eh            ;"SYNTAX ERROR"
+    jp error
 
 cmd_cpy:
 ;command for copy and concat "C"
 ;
-    call find_drvlet    ;0ce2 cd 25 16
-    call get_filename   ;0ce5 cd e3 15
-    push hl             ;0ce8 e5
-    ld a,0fh            ;0ce9 3e 0f
-    ld (2ae7h),a        ;0ceb 32 e7 2a
-    call sub_1689h      ;0cee cd 89 16
-    ld a,(2d67h)        ;0cf1 3a 67 2d
-    ld (iy+01h),a       ;0cf4 fd 77 01
-    ld (iy+28h),000h    ;0cf7 fd 36 28 00
-    ld (iy+27h),000h    ;0cfb fd 36 27 00
-    ld (iy+26h),0ffh    ;0cff fd 36 26 ff
+    call find_drvlet    ;Find drive letter
+    call get_filename   ;Get a filename
+    push hl
+    ld a,0fh
+    ld (2ae7h),a        ;(sa)=0fh (15 = control channel)
+    call sub_1689h
+    ld a,(2d67h)
+    ld (iy+01h),a
+    ld (iy+28h),000h
+    ld (iy+27h),000h
+    ld (iy+26h),0ffh    ;No valid Allocation 1 index number
+
     ld hl,(2ae8h)       ;0d03 2a e8 2a
     ld de,0002h         ;0d06 11 02 00
     add hl,de           ;0d09 19
@@ -1818,20 +1905,21 @@ l0f0eh:
     push de             ;0f14 d5
     pop iy              ;0f15 fd e1
     jp (iy)             ;0f17 fd e9
+
 l0f19h:
-    ld b,h              ;0f19 44
-    ld (hl),0fh         ;0f1a 36 0f
-    ld c,b              ;0f1c 48
-    ld c,a              ;0f1d 4f
-    rrca                ;0f1e 0f
-    ld c,(hl)           ;0f1f 4e
-    ld b,h              ;0f20 44
-    rrca                ;0f21 0f
-    ld b,l              ;0f22 45
-    ld e,(hl)           ;0f23 5e
-    rrca                ;0f24 0f
+    db "D"              ;Set Device Number
+    dw cmd_dev
+
+    db "H"              ;Get Hardbox Version
+    dw cmd_hbv
+
+    db "N"              ;Number of current User
+    dw cmd_uid
+
+    db "E"              ;Execute
+    dw cmd_exe
+
     ld hl,2bf5h         ;0f25 21 f5 2b
-l0f28h:
     ld a,(hl)           ;0f28 7e
     cp 0dh              ;0f29 fe 0d
     scf                 ;0f2b 37
@@ -1841,24 +1929,36 @@ l0f28h:
     ret z               ;0f30 c8
     cp 3ah              ;0f31 fe 3a
     ret z               ;0f33 c8
-    jr l0f28h           ;0f34 18 f2
+    jr 0f28h            ;0f34 18 f2
+
+cmd_dev:
     call get_numeric    ;0f36 cd 4d 16
     jr c,l0f3fh         ;0f39 38 04
     ld (2000h),a        ;0f3b 32 00 20
     ret                 ;0f3e c9
+
 l0f3fh:
     ld a,1eh            ;0f3f 3e 1e
     jp error            ;0f41 c3 cf 05
-    ld a,(2002h)        ;0f44 3a 02 20
-    ld (2051h),a        ;0f47 32 51 20
-    ld a,59h            ;0f4a 3e 59
-    jp error            ;0f4c c3 cf 05
+
+cmd_uid:
+    ld a,(2002h)        ;get userid
+    ld (2051h),a        ;store as error track number
+
+    ld a,59h            ;"USER #"
+    jp error            ;and give it out
+
+cmd_hbv:
     ld a,02h            ;0f4f 3e 02
     ld (2051h),a        ;0f51 32 51 20
     ld a,04h            ;0f54 3e 04
     ld (2054h),a        ;0f56 32 54 20
     ld a,63h            ;0f59 3e 63
     jp error            ;0f5b c3 cf 05
+
+cmd_exe:
+;command to execute program in buffer "!E"
+;
     call get_numeric    ;0f5e cd 4d 16
     and 0fh             ;0f61 e6 0f
     ld d,a              ;0f63 57
@@ -1895,7 +1995,7 @@ l0f86h:
     jr l0f86h           ;0f98 18 ec
 l0f9ah:
     ld a,(2002h)        ;0f9a 3a 02 20
-    jp init_user       ;0f9d c3 0d 02
+    jp init_user        ;0f9d c3 0d 02
 
 cmd_ren:
     call find_drvlet    ;0fa0 cd 25 16
@@ -2375,32 +2475,38 @@ l12f4h:
     inc hl              ;12f5 23
     cp 0dh              ;12f6 fe 0d
     jr z,l1318h         ;12f8 28 1e
-    cp 2dh              ;12fa fe 2d
+    cp "-"              ;12fa fe 2d
     jr nz,l12f4h        ;12fc 20 f6
 l12feh:
     ld a,(hl)           ;12fe 7e
     inc hl              ;12ff 23
     cp 0dh              ;1300 fe 0d
     jr z,l1318h         ;1302 28 14
-    cp 41h              ;1304 fe 41
+    cp "A"              ;1304 fe 41
     jp c,l12feh         ;1306 da fe 12
-    cp 5bh              ;1309 fe 5b
+    cp "Z"+1            ;1309 fe 5b
     jp nc,l12feh        ;130b d2 fe 12
-    cp 57h              ;130e fe 57
+    cp "W"              ;130e fe 57
     jp z,abs_wr         ;1310 ca 1d 13
-    cp 52h              ;1313 fe 52
+    cp "R"              ;1313 fe 52
     jp z,abs_rd         ;1315 ca 2c 13
 l1318h:
     ld a,1eh            ;1318 3e 1e
     jp error            ;131a c3 cf 05
+
 abs_wr:
+;command for absolute write "A-W"
+;
     ld a,(2002h)        ;131d 3a 02 20
     or a                ;1320 b7
     ld a,5ch            ;1321 3e 5c
     jp nz,error         ;1323 c2 cf 05
     call sub_134dh      ;1326 cd 4d 13
     jp corv_writ_sec    ;1329 c3 b3 19
+
 abs_rd:
+;command for absolute read "A-R"
+;
     call sub_134dh      ;132c cd 4d 13
     ld (iy+20h),000h    ;132f fd 36 20 00
     ld (iy+25h),0ffh    ;1333 fd 36 25 ff
@@ -3351,6 +3457,7 @@ sub_1973h:
     ret z               ;197c c8
     ld a,5ch            ;197d 3e 5c
     jp error            ;197f c3 cf 05
+
 corv_read_sec:
     ld (4a10h),de       ;1982 ed 53 10 4a
     ld (4a12h),a        ;1986 32 12 4a
@@ -3413,6 +3520,7 @@ l19dfh:
     ld (2056h),a        ;19e9 32 56 20
     pop af              ;19ec f1
     jp error_out        ;19ed c3 db 05
+
 corv_send_cmd:
     ld b,a              ;19f0 47
     xor a               ;19f1 af
@@ -3434,6 +3542,7 @@ l1a09h:
     nop                 ;1a09 00
     djnz l1a09h         ;1a0a 10 fd
     ret                 ;1a0c c9
+
 sub_1a0dh:
     ld a,0ffh           ;1a0d 3e ff
     out (corvus),a      ;1a0f d3 18
@@ -3454,6 +3563,7 @@ l1a1ah:
     out (corvus),a      ;1a25 d3 18
     pop af              ;1a27 f1
     ret                 ;1a28 c9
+
 sub_1a29h:
     xor a               ;1a29 af
     out (corvus),a      ;1a2a d3 18
