@@ -1,8 +1,55 @@
 ;This is a disassembly of the HardBox code payload inside mwdos291.com.
 
+ppi1:     equ 10h       ;8255 PPI #1 (IC17)
+ppi1_pa:  equ ppi1+0    ;  Port A: IEEE-488 Data In
+ppi1_pb:  equ ppi1+1    ;  Port B: IEEE-488 Data Out
+ppi1_pc:  equ ppi1+2    ;  Port C: DIP Switches
+ppi1_cr:  equ ppi1+3    ;  Control Register
+
+ppi2:     equ 14h       ;8255 PPI #2 (IC16)
+ppi2_pa:  equ ppi2+0    ;  Port A:
+                        ;    PA7 IEEE-488 IFC in (unused)
+                        ;    PA6 IEEE-488 REN in (unused)
+                        ;    PA5 IEEE-488 SRQ in (unused)
+                        ;    PA4 IEEE-488 EOI in
+                        ;    PA3 IEEE-488 NRFD in
+                        ;    PA2 IEEE-488 NDAC in
+                        ;    PA1 IEEE-488 DAV in
+                        ;    PA0 IEEE-488 ATN in
+ppi2_pb:  equ ppi2+1    ;  Port B:
+                        ;    PB7 IEEE-488 ATNA out (because LK3 is open)
+                        ;    PB6 IEEE-488 REN out (unused)
+                        ;    PB5 IEEE-488 SRQ out (unused)
+                        ;    PB4 IEEE-488 EOI out
+                        ;    PB3 IEEE-488 NRFD out
+                        ;    PB2 IEEE-488 NDAC out
+                        ;    PB1 IEEE-488 DAV out
+                        ;    PB0 IEEE-488 ATN out (unused)
+ppi2_pc:  equ ppi2+2    ;  Port C:
+                        ;    PC7 Unused
+                        ;    PC6 Unused
+                        ;    PC5 Corvus DIRC
+                        ;    PC4 Corvus READY
+                        ;    PC3 Unused
+                        ;    PC2 LED "Ready"
+                        ;    PC1 LED "B"
+                        ;    PC0 LED "A"
+ppi2_cr:  equ ppi2+3    ;  Control Register
+
+corvus:   equ 18h       ;Corvus data bus
+
+atna:     equ 10000000b ;ATNA (With installed IC37 this isn't IFC, leave LK3 open!)
+ren:      equ 01000000b ;REN (unused)
+srq:      equ 00100000b ;SRQ (unused)
+eoi:      equ 00010000b ;EOI
+nrfd:     equ 00001000b ;NRFD
+ndac:     equ 00000100b ;NDAC
+dav:      equ 00000010b ;DAV
+atn:      equ 00000001b ;ATN
+
     org 0100h
 
-    jp l0200h           ;0100 c3 00 02
+    jp reset            ;0100 c3 00 02
 l0103h:
     ld bc,0000h         ;0103 01 00 00
     nop                 ;0106 00
@@ -18,7 +65,8 @@ l0103h:
     dec e               ;0110 1d
 
     db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    db "HARD DISK       ",07h,60h,00h,08h
+    db "HARD DISK       ",07h,60h,00h
+    db 08h              ;IEEE-488 primary address
     db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -31,24 +79,30 @@ l0103h:
     db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     db 0
 
-l0200h:
+reset:
     xor a               ;0200 af
-    out (11h),a         ;0201 d3 11
+    out (ppi1_pb),a     ;0201 d3 11
     ld a,80h            ;0203 3e 80
-    out (15h),a         ;0205 d3 15
+    out (ppi2_pb),a     ;0205 d3 15
     ld a,(0136h)        ;0207 3a 36 01
     ld (2000h),a        ;020a 32 00 20
-l020dh:
-    ld sp,4a93h         ;020d 31 93 4a
-    ld hl,2004h         ;0210 21 04 20
-    ld de,2005h         ;0213 11 05 20
-    ld bc,2a0eh         ;0216 01 0e 2a
-    ld (hl),00h         ;0219 36 00
-    ldir                ;021b ed b0
+
+init_user:
+    ld sp,4a93h
+
+                        ;Clear memory from 2004h .. 4a13h
+    ld hl,2004h         ;HL=2004h
+    ld de,2005h         ;DE=2005h
+    ld bc,2a0eh         ;BC=2a0eh
+    ld (hl),00h
+    ldir                ;Copy BC bytes from (HL) to (DE)
+
     xor a               ;021d af
     ld (2002h),a        ;021e 32 02 20
+
     ld a,01h            ;0221 3e 01
     ld (460ch),a        ;0223 32 0c 46
+
     ld hl,2bf5h         ;0226 21 f5 2b
     ld (2af3h),hl       ;0229 22 f3 2a
     ld hl,l0103h        ;022c 21 03 01
@@ -59,7 +113,7 @@ l020dh:
     ld de,203eh         ;023a 11 3e 20
     ld bc,0010h         ;023d 01 10 00
     ldir                ;0240 ed b0
-    call sub_05d8h      ;0242 cd d8 05
+    call error_ok       ;0242 cd d8 05
     call sub_192dh      ;0245 cd 2d 19
     ld hl,(200bh)       ;0248 2a 0b 20
     ld (202ah),hl       ;024b 22 2a 20
@@ -71,23 +125,23 @@ l020dh:
     ld hl,(200dh)       ;0258 2a 0d 20
     ld a,h              ;025b 7c
     ld b,09h            ;025c 06 09
-    call sub_1a7ah      ;025e cd 7a 1a
+    call hl_shr_b       ;025e cd 7a 1a
     inc hl              ;0261 23
     ld (2039h),hl       ;0262 22 39 20
     ld hl,(200bh)       ;0265 2a 0b 20
     ld b,05h            ;0268 06 05
-    call sub_1a7ah      ;026a cd 7a 1a
+    call hl_shr_b       ;026a cd 7a 1a
     inc hl              ;026d 23
     ex de,hl            ;026e eb
     ld hl,(202ah)       ;026f 2a 2a 20
     ld b,03h            ;0272 06 03
-    call sub_1a7ah      ;0274 cd 7a 1a
+    call hl_shr_b       ;0274 cd 7a 1a
     inc hl              ;0277 23
     add hl,de           ;0278 19
     ex de,hl            ;0279 eb
     ld hl,(202fh)       ;027a 2a 2f 20
     ld b,02h            ;027d 06 02
-    call sub_1a7ah      ;027f cd 7a 1a
+    call hl_shr_b       ;027f cd 7a 1a
     inc hl              ;0282 23
     add hl,de           ;0283 19
     ld de,(200dh)       ;0284 ed 5b 0d 20
@@ -111,7 +165,7 @@ l020dh:
     ex de,hl            ;02ae eb
     ld hl,(200bh)       ;02af 2a 0b 20
     ld b,03h            ;02b2 06 03
-    call sub_1a7ah      ;02b4 cd 7a 1a
+    call hl_shr_b       ;02b4 cd 7a 1a
     inc hl              ;02b7 23
     add hl,de           ;02b8 19
     adc a,00h           ;02b9 ce 00
@@ -152,11 +206,11 @@ l02e6h:
     ld hl,0000h         ;0308 21 00 00
     ld (2d68h),hl       ;030b 22 68 2d
 l030eh:
-    call sub_15a6h      ;030e cd a6 15
+    call dir_get_next   ;030e cd a6 15
     jr c,l0336h         ;0311 38 23
     bit 7,(ix+01h)      ;0313 dd cb 01 7e
     jr nz,l030eh        ;0317 20 f5
-    call sub_18beh      ;0319 cd be 18
+    call loc1_read_sec  ;0319 cd be 18
     ld b,40h            ;031c 06 40
     ld ix,(2aeeh)       ;031e dd 2a ee 2a
 l0322h:
@@ -181,7 +235,7 @@ l0340h:
     push bc             ;0344 c5
     push hl             ;0345 e5
     push de             ;0346 d5
-    call sub_17b5h      ;0347 cd b5 17
+    call loc2_writ_sec  ;0347 cd b5 17
     ld b,80h            ;034a 06 80
     ld ix,(2aeah)       ;034c dd 2a ea 2a
 l0350h:
@@ -208,109 +262,131 @@ l0372h:
     jr l033ch           ;0374 18 c6
 l0376h:
     xor a               ;0376 af
-    out (16h),a         ;0377 d3 16
-    out (11h),a         ;0379 d3 11
-    in a,(15h)          ;037b db 15
+    out (ppi2_pc),a     ;0377 d3 16
+    out (ppi1_pb),a     ;0379 d3 11
+    in a,(ppi2_pb)      ;037b db 15
     and 00h             ;037d e6 00
-    out (15h),a         ;037f d3 15
+    out (ppi2_pb),a     ;037f d3 15
 l0381h:
-    in a,(14h)          ;0381 db 14
+    in a,(ppi2_pa)      ;0381 db 14
     and 01h             ;0383 e6 01
     jr z,l0381h         ;0385 28 fa
 l0387h:
-    in a,(15h)          ;0387 db 15
+    in a,(ppi2_pb)      ;0387 db 15
     or 84h              ;0389 f6 84
-    out (15h),a         ;038b d3 15
-    in a,(15h)          ;038d db 15
+    out (ppi2_pb),a     ;038b d3 15
+    in a,(ppi2_pb)      ;038d db 15
     and 0f7h            ;038f e6 f7
-    out (15h),a         ;0391 d3 15
+    out (ppi2_pb),a     ;0391 d3 15
 l0393h:
-    in a,(14h)          ;0393 db 14
+    in a,(ppi2_pa)      ;0393 db 14
     and 02h             ;0395 e6 02
     jr nz,l03a2h        ;0397 20 09
-    in a,(14h)          ;0399 db 14
+    in a,(ppi2_pa)      ;0399 db 14
     and 01h             ;039b e6 01
     jr nz,l0393h        ;039d 20 f4
-    jp l0415h           ;039f c3 15 04
+    jp do_write         ;039f c3 15 04
+
 l03a2h:
-    ld hl,2af0h         ;03a2 21 f0 2a
-    in a,(15h)          ;03a5 db 15
-    or 08h              ;03a7 f6 08
-    out (15h),a         ;03a9 d3 15
-    in a,(10h)          ;03ab db 10
-    ld c,a              ;03ad 4f
-    in a,(15h)          ;03ae db 15
-    and 0fbh            ;03b0 e6 fb
-    out (15h),a         ;03b2 d3 15
-    ld a,(2000h)        ;03b4 3a 00 20
-    or 20h              ;03b7 f6 20
-    cp c                ;03b9 b9
-    jr z,l03e2h         ;03ba 28 26
-    xor 60h             ;03bc ee 60
-    cp c                ;03be b9
-    jr z,l03eah         ;03bf 28 29
-    ld a,c              ;03c1 79
-    cp 3fh              ;03c2 fe 3f
-    jr z,l03f2h         ;03c4 28 2c
-    cp 5fh              ;03c6 fe 5f
-    jr z,l03f6h         ;03c8 28 2c
-    and 60h             ;03ca e6 60
-    cp 60h              ;03cc fe 60
-    jr nz,l03dah        ;03ce 20 0a
-    ld a,c              ;03d0 79
-    ld (2ae7h),a        ;03d1 32 e7 2a
-    and 0f0h            ;03d4 e6 f0
-    cp 0e0h             ;03d6 fe e0
-    jr z,l03fah         ;03d8 28 20
+;After detection an ATN=low, now is DAV=low.  So we must read the
+;primary address (TALK or LISTEN).
+;
+    ld hl,2af0h
+
+    in a,(ppi2_pb)
+    or nrfd
+    out (ppi2_pb),a     ;NRFD_OUT=low
+
+    in a,(ppi1_pa)
+    ld c,a
+
+    in a,(ppi2_pb)
+    and 255-ndac
+    out (ppi2_pb),a     ;NDAC_OUT=high
+
+    ld a,(2000h)        ;Generate LISTEN address
+    or 20h
+    cp c
+    jr z,do_listn       ;If found LISTEN execute do_listn
+
+    xor 60h             ;Generate TALK address
+    cp c
+    jr z,do_talk        ;If found TALK execute do_talk
+
+    ld a,c
+    cp 3fh              ;3Fh=UNLISTEN
+    jr z,do_unlst       ;If found UNLISTEN execute do_unlst
+
+    cp 5fh              ;5Fh=UNTALK
+    jr z,do_untlk       ;If found UNTALK execute do_untlk
+
+    and 60h
+    cp 60h              ;Is the byte a SA, OPEN or CLOSE?
+    jr nz,l03dah        ;  NO: finish this data cyclus and skip data
+
+    ld a,c              ;We store the channel number as SA
+    ld (2ae7h),a        ;(sa)=C
+
+    and 0f0h
+    cp 0e0h             ;Is this byte a CLOSE?
+    jr z,sa_close       ;  YES: process a close
+
 l03dah:
-    in a,(14h)          ;03da db 14
-    and 02h             ;03dc e6 02
-    jr nz,l03dah        ;03de 20 fa
-    jr l0387h           ;03e0 18 a5
-l03e2h:
-    set 2,(hl)          ;03e2 cb d6
-    xor a               ;03e4 af
-    ld (2ae7h),a        ;03e5 32 e7 2a
-    jr l03dah           ;03e8 18 f0
-l03eah:
-    set 1,(hl)          ;03ea cb ce
-    xor a               ;03ec af
-    ld (2ae7h),a        ;03ed 32 e7 2a
-    jr l03dah           ;03f0 18 e8
-l03f2h:
-    res 2,(hl)          ;03f2 cb 96
-    jr l03dah           ;03f4 18 e4
-l03f6h:
-    res 1,(hl)          ;03f6 cb 8e
-    jr l03dah           ;03f8 18 e0
-l03fah:
-    ld (hl),00h         ;03fa 36 00
-    ld a,c              ;03fc 79
-    and 0fh             ;03fd e6 0f
-    ld (2ae7h),a        ;03ff 32 e7 2a
-    push af             ;0402 f5
-    cp 02h              ;0403 fe 02
-    call nc,sub_05d8h   ;0405 d4 d8 05
-    pop af              ;0408 f1
-    cp 0fh              ;0409 fe 0f
-    push af             ;040b f5
-    call z,sub_0932h    ;040c cc 32 09
-    pop af              ;040f f1
-    call nz,sub_08e7h   ;0410 c4 e7 08
-    jr l03dah           ;0413 18 c5
-l0415h:
-    in a,(15h)          ;0415 db 15
+    in a,(ppi2_pa)
+    and dav
+    jr nz,l03dah        ;Wait until DAV_IN=high
+
+    jr l0387h
+
+do_listn:
+    set 2,(hl)          ;Set marker for LISTEN is active
+    xor a               ;A=0
+    ld (2ae7h),a
+    jr l03dah
+
+do_talk:
+    set 1,(hl)          ;Set marker for TALK is active
+    xor a               ;A=0
+    ld (2ae7h),a
+    jr l03dah
+
+do_unlst:
+    res 2,(hl)          ;Clear marker for LISTEN is active
+    jr l03dah
+
+do_untlk:
+    res 1,(hl)          ;Clear marker for TALK is active
+    jr l03dah
+
+sa_close:
+    ld (hl),00h         ;Clear all marker for LISTEN and TALK active
+    ld a,c
+    and 0fh
+    ld (2ae7h),a
+    push af
+    cp 02h
+    call nc,error_ok
+    pop af
+    cp 0fh              ;Is Control Channel?
+    push af
+    call z,sub_0932h
+    pop af
+    call nz,sub_08e7h
+    jr l03dah
+
+do_write:
+    in a,(ppi2_pb)      ;0415 db 15
     and 7fh             ;0417 e6 7f
-    out (15h),a         ;0419 d3 15
+    out (ppi2_pb),a     ;0419 d3 15
     ld a,(2af0h)        ;041b 3a f0 2a
 sub_041eh:
     or a                ;041e b7
     jp z,l0376h         ;041f ca 76 03
     bit 2,a             ;0422 cb 57
-    jr nz,l0455h        ;0424 20 2f
-    in a,(15h)          ;0426 db 15
+    jr nz,do_read       ;0424 20 2f
+    in a,(ppi2_pb)      ;0426 db 15
     and 0fbh            ;0428 e6 fb
-    out (15h),a         ;042a d3 15
+    out (ppi2_pb),a     ;042a d3 15
     ld a,(2ae7h)        ;042c 3a e7 2a
     or a                ;042f b7
     jp z,l0376h         ;0430 ca 76 03
@@ -331,7 +407,7 @@ l043dh:
 l0450h:
     ld (2af1h),hl       ;0450 22 f1 2a
     jr l043dh           ;0453 18 e8
-l0455h:
+do_read:
     ld a,(2ae7h)        ;0455 3a e7 2a
     or a                ;0458 b7
     jp z,l0376h         ;0459 ca 76 03
@@ -339,13 +415,13 @@ l0455h:
     and 0fh             ;045d e6 0f
     ld (2ae7h),a        ;045f 32 e7 2a
     cp 02h              ;0462 fe 02
-    call nc,sub_05d8h   ;0464 d4 d8 05
+    call nc,error_ok    ;0464 d4 d8 05
     pop af              ;0467 f1
     jp p,l049bh         ;0468 f2 9b 04
     ld hl,2c75h         ;046b 21 75 2c
     ld b,7fh            ;046e 06 7f
 l0470h:
-    call sub_04c1h      ;0470 cd c1 04
+    call rdieee         ;0470 cd c1 04
     jp c,l0376h         ;0473 da 76 03
     bit 7,b             ;0476 cb 78
     jr nz,l047dh        ;0478 20 03
@@ -359,7 +435,7 @@ l047dh:
     ld (hl),0dh         ;0483 36 0d
     ld a,(2ae7h)        ;0485 3a e7 2a
     cp 0fh              ;0488 fe 0f
-    jp nz,l06bbh        ;048a c2 bb 06
+    jp nz,do_open       ;048a c2 bb 06
     ld hl,2c75h         ;048d 21 75 2c
     ld de,2bf5h         ;0490 11 f5 2b
     ld bc,0080h         ;0493 01 80 00
@@ -371,7 +447,7 @@ l049bh:
     jp nz,l0a48h        ;04a0 c2 48 0a
     ld hl,(2af3h)       ;04a3 2a f3 2a
 l04a6h:
-    call sub_04c1h      ;04a6 cd c1 04
+    call rdieee         ;04a6 cd c1 04
     jp c,l0376h         ;04a9 da 76 03
     ld (hl),a           ;04ac 77
     ld a,l              ;04ad 7d
@@ -385,94 +461,94 @@ l04b6h:
     jr z,l04a6h         ;04ba 28 ea
     ld (hl),0dh         ;04bc 36 0d
     jp l056ah           ;04be c3 6a 05
-sub_04c1h:
-    in a,(14h)          ;04c1 db 14
+rdieee:
+    in a,(ppi2_pa)      ;04c1 db 14
     and 01h             ;04c3 e6 01
     jr nz,l0506h        ;04c5 20 3f
-    in a,(15h)          ;04c7 db 15
+    in a,(ppi2_pb)      ;04c7 db 15
     and 0f7h            ;04c9 e6 f7
-    out (15h),a         ;04cb d3 15
+    out (ppi2_pb),a     ;04cb d3 15
 l04cdh:
-    in a,(14h)          ;04cd db 14
+    in a,(ppi2_pa)      ;04cd db 14
     and 01h             ;04cf e6 01
     jr nz,l0506h        ;04d1 20 33
-    in a,(14h)          ;04d3 db 14
+    in a,(ppi2_pa)      ;04d3 db 14
     and 02h             ;04d5 e6 02
     jr z,l04cdh         ;04d7 28 f4
-    in a,(10h)          ;04d9 db 10
+    in a,(ppi1_pa)      ;04d9 db 10
     push af             ;04db f5
     xor a               ;04dc af
     ld (456fh),a        ;04dd 32 6f 45
-    in a,(14h)          ;04e0 db 14
+    in a,(ppi2_pa)      ;04e0 db 14
     and 10h             ;04e2 e6 10
     jr z,l04ebh         ;04e4 28 05
     ld a,01h            ;04e6 3e 01
     ld (456fh),a        ;04e8 32 6f 45
 l04ebh:
-    in a,(15h)          ;04eb db 15
+    in a,(ppi2_pb)      ;04eb db 15
     or 08h              ;04ed f6 08
-    out (15h),a         ;04ef d3 15
-    in a,(15h)          ;04f1 db 15
+    out (ppi2_pb),a     ;04ef d3 15
+    in a,(ppi2_pb)      ;04f1 db 15
     and 0fbh            ;04f3 e6 fb
-    out (15h),a         ;04f5 d3 15
+    out (ppi2_pb),a     ;04f5 d3 15
 l04f7h:
-    in a,(14h)          ;04f7 db 14
+    in a,(ppi2_pa)      ;04f7 db 14
     and 02h             ;04f9 e6 02
     jr nz,l04f7h        ;04fb 20 fa
-    in a,(15h)          ;04fd db 15
+    in a,(ppi2_pb)      ;04fd db 15
     or 04h              ;04ff f6 04
-    out (15h),a         ;0501 d3 15
+    out (ppi2_pb),a     ;0501 d3 15
     pop af              ;0503 f1
     or a                ;0504 b7
     ret                 ;0505 c9
 l0506h:
     scf                 ;0506 37
     ret                 ;0507 c9
-sub_0508h:
+wreoi:
     push af             ;0508 f5
-    in a,(15h)          ;0509 db 15
+    in a,(ppi2_pb)      ;0509 db 15
     or 10h              ;050b f6 10
-    out (15h),a         ;050d d3 15
+    out (ppi2_pb),a     ;050d d3 15
     pop af              ;050f f1
 sub_0510h:
-    call sub_0519h      ;0510 cd 19 05
+    call wrieee         ;0510 cd 19 05
     ret c               ;0513 d8
     call sub_055ah      ;0514 cd 5a 05
     or a                ;0517 b7
     ret                 ;0518 c9
-sub_0519h:
+wrieee:
     push af             ;0519 f5
 l051ah:
-    in a,(14h)          ;051a db 14
+    in a,(ppi2_pa)      ;051a db 14
     and 01h             ;051c e6 01
     jr nz,l0557h        ;051e 20 37
-    in a,(14h)          ;0520 db 14
+    in a,(ppi2_pa)      ;0520 db 14
     and 08h             ;0522 e6 08
     jr nz,l051ah        ;0524 20 f4
-    in a,(14h)          ;0526 db 14
+    in a,(ppi2_pa)      ;0526 db 14
     and 01h             ;0528 e6 01
     jr nz,l0557h        ;052a 20 2b
-    in a,(14h)          ;052c db 14
+    in a,(ppi2_pa)      ;052c db 14
     and 04h             ;052e e6 04
     jr z,l0557h         ;0530 28 25
     pop af              ;0532 f1
-    out (11h),a         ;0533 d3 11
-    in a,(15h)          ;0535 db 15
+    out (ppi1_pb),a     ;0533 d3 11
+    in a,(ppi2_pb)      ;0535 db 15
     or 02h              ;0537 f6 02
-    out (15h),a         ;0539 d3 15
+    out (ppi2_pb),a     ;0539 d3 15
 l053bh:
-    in a,(14h)          ;053b db 14
+    in a,(ppi2_pa)      ;053b db 14
     and 08h             ;053d e6 08
     jr nz,l0555h        ;053f 20 14
-    in a,(14h)          ;0541 db 14
+    in a,(ppi2_pa)      ;0541 db 14
     and 04h             ;0543 e6 04
     jr nz,l053bh        ;0545 20 f4
-    in a,(14h)          ;0547 db 14
+    in a,(ppi2_pa)      ;0547 db 14
     and 08h             ;0549 e6 08
     jr nz,l0555h        ;054b 20 08
-    in a,(15h)          ;054d db 15
+    in a,(ppi2_pb)      ;054d db 15
     and 0fdh            ;054f e6 fd
-    out (15h),a         ;0551 d3 15
+    out (ppi2_pb),a     ;0551 d3 15
     scf                 ;0553 37
     ret                 ;0554 c9
 l0555h:
@@ -483,18 +559,18 @@ l0557h:
     scf                 ;0558 37
     ret                 ;0559 c9
 sub_055ah:
-    in a,(14h)          ;055a db 14
+    in a,(ppi2_pa)      ;055a db 14
     and 04h             ;055c e6 04
     jr nz,sub_055ah     ;055e 20 fa
-    in a,(15h)          ;0560 db 15
+    in a,(ppi2_pb)      ;0560 db 15
     and 0edh            ;0562 e6 ed
-    out (15h),a         ;0564 d3 15
+    out (ppi2_pb),a     ;0564 d3 15
     xor a               ;0566 af
-    out (11h),a         ;0567 d3 11
+    out (ppi1_pb),a     ;0567 d3 11
     ret                 ;0569 c9
 l056ah:
-    call sub_05d8h      ;056a cd d8 05
-    ld de,l0599h        ;056d 11 99 05
+    call error_ok       ;056a cd d8 05
+    ld de,cmd_char      ;056d 11 99 05
     ld hl,2bf5h         ;0570 21 f5 2b
     ld (2af3h),hl       ;0573 22 f3 2a
     ld b,12h            ;0576 06 12
@@ -502,21 +578,24 @@ l056ah:
 l057ch:
     ld a,(de)           ;057c 1a
     cp (hl)             ;057d be
-    jr z,l058ch         ;057e 28 0c
+    jr z,cmd_found      ;057e 28 0c
     inc de              ;0580 13
     inc ix              ;0581 dd 23
     inc ix              ;0583 dd 23
     djnz l057ch         ;0585 10 f5
     ld a,1fh            ;0587 3e 1f
-    jp 05cfh            ;0589 c3 cf 05
-l058ch:
-    ld l,(ix+00h)       ;058c dd 6e 00
-    ld h,(ix+01h)       ;058f dd 66 01
-    call sub_0598h      ;0592 cd 98 05
-    jp l0376h           ;0595 c3 76 03
-sub_0598h:
-    jp (hl)             ;0598 e9
-l0599h:
+    jp error            ;0589 c3 cf 05
+
+cmd_found:
+    ld l,(ix+00h)
+    ld h,(ix+01h)       ;HL=(IX)
+    call do_cmd
+    jp l0376h
+
+do_cmd:
+    jp (hl)
+
+cmd_char:
     db "NSDIRGHW-VLT!PBUAC"
 
 cmd_addr:
@@ -540,263 +619,304 @@ cmd_addr:
     dw cmd_cpy          ;"C": Copy and Concat
 
 error:
-    call 05dbh          ;Write the error msg defined in A into status buffer
+    call error_out      ;Write the error msg defined in A into status buffer
     ld sp,4a93h
-    jp 0376h
+    jp l0376h
 
-sub_05d8h:
-    call sub_064ch      ;05d8 cd 4c 06
-sub_05dbh:
-    ld (2050h),a        ;05db 32 50 20
-    ld hl,1a81h         ;05de 21 81 1a
+error_ok:
+;Writes the error message "OK" into the status buffer
+;
+    call clrerrts       ;05d8 cd 4c 06
+
+error_out:
+;Writes the error message defined in A into the status buffer
+;
+;        A = Error Code
+; (errtrk) = Error Track
+; (errsec) = Error Sector
+;
+    ld (2050h),a
+    ld hl,error_txt     ;Get address of error code/text table
 l05e1h:
-    bit 7,(hl)          ;05e1 cb 7e
-    jr nz,l05f0h        ;05e3 20 0b
-    cp (hl)             ;05e5 be
-    jr z,l05f0h         ;05e6 28 08
-    inc hl              ;05e8 23
+    bit 7,(hl)          ;Is this a valid error code (less than 128)
+    jr nz,l05f0h        ;  NO: We reached the end of the error list, UNKNOWN ERROR CODE
+    cp (hl)             ;Is this the wanted error code
+    jr z,l05f0h         ;  YES: We reached the correct position
+    inc hl              ;Now begin to skip the error text
 l05e9h:
-    bit 7,(hl)          ;05e9 cb 7e
-    inc hl              ;05eb 23
-    jr z,l05e9h         ;05ec 28 fb
-    jr l05e1h           ;05ee 18 f1
+    bit 7,(hl)          ;Is the end of this error text reached
+    inc hl
+    jr z,l05e9h         ;  NO: loop
+    jr l05e1h           ;  YES: Check the next error text
+
 l05f0h:
-    ex de,hl            ;05f0 eb
-    inc de              ;05f1 13
-    push de             ;05f2 d5
-    ld hl,2cf5h         ;05f3 21 f5 2c
-    ld de,0000h         ;05f6 11 00 00
-    call sub_0660h      ;05f9 cd 60 06
-    ld (hl),2ch         ;05fc 36 2c
-    inc hl              ;05fe 23
-    pop de              ;05ff d1
+    ex de,hl
+    inc de
+    push de
+    ld hl,2cf5h         ;HL=stabuf
+    ld de,0000h         ;DEA=(errcod)
+    call put_number      ;Put a number into buffer
+
+    ld (hl),","         ;Put comma into buffer
+    inc hl
+
+    pop de
 l0600h:
-    ld a,(de)           ;0600 1a
-    and 7fh             ;0601 e6 7f
-    ld (hl),a           ;0603 77
-    cp 20h              ;0604 fe 20
-    jr nc,l0623h        ;0606 30 1b
-    push de             ;0608 d5
-    ld de,1baah         ;0609 11 aa 1b
-    ld b,a              ;060c 47
+    ld a,(de)           ;Get the character from error text
+    and 01111111b       ;Mask off the highest bit (end marker bit)
+    ld (hl),a           ;Store it into buffer
+
+    cp 20h              ;Is this an error token?
+    jr nc,l0623h        ;  NO: leave unchanged
+
+    push de
+    ld de,1baah         ;Get address of error token table
+    ld b,a              ;B=error token
+
 l060dh:
-    dec b               ;060d 05
-    jr z,l0617h         ;060e 28 07
+    dec b               ;Decrement error token
+    jr z,l0617h         ;Is error token found? YES: Put the token into buffer
+
 l0610h:
-    ld a,(de)           ;0610 1a
-    inc de              ;0611 13
-    rla                 ;0612 17
-    jr nc,l0610h        ;0613 30 fb
-    jr l060dh           ;0615 18 f6
+    ld a,(de)           ;Get the character from error token
+    inc de
+    rla                 ;Is highest bit set (end marker bit)?
+    jr nc,l0610h        ;  NO: get next character
+    jr l060dh           ;  YES: Check next error token
+
 l0617h:
-    ld a,(de)           ;0617 1a
-    and 7fh             ;0618 e6 7f
-    ld (hl),a           ;061a 77
-    ld a,(de)           ;061b 1a
-    inc hl              ;061c 23
-    inc de              ;061d 13
-    rla                 ;061e 17
-    jr nc,l0617h        ;061f 30 f6
-    pop de              ;0621 d1
-    dec hl              ;0622 2b
+    ld a,(de)           ;Get the character from error token
+    and 01111111b       ;Mask off the highest bit (end marker bit)
+    ld (hl),a           ;Store it into buffer
+    ld a,(de)           ;Get last character from error token
+    inc hl
+    inc de
+    rla                 ;Is highest bit set (end marker bit)?
+    jr nc,l0617h        ;  NO: get next character
+    pop de
+    dec hl
+
 l0623h:
-    ld a,(de)           ;0623 1a
-    rla                 ;0624 17
-    inc hl              ;0625 23
-    inc de              ;0626 13
-    jr nc,l0600h        ;0627 30 d7
-    ld (hl),2ch         ;0629 36 2c
-    inc hl              ;062b 23
-    ld a,(2051h)        ;062c 3a 51 20
-    ld de,(2052h)       ;062f ed 5b 52 20
-    call sub_0660h      ;0633 cd 60 06
-    ld (hl),2ch         ;0636 36 2c
-    inc hl              ;0638 23
-    ld a,(2054h)        ;0639 3a 54 20
-    ld de,(2055h)       ;063c ed 5b 55 20
-    call sub_0660h      ;0640 cd 60 06
-    ld (hl),0dh         ;0643 36 0d
-    ld hl,2cf5h         ;0645 21 f5 2c
-    ld (2af1h),hl       ;0648 22 f1 2a
-    ret                 ;064b c9
-sub_064ch:
-    xor a               ;064c af
-    ld (2051h),a        ;064d 32 51 20
-    ld (2052h),a        ;0650 32 52 20
-    ld (2053h),a        ;0653 32 53 20
-    ld (2054h),a        ;0656 32 54 20
-    ld (2055h),a        ;0659 32 55 20
-    ld (2056h),a        ;065c 32 56 20
-    ret                 ;065f c9
-sub_0660h:
-    ld ix,l06a9h        ;0660 dd 21 a9 06
-    ld b,06h            ;0664 06 06
-    ld iy,460fh         ;0666 fd 21 0f 46
-    res 0,(iy+00h)      ;066a fd cb 00 86
-    push hl             ;066e e5
-    ex de,hl            ;066f eb
+    ld a,(de)           ;Get last character from error text
+    rla                 ;Is highest bit set (end marker bit)?
+    inc hl
+    inc de
+    jr nc,l0600h        ;  NO: get next character
+
+    ld (hl),","         ;Put comma into buffer
+    inc hl
+
+    ld a,(2051h)
+    ld de,(2052h)       ;DEA=(errtrk)
+    call put_number     ;Put a number into buffer
+
+    ld (hl),2ch         ;Put comma into buffer
+    inc hl
+
+    ld a,(2054h)
+    ld de,(2055h)       ;DEA=(errsec)
+    call put_number     ;Put a number into buffer
+
+    ld (hl),0dh         ;Put cr into buffer
+    ld hl,2cf5h         ;When we start writing to control channel, we take it from status buffer (stabuf)
+    ld (2af1h),hl       ;(staptr)=stabuf
+    ret
+
+clrerrts:
+;clear error track and sector number
+;
+    xor a
+    ld (2051h),a
+    ld (2052h),a
+    ld (2053h),a        ;errtrk=0
+
+    ld (2054h),a
+    ld (2055h),a
+    ld (2056h),a        ;errtrk=0
+    ret
+
+put_number:
+;Put a number into buffer
+;
+;Input DEA: Number
+;Input HL: Buffer address
+;
+    ld ix,l06a9h
+    ld b,06h            ;B=06h (Maximum 6 digits)
+    ld iy,460fh
+    res 0,(iy+00h)
+    push hl
+    ex de,hl
 l0670h:
-    ld e,(ix+01h)       ;0670 dd 5e 01
-    ld d,(ix+02h)       ;0673 dd 56 02
-    ld c,2fh            ;0676 0e 2f
+    ld e,(ix+01h)
+    ld d,(ix+02h)
+    ld c,2fh
 l0678h:
-    inc c               ;0678 0c
-    sub (ix+00h)        ;0679 dd 96 00
-    sbc hl,de           ;067c ed 52
-    jr nc,l0678h        ;067e 30 f8
-    add a,(ix+00h)      ;0680 dd 86 00
-    adc hl,de           ;0683 ed 5a
-    ld e,a              ;0685 5f
-    ld a,c              ;0686 79
-    cp 30h              ;0687 fe 30
-    jr nz,l0696h        ;0689 20 0b
-    bit 0,(iy+00h)      ;068b fd cb 00 46
-    jr nz,l0696h        ;068f 20 05
-    ld a,b              ;0691 78
-    cp 02h              ;0692 fe 02
-    jr nz,l069eh        ;0694 20 08
+    inc c
+    sub (ix+00h)
+    sbc hl,de
+    jr nc,l0678h
+    add a,(ix+00h)
+    adc hl,de
+    ld e,a
+    ld a,c
+    cp 30h
+    jr nz,l0696h
+    bit 0,(iy+00h)
+    jr nz,l0696h
+    ld a,b
+    cp 02h
+    jr nz,l069eh
 l0696h:
-    set 0,(iy+00h)      ;0696 fd cb 00 c6
-    ex (sp),hl          ;069a e3
-    ld (hl),c           ;069b 71
-    inc hl              ;069c 23
-    ex (sp),hl          ;069d e3
+    set 0,(iy+00h)
+    ex (sp),hl
+    ld (hl),c
+    inc hl
+    ex (sp),hl
 l069eh:
-    ld a,e              ;069e 7b
-    inc ix              ;069f dd 23
-    inc ix              ;06a1 dd 23
-    inc ix              ;06a3 dd 23
-    djnz l0670h         ;06a5 10 c9
-    pop hl              ;06a7 e1
-    ret                 ;06a8 c9
+    ld a,e
+    inc ix
+    inc ix
+    inc ix
+    djnz l0670h
+    pop hl
+    ret
+
 l06a9h:
-    and b               ;06a9 a0
-    add a,(hl)          ;06aa 86
-    ld bc,2710h         ;06ab 01 10 27
-    nop                 ;06ae 00
+    db 0a0h,86h,01h     ;100000
+    db 10h,27h,00h      ;10000
+
 l06afh:
-    ret pe              ;06af e8
-    inc bc              ;06b0 03
-    nop                 ;06b1 00
-    ld h,h              ;06b2 64
-    nop                 ;06b3 00
-    nop                 ;06b4 00
-    ld a,(bc)           ;06b5 0a
-    nop                 ;06b6 00
-    nop                 ;06b7 00
-    ld bc,0000h         ;06b8 01 00 00
-l06bbh:
-    call sub_05d8h      ;06bb cd d8 05
-    call sub_1689h      ;06be cd 89 16
-    bit 7,(iy+28h)      ;06c1 fd cb 28 7e
-    call nz,sub_08e7h   ;06c5 c4 e7 08
-    ld iy,(2ae8h)       ;06c8 fd 2a e8 2a
-    ld (iy+28h),000h    ;06cc fd 36 28 00
-    ld (iy+27h),000h    ;06d0 fd 36 27 00
-    ld (iy+26h),0ffh    ;06d4 fd 36 26 ff
-    ld hl,2c75h         ;06d8 21 75 2c
+    db 0e8h,03h,00h     ;1000
+    db 64h,00h,00h      ;100
+    db 0ah,00h,00h      ;10
+    db 01h,00h,00h      ;1
+
+do_open:
+    call error_ok
+    call sub_1689h
+    bit 7,(iy+28h)
+    call nz,sub_08e7h
+    ld iy,(2ae8h)
+    ld (iy+28h),000h
+    ld (iy+27h),000h
+    ld (iy+26h),0ffh    ;No valid Allocation 1 index number
+    ld hl,2c75h         ;HL=getbuf
+
 l06dbh:
-    ld a,(hl)           ;06db 7e
-    cp 24h              ;06dc fe 24
-    jp z,l1365h         ;06de ca 65 13
-    cp 23h              ;06e1 fe 23
-    jp z,l08d8h         ;06e3 ca d8 08
-    cp 40h              ;06e6 fe 40
-    jr nz,l06f1h        ;06e8 20 07
-    set 5,(iy+28h)      ;06ea fd cb 28 ee
-    inc hl              ;06ee 23
-    jr l06dbh           ;06ef 18 ea
+    ld a,(hl)
+    cp "$"
+    jp z,open_dir
+    cp "#"
+    jp z,open_chn
+    cp "@"
+    jr nz,l06f1h
+    set 5,(iy+28h)      ;Set marker for "Command Access"
+    inc hl
+    jr l06dbh
+
 l06f1h:
-    call sub_15e3h      ;06f1 cd e3 15
-    ld (iy+00h),000h    ;06f4 fd 36 00 00
-    ld a,(2ae7h)        ;06f8 3a e7 2a
-    cp 02h              ;06fb fe 02
-    jr nc,l0707h        ;06fd 30 08
-    ld (iy+00h),002h    ;06ff fd 36 00 02
-    set 0,(iy+28h)      ;0703 fd cb 28 c6
+    call get_filename
+    ld (iy+00h),000h
+    ld a,(2ae7h)
+    cp 02h
+    jr nc,l0707h
+    ld (iy+00h),002h
+    set 0,(iy+28h)      ;Set marker for file type
 l0707h:
-    ld a,(hl)           ;0707 7e
-    cp 0dh              ;0708 fe 0d
-    jr z,l0763h         ;070a 28 57
-    cp 2ch              ;070c fe 2c
-    inc hl              ;070e 23
-    jr nz,l0707h        ;070f 20 f6
-    ld a,(hl)           ;0711 7e
-    ld b,00h            ;0712 06 00
-    cp 53h              ;0714 fe 53
+    ld a,(hl)
+    cp 0dh
+    jr z,l0763h
+    cp ","
+    inc hl
+    jr nz,l0707h
+    ld a,(hl)
+    ld b,00h
+    cp "S"              ;check for "SEQ"
 sub_0716h:
-    jr z,l0748h         ;0716 28 30
-    ld b,01h            ;0718 06 01
-    cp 55h              ;071a fe 55
-    jr z,l0748h         ;071c 28 2a
-    ld b,02h            ;071e 06 02
-    cp 50h              ;0720 fe 50
-    jr z,l0748h         ;0722 28 24
-    cp 57h              ;0724 fe 57
-    jr z,l075dh         ;0726 28 35
-    cp 41h              ;0728 fe 41
-    jr z,l0757h         ;072a 28 2b
-    cp 52h              ;072c fe 52
-    jr nz,l0737h        ;072e 20 07
-    inc hl              ;0730 23
-    ld a,(hl)           ;0731 7e
-    cp 45h              ;0732 fe 45
-    jr nz,l0707h        ;0734 20 d1
-    inc hl              ;0736 23
+    jr z,l0748h
+    ld b,01h
+    cp "U"              ;check for "USR"
+    jr z,l0748h
+    ld b,02h
+    cp "P"              ;check for "PRG"
+    jr z,l0748h
+    cp "W"              ;Write
+    jr z,l075dh
+    cp "A"              ;Append
+    jr z,l0757h
+    cp "R"              ;check for "REL"
+    jr nz,l0737h
+    inc hl
+    ld a,(hl)
+    cp "E"
+    jr nz,l0707h
+    inc hl
 l0737h:
-    cp 4ch              ;0737 fe 4c
-    jr nz,l0707h        ;0739 20 cc
-    ld b,03h            ;073b 06 03
-    inc hl              ;073d 23
-    ld a,(hl)           ;073e 7e
-    cp 2ch              ;073f fe 2c
-    jr nz,l0748h        ;0741 20 05
-    inc hl              ;0743 23
-    ld a,(hl)           ;0744 7e
-    ld (iy+15h),a       ;0745 fd 77 15
+    cp "L"              ;(Record) Length
+    jr nz,l0707h
+    ld b,03h
+    inc hl
+    ld a,(hl)
+    cp ","
+    jr nz,l0748h
+    inc hl
+    ld a,(hl)
+    ld (iy+15h),a       ;Save detected record length
+
 l0748h:
-    ld a,(iy+00h)       ;0748 fd 7e 00
-    and 0fch            ;074b e6 fc
-    or b                ;074d b0
-    ld (iy+00h),a       ;074e fd 77 00
-    set 0,(iy+28h)      ;0751 fd cb 28 c6
-    jr l0707h           ;0755 18 b0
+    ld a,(iy+00h)       ;Get file attributes
+    and 11111100b
+    or b
+    ld (iy+00h),a       ;Save detected file type
+
+    set 0,(iy+28h)      ;Set marker for file type
+    jr l0707h
+
 l0757h:
-    set 4,(iy+28h)      ;0757 fd cb 28 e6
-    jr l0707h           ;075b 18 aa
+    set 4,(iy+28h)      ;Set marker for "Append"
+    jr l0707h
+
 l075dh:
-    set 3,(iy+28h)      ;075d fd cb 28 de
-    jr l0707h           ;0761 18 a4
+    set 3,(iy+28h)      ;Set marker for "Write"
+    jr l0707h
+
 l0763h:
-    ld a,(2ae7h)        ;0763 3a e7 2a
-    cp 02h              ;0766 fe 02
-    jr nc,l0775h        ;0768 30 0b
-    res 3,(iy+28h)      ;076a fd cb 28 9e
-    or a                ;076e b7
-    jr z,l0775h         ;076f 28 04
-    set 3,(iy+28h)      ;0771 fd cb 28 de
+    ld a,(2ae7h)
+    cp 02h              ;Is (sa) >= 2
+    jr nc,l0775h        ;  YES: No changes (can be read and write)
+
+    res 3,(iy+28h)      ;Reset marker for "Write"
+    or a                ;Is (sa) equal 0
+    jr z,l0775h         ;  YES: This is a read channel
+
+    set 3,(iy+28h)      ;Set marker for "Write"
+
 l0775h:
-    bit 3,(iy+28h)      ;0775 fd cb 28 5e
-    jp z,l0810h         ;0779 ca 10 08
+    bit 3,(iy+28h)      ;Is marker for "Write" set?
+    jp z,l0810h         ;  YES: do write
+                        ;  NO: do read
 l077ch:
-    call sub_163bh      ;077c cd 3b 16
-    ld a,21h            ;077f 3e 21
-    jp c,05cfh          ;0781 da cf 05
-    ld hl,2d45h         ;0784 21 45 2d
-    ld a,(2d67h)        ;0787 3a 67 2d
-    call 153dh          ;078a cd 3d 15
-    ld iy,(2ae8h)       ;078d fd 2a e8 2a
-    jr c,l07aah         ;0791 38 17
-    bit 5,(iy+28h)      ;0793 fd cb 28 6e
-    ld a,3fh            ;0797 3e 3f
-    jp z,05cfh          ;0799 ca cf 05
-    bit 6,(ix+00h)      ;079c dd cb 00 76
-    ld a,1ah            ;07a0 3e 1a
-    jp nz,05cfh         ;07a2 c2 cf 05
+    call check_wild
+    ld a,21h            ;"SYNTAX ERROR(INVALID FILENAME)"
+    jp c,error          ;If invalid filename, SYNTAX ERROR(INVALID FILENAME)
+
+    ld hl,2d45h
+    ld a,(2d67h)
+    call find_first
+    ld iy,(2ae8h)
+    jr c,l07aah
+    bit 5,(iy+28h)      ;Is marker for command access set
+    ld a,3fh            ;"FILE EXISTS"
+    jp z,error
+
+    bit 6,(ix+00h)      ;is marker for "Write Protect" set?
+    ld a,1ah            ;"WRITE PROTECTED"
+    jp nz,error         ;07a2 c2 cf 05
     call sub_16e3h      ;07a5 cd e3 16
     jr l07adh           ;07a8 18 03
 l07aah:
-    call sub_1586h      ;07aa cd 86 15
+    call find_free      ;07aa cd 86 15
 l07adh:
     push de             ;07ad d5
     push ix             ;07ae dd e5
@@ -837,12 +957,12 @@ l07e8h:
     ld bc,0020h         ;0804 01 20 00
     ldir                ;0807 ed b0
     pop de              ;0809 d1
-    call sub_1789h      ;080a cd 89 17
+    call dir_writ_sec   ;080a cd 89 17
     jp l0376h           ;080d c3 76 03
 l0810h:
     ld hl,2d45h         ;0810 21 45 2d
     ld a,(2d67h)        ;0813 3a 67 2d
-    call 153dh          ;0816 cd 3d 15
+    call find_first     ;0816 cd 3d 15
     ld iy,(2ae8h)       ;0819 fd 2a e8 2a
     jr nc,l082eh        ;081d 30 0f
     ld a,(iy+00h)       ;081f fd 7e 00
@@ -850,7 +970,7 @@ l0810h:
     cp 03h              ;0824 fe 03
     jp z,l077ch         ;0826 ca 7c 07
     ld a,3eh            ;0829 3e 3e
-    jp 05cfh            ;082b c3 cf 05
+    jp error            ;082b c3 cf 05
 l082eh:
     bit 0,(iy+28h)      ;082e fd cb 28 46
     jr z,l0852h         ;0832 28 1e
@@ -860,13 +980,13 @@ l082eh:
     jr z,l0852h         ;083c 28 14
     ld hl,2d45h         ;083e 21 45 2d
     ld a,(2d67h)        ;0841 3a 67 2d
-    call sub_1544h      ;0844 cd 44 15
+    call find_next      ;0844 cd 44 15
     ld iy,(2ae8h)       ;0847 fd 2a e8 2a
     jr nc,l082eh        ;084b 30 e1
     ld a,40h            ;084d 3e 40
-    jp 05cfh            ;084f c3 cf 05
+    jp error            ;084f c3 cf 05
 l0852h:
-    call sub_18beh      ;0852 cd be 18
+    call loc1_read_sec  ;0852 cd be 18
     ld (iy+23h),e       ;0855 fd 73 23
     ld (iy+24h),d       ;0858 fd 72 24
     ld (iy+20h),000h    ;085b fd 36 20 00
@@ -919,11 +1039,13 @@ l08b3h:
     or a                ;08d1 b7
     call nz,sub_17e0h   ;08d2 c4 e0 17
     jp l0376h           ;08d5 c3 76 03
-l08d8h:
-    set 7,(iy+28h)      ;08d8 fd cb 28 fe
-    set 6,(iy+28h)      ;08dc fd cb 28 f6
-    ld (iy+20h),000h    ;08e0 fd 36 20 00
-    jp l0376h           ;08e4 c3 76 03
+
+open_chn:
+    set 7,(iy+28h)
+    set 6,(iy+28h)      ;Set marker for "Channel Access"
+    ld (iy+20h),000h
+    jp l0376h
+
 sub_08e7h:
     call sub_1689h      ;08e7 cd 89 16
     bit 7,(iy+28h)      ;08ea fd cb 28 7e
@@ -931,7 +1053,7 @@ sub_08e7h:
     res 7,(iy+28h)      ;08ef fd cb 28 be
     call sub_0bcah      ;08f3 cd ca 0b
     bit 7,(iy+27h)      ;08f6 fd cb 27 7e
-    call nz,sub_17ebh   ;08fa c4 eb 17
+    call nz,fil_writ_sec ;08fa c4 eb 17
     bit 4,(iy+27h)      ;08fd fd cb 27 66
     jr nz,l0908h        ;0901 20 05
     bit 7,(iy+00h)      ;0903 fd cb 00 7e
@@ -958,7 +1080,7 @@ l0908h:
     ld hl,(2ae8h)       ;0929 2a e8 2a
     ldir                ;092c ed b0
     pop de              ;092e d1
-    jp sub_1789h        ;092f c3 89 17
+    jp dir_writ_sec     ;092f c3 89 17
 sub_0932h:
     xor a               ;0932 af
 l0933h:
@@ -989,7 +1111,7 @@ l0941h:
     jr nz,l097bh        ;0971 20 08
     call sub_10b0h      ;0973 cd b0 10
     ld a,32h            ;0976 3e 32
-    jp nc,05cfh         ;0978 d2 cf 05
+    jp nc,error         ;0978 d2 cf 05
 l097bh:
     ld a,(2d6bh)        ;097b 3a 6b 2d
     ld e,a              ;097e 5f
@@ -1005,9 +1127,9 @@ l0985h:
     jr nz,l099fh        ;0991 20 0c
     ld a,(iy+15h)       ;0993 fd 7e 15
     ld (iy+25h),a       ;0996 fd 77 25
-    in a,(15h)          ;0999 db 15
+    in a,(ppi2_pb)      ;0999 db 15
     or 10h              ;099b f6 10
-    out (15h),a         ;099d d3 15
+    out (ppi2_pb),a     ;099d d3 15
 l099fh:
     ld a,(iy+20h)       ;099f fd 7e 20
     cp (iy+12h)         ;09a2 fd be 12
@@ -1020,7 +1142,7 @@ l099fh:
     jr z,l09dah         ;09b5 28 23
 l09b7h:
     ld a,(hl)           ;09b7 7e
-    call sub_0519h      ;09b8 cd 19 05
+    call wrieee         ;09b8 cd 19 05
     jp c,l09e3h         ;09bb da e3 09
     inc hl              ;09be 23
     inc (iy+20h)        ;09bf fd 34 20
@@ -1037,7 +1159,7 @@ l09d5h:
     jr l0985h           ;09d8 18 ab
 l09dah:
     ld a,(hl)           ;09da 7e
-    call sub_0508h      ;09db cd 08 05
+    call wreoi          ;09db cd 08 05
     jp c,l0376h         ;09de da 76 03
     jr l09dah           ;09e1 18 f7
 l09e3h:
@@ -1058,7 +1180,7 @@ l09e9h:
     jr l09e9h           ;0a02 18 e5
 l0a04h:
     ld a,(hl)           ;0a04 7e
-    call sub_0508h      ;0a05 cd 08 05
+    call wreoi          ;0a05 cd 08 05
     jp c,l0376h         ;0a08 da 76 03
     ld (iy+20h),000h    ;0a0b fd 36 20 00
     jr l09e9h           ;0a0f 18 d8
@@ -1068,7 +1190,7 @@ l0a11h:
     cp l                ;0a17 bd
     jr z,l0a3fh         ;0a18 28 25
     ld a,(hl)           ;0a1a 7e
-    call sub_0519h      ;0a1b cd 19 05
+    call wrieee         ;0a1b cd 19 05
     jp c,l0376h         ;0a1e da 76 03
     inc hl              ;0a21 23
     ld (45f0h),hl       ;0a22 22 f0 45
@@ -1088,7 +1210,7 @@ l0a30h:
     jr nz,l0a11h        ;0a3d 20 d2
 l0a3fh:
     xor a               ;0a3f af
-    call sub_0508h      ;0a40 cd 08 05
+    call wreoi          ;0a40 cd 08 05
     jr nc,l0a3fh        ;0a43 30 fa
     jp l0376h           ;0a45 c3 76 03
 l0a48h:
@@ -1113,7 +1235,7 @@ l0a6fh:
     ld hl,(2aech)       ;0a78 2a ec 2a
     add hl,de           ;0a7b 19
 l0a7ch:
-    call sub_04c1h      ;0a7c cd c1 04
+    call rdieee         ;0a7c cd c1 04
     jp c,l0376h         ;0a7f da 76 03
     ld (hl),a           ;0a82 77
     set 7,(iy+27h)      ;0a83 fd cb 27 fe
@@ -1131,14 +1253,14 @@ l0a99h:
     jr nz,l0aa6h        ;0aa1 20 03
     inc (iy+22h)        ;0aa3 fd 34 22
 l0aa6h:
-    call sub_17ebh      ;0aa6 cd eb 17
+    call fil_writ_sec   ;0aa6 cd eb 17
     res 7,(iy+27h)      ;0aa9 fd cb 27 be
     jr l0a6fh           ;0aad 18 c0
 l0aafh:
-    call sub_04c1h      ;0aaf cd c1 04
+    call rdieee         ;0aaf cd c1 04
     jp c,l0376h         ;0ab2 da 76 03
     push af             ;0ab5 f5
-    call sub_05d8h      ;0ab6 cd d8 05
+    call error_ok       ;0ab6 cd d8 05
     call sub_0bcah      ;0ab9 cd ca 0b
     call sub_10b0h      ;0abc cd b0 10
     jp c,l0b4bh         ;0abf da 4b 0b
@@ -1186,7 +1308,7 @@ l0b0bh:
     inc (iy+22h)        ;0b17 fd 34 22
 l0b1ah:
     push bc             ;0b1a c5
-    call sub_17ebh      ;0b1b cd eb 17
+    call fil_writ_sec   ;0b1b cd eb 17
     call sub_0bcah      ;0b1e cd ca 0b
     pop bc              ;0b21 c1
     ld hl,(2aech)       ;0b22 2a ec 2a
@@ -1217,9 +1339,9 @@ l0b4bh:
     pop af              ;0b58 f1
     jr l0b66h           ;0b59 18 0b
 l0b5bh:
-    call sub_04c1h      ;0b5b cd c1 04
+    call rdieee         ;0b5b cd c1 04
     jr nc,l0b66h        ;0b5e 30 06
-    call sub_17ebh      ;0b60 cd eb 17
+    call fil_writ_sec   ;0b60 cd eb 17
     jp l0376h           ;0b63 c3 76 03
 l0b66h:
     ld c,a              ;0b66 4f
@@ -1229,7 +1351,7 @@ l0b66h:
     push af             ;0b6c f5
     push iy             ;0b6d fd e5
     ld a,33h            ;0b6f 3e 33
-    call z,sub_05dbh    ;0b71 cc db 05
+    call z,error_out    ;0b71 cc db 05
     pop iy              ;0b74 fd e1
     pop af              ;0b76 f1
     call nz,sub_0b94h   ;0b77 c4 94 0b
@@ -1257,14 +1379,14 @@ sub_0b94h:
     jr nz,l0ba5h        ;0ba0 20 03
     inc (iy+22h)        ;0ba2 fd 34 22
 l0ba5h:
-    call sub_17ebh      ;0ba5 cd eb 17
+    call fil_writ_sec   ;0ba5 cd eb 17
     call sub_0bcah      ;0ba8 cd ca 0b
     call sub_10b0h      ;0bab cd b0 10
     call c,sub_17e0h    ;0bae dc e0 17
     ld hl,(2aech)       ;0bb1 2a ec 2a
     ret                 ;0bb4 c9
 l0bb5h:
-    call sub_04c1h      ;0bb5 cd c1 04
+    call rdieee         ;0bb5 cd c1 04
     jp c,l0376h         ;0bb8 da 76 03
     ld hl,(2aech)       ;0bbb 2a ec 2a
     ld c,(iy+20h)       ;0bbe fd 4e 20
@@ -1283,12 +1405,12 @@ sub_0bcah:
     and 07h             ;0bdb e6 07
     ld (2d6ch),a        ;0bdd 32 6c 2d
     ld b,03h            ;0be0 06 03
-    call sub_1a7ah      ;0be2 cd 7a 1a
+    call hl_shr_b       ;0be2 cd 7a 1a
     ld a,l              ;0be5 7d
     and 7fh             ;0be6 e6 7f
     ld (2d6ah),a        ;0be8 32 6a 2d
     ld b,07h            ;0beb 06 07
-    call sub_1a7ah      ;0bed cd 7a 1a
+    call hl_shr_b       ;0bed cd 7a 1a
     ld a,l              ;0bf0 7d
     ld (2d6dh),a        ;0bf1 32 6d 2d
     ret                 ;0bf4 c9
@@ -1296,9 +1418,9 @@ sub_0bcah:
 cmd_del:
 ;command for scratch files "S"
 ;
-    call sub_1625h      ;0bf5 cd 25 16
+    call find_drvlet    ;0bf5 cd 25 16
 l0bf8h:
-    call sub_15e3h      ;0bf8 cd e3 15
+    call get_filename   ;0bf8 cd e3 15
     push hl             ;0bfb e5
     ld a,0fh            ;0bfc 3e 0f
     ld (2ae7h),a        ;0bfe 32 e7 2a
@@ -1306,7 +1428,7 @@ l0bf8h:
     ld a,(2d67h)        ;0c04 3a 67 2d
     ld c,a              ;0c07 4f
     ld hl,2d45h         ;0c08 21 45 2d
-    call 153dh          ;0c0b cd 3d 15
+    call find_first     ;0c0b cd 3d 15
     jr c,l0c38h         ;0c0e 38 28
 l0c10h:
     bit 6,(ix+00h)      ;0c10 dd cb 00 76
@@ -1319,12 +1441,12 @@ l0c10h:
     push de             ;0c24 d5
     call sub_16e3h      ;0c25 cd e3 16
     pop de              ;0c28 d1
-    call sub_1789h      ;0c29 cd 89 17
+    call dir_writ_sec   ;0c29 cd 89 17
 l0c2ch:
     ld hl,2d45h         ;0c2c 21 45 2d
     ld a,(2d67h)        ;0c2f 3a 67 2d
     ld c,a              ;0c32 4f
-    call sub_1544h      ;0c33 cd 44 15
+    call find_next      ;0c33 cd 44 15
     jr nc,l0c10h        ;0c36 30 d8
 l0c38h:
     pop hl              ;0c38 e1
@@ -1336,16 +1458,16 @@ l0c39h:
     cp 0dh              ;0c3f fe 0d
     jr nz,l0c39h        ;0c41 20 f6
     ld a,01h            ;0c43 3e 01
-    jp sub_05dbh        ;0c45 c3 db 05
+    jp error_out        ;0c45 c3 db 05
 
 cmd_flg:
 ;Command set or reset a flag (Global, Hide a File, Write Protect)
 ;
-    call sub_1625h      ;0c48 cd 25 16
-    call sub_15e3h      ;0c4b cd e3 15
+    call find_drvlet    ;0c48 cd 25 16
+    call get_filename   ;0c4b cd e3 15
     ld a,(2d67h)        ;0c4e 3a 67 2d
     ld hl,2d45h         ;0c51 21 45 2d
-    call 153dh          ;0c54 cd 3d 15
+    call find_first     ;0c54 cd 3d 15
 l0c57h:
     ret c               ;0c57 d8
     ld hl,2bf5h         ;0c58 21 f5 2b
@@ -1384,14 +1506,14 @@ l0c93h:
     jr nz,l0c9bh        ;0c95 20 04
     res 4,(ix+00h)      ;0c97 dd cb 00 a6
 l0c9bh:
-    call sub_1789h      ;0c9b cd 89 17
+    call dir_writ_sec   ;0c9b cd 89 17
     ld hl,2d45h         ;0c9e 21 45 2d
     ld a,(2d67h)        ;0ca1 3a 67 2d
-    call sub_1544h      ;0ca4 cd 44 15
+    call find_next      ;0ca4 cd 44 15
     jr l0c57h           ;0ca7 18 ae
 l0ca9h:
-    call sub_1625h      ;0ca9 cd 25 16
-    call sub_15e3h      ;0cac cd e3 15
+    call find_drvlet    ;0ca9 cd 25 16
+    call get_filename   ;0cac cd e3 15
     ld a,(hl)           ;0caf 7e
     inc hl              ;0cb0 23
     cp 2ch              ;0cb1 fe 2c
@@ -1405,26 +1527,26 @@ l0ca9h:
     push bc             ;0cbf c5
     ld a,(2d67h)        ;0cc0 3a 67 2d
     ld hl,2d45h         ;0cc3 21 45 2d
-    call 153dh          ;0cc6 cd 3d 15
+    call find_first     ;0cc6 cd 3d 15
 l0cc9h:
     pop bc              ;0cc9 c1
     ret c               ;0cca d8
     ld (ix+01h),c       ;0ccb dd 71 01
     push bc             ;0cce c5
-    call sub_1789h      ;0ccf cd 89 17
+    call dir_writ_sec   ;0ccf cd 89 17
     ld a,(2d67h)        ;0cd2 3a 67 2d
     ld hl,2d45h         ;0cd5 21 45 2d
-    call sub_1544h      ;0cd8 cd 44 15
+    call find_next      ;0cd8 cd 44 15
     jr l0cc9h           ;0cdb 18 ec
 l0cddh:
     ld a,1eh            ;0cdd 3e 1e
-    jp 05cfh            ;0cdf c3 cf 05
+    jp error            ;0cdf c3 cf 05
 
 cmd_cpy:
 ;command for copy and concat "C"
 ;
-    call sub_1625h      ;0ce2 cd 25 16
-    call sub_15e3h      ;0ce5 cd e3 15
+    call find_drvlet    ;0ce2 cd 25 16
+    call get_filename   ;0ce5 cd e3 15
     push hl             ;0ce8 e5
     ld a,0fh            ;0ce9 3e 0f
     ld (2ae7h),a        ;0ceb 32 e7 2a
@@ -1441,16 +1563,16 @@ cmd_cpy:
     ld hl,2d45h         ;0d0b 21 45 2d
     ld bc,0010h         ;0d0e 01 10 00
     ldir                ;0d11 ed b0
-    call sub_163bh      ;0d13 cd 3b 16
+    call check_wild     ;0d13 cd 3b 16
     ld a,21h            ;0d16 3e 21
-    jp c,05cfh          ;0d18 da cf 05
+    jp c,error          ;0d18 da cf 05
     pop hl              ;0d1b e1
     ld a,(hl)           ;0d1c 7e
     cp 3dh              ;0d1d fe 3d
     ld a,1eh            ;0d1f 3e 1e
-    jp nz,05cfh         ;0d21 c2 cf 05
+    jp nz,error         ;0d21 c2 cf 05
     inc hl              ;0d24 23
-    call sub_15e3h      ;0d25 cd e3 15
+    call get_filename   ;0d25 cd e3 15
     push hl             ;0d28 e5
     ld a,(2d67h)        ;0d29 3a 67 2d
     cp (iy+01h)         ;0d2c fd be 01
@@ -1469,9 +1591,9 @@ l0d3dh:
     djnz l0d3dh         ;0d43 10 f8
     ld a,(2d67h)        ;0d45 3a 67 2d
     ld hl,2d45h         ;0d48 21 45 2d
-    call 153dh          ;0d4b cd 3d 15
+    call find_first     ;0d4b cd 3d 15
     ld a,3eh            ;0d4e 3e 3e
-    jp c,05cfh          ;0d50 da cf 05
+    jp c,error          ;0d50 da cf 05
     ld iy,(2ae8h)       ;0d53 fd 2a e8 2a
     ld (iy+23h),e       ;0d57 fd 73 23
     ld (iy+24h),d       ;0d5a fd 72 24
@@ -1495,10 +1617,10 @@ l0d84h:
     ld de,0002h         ;0d87 11 02 00
     add hl,de           ;0d8a 19
     ld a,(iy+01h)       ;0d8b fd 7e 01
-    call 153dh          ;0d8e cd 3d 15
+    call find_first     ;0d8e cd 3d 15
     ld a,3fh            ;0d91 3e 3f
-    jp nc,05cfh         ;0d93 d2 cf 05
-    call sub_1586h      ;0d96 cd 86 15
+    jp nc,error         ;0d93 d2 cf 05
+    call find_free      ;0d96 cd 86 15
     ld iy,(2ae8h)       ;0d99 fd 2a e8 2a
     ld (iy+23h),e       ;0d9d fd 73 23
     ld (iy+24h),d       ;0da0 fd 72 24
@@ -1514,9 +1636,9 @@ l0db8h:
     djnz l0db8h         ;0dbb 10 fb
     ld a,(2d67h)        ;0dbd 3a 67 2d
     ld hl,2d45h         ;0dc0 21 45 2d
-    call 153dh          ;0dc3 cd 3d 15
+    call find_first     ;0dc3 cd 3d 15
     ld a,3eh            ;0dc6 3e 3e
-    jp c,05cfh          ;0dc8 da cf 05
+    jp c,error          ;0dc8 da cf 05
     ld iy,(2ae8h)       ;0dcb fd 2a e8 2a
     ld a,(ix+00h)       ;0dcf dd 7e 00
     ld (iy+00h),a       ;0dd2 fd 77 00
@@ -1536,7 +1658,7 @@ l0de2h:
     ld (2aeeh),hl       ;0ded 22 ee 2a
     ld (2aeah),hl       ;0df0 22 ea 2a
     ld de,(460dh)       ;0df3 ed 5b 0d 46
-    call sub_18beh      ;0df7 cd be 18
+    call loc1_read_sec  ;0df7 cd be 18
     ld hl,4810h         ;0dfa 21 10 48
     pop bc              ;0dfd c1
     push bc             ;0dfe c5
@@ -1548,7 +1670,7 @@ l0de2h:
     ld e,(hl)           ;0e07 5e
     inc hl              ;0e08 23
     ld d,(hl)           ;0e09 56
-    call sub_17b5h      ;0e0a cd b5 17
+    call loc2_writ_sec  ;0e0a cd b5 17
 l0e0dh:
     pop de              ;0e0d d1
     push de             ;0e0e d5
@@ -1587,7 +1709,7 @@ l0e0dh:
     ld hl,2004h         ;0e3d 21 04 20
     ld b,(hl)           ;0e40 46
     ld hl,4710h         ;0e41 21 10 47
-    call sub_1982h      ;0e44 cd 82 19
+    call corv_read_sec  ;0e44 cd 82 19
     call sub_1689h      ;0e47 cd 89 16
     call sub_0bcah      ;0e4a cd ca 0b
     ld b,00h            ;0e4d 06 00
@@ -1623,7 +1745,7 @@ l0e6eh:
 l0e83h:
     push bc             ;0e83 c5
     push de             ;0e84 d5
-    call sub_17ebh      ;0e85 cd eb 17
+    call fil_writ_sec   ;0e85 cd eb 17
     res 7,(iy+27h)      ;0e88 fd cb 27 be
     call sub_0bcah      ;0e8c cd ca 0b
     ld hl,(2aech)       ;0e8f 2a ec 2a
@@ -1647,14 +1769,14 @@ l0ea6h:
     jr z,l0ec5h         ;0eaa 28 19
     cp 2ch              ;0eac fe 2c
     jr nz,l0ea6h        ;0eae 20 f6
-    call sub_15e3h      ;0eb0 cd e3 15
+    call get_filename   ;0eb0 cd e3 15
     push hl             ;0eb3 e5
     ld hl,2d45h         ;0eb4 21 45 2d
     ld a,(2d67h)        ;0eb7 3a 67 2d
-    call 153dh          ;0eba cd 3d 15
+    call find_first     ;0eba cd 3d 15
     jp nc,l0ddbh        ;0ebd d2 db 0d
     ld a,3eh            ;0ec0 3e 3e
-    jp 05cfh            ;0ec2 c3 cf 05
+    jp error            ;0ec2 c3 cf 05
 l0ec5h:
     ld iy,(2ae8h)       ;0ec5 fd 2a e8 2a
     ld a,(iy+20h)       ;0ec9 fd 7e 20
@@ -1674,7 +1796,7 @@ cmd_lgn:
 ;command for login "L"
 ;
     ld a,1fh            ;0eec 3e 1f
-    jp 05cfh            ;0eee c3 cf 05
+    jp error            ;0eee c3 cf 05
 l0ef1h:
     ld hl,2bf6h         ;0ef1 21 f6 2b
     ld a,(hl)           ;0ef4 7e
@@ -1689,7 +1811,7 @@ l0efch:
     inc ix              ;0f05 dd 23
     djnz l0efch         ;0f07 10 f3
     ld a,1fh            ;0f09 3e 1f
-    jp 05cfh            ;0f0b c3 cf 05
+    jp error            ;0f0b c3 cf 05
 l0f0eh:
     ld e,(ix+01h)       ;0f0e dd 5e 01
     ld d,(ix+02h)       ;0f11 dd 56 02
@@ -1720,24 +1842,24 @@ l0f28h:
     cp 3ah              ;0f31 fe 3a
     ret z               ;0f33 c8
     jr l0f28h           ;0f34 18 f2
-    call sub_164dh      ;0f36 cd 4d 16
+    call get_numeric    ;0f36 cd 4d 16
     jr c,l0f3fh         ;0f39 38 04
     ld (2000h),a        ;0f3b 32 00 20
     ret                 ;0f3e c9
 l0f3fh:
     ld a,1eh            ;0f3f 3e 1e
-    jp 05cfh            ;0f41 c3 cf 05
+    jp error            ;0f41 c3 cf 05
     ld a,(2002h)        ;0f44 3a 02 20
     ld (2051h),a        ;0f47 32 51 20
     ld a,59h            ;0f4a 3e 59
-    jp 05cfh            ;0f4c c3 cf 05
+    jp error            ;0f4c c3 cf 05
     ld a,02h            ;0f4f 3e 02
     ld (2051h),a        ;0f51 32 51 20
     ld a,04h            ;0f54 3e 04
     ld (2054h),a        ;0f56 32 54 20
     ld a,63h            ;0f59 3e 63
-    jp 05cfh            ;0f5b c3 cf 05
-    call sub_164dh      ;0f5e cd 4d 16
+    jp error            ;0f5b c3 cf 05
+    call get_numeric    ;0f5e cd 4d 16
     and 0fh             ;0f61 e6 0f
     ld d,a              ;0f63 57
     ld e,00h            ;0f64 1e 00
@@ -1746,7 +1868,7 @@ l0f3fh:
     jp (hl)             ;0f6a e9
 
 cmd_drv:
-    call sub_1625h      ;0f6b cd 25 16
+    call find_drvlet    ;0f6b cd 25 16
     ld a,(hl)           ;0f6e 7e
     call sub_1682h      ;0f6f cd 82 16
     jr nc,l0f7ah        ;0f72 30 06
@@ -1755,7 +1877,7 @@ cmd_drv:
     ret                 ;0f79 c9
 l0f7ah:
     ld a,1eh            ;0f7a 3e 1e
-    jp 05cfh            ;0f7c c3 cf 05
+    jp error            ;0f7c c3 cf 05
 
 cmd_ini:
     ret                 ;0f7f c9
@@ -1764,26 +1886,26 @@ cmd_vfy:
     ld hl,0000h         ;0f80 21 00 00
     ld (2d68h),hl       ;0f83 22 68 2d
 l0f86h:
-    call sub_15a6h      ;0f86 cd a6 15
+    call dir_get_next   ;0f86 cd a6 15
     jr c,l0f9ah         ;0f89 38 0f
     bit 7,(ix+00h)      ;0f8b dd cb 00 7e
     jr z,l0f86h         ;0f8f 28 f5
     ld (ix+01h),0ffh    ;0f91 dd 36 01 ff
-    call sub_1789h      ;0f95 cd 89 17
+    call dir_writ_sec   ;0f95 cd 89 17
     jr l0f86h           ;0f98 18 ec
 l0f9ah:
     ld a,(2002h)        ;0f9a 3a 02 20
-    jp l020dh           ;0f9d c3 0d 02
+    jp init_user       ;0f9d c3 0d 02
 
 cmd_ren:
-    call sub_1625h      ;0fa0 cd 25 16
-    call sub_15e3h      ;0fa3 cd e3 15
+    call find_drvlet    ;0fa0 cd 25 16
+    call get_filename   ;0fa3 cd e3 15
     ld a,(2d67h)        ;0fa6 3a 67 2d
     push af             ;0fa9 f5
     push hl             ;0faa e5
-    call sub_163bh      ;0fab cd 3b 16
+    call check_wild     ;0fab cd 3b 16
     ld a,21h            ;0fae 3e 21
-    jp c,05cfh          ;0fb0 da cf 05
+    jp c,error          ;0fb0 da cf 05
     ld hl,2d45h         ;0fb3 21 45 2d
     ld de,2d56h         ;0fb6 11 56 2d
     ld bc,0010h         ;0fb9 01 10 00
@@ -1792,23 +1914,23 @@ cmd_ren:
     ld a,(hl)           ;0fbf 7e
     cp 3dh              ;0fc0 fe 3d
     ld a,1eh            ;0fc2 3e 1e
-    jp nz,05cfh         ;0fc4 c2 cf 05
+    jp nz,error         ;0fc4 c2 cf 05
     inc hl              ;0fc7 23
-    call sub_15e3h      ;0fc8 cd e3 15
-    call sub_163bh      ;0fcb cd 3b 16
+    call get_filename   ;0fc8 cd e3 15
+    call check_wild     ;0fcb cd 3b 16
     ld a,21h            ;0fce 3e 21
-    jp c,05cfh          ;0fd0 da cf 05
+    jp c,error          ;0fd0 da cf 05
     pop af              ;0fd3 f1
     push af             ;0fd4 f5
     ld hl,2d56h         ;0fd5 21 56 2d
-    call 153dh          ;0fd8 cd 3d 15
+    call find_first     ;0fd8 cd 3d 15
     ld a,3fh            ;0fdb 3e 3f
-    jp nc,05cfh         ;0fdd d2 cf 05
+    jp nc,error         ;0fdd d2 cf 05
     pop af              ;0fe0 f1
     ld hl,2d45h         ;0fe1 21 45 2d
-    call 153dh          ;0fe4 cd 3d 15
+    call find_first     ;0fe4 cd 3d 15
     ld a,3eh            ;0fe7 3e 3e
-    jp c,05cfh          ;0fe9 da cf 05
+    jp c,error          ;0fe9 da cf 05
     bit 7,(ix+00h)      ;0fec dd cb 00 7e
     ret nz              ;0ff0 c0
     ld hl,2d56h         ;0ff1 21 56 2d
@@ -1819,15 +1941,15 @@ l0ff6h:
     inc hl              ;0ffa 23
     inc ix              ;0ffb dd 23
     djnz l0ff6h         ;0ffd 10 f7
-    jp sub_1789h        ;0fff c3 89 17
+    jp dir_writ_sec     ;0fff c3 89 17
 
 cmd_new:
-    call sub_1625h      ;1002 cd 25 16
-    call sub_15e3h      ;1005 cd e3 15
+    call find_drvlet    ;1002 cd 25 16
+    call get_filename   ;1005 cd e3 15
     ld a,(hl)           ;1008 7e
     cp 2ch              ;1009 fe 2c
     ld a,1eh            ;100b 3e 1e
-    jp nz,05cfh         ;100d c2 cf 05
+    jp nz,error         ;100d c2 cf 05
     inc hl              ;1010 23
     ex de,hl            ;1011 eb
     ld hl,(2d67h)       ;1012 2a 67 2d
@@ -1913,7 +2035,7 @@ l1085h:
     call sub_10b0h      ;10a5 cd b0 10
     jp c,sub_17e0h      ;10a8 da e0 17
     ld a,32h            ;10ab 3e 32
-    jp 05cfh            ;10ad c3 cf 05
+    jp error            ;10ad c3 cf 05
 sub_10b0h:
     push bc             ;10b0 c5
     push hl             ;10b1 e5
@@ -1946,58 +2068,64 @@ l10d3h:
     cp 2dh              ;10d9 fe 2d
     jr nz,l10d3h        ;10db 20 f6
 l10ddh:
-    ld a,(hl)           ;10dd 7e
-    inc hl              ;10de 23
-    cp 0dh              ;10df fe 0d
-    jr z,l1106h         ;10e1 28 23
-    cp 41h              ;10e3 fe 41
-    jp c,l10ddh         ;10e5 da dd 10
-    cp 5bh              ;10e8 fe 5b
-    jp nc,l10ddh        ;10ea d2 dd 10
-    cp 57h              ;10ed fe 57
-    jp z,l110bh         ;10ef ca 0b 11
-    cp 52h              ;10f2 fe 52
-    jp z,l111dh         ;10f4 ca 1d 11
-    cp 41h              ;10f7 fe 41
-    jp z,l1142h         ;10f9 ca 42 11
-    cp 46h              ;10fc fe 46
-    jp z,l113bh         ;10fe ca 3b 11
-    cp 50h              ;1101 fe 50
-    jp z,l112fh         ;1103 ca 2f 11
+    ld a,(hl)
+    inc hl
+    cp 0dh
+    jr z,l1106h
+    cp "A"
+    jp c,l10ddh
+    cp "Z"+1
+    jp nc,l10ddh
+    cp "W"              ;Check for "B-W": Block Write
+    jp z,blk_wr
+    cp "R"              ;Check for "B-R": Block Read
+    jp z,blk_rd
+    cp "A"              ;Check for "B-A": Block Allocate
+    jp z,blk_use
+    cp "F"              ;Check for "B-F": Block Free
+    jp z,blk_fre
+    cp "P"              ;Check for "B-P": Buffer Pointer
+    jp z,blk_ptr
 l1106h:
-    ld a,1eh            ;1106 3e 1e
-    jp 05cfh            ;1108 c3 cf 05
-l110bh:
-    call sub_1226h      ;110b cd 26 12
-    push af             ;110e f5
-    push hl             ;110f e5
-    ld a,(iy+20h)       ;1110 fd 7e 20
-    dec a               ;1113 3d
-    ld hl,(2aech)       ;1114 2a ec 2a
-    ld (hl),a           ;1117 77
-    pop hl              ;1118 e1
-    pop af              ;1119 f1
-    jp l19b3h           ;111a c3 b3 19
-l111dh:
+    ld a,1eh            ;"SYNTAX ERROR"
+    jp error
+
+blk_wr:
+;command for block write "B-W"
+;
+    call sub_1226h
+    push af
+    push hl
+
+    ld a,(iy+20h)       ;Get the block pointer for this channel
+    dec a               ;Decrement it
+    ld hl,(2aech)       ;Get buffer address
+    ld (hl),a           ;Store the block pointer minus 1 at the
+                        ;  first byte into the buffer
+    pop hl
+    pop af
+    jp corv_writ_sec    ;Write a sector (256 bytes)
+
+blk_rd:
     call sub_1226h      ;111d cd 26 12
-    call sub_1982h      ;1120 cd 82 19
+    call corv_read_sec      ;1120 cd 82 19
     ld hl,(2aech)       ;1123 2a ec 2a
     ld a,(hl)           ;1126 7e
     ld (iy+25h),a       ;1127 fd 77 25
     ld (iy+20h),001h    ;112a fd 36 20 01
     ret                 ;112e c9
-l112fh:
-    call sub_12d5h      ;112f cd d5 12
+blk_ptr:
+    call get_chan       ;112f cd d5 12
     jr c,l1106h         ;1132 38 d2
-    call sub_164dh      ;1134 cd 4d 16
+    call get_numeric    ;1134 cd 4d 16
     ld (iy+20h),a       ;1137 fd 77 20
     ret                 ;113a c9
-l113bh:
-    call sub_11cfh      ;113b cd cf 11
+blk_fre:
+    call get_bam_bit    ;113b cd cf 11
     and 7fh             ;113e e6 7f
     jr l1149h           ;1140 18 07
-l1142h:
-    call sub_11cfh      ;1142 cd cf 11
+blk_use:
+    call get_bam_bit    ;1142 cd cf 11
     jr c,l1153h         ;1145 38 0c
     or 80h              ;1147 f6 80
 l1149h:
@@ -2005,7 +2133,7 @@ l1149h:
     djnz l1149h         ;114a 10 fd
     ld (hl),a           ;114c 77
     call sub_1955h      ;114d cd 55 19
-    jp sub_05d8h        ;1150 c3 d8 05
+    jp error_ok         ;1150 c3 d8 05
 l1153h:
     inc b               ;1153 04
 l1154h:
@@ -2042,7 +2170,7 @@ l1196h:
     ld (ix+00h),000h    ;11a4 dd 36 00 00
     ld (ix+01h),000h    ;11a8 dd 36 01 00
     ld a,41h            ;11ac 3e 41
-    jp 05cfh            ;11ae c3 cf 05
+    jp error            ;11ae c3 cf 05
 l11b1h:
     pop af              ;11b1 f1
     djnz l11c7h         ;11b2 10 13
@@ -2052,7 +2180,7 @@ l11b1h:
     jr nz,l11c4h        ;11b8 20 0a
     ld hl,204eh         ;11ba 21 4e 20
     inc (hl)            ;11bd 34
-    call sub_194fh      ;11be cd 4f 19
+    call bam_read_sec   ;11be cd 4f 19
     ld hl,4910h         ;11c1 21 10 49
 l11c4h:
     ld a,(hl)           ;11c4 7e
@@ -2061,9 +2189,9 @@ l11c7h:
     rrca                ;11c7 0f
     jr c,l1154h         ;11c8 38 8a
     ld a,41h            ;11ca 3e 41
-    jp 05cfh            ;11cc c3 cf 05
-sub_11cfh:
-    call sub_1245h      ;11cf cd 45 12
+    jp error            ;11cc c3 cf 05
+get_bam_bit:
+    call get_ts         ;11cf cd 45 12
     ld a,b              ;11d2 78
     ld b,03h            ;11d3 06 03
     push de             ;11d5 d5
@@ -2075,7 +2203,7 @@ l11d6h:
     push de             ;11dd d5
     ld a,d              ;11de 7a
     ld (204eh),a        ;11df 32 4e 20
-    call sub_194fh      ;11e2 cd 4f 19
+    call bam_read_sec   ;11e2 cd 4f 19
     pop de              ;11e5 d1
     ld d,00h            ;11e6 16 00
     ld hl,4910h         ;11e8 21 10 49
@@ -2099,26 +2227,26 @@ cmd_usr:
     inc hl              ;11ff 23
     and 0fh             ;1200 e6 0f
     cp 01h              ;1202 fe 01
-    jr z,l1212h         ;1204 28 0c
+    jr z,cmd_u1         ;1204 28 0c
     cp 02h              ;1206 fe 02
-    jr z,l1220h         ;1208 28 16
+    jr z,cmd_u2         ;1208 28 16
     cp 0ah              ;120a fe 0a
-    jp z,l0200h         ;120c ca 00 02
+    jp z,reset          ;120c ca 00 02
     jp l1106h           ;120f c3 06 11
-l1212h:
+cmd_u1:
     call sub_1226h      ;1212 cd 26 12
     ld (iy+25h),0ffh    ;1215 fd 36 25 ff
     ld (iy+20h),000h    ;1219 fd 36 20 00
-    jp sub_1982h        ;121d c3 82 19
-l1220h:
+    jp corv_read_sec    ;121d c3 82 19
+cmd_u2:
     call sub_1226h      ;1220 cd 26 12
-    jp l19b3h           ;1223 c3 b3 19
+    jp corv_writ_sec    ;1223 c3 b3 19
 sub_1226h:
-    call sub_12d5h      ;1226 cd d5 12
+    call get_chan       ;1226 cd d5 12
     ld a,1eh            ;1229 3e 1e
-    jp c,05cfh          ;122b da cf 05
-    call sub_1245h      ;122e cd 45 12
-    call sub_064ch      ;1231 cd 4c 06
+    jp c,error          ;122b da cf 05
+    call get_ts         ;122e cd 45 12
+    call clrerrts       ;1231 cd 4c 06
     ld hl,(2036h)       ;1234 2a 36 20
     ld a,(2038h)        ;1237 3a 38 20
     add hl,de           ;123a 19
@@ -2128,8 +2256,8 @@ sub_1226h:
     ld b,(hl)           ;1240 46
     ld hl,(2aech)       ;1241 2a ec 2a
     ret                 ;1244 c9
-sub_1245h:
-    call sub_164dh      ;1245 cd 4d 16
+get_ts:
+    call get_numeric    ;1245 cd 4d 16
     jp c,l12d0h         ;1248 da d0 12
     ld de,(200fh)       ;124b ed 5b 0f 20
     push hl             ;124f e5
@@ -2143,7 +2271,7 @@ l1256h:
 l125ah:
     djnz l1256h         ;125a 10 fa
     ex (sp),hl          ;125c e3
-    call sub_164dh      ;125d cd 4d 16
+    call get_numeric    ;125d cd 4d 16
     jr c,l12d0h         ;1260 38 6e
     inc d               ;1262 14
     dec d               ;1263 15
@@ -2178,7 +2306,7 @@ l1293h:
     djnz l1288h         ;1293 10 f3
     ex (sp),hl          ;1295 e3
     push af             ;1296 f5
-    call sub_164dh      ;1297 cd 4d 16
+    call get_numeric    ;1297 cd 4d 16
     jr c,l12d0h         ;129a 38 34
     ld (2054h),a        ;129c 32 54 20
     ld (2055h),de       ;129f ed 53 55 20
@@ -2216,12 +2344,12 @@ l1293h:
     ret c               ;12ca d8
 l12cbh:
     ld a,42h            ;12cb 3e 42
-    jp 05cfh            ;12cd c3 cf 05
+    jp error            ;12cd c3 cf 05
 l12d0h:
     ld a,1eh            ;12d0 3e 1e
-    jp 05cfh            ;12d2 c3 cf 05
-sub_12d5h:
-    call sub_164dh      ;12d5 cd 4d 16
+    jp error            ;12d2 c3 cf 05
+get_chan:
+    call get_numeric    ;12d5 cd 4d 16
     ret c               ;12d8 d8
     push af             ;12d9 f5
     and 0f0h            ;12da e6 f0
@@ -2259,20 +2387,20 @@ l12feh:
     cp 5bh              ;1309 fe 5b
     jp nc,l12feh        ;130b d2 fe 12
     cp 57h              ;130e fe 57
-    jp z,l131dh         ;1310 ca 1d 13
+    jp z,abs_wr         ;1310 ca 1d 13
     cp 52h              ;1313 fe 52
-    jp z,l132ch         ;1315 ca 2c 13
+    jp z,abs_rd         ;1315 ca 2c 13
 l1318h:
     ld a,1eh            ;1318 3e 1e
-    jp 05cfh            ;131a c3 cf 05
-l131dh:
+    jp error            ;131a c3 cf 05
+abs_wr:
     ld a,(2002h)        ;131d 3a 02 20
     or a                ;1320 b7
     ld a,5ch            ;1321 3e 5c
-    jp nz,05cfh         ;1323 c2 cf 05
+    jp nz,error         ;1323 c2 cf 05
     call sub_134dh      ;1326 cd 4d 13
-    jp l19b3h           ;1329 c3 b3 19
-l132ch:
+    jp corv_writ_sec    ;1329 c3 b3 19
+abs_rd:
     call sub_134dh      ;132c cd 4d 13
     ld (iy+20h),000h    ;132f fd 36 20 00
     ld (iy+25h),0ffh    ;1333 fd 36 25 ff
@@ -2286,17 +2414,17 @@ l1340h:
     ld a,(2002h)        ;1340 3a 02 20
     or a                ;1343 b7
     ld a,5ch            ;1344 3e 5c
-    jp nz,05cfh         ;1346 c2 cf 05
+    jp nz,error         ;1346 c2 cf 05
 l1349h:
     pop af              ;1349 f1
-    jp sub_1982h        ;134a c3 82 19
+    jp corv_read_sec    ;134a c3 82 19
 sub_134dh:
-    call sub_12d5h      ;134d cd d5 12
+    call get_chan       ;134d cd d5 12
     ld a,1eh            ;1350 3e 1e
-    jp c,05cfh          ;1352 da cf 05
-    call sub_164dh      ;1355 cd 4d 16
+    jp c,error          ;1352 da cf 05
+    call get_numeric    ;1355 cd 4d 16
     push af             ;1358 f5
-    call sub_164dh      ;1359 cd 4d 16
+    call get_numeric    ;1359 cd 4d 16
     push de             ;135c d5
     ld d,e              ;135d 53
     ld e,a              ;135e 5f
@@ -2304,11 +2432,11 @@ sub_134dh:
     pop bc              ;1360 c1
     ld hl,(2aech)       ;1361 2a ec 2a
     ret                 ;1364 c9
-l1365h:
+open_dir:
     set 2,(iy+28h)      ;1365 fd cb 28 d6
     set 7,(iy+28h)      ;1369 fd cb 28 fe
     ld hl,2c76h         ;136d 21 76 2c
-    call sub_15e3h      ;1370 cd e3 15
+    call get_filename   ;1370 cd e3 15
 l1373h:
     ld a,(hl)           ;1373 7e
     inc hl              ;1374 23
@@ -2371,7 +2499,7 @@ l137dh:
     ld a,(2002h)        ;13d8 3a 02 20
     push de             ;13db d5
     ld de,0000h         ;13dc 11 00 00
-    call sub_0660h      ;13df cd 60 06
+    call put_number     ;13df cd 60 06
     pop de              ;13e2 d1
     ld (hl),00h         ;13e3 36 00
     inc hl              ;13e5 23
@@ -2396,7 +2524,7 @@ l137dh:
 sub_140fh:
     ld hl,45f7h         ;140f 21 f7 45
     ld a,(45f6h)        ;1412 3a f6 45
-    call sub_1544h      ;1415 cd 44 15
+    call find_next      ;1415 cd 44 15
     jp c,l14dch         ;1418 da dc 14
     bit 5,(ix+00h)      ;141b dd cb 00 6e
     jr z,l1429h         ;141f 28 08
@@ -2571,16 +2699,24 @@ l152eh:
     ld b,l              ;1538 45
     ld b,l              ;1539 45
     jr nz,$+60          ;153a 20 3a
-    jr nz,l154fh        ;153c 20 11
-    nop                 ;153e 00
-    nop                 ;153f 00
-    ld (2d68h),de       ;1540 ed 53 68 2d
-sub_1544h:
+    db 20h
+
+find_first:
+;Find the first result from directory
+;Returns carry set if file is not found, clear if found.
+;
+;See find_next
+;
+    ld de,0000h
+    ld (2d68h),de       ;(dirnum)=0
+                        ;Fall through into find_next
+
+find_next:
     ld c,a              ;1544 4f
     ld (4608h),hl       ;1545 22 08 46
 l1548h:
     push bc             ;1548 c5
-    call sub_15a6h      ;1549 cd a6 15
+    call dir_get_next      ;1549 cd a6 15
     ld hl,(4608h)       ;154c 2a 08 46
 l154fh:
     pop bc              ;154f c1
@@ -2616,11 +2752,11 @@ l157eh:
     ret z               ;1582 c8
     djnz l1569h         ;1583 10 e4
     ret                 ;1585 c9
-sub_1586h:
+find_free:
     ld hl,0000h         ;1586 21 00 00
     ld (2d68h),hl       ;1589 22 68 2d
 l158ch:
-    call sub_15a6h      ;158c cd a6 15
+    call dir_get_next   ;158c cd a6 15
     bit 7,(ix+01h)      ;158f dd cb 01 7e
     ret nz              ;1593 c0
     inc de              ;1594 13
@@ -2631,12 +2767,12 @@ l158ch:
     cp d                ;159e ba
     jr nz,l158ch        ;159f 20 eb
     ld a,48h            ;15a1 3e 48
-    jp 05cfh            ;15a3 c3 cf 05
-sub_15a6h:
+    jp error            ;15a3 c3 cf 05
+dir_get_next:
     ld a,(460ch)        ;15a6 3a 0c 46
     or a                ;15a9 b7
     ld a,54h            ;15aa 3e 54
-    jp z,05cfh          ;15ac ca cf 05
+    jp z,error          ;15ac ca cf 05
     ld hl,(2d68h)       ;15af 2a 68 2d
     ld e,l              ;15b2 5d
     ld d,h              ;15b3 54
@@ -2669,7 +2805,7 @@ l15cch:
     ret nz              ;15e0 c0
     scf                 ;15e1 37
     ret                 ;15e2 c9
-sub_15e3h:
+get_filename:
     ld a,(204fh)        ;15e3 3a 4f 20
     ld (2d67h),a        ;15e6 32 67 2d
     ld a,(hl)           ;15e9 7e
@@ -2705,20 +2841,20 @@ l1608h:
     inc de              ;1617 13
     djnz l1608h         ;1618 10 ee
     ld a,1fh            ;161a 3e 1f
-    jp 05cfh            ;161c c3 cf 05
+    jp error            ;161c c3 cf 05
 l161fh:
     xor a               ;161f af
     ld (de),a           ;1620 12
     inc de              ;1621 13
     djnz l161fh         ;1622 10 fb
     ret                 ;1624 c9
-sub_1625h:
+find_drvlet:
     ld hl,2bf5h         ;1625 21 f5 2b
 l1628h:
     ld a,(hl)           ;1628 7e
     cp 0dh              ;1629 fe 0d
     ld a,22h            ;162b 3e 22
-    jp z,05cfh          ;162d ca cf 05
+    jp z,error          ;162d ca cf 05
     ld a,(hl)           ;1630 7e
     cp 30h              ;1631 fe 30
     jr c,l1638h         ;1633 38 03
@@ -2727,7 +2863,7 @@ l1628h:
 l1638h:
     inc hl              ;1638 23
     jr l1628h           ;1639 18 ed
-sub_163bh:
+check_wild:
     ld b,10h            ;163b 06 10
     ld hl,2d45h         ;163d 21 45 2d
 l1640h:
@@ -2741,14 +2877,14 @@ l1640h:
     djnz l1640h         ;1649 10 f5
     or a                ;164b b7
     ret                 ;164c c9
-sub_164dh:
+get_numeric:
     ld a,(hl)           ;164d 7e
     inc hl              ;164e 23
     cp 0dh              ;164f fe 0d
     scf                 ;1651 37
     ret z               ;1652 c8
     call sub_1682h      ;1653 cd 82 16
-    jr nc,sub_164dh     ;1656 30 f5
+    jr nc,get_numeric   ;1656 30 f5
     ld de,0000h         ;1658 11 00 00
     ld b,00h            ;165b 06 00
     dec hl              ;165d 2b
@@ -2842,7 +2978,7 @@ l16cfh:
     ret                 ;16dd c9
 l16deh:
     ld a,48h            ;16de 3e 48
-    jp 05cfh            ;16e0 c3 cf 05
+    jp error            ;16e0 c3 cf 05
 sub_16e3h:
     push ix             ;16e3 dd e5
     push iy             ;16e5 fd e5
@@ -2850,7 +2986,7 @@ sub_16e3h:
     push de             ;16e8 d5
     push bc             ;16e9 c5
     call sub_1973h      ;16ea cd 73 19
-    call sub_18beh      ;16ed cd be 18
+    call loc1_read_sec  ;16ed cd be 18
     ld b,40h            ;16f0 06 40
     ld ix,(2aeeh)       ;16f2 dd 2a ee 2a
 l16f6h:
@@ -2860,7 +2996,7 @@ l16f6h:
     jr nz,l1725h        ;16fe 20 25
     push bc             ;1700 c5
     push de             ;1701 d5
-    call sub_17b5h      ;1702 cd b5 17
+    call loc2_writ_sec  ;1702 cd b5 17
     ld b,80h            ;1705 06 80
     ld iy,(2aeah)       ;1707 fd 2a ea 2a
 l170bh:
@@ -2905,7 +3041,7 @@ sub_1746h:
     ld a,l              ;1747 7d
     push af             ;1748 f5
     ld b,03h            ;1749 06 03
-    call sub_1a7ah      ;174b cd 7a 1a
+    call hl_shr_b       ;174b cd 7a 1a
     add hl,de           ;174e 19
     pop af              ;174f f1
     and 07h             ;1750 e6 07
@@ -2944,16 +3080,16 @@ sub_177eh:
     push de             ;177e d5
     push hl             ;177f e5
     call sub_1797h      ;1780 cd 97 17
-    call sub_1982h      ;1783 cd 82 19
+    call corv_read_sec  ;1783 cd 82 19
     pop hl              ;1786 e1
     pop de              ;1787 d1
     ret                 ;1788 c9
-sub_1789h:
+dir_writ_sec:
     push de             ;1789 d5
     push hl             ;178a e5
     call sub_1973h      ;178b cd 73 19
     call sub_1797h      ;178e cd 97 17
-    call l19b3h         ;1791 cd b3 19
+    call corv_writ_sec  ;1791 cd b3 19
     pop hl              ;1794 e1
     pop de              ;1795 d1
     ret                 ;1796 c9
@@ -2973,11 +3109,11 @@ sub_1797h:
     adc a,00h           ;17af ce 00
     ld hl,2af5h         ;17b1 21 f5 2a
     ret                 ;17b4 c9
-sub_17b5h:
+loc2_writ_sec:
     push de             ;17b5 d5
     push hl             ;17b6 e5
     call sub_17ceh      ;17b7 cd ce 17
-    call sub_1982h      ;17ba cd 82 19
+    call corv_read_sec  ;17ba cd 82 19
     pop de              ;17bd d1
     pop hl              ;17be e1
     ret                 ;17bf c9
@@ -2986,7 +3122,7 @@ sub_17c0h:
     push hl             ;17c1 e5
     call sub_1973h      ;17c2 cd 73 19
     call sub_17ceh      ;17c5 cd ce 17
-    call l19b3h         ;17c8 cd b3 19
+    call corv_writ_sec  ;17c8 cd b3 19
     pop de              ;17cb d1
     pop hl              ;17cc e1
     ret                 ;17cd c9
@@ -3004,15 +3140,15 @@ sub_17e0h:
     push de             ;17e0 d5
     push hl             ;17e1 e5
     call sub_17f6h      ;17e2 cd f6 17
-    call sub_1982h      ;17e5 cd 82 19
+    call corv_read_sec  ;17e5 cd 82 19
     pop hl              ;17e8 e1
     pop de              ;17e9 d1
     ret                 ;17ea c9
-sub_17ebh:
+fil_writ_sec:
     push de             ;17eb d5
     push hl             ;17ec e5
     call sub_17f6h      ;17ed cd f6 17
-    call l19b3h         ;17f0 cd b3 19
+    call corv_writ_sec  ;17f0 cd b3 19
     pop hl              ;17f3 e1
     pop de              ;17f4 d1
     ret                 ;17f5 c9
@@ -3035,7 +3171,7 @@ sub_17f6h:
     and d               ;181b a2
     inc a               ;181c 3c
     push af             ;181d f5
-    call nz,sub_17b5h   ;181e c4 b5 17
+    call nz,loc2_writ_sec ;181e c4 b5 17
     pop af              ;1821 f1
     jr nz,l1847h        ;1822 20 23
     ld de,2057h         ;1824 11 57 20
@@ -3108,7 +3244,7 @@ l189ch:
     pop iy              ;18b9 fd e1
     pop ix              ;18bb dd e1
     ret                 ;18bd c9
-sub_18beh:
+loc1_read_sec:
     push hl             ;18be e5
     push de             ;18bf d5
     push bc             ;18c0 c5
@@ -3123,7 +3259,7 @@ sub_18beh:
     ld hl,2004h         ;18d0 21 04 20
     ld b,(hl)           ;18d3 46
     ld hl,4710h         ;18d4 21 10 47
-    call sub_1982h      ;18d7 cd 82 19
+    call corv_read_sec  ;18d7 cd 82 19
     pop af              ;18da f1
     ld hl,4710h         ;18db 21 10 47
     ld bc,0080h         ;18de 01 80 00
@@ -3155,7 +3291,7 @@ sub_18eeh:
     push af             ;190a f5
     push de             ;190b d5
     push bc             ;190c c5
-    call sub_1982h      ;190d cd 82 19
+    call corv_read_sec  ;190d cd 82 19
     ex af,af'           ;1910 08
     ld hl,4710h         ;1911 21 10 47
     ld bc,0080h         ;1914 01 80 00
@@ -3169,7 +3305,7 @@ l191ah:
     pop de              ;1921 d1
     pop af              ;1922 f1
     ld hl,4710h         ;1923 21 10 47
-    call l19b3h         ;1926 cd b3 19
+    call corv_writ_sec  ;1926 cd b3 19
     pop bc              ;1929 c1
     pop de              ;192a d1
     pop hl              ;192b e1
@@ -3180,20 +3316,20 @@ sub_192dh:
     ld de,(2005h)       ;1931 ed 5b 05 20
     ld a,(2007h)        ;1935 3a 07 20
     ld hl,4610h         ;1938 21 10 46
-    jp sub_1982h        ;193b c3 82 19
+    jp corv_read_sec    ;193b c3 82 19
 l193eh:
     ld a,(2004h)        ;193e 3a 04 20
     ld b,a              ;1941 47
     ld de,(2005h)       ;1942 ed 5b 05 20
     ld a,(2007h)        ;1946 3a 07 20
     ld hl,4610h         ;1949 21 10 46
-    jp l19b3h           ;194c c3 b3 19
-sub_194fh:
+    jp corv_writ_sec    ;194c c3 b3 19
+bam_read_sec:
     call sub_195bh      ;194f cd 5b 19
-    jp sub_1982h        ;1952 c3 82 19
+    jp corv_read_sec    ;1952 c3 82 19
 sub_1955h:
     call sub_195bh      ;1955 cd 5b 19
-    jp l19b3h           ;1958 c3 b3 19
+    jp corv_writ_sec    ;1958 c3 b3 19
 sub_195bh:
     ld de,(204eh)       ;195b ed 5b 4e 20
     ld d,00h            ;195f 16 00
@@ -3214,22 +3350,22 @@ sub_1973h:
     or a                ;197b b7
     ret z               ;197c c8
     ld a,5ch            ;197d 3e 5c
-    jp 05cfh            ;197f c3 cf 05
-sub_1982h:
+    jp error            ;197f c3 cf 05
+corv_read_sec:
     ld (4a10h),de       ;1982 ed 53 10 4a
     ld (4a12h),a        ;1986 32 12 4a
     push hl             ;1989 e5
     ld a,21h            ;198a 3e 21
-    call sub_19f0h      ;198c cd f0 19
+    call corv_send_cmd  ;198c cd f0 19
     call sub_1a29h      ;198f cd 29 1a
     call sub_1a0dh      ;1992 cd 0d 1a
     pop hl              ;1995 e1
     jr nz,l19dfh        ;1996 20 47
     ld a,41h            ;1998 3e 41
-    call sub_19f0h      ;199a cd f0 19
+    call corv_send_cmd  ;199a cd f0 19
     ld b,00h            ;199d 06 00
 l199fh:
-    in a,(18h)          ;199f db 18
+    in a,(corvus)       ;199f db 18
     ld (hl),a           ;19a1 77
     inc hl              ;19a2 23
     ex (sp),hl          ;19a3 e3
@@ -3240,15 +3376,22 @@ l199fh:
     ld (2051h),a        ;19ab 32 51 20
     ld a,16h            ;19ae 3e 16
     jp l19dfh           ;19b0 c3 df 19
-l19b3h:
+
+corv_writ_sec:
+;Write a sector (256 bytes) to the Corvus hard drive
+;
+;  B = Drive Number
+;ADE = Sector address (20 bit address)
+; HL = DMA buffer address
+;
     ld (4a10h),de       ;19b3 ed 53 10 4a
     ld (4a12h),a        ;19b7 32 12 4a
     ld a,42h            ;19ba 3e 42
-    call sub_19f0h      ;19bc cd f0 19
+    call corv_send_cmd  ;19bc cd f0 19
     ld b,00h            ;19bf 06 00
 l19c1h:
     ld a,(hl)           ;19c1 7e
-    out (18h),a         ;19c2 d3 18
+    out (corvus),a      ;19c2 d3 18
     inc hl              ;19c4 23
     ex (sp),hl          ;19c5 e3
     ex (sp),hl          ;19c6 e3
@@ -3256,7 +3399,7 @@ l19c1h:
     call sub_1a0dh      ;19c9 cd 0d 1a
     jr nz,l19dfh        ;19cc 20 11
     ld a,22h            ;19ce 3e 22
-    call sub_19f0h      ;19d0 cd f0 19
+    call corv_send_cmd  ;19d0 cd f0 19
     call sub_1a29h      ;19d3 cd 29 1a
     call sub_1a0dh      ;19d6 cd 0d 1a
     ret z               ;19d9 c8
@@ -3269,23 +3412,23 @@ l19dfh:
     ld a,(4a12h)        ;19e6 3a 12 4a
     ld (2056h),a        ;19e9 32 56 20
     pop af              ;19ec f1
-    jp sub_05dbh        ;19ed c3 db 05
-sub_19f0h:
+    jp error_out        ;19ed c3 db 05
+corv_send_cmd:
     ld b,a              ;19f0 47
     xor a               ;19f1 af
-    out (18h),a         ;19f2 d3 18
+    out (corvus),a      ;19f2 d3 18
 l19f4h:
-    in a,(18h)          ;19f4 db 18
+    in a,(corvus)       ;19f4 db 18
     cp 0a0h             ;19f6 fe a0
     jr nz,l19f4h        ;19f8 20 fa
     ld a,b              ;19fa 78
-    out (18h),a         ;19fb d3 18
+    out (corvus),a      ;19fb d3 18
 l19fdh:
-    in a,(18h)          ;19fd db 18
+    in a,(corvus)       ;19fd db 18
     cp 0a1h             ;19ff fe a1
     jr nz,l19fdh        ;1a01 20 fa
     ld a,0ffh           ;1a03 3e ff
-    out (18h),a         ;1a05 d3 18
+    out (corvus),a      ;1a05 d3 18
     ld b,14h            ;1a07 06 14
 l1a09h:
     nop                 ;1a09 00
@@ -3293,27 +3436,27 @@ l1a09h:
     ret                 ;1a0c c9
 sub_1a0dh:
     ld a,0ffh           ;1a0d 3e ff
-    out (18h),a         ;1a0f d3 18
+    out (corvus),a      ;1a0f d3 18
 l1a11h:
-    in a,(18h)          ;1a11 db 18
+    in a,(corvus)       ;1a11 db 18
     inc a               ;1a13 3c
     jr nz,l1a11h        ;1a14 20 fb
     ld a,0feh           ;1a16 3e fe
-    out (18h),a         ;1a18 d3 18
+    out (corvus),a      ;1a18 d3 18
 l1a1ah:
-    in a,(18h)          ;1a1a db 18
+    in a,(corvus)       ;1a1a db 18
     rla                 ;1a1c 17
     jr c,l1a1ah         ;1a1d 38 fb
-    in a,(18h)          ;1a1f db 18
+    in a,(corvus)       ;1a1f db 18
     bit 6,a             ;1a21 cb 77
     push af             ;1a23 f5
     xor a               ;1a24 af
-    out (18h),a         ;1a25 d3 18
+    out (corvus),a      ;1a25 d3 18
     pop af              ;1a27 f1
     ret                 ;1a28 c9
 sub_1a29h:
     xor a               ;1a29 af
-    out (18h),a         ;1a2a d3 18
+    out (corvus),a      ;1a2a d3 18
     ld hl,(4a10h)       ;1a2c 2a 10 4a
     ld a,(4a12h)        ;1a2f 3a 12 4a
     ld b,05h            ;1a32 06 05
@@ -3349,27 +3492,31 @@ l1a57h:
     dec a               ;1a5b 3d
     jr nz,l1a4bh        ;1a5c 20 ed
     ld a,l              ;1a5e 7d
-    out (18h),a         ;1a5f d3 18
+    out (corvus),a      ;1a5f d3 18
     ld hl,(0134h)       ;1a61 2a 34 01
     add hl,de           ;1a64 19
     ld a,l              ;1a65 7d
-    out (18h),a         ;1a66 d3 18
+    out (corvus),a      ;1a66 d3 18
     ld a,h              ;1a68 7c
-    out (18h),a         ;1a69 d3 18
+    out (corvus),a      ;1a69 d3 18
     ld a,(4a10h)        ;1a6b 3a 10 4a
     and 1fh             ;1a6e e6 1f
-    out (18h),a         ;1a70 d3 18
+    out (corvus),a      ;1a70 d3 18
     xor a               ;1a72 af
-    out (18h),a         ;1a73 d3 18
-    out (18h),a         ;1a75 d3 18
-    out (18h),a         ;1a77 d3 18
+    out (corvus),a      ;1a73 d3 18
+    out (corvus),a      ;1a75 d3 18
+    out (corvus),a      ;1a77 d3 18
     ret                 ;1a79 c9
-sub_1a7ah:
-    srl h               ;1a7a cb 3c
-    rr l                ;1a7c cb 1d
-    djnz sub_1a7ah      ;1a7e 10 fa
-    ret                 ;1a80 c9
 
+hl_shr_b:
+;Shift B times HL right, so HL is divided by 2^B
+;
+    srl h
+    rr l
+    djnz hl_shr_b
+    ret
+
+error_txt:
     db 0                ;"OK"
     db " O", 80h+'K'
 
@@ -3382,7 +3529,7 @@ sub_1a7ah:
     db 19h              ;"WRITE ERROR"
     db 02h,83h
 
-    db 1ah              ;"WRITE PROTECED"
+    db 1ah              ;"WRITE PROTECTED"
     db 02h," PROTECTE",80h+'D'
     db 1eh,04h
 
