@@ -5619,9 +5619,9 @@ IF version = 291
 
     ld a,21h            ;198a 3e 21
     call corv_send_cmd  ;198c cd f0 19
+    call corv_send_sec  ;198f cd 29 1a
 
-    call sub_1a29h      ;198f cd 29 1a
-    call sub_1a0dh      ;1992 cd 0d 1a
+    call corv_read_err  ;1992 cd 0d 1a
     pop hl              ;1995 e1
     jr nz,corv_err      ;1996 20 47
 
@@ -5637,7 +5637,7 @@ l199fh:
     ex (sp),hl          ;19a4 e3
     djnz l199fh         ;19a5 10 f8
 
-    call sub_1a0dh      ;19a7 cd 0d 1a
+    call corv_read_err  ;19a7 cd 0d 1a
     ret z               ;19aa c8
 
     ld (errtrk),a       ;19ab 32 51 20
@@ -5694,14 +5694,14 @@ l19c1h:
     ex (sp),hl          ;19c6 e3
     djnz l19c1h         ;19c7 10 f8
 
-    call sub_1a0dh      ;19c9 cd 0d 1a
+    call corv_read_err  ;19c9 cd 0d 1a
     jr nz,corv_err      ;19cc 20 11
 
     ld a,22h            ;19ce 3e 22
     call corv_send_cmd  ;19d0 cd f0 19
+    call corv_send_sec  ;19d3 cd 29 1a
 
-    call sub_1a29h      ;19d3 cd 29 1a
-    call sub_1a0dh      ;19d6 cd 0d 1a
+    call corv_read_err  ;19d6 cd 0d 1a
     ret z               ;19d9 c8
 
     ld (errtrk),a       ;19da 32 51 20
@@ -5749,13 +5749,21 @@ ENDIF
 
 IF version = 291
 corv_send_cmd:
+;Send the command to Corvus hard drive
+;
+;  A = Command
+;        21h = Read Sector with Address into Buffer
+;        41h = Read Sector Data from Buffer
+;        42h = Write Sector Data into Buffer
+;        22h = Write Sector with Address from Buffer
+;
     ld b,a              ;19f0 47
     xor a               ;19f1 af
     out (corvus),a      ;19f2 d3 18
 
 l19f4h:
     in a,(corvus)       ;19f4 db 18
-    cp 0a0h             ;19f6 fe a0
+    cp 10100000b        ;19f6 fe a0
     jr nz,l19f4h        ;19f8 20 fa
 
     ld a,b              ;19fa 78
@@ -5763,10 +5771,10 @@ l19f4h:
 
 l19fdh:
     in a,(corvus)       ;19fd db 18
-    cp 0a1h             ;19ff fe a1
+    cp 10100001b        ;19ff fe a1
     jr nz,l19fdh        ;1a01 20 fa
 
-    ld a,0ffh           ;1a03 3e ff
+    ld a,255            ;1a03 3e ff
     out (corvus),a      ;1a05 d3 18
 
     ld b,20             ;B=14h
@@ -5776,22 +5784,27 @@ l1a09h:
 
     ret                 ;1a0c c9
 
-sub_1a0dh:
-    ld a,0ffh           ;1a0d 3e ff
+corv_read_err:
+;Read the error code from a Corvus hard drive.
+;
+;Returns the error code in A (0=OK) and also changes
+;the Z flag: Z=1 if OK, Z=0 if error.
+;
+    ld a,255            ;1a0d 3e ff
     out (corvus),a      ;1a0f d3 18
 
 l1a11h:
-    in a,(corvus)       ;1a11 db 18
-    inc a               ;1a13 3c
-    jr nz,l1a11h        ;1a14 20 fb
+    in a,(corvus)
+    inc a
+    jr nz,l1a11h        ;Wait until readed data = 255
 
-    ld a,0feh           ;1a16 3e fe
+    ld a,255-00000001b  ;1a16 3e fe
     out (corvus),a      ;1a18 d3 18
 
 l1a1ah:
-    in a,(corvus)       ;1a1a db 18
-    rla                 ;1a1c 17
-    jr c,l1a1ah         ;1a1d 38 fb
+    in a,(corvus)
+    rla
+    jr c,l1a1ah         ;Wait until Bit 7 = Low
 
     in a,(corvus)       ;1a1f db 18
     bit 6,a             ;1a21 cb 77
@@ -5803,34 +5816,37 @@ l1a1ah:
     pop af              ;1a27 f1
     ret                 ;1a28 c9
 
-sub_1a29h:
+corv_send_sec:
     xor a               ;1a29 af
     out (corvus),a      ;1a2a d3 18
 
-    ld hl,(l4a10h)      ;1a2c 2a 10 4a
-    ld a,(l4a10h+2)     ;1a2f 3a 12 4a
+    ld hl,(l4a10h)
+    ld a,(l4a10h+2)     ;AHL = (l4a10h)
 
-    ld b,05h            ;1a32 06 05
+    ld b,05h
 l1a34h:
-    rra                 ;1a34 1f
-    rr h                ;1a35 cb 1c
-    rr l                ;1a37 cb 1d
-    djnz l1a34h         ;1a39 10 f9
+    rra
+    rr h
+    rr l
+    djnz l1a34h         ;AHL = AHL / 32
 
-    ld a,(l0133h)       ;1a3b 3a 33 01
-    inc a               ;1a3e 3c
-    add a,a             ;1a3f 87
-    add a,a             ;1a40 87
-    add a,a             ;1a41 87
-    add a,a             ;1a42 87
-    ld b,a              ;1a43 47
+    ld a,(l0133h)
+    inc a
+    add a,a
+    add a,a
+    add a,a
+    add a,a
+    ld b,a              ;BC = ((l0133h) + 1) * 4096
     ld c,00h            ;1a44 0e 00
-    ld de,0000h         ;1a46 11 00 00
-    ld a,0dh            ;1a49 3e 0d
+
+    ld de,0000h         ;DE = 0000h
+    ld a,13             ;A = 0dh (13 Loops)
+
 l1a4bh:
-    ex de,hl            ;1a4b eb
-    add hl,hl           ;1a4c 29
-    ex de,hl            ;1a4d eb
+    ex de,hl
+    add hl,hl
+    ex de,hl            ;DE = DE * 2
+
     or a                ;1a4e b7
     sbc hl,bc           ;1a4f ed 42
     jr nc,l1a56h        ;1a51 30 03
@@ -5839,16 +5855,17 @@ l1a4bh:
 l1a56h:
     inc de              ;1a56 13
 l1a57h:
-    srl b               ;1a57 cb 38
-    rr c                ;1a59 cb 19
-    dec a               ;1a5b 3d
+    srl b
+    rr c                ;BC = BC / 2
+    dec a               ;A = A - 1
     jr nz,l1a4bh        ;1a5c 20 ed
 
     ld a,l              ;1a5e 7d
     out (corvus),a      ;1a5f d3 18
 
-    ld hl,(l0134h)       ;1a61 2a 34 01
-    add hl,de           ;1a64 19
+    ld hl,(l0134h)
+    add hl,de           ;HL = (l0134h) + DE
+
     ld a,l              ;1a65 7d
     out (corvus),a      ;1a66 d3 18
 
