@@ -230,6 +230,10 @@ ENDIF
                         ;Absolute Sector 16 Bytes  8 ..   9: "HB" as Magic Characters for "HardBox"
                         ;Absolute Sector 16 Bytes 10 .. 255: <Unknown or Undefined>
 
+IF version = 291
+                        ;Absolute Sector 32 to 63: Firmware for Hardbox (see payload from mwdos291.com)
+ENDIF
+
                         ;User Parameter
                         ;==============
                         ;Byte         0: Physical Drive Number (1 .. 4 = Drive Number, 0 = Unused Entry)
