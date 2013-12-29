@@ -141,7 +141,8 @@ is_err_47h:
     ld bc,e47_not_ready
     call print_str
 
-    jp got_error_done   ;01d4 c3 ee 01
+    ;GOTO got_error_done
+    jp got_error_done
 
 is_err_49h:
     ;IF l0c3ch <> &H49 THEN GOTO unknown_err
@@ -282,7 +283,7 @@ l02abh:
     ld (l0cd2h),hl      ;02af 22 d2 0c
     ld hl,(l0cd2h)      ;02b2 2a d2 0c
     ld c,(hl)           ;02b5 4e
-    call print_char      ;02b6 cd 85 02
+    call print_char     ;02b6 cd 85 02
     ld hl,l0cd4h        ;02b9 21 d4 0c
     dec (hl)            ;02bc 35
     ld a,(hl)           ;02bd 7e
@@ -318,7 +319,7 @@ sub_02c3h:
     ld a,l              ;02f1 7d
     add a,30h           ;02f2 c6 30
     ld c,a              ;02f4 4f
-    call print_char      ;02f5 cd 85 02
+    call print_char     ;02f5 cd 85 02
 l02f8h:
     call sub_0c17h      ;02f8 cd 17 0c
     ld (bc),a           ;02fb 02
@@ -409,7 +410,7 @@ l037ah:
     add a,30h           ;037d c6 30
 l037fh:
     ld c,a              ;037f 4f
-    call print_char      ;0380 cd 85 02
+    call print_char     ;0380 cd 85 02
     ld c,04h            ;0383 0e 04
     ld hl,(l0cdbh)      ;0385 2a db 0c
     jp l038ch           ;0388 c3 8c 03
@@ -530,9 +531,11 @@ ask_drv_typ:
     ld bc,which_type
     call print_str
 
-    call readline       ;0442 cd f2 01
+    ;GOSUB readline
+    call readline
 
-    ld a,(l0c3fh)       ;0445 3a 3f 0c
+    ;IF l0c3fh <> &H41 THEN GOTO is_drv_type_b
+    ld a,(l0c3fh)
     cp 'A'              ;Is it 'A': 3 Mbyte (191 cyl)?
     jp nz,is_drv_type_b ;  No: jump to check for 'B'
 
@@ -540,10 +543,13 @@ ask_drv_typ:
     ld (hl),02h         ;0450 36 02
     ld hl,00bfh         ;0452 21 bf 00
     ld (l0c40h),hl      ;0455 22 40 0c
-    jp got_drv_type     ;0458 c3 fe 04
+
+    ;GOTO got_drv_type
+    jp got_drv_type
 
 is_drv_type_b:
-    ld a,(l0c3fh)       ;045b 3a 3f 0c
+    ;IF l0c3fh <> &H42 THEN GOTO is_drv_type_c
+    ld a,(l0c3fh)
     cp 'B'              ;Is it 'B': 6 Mbyte (191 cyl)?
     jp nz,is_drv_type_c ;  No: jump to check for 'C'
 
@@ -551,10 +557,13 @@ is_drv_type_b:
     ld (hl),04h         ;0466 36 04
     ld hl,00bfh         ;0468 21 bf 00
     ld (l0c40h),hl      ;046b 22 40 0c
-    jp got_drv_type     ;046e c3 fe 04
+
+    ;GOTO got_drv_type
+    jp got_drv_type
 
 is_drv_type_c:
-    ld a,(l0c3fh)       ;0471 3a 3f 0c
+    ;IF l0c3fh <> &H43 THEN GOTO is_drv_type_d
+    ld a,(l0c3fh)
     cp 'C'              ;Is it 'C': 12 Mbyte (191 cyl)?
     jp nz,is_drv_type_d ;  No: jump to check for 'D'
 
@@ -562,10 +571,13 @@ is_drv_type_c:
     ld (hl),08h         ;047c 36 08
     ld hl,00bfh         ;047e 21 bf 00
     ld (l0c40h),hl      ;0481 22 40 0c
-    jp got_drv_type     ;0484 c3 fe 04
+
+    ;GOTO got_drv_type
+    jp got_drv_type
 
 is_drv_type_d:
-    ld a,(l0c3fh)       ;0487 3a 3f 0c
+    ;IF l0c3fh <> &H44 THEN GOTO is_drv_type_e
+    ld a,(l0c3fh)
     cp 'D'              ;Is it 'D': 5 Mbyte (320 cyl)?
     jp nz,is_drv_type_e ;  No: jump to check for 'E'
 
@@ -573,10 +585,13 @@ is_drv_type_d:
     ld (hl),02h         ;0492 36 02
     ld hl,l0140h        ;0494 21 40 01
     ld (l0c40h),hl      ;0497 22 40 0c
-    jp got_drv_type     ;049a c3 fe 04
+
+    ;GOTO got_drv_type
+    jp got_drv_type
 
 is_drv_type_e:
-    ld a,(l0c3fh)       ;049d 3a 3f 0c
+    ;IF l0c3fh <> &H45 THEN GOTO is_drv_type_f
+    ld a,(l0c3fh)
     cp 'E'              ;Is it 'E': 10 Mbyte (320 cyl)?
     jp nz,is_drv_type_f ;  No: jump to check for 'F'
 
@@ -584,10 +599,13 @@ is_drv_type_e:
     ld (hl),04h         ;04a8 36 04
     ld hl,l0140h        ;04aa 21 40 01
     ld (l0c40h),hl      ;04ad 22 40 0c
-    jp got_drv_type     ;04b0 c3 fe 04
+
+    ;GOTO got_drv_type
+    jp got_drv_type
 
 is_drv_type_f:
-    ld a,(l0c3fh)       ;04b3 3a 3f 0c
+    ;IF l0c3fh <> &H46 THEN GOTO is_drv_type_z
+    ld a,(l0c3fh)
     cp 'F'              ;Is it 'F': 15 Mbyte (320 cyl)?
     jp nz,is_drv_type_z ;  No: jump to check for 'Z'
 
@@ -595,10 +613,13 @@ is_drv_type_f:
     ld (hl),06h         ;04be 36 06
     ld hl,l0140h        ;04c0 21 40 01
     ld (l0c40h),hl      ;04c3 22 40 0c
-    jp got_drv_type     ;04c6 c3 fe 04
+
+    ;GOTO got_drv_type
+    jp got_drv_type
 
 is_drv_type_z:
-    ld a,(l0c3fh)       ;04c9 3a 3f 0c
+    ;IF l0c3fh <> &H5A THEN GOTO bad_drv_type
+    ld a,(l0c3fh)
     cp 'Z'              ;Is it 'Z': None of the above?
     jp nz,bad_drv_type  ;  No: bad drive type entered
 
@@ -612,7 +633,9 @@ is_drv_type_z:
     ld bc,num_heads
     call print_str
 
-    call readline       ;04dd cd f2 01
+    ;GOSUB readline
+    call readline
+
     ld a,(l0c48h)       ;04e0 3a 48 0c
     ld (l0c3dh),a       ;04e3 32 3d 0c
 
@@ -623,12 +646,17 @@ is_drv_type_z:
     ld bc,num_cylinders
     call print_str
 
-    call readline       ;04ef cd f2 01
+    ;GOSUB readline
+    call readline
+
     ld hl,(l0c48h)      ;04f2 2a 48 0c
     ld (l0c40h),hl      ;04f5 22 40 0c
-    jp got_drv_type     ;04f8 c3 fe 04
+
+    ;GOTO got_drv_type
+    jp got_drv_type
 
 bad_drv_type:
+    ;GOTO ask_drv_typ
     jp ask_drv_typ
 
 got_drv_type:
@@ -709,19 +737,23 @@ l0558h:
     ld (l0c42h),hl      ;0569 22 42 0c
 
     ;PRINT
-    call print_eol      ;056c cd 93 02
+    call print_eol
 
     ;PRINT
-    call print_eol      ;056f cd 93 02
+    call print_eol
 
     ;PRINT "Format all surfaces (Y/N) ? ";
     ld bc,all_surfaces
     call print_str
 
-    call readline       ;0578 cd f2 01
-    ld a,(l0c3fh)       ;057b 3a 3f 0c
-    cp 'N'              ;057e fe 4e
-    jp nz,l064bh        ;0580 c2 4b 06
+    ;GOSUB readline
+    call readline
+
+    ;IF l0c3fh <> &H4E THEN GOTO l064bh
+    ld a,(l0c3fh)
+    cp 'N'
+    jp nz,l064bh
+
 l0583h:
     ;PRINT
     call print_eol
@@ -744,7 +776,9 @@ l0583h:
     ld bc,p_q_1
     call print_str
 
-    call readline       ;059f cd f2 01
+    ;GOSUB readline
+    call readline
+
     ld hl,(l0c48h)      ;05a2 2a 48 0c
     add hl,hl           ;05a5 29
     jp c,l05bbh         ;05a6 da bb 05
@@ -766,13 +800,16 @@ l05bbh:
     call print_str
     call print_eol
 
-    jp l0583h           ;05c4 c3 83 05
+    ;GOTO l0583h
+    jp l0583h
+
 l05c7h:
     ld a,(l0c48h)       ;05c7 3a 48 0c
     ld (l0c3eh),a       ;05ca 32 3e 0c
+
 l05cdh:
     ;PRINT
-    call print_eol      ;05cd cd 93 02
+    call print_eol
 
     ;PRINT "Format all tracks on surface #";
     ld bc,all_tracks_on
@@ -790,13 +827,17 @@ l05cdh:
     ld bc,q_1
     call print_str
 
-    call readline       ;05e7 cd f2 01
-    ld a,(l0c3fh)       ;05ea 3a 3f 0c
-    cp 'N'              ;05ed fe 4e
-    jp nz,l0637h        ;05ef c2 37 06
+    ;GOSUB readline
+    call readline
+
+    ;IF l0c3fh <> &H4E THEN GOTO l0637h
+    ld a,(l0c3fh)
+    cp 'N'
+    jp nz,l0637h
+
 l05f2h:
     ;PRINT
-    call print_eol      ;05cd cd 93 02
+    call print_eol
 
     ;PRINT "Format which track (0 to ";
     ld bc,which_track
@@ -812,7 +853,9 @@ l05f2h:
     ld bc,p_q_2
     call print_str
 
-    call readline       ;060a cd f2 01
+    ;GOSUB readline
+    call readline
+
     ld hl,(l0c48h)      ;060d 2a 48 0c
     add hl,hl           ;0610 29
     jp c,l0622h         ;0611 da 22 06
@@ -867,7 +910,9 @@ l065ch:
     ld bc,press_ctrl_c
     call print_str
 
-    call readline       ;066b cd f2 01
+    ;GOSUB readline
+    call readline
+
     ld c,42h            ;066e 0e 42
     call sub_0118h      ;0670 cd 18 01
     ld hl,0000h         ;0673 21 00 00
