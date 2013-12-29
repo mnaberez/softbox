@@ -65,83 +65,108 @@ l0164h:
     call sub_0111h      ;016c cd 11 01
     ld (l0c3ch),a       ;016f 32 3c 0c
     ret                 ;0172 c9
-sub_0173h:
-    ld a,(l0c3ch)       ;0173 3a 3c 0c
-    and 40h             ;0176 e6 40
-    jp nz,l017ch        ;0178 c2 7c 01
-    ret                 ;017b c9
-l017ch:
+
+check_error:
+    ;IF (l0c3ch AND &H40) <> 0 THEN GOTO got_error
+    ld a,(l0c3ch)
+    and 40h
+    jp nz,got_error
+
+    ;RETURN
+    ret
+
+got_error:
     ;PRINT "DRIVE ERROR #";
     ld bc,drive_err_n
     call print_str
 
-    ld a,(l0c3ch)       ;0182 3a 3c 0c
-    cp 40h              ;0185 fe 40
-    jp nz,l0193h        ;0187 c2 93 01
+    ;IF l0c3ch <> &H40 THEN GOTO is_err_42h
+    ld a,(l0c3ch)
+    cp 40h
+    jp nz,is_err_42h
 
     ;PRINT "40 - header write error";
     ld bc,e40_head_writ
     call print_str
 
-    jp l01eeh           ;0190 c3 ee 01
-l0193h:
-    ld a,(l0c3ch)       ;0193 3a 3c 0c
-    cp 42h              ;0196 fe 42
-    jp nz,l01a4h        ;0198 c2 a4 01
+    ;GOTO got_error_done
+    jp got_error_done
+
+is_err_42h:
+    ;IF l0c3ch <> &H42 THEN GOTO is_err_44h
+    ld a,(l0c3ch)
+    cp 42h
+    jp nz,is_err_44h
 
     ;PRINT "42 - header read error";
     ld bc,e42_head_read
     call print_str
 
-    jp l01eeh           ;01a1 c3 ee 01
-l01a4h:
-    ld a,(l0c3ch)       ;01a4 3a 3c 0c
-    cp 44h              ;01a7 fe 44
-    jp nz,l01b5h        ;01a9 c2 b5 01
+    ;GOTO got_error_done
+    jp got_error_done
+
+is_err_44h:
+    ;IF l0c3ch <> &H44 THEN GOTO is_err_46h
+    ld a,(l0c3ch)
+    cp 44h
+    jp nz,is_err_46h
 
     ;PRINT "44 - data read error";
     ld bc,e44_data_read
     call print_str
 
-    jp l01eeh           ;01b2 c3 ee 01
-l01b5h:
-    ld a,(l0c3ch)       ;01b5 3a 3c 0c
-    cp 46h              ;01b8 fe 46
-    jp nz,l01c6h        ;01ba c2 c6 01
+    ;GOTO got_error_done
+    jp got_error_done
+
+is_err_46h:
+    ;IF l0c3ch <> &H46 THEN GOTO is_err_47h
+    ld a,(l0c3ch)
+    cp 46h
+    jp nz,is_err_47h
 
     ;PRINT "46 - write fault";
     ld bc,e46_writ_flt
     call print_str
 
-    jp l01eeh           ;01c3 c3 ee 01
-l01c6h:
-    ld a,(l0c3ch)       ;01c6 3a 3c 0c
-    cp 47h              ;01c9 fe 47
-    jp nz,l01d7h        ;01cb c2 d7 01
+    ;GOTO got_error_done
+    jp got_error_done
+
+is_err_47h:
+    ;IF l0c3ch <> &H47 THEN GOTO is_err_49h
+    ld a,(l0c3ch)
+    cp 47h
+    jp nz,is_err_49h
 
     ;PRINT "47 - disk not ready";
     ld bc,e47_not_ready
     call print_str
 
-    jp l01eeh           ;01d4 c3 ee 01
-l01d7h:
-    ld a,(l0c3ch)       ;01d7 3a 3c 0c
-    cp 49h              ;01da fe 49
-    jp nz,l01e8h        ;01dc c2 e8 01
+    jp got_error_done   ;01d4 c3 ee 01
+
+is_err_49h:
+    ;IF l0c3ch <> &H49 THEN GOTO unknown_err
+    ld a,(l0c3ch)
+    cp 49h
+    jp nz,unknown_err
 
     ;PRINT "49 - illegal command";
     ld bc,e49_illegal
     call print_str
 
-    jp l01eeh           ;01e5 c3 ee 01
-l01e8h:
+    ;GOTO got_error_done
+    jp got_error_done
+
+unknown_err:
     ;PRINT "xx - unknown error code";
     ld bc,exx_unknown
     call print_str
-l01eeh:
+
+got_error_done:
     ;PRINT
-    call print_eol      ;01ee cd 93 02
-    ret                 ;01f1 c9
+    call print_eol
+
+    ;RETURN
+    ret
 
 readline:
     ld hl,l0c4dh        ;01f2 21 4d 0c
@@ -877,7 +902,9 @@ l06aah:
     add hl,hl           ;06b1 29
     jp c,l069eh         ;06b2 da 9e 06
     call sub_0152h      ;06b5 cd 52 01
-    call sub_0173h      ;06b8 cd 73 01
+
+    ;GOSUB check_error
+    call check_error
 
     ;PRINT
     call print_eol
@@ -924,7 +951,9 @@ l06eeh:
     ld c,00h            ;0705 0e 00
     call sub_0107h      ;0707 cd 07 01
     call sub_0152h      ;070a cd 52 01
-    call sub_0173h      ;070d cd 73 01
+
+    ;GOSUB check_error
+    call check_error
 
     ;PRINT
     call print_eol
