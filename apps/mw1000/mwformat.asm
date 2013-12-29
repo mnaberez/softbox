@@ -71,52 +71,73 @@ sub_0173h:
     jp nz,l017ch        ;0178 c2 7c 01
     ret                 ;017b c9
 l017ch:
-    ld bc,drive_err_n   ;017c 01 22 07
-    call sub_029eh      ;017f cd 9e 02
+    ;PRINT "DRIVE ERROR #"
+    ld bc,drive_err_n
+    call sub_029eh
+
     ld a,(l0c3ch)       ;0182 3a 3c 0c
     cp 40h              ;0185 fe 40
     jp nz,l0193h        ;0187 c2 93 01
-    ld bc,e40_head_writ ;018a 01 30 07
-    call sub_029eh      ;018d cd 9e 02
+
+    ;PRINT "40 - header write error"
+    ld bc,e40_head_writ
+    call sub_029eh
+
     jp l01eeh           ;0190 c3 ee 01
 l0193h:
     ld a,(l0c3ch)       ;0193 3a 3c 0c
     cp 42h              ;0196 fe 42
     jp nz,l01a4h        ;0198 c2 a4 01
-    ld bc,e42_head_read ;019b 01 48 07
-    call sub_029eh      ;019e cd 9e 02
+
+    ;PRINT "42 - header read error"
+    ld bc,e42_head_read
+    call sub_029eh
+
     jp l01eeh           ;01a1 c3 ee 01
 l01a4h:
     ld a,(l0c3ch)       ;01a4 3a 3c 0c
     cp 44h              ;01a7 fe 44
     jp nz,l01b5h        ;01a9 c2 b5 01
-    ld bc,e44_data_read ;01ac 01 5f 07
-    call sub_029eh      ;01af cd 9e 02
+
+    ;PRINT "44 - data read error"
+    ld bc,e44_data_read
+    call sub_029eh
+
     jp l01eeh           ;01b2 c3 ee 01
 l01b5h:
     ld a,(l0c3ch)       ;01b5 3a 3c 0c
     cp 46h              ;01b8 fe 46
     jp nz,l01c6h        ;01ba c2 c6 01
-    ld bc,e46_writ_flt  ;01bd 01 74 07
-    call sub_029eh      ;01c0 cd 9e 02
+
+    ;PRINT "46 - write fault"
+    ld bc,e46_writ_flt
+    call sub_029eh
+
     jp l01eeh           ;01c3 c3 ee 01
 l01c6h:
     ld a,(l0c3ch)       ;01c6 3a 3c 0c
     cp 47h              ;01c9 fe 47
     jp nz,l01d7h        ;01cb c2 d7 01
-    ld bc,e47_not_ready ;01ce 01 85 07
-    call sub_029eh      ;01d1 cd 9e 02
+
+    ;PRINT "47 - disk not ready"
+    ld bc,e47_not_ready
+    call sub_029eh
+
     jp l01eeh           ;01d4 c3 ee 01
 l01d7h:
     ld a,(l0c3ch)       ;01d7 3a 3c 0c
     cp 49h              ;01da fe 49
     jp nz,l01e8h        ;01dc c2 e8 01
-    ld bc,e49_illegal   ;01df 01 99 07
-    call sub_029eh      ;01e2 cd 9e 02
+
+    ;PRINT "49 - illegal command"
+    ld bc,e49_illegal
+    call sub_029eh
+
     jp l01eeh           ;01e5 c3 ee 01
 l01e8h:
-    ld bc,exx_unknown   ;01e8 01 ae 07
-    call sub_029eh      ;01eb cd 9e 02
+    ;PRINT "xx - unknown error code"
+    ld bc,exx_unknown
+    call sub_029eh
 l01eeh:
     call sub_0293h      ;01ee cd 93 02
     ret                 ;01f1 c9
@@ -277,8 +298,11 @@ sub_02feh:
     ld a,l              ;0307 7d
     or h                ;0308 b4
     jp nz,l0315h        ;0309 c2 15 03
-    ld bc,zero          ;030c 01 c6 07
-    call sub_029eh      ;030f cd 9e 02
+
+    ;PRINT "0"
+    ld bc,zero
+    call sub_029eh
+
     jp l031dh           ;0312 c3 1d 03
 l0315h:
     ld hl,(l0cd7h)      ;0315 2a d7 0c
@@ -294,8 +318,11 @@ l031dh:
     ld hl,(l0cd9h)      ;0324 2a d9 0c
     add hl,hl           ;0327 29
     jp nc,l0341h        ;0328 d2 41 03
-    ld bc,dash          ;032b 01 c8 07
-    call sub_029eh      ;032e cd 9e 02
+
+    ;PRINT "-"
+    ld bc,dash
+    call sub_029eh
+
     ld hl,(l0cd9h)      ;0331 2a d9 0c
     ld a,l              ;0334 7d
     cpl                 ;0335 2f
@@ -368,59 +395,104 @@ l03a0h:
     ld hl,(0006h)       ;03a0 2a 06 00
     ld sp,hl            ;03a3 f9
 l03a4h:
-    ld c,1ah            ;03a4 0e 1a
-    call sub_0285h      ;03a6 cd 85 02
-    ld bc,format_prog   ;03a9 01 ca 07
-    call sub_029eh      ;03ac cd 9e 02
-    call sub_0293h      ;03af cd 93 02
-    ld bc,dashes        ;03b2 01 f1 07
+    ;PRINT CHR$(26) ' Clear screen
+    ld c,1ah
+    call sub_0285h
+
+    ;PRINT "SoftBox Mini-Winchester Format Program"
+    ld bc,format_prog
+    call sub_029eh
+
+    ;PRINT "------- ---- ---------- ------ -------"
+    call sub_0293h
+    ld bc,dashes
+
     call sub_029eh      ;03b5 cd 9e 02
     call sub_0293h      ;03b8 cd 93 02
     call sub_0293h      ;03bb cd 93 02
-    ld bc,rev_21        ;03be 01 18 08
-    call sub_029eh      ;03c1 cd 9e 02
+
+    ;PRINT "Revision 2.1"
+    ld bc,rev_21
+    call sub_029eh
+
     call sub_0293h      ;03c4 cd 93 02
     call sub_0293h      ;03c7 cd 93 02
-    ld bc,warning       ;03ca 01 25 08
-    call sub_029eh      ;03cd cd 9e 02
+
+    ;PRINT "WARNING - use of this program will destroy "
+    ld bc,warning
+    call sub_029eh
+
     call sub_0293h      ;03d0 cd 93 02
-    ld bc,0848h         ;03d3 01 48 08
-    call sub_029eh      ;03d6 cd 9e 02
-    call sub_0293h      ;03d9 cd 93 02
+
+    ;PRINT "destroy any existing data on the"
+    ld bc,destroy
+    call sub_029eh
+
+    call sub_0293h      ;03d0 cd 93 02
+
+    ;PRINT "hard disk."
     ld bc,hard_disk     ;03dc 01 69 08
     call sub_029eh      ;03df cd 9e 02
+
     call sub_0293h      ;03e2 cd 93 02
     call sub_0293h      ;03e5 cd 93 02
     call sub_0293h      ;03e8 cd 93 02
     call sub_0293h      ;03eb cd 93 02
-    ld bc,drive_sizes   ;03ee 01 74 08
-    call sub_029eh      ;03f1 cd 9e 02
+
+    ;PRINT "Drive sizes supported : "
+    ld bc,drive_sizes
+    call sub_029eh
+
     call sub_0293h      ;03f4 cd 93 02
     call sub_0293h      ;03f7 cd 93 02
-    ld bc,drv_a_3mb     ;03fa 01 8d 08
-    call sub_029eh      ;03fd cd 9e 02
+
+    ;PRINT "A.   3  Mbyte      (191 cyl)"
+    ld bc,drv_a_3mb
+    call sub_029eh
+
     call sub_0293h      ;0400 cd 93 02
-    ld bc,drv_b_6mb     ;0403 01 aa 08
-    call sub_029eh      ;0406 cd 9e 02
+
+    ;PRINT "B.   6  Mbyte      (191 cyl)"
+    ld bc,drv_b_6mb
+    call sub_029eh
+
     call sub_0293h      ;0409 cd 93 02
-    ld bc,drv_c_12mb    ;040c 01 c7 08
-    call sub_029eh      ;040f cd 9e 02
+
+    ;PRINT "C.   12 Mbyte      (191 cyl)"
+    ld bc,drv_c_12mb
+    call sub_029eh
+
     call sub_0293h      ;0412 cd 93 02
-    ld bc,drv_d_5mb     ;0415 01 e4 08
-    call sub_029eh      ;0418 cd 9e 02
+
+    ;PRINT "D.   5  Mbyte      (320 cyl)"
+    ld bc,drv_d_5mb
+    call sub_029eh
+
     call sub_0293h      ;041b cd 93 02
-    ld bc,drv_e_10mb    ;041e 01 01 09
-    call sub_029eh      ;0421 cd 9e 02
+
+    ;PRINT "E.   10 Mbyte      (320 cyl)"
+    ld bc,drv_e_10mb
+    call sub_029eh
+
     call sub_0293h      ;0424 cd 93 02
-    ld bc,drv_f_15mb    ;0427 01 1e 09
-    call sub_029eh      ;042a cd 9e 02
+
+    ;PRINT "F.   15 Mbyte      (320 cyl)"
+    ld bc,drv_f_15mb
+    call sub_029eh
+
     call sub_0293h      ;042d cd 93 02
-    ld bc,drv_z_other   ;0430 01 3b 09
-    call sub_029eh      ;0433 cd 9e 02
+
+    ;PRINT "Z.   None of the above"
+    ld bc,drv_z_other
+    call sub_029eh
+
     call sub_0293h      ;0436 cd 93 02
     call sub_0293h      ;0439 cd 93 02
-    ld bc,which_type    ;043c 01 52 09
-    call sub_029eh      ;043f cd 9e 02
+
+    ;PRINT "Which drive type (A-Z) ? "
+    ld bc,which_type
+    call sub_029eh
+
     call sub_01f2h      ;0442 cd f2 01
     ld a,(l0c3fh)       ;0445 3a 3f 0c
     cp 41h              ;0448 fe 41
@@ -481,14 +553,20 @@ l04c9h:
     jp nz,l04fbh        ;04ce c2 fb 04
     call sub_0293h      ;04d1 cd 93 02
     call sub_0293h      ;04d4 cd 93 02
-    ld bc,num_heads     ;04d7 01 6c 09
-    call sub_029eh      ;04da cd 9e 02
+
+    ;PRINT "How many heads ? "
+    ld bc,num_heads
+    call sub_029eh
+
     call sub_01f2h      ;04dd cd f2 01
     ld a,(l0c48h)       ;04e0 3a 48 0c
     ld (l0c3dh),a       ;04e3 32 3d 0c
     call sub_0293h      ;04e6 cd 93 02
-    ld bc,num_cylinders ;04e9 01 7e 09
-    call sub_029eh      ;04ec cd 9e 02
+
+    ;PRINT "How many cylinders ? "
+    ld bc,num_cylinders
+    call sub_029eh
+
     call sub_01f2h      ;04ef cd f2 01
     ld hl,(l0c48h)      ;04f2 2a 48 0c
     ld (l0c40h),hl      ;04f5 22 40 0c
@@ -500,8 +578,11 @@ l04feh:
     call sub_0285h      ;0500 cd 85 02
     call sub_0293h      ;0503 cd 93 02
     call sub_0293h      ;0506 cd 93 02
-    ld bc,drive_has     ;0509 01 94 09
-    call sub_029eh      ;050c cd 9e 02
+
+    ;PRINT "Drive has "
+    ld bc,drive_has
+    call sub_029eh
+
     ld a,(l0c3dh)       ;050f 3a 3d 0c
     ld l,a              ;0512 6f
     rla                 ;0513 17
@@ -509,18 +590,27 @@ l04feh:
     ld b,a              ;0515 47
     ld c,l              ;0516 4d
     call sub_02feh      ;0517 cd fe 02
-    ld bc,heads_and     ;051a 01 9f 09
-    call sub_029eh      ;051d cd 9e 02
+
+    ;PRINT " heads and "
+    ld bc,heads_and
+    call sub_029eh
+
     ld hl,(l0c40h)      ;0520 2a 40 0c
     ld b,h              ;0523 44
     ld c,l              ;0524 4d
     call sub_02feh      ;0525 cd fe 02
-    ld bc,cylinders     ;0528 01 ab 09
-    call sub_029eh      ;052b cd 9e 02
+
+    ;PRINT " cylinders."
+    ld bc,cylinders
+    call sub_029eh
+
     call sub_0293h      ;052e cd 93 02
     call sub_0293h      ;0531 cd 93 02
-    ld bc,capacity_is   ;0534 01 b7 09
-    call sub_029eh      ;0537 cd 9e 02
+
+    ;PRINT "The formatted capacity is "
+    ld bc,capacity_is
+    call sub_029eh
+
     ld a,(l0c3dh)       ;053a 3a 3d 0c
     ld l,a              ;053d 6f
     rla                 ;053e 17
@@ -537,8 +627,11 @@ l04feh:
     ld b,h              ;054d 44
     ld c,l              ;054e 4d
     call sub_02feh      ;054f cd fe 02
-    ld bc,kbytes        ;0552 01 d2 09
-    call sub_029eh      ;0555 cd 9e 02
+
+    ;PRINT " Kbytes."
+    ld bc,kbytes
+    call sub_029eh
+
 l0558h:
     ld a,(l0c3dh)       ;0558 3a 3d 0c
     dec a               ;055b 3d
@@ -552,16 +645,22 @@ l0558h:
     ld (l0c42h),hl      ;0569 22 42 0c
     call sub_0293h      ;056c cd 93 02
     call sub_0293h      ;056f cd 93 02
-    ld bc,all_surfaces  ;0572 01 db 09
-    call sub_029eh      ;0575 cd 9e 02
+
+    ;PRINT "Format all surfaces (Y/N) ? "
+    ld bc,all_surfaces
+    call sub_029eh
+
     call sub_01f2h      ;0578 cd f2 01
     ld a,(l0c3fh)       ;057b 3a 3f 0c
     cp 4eh              ;057e fe 4e
     jp nz,l064bh        ;0580 c2 4b 06
 l0583h:
     call sub_0293h      ;0583 cd 93 02
-    ld bc,which_surface ;0586 01 f8 09
-    call sub_029eh      ;0589 cd 9e 02
+
+    ;PRINT "Format which surface (0 to "
+    ld bc,which_surface
+    call sub_029eh
+
     ld a,(l0c3dh)       ;058c 3a 3d 0c
     ld l,a              ;058f 6f
     rla                 ;0590 17
@@ -571,8 +670,11 @@ l0583h:
     ld b,h              ;0594 44
     ld c,l              ;0595 4d
     call sub_02feh      ;0596 cd fe 02
-    ld bc,p_q_1         ;0599 01 14 0a
-    call sub_029eh      ;059c cd 9e 02
+
+    ;PRINT ") ? "
+    ld bc,p_q_1
+    call sub_029eh
+
     call sub_01f2h      ;059f cd f2 01
     ld hl,(l0c48h)      ;05a2 2a 48 0c
     add hl,hl           ;05a5 29
@@ -590,8 +692,10 @@ l0583h:
     sbc a,d             ;05b7 9a
     jp m,l05c7h         ;05b8 fa c7 05
 l05bbh:
-    ld bc,q_q_1         ;05bb 01 19 0a
-    call sub_029eh      ;05be cd 9e 02
+    ;PRINT "??"
+    ld bc,q_q_1
+    call sub_029eh
+
     call sub_0293h      ;05c1 cd 93 02
     jp l0583h           ;05c4 c3 83 05
 l05c7h:
@@ -599,8 +703,11 @@ l05c7h:
     ld (l0c3eh),a       ;05ca 32 3e 0c
 l05cdh:
     call sub_0293h      ;05cd cd 93 02
-    ld bc,all_tracks_on ;05d0 01 1c 0a
-    call sub_029eh      ;05d3 cd 9e 02
+
+    ;PRINT "Format all tracks on surface #"
+    ld bc,all_tracks_on
+    call sub_029eh
+
     ld a,(l0c3eh)       ;05d6 3a 3e 0c
     ld l,a              ;05d9 6f
     rla                 ;05da 17
@@ -608,23 +715,32 @@ l05cdh:
     ld b,a              ;05dc 47
     ld c,l              ;05dd 4d
     call sub_02feh      ;05de cd fe 02
-    ld bc,q_1           ;05e1 01 3b 0a
-    call sub_029eh      ;05e4 cd 9e 02
+
+    ;PRINT " ? "
+    ld bc,q_1
+    call sub_029eh
+
     call sub_01f2h      ;05e7 cd f2 01
     ld a,(l0c3fh)       ;05ea 3a 3f 0c
     cp 4eh              ;05ed fe 4e
     jp nz,l0637h        ;05ef c2 37 06
 l05f2h:
-    call sub_0293h      ;05f2 cd 93 02
-    ld bc,which_track   ;05f5 01 3f 0a
-    call sub_029eh      ;05f8 cd 9e 02
+    call sub_0293h      ;05cd cd 93 02
+
+    ;PRINT "Format which track (0 to "
+    ld bc,which_track
+    call sub_029eh
+
     ld hl,(l0c40h)      ;05fb 2a 40 0c
     dec hl              ;05fe 2b
     ld b,h              ;05ff 44
     ld c,l              ;0600 4d
     call sub_02feh      ;0601 cd fe 02
-    ld bc,p_q_2         ;0604 01 59 0a
-    call sub_029eh      ;0607 cd 9e 02
+
+    ;PRINT ") ? "
+    ld bc,p_q_2
+    call sub_029eh
+
     call sub_01f2h      ;060a cd f2 01
     ld hl,(l0c48h)      ;060d 2a 48 0c
     add hl,hl           ;0610 29
@@ -638,8 +754,10 @@ l05f2h:
     sbc a,h             ;061e 9c
     jp m,l062eh         ;061f fa 2e 06
 l0622h:
-    ld bc,q_q_2         ;0622 01 5e 0a
-    call sub_029eh      ;0625 cd 9e 02
+    ;PRINT "??"
+    ld bc,q_q_2
+    call sub_029eh
+
     call sub_0293h      ;0628 cd 93 02
     jp l05f2h           ;062b c3 f2 05
 l062eh:
@@ -650,8 +768,11 @@ l0637h:
     ld a,(l0c3fh)       ;0637 3a 3f 0c
     cp 59h              ;063a fe 59
     jp z,l0648h         ;063c ca 48 06
-    ld bc,pls_yn_1      ;063f 01 61 0a
-    call sub_029eh      ;0642 cd 9e 02
+
+    ;PRINT "Please answer Y or N : "
+    ld bc,pls_yn_1
+    call sub_029eh
+
     jp l05cdh           ;0645 c3 cd 05
 l0648h:
     jp l065ch           ;0648 c3 5c 06
@@ -659,15 +780,23 @@ l064bh:
     ld a,(l0c3fh)       ;064b 3a 3f 0c
     cp 59h              ;064e fe 59
     jp z,l065ch         ;0650 ca 5c 06
-    ld bc,pls_yn_2      ;0653 01 79 0a
-    call sub_029eh      ;0656 cd 9e 02
+
+    ;PRINT "Please answer Y or N : "
+    ld bc,pls_yn_2
+    call sub_029eh
+
     jp l0558h           ;0659 c3 58 05
 l065ch:
-    ld bc,press_return  ;065c 01 91 0a
-    call sub_029eh      ;065f cd 9e 02
-    call sub_0293h      ;0662 cd 93 02
-    ld bc,press_ctrl_c  ;0665 01 ae 0a
-    call sub_029eh      ;0668 cd 9e 02
+    ;PRINT "Press return to format disk,"
+    ld bc,press_return
+    call sub_029eh
+
+    call sub_0293h      ;0628 cd 93 02
+
+    ;PRINT "press control-C to abort ... "
+    ld bc,press_ctrl_c
+    call sub_029eh
+
     call sub_01f2h      ;066b cd f2 01
     ld c,42h            ;066e 0e 42
     call sub_0118h      ;0670 cd 18 01
@@ -706,8 +835,11 @@ l06aah:
     call sub_0173h      ;06b8 cd 73 01
     call sub_0293h      ;06bb cd 93 02
     call sub_0293h      ;06be cd 93 02
-    ld bc,formatting    ;06c1 01 cc 0a
-    call sub_029eh      ;06c4 cd 9e 02
+
+    ;PRINT "Formatting ..."
+    ld bc,formatting
+    call sub_029eh
+
     ld c,27h            ;06c7 0e 27
     call sub_0118h      ;06c9 cd 18 01
     ld c,00h            ;06cc 0e 00
@@ -746,8 +878,11 @@ l06eeh:
     call sub_0173h      ;070d cd 73 01
     call sub_0293h      ;0710 cd 93 02
     call sub_0293h      ;0713 cd 93 02
-    ld bc,complete      ;0716 01 db 0a
-    call sub_029eh      ;0719 cd 9e 02
+
+    ;PRINT "Format complete."
+    ld bc,complete
+    call sub_029eh
+
     call sub_0293h      ;071c cd 93 02
     call sub_0103h      ;071f cd 03 01
 
@@ -792,8 +927,10 @@ rev_21:
     db "Revision 2.1"
 warning:
     db 22h
-    db "WARNING - use of this program will destroy "
-    db "any existing data on the"
+    db "WARNING - use of this program will"
+destroy:
+    db 20h
+    db "destroy any existing data on the"
 hard_disk:
     db 0ah
     db "hard disk."
