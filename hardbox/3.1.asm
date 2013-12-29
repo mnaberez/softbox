@@ -689,9 +689,11 @@ l0123h:                 ;user name
     db "HARD DISK       "
 
 l0133h:
-    db 07h
+    db 07h              ;Max. head number (starting from 0)
+
 l0134h:
-    dw 0060h
+    dw 0060h            ;First cylinder number used for HardBox
+
 l0136h:
     db 08h              ;IEEE-488 primary address
 
@@ -5623,7 +5625,7 @@ IF version = 291
 
     ld a,21h            ;198a 3e 21
     call corv_send_cmd  ;198c cd f0 19
-    call corv_send_sec  ;198f cd 29 1a
+    call corv_send_para ;198f cd 29 1a
 
     call corv_read_err  ;1992 cd 0d 1a
     pop hl              ;1995 e1
@@ -5703,7 +5705,7 @@ l19c1h:
 
     ld a,22h            ;19ce 3e 22
     call corv_send_cmd  ;19d0 cd f0 19
-    call corv_send_sec  ;19d3 cd 29 1a
+    call corv_send_para ;19d3 cd 29 1a
 
     call corv_read_err  ;19d6 cd 0d 1a
     ret z               ;19d9 c8
@@ -5753,7 +5755,7 @@ ENDIF
 
 IF version = 291
 corv_send_cmd:
-;Send the command to Corvus hard drive
+;Send the command to Mini-Winchester hard drive
 ;
 ;  A = Command
 ;        21h = Read Sector with Address into Buffer
@@ -5761,9 +5763,10 @@ corv_send_cmd:
 ;        42h = Write Sector Data into Buffer
 ;        22h = Write Sector with Address from Buffer
 ;
-    ld b,a              ;19f0 47
+    ld b,a              ;Save the command
+
     xor a               ;19f1 af
-    out (corvus),a      ;19f2 d3 18
+    out (corvus),a      ;Put byte (00h) on Mini-Winchester data bus
 
 l19f4h:
     in a,(corvus)       ;19f4 db 18
@@ -5771,7 +5774,7 @@ l19f4h:
     jr nz,l19f4h        ;19f8 20 fa
 
     ld a,b              ;19fa 78
-    out (corvus),a      ;19fb d3 18
+    out (corvus),a      ;Put byte (command) on Mini-Winchester data bus
 
 l19fdh:
     in a,(corvus)       ;19fd db 18
@@ -5779,7 +5782,7 @@ l19fdh:
     jr nz,l19fdh        ;1a01 20 fa
 
     ld a,255            ;1a03 3e ff
-    out (corvus),a      ;1a05 d3 18
+    out (corvus),a      ;Put byte (0ffh) on Mini-Winchester data bus
 
     ld b,20             ;B=14h
 l1a09h:
@@ -5789,13 +5792,13 @@ l1a09h:
     ret                 ;1a0c c9
 
 corv_read_err:
-;Read the error code from a Corvus hard drive.
+;Read the error code from a Mini-Winchester hard drive.
 ;
 ;Returns the error code in A (0=OK) and also changes
 ;the Z flag: Z=1 if OK, Z=0 if error.
 ;
     ld a,255            ;1a0d 3e ff
-    out (corvus),a      ;1a0f d3 18
+    out (corvus),a      ;Put byte (0ffh) on Mini-Winchester data bus
 
 l1a11h:
     in a,(corvus)
@@ -5803,7 +5806,7 @@ l1a11h:
     jr nz,l1a11h        ;Wait until readed data = 255
 
     ld a,255-00000001b  ;1a16 3e fe
-    out (corvus),a      ;1a18 d3 18
+    out (corvus),a      ;Put byte (0feh) on Mini-Winchester data bus
 
 l1a1ah:
     in a,(corvus)
@@ -5815,14 +5818,26 @@ l1a1ah:
     push af             ;1a23 f5
 
     xor a               ;1a24 af
-    out (corvus),a      ;1a25 d3 18
+    out (corvus),a      ;Put byte (00h) on Mini-Winchester data bus
 
     pop af              ;1a27 f1
     ret                 ;1a28 c9
 
-corv_send_sec:
+corv_send_para:
+;Send an eight bytes parameter block to the Mini-Winchester hard drive
+;
+; (l4a10h) = 24 bit absolute sector number
+;
+; 1. Byte:              00h (drive number?)
+; 2. Byte:             Head (0 .. (l0133h))
+; 3. and 4. Bytes: Cylinder ((l0134h) .. max. cylinder number)
+; 5. Byte:           Sector (0 .. 31)
+; 6. Byte:              00h
+; 7. Byte:              00h
+; 8. Byte:              00h
+;
     xor a               ;1a29 af
-    out (corvus),a      ;1a2a d3 18
+    out (corvus),a      ;Put 1. Byte on Mini-Winchester data bus
 
     ld hl,(l4a10h)
     ld a,(l4a10h+2)     ;AHL = (l4a10h)
@@ -5832,20 +5847,22 @@ l1a34h:
     rra
     rr h
     rr l
-    djnz l1a34h         ;AHL = AHL / 32
+    djnz l1a34h         ;HL = AHL / 32
 
     ld a,(l0133h)
-    inc a
-    add a,a
-    add a,a
-    add a,a
-    add a,a
-    ld b,a              ;BC = ((l0133h) + 1) * 4096
-    ld c,00h            ;1a44 0e 00
+    inc a               ;A = (l0133h) + 1
 
+    add a,a
+    add a,a
+    add a,a
+    add a,a
+    ld b,a
+    ld c,00h            ;BC = A * 4096
     ld de,0000h         ;DE = 0000h
     ld a,13             ;A = 0dh (13 Loops)
 
+                        ;DE = HL DIV ((l0133h) + 1)
+                        ; L = HL MOD ((l0133h) + 1)
 l1a4bh:
     ex de,hl
     add hl,hl
@@ -5865,26 +5882,26 @@ l1a57h:
     jr nz,l1a4bh        ;1a5c 20 ed
 
     ld a,l              ;1a5e 7d
-    out (corvus),a      ;1a5f d3 18
+    out (corvus),a      ;Put 2. Byte on Mini-Winchester data bus
 
     ld hl,(l0134h)
     add hl,de           ;HL = (l0134h) + DE
 
     ld a,l              ;1a65 7d
-    out (corvus),a      ;1a66 d3 18
+    out (corvus),a      ;Put 3. Byte on Mini-Winchester data bus
 
     ld a,h              ;1a68 7c
-    out (corvus),a      ;1a69 d3 18
+    out (corvus),a      ;Put 4. Byte on Mini-Winchester data bus
 
     ld a,(l4a10h)       ;1a6b 3a 10 4a
     and 1fh             ;1a6e e6 1f
-    out (corvus),a      ;1a70 d3 18
+    out (corvus),a      ;Put 5. Byte on Mini-Winchester data bus
 
     xor a               ;1a72 af
-    out (corvus),a      ;1a73 d3 18
+    out (corvus),a      ;Put &: Byte on Mini-Winchester data bus
 
-    out (corvus),a      ;1a75 d3 18
-    out (corvus),a      ;1a77 d3 18
+    out (corvus),a      ;Put 7. byte on Mini-Winchester data bus
+    out (corvus),a      ;Put 8. Byte on Mini-Winchester data bus
     ret                 ;1a79 c9
 ELSE
 corv_read_err:
