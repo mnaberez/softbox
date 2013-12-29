@@ -882,7 +882,6 @@ l0adbh:
     jp l0b00h           ;0af6 c3 00 0b
 l0af9h:
     inc h               ;0af9 24
-l0afah:
     cpl                 ;0afa 2f
     ld b,a              ;0afb 47
     ld a,c              ;0afc 79
@@ -895,12 +894,10 @@ l0b00h:
     jp m,l0b0ch         ;0b02 fa 0c 0b
     or e                ;0b05 b3
     jp z,l0b44h         ;0b06 ca 44 0b
-l0b09h:
     jp l0b13h           ;0b09 c3 13 0b
 l0b0ch:
     inc h               ;0b0c 24
     cpl                 ;0b0d 2f
-l0b0eh:
     ld d,a              ;0b0e 57
     ld a,e              ;0b0f 7b
     cpl                 ;0b10 2f
@@ -908,7 +905,6 @@ l0b0eh:
     inc de              ;0b12 13
 l0b13h:
     push hl             ;0b13 e5
-l0b14h:
     ld a,c              ;0b14 79
     sub e               ;0b15 93
     ld a,b              ;0b16 78
@@ -921,7 +917,6 @@ l0b14h:
     ld c,l              ;0b1f 4d
 l0b20h:
     ld hl,0000h         ;0b20 21 00 00
-l0b23h:
     ex de,hl            ;0b23 eb
 l0b24h:
     ld a,b              ;0b24 78
@@ -936,7 +931,6 @@ l0b24h:
     jp nc,l0b35h        ;0b2f d2 35 0b
     ex de,hl            ;0b32 eb
     add hl,de           ;0b33 19
-l0b34h:
     ex de,hl            ;0b34 eb
 l0b35h:
     add hl,hl           ;0b35 29
@@ -955,7 +949,6 @@ l0b39h:
     ret                 ;0b43 c9
 l0b44h:
     ld de,0000h         ;0b44 11 00 00
-l0b47h:
     ret                 ;0b47 c9
 sub_0b48h:
     xor a               ;0b48 af
