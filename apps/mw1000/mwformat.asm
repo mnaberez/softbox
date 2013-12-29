@@ -294,7 +294,7 @@ l031dh:
     ld hl,(l0cd9h)      ;0324 2a d9 0c
     add hl,hl           ;0327 29
     jp nc,l0341h        ;0328 d2 41 03
-    ld bc,l07c6h+2      ;032b 01 c8 07
+    ld bc,l07c8h        ;032b 01 c8 07
     call sub_029eh      ;032e cd 9e 02
     ld hl,(l0cd9h)      ;0331 2a d9 0c
     ld a,l              ;0334 7d
@@ -393,11 +393,11 @@ l03a4h:
     call sub_0293h      ;03e5 cd 93 02
     call sub_0293h      ;03e8 cd 93 02
     call sub_0293h      ;03eb cd 93 02
-    ld bc,0874h         ;03ee 01 74 08
+    ld bc,l0874h        ;03ee 01 74 08
     call sub_029eh      ;03f1 cd 9e 02
     call sub_0293h      ;03f4 cd 93 02
     call sub_0293h      ;03f7 cd 93 02
-    ld bc,088dh         ;03fa 01 8d 08
+    ld bc,l088dh        ;03fa 01 8d 08
     call sub_029eh      ;03fd cd 9e 02
     call sub_0293h      ;0400 cd 93 02
     ld bc,l08aah        ;0403 01 aa 08
@@ -481,13 +481,13 @@ l04c9h:
     jp nz,l04fbh        ;04ce c2 fb 04
     call sub_0293h      ;04d1 cd 93 02
     call sub_0293h      ;04d4 cd 93 02
-    ld bc,096ch         ;04d7 01 6c 09
+    ld bc,l096ch        ;04d7 01 6c 09
     call sub_029eh      ;04da cd 9e 02
     call sub_01f2h      ;04dd cd f2 01
     ld a,(l0c48h)       ;04e0 3a 48 0c
     ld (l0c3dh),a       ;04e3 32 3d 0c
     call sub_0293h      ;04e6 cd 93 02
-    ld bc,097eh         ;04e9 01 7e 09
+    ld bc,l097eh        ;04e9 01 7e 09
     call sub_029eh      ;04ec cd 9e 02
     call sub_01f2h      ;04ef cd f2 01
     ld hl,(l0c48h)      ;04f2 2a 48 0c
@@ -500,7 +500,7 @@ l04feh:
     call sub_0285h      ;0500 cd 85 02
     call sub_0293h      ;0503 cd 93 02
     call sub_0293h      ;0506 cd 93 02
-    ld bc,0994h         ;0509 01 94 09
+    ld bc,l0994h        ;0509 01 94 09
     call sub_029eh      ;050c cd 9e 02
     ld a,(l0c3dh)       ;050f 3a 3d 0c
     ld l,a              ;0512 6f
@@ -509,17 +509,17 @@ l04feh:
     ld b,a              ;0515 47
     ld c,l              ;0516 4d
     call sub_02feh      ;0517 cd fe 02
-    ld bc,099fh         ;051a 01 9f 09
+    ld bc,l099fh        ;051a 01 9f 09
     call sub_029eh      ;051d cd 9e 02
     ld hl,(l0c40h)      ;0520 2a 40 0c
     ld b,h              ;0523 44
     ld c,l              ;0524 4d
     call sub_02feh      ;0525 cd fe 02
-    ld bc,09abh         ;0528 01 ab 09
+    ld bc,l09abh        ;0528 01 ab 09
     call sub_029eh      ;052b cd 9e 02
     call sub_0293h      ;052e cd 93 02
     call sub_0293h      ;0531 cd 93 02
-    ld bc,09b7h         ;0534 01 b7 09
+    ld bc,l09b7h        ;0534 01 b7 09
     call sub_029eh      ;0537 cd 9e 02
     ld a,(l0c3dh)       ;053a 3a 3d 0c
     ld l,a              ;053d 6f
@@ -537,7 +537,7 @@ l04feh:
     ld b,h              ;054d 44
     ld c,l              ;054e 4d
     call sub_02feh      ;054f cd fe 02
-    ld bc,09d2h         ;0552 01 d2 09
+    ld bc,l09d2h        ;0552 01 d2 09
     call sub_029eh      ;0555 cd 9e 02
 l0558h:
     ld a,(l0c3dh)       ;0558 3a 3d 0c
@@ -552,7 +552,7 @@ l0558h:
     ld (l0c42h),hl      ;0569 22 42 0c
     call sub_0293h      ;056c cd 93 02
     call sub_0293h      ;056f cd 93 02
-    ld bc,09dbh         ;0572 01 db 09
+    ld bc,l09dbh        ;0572 01 db 09
     call sub_029eh      ;0575 cd 9e 02
     call sub_01f2h      ;0578 cd f2 01
     ld a,(l0c3fh)       ;057b 3a 3f 0c
@@ -560,7 +560,7 @@ l0558h:
     jp nz,l064bh        ;0580 c2 4b 06
 l0583h:
     call sub_0293h      ;0583 cd 93 02
-    ld bc,09f8h         ;0586 01 f8 09
+    ld bc,l09f8h        ;0586 01 f8 09
     call sub_029eh      ;0589 cd 9e 02
     ld a,(l0c3dh)       ;058c 3a 3d 0c
     ld l,a              ;058f 6f
@@ -571,7 +571,7 @@ l0583h:
     ld b,h              ;0594 44
     ld c,l              ;0595 4d
     call sub_02feh      ;0596 cd fe 02
-    ld bc,0a14h         ;0599 01 14 0a
+    ld bc,l0a14h        ;0599 01 14 0a
     call sub_029eh      ;059c cd 9e 02
     call sub_01f2h      ;059f cd f2 01
     ld hl,(l0c48h)      ;05a2 2a 48 0c
@@ -590,7 +590,7 @@ l0583h:
     sbc a,d             ;05b7 9a
     jp m,l05c7h         ;05b8 fa c7 05
 l05bbh:
-    ld bc,0a19h         ;05bb 01 19 0a
+    ld bc,l0a19h        ;05bb 01 19 0a
     call sub_029eh      ;05be cd 9e 02
     call sub_0293h      ;05c1 cd 93 02
     jp l0583h           ;05c4 c3 83 05
@@ -616,14 +616,14 @@ l05cdh:
     jp nz,l0637h        ;05ef c2 37 06
 l05f2h:
     call sub_0293h      ;05f2 cd 93 02
-    ld bc,0a3fh         ;05f5 01 3f 0a
+    ld bc,l0a3fh        ;05f5 01 3f 0a
     call sub_029eh      ;05f8 cd 9e 02
     ld hl,(l0c40h)      ;05fb 2a 40 0c
     dec hl              ;05fe 2b
     ld b,h              ;05ff 44
     ld c,l              ;0600 4d
     call sub_02feh      ;0601 cd fe 02
-    ld bc,0a59h         ;0604 01 59 0a
+    ld bc,l0a59h        ;0604 01 59 0a
     call sub_029eh      ;0607 cd 9e 02
     call sub_01f2h      ;060a cd f2 01
     ld hl,(l0c48h)      ;060d 2a 48 0c
@@ -638,7 +638,7 @@ l05f2h:
     sbc a,h             ;061e 9c
     jp m,l062eh         ;061f fa 2e 06
 l0622h:
-    ld bc,0a5eh         ;0622 01 5e 0a
+    ld bc,l0a5eh        ;0622 01 5e 0a
     call sub_029eh      ;0625 cd 9e 02
     call sub_0293h      ;0628 cd 93 02
     jp l05f2h           ;062b c3 f2 05
@@ -659,11 +659,11 @@ l064bh:
     ld a,(l0c3fh)       ;064b 3a 3f 0c
     cp 59h              ;064e fe 59
     jp z,l065ch         ;0650 ca 5c 06
-    ld bc,0a79h         ;0653 01 79 0a
+    ld bc,l0a79h        ;0653 01 79 0a
     call sub_029eh      ;0656 cd 9e 02
     jp l0558h           ;0659 c3 58 05
 l065ch:
-    ld bc,0a91h         ;065c 01 91 0a
+    ld bc,l0a91h        ;065c 01 91 0a
     call sub_029eh      ;065f cd 9e 02
     call sub_0293h      ;0662 cd 93 02
     ld bc,l0aaeh        ;0665 01 ae 0a
@@ -706,7 +706,7 @@ l06aah:
     call sub_0173h      ;06b8 cd 73 01
     call sub_0293h      ;06bb cd 93 02
     call sub_0293h      ;06be cd 93 02
-    ld bc,0acch         ;06c1 01 cc 0a
+    ld bc,l0acch        ;06c1 01 cc 0a
     call sub_029eh      ;06c4 cd 9e 02
     ld c,27h            ;06c7 0e 27
     call sub_0118h      ;06c9 cd 18 01
@@ -778,7 +778,8 @@ l07aeh:
 l07c6h:
     db 01h
     db "0"
-    db 01
+l07c8h:
+    db 01h
     db "-"
 l07cah:
     db 26h
@@ -796,10 +797,10 @@ l0825h:
 l0869h:
     db 0ah
     db "hard disk."
-
+l0874h:
     db 18h
     db "Drive sizes supported : "
-
+l088dh:
     db 1ch
     db "A.   3  Mbyte      (191 cyl)"
 l08aah:
@@ -823,26 +824,37 @@ l093bh:
 l0952h:
     db 19h
     db "Which drive type (A-Z) ? "
+l096ch:
     db 11h
     db "How many heads ? "
+l097eh:
     db 15h
     db "How many cylinders ? "
+l0994h:
     db 0ah
     db "Drive has "
+l099fh:
     db 0bh
     db " heads and "
+l09abh:
     db 0bh
     db " cylinders."
+l09b7h:
     db 1ah
     db "The formatted capacity is "
+l09d2h:
     db 08h
     db " Kbytes."
+l09dbh:
     db 1ch
     db "Format all surfaces (Y/N) ? "
+l09f8h:
     db 1bh
     db "Format which surface (0 to "
+l0a14h:
     db 04h
     db ") ? "
+l0a19h:
     db 02h
     db "??"
 l0a1ch:
@@ -851,22 +863,28 @@ l0a1ch:
 l0a3bh:
     db 03h
     db " ? "
+l0a3fh:
     db 19h
     db "Format which track (0 to "
+l0a59h:
     db 04h
     db ") ? "
+l0a5eh:
     db 02h
     db "??"
 l0a61h:
     db 17h
     db "Please answer Y or N : "
+l0a79h:
     db 17h
     db "Please answer Y or N : "
+l0a91h:
     db 1ch
     db "Press return to format disk,"
 l0aaeh:
     db 1dh
     db "press control-C to abort ... "
+l0acch:
     db 0eh
     db "Formatting ..."
 l0adbh:
