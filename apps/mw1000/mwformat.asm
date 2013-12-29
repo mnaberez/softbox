@@ -142,7 +142,8 @@ l01eeh:
     ;PRINT
     call print_eol      ;01ee cd 93 02
     ret                 ;01f1 c9
-sub_01f2h:
+
+readline:
     ld hl,l0c4dh        ;01f2 21 4d 0c
     ld (hl),80h         ;01f5 36 80
     ld de,l0c4dh        ;01f7 11 4d 0c
@@ -403,7 +404,8 @@ l0397h:
 l03a0h:
     ld hl,(0006h)       ;03a0 2a 06 00
     ld sp,hl            ;03a3 f9
-l03a4h:
+
+ask_drv_typ:
     ;PRINT CHR$(26) ' Clear screen
     ld c,1ah
     call print_char
@@ -503,64 +505,77 @@ l03a4h:
     ld bc,which_type
     call print_str
 
-    call sub_01f2h      ;0442 cd f2 01
+    call readline       ;0442 cd f2 01
+
     ld a,(l0c3fh)       ;0445 3a 3f 0c
-    cp 41h              ;0448 fe 41
-    jp nz,l045bh        ;044a c2 5b 04
+    cp 'A'              ;Is it 'A': 3 Mbyte (191 cyl)?
+    jp nz,is_drv_type_b ;  No: jump to check for 'B'
+
     ld hl,l0c3dh        ;044d 21 3d 0c
     ld (hl),02h         ;0450 36 02
     ld hl,00bfh         ;0452 21 bf 00
     ld (l0c40h),hl      ;0455 22 40 0c
-    jp l04feh           ;0458 c3 fe 04
-l045bh:
+    jp got_drv_type     ;0458 c3 fe 04
+
+is_drv_type_b:
     ld a,(l0c3fh)       ;045b 3a 3f 0c
-    cp 42h              ;045e fe 42
-    jp nz,l0471h        ;0460 c2 71 04
+    cp 'B'              ;Is it 'B': 6 Mbyte (191 cyl)?
+    jp nz,is_drv_type_c ;  No: jump to check for 'C'
+
     ld hl,l0c3dh        ;0463 21 3d 0c
     ld (hl),04h         ;0466 36 04
     ld hl,00bfh         ;0468 21 bf 00
     ld (l0c40h),hl      ;046b 22 40 0c
-    jp l04feh           ;046e c3 fe 04
-l0471h:
+    jp got_drv_type     ;046e c3 fe 04
+
+is_drv_type_c:
     ld a,(l0c3fh)       ;0471 3a 3f 0c
-    cp 43h              ;0474 fe 43
-    jp nz,l0487h        ;0476 c2 87 04
+    cp 'C'              ;Is it 'C': 12 Mbyte (191 cyl)?
+    jp nz,is_drv_type_d ;  No: jump to check for 'D'
+
     ld hl,l0c3dh        ;0479 21 3d 0c
     ld (hl),08h         ;047c 36 08
     ld hl,00bfh         ;047e 21 bf 00
     ld (l0c40h),hl      ;0481 22 40 0c
-    jp l04feh           ;0484 c3 fe 04
-l0487h:
+    jp got_drv_type     ;0484 c3 fe 04
+
+is_drv_type_d:
     ld a,(l0c3fh)       ;0487 3a 3f 0c
-    cp 44h              ;048a fe 44
-    jp nz,l049dh        ;048c c2 9d 04
+    cp 'D'              ;Is it 'D': 5 Mbyte (320 cyl)?
+    jp nz,is_drv_type_e ;  No: jump to check for 'E'
+
     ld hl,l0c3dh        ;048f 21 3d 0c
     ld (hl),02h         ;0492 36 02
     ld hl,l0140h        ;0494 21 40 01
     ld (l0c40h),hl      ;0497 22 40 0c
-    jp l04feh           ;049a c3 fe 04
-l049dh:
+    jp got_drv_type     ;049a c3 fe 04
+
+is_drv_type_e:
     ld a,(l0c3fh)       ;049d 3a 3f 0c
-    cp 45h              ;04a0 fe 45
-    jp nz,l04b3h        ;04a2 c2 b3 04
+    cp 'E'              ;Is it 'E': 10 Mbyte (320 cyl)?
+    jp nz,is_drv_type_f ;  No: jump to check for 'F'
+
     ld hl,l0c3dh        ;04a5 21 3d 0c
     ld (hl),04h         ;04a8 36 04
     ld hl,l0140h        ;04aa 21 40 01
     ld (l0c40h),hl      ;04ad 22 40 0c
-    jp l04feh           ;04b0 c3 fe 04
-l04b3h:
+    jp got_drv_type     ;04b0 c3 fe 04
+
+is_drv_type_f:
     ld a,(l0c3fh)       ;04b3 3a 3f 0c
-    cp 46h              ;04b6 fe 46
-    jp nz,l04c9h        ;04b8 c2 c9 04
+    cp 'F'              ;Is it 'F': 15 Mbyte (320 cyl)?
+    jp nz,is_drv_type_z ;  No: jump to check for 'Z'
+
     ld hl,l0c3dh        ;04bb 21 3d 0c
     ld (hl),06h         ;04be 36 06
     ld hl,l0140h        ;04c0 21 40 01
     ld (l0c40h),hl      ;04c3 22 40 0c
-    jp l04feh           ;04c6 c3 fe 04
-l04c9h:
+    jp got_drv_type     ;04c6 c3 fe 04
+
+is_drv_type_z:
     ld a,(l0c3fh)       ;04c9 3a 3f 0c
-    cp 5ah              ;04cc fe 5a
-    jp nz,l04fbh        ;04ce c2 fb 04
+    cp 'Z'              ;Is it 'Z': None of the above?
+    jp nz,bad_drv_type  ;  No: bad drive type entered
 
     ;PRINT
     call print_eol
@@ -572,7 +587,7 @@ l04c9h:
     ld bc,num_heads
     call print_str
 
-    call sub_01f2h      ;04dd cd f2 01
+    call readline       ;04dd cd f2 01
     ld a,(l0c48h)       ;04e0 3a 48 0c
     ld (l0c3dh),a       ;04e3 32 3d 0c
 
@@ -583,13 +598,15 @@ l04c9h:
     ld bc,num_cylinders
     call print_str
 
-    call sub_01f2h      ;04ef cd f2 01
+    call readline       ;04ef cd f2 01
     ld hl,(l0c48h)      ;04f2 2a 48 0c
     ld (l0c40h),hl      ;04f5 22 40 0c
-    jp l04feh           ;04f8 c3 fe 04
-l04fbh:
-    jp l03a4h           ;04fb c3 a4 03
-l04feh:
+    jp got_drv_type     ;04f8 c3 fe 04
+
+bad_drv_type:
+    jp ask_drv_typ
+
+got_drv_type:
     ;PRINT CHR$(26) ' Clear screen
     ld c,1ah
     call print_char
@@ -676,9 +693,9 @@ l0558h:
     ld bc,all_surfaces
     call print_str
 
-    call sub_01f2h      ;0578 cd f2 01
+    call readline       ;0578 cd f2 01
     ld a,(l0c3fh)       ;057b 3a 3f 0c
-    cp 4eh              ;057e fe 4e
+    cp 'N'              ;057e fe 4e
     jp nz,l064bh        ;0580 c2 4b 06
 l0583h:
     ;PRINT
@@ -702,7 +719,7 @@ l0583h:
     ld bc,p_q_1
     call print_str
 
-    call sub_01f2h      ;059f cd f2 01
+    call readline       ;059f cd f2 01
     ld hl,(l0c48h)      ;05a2 2a 48 0c
     add hl,hl           ;05a5 29
     jp c,l05bbh         ;05a6 da bb 05
@@ -748,9 +765,9 @@ l05cdh:
     ld bc,q_1
     call print_str
 
-    call sub_01f2h      ;05e7 cd f2 01
+    call readline       ;05e7 cd f2 01
     ld a,(l0c3fh)       ;05ea 3a 3f 0c
-    cp 4eh              ;05ed fe 4e
+    cp 'N'              ;05ed fe 4e
     jp nz,l0637h        ;05ef c2 37 06
 l05f2h:
     ;PRINT
@@ -770,7 +787,7 @@ l05f2h:
     ld bc,p_q_2
     call print_str
 
-    call sub_01f2h      ;060a cd f2 01
+    call readline       ;060a cd f2 01
     ld hl,(l0c48h)      ;060d 2a 48 0c
     add hl,hl           ;0610 29
     jp c,l0622h         ;0611 da 22 06
@@ -795,7 +812,7 @@ l062eh:
     jp l0648h           ;0634 c3 48 06
 l0637h:
     ld a,(l0c3fh)       ;0637 3a 3f 0c
-    cp 59h              ;063a fe 59
+    cp 'Y'              ;063a fe 59
     jp z,l0648h         ;063c ca 48 06
 
     ;PRINT "Please answer Y or N : ";
@@ -807,7 +824,7 @@ l0648h:
     jp l065ch           ;0648 c3 5c 06
 l064bh:
     ld a,(l0c3fh)       ;064b 3a 3f 0c
-    cp 59h              ;064e fe 59
+    cp 'Y'              ;064e fe 59
     jp z,l065ch         ;0650 ca 5c 06
 
     ;PRINT "Please answer Y or N : ";
@@ -825,7 +842,7 @@ l065ch:
     ld bc,press_ctrl_c
     call print_str
 
-    call sub_01f2h      ;066b cd f2 01
+    call readline       ;066b cd f2 01
     ld c,42h            ;066e 0e 42
     call sub_0118h      ;0670 cd 18 01
     ld hl,0000h         ;0673 21 00 00
