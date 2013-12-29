@@ -174,7 +174,7 @@ l0233h:
     ld b,h              ;0258 44
     ld c,l              ;0259 4d
     ld de,000ah         ;025a 11 0a 00
-    call 0aech          ;025d cd ec 0a
+    call l0aech         ;025d cd ec 0a
     ld a,(l0cd0h)       ;0260 3a d0 0c
     ld l,a              ;0263 6f
     rla                 ;0264 17
@@ -529,7 +529,7 @@ l04feh:
     ld c,l              ;0541 4d
     ld hl,(l0c40h)      ;0542 2a 40 0c
     ex de,hl            ;0545 eb
-    call 0aech          ;0546 cd ec 0a
+    call l0aech         ;0546 cd ec 0a
     ex de,hl            ;0549 eb
     add hl,hl           ;054a 29
     add hl,hl           ;054b 29
@@ -872,8 +872,9 @@ l0aaeh:
 l0adbh:
     db 10h
     db "Format complete."
-    db 0afh
 
+l0aech:
+    xor a               ;0aec af
     ld h,a              ;0aed 67
     add a,b             ;0aee 80
     jp m,l0af9h         ;0aef fa f9 0a
