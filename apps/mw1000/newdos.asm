@@ -244,7 +244,7 @@ l02b1h:
     ld hl,(l30aah)      ;02b8 2a aa 30
     add hl,hl           ;02bb 29
     jp nc,l02d5h        ;02bc d2 d5 02
-    ld bc,l0b91h+2      ;02bf 01 93 0b
+    ld bc,l0b93h        ;02bf 01 93 0b
     call print_str      ;02c2 cd 32 02
     ld hl,(l30aah)      ;02c5 2a aa 30
     ld a,l              ;02c8 7d
@@ -341,7 +341,7 @@ l0338h:
     call print_str      ;036d cd 32 02
     call print_eol      ;0370 cd 27 02
     call print_eol      ;0373 cd 27 02
-    ld bc,0c01h         ;0376 01 01 0c
+    ld bc,l0c01h        ;0376 01 01 0c
     call print_str      ;0379 cd 32 02
     call print_eol      ;037c cd 27 02
     ld bc,l0c1eh        ;037f 01 1e 0c
@@ -421,7 +421,7 @@ l043fh:
     jp l0338h           ;043f c3 38 03
 l0442h:
     call print_eol      ;0442 cd 27 02
-    ld bc,0cc9h         ;0445 01 c9 0c
+    ld bc,l0cc9h        ;0445 01 c9 0c
     call print_str      ;0448 cd 32 02
     call print_eol      ;044b cd 27 02
     ld bc,l0cebh        ;044e 01 eb 0c
@@ -452,7 +452,7 @@ l0478h:
     ld (4034h),hl       ;0488 22 34 40
     jp l0497h           ;048b c3 97 04
 l048eh:
-    ld bc,0d0ah         ;048e 01 0a 0d
+    ld bc,l0d0ah        ;048e 01 0a 0d
     call print_str      ;0491 cd 32 02
     jp l0442h           ;0494 c3 42 04
 l0497h:
@@ -484,7 +484,7 @@ l0497h:
     ld (4007h),hl       ;04b8 22 07 40
 l04bbh:
     call print_eol      ;04bb cd 27 02
-    ld bc,0d22h         ;04be 01 22 0d
+    ld bc,l0d22h        ;04be 01 22 0d
     call print_str      ;04c1 cd 32 02
     call print_eol      ;04c4 cd 27 02
     ld bc,l0d47h        ;04c7 01 47 0d
@@ -508,7 +508,7 @@ l04f0h:
 l04f8h:
     ld c,1ah            ;04f8 0e 1a
     call print_char     ;04fa cd 19 02
-    ld bc,0d6fh         ;04fd 01 6f 0d
+    ld bc,l0d6fh        ;04fd 01 6f 0d
     call print_str      ;0500 cd 32 02
     call print_eol      ;0503 cd 27 02
     ld bc,0fff6h        ;0506 01 f6 ff
@@ -523,14 +523,14 @@ l04f8h:
     ld bc,l0db6h        ;051b 01 b6 0d
     call print_str      ;051e cd 32 02
     call print_eol      ;0521 cd 27 02
-    ld bc,0dd4h         ;0524 01 d4 0d
+    ld bc,l0dd4h        ;0524 01 d4 0d
     call print_str      ;0527 cd 32 02
     call print_eol      ;052a cd 27 02
     ld bc,l0dfdh        ;052d 01 fd 0d
     call print_str      ;0530 cd 32 02
     call print_eol      ;0533 cd 27 02
     call print_eol      ;0536 cd 27 02
-    ld bc,0e1ch         ;0539 01 1c 0e
+    ld bc,l0e1ch        ;0539 01 1c 0e
     call print_str      ;053c cd 32 02
     call print_eol      ;053f cd 27 02
     ld bc,l0e42h        ;0542 01 42 0e
@@ -553,7 +553,7 @@ l0568h:
     ld a,l              ;0571 7d
     or h                ;0572 b4
     jp z,l04f8h         ;0573 ca f8 04
-    ld bc,0e64h         ;0576 01 64 0e
+    ld bc,l0e64h        ;0576 01 64 0e
     call print_str      ;0579 cd 32 02
     call print_eol      ;057c cd 27 02
     ld bc,l0e8ah        ;057f 01 8a 0e
@@ -563,7 +563,7 @@ l0568h:
     call print_str      ;058b cd 32 02
     call print_eol      ;058e cd 27 02
     call print_eol      ;0591 cd 27 02
-    ld bc,0ed6h         ;0594 01 d6 0e
+    ld bc,l0ed6h        ;0594 01 d6 0e
     call print_str      ;0597 cd 32 02
     call print_eol      ;059a cd 27 02
     ld bc,l0efch        ;059d 01 fc 0e
@@ -579,7 +579,7 @@ l0568h:
     ld hl,(l3004h)      ;05bb 2a 04 30
     ld (4010h),hl       ;05be 22 10 40
     call print_eol      ;05c1 cd 27 02
-    ld bc,0f4eh         ;05c4 01 4e 0f
+    ld bc,l0f4eh        ;05c4 01 4e 0f
     call print_str      ;05c7 cd 32 02
     call sub_0186h      ;05ca cd 86 01
     ld hl,(l3004h)      ;05cd 2a 04 30
@@ -587,7 +587,7 @@ l0568h:
 l05d3h:
     jp l05dfh           ;05d3 c3 df 05
 l05d6h:
-    ld bc,0f6ch         ;05d6 01 6c 0f
+    ld bc,l0f6ch        ;05d6 01 6c 0f
     call print_str      ;05d9 cd 32 02
     jp l04bbh           ;05dc c3 bb 04
 l05dfh:
@@ -684,7 +684,7 @@ l05dfh:
     ld (hl),08h         ;067c 36 08
     ld c,1ah            ;067e 0e 1a
     call print_char     ;0680 cd 19 02
-    ld bc,0f84h         ;0683 01 84 0f
+    ld bc,l0f84h        ;0683 01 84 0f
     call print_str      ;0686 cd 32 02
     call print_eol      ;0689 cd 27 02
     ld bc,l0f9dh        ;068c 01 9d 0f
@@ -693,7 +693,7 @@ l05dfh:
     ld b,h              ;0695 44
     ld c,l              ;0696 4d
     call 0292h          ;0697 cd 92 02
-    ld bc,0fb9h         ;069a 01 b9 0f
+    ld bc,l0fb9h        ;069a 01 b9 0f
     call print_str      ;069d cd 32 02
     call print_eol      ;06a0 cd 27 02
     ld bc,l0fc1h        ;06a3 01 c1 0f
@@ -702,7 +702,7 @@ l05dfh:
     ld b,h              ;06ac 44
     ld c,l              ;06ad 4d
     call 0292h          ;06ae cd 92 02
-    ld bc,0fddh         ;06b1 01 dd 0f
+    ld bc,l0fddh        ;06b1 01 dd 0f
     call print_str      ;06b4 cd 32 02
     call print_eol      ;06b7 cd 27 02
     ld bc,l0fe5h        ;06ba 01 e5 0f
@@ -712,7 +712,7 @@ l05dfh:
     ld c,l              ;06c4 4d
     call 0292h          ;06c5 cd 92 02
     call print_eol      ;06c8 cd 27 02
-    ld bc,1001h         ;06cb 01 01 10
+    ld bc,l1001h        ;06cb 01 01 10
     call print_str      ;06ce cd 32 02
     ld hl,(400eh)       ;06d1 2a 0e 40
     ld b,h              ;06d4 44
@@ -734,7 +734,7 @@ l05dfh:
     ld bc,l1053h        ;06fc 01 53 10
     call print_str      ;06ff cd 32 02
     call print_eol      ;0702 cd 27 02
-    ld bc,1071h         ;0705 01 71 10
+    ld bc,l1071h        ;0705 01 71 10
     call print_str      ;0708 cd 32 02
     ld a,(l3001h)       ;070b 3a 01 30
     ld l,a              ;070e 6f
@@ -751,7 +751,7 @@ l05dfh:
     ld c,l              ;0723 4d
     call 0292h          ;0724 cd 92 02
     call print_eol      ;0727 cd 27 02
-    ld bc,10a9h         ;072a 01 a9 10
+    ld bc,l10a9h        ;072a 01 a9 10
     call print_str      ;072d cd 32 02
     ld a,(l3001h)       ;0730 3a 01 30
     ld l,a              ;0733 6f
@@ -773,7 +773,7 @@ l05dfh:
     ld c,l              ;0747 4d
     call 0292h          ;0748 cd 92 02
     call print_eol      ;074b cd 27 02
-    ld bc,10c5h         ;074e 01 c5 10
+    ld bc,l10c5h        ;074e 01 c5 10
     call print_str      ;0751 cd 32 02
     ld hl,(4034h)       ;0754 2a 34 40
     ld b,h              ;0757 44
@@ -794,7 +794,7 @@ l05dfh:
     ld c,e              ;0772 4b
     call 0292h          ;0773 cd 92 02
     call print_eol      ;0776 cd 27 02
-    ld bc,10fdh         ;0779 01 fd 10
+    ld bc,l10fdh        ;0779 01 fd 10
     call print_str      ;077c cd 32 02
     ld hl,(l301ah)      ;077f 2a 1a 30
     ld b,h              ;0782 44
@@ -831,7 +831,7 @@ l07cah:
     jp nz,l07b3h        ;07cf c2 b3 07
     call print_eol      ;07d2 cd 27 02
     call print_eol      ;07d5 cd 27 02
-    ld bc,117bh         ;07d8 01 7b 11
+    ld bc,l117bh        ;07d8 01 7b 11
     call print_str      ;07db cd 32 02
     call print_eol      ;07de cd 27 02
     ld de,0020h         ;07e1 11 20 00
