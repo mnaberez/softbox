@@ -1533,7 +1533,6 @@ l11b7h:
     db 1eh
     db "clearing direct access BAM ..."
 
-l11d6h:
     xor a               ;11d6 af
     ld (l1299h),a       ;11d7 32 99 12
     ld (l1297h),de      ;11da ed 53 97 12
@@ -1541,17 +1540,13 @@ l11d6h:
     ld l,c              ;11df 69
     push hl             ;11e0 e5
     ld a,21h            ;11e1 3e 21
-l11e3h:
     call sub_1228h      ;11e3 cd 28 12
-l11e6h:
     call sub_1261h      ;11e6 cd 61 12
     call sub_1245h      ;11e9 cd 45 12
-l11ech:
     pop hl              ;11ec e1
     ret nz              ;11ed c0
     ld a,41h            ;11ee 3e 41
     call sub_1228h      ;11f0 cd 28 12
-l11f3h:
     ld b,00h            ;11f3 06 00
 l11f5h:
     in a,(18h)          ;11f5 db 18
@@ -1559,7 +1554,6 @@ l11f5h:
     inc hl              ;11f8 23
     ex (sp),hl          ;11f9 e3
     ex (sp),hl          ;11fa e3
-l11fbh:
     djnz l11f5h         ;11fb 10 f8
     jp sub_1245h        ;11fd c3 45 12
 sub_1200h:
@@ -1570,11 +1564,9 @@ sub_1200h:
     ld l,c              ;1209 69
     ld a,42h            ;120a 3e 42
     call sub_1228h      ;120c cd 28 12
-l120fh:
     ld b,00h            ;120f 06 00
 l1211h:
     ld a,(hl)           ;1211 7e
-l1212h:
     out (18h),a         ;1212 d3 18
     inc hl              ;1214 23
     ex (sp),hl          ;1215 e3
@@ -1589,7 +1581,6 @@ l1212h:
 sub_1228h:
     ld b,a              ;1228 47
     xor a               ;1229 af
-l122ah:
     out (18h),a         ;122a d3 18
 l122ch:
     in a,(18h)          ;122c db 18
@@ -5097,19 +5088,15 @@ l13e2h:
     nop                 ;2029 00
     nop                 ;202a 00
     nop                 ;202b 00
-l202ch:
     nop                 ;202c 00
     nop                 ;202d 00
     nop                 ;202e 00
     nop                 ;202f 00
-l2030h:
     nop                 ;2030 00
     nop                 ;2031 00
-l2032h:
     nop                 ;2032 00
     nop                 ;2033 00
     nop                 ;2034 00
-l2035h:
     nop                 ;2035 00
     nop                 ;2036 00
     nop                 ;2037 00
@@ -8417,7 +8404,6 @@ l2035h:
     nop                 ;2d1d 00
     nop                 ;2d1e 00
     nop                 ;2d1f 00
-l2d20h:
     nop                 ;2d20 00
     nop                 ;2d21 00
     nop                 ;2d22 00
