@@ -3,10 +3,13 @@
 
     org 0100h
 
-    jp l03a0h           ;0100 c3 a0 03
-sub_0103h:
-    jp 0000h            ;0103 c3 00 00
-    ret                 ;0106 c9
+    jp start
+
+end:
+;Exit back to CP/M.
+    jp 0000h            ;Jump to CP/M warm start
+    ret
+
 sub_0107h:
     ld hl,l0c4ah        ;0107 21 4a 0c
     ld (hl),c           ;010a 71
@@ -427,7 +430,8 @@ l0397h:
     cp 05h              ;039a fe 05
     jp m,l0357h         ;039c fa 57 03
     ret                 ;039f c9
-l03a0h:
+
+start:
     ld hl,(0006h)       ;03a0 2a 06 00
     ld sp,hl            ;03a3 f9
 
@@ -1057,7 +1061,7 @@ l06eeh:
     call print_str
     call print_eol
 
-    call sub_0103h      ;071f cd 03 01
+    call end      ;071f cd 03 01
 
 drive_err_n:
     db 0dh
