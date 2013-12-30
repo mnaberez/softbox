@@ -539,10 +539,13 @@ ask_drv_typ:
     cp 'A'              ;Is it 'A': 3 Mbyte (191 cyl)?
     jp nz,is_drv_type_b ;  No: jump to check for 'B'
 
-    ld hl,l0c3dh        ;044d 21 3d 0c
-    ld (hl),02h         ;0450 36 02
-    ld hl,00bfh         ;0452 21 bf 00
-    ld (l0c40h),hl      ;0455 22 40 0c
+    ;heads = 2
+    ld hl,heads
+    ld (hl),2
+
+    ;cylinders = 191
+    ld hl,191
+    ld (cylinders),hl
 
     ;GOTO got_drv_type
     jp got_drv_type
@@ -553,10 +556,13 @@ is_drv_type_b:
     cp 'B'              ;Is it 'B': 6 Mbyte (191 cyl)?
     jp nz,is_drv_type_c ;  No: jump to check for 'C'
 
-    ld hl,l0c3dh        ;0463 21 3d 0c
-    ld (hl),04h         ;0466 36 04
-    ld hl,00bfh         ;0468 21 bf 00
-    ld (l0c40h),hl      ;046b 22 40 0c
+    ;heads = 4
+    ld hl,heads
+    ld (hl),4
+
+    ;cylinders = 191
+    ld hl,191
+    ld (cylinders),hl
 
     ;GOTO got_drv_type
     jp got_drv_type
@@ -567,10 +573,13 @@ is_drv_type_c:
     cp 'C'              ;Is it 'C': 12 Mbyte (191 cyl)?
     jp nz,is_drv_type_d ;  No: jump to check for 'D'
 
-    ld hl,l0c3dh        ;0479 21 3d 0c
-    ld (hl),08h         ;047c 36 08
-    ld hl,00bfh         ;047e 21 bf 00
-    ld (l0c40h),hl      ;0481 22 40 0c
+    ;heads = 8
+    ld hl,heads
+    ld (hl),8
+
+    ;cylinders = 191
+    ld hl,191
+    ld (cylinders),hl
 
     ;GOTO got_drv_type
     jp got_drv_type
@@ -581,10 +590,13 @@ is_drv_type_d:
     cp 'D'              ;Is it 'D': 5 Mbyte (320 cyl)?
     jp nz,is_drv_type_e ;  No: jump to check for 'E'
 
-    ld hl,l0c3dh        ;048f 21 3d 0c
-    ld (hl),02h         ;0492 36 02
-    ld hl,l0140h        ;0494 21 40 01
-    ld (l0c40h),hl      ;0497 22 40 0c
+    ;heads = 2
+    ld hl,heads
+    ld (hl),2
+
+    ;cylinders = 320
+    ld hl,320
+    ld (cylinders),hl
 
     ;GOTO got_drv_type
     jp got_drv_type
@@ -595,10 +607,13 @@ is_drv_type_e:
     cp 'E'              ;Is it 'E': 10 Mbyte (320 cyl)?
     jp nz,is_drv_type_f ;  No: jump to check for 'F'
 
-    ld hl,l0c3dh        ;04a5 21 3d 0c
-    ld (hl),04h         ;04a8 36 04
-    ld hl,l0140h        ;04aa 21 40 01
-    ld (l0c40h),hl      ;04ad 22 40 0c
+    ;heads = 4
+    ld hl,heads
+    ld (hl),4
+
+    ;cylinders = 320
+    ld hl,320
+    ld (cylinders),hl
 
     ;GOTO got_drv_type
     jp got_drv_type
@@ -609,10 +624,13 @@ is_drv_type_f:
     cp 'F'              ;Is it 'F': 15 Mbyte (320 cyl)?
     jp nz,is_drv_type_z ;  No: jump to check for 'Z'
 
-    ld hl,l0c3dh        ;04bb 21 3d 0c
-    ld (hl),06h         ;04be 36 06
-    ld hl,l0140h        ;04c0 21 40 01
-    ld (l0c40h),hl      ;04c3 22 40 0c
+    ;heads = 6
+    ld hl,heads
+    ld (hl),6
+
+    ;cylinders = 320
+    ld hl,320
+    ld (cylinders),hl
 
     ;GOTO got_drv_type
     jp got_drv_type
@@ -636,8 +654,9 @@ is_drv_type_z:
     ;GOSUB readline
     call readline
 
-    ld a,(l0c48h)       ;04e0 3a 48 0c
-    ld (l0c3dh),a       ;04e3 32 3d 0c
+    ;heads = l0c48h
+    ld a,(l0c48h)
+    ld (heads),a
 
     ;PRINT
     call print_eol
@@ -649,8 +668,9 @@ is_drv_type_z:
     ;GOSUB readline
     call readline
 
-    ld hl,(l0c48h)      ;04f2 2a 48 0c
-    ld (l0c40h),hl      ;04f5 22 40 0c
+    ;cylinders = l0c48h
+    ld hl,(l0c48h)
+    ld (cylinders),hl
 
     ;GOTO got_drv_type
     jp got_drv_type
@@ -674,7 +694,7 @@ got_drv_type:
     ld bc,drive_has
     call print_str
 
-    ld a,(l0c3dh)       ;050f 3a 3d 0c
+    ld a,(heads)        ;050f 3a 3d 0c
     ld l,a              ;0512 6f
     rla                 ;0513 17
     sbc a,a             ;0514 9f
@@ -686,13 +706,13 @@ got_drv_type:
     ld bc,heads_and
     call print_str
 
-    ld hl,(l0c40h)      ;0520 2a 40 0c
+    ld hl,(cylinders)   ;0520 2a 40 0c
     ld b,h              ;0523 44
     ld c,l              ;0524 4d
     call sub_02feh      ;0525 cd fe 02
 
     ;PRINT " cylinders."
-    ld bc,cylinders
+    ld bc,cylinders_
     call print_str
     call print_eol
 
@@ -703,13 +723,13 @@ got_drv_type:
     ld bc,capacity_is
     call print_str
 
-    ld a,(l0c3dh)       ;053a 3a 3d 0c
+    ld a,(heads)        ;053a 3a 3d 0c
     ld l,a              ;053d 6f
     rla                 ;053e 17
     sbc a,a             ;053f 9f
     ld b,a              ;0540 47
     ld c,l              ;0541 4d
-    ld hl,(l0c40h)      ;0542 2a 40 0c
+    ld hl,(cylinders)   ;0542 2a 40 0c
     ex de,hl            ;0545 eb
     call l0aech         ;0546 cd ec 0a
     ex de,hl            ;0549 eb
@@ -725,11 +745,11 @@ got_drv_type:
     call print_str
 
 l0558h:
-    ld a,(l0c3dh)       ;0558 3a 3d 0c
+    ld a,(heads)        ;0558 3a 3d 0c
     dec a               ;055b 3d
     or 80h              ;055c f6 80
     ld (l0c3eh),a       ;055e 32 3e 0c
-    ld hl,(l0c40h)      ;0561 2a 40 0c
+    ld hl,(cylinders)   ;0561 2a 40 0c
     dec hl              ;0564 2b
     ld a,h              ;0565 7c
     or 80h              ;0566 f6 80
@@ -762,7 +782,7 @@ l0583h:
     ld bc,which_surface
     call print_str
 
-    ld a,(l0c3dh)       ;058c 3a 3d 0c
+    ld a,(heads)        ;058c 3a 3d 0c
     ld l,a              ;058f 6f
     rla                 ;0590 17
     sbc a,a             ;0591 9f
@@ -782,7 +802,7 @@ l0583h:
     ld hl,(l0c48h)      ;05a2 2a 48 0c
     add hl,hl           ;05a5 29
     jp c,l05bbh         ;05a6 da bb 05
-    ld a,(l0c3dh)       ;05a9 3a 3d 0c
+    ld a,(heads)        ;05a9 3a 3d 0c
     ld l,a              ;05ac 6f
     rla                 ;05ad 17
     sbc a,a             ;05ae 9f
@@ -843,7 +863,7 @@ l05f2h:
     ld bc,which_track
     call print_str
 
-    ld hl,(l0c40h)      ;05fb 2a 40 0c
+    ld hl,(cylinders)   ;05fb 2a 40 0c
     dec hl              ;05fe 2b
     ld b,h              ;05ff 44
     ld c,l              ;0600 4d
@@ -862,7 +882,7 @@ l05f2h:
     ld hl,(l0c48h)      ;0614 2a 48 0c
     ld a,l              ;0617 7d
     ex de,hl            ;0618 eb
-    ld hl,(l0c40h)      ;0619 2a 40 0c
+    ld hl,(cylinders)   ;0619 2a 40 0c
     sub l               ;061c 95
     ld a,d              ;061d 7a
     sbc a,h             ;061e 9c
@@ -873,33 +893,46 @@ l0622h:
     call print_str
     call print_eol
 
-    jp l05f2h           ;062b c3 f2 05
+    ;GOTO l05f2h
+    jp l05f2h
+
 l062eh:
     ld hl,(l0c48h)      ;062e 2a 48 0c
     ld (l0c42h),hl      ;0631 22 42 0c
-    jp l0648h           ;0634 c3 48 06
+
+    ;GOTO l0648h
+    jp l0648h
+
 l0637h:
-    ld a,(l0c3fh)       ;0637 3a 3f 0c
-    cp 'Y'              ;063a fe 59
-    jp z,l0648h         ;063c ca 48 06
+    ;IF l0c3fh = 'Y' THEN GOTO l0648h
+    ld a,(l0c3fh)
+    cp 'Y'
+    jp z,l0648h
 
     ;PRINT "Please answer Y or N : ";
     ld bc,pls_yn_1
     call print_str
 
-    jp l05cdh           ;0645 c3 cd 05
+    ;GOTO l05cdh
+    jp l05cdh
+
 l0648h:
-    jp l065ch           ;0648 c3 5c 06
+    ;GOTO l065ch
+    jp l065ch
+
 l064bh:
-    ld a,(l0c3fh)       ;064b 3a 3f 0c
-    cp 'Y'              ;064e fe 59
-    jp z,l065ch         ;0650 ca 5c 06
+    ;IF l0c3fh = &H59 THEN GOTO l065ch
+    ld a,(l0c3fh)
+    cp 'Y'
+    jp z,l065ch
 
     ;PRINT "Please answer Y or N : ";
     ld bc,pls_yn_2
     call print_str
 
-    jp l0558h           ;0659 c3 58 05
+    ;GOTO l0558h
+    jp l0558h
+
 l065ch:
     ;PRINT "Press return to format disk,"
     ld bc,press_return
@@ -963,17 +996,24 @@ l06aah:
 
     ld c,27h            ;06c7 0e 27
     call sub_0118h      ;06c9 cd 18 01
+
     ld c,00h            ;06cc 0e 00
     call sub_0107h      ;06ce cd 07 01
+
     ld hl,l0c3eh        ;06d1 21 3e 0c
     ld c,(hl)           ;06d4 4e
     call sub_0107h      ;06d5 cd 07 01
+
     ld hl,l0c42h        ;06d8 21 42 0c
     ld c,(hl)           ;06db 4e
     call sub_0107h      ;06dc cd 07 01
+
     ld b,08h            ;06df 06 08
     ld hl,(l0c42h)      ;06e1 2a 42 0c
-    jp l06eeh           ;06e4 c3 ee 06
+
+    ;GOTO l06eeh
+    jp l06eeh
+
 l06e7h:
     or a                ;06e7 b7
     ld a,h              ;06e8 7c
@@ -982,19 +1022,25 @@ l06e7h:
     ld a,l              ;06eb 7d
     rra                 ;06ec 1f
     ld l,a              ;06ed 6f
+
 l06eeh:
     dec b               ;06ee 05
     jp p,l06e7h         ;06ef f2 e7 06
     ld c,l              ;06f2 4d
     call sub_0107h      ;06f3 cd 07 01
+
     ld c,1fh            ;06f6 0e 1f
     call sub_0107h      ;06f8 cd 07 01
+
     ld c,00h            ;06fb 0e 00
     call sub_0107h      ;06fd cd 07 01
+
     ld c,00h            ;0700 0e 00
     call sub_0107h      ;0702 cd 07 01
+
     ld c,00h            ;0705 0e 00
     call sub_0107h      ;0707 cd 07 01
+
     call sub_0152h      ;070a cd 52 01
 
     ;GOSUB check_error
@@ -1100,7 +1146,7 @@ drive_has:
 heads_and:
     db 0bh
     db " heads and "
-cylinders:
+cylinders_:
     db 0bh
     db " cylinders."
 capacity_is:
@@ -1451,15 +1497,18 @@ l0c34h:
     ret                 ;0c3b c9
 l0c3ch:
     nop                 ;0c3c 00
-l0c3dh:
-    nop                 ;0c3d 00
+
+heads:
+    db 0
+
 l0c3eh:
     nop                 ;0c3e 00
 l0c3fh:
     nop                 ;0c3f 00
-l0c40h:
-    nop                 ;0c40 00
-    nop                 ;0c41 00
+
+cylinders:
+    dw 0
+
 l0c42h:
     nop                 ;0c42 00
     nop                 ;0c43 00
