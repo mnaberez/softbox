@@ -435,7 +435,7 @@ start:
     ld hl,(0006h)       ;03a0 2a 06 00
     ld sp,hl            ;03a3 f9
 
-ask_drv_typ:
+ask_drv_type:
     ;PRINT CHR$(26) ' Clear screen
     ld c,1ah
     call print_char
@@ -680,8 +680,8 @@ is_drv_type_z:
     jp got_drv_type
 
 bad_drv_type:
-    ;GOTO ask_drv_typ
-    jp ask_drv_typ
+    ;GOTO ask_drv_type
+    jp ask_drv_type
 
 got_drv_type:
     ;PRINT CHR$(26) ' Clear screen
