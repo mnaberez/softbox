@@ -13,11 +13,13 @@ sub_0107h:
     jp nz,l0110h        ;010c c2 10 01
     ret                 ;010f c9
 l0110h:
+    ;PRINT "DRIVE ERROR #"
     ld bc,l0aedh        ;0110 01 ed 0a
     call print_str      ;0113 cd 32 02
     ld a,(l3000h)       ;0116 3a 00 30
     cp 40h              ;0119 fe 40
     jp nz,l0127h        ;011b c2 27 01
+    ;PRINT "40 - header write error"
     ld bc,l0afbh        ;011e 01 fb 0a
     call print_str      ;0121 cd 32 02
     jp l0182h           ;0124 c3 82 01
@@ -25,6 +27,7 @@ l0127h:
     ld a,(l3000h)       ;0127 3a 00 30
     cp 42h              ;012a fe 42
     jp nz,l0138h        ;012c c2 38 01
+    ;PRINT "42 - header read error"
     ld bc,l0b13h        ;012f 01 13 0b
     call print_str      ;0132 cd 32 02
     jp l0182h           ;0135 c3 82 01
@@ -33,6 +36,7 @@ l0138h:
     cp 44h              ;013b fe 44
     jp nz,l0149h        ;013d c2 49 01
 l0140h:
+    ;PRINT "44 - data read error"
     ld bc,l0b2ah        ;0140 01 2a 0b
     call print_str      ;0143 cd 32 02
     jp l0182h           ;0146 c3 82 01
@@ -40,6 +44,7 @@ l0149h:
     ld a,(l3000h)       ;0149 3a 00 30
     cp 46h              ;014c fe 46
     jp nz,l015ah        ;014e c2 5a 01
+    ;PRINT "46 - write fault"
     ld bc,l0b3fh        ;0151 01 3f 0b
     call print_str      ;0154 cd 32 02
     jp l0182h           ;0157 c3 82 01
@@ -47,6 +52,7 @@ l015ah:
     ld a,(l3000h)       ;015a 3a 00 30
     cp 47h              ;015d fe 47
     jp nz,l016bh        ;015f c2 6b 01
+    ;PRINT "47 - disk not ready"
     ld bc,l0b50h        ;0162 01 50 0b
     call print_str      ;0165 cd 32 02
     jp l0182h           ;0168 c3 82 01
@@ -54,10 +60,12 @@ l016bh:
     ld a,(l3000h)       ;016b 3a 00 30
     cp 49h              ;016e fe 49
     jp nz,l017ch        ;0170 c2 7c 01
+    ;PRINT "49 - illegal command"
     ld bc,l0b64h        ;0173 01 64 0b
     call print_str      ;0176 cd 32 02
     jp l0182h           ;0179 c3 82 01
 l017ch:
+    ;PRINT "xx - unknown error code"
     ld bc,l0b79h        ;017c 01 79 0b
     call print_str      ;017f cd 32 02
 l0182h:
@@ -227,6 +235,7 @@ l028ch:
     ld a,l              ;029b 7d
     or h                ;029c b4
     jp nz,l02a9h        ;029d c2 a9 02
+    ;PRINT "0"
     ld bc,l0b91h        ;02a0 01 91 0b
     call print_str      ;02a3 cd 32 02
     jp l02b1h           ;02a6 c3 b1 02
@@ -244,6 +253,7 @@ l02b1h:
     ld hl,(l30aah)      ;02b8 2a aa 30
     add hl,hl           ;02bb 29
     jp nc,l02d5h        ;02bc d2 d5 02
+    ;PRINT "-"
     ld bc,l0b93h        ;02bf 01 93 0b
     call print_str      ;02c2 cd 32 02
     ld hl,(l30aah)      ;02c5 2a aa 30
@@ -322,45 +332,57 @@ l0334h:
 l0338h:
     ld c,1ah            ;0338 0e 1a
     call print_char     ;033a cd 19 02
+    ;PRINT "HardBox configuration program"
     ld bc,l0b95h        ;033d 01 95 0b
     call print_str      ;0340 cd 32 02
     call print_eol      ;0343 cd 27 02
+    ;PRINT "For Mini-Winchester"
     ld bc,l0bb3h        ;0346 01 b3 0b
     call print_str      ;0349 cd 32 02
     call print_eol      ;034c cd 27 02
+    ;PRINT "--- ---------------"
     ld bc,l0bc7h        ;034f 01 c7 0b
     call print_str      ;0352 cd 32 02
     call print_eol      ;0355 cd 27 02
     call print_eol      ;0358 cd 27 02
     call print_eol      ;035b cd 27 02
+    ;PRINT "Revision 2.1"
     ld bc,l0bdbh        ;035e 01 db 0b
     call print_str      ;0361 cd 32 02
     call print_eol      ;0364 cd 27 02
     call print_eol      ;0367 cd 27 02
+    ;PRINT "Drive sizes supported : "
     ld bc,l0be8h        ;036a 01 e8 0b
     call print_str      ;036d cd 32 02
     call print_eol      ;0370 cd 27 02
     call print_eol      ;0373 cd 27 02
+    ;PRINT "A.   3  Mbyte      (191 cyl)"
     ld bc,l0c01h        ;0376 01 01 0c
     call print_str      ;0379 cd 32 02
     call print_eol      ;037c cd 27 02
+    ;PRINT "B.   6  Mbyte      (191 cyl)"
     ld bc,l0c1eh        ;037f 01 1e 0c
     call print_str      ;0382 cd 32 02
     call print_eol      ;0385 cd 27 02
+    ;PRINT "C.   12 Mbyte      (191 cyl)"
     ld bc,l0c3bh        ;0388 01 3b 0c
     call print_str      ;038b cd 32 02
     call print_eol      ;038e cd 27 02
+    ;PRINT "D.   5  Mbyte      (320 cyl)"
     ld bc,l0c58h        ;0391 01 58 0c
     call print_str      ;0394 cd 32 02
     call print_eol      ;0397 cd 27 02
+    ;PRINT "E.   10 Mbyte      (320 cyl)"
     ld bc,l0c75h        ;039a 01 75 0c
     call print_str      ;039d cd 32 02
     call print_eol      ;03a0 cd 27 02
+    ;PRINT "F.   15 Mbyte      (320 cyl)"
     ld bc,l0c92h        ;03a3 01 92 0c
     call print_str      ;03a6 cd 32 02
     call print_eol      ;03a9 cd 27 02
     call print_eol      ;03ac cd 27 02
     call print_eol      ;03af cd 27 02
+    ;PRINT "Which drive type (A-F) ? "
     ld bc,l0cafh        ;03b2 01 af 0c
     call print_str      ;03b5 cd 32 02
     call sub_0186h      ;03b8 cd 86 01
@@ -421,9 +443,11 @@ l043fh:
     jp l0338h           ;043f c3 38 03
 l0442h:
     call print_eol      ;0442 cd 27 02
+    ;PRINT "Configure entire drive as HardBox"
     ld bc,l0cc9h        ;0445 01 c9 0c
     call print_str      ;0448 cd 32 02
     call print_eol      ;044b cd 27 02
+    ;PRINT "or just the last half (E/H) ? "
     ld bc,l0cebh        ;044e 01 eb 0c
     call print_str      ;0451 cd 32 02
     call sub_0186h      ;0454 cd 86 01
@@ -452,6 +476,7 @@ l0478h:
     ld (4034h),hl       ;0488 22 34 40
     jp l0497h           ;048b c3 97 04
 l048eh:
+    ;PRINT "Please answer E or H : "
     ld bc,l0d0ah        ;048e 01 0a 0d
     call print_str      ;0491 cd 32 02
     jp l0442h           ;0494 c3 42 04
@@ -484,9 +509,11 @@ l0497h:
     ld (4007h),hl       ;04b8 22 07 40
 l04bbh:
     call print_eol      ;04bb cd 27 02
+    ;PRINT "Do you wish to use the direct access"
     ld bc,l0d22h        ;04be 01 22 0d
     call print_str      ;04c1 cd 32 02
     call print_eol      ;04c4 cd 27 02
+    ;PRINT "commands B-W, B-R, U1, U2 etc. (Y/N) ? "
     ld bc,l0d47h        ;04c7 01 47 0d
     call print_str      ;04ca cd 32 02
     call sub_0186h      ;04cd cd 86 01
@@ -508,6 +535,7 @@ l04f0h:
 l04f8h:
     ld c,1ah            ;04f8 0e 1a
     call print_char     ;04fa cd 19 02
+    ;PRINT "Any number of kilobytes from zero to"
     ld bc,l0d6fh        ;04fd 01 6f 0d
     call print_str      ;0500 cd 32 02
     call print_eol      ;0503 cd 27 02
@@ -517,22 +545,28 @@ l04f8h:
     ld b,h              ;050d 44
     ld c,l              ;050e 4d
     call 0292h          ;050f cd 92 02
+    ;PRINT "may be reserved for direct access"
     ld bc,l0d94h        ;0512 01 94 0d
     call print_str      ;0515 cd 32 02
     call print_eol      ;0518 cd 27 02
+    ;PRINT "rather than sequential files."
     ld bc,l0db6h        ;051b 01 b6 0d
     call print_str      ;051e cd 32 02
     call print_eol      ;0521 cd 27 02
+    ;PRINT "Alternatively for emulation of twin 8050"
     ld bc,l0dd4h        ;0524 01 d4 0d
     call print_str      ;0527 cd 32 02
     call print_eol      ;052a cd 27 02
+    ;PRINT "floppies you may enter an 'E'."
     ld bc,l0dfdh        ;052d 01 fd 0d
     call print_str      ;0530 cd 32 02
     call print_eol      ;0533 cd 27 02
     call print_eol      ;0536 cd 27 02
+    ;PRINT "Amount of space to reserve for direct"
     ld bc,l0e1ch        ;0539 01 1c 0e
     call print_str      ;053c cd 32 02
     call print_eol      ;053f cd 27 02
+    ;PRINT "access commands (in kilobytes) ? "
     ld bc,l0e42h        ;0542 01 42 0e
     call print_str      ;0545 cd 32 02
     call sub_0186h      ;0548 cd 86 01
@@ -553,32 +587,40 @@ l0568h:
     ld a,l              ;0571 7d
     or h                ;0572 b4
     jp z,l04f8h         ;0573 ca f8 04
+    ;PRINT "You now need to specify the number of"
     ld bc,l0e64h        ;0576 01 64 0e
     call print_str      ;0579 cd 32 02
     call print_eol      ;057c cd 27 02
+    ;PRINT "apparent sectors per track and tracks"
     ld bc,l0e8ah        ;057f 01 8a 0e
     call print_str      ;0582 cd 32 02
     call print_eol      ;0585 cd 27 02
+    ;PRINT "per drive when using direct access : "
     ld bc,l0eb0h        ;0588 01 b0 0e
     call print_str      ;058b cd 32 02
     call print_eol      ;058e cd 27 02
     call print_eol      ;0591 cd 27 02
+    ;PRINT "For example to emulate an 8050 unit :"
     ld bc,l0ed6h        ;0594 01 d6 0e
     call print_str      ;0597 cd 32 02
     call print_eol      ;059a cd 27 02
+    ;PRINT "   sectors per track = 29"
     ld bc,l0efch        ;059d 01 fc 0e
     call print_str      ;05a0 cd 32 02
     call print_eol      ;05a3 cd 27 02
+    ;PRINT "   tracks per drive = 77"
     ld bc,l0f16h        ;05a6 01 16 0f
     call print_str      ;05a9 cd 32 02
     call print_eol      ;05ac cd 27 02
     call print_eol      ;05af cd 27 02
+    ;PRINT "Number of sectors per track ? "
     ld bc,l0f2fh        ;05b2 01 2f 0f
     call print_str      ;05b5 cd 32 02
     call sub_0186h      ;05b8 cd 86 01
     ld hl,(l3004h)      ;05bb 2a 04 30
     ld (4010h),hl       ;05be 22 10 40
     call print_eol      ;05c1 cd 27 02
+    ;PRINT "Number of tracks per drive ? "
     ld bc,l0f4eh        ;05c4 01 4e 0f
     call print_str      ;05c7 cd 32 02
     call sub_0186h      ;05ca cd 86 01
@@ -587,6 +629,7 @@ l0568h:
 l05d3h:
     jp l05dfh           ;05d3 c3 df 05
 l05d6h:
+    ;PRINT "Please answer Y or N : "
     ld bc,l0f6ch        ;05d6 01 6c 0f
     call print_str      ;05d9 cd 32 02
     jp l04bbh           ;05dc c3 bb 04
@@ -684,27 +727,33 @@ l05dfh:
     ld (hl),08h         ;067c 36 08
     ld c,1ah            ;067e 0e 1a
     call print_char     ;0680 cd 19 02
+    ;PRINT "Logical specifications :"
     ld bc,l0f84h        ;0683 01 84 0f
     call print_str      ;0686 cd 32 02
     call print_eol      ;0689 cd 27 02
+    ;PRINT "User area size :           "
     ld bc,l0f9dh        ;068c 01 9d 0f
     call print_str      ;068f cd 32 02
     ld hl,(4007h)       ;0692 2a 07 40
     ld b,h              ;0695 44
     ld c,l              ;0696 4d
     call 0292h          ;0697 cd 92 02
+    ;PRINT " Kbytes"
     ld bc,l0fb9h        ;069a 01 b9 0f
     call print_str      ;069d cd 32 02
     call print_eol      ;06a0 cd 27 02
+    ;PRINT "Direct access size :       "
     ld bc,l0fc1h        ;06a3 01 c1 0f
     call print_str      ;06a6 cd 32 02
     ld hl,(400ch)       ;06a9 2a 0c 40
     ld b,h              ;06ac 44
     ld c,l              ;06ad 4d
     call 0292h          ;06ae cd 92 02
+    ;PRINT " Kbytes"
     ld bc,l0fddh        ;06b1 01 dd 0f
     call print_str      ;06b4 cd 32 02
     call print_eol      ;06b7 cd 27 02
+    ;PRINT "Direct sectors per track : "
     ld bc,l0fe5h        ;06ba 01 e5 0f
     call print_str      ;06bd cd 32 02
     ld hl,(4010h)       ;06c0 2a 10 40
@@ -712,6 +761,7 @@ l05dfh:
     ld c,l              ;06c4 4d
     call 0292h          ;06c5 cd 92 02
     call print_eol      ;06c8 cd 27 02
+    ;PRINT "Direct tracks per drive :  "
     ld bc,l1001h        ;06cb 01 01 10
     call print_str      ;06ce cd 32 02
     ld hl,(400eh)       ;06d1 2a 0e 40
@@ -719,6 +769,7 @@ l05dfh:
     ld c,l              ;06d5 4d
     call 0292h          ;06d6 cd 92 02
     call print_eol      ;06d9 cd 27 02
+    ;PRINT "Max number of files :      "
     ld bc,l101dh        ;06dc 01 1d 10
     call print_str      ;06df cd 32 02
     ld hl,(400ah)       ;06e2 2a 0a 40
@@ -728,12 +779,15 @@ l05dfh:
     call print_eol      ;06ea cd 27 02
     call print_eol      ;06ed cd 27 02
     call print_eol      ;06f0 cd 27 02
+    ;PRINT "Physical specifications :"
     ld bc,l1039h        ;06f3 01 39 10
     call print_str      ;06f6 cd 32 02
     call print_eol      ;06f9 cd 27 02
+    ;PRINT "Sectors per track :        32"
     ld bc,l1053h        ;06fc 01 53 10
     call print_str      ;06ff cd 32 02
     call print_eol      ;0702 cd 27 02
+    ;PRINT "Tracks per cylinder :      "
     ld bc,l1071h        ;0705 01 71 10
     call print_str      ;0708 cd 32 02
     ld a,(l3001h)       ;070b 3a 01 30
@@ -744,6 +798,7 @@ l05dfh:
     ld c,l              ;0712 4d
     call 0292h          ;0713 cd 92 02
     call print_eol      ;0716 cd 27 02
+    ;PRINT "Total cylinders on drive : "
     ld bc,l108dh        ;0719 01 8d 10
     call print_str      ;071c cd 32 02
     ld hl,(l3006h)      ;071f 2a 06 30
@@ -751,6 +806,7 @@ l05dfh:
     ld c,l              ;0723 4d
     call 0292h          ;0724 cd 92 02
     call print_eol      ;0727 cd 27 02
+    ;PRINT "Total kbyte capacity :     "
     ld bc,l10a9h        ;072a 01 a9 10
     call print_str      ;072d cd 32 02
     ld a,(l3001h)       ;0730 3a 01 30
@@ -773,6 +829,7 @@ l05dfh:
     ld c,l              ;0747 4d
     call 0292h          ;0748 cd 92 02
     call print_eol      ;074b cd 27 02
+    ;PRINT "First user cylinder :      "
     ld bc,l10c5h        ;074e 01 c5 10
     call print_str      ;0751 cd 32 02
     ld hl,(4034h)       ;0754 2a 34 40
@@ -780,6 +837,7 @@ l05dfh:
     ld c,l              ;0758 4d
     call 0292h          ;0759 cd 92 02
     call print_eol      ;075c cd 27 02
+    ;PRINT "Number of user cylinders : "
     ld bc,l10e1h        ;075f 01 e1 10
     call print_str      ;0762 cd 32 02
     ld hl,(l3006h)      ;0765 2a 06 30
@@ -794,6 +852,7 @@ l05dfh:
     ld c,e              ;0772 4b
     call 0292h          ;0773 cd 92 02
     call print_eol      ;0776 cd 27 02
+    ;PRINT "User area starts at :      "
     ld bc,l10fdh        ;0779 01 fd 10
     call print_str      ;077c cd 32 02
     ld hl,(l301ah)      ;077f 2a 1a 30
@@ -802,22 +861,27 @@ l05dfh:
     call 0292h          ;0784 cd 92 02
     call print_eol      ;0787 cd 27 02
     call print_eol      ;078a cd 27 02
+    ;PRINT "WARNING :  This command will destroy all"
     ld bc,l1119h        ;078d 01 19 11
     call print_str      ;0790 cd 32 02
     call print_eol      ;0793 cd 27 02
+    ;PRINT "data on the"
     ld bc,l1142h        ;0796 01 42 11
     call print_str      ;0799 cd 32 02
     ld a,(l3003h)       ;079c 3a 03 30
     cp 01h              ;079f fe 01
     jp nz,l07aah        ;07a1 c2 aa 07
+    ;PRINT " second half of the"
     ld bc,l114eh        ;07a4 01 4e 11
     call print_str      ;07a7 cd 32 02
 l07aah:
+    ;PRINT " drive"
     ld bc,l1162h        ;07aa 01 62 11
     call print_str      ;07ad cd 32 02
     call print_eol      ;07b0 cd 27 02
 l07b3h:
     call print_eol      ;07b3 cd 27 02
+    ;PRINT "Continue (Y/N) ? "
     ld bc,l1169h        ;07b6 01 69 11
     call print_str      ;07b9 cd 32 02
     call sub_0186h      ;07bc cd 86 01
@@ -831,6 +895,7 @@ l07cah:
     jp nz,l07b3h        ;07cf c2 b3 07
     call print_eol      ;07d2 cd 27 02
     call print_eol      ;07d5 cd 27 02
+    ;PRINT "Writing new configuration data ..."
     ld bc,l117bh        ;07d8 01 7b 11
     call print_str      ;07db cd 32 02
     call print_eol      ;07de cd 27 02
@@ -838,6 +903,7 @@ l07cah:
     ld bc,4000h         ;07e4 01 00 40
     call sub_1200h      ;07e7 cd 00 12
     call sub_0107h      ;07ea cd 07 01
+    ;PRINT "Formatting directory ..."
     ld bc,l119eh        ;07ed 01 9e 11
     call print_str      ;07f0 cd 32 02
     call print_eol      ;07f3 cd 27 02
@@ -1044,6 +1110,7 @@ l0981h:
     ld a,l              ;0992 7d
     or h                ;0993 b4
     jp z,l0aeah         ;0994 ca ea 0a
+    ;PRINT "clearing direct access BAM ..."
     ld bc,l11b7h        ;0997 01 b7 11
     call print_str      ;099a cd 32 02
     call print_eol      ;099d cd 27 02
