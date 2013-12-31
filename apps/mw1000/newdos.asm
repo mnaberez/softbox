@@ -71,7 +71,7 @@ l017ch:
 l0182h:
     call print_eol      ;0182 cd 27 02
     ret                 ;0185 c9
-sub_0186h:
+readline:
     ld hl,l301eh        ;0186 21 1e 30
     ld (hl),80h         ;0189 36 80
     ld de,l301eh        ;018b 11 1e 30
@@ -411,7 +411,9 @@ ask_drv_type:
     ;PRINT "Which drive type (A-F) ? "
     ld bc,l0cafh
     call print_str
-    call sub_0186h
+
+    ;GOSUB readline
+    call readline
 
     ;IF l3002h <> &H41 THEN GOTO is_drv_type_b
     ld a,(l3002h)
@@ -527,7 +529,10 @@ got_drv_type:
     ;PRINT "or just the last half (E/H) ? "
     ld bc,l0cebh        ;044e 01 eb 0c
     call print_str      ;0451 cd 32 02
-    call sub_0186h      ;0454 cd 86 01
+
+    ;GOSUB readline
+    call readline
+
     ld a,(l3002h)       ;0457 3a 02 30
     cp 48h              ;045a fe 48
     jp nz,l0478h        ;045c c2 78 04
@@ -593,7 +598,10 @@ l04bbh:
     ;PRINT "commands B-W, B-R, U1, U2 etc. (Y/N) ? "
     ld bc,l0d47h        ;04c7 01 47 0d
     call print_str      ;04ca cd 32 02
-    call sub_0186h      ;04cd cd 86 01
+
+    ;GOSUB readline
+    call readline
+
     ld hl,0000h         ;04d0 21 00 00
     ld (400ch),hl       ;04d3 22 0c 40
     ld (4010h),hl       ;04d6 22 10 40
@@ -646,7 +654,10 @@ l04f8h:
     ;PRINT "access commands (in kilobytes) ? "
     ld bc,l0e42h        ;0542 01 42 0e
     call print_str      ;0545 cd 32 02
-    call sub_0186h      ;0548 cd 86 01
+
+    ;GOSUB readline
+    call readline
+
     ld a,(l3002h)       ;054b 3a 02 30
     cp 45h              ;054e fe 45
     jp nz,l0568h        ;0550 c2 68 05
@@ -693,14 +704,20 @@ l0568h:
     ;PRINT "Number of sectors per track ? "
     ld bc,l0f2fh        ;05b2 01 2f 0f
     call print_str      ;05b5 cd 32 02
-    call sub_0186h      ;05b8 cd 86 01
+
+    ;GOSUB readline
+    call readline
+
     ld hl,(l3004h)      ;05bb 2a 04 30
     ld (4010h),hl       ;05be 22 10 40
     call print_eol      ;05c1 cd 27 02
     ;PRINT "Number of tracks per drive ? "
     ld bc,l0f4eh        ;05c4 01 4e 0f
     call print_str      ;05c7 cd 32 02
-    call sub_0186h      ;05ca cd 86 01
+
+    ;GOSUB readline
+    call readline
+
     ld hl,(l3004h)      ;05cd 2a 04 30
     ld (400eh),hl       ;05d0 22 0e 40
 l05d3h:
@@ -711,7 +728,7 @@ l05d6h:
     call print_str      ;05d9 cd 32 02
     jp l04bbh           ;05dc c3 bb 04
 l05dfh:
-    ld a,(heads)       ;05df 3a 01 30
+    ld a,(heads)        ;05df 3a 01 30
     ld l,a              ;05e2 6f
     rla                 ;05e3 17
     sbc a,a             ;05e4 9f
@@ -961,7 +978,10 @@ l07b3h:
     ;PRINT "Continue (Y/N) ? "
     ld bc,l1169h        ;07b6 01 69 11
     call print_str      ;07b9 cd 32 02
-    call sub_0186h      ;07bc cd 86 01
+
+    ;GOSUB readline
+    call readline
+
     ld a,(l3002h)       ;07bf 3a 02 30
     cp 4eh              ;07c2 fe 4e
     jp nz,l07cah        ;07c4 c2 ca 07
