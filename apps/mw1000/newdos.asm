@@ -763,24 +763,31 @@ l04f8h:
     cp 'E'
     jp nz,l0568h
 
-    ld hl,045dh         ;0553 21 5d 04
-    ld (400ch),hl       ;0556 22 0c 40
-    ld hl,001dh         ;0559 21 1d 00
-    ld (4010h),hl       ;055c 22 10 40
-    ld hl,004dh         ;055f 21 4d 00
-    ld (400eh),hl       ;0562 22 0e 40
+    ;REM User selected 'E' for 8050 emulation
+
+    ld hl,1117
+    ld (400ch),hl       ;direct access size = 1117
+
+    ld hl,29
+    ld (4010h),hl       ;sectors per track = 29
+
+    ld hl,77
+    ld (400eh),hl       ;tracks per drive = 77
 
     ;GOTO l05d3h
     jp l05d3h
 
 l0568h:
+    ;REM User did not select 8050 emulation
+
     ld hl,(l3004h)      ;0568 2a 04 30
     ld (400ch),hl       ;056b 22 0c 40
 
-    ld hl,(400ch)       ;056e 2a 0c 40
-    ld a,l              ;0571 7d
-    or h                ;0572 b4
-    jp z,l04f8h         ;0573 ca f8 04
+    ;IF &H400C = 0 THEN GOTO l04f8h
+    ld hl,(400ch)
+    ld a,l
+    or h
+    jp z,l04f8h
 
     ;PRINT "You now need to specify the number of"
     ld bc,l0e64h
@@ -907,6 +914,7 @@ l05dfh:
     ld (hl),00h         ;0639 36 00
     ld hl,4012h         ;063b 21 12 40
     ld (hl),00h         ;063e 36 00
+
     ld hl,4023h         ;0640 21 23 40
     ld (hl),'H'         ;0643 36 48
     inc hl              ;0645 23
@@ -939,47 +947,64 @@ l05dfh:
     ld (hl),' '         ;066d 36 20
     inc hl              ;066f 23
     ld (hl),' '         ;0670 36 20
+
     ld a,(heads)        ;0672 3a 01 30
     dec a               ;0675 3d
     ld (4033h),a        ;0676 32 33 40
-    ld hl,4036h         ;0679 21 36 40
-    ld (hl),08h         ;067c 36 08
-    ld c,1ah            ;067e 0e 1a
-    call print_char     ;0680 cd 19 02
+
+    ;POKE &H4036, 8 ' IEEE-488 primary address
+    ld hl,4036h
+    ld (hl),08h
+
+    ;PRINT CHR$(26);
+    ld c,1ah
+    call print_char
+
     ;PRINT "Logical specifications :"
-    ld bc,l0f84h        ;0683 01 84 0f
-    call print_str      ;0686 cd 32 02
-    call print_eol      ;0689 cd 27 02
+    ld bc,l0f84h
+    call print_str
+    call print_eol
+
     ;PRINT "User area size :           "
-    ld bc,l0f9dh        ;068c 01 9d 0f
-    call print_str      ;068f cd 32 02
+    ld bc,l0f9dh
+    call print_str
+
     ld hl,(4007h)       ;0692 2a 07 40
     ld b,h              ;0695 44
     ld c,l              ;0696 4d
     call 0292h          ;0697 cd 92 02
+
     ;PRINT " Kbytes"
-    ld bc,l0fb9h        ;069a 01 b9 0f
-    call print_str      ;069d cd 32 02
-    call print_eol      ;06a0 cd 27 02
+    ld bc,l0fb9h
+    call print_str
+    call print_eol
+
     ;PRINT "Direct access size :       "
-    ld bc,l0fc1h        ;06a3 01 c1 0f
-    call print_str      ;06a6 cd 32 02
+    ld bc,l0fc1h
+    call print_str
+
     ld hl,(400ch)       ;06a9 2a 0c 40
     ld b,h              ;06ac 44
     ld c,l              ;06ad 4d
     call 0292h          ;06ae cd 92 02
+
     ;PRINT " Kbytes"
-    ld bc,l0fddh        ;06b1 01 dd 0f
-    call print_str      ;06b4 cd 32 02
-    call print_eol      ;06b7 cd 27 02
+    ld bc,l0fddh
+    call print_str
+    call print_eol
+
     ;PRINT "Direct sectors per track : "
-    ld bc,l0fe5h        ;06ba 01 e5 0f
-    call print_str      ;06bd cd 32 02
+    ld bc,l0fe5h
+    call print_str
+
     ld hl,(4010h)       ;06c0 2a 10 40
     ld b,h              ;06c3 44
     ld c,l              ;06c4 4d
     call 0292h          ;06c5 cd 92 02
+
+    ;PRINT
     call print_eol      ;06c8 cd 27 02
+
     ;PRINT "Direct tracks per drive :  "
     ld bc,l1001h        ;06cb 01 01 10
     call print_str      ;06ce cd 32 02
@@ -987,7 +1012,10 @@ l05dfh:
     ld b,h              ;06d4 44
     ld c,l              ;06d5 4d
     call 0292h          ;06d6 cd 92 02
-    call print_eol      ;06d9 cd 27 02
+
+    ;PRINT
+    call print_eol
+
     ;PRINT "Max number of files :      "
     ld bc,l101dh        ;06dc 01 1d 10
     call print_str      ;06df cd 32 02
@@ -995,20 +1023,30 @@ l05dfh:
     ld b,h              ;06e5 44
     ld c,l              ;06e6 4d
     call 0292h          ;06e7 cd 92 02
-    call print_eol      ;06ea cd 27 02
-    call print_eol      ;06ed cd 27 02
-    call print_eol      ;06f0 cd 27 02
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
     ;PRINT "Physical specifications :"
-    ld bc,l1039h        ;06f3 01 39 10
-    call print_str      ;06f6 cd 32 02
-    call print_eol      ;06f9 cd 27 02
+    ld bc,l1039h
+    call print_str
+    call print_eol
+
     ;PRINT "Sectors per track :        32"
-    ld bc,l1053h        ;06fc 01 53 10
-    call print_str      ;06ff cd 32 02
-    call print_eol      ;0702 cd 27 02
-    ;PRINT "Tracks per cylinder :      "
-    ld bc,l1071h        ;0705 01 71 10
-    call print_str      ;0708 cd 32 02
+    ld bc,l1053h
+    call print_str
+    call print_eol
+
+    ;PRINT "Tracks per cylinder :      ";
+    ld bc,l1071h
+    call print_str
+
     ld a,(heads)        ;070b 3a 01 30
     ld l,a              ;070e 6f
     rla                 ;070f 17
@@ -1016,19 +1054,27 @@ l05dfh:
     ld b,a              ;0711 47
     ld c,l              ;0712 4d
     call 0292h          ;0713 cd 92 02
-    call print_eol      ;0716 cd 27 02
-    ;PRINT "Total cylinders on drive : "
-    ld bc,l108dh        ;0719 01 8d 10
-    call print_str      ;071c cd 32 02
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Total cylinders on drive : ";
+    ld bc,l108dh
+    call print_str
+
     ld hl,(cylinders)   ;071f 2a 06 30
     ld b,h              ;0722 44
     ld c,l              ;0723 4d
     call 0292h          ;0724 cd 92 02
-    call print_eol      ;0727 cd 27 02
-    ;PRINT "Total kbyte capacity :     "
-    ld bc,l10a9h        ;072a 01 a9 10
-    call print_str      ;072d cd 32 02
-    ld a,(heads)       ;0730 3a 01 30
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Total kbyte capacity :     ";
+    ld bc,l10a9h
+    call print_str
+
+    ld a,(heads)        ;0730 3a 01 30
     ld l,a              ;0733 6f
     rla                 ;0734 17
     sbc a,a             ;0735 9f
@@ -1047,18 +1093,26 @@ l05dfh:
     ld b,h              ;0746 44
     ld c,l              ;0747 4d
     call 0292h          ;0748 cd 92 02
-    call print_eol      ;074b cd 27 02
+
+    ;PRINT
+    call print_eol
+
     ;PRINT "First user cylinder :      "
-    ld bc,l10c5h        ;074e 01 c5 10
-    call print_str      ;0751 cd 32 02
+    ld bc,l10c5h
+    call print_str
+
     ld hl,(4034h)       ;0754 2a 34 40
     ld b,h              ;0757 44
     ld c,l              ;0758 4d
     call 0292h          ;0759 cd 92 02
-    call print_eol      ;075c cd 27 02
-    ;PRINT "Number of user cylinders : "
-    ld bc,l10e1h        ;075f 01 e1 10
-    call print_str      ;0762 cd 32 02
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Number of user cylinders : ";
+    ld bc,l10e1h
+    call print_str
+
     ld hl,(cylinders)   ;0765 2a 06 30
     ld a,l              ;0768 7d
     ex de,hl            ;0769 eb
@@ -1070,68 +1124,95 @@ l05dfh:
     ld b,a              ;0771 47
     ld c,e              ;0772 4b
     call 0292h          ;0773 cd 92 02
+
+    ;PRINT
     call print_eol      ;0776 cd 27 02
-    ;PRINT "User area starts at :      "
-    ld bc,l10fdh        ;0779 01 fd 10
-    call print_str      ;077c cd 32 02
+
+    ;PRINT "User area starts at :      ";
+    ld bc,l10fdh
+    call print_str
+
     ld hl,(l301ah)      ;077f 2a 1a 30
     ld b,h              ;0782 44
     ld c,l              ;0783 4d
     call 0292h          ;0784 cd 92 02
-    call print_eol      ;0787 cd 27 02
-    call print_eol      ;078a cd 27 02
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
     ;PRINT "WARNING :  This command will destroy all"
-    ld bc,l1119h        ;078d 01 19 11
-    call print_str      ;0790 cd 32 02
-    call print_eol      ;0793 cd 27 02
-    ;PRINT "data on the"
-    ld bc,l1142h        ;0796 01 42 11
-    call print_str      ;0799 cd 32 02
-    ld a,(l3003h)       ;079c 3a 03 30
-    cp 01h              ;079f fe 01
-    jp nz,l07aah        ;07a1 c2 aa 07
+    ld bc,l1119h
+    call print_str
+    call print_eol
+
+    ;PRINT "data on the";
+    ld bc,l1142h
+    call print_str
+
+    ;IF l3003h <> 1 THEN GOTO l07aah
+    ld a,(l3003h)
+    cp 01h
+    jp nz,l07aah
+
     ;PRINT " second half of the"
-    ld bc,l114eh        ;07a4 01 4e 11
-    call print_str      ;07a7 cd 32 02
+    ld bc,l114eh
+    call print_str
+
 l07aah:
     ;PRINT " drive"
-    ld bc,l1162h        ;07aa 01 62 11
-    call print_str      ;07ad cd 32 02
-    call print_eol      ;07b0 cd 27 02
+    ld bc,l1162h
+    call print_str
+    call print_eol
+
 l07b3h:
-    call print_eol      ;07b3 cd 27 02
-    ;PRINT "Continue (Y/N) ? "
-    ld bc,l1169h        ;07b6 01 69 11
-    call print_str      ;07b9 cd 32 02
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Continue (Y/N) ? ";
+    ld bc,l1169h
+    call print_str
 
     ;GOSUB readline
     call readline
 
-    ld a,(l3002h)       ;07bf 3a 02 30
-    cp 4eh              ;07c2 fe 4e
-    jp nz,l07cah        ;07c4 c2 ca 07
+    ;IF l3002h <> &H4E THEN GOTO l07cah
+    ld a,(l3002h)
+    cp 'N'
+    jp nz,l07cah
 
     ;END
     call end
 
 l07cah:
-    ld a,(l3002h)       ;07ca 3a 02 30
-    cp 59h              ;07cd fe 59
-    jp nz,l07b3h        ;07cf c2 b3 07
-    call print_eol      ;07d2 cd 27 02
-    call print_eol      ;07d5 cd 27 02
+    ;IF l3002h <> &H59 THEN GOTO l07b3h
+    ld a,(l3002h)
+    cp 'Y'
+    jp nz,l07b3h
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
     ;PRINT "Writing new configuration data ..."
-    ld bc,l117bh        ;07d8 01 7b 11
-    call print_str      ;07db cd 32 02
-    call print_eol      ;07de cd 27 02
+    ld bc,l117bh
+    call print_str
+    call print_eol
+
     ld de,0020h         ;07e1 11 20 00
     ld bc,4000h         ;07e4 01 00 40
-    call sub_1200h      ;07e7 cd 00 12
+    call mw_write      ;07e7 cd 00 12
     call check_error
+
     ;PRINT "Formatting directory ..."
-    ld bc,l119eh        ;07ed 01 9e 11
-    call print_str      ;07f0 cd 32 02
-    call print_eol      ;07f3 cd 27 02
+    ld bc,l119eh
+    call print_str
+    call print_eol
+
     ld hl,0000h         ;07f6 21 00 00
     ld (l3016h),hl      ;07f9 22 16 30
     jp l08feh           ;07fc c3 fe 08
@@ -1267,7 +1348,7 @@ l08feh:
     ld hl,(l301ah)      ;0909 2a 1a 30
     ex de,hl            ;090c eb
     ld bc,7000h         ;090d 01 00 70
-    call sub_1200h      ;0910 cd 00 12
+    call mw_write      ;0910 cd 00 12
     call check_error
     ld hl,0000h         ;0916 21 00 00
     ld (l3016h),hl      ;0919 22 16 30
@@ -1315,9 +1396,9 @@ l095fh:
     add hl,de           ;096a 19
     ex de,hl            ;096b eb
     ld bc,7000h         ;096c 01 00 70
-    call sub_1200h      ;096f cd 00 12
+    call mw_write      ;096f cd 00 12
     call check_error
-    ld c,2eh            ;0975 0e 2e
+    ld c,'.'            ;0975 0e 2e
     call print_char     ;0977 cd 19 02
     ld hl,(l3016h)      ;097a 2a 16 30
     inc hl              ;097d 23
@@ -1335,10 +1416,12 @@ l0981h:
     ld a,l              ;0992 7d
     or h                ;0993 b4
     jp z,l0aeah         ;0994 ca ea 0a
+
     ;PRINT "clearing direct access BAM ..."
-    ld bc,l11b7h        ;0997 01 b7 11
-    call print_str      ;099a cd 32 02
-    call print_eol      ;099d cd 27 02
+    ld bc,l11b7h
+    call print_str
+    call print_eol
+
     ld hl,(400ah)       ;09a0 2a 0a 40
     ld (l3012h),hl      ;09a3 22 12 30
     ld c,08h            ;09a6 0e 08
@@ -1538,9 +1621,9 @@ l0abeh:
     add hl,de           ;0ac5 19
     ex de,hl            ;0ac6 eb
     ld bc,7000h         ;0ac7 01 00 70
-    call sub_1200h      ;0aca cd 00 12
+    call mw_write      ;0aca cd 00 12
     call check_error
-    ld c,2eh            ;0ad0 0e 2e
+    ld c,'.'            ;0ad0 0e 2e
     call print_char     ;0ad2 cd 19 02
     ld hl,(l3016h)      ;0ad5 2a 16 30
     inc hl              ;0ad8 23
@@ -1827,6 +1910,9 @@ l11b7h:
     db 1eh
     db "clearing direct access BAM ..."
 
+; Start of Unknown Library ==================================================
+
+mw_read:
     xor a               ;11d6 af
     ld (l1299h),a       ;11d7 32 99 12
     ld (l1297h),de      ;11da ed 53 97 12
@@ -1834,13 +1920,13 @@ l11b7h:
     ld l,c              ;11df 69
     push hl             ;11e0 e5
     ld a,21h            ;11e1 3e 21
-    call sub_1228h      ;11e3 cd 28 12
-    call sub_1261h      ;11e6 cd 61 12
-    call sub_1245h      ;11e9 cd 45 12
+    call mw_sub_1228h   ;11e3 cd 28 12
+    call mw_sub_1261h      ;11e6 cd 61 12
+    call mw_sub_1245h   ;11e9 cd 45 12
     pop hl              ;11ec e1
     ret nz              ;11ed c0
     ld a,41h            ;11ee 3e 41
-    call sub_1228h      ;11f0 cd 28 12
+    call mw_sub_1228h   ;11f0 cd 28 12
     ld b,00h            ;11f3 06 00
 l11f5h:
     in a,(18h)          ;11f5 db 18
@@ -1849,15 +1935,16 @@ l11f5h:
     ex (sp),hl          ;11f9 e3
     ex (sp),hl          ;11fa e3
     djnz l11f5h         ;11fb 10 f8
-    jp sub_1245h        ;11fd c3 45 12
-sub_1200h:
+    jp mw_sub_1245h     ;11fd c3 45 12
+
+mw_write:
     xor a               ;1200 af
     ld (l1299h),a       ;1201 32 99 12
     ld (l1297h),de      ;1204 ed 53 97 12
     ld h,b              ;1208 60
     ld l,c              ;1209 69
     ld a,42h            ;120a 3e 42
-    call sub_1228h      ;120c cd 28 12
+    call mw_sub_1228h   ;120c cd 28 12
     ld b,00h            ;120f 06 00
 l1211h:
     ld a,(hl)           ;1211 7e
@@ -1866,13 +1953,14 @@ l1211h:
     ex (sp),hl          ;1215 e3
     ex (sp),hl          ;1216 e3
     djnz l1211h         ;1217 10 f8
-    call sub_1245h      ;1219 cd 45 12
+    call mw_sub_1245h   ;1219 cd 45 12
     ret nz              ;121c c0
     ld a,22h            ;121d 3e 22
-    call sub_1228h      ;121f cd 28 12
-    call sub_1261h      ;1222 cd 61 12
-    jp sub_1245h        ;1225 c3 45 12
-sub_1228h:
+    call mw_sub_1228h   ;121f cd 28 12
+    call mw_sub_1261h      ;1222 cd 61 12
+    jp mw_sub_1245h     ;1225 c3 45 12
+
+mw_sub_1228h:
     ld b,a              ;1228 47
     xor a               ;1229 af
     out (18h),a         ;122a d3 18
@@ -1893,7 +1981,8 @@ l1241h:
     nop                 ;1241 00
     djnz l1241h         ;1242 10 fd
     ret                 ;1244 c9
-sub_1245h:
+
+mw_sub_1245h:
     ld a,0ffh           ;1245 3e ff
     out (18h),a         ;1247 d3 18
 l1249h:
@@ -1913,7 +2002,8 @@ l1252h:
     out (18h),a         ;125d d3 18
     pop af              ;125f f1
     ret                 ;1260 c9
-sub_1261h:
+
+mw_sub_1261h:
     xor a               ;1261 af
     out (18h),a         ;1262 d3 18
     ld hl,(l1297h)      ;1264 2a 97 12
@@ -1945,11 +2035,15 @@ l127ah:
     out (18h),a         ;1292 d3 18
     out (18h),a         ;1294 d3 18
     ret                 ;1296 c9
+
 l1297h:
     nop                 ;1297 00
     nop                 ;1298 00
 l1299h:
     nop                 ;1299 00
+
+; End of Unknown Library ====================================================
+
 sub_129ah:
     xor a               ;129a af
     ld h,a              ;129b 67
