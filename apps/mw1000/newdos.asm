@@ -20,7 +20,7 @@ check_error:
     ret
 
 got_error:
-    ;PRINT "DRIVE ERROR #"
+    ;PRINT "DRIVE ERROR #";
     ld bc,l0aedh
     call print_str
 
@@ -374,7 +374,7 @@ start:
     ld sp,hl            ;0337 f9
 
 ask_drv_type:
-    ;PRINT CHR$(26) ' Clear screen
+    ;PRINT CHR$(26); ' Clear screen
     ld c,1ah
     call print_char
 
@@ -451,7 +451,7 @@ ask_drv_type:
     ;PRINT
     call print_eol
 
-    ;PRINT "Which drive type (A-F) ? "
+    ;PRINT "Which drive type (A-F) ? ";
     ld bc,l0cafh
     call print_str
 
@@ -609,13 +609,15 @@ ask_hbox_conf:
     ld h,b              ;0470 60
     ld l,c              ;0471 69
     ld (4034h),hl       ;0472 22 34 40
-    jp l0497h           ;0475 c3 97 04
+
+    ;GOTO got_hbox_conf
+    jp got_hbox_conf
 
 not_half_hbox:
-    ;IF l3002h <> &H45 THEN GOTO bad_conf_hbox
+    ;IF l3002h <> &H45 THEN GOTO bad_hbox_conf
     ld a,(l3002h)
     cp 'E'              ;Is it 'E': use entire drive for HardBox?
-    jp nz,bad_conf_hbox ;  No: jump to bad_conf_hbox
+    jp nz,bad_hbox_conf ;  No: jump to bad_hbox_conf
 
     ;REM User selected 'E' for use entire drive for HardBox
 
@@ -623,9 +625,9 @@ not_half_hbox:
     ld (hl),00h         ;0483 36 00
     ld hl,0001h         ;0485 21 01 00
     ld (4034h),hl       ;0488 22 34 40
-    jp l0497h           ;048b c3 97 04
+    jp got_hbox_conf    ;048b c3 97 04
 
-bad_conf_hbox:
+bad_hbox_conf:
     ;PRINT "Please answer E or H : "
     ld bc,l0d0ah
     call print_str
@@ -633,7 +635,7 @@ bad_conf_hbox:
     ;GOTO ask_hbox_conf
     jp ask_hbox_conf
 
-l0497h:
+got_hbox_conf:
     ld a,(heads)        ;0497 3a 01 30
     ld l,a              ;049a 6f
     rla                 ;049b 17
@@ -660,15 +662,19 @@ l0497h:
     add hl,hl           ;04b6 29
     add hl,hl           ;04b7 29
     ld (4007h),hl       ;04b8 22 07 40
-l04bbh:
+
+ask_direct:
+    ;PRINT
     call print_eol      ;04bb cd 27 02
+
     ;PRINT "Do you wish to use the direct access"
-    ld bc,l0d22h        ;04be 01 22 0d
-    call print_str      ;04c1 cd 32 02
-    call print_eol      ;04c4 cd 27 02
+    ld bc,l0d22h
+    call print_str
+    call print_eol
+
     ;PRINT "commands B-W, B-R, U1, U2 etc. (Y/N) ? "
-    ld bc,l0d47h        ;04c7 01 47 0d
-    call print_str      ;04ca cd 32 02
+    ld bc,l0d47h
+    call print_str
 
     ;GOSUB readline
     call readline
@@ -677,127 +683,175 @@ l04bbh:
     ld (400ch),hl       ;04d3 22 0c 40
     ld (4010h),hl       ;04d6 22 10 40
     ld (400eh),hl       ;04d9 22 0e 40
-    ld a,(l3002h)       ;04dc 3a 02 30
-    cp 4eh              ;04df fe 4e
-    jp nz,l04f0h        ;04e1 c2 f0 04
+
+    ;IF l3002h <> &H4E THEN GOTO l04f0h
+    ld a,(l3002h)
+    cp 'N'
+    jp nz,l04f0h
+
+    ;REM User selected 'N' for no direct access
+
     ld (400ch),hl       ;04e4 22 0c 40
     ld (4010h),hl       ;04e7 22 10 40
     ld (400eh),hl       ;04ea 22 0e 40
-    jp l05dfh           ;04ed c3 df 05
+
+    ;GOTO l05dfh
+    jp l05dfh
+
 l04f0h:
-    ld a,(l3002h)       ;04f0 3a 02 30
-    cp 59h              ;04f3 fe 59
-    jp nz,l05d6h        ;04f5 c2 d6 05
+    ;IF l3002h <> &H59 THEN GOTO l05d6h
+    ld a,(l3002h)
+    cp 'Y'
+    jp nz,l05d6h
+
+    ;REM User selected 'Y' for use direct access
+
 l04f8h:
-    ld c,1ah            ;04f8 0e 1a
-    call print_char     ;04fa cd 19 02
+    ;PRINT CHR$(26)
+    ld c,1ah
+    call print_char
+
     ;PRINT "Any number of kilobytes from zero to"
-    ld bc,l0d6fh        ;04fd 01 6f 0d
-    call print_str      ;0500 cd 32 02
-    call print_eol      ;0503 cd 27 02
+    ld bc,l0d6fh
+    call print_str
+    call print_eol
+
     ld bc,0fff6h        ;0506 01 f6 ff
     ld hl,(4007h)       ;0509 2a 07 40
     add hl,bc           ;050c 09
     ld b,h              ;050d 44
     ld c,l              ;050e 4d
     call 0292h          ;050f cd 92 02
+
     ;PRINT "may be reserved for direct access"
-    ld bc,l0d94h        ;0512 01 94 0d
-    call print_str      ;0515 cd 32 02
-    call print_eol      ;0518 cd 27 02
+    ld bc,l0d94h
+    call print_str
+    call print_eol
+
     ;PRINT "rather than sequential files."
-    ld bc,l0db6h        ;051b 01 b6 0d
-    call print_str      ;051e cd 32 02
-    call print_eol      ;0521 cd 27 02
+    ld bc,l0db6h
+    call print_str
+    call print_eol
+
     ;PRINT "Alternatively for emulation of twin 8050"
-    ld bc,l0dd4h        ;0524 01 d4 0d
-    call print_str      ;0527 cd 32 02
-    call print_eol      ;052a cd 27 02
+    ld bc,l0dd4h
+    call print_str
+    call print_eol
+
     ;PRINT "floppies you may enter an 'E'."
-    ld bc,l0dfdh        ;052d 01 fd 0d
-    call print_str      ;0530 cd 32 02
-    call print_eol      ;0533 cd 27 02
-    call print_eol      ;0536 cd 27 02
+    ld bc,l0dfdh
+    call print_str
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
     ;PRINT "Amount of space to reserve for direct"
-    ld bc,l0e1ch        ;0539 01 1c 0e
-    call print_str      ;053c cd 32 02
-    call print_eol      ;053f cd 27 02
-    ;PRINT "access commands (in kilobytes) ? "
-    ld bc,l0e42h        ;0542 01 42 0e
-    call print_str      ;0545 cd 32 02
+    ld bc,l0e1ch
+    call print_str
+    call print_eol
+
+    ;PRINT "access commands (in kilobytes) ? ";
+    ld bc,l0e42h
+    call print_str
 
     ;GOSUB readline
     call readline
 
-    ld a,(l3002h)       ;054b 3a 02 30
-    cp 45h              ;054e fe 45
-    jp nz,l0568h        ;0550 c2 68 05
+    ;IF l3002h <> &H45 THEN GOTO l0568h
+    ld a,(l3002h)
+    cp 'E'
+    jp nz,l0568h
+
     ld hl,045dh         ;0553 21 5d 04
     ld (400ch),hl       ;0556 22 0c 40
     ld hl,001dh         ;0559 21 1d 00
     ld (4010h),hl       ;055c 22 10 40
     ld hl,004dh         ;055f 21 4d 00
     ld (400eh),hl       ;0562 22 0e 40
-    jp l05d3h           ;0565 c3 d3 05
+
+    ;GOTO l05d3h
+    jp l05d3h
+
 l0568h:
     ld hl,(l3004h)      ;0568 2a 04 30
     ld (400ch),hl       ;056b 22 0c 40
+
     ld hl,(400ch)       ;056e 2a 0c 40
     ld a,l              ;0571 7d
     or h                ;0572 b4
     jp z,l04f8h         ;0573 ca f8 04
+
     ;PRINT "You now need to specify the number of"
-    ld bc,l0e64h        ;0576 01 64 0e
-    call print_str      ;0579 cd 32 02
-    call print_eol      ;057c cd 27 02
+    ld bc,l0e64h
+    call print_str
+    call print_eol
+
     ;PRINT "apparent sectors per track and tracks"
-    ld bc,l0e8ah        ;057f 01 8a 0e
-    call print_str      ;0582 cd 32 02
-    call print_eol      ;0585 cd 27 02
+    ld bc,l0e8ah
+    call print_str
+    call print_eol
+
     ;PRINT "per drive when using direct access : "
-    ld bc,l0eb0h        ;0588 01 b0 0e
-    call print_str      ;058b cd 32 02
-    call print_eol      ;058e cd 27 02
-    call print_eol      ;0591 cd 27 02
+    ld bc,l0eb0h
+    call print_str
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
     ;PRINT "For example to emulate an 8050 unit :"
-    ld bc,l0ed6h        ;0594 01 d6 0e
-    call print_str      ;0597 cd 32 02
-    call print_eol      ;059a cd 27 02
+    ld bc,l0ed6h
+    call print_str
+    call print_eol
+
     ;PRINT "   sectors per track = 29"
-    ld bc,l0efch        ;059d 01 fc 0e
-    call print_str      ;05a0 cd 32 02
-    call print_eol      ;05a3 cd 27 02
+    ld bc,l0efch
+    call print_str
+    call print_eol
+
     ;PRINT "   tracks per drive = 77"
-    ld bc,l0f16h        ;05a6 01 16 0f
-    call print_str      ;05a9 cd 32 02
-    call print_eol      ;05ac cd 27 02
-    call print_eol      ;05af cd 27 02
-    ;PRINT "Number of sectors per track ? "
-    ld bc,l0f2fh        ;05b2 01 2f 0f
-    call print_str      ;05b5 cd 32 02
+    ld bc,l0f16h
+    call print_str
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Number of sectors per track ? ";
+    ld bc,l0f2fh
+    call print_str
 
     ;GOSUB readline
     call readline
 
     ld hl,(l3004h)      ;05bb 2a 04 30
     ld (4010h),hl       ;05be 22 10 40
-    call print_eol      ;05c1 cd 27 02
-    ;PRINT "Number of tracks per drive ? "
-    ld bc,l0f4eh        ;05c4 01 4e 0f
-    call print_str      ;05c7 cd 32 02
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Number of tracks per drive ? ";
+    ld bc,l0f4eh
+    call print_str
 
     ;GOSUB readline
     call readline
 
     ld hl,(l3004h)      ;05cd 2a 04 30
     ld (400eh),hl       ;05d0 22 0e 40
+
 l05d3h:
     jp l05dfh           ;05d3 c3 df 05
+
 l05d6h:
     ;PRINT "Please answer Y or N : "
-    ld bc,l0f6ch        ;05d6 01 6c 0f
-    call print_str      ;05d9 cd 32 02
-    jp l04bbh           ;05dc c3 bb 04
+    ld bc,l0f6ch
+    call print_str
+
+    ;GOTO ask_direct
+    jp ask_direct
+
 l05dfh:
     ld a,(heads)        ;05df 3a 01 30
     ld l,a              ;05e2 6f
