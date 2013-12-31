@@ -3,75 +3,117 @@
 
     org 0100h
 
-    jp l0334h           ;0100 c3 34 03
-sub_0103h:
-    jp 0000h            ;0103 c3 00 00
-    ret                 ;0106 c9
-sub_0107h:
-    ld a,(l3000h)       ;0107 3a 00 30
-    and 40h             ;010a e6 40
-    jp nz,l0110h        ;010c c2 10 01
-    ret                 ;010f c9
-l0110h:
+    jp start
+
+end:
+;Exit back to CP/M.
+    jp 0000h            ;Jump to CP/M warm start
+    ret
+
+check_error:
+    ;IF (l0c3ch AND &H40) <> 0 THEN GOTO got_error
+    ld a,(l3000h)
+    and 40h
+    jp nz,got_error
+
+    ;RETURN
+    ret
+
+got_error:
     ;PRINT "DRIVE ERROR #"
-    ld bc,l0aedh        ;0110 01 ed 0a
-    call print_str      ;0113 cd 32 02
-    ld a,(l3000h)       ;0116 3a 00 30
-    cp 40h              ;0119 fe 40
-    jp nz,l0127h        ;011b c2 27 01
+    ld bc,l0aedh
+    call print_str
+
+    ;IF l3000h <> &H40 THEN GOTO is_err_42h
+    ld a,(l3000h)
+    cp 40h
+    jp nz,is_err_42h
+
     ;PRINT "40 - header write error"
-    ld bc,l0afbh        ;011e 01 fb 0a
-    call print_str      ;0121 cd 32 02
-    jp l0182h           ;0124 c3 82 01
-l0127h:
-    ld a,(l3000h)       ;0127 3a 00 30
-    cp 42h              ;012a fe 42
-    jp nz,l0138h        ;012c c2 38 01
+    ld bc,l0afbh
+    call print_str
+
+    ;GOTO got_error_done
+    jp got_error_done
+
+is_err_42h:
+    ;IF l3000h <> &H42 THEN GOTO is_err_44h
+    ld a,(l3000h)
+    cp 42h
+    jp nz,is_err_44h
+
     ;PRINT "42 - header read error"
-    ld bc,l0b13h        ;012f 01 13 0b
-    call print_str      ;0132 cd 32 02
-    jp l0182h           ;0135 c3 82 01
-l0138h:
-    ld a,(l3000h)       ;0138 3a 00 30
-    cp 44h              ;013b fe 44
-    jp nz,l0149h        ;013d c2 49 01
-l0140h:
+    ld bc,l0b13h
+    call print_str
+
+    ;GOTO got_error_done
+    jp got_error_done
+
+is_err_44h:
+    ;IF l3000h <> &H44 THEN GOTO is_err_46h
+    ld a,(l3000h)
+    cp 44h
+    jp nz,is_err_46h
+
     ;PRINT "44 - data read error"
-    ld bc,l0b2ah        ;0140 01 2a 0b
-    call print_str      ;0143 cd 32 02
-    jp l0182h           ;0146 c3 82 01
-l0149h:
-    ld a,(l3000h)       ;0149 3a 00 30
-    cp 46h              ;014c fe 46
-    jp nz,l015ah        ;014e c2 5a 01
+    ld bc,l0b2ah
+    call print_str
+
+    ;GOTO got_error_done
+    jp got_error_done
+
+is_err_46h:
+    ;IF l3000h <> &H46 THEN GOTO is_err_47h
+    ld a,(l3000h)
+    cp 46h
+    jp nz,is_err_47h
+
     ;PRINT "46 - write fault"
-    ld bc,l0b3fh        ;0151 01 3f 0b
-    call print_str      ;0154 cd 32 02
-    jp l0182h           ;0157 c3 82 01
-l015ah:
-    ld a,(l3000h)       ;015a 3a 00 30
-    cp 47h              ;015d fe 47
-    jp nz,l016bh        ;015f c2 6b 01
+    ld bc,l0b3fh
+    call print_str
+
+    ;GOTO got_error_done
+    jp got_error_done
+
+is_err_47h:
+    ;IF l3000h <> &H47 THEN GOTO is_err_49h
+    ld a,(l3000h)
+    cp 47h
+    jp nz,is_err_49h
+
     ;PRINT "47 - disk not ready"
-    ld bc,l0b50h        ;0162 01 50 0b
-    call print_str      ;0165 cd 32 02
-    jp l0182h           ;0168 c3 82 01
-l016bh:
-    ld a,(l3000h)       ;016b 3a 00 30
-    cp 49h              ;016e fe 49
-    jp nz,l017ch        ;0170 c2 7c 01
+    ld bc,l0b50h
+    call print_str
+
+    ;GOTO got_error_done
+    jp got_error_done
+
+is_err_49h:
+    ;IF l3000h <> &H49 THEN GOTO unknown_err
+    ld a,(l3000h)
+    cp 49h
+    jp nz,unknown_err
+
     ;PRINT "49 - illegal command"
-    ld bc,l0b64h        ;0173 01 64 0b
-    call print_str      ;0176 cd 32 02
-    jp l0182h           ;0179 c3 82 01
-l017ch:
+    ld bc,l0b64h
+    call print_str
+
+    ;GOTO got_error_done
+    jp got_error_done
+
+unknown_err:
     ;PRINT "xx - unknown error code"
-    ld bc,l0b79h        ;017c 01 79 0b
-    call print_str      ;017f cd 32 02
-l0182h:
-    call print_eol      ;0182 cd 27 02
-    ret                 ;0185 c9
-sub_0186h:
+    ld bc,l0b79h
+    call print_str
+
+got_error_done:
+    ;PRINT
+    call print_eol
+
+    ;RETURN
+    ret
+
+readline:
     ld hl,l301eh        ;0186 21 1e 30
     ld (hl),80h         ;0189 36 80
     ld de,l301eh        ;018b 11 1e 30
@@ -326,7 +368,8 @@ l032bh:
     cp 05h              ;032e fe 05
     jp m,l02ebh         ;0330 fa eb 02
     ret                 ;0333 c9
-l0334h:
+
+start:
     ld hl,(0006h)       ;0334 2a 06 00
     ld sp,hl            ;0337 f9
 
@@ -411,7 +454,9 @@ ask_drv_type:
     ;PRINT "Which drive type (A-F) ? "
     ld bc,l0cafh
     call print_str
-    call sub_0186h
+
+    ;GOSUB readline
+    call readline
 
     ;IF l3002h <> &H41 THEN GOTO is_drv_type_b
     ld a,(l3002h)
@@ -527,7 +572,10 @@ got_drv_type:
     ;PRINT "or just the last half (E/H) ? "
     ld bc,l0cebh        ;044e 01 eb 0c
     call print_str      ;0451 cd 32 02
-    call sub_0186h      ;0454 cd 86 01
+
+    ;GOSUB readline
+    call readline
+
     ld a,(l3002h)       ;0457 3a 02 30
     cp 48h              ;045a fe 48
     jp nz,l0478h        ;045c c2 78 04
@@ -593,7 +641,10 @@ l04bbh:
     ;PRINT "commands B-W, B-R, U1, U2 etc. (Y/N) ? "
     ld bc,l0d47h        ;04c7 01 47 0d
     call print_str      ;04ca cd 32 02
-    call sub_0186h      ;04cd cd 86 01
+
+    ;GOSUB readline
+    call readline
+
     ld hl,0000h         ;04d0 21 00 00
     ld (400ch),hl       ;04d3 22 0c 40
     ld (4010h),hl       ;04d6 22 10 40
@@ -646,7 +697,10 @@ l04f8h:
     ;PRINT "access commands (in kilobytes) ? "
     ld bc,l0e42h        ;0542 01 42 0e
     call print_str      ;0545 cd 32 02
-    call sub_0186h      ;0548 cd 86 01
+
+    ;GOSUB readline
+    call readline
+
     ld a,(l3002h)       ;054b 3a 02 30
     cp 45h              ;054e fe 45
     jp nz,l0568h        ;0550 c2 68 05
@@ -693,14 +747,20 @@ l0568h:
     ;PRINT "Number of sectors per track ? "
     ld bc,l0f2fh        ;05b2 01 2f 0f
     call print_str      ;05b5 cd 32 02
-    call sub_0186h      ;05b8 cd 86 01
+
+    ;GOSUB readline
+    call readline
+
     ld hl,(l3004h)      ;05bb 2a 04 30
     ld (4010h),hl       ;05be 22 10 40
     call print_eol      ;05c1 cd 27 02
     ;PRINT "Number of tracks per drive ? "
     ld bc,l0f4eh        ;05c4 01 4e 0f
     call print_str      ;05c7 cd 32 02
-    call sub_0186h      ;05ca cd 86 01
+
+    ;GOSUB readline
+    call readline
+
     ld hl,(l3004h)      ;05cd 2a 04 30
     ld (400eh),hl       ;05d0 22 0e 40
 l05d3h:
@@ -711,7 +771,7 @@ l05d6h:
     call print_str      ;05d9 cd 32 02
     jp l04bbh           ;05dc c3 bb 04
 l05dfh:
-    ld a,(heads)       ;05df 3a 01 30
+    ld a,(heads)        ;05df 3a 01 30
     ld l,a              ;05e2 6f
     rla                 ;05e3 17
     sbc a,a             ;05e4 9f
@@ -961,11 +1021,17 @@ l07b3h:
     ;PRINT "Continue (Y/N) ? "
     ld bc,l1169h        ;07b6 01 69 11
     call print_str      ;07b9 cd 32 02
-    call sub_0186h      ;07bc cd 86 01
+
+    ;GOSUB readline
+    call readline
+
     ld a,(l3002h)       ;07bf 3a 02 30
     cp 4eh              ;07c2 fe 4e
     jp nz,l07cah        ;07c4 c2 ca 07
-    call sub_0103h      ;07c7 cd 03 01
+
+    ;END
+    call end
+
 l07cah:
     ld a,(l3002h)       ;07ca 3a 02 30
     cp 59h              ;07cd fe 59
@@ -979,7 +1045,7 @@ l07cah:
     ld de,0020h         ;07e1 11 20 00
     ld bc,4000h         ;07e4 01 00 40
     call sub_1200h      ;07e7 cd 00 12
-    call sub_0107h      ;07ea cd 07 01
+    call check_error
     ;PRINT "Formatting directory ..."
     ld bc,l119eh        ;07ed 01 9e 11
     call print_str      ;07f0 cd 32 02
@@ -1120,7 +1186,7 @@ l08feh:
     ex de,hl            ;090c eb
     ld bc,7000h         ;090d 01 00 70
     call sub_1200h      ;0910 cd 00 12
-    call sub_0107h      ;0913 cd 07 01
+    call check_error
     ld hl,0000h         ;0916 21 00 00
     ld (l3016h),hl      ;0919 22 16 30
     jp l092fh           ;091c c3 2f 09
@@ -1168,7 +1234,7 @@ l095fh:
     ex de,hl            ;096b eb
     ld bc,7000h         ;096c 01 00 70
     call sub_1200h      ;096f cd 00 12
-    call sub_0107h      ;0972 cd 07 01
+    call check_error
     ld c,2eh            ;0975 0e 2e
     call print_char     ;0977 cd 19 02
     ld hl,(l3016h)      ;097a 2a 16 30
@@ -1391,7 +1457,7 @@ l0abeh:
     ex de,hl            ;0ac6 eb
     ld bc,7000h         ;0ac7 01 00 70
     call sub_1200h      ;0aca cd 00 12
-    call sub_0107h      ;0acd cd 07 01
+    call check_error
     ld c,2eh            ;0ad0 0e 2e
     call print_char     ;0ad2 cd 19 02
     ld hl,(l3016h)      ;0ad5 2a 16 30
@@ -1406,8 +1472,10 @@ l0adch:
     ld a,d              ;0ae5 7a
     sbc a,h             ;0ae6 9c
     jp p,l0abeh         ;0ae7 f2 be 0a
+
 l0aeah:
-    call sub_0103h      ;0aea cd 03 01
+    ;END
+    call end
 
 l0aedh:
     db 0dh
