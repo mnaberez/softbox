@@ -543,6 +543,8 @@ ask_drv_type:
     cp 'A'              ;Is it 'A': 3 Mbyte (191 cyl)?
     jp nz,is_drv_type_b ;  No: jump to check for 'B'
 
+    ;REM User selected 'A' for 3 Mbyte (191 cyl)
+
     ;heads = 2
     ld hl,heads
     ld (hl),2
@@ -559,6 +561,8 @@ is_drv_type_b:
     ld a,(l0c3fh)
     cp 'B'              ;Is it 'B': 6 Mbyte (191 cyl)?
     jp nz,is_drv_type_c ;  No: jump to check for 'C'
+
+    ;REM User selected 'B' for 6 Mbyte (191 cyl)
 
     ;heads = 4
     ld hl,heads
@@ -577,6 +581,8 @@ is_drv_type_c:
     cp 'C'              ;Is it 'C': 12 Mbyte (191 cyl)?
     jp nz,is_drv_type_d ;  No: jump to check for 'D'
 
+    ;REM User selected 'C' for 12 Mbyte (191 cyl)
+
     ;heads = 8
     ld hl,heads
     ld (hl),8
@@ -593,6 +599,8 @@ is_drv_type_d:
     ld a,(l0c3fh)
     cp 'D'              ;Is it 'D': 5 Mbyte (320 cyl)?
     jp nz,is_drv_type_e ;  No: jump to check for 'E'
+
+    ;REM User selected 'D' for 5 Mbyte (320 cyl)
 
     ;heads = 2
     ld hl,heads
@@ -611,6 +619,8 @@ is_drv_type_e:
     cp 'E'              ;Is it 'E': 10 Mbyte (320 cyl)?
     jp nz,is_drv_type_f ;  No: jump to check for 'F'
 
+    ;REM User selected 'E' for 10 Mbyte (320 cyl)
+
     ;heads = 4
     ld hl,heads
     ld (hl),4
@@ -628,6 +638,8 @@ is_drv_type_f:
     cp 'F'              ;Is it 'F': 15 Mbyte (320 cyl)?
     jp nz,is_drv_type_z ;  No: jump to check for 'Z'
 
+    ;REM User selected 'F' for 15 Mbyte (320 cyl)
+
     ;heads = 6
     ld hl,heads
     ld (hl),6
@@ -644,6 +656,8 @@ is_drv_type_z:
     ld a,(l0c3fh)
     cp 'Z'              ;Is it 'Z': None of the above?
     jp nz,bad_drv_type  ;  No: bad drive type entered
+
+    ;REM User selected 'Z' for arbitrary heads/cylinders
 
     ;PRINT
     call print_eol
