@@ -5797,6 +5797,13 @@ corv_read_err:
 ;Returns the error code in A (0=OK) and also changes
 ;the Z flag: Z=1 if OK, Z=0 if error.
 ;
+;  00 Header Write Error
+;  02 Header Read Error
+;  04 Data Read Error
+;  06 Write Fault
+;  07 Disk Not Ready
+;  09 Illegal Command
+;
     ld a,255            ;1a0d 3e ff
     out (corvus),a      ;Put byte (0ffh) on Mini-Winchester data bus
 
