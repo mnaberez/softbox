@@ -329,119 +329,196 @@ l032bh:
 l0334h:
     ld hl,(0006h)       ;0334 2a 06 00
     ld sp,hl            ;0337 f9
-l0338h:
-    ld c,1ah            ;0338 0e 1a
-    call print_char     ;033a cd 19 02
+
+ask_drv_type:
+    ;PRINT CHR$(26) ' Clear screen
+    ld c,1ah
+    call print_char
+
     ;PRINT "HardBox configuration program"
-    ld bc,l0b95h        ;033d 01 95 0b
-    call print_str      ;0340 cd 32 02
-    call print_eol      ;0343 cd 27 02
+    ld bc,l0b95h
+    call print_str
+    call print_eol
+
     ;PRINT "For Mini-Winchester"
-    ld bc,l0bb3h        ;0346 01 b3 0b
-    call print_str      ;0349 cd 32 02
-    call print_eol      ;034c cd 27 02
+    ld bc,l0bb3h
+    call print_str
+    call print_eol
+
     ;PRINT "--- ---------------"
-    ld bc,l0bc7h        ;034f 01 c7 0b
-    call print_str      ;0352 cd 32 02
-    call print_eol      ;0355 cd 27 02
-    call print_eol      ;0358 cd 27 02
-    call print_eol      ;035b cd 27 02
+    ld bc,l0bc7h
+    call print_str
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
     ;PRINT "Revision 2.1"
-    ld bc,l0bdbh        ;035e 01 db 0b
-    call print_str      ;0361 cd 32 02
-    call print_eol      ;0364 cd 27 02
-    call print_eol      ;0367 cd 27 02
+    ld bc,l0bdbh
+    call print_str
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
     ;PRINT "Drive sizes supported : "
-    ld bc,l0be8h        ;036a 01 e8 0b
-    call print_str      ;036d cd 32 02
-    call print_eol      ;0370 cd 27 02
-    call print_eol      ;0373 cd 27 02
+    ld bc,l0be8h
+    call print_str
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
     ;PRINT "A.   3  Mbyte      (191 cyl)"
-    ld bc,l0c01h        ;0376 01 01 0c
-    call print_str      ;0379 cd 32 02
-    call print_eol      ;037c cd 27 02
+    ld bc,l0c01h
+    call print_str
+    call print_eol
+
     ;PRINT "B.   6  Mbyte      (191 cyl)"
-    ld bc,l0c1eh        ;037f 01 1e 0c
-    call print_str      ;0382 cd 32 02
-    call print_eol      ;0385 cd 27 02
+    ld bc,l0c1eh
+    call print_str
+    call print_eol
+
     ;PRINT "C.   12 Mbyte      (191 cyl)"
-    ld bc,l0c3bh        ;0388 01 3b 0c
-    call print_str      ;038b cd 32 02
-    call print_eol      ;038e cd 27 02
+    ld bc,l0c3bh
+    call print_str
+    call print_eol
+
     ;PRINT "D.   5  Mbyte      (320 cyl)"
-    ld bc,l0c58h        ;0391 01 58 0c
-    call print_str      ;0394 cd 32 02
-    call print_eol      ;0397 cd 27 02
+    ld bc,l0c58h
+    call print_str
+    call print_eol
+
     ;PRINT "E.   10 Mbyte      (320 cyl)"
-    ld bc,l0c75h        ;039a 01 75 0c
-    call print_str      ;039d cd 32 02
-    call print_eol      ;03a0 cd 27 02
+    ld bc,l0c75h
+    call print_str
+    call print_eol
+
     ;PRINT "F.   15 Mbyte      (320 cyl)"
-    ld bc,l0c92h        ;03a3 01 92 0c
-    call print_str      ;03a6 cd 32 02
-    call print_eol      ;03a9 cd 27 02
-    call print_eol      ;03ac cd 27 02
-    call print_eol      ;03af cd 27 02
+    ld bc,l0c92h
+    call print_str
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
     ;PRINT "Which drive type (A-F) ? "
-    ld bc,l0cafh        ;03b2 01 af 0c
-    call print_str      ;03b5 cd 32 02
-    call sub_0186h      ;03b8 cd 86 01
-    ld a,(l3002h)       ;03bb 3a 02 30
-    cp 41h              ;03be fe 41
-    jp nz,l03d1h        ;03c0 c2 d1 03
-    ld hl,l3001h        ;03c3 21 01 30
-    ld (hl),02h         ;03c6 36 02
-    ld hl,00bfh         ;03c8 21 bf 00
-    ld (l3006h),hl      ;03cb 22 06 30
-    jp l0442h           ;03ce c3 42 04
-l03d1h:
-    ld a,(l3002h)       ;03d1 3a 02 30
-    cp 42h              ;03d4 fe 42
-    jp nz,l03e7h        ;03d6 c2 e7 03
-    ld hl,l3001h        ;03d9 21 01 30
-    ld (hl),04h         ;03dc 36 04
-    ld hl,00bfh         ;03de 21 bf 00
-    ld (l3006h),hl      ;03e1 22 06 30
-    jp l0442h           ;03e4 c3 42 04
-l03e7h:
-    ld a,(l3002h)       ;03e7 3a 02 30
-    cp 43h              ;03ea fe 43
-    jp nz,l03fdh        ;03ec c2 fd 03
-    ld hl,l3001h        ;03ef 21 01 30
-    ld (hl),08h         ;03f2 36 08
-    ld hl,00bfh         ;03f4 21 bf 00
-    ld (l3006h),hl      ;03f7 22 06 30
-    jp l0442h           ;03fa c3 42 04
-l03fdh:
-    ld a,(l3002h)       ;03fd 3a 02 30
-    cp 44h              ;0400 fe 44
-    jp nz,l0413h        ;0402 c2 13 04
-    ld hl,l3001h        ;0405 21 01 30
-    ld (hl),02h         ;0408 36 02
-    ld hl,l0140h        ;040a 21 40 01
-    ld (l3006h),hl      ;040d 22 06 30
-    jp l0442h           ;0410 c3 42 04
-l0413h:
-    ld a,(l3002h)       ;0413 3a 02 30
-    cp 45h              ;0416 fe 45
-    jp nz,l0429h        ;0418 c2 29 04
-    ld hl,l3001h        ;041b 21 01 30
-    ld (hl),04h         ;041e 36 04
-    ld hl,l0140h        ;0420 21 40 01
-    ld (l3006h),hl      ;0423 22 06 30
-    jp l0442h           ;0426 c3 42 04
-l0429h:
-    ld a,(l3002h)       ;0429 3a 02 30
-    cp 46h              ;042c fe 46
-    jp nz,l043fh        ;042e c2 3f 04
-    ld hl,l3001h        ;0431 21 01 30
-    ld (hl),06h         ;0434 36 06
-    ld hl,l0140h        ;0436 21 40 01
-    ld (l3006h),hl      ;0439 22 06 30
-    jp l0442h           ;043c c3 42 04
-l043fh:
-    jp l0338h           ;043f c3 38 03
-l0442h:
+    ld bc,l0cafh
+    call print_str
+    call sub_0186h
+
+    ;IF l3002h <> &H41 THEN GOTO is_drv_type_b
+    ld a,(l3002h)
+    cp 'A'              ;Is it 'A': 3 Mbyte (191 cyl)?
+    jp nz,is_drv_type_b ;  No: jump to check for 'B'
+
+    ;heads = 2
+    ld hl,heads
+    ld (hl),2
+
+    ;cylinders = 191
+    ld hl,191
+    ld (cylinders),hl
+
+    ;GOTO got_drv_type
+    jp got_drv_type
+
+is_drv_type_b:
+    ;IF l3002h <> &H42 THEN GOTO is_drv_type_c
+    ld a,(l3002h)
+    cp 'B'              ;Is it 'B': 6 Mbyte (191 cyl)?
+    jp nz,is_drv_type_c ;  No: jump to check for 'C'
+
+    ;heads = 2
+    ld hl,heads
+    ld (hl),4
+
+    ;cylinders = 191
+    ld hl,191
+    ld (cylinders),hl
+
+    ;GOTO got_drv_type
+    jp got_drv_type
+
+is_drv_type_c:
+    ;IF l3002h <> &H43 THEN GOTO is_drv_type_d
+    ld a,(l3002h)
+    cp 'C'              ;Is it 'C': 12 Mbyte (191 cyl)?
+    jp nz,is_drv_type_d ;  No: jump to check for 'D'
+
+    ;heads = 8
+    ld hl,heads
+    ld (hl),8
+
+    ;cylinders = 191
+    ld hl,191
+    ld (cylinders),hl
+
+    ;GOTO got_drv_type
+    jp got_drv_type
+
+is_drv_type_d:
+    ;IF l3002h <> &H44 THEN GOTO is_drv_type_e
+    ld a,(l3002h)
+    cp 'D'              ;Is it 'D': 5 Mbyte (320 cyl)?
+    jp nz,is_drv_type_e ;  No: jump to check for 'E'
+
+    ;heads = 2
+    ld hl,heads
+    ld (hl),2
+
+    ;cylinders = 320
+    ld hl,320
+    ld (cylinders),hl
+
+    ;GOTO got_drv_type
+    jp got_drv_type
+
+is_drv_type_e:
+    ;IF l3002h <> &H45 THEN GOTO is_drv_type_f
+    ld a,(l3002h)
+    cp 'E'              ;Is it 'E': 10 Mbyte (320 cyl)?
+    jp nz,is_drv_type_f ;  No: jump to check for 'F'
+
+    ;heads = 4
+    ld hl,heads
+    ld (hl),4
+
+    ;cylinders = 320
+    ld hl,320
+    ld (cylinders),hl
+
+    ;GOTO got_drv_type
+    jp got_drv_type
+
+is_drv_type_f:
+    ;IF l3002h <> &H46 THEN GOTO bad_drv_type
+    ld a,(l3002h)
+    cp 'F'              ;Is it 'F': 15 Mbyte (320 cyl)?
+    jp nz,bad_drv_type  ;  No: bad drive type entered
+
+    ;heads = 6
+    ld hl,heads
+    ld (hl),6
+
+    ;cylinders = 320
+    ld hl,320
+    ld (cylinders),hl
+
+    ;GOTO got_drv_type
+    jp got_drv_type
+
+bad_drv_type:
+    ;GOTO ask_drv_type
+    jp ask_drv_type
+
+got_drv_type:
     call print_eol      ;0442 cd 27 02
     ;PRINT "Configure entire drive as HardBox"
     ld bc,l0cc9h        ;0445 01 c9 0c
@@ -456,7 +533,7 @@ l0442h:
     jp nz,l0478h        ;045c c2 78 04
     ld hl,l3003h        ;045f 21 03 30
     ld (hl),01h         ;0462 36 01
-    ld hl,(l3006h)      ;0464 2a 06 30
+    ld hl,(cylinders)   ;0464 2a 06 30
     ld b,h              ;0467 44
     ld c,l              ;0468 4d
     ld de,0002h         ;0469 11 02 00
@@ -479,14 +556,14 @@ l048eh:
     ;PRINT "Please answer E or H : "
     ld bc,l0d0ah        ;048e 01 0a 0d
     call print_str      ;0491 cd 32 02
-    jp l0442h           ;0494 c3 42 04
+    jp got_drv_type           ;0494 c3 42 04
 l0497h:
-    ld a,(l3001h)       ;0497 3a 01 30
+    ld a,(heads)        ;0497 3a 01 30
     ld l,a              ;049a 6f
     rla                 ;049b 17
     sbc a,a             ;049c 9f
     ex de,hl            ;049d eb
-    ld hl,(l3006h)      ;049e 2a 06 30
+    ld hl,(cylinders)   ;049e 2a 06 30
     ld d,a              ;04a1 57
     ld a,l              ;04a2 7d
     ld b,h              ;04a3 44
@@ -634,7 +711,7 @@ l05d6h:
     call print_str      ;05d9 cd 32 02
     jp l04bbh           ;05dc c3 bb 04
 l05dfh:
-    ld a,(l3001h)       ;05df 3a 01 30
+    ld a,(heads)       ;05df 3a 01 30
     ld l,a              ;05e2 6f
     rla                 ;05e3 17
     sbc a,a             ;05e4 9f
@@ -720,7 +797,7 @@ l05dfh:
     ld (hl),20h         ;066d 36 20
     inc hl              ;066f 23
     ld (hl),20h         ;0670 36 20
-    ld a,(l3001h)       ;0672 3a 01 30
+    ld a,(heads)       ;0672 3a 01 30
     dec a               ;0675 3d
     ld (4033h),a        ;0676 32 33 40
     ld hl,4036h         ;0679 21 36 40
@@ -790,7 +867,7 @@ l05dfh:
     ;PRINT "Tracks per cylinder :      "
     ld bc,l1071h        ;0705 01 71 10
     call print_str      ;0708 cd 32 02
-    ld a,(l3001h)       ;070b 3a 01 30
+    ld a,(heads)        ;070b 3a 01 30
     ld l,a              ;070e 6f
     rla                 ;070f 17
     sbc a,a             ;0710 9f
@@ -801,7 +878,7 @@ l05dfh:
     ;PRINT "Total cylinders on drive : "
     ld bc,l108dh        ;0719 01 8d 10
     call print_str      ;071c cd 32 02
-    ld hl,(l3006h)      ;071f 2a 06 30
+    ld hl,(cylinders)   ;071f 2a 06 30
     ld b,h              ;0722 44
     ld c,l              ;0723 4d
     call 0292h          ;0724 cd 92 02
@@ -809,12 +886,12 @@ l05dfh:
     ;PRINT "Total kbyte capacity :     "
     ld bc,l10a9h        ;072a 01 a9 10
     call print_str      ;072d cd 32 02
-    ld a,(l3001h)       ;0730 3a 01 30
+    ld a,(heads)       ;0730 3a 01 30
     ld l,a              ;0733 6f
     rla                 ;0734 17
     sbc a,a             ;0735 9f
     push hl             ;0736 e5
-    ld hl,(l3006h)      ;0737 2a 06 30
+    ld hl,(cylinders)   ;0737 2a 06 30
     ld b,h              ;073a 44
     ld c,l              ;073b 4d
     pop hl              ;073c e1
@@ -840,7 +917,7 @@ l05dfh:
     ;PRINT "Number of user cylinders : "
     ld bc,l10e1h        ;075f 01 e1 10
     call print_str      ;0762 cd 32 02
-    ld hl,(l3006h)      ;0765 2a 06 30
+    ld hl,(cylinders)   ;0765 2a 06 30
     ld a,l              ;0768 7d
     ex de,hl            ;0769 eb
     ld hl,(4034h)       ;076a 2a 34 40
@@ -9209,7 +9286,7 @@ l13e2h:
     nop                 ;2fff 00
 l3000h:
     nop                 ;3000 00
-l3001h:
+heads:
     nop                 ;3001 00
 l3002h:
     nop                 ;3002 00
@@ -9218,7 +9295,7 @@ l3003h:
 l3004h:
     nop                 ;3004 00
     nop                 ;3005 00
-l3006h:
+cylinders:
     nop                 ;3006 00
     nop                 ;3007 00
 l3008h:
