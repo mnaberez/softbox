@@ -908,38 +908,38 @@ l05dfh:
     ld hl,4012h         ;063b 21 12 40
     ld (hl),00h         ;063e 36 00
     ld hl,4023h         ;0640 21 23 40
-    ld (hl),48h         ;0643 36 48
+    ld (hl),'H'         ;0643 36 48
     inc hl              ;0645 23
-    ld (hl),41h         ;0646 36 41
+    ld (hl),'A'         ;0646 36 41
     inc hl              ;0648 23
-    ld (hl),52h         ;0649 36 52
+    ld (hl),'R'         ;0649 36 52
     inc hl              ;064b 23
-    ld (hl),44h         ;064c 36 44
+    ld (hl),'D'         ;064c 36 44
     inc hl              ;064e 23
-    ld (hl),20h         ;064f 36 20
+    ld (hl),' '         ;064f 36 20
     inc hl              ;0651 23
-    ld (hl),44h         ;0652 36 44
+    ld (hl),'D'         ;0652 36 44
     inc hl              ;0654 23
-    ld (hl),49h         ;0655 36 49
+    ld (hl),'I'         ;0655 36 49
     inc hl              ;0657 23
-    ld (hl),53h         ;0658 36 53
+    ld (hl),'S'         ;0658 36 53
     inc hl              ;065a 23
-    ld (hl),4bh         ;065b 36 4b
+    ld (hl),'K'         ;065b 36 4b
     inc hl              ;065d 23
-    ld (hl),20h         ;065e 36 20
+    ld (hl),' '         ;065e 36 20
     inc hl              ;0660 23
-    ld (hl),20h         ;0661 36 20
+    ld (hl),' '         ;0661 36 20
     inc hl              ;0663 23
-    ld (hl),20h         ;0664 36 20
+    ld (hl),' '         ;0664 36 20
     inc hl              ;0666 23
-    ld (hl),20h         ;0667 36 20
+    ld (hl),' '         ;0667 36 20
     inc hl              ;0669 23
-    ld (hl),20h         ;066a 36 20
+    ld (hl),' '         ;066a 36 20
     inc hl              ;066c 23
-    ld (hl),20h         ;066d 36 20
+    ld (hl),' '         ;066d 36 20
     inc hl              ;066f 23
-    ld (hl),20h         ;0670 36 20
-    ld a,(heads)       ;0672 3a 01 30
+    ld (hl),' '         ;0670 36 20
+    ld a,(heads)        ;0672 3a 01 30
     dec a               ;0675 3d
     ld (4033h),a        ;0676 32 33 40
     ld hl,4036h         ;0679 21 36 40
@@ -1148,97 +1148,97 @@ l0808h:
     ld bc,7000h         ;080f 01 00 70
     ld hl,(l3018h)      ;0812 2a 18 30
     add hl,bc           ;0815 09
-    ld (hl),48h         ;0816 36 48
+    ld (hl),'H'         ;0816 36 48
     ld hl,(l3018h)      ;0818 2a 18 30
     inc hl              ;081b 23
     ld bc,7000h         ;081c 01 00 70
     add hl,bc           ;081f 09
-    ld (hl),41h         ;0820 36 41
+    ld (hl),'A'         ;0820 36 41
     ld hl,(l3018h)      ;0822 2a 18 30
     inc hl              ;0825 23
     inc hl              ;0826 23
     ld bc,7000h         ;0827 01 00 70
     add hl,bc           ;082a 09
-    ld (hl),52h         ;082b 36 52
+    ld (hl),'R'         ;082b 36 52
     ld hl,(l3018h)      ;082d 2a 18 30
     inc hl              ;0830 23
     inc hl              ;0831 23
     inc hl              ;0832 23
     ld bc,7000h         ;0833 01 00 70
     add hl,bc           ;0836 09
-    ld (hl),44h         ;0837 36 44
+    ld (hl),'D'         ;0837 36 44
     ld bc,0004h         ;0839 01 04 00
     ld hl,(l3018h)      ;083c 2a 18 30
     add hl,bc           ;083f 09
     ld bc,7000h         ;0840 01 00 70
     add hl,bc           ;0843 09
-    ld (hl),42h         ;0844 36 42
+    ld (hl),'B'         ;0844 36 42
     ld bc,0005h         ;0846 01 05 00
     ld hl,(l3018h)      ;0849 2a 18 30
     add hl,bc           ;084c 09
     ld bc,7000h         ;084d 01 00 70
     add hl,bc           ;0850 09
-    ld (hl),4fh         ;0851 36 4f
+    ld (hl),'O'         ;0851 36 4f
     ld bc,0006h         ;0853 01 06 00
     ld hl,(l3018h)      ;0856 2a 18 30
     add hl,bc           ;0859 09
     ld bc,7000h         ;085a 01 00 70
     add hl,bc           ;085d 09
-    ld (hl),58h         ;085e 36 58
+    ld (hl),'X'         ;085e 36 58
     ld bc,0007h         ;0860 01 07 00
     ld hl,(l3018h)      ;0863 2a 18 30
     add hl,bc           ;0866 09
     ld bc,7000h         ;0867 01 00 70
     add hl,bc           ;086a 09
-    ld (hl),20h         ;086b 36 20
+    ld (hl),' '         ;086b 36 20
     ld bc,0008h         ;086d 01 08 00
     ld hl,(l3018h)      ;0870 2a 18 30
     add hl,bc           ;0873 09
     ld bc,7000h         ;0874 01 00 70
     add hl,bc           ;0877 09
-    ld (hl),20h         ;0878 36 20
+    ld (hl),' '         ;0878 36 20
     ld bc,0009h         ;087a 01 09 00
     ld hl,(l3018h)      ;087d 2a 18 30
     add hl,bc           ;0880 09
     ld bc,7000h         ;0881 01 00 70
     add hl,bc           ;0884 09
-    ld (hl),20h         ;0885 36 20
+    ld (hl),' '         ;0885 36 20
     ld bc,000ah         ;0887 01 0a 00
     ld hl,(l3018h)      ;088a 2a 18 30
     add hl,bc           ;088d 09
     ld bc,7000h         ;088e 01 00 70
     add hl,bc           ;0891 09
-    ld (hl),20h         ;0892 36 20
+    ld (hl),' '         ;0892 36 20
     ld bc,000bh         ;0894 01 0b 00
     ld hl,(l3018h)      ;0897 2a 18 30
     add hl,bc           ;089a 09
     ld bc,7000h         ;089b 01 00 70
     add hl,bc           ;089e 09
-    ld (hl),20h         ;089f 36 20
+    ld (hl),' '         ;089f 36 20
     ld bc,000ch         ;08a1 01 0c 00
     ld hl,(l3018h)      ;08a4 2a 18 30
     add hl,bc           ;08a7 09
     ld bc,7000h         ;08a8 01 00 70
     add hl,bc           ;08ab 09
-    ld (hl),20h         ;08ac 36 20
+    ld (hl),' '         ;08ac 36 20
     ld bc,000dh         ;08ae 01 0d 00
     ld hl,(l3018h)      ;08b1 2a 18 30
     add hl,bc           ;08b4 09
     ld bc,7000h         ;08b5 01 00 70
     add hl,bc           ;08b8 09
-    ld (hl),20h         ;08b9 36 20
+    ld (hl),' '         ;08b9 36 20
     ld bc,000eh         ;08bb 01 0e 00
     ld hl,(l3018h)      ;08be 2a 18 30
     add hl,bc           ;08c1 09
     ld bc,7000h         ;08c2 01 00 70
     add hl,bc           ;08c5 09
-    ld (hl),20h         ;08c6 36 20
+    ld (hl),' '         ;08c6 36 20
     ld bc,000fh         ;08c8 01 0f 00
     ld hl,(l3018h)      ;08cb 2a 18 30
     add hl,bc           ;08ce 09
     ld bc,7000h         ;08cf 01 00 70
     add hl,bc           ;08d2 09
-    ld (hl),20h         ;08d3 36 20
+    ld (hl),' '         ;08d3 36 20
     ld bc,00a0h         ;08d5 01 a0 00
     ld hl,(l3016h)      ;08d8 2a 16 30
     add hl,bc           ;08db 09
@@ -1249,12 +1249,12 @@ l0808h:
     ld bc,7000h         ;08e4 01 00 70
     ld hl,(l3018h)      ;08e7 2a 18 30
     add hl,bc           ;08ea 09
-    ld (hl),4bh         ;08eb 36 4b
+    ld (hl),'K'         ;08eb 36 4b
     ld hl,(l3018h)      ;08ed 2a 18 30
     inc hl              ;08f0 23
     ld bc,7000h         ;08f1 01 00 70
     add hl,bc           ;08f4 09
-    ld (hl),46h         ;08f5 36 46
+    ld (hl),'F'         ;08f5 36 46
     ld hl,(l3016h)      ;08f7 2a 16 30
     inc hl              ;08fa 23
     ld (l3016h),hl      ;08fb 22 16 30
