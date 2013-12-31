@@ -398,9 +398,10 @@ l0321h:
     ;PRINT
     call print_eol
 
-    ld a,(l3003h)       ;0339 3a 03 30
-    cp cr               ;033c fe 0d
-    jp nz,l0344h        ;033e c2 44 03
+    ;IF l3003h <> &H0D THEN GOTO l0344h
+    ld a,(l3003h)
+    cp cr
+    jp nz,l0344h
 
     ;END
     call end            ;Never returns
@@ -438,14 +439,20 @@ l0376h:
     jp m,l03c7h         ;037b fa c7 03
     cp 06h              ;037e fe 06
     jp p,l03c7h         ;0380 f2 c7 03
-    ld c,bell           ;0383 0e 07
-    call print_char     ;0385 cd 6b 01
-    ld bc,data_on_hd    ;0388 01 e6 04
-    call print_str      ;038b cd 84 01
-    ld a,(l3000h)       ;038e 3a 00 30
-    add a,41h           ;0391 c6 41
-    ld c,a              ;0393 4f
-    call print_char     ;0394 cd 6b 01
+
+    ;PRINT CHR$(7) ' Bell
+    ld c,bell
+    call print_char
+
+    ;PRINT "Data on hard disk ";
+    ld bc,data_on_hd
+    call print_str
+
+    ;PRINT CHR$(l3000h + &H41);
+    ld a,(l3000h)
+    add a,'A'           ;Convert to CP/M drive letter
+    ld c,a
+    call print_char
 
     ;PRINT ": will be erased"
     ld bc,will_be_eras
@@ -458,9 +465,10 @@ l0376h:
     ;GOSUB readline
     call readline
 
-    ld a,(l3003h)       ;03a6 3a 03 30
-    cp 'Y'              ;03a9 fe 59
-    jp z,l03b1h         ;03ab ca b1 03
+    ;IF l3003h = &H59 THEN GOTO l03b1h
+    ld a,(l3003h)
+    cp 'Y'
+    jp z,l03b1h
 
     ;END
     call end            ;Never returns
@@ -485,10 +493,11 @@ l03c7h:
     ld bc,disk_on_drv
     call print_str
 
-    ld a,(l3000h)       ;03cd 3a 00 30
-    add a,41h           ;03d0 c6 41
-    ld c,a              ;03d2 4f
-    call print_char     ;03d3 cd 6b 01
+    ;PRINT CHR$(l3000h + &H41);
+    ld a,(l3000h)
+    add a,'A'           ;Convert to CP/M drive letter
+    ld c,a
+    call print_char
 
     ;PRINT ": is to be formatted"
     ld bc,be_formatted
@@ -501,9 +510,10 @@ l03c7h:
     ;GOSUB readline
     call readline
 
-    ld a,(l3003h)       ;03e5 3a 03 30
-    cp cr               ;03e8 fe 0d
-    jp z,l03f0h         ;03ea ca f0 03
+    ;IF A = &H0D THEN GOTO l03f0h
+    ld a,(l3003h)
+    cp cr
+    jp z,l03f0h
 
     ;END
     call end            ;Never returns
@@ -519,7 +529,10 @@ l03f0h:
     ld hl,l3000h        ;03f9 21 00 30
     ld c,(hl)           ;03fc 4e
     call format         ;03fd cd 5d 07
+
+    ;PRINT
     call print_eol      ;0400 cd 79 01
+
     call sub_011eh      ;0403 cd 1e 01
     or a                ;0406 b7
     jp nz,l0413h        ;0407 c2 13 04
@@ -528,7 +541,8 @@ l03f0h:
     ld bc,complete
     call print_str_eol
 
-    jp l0419h           ;0410 c3 19 04
+    ;GOTO l0419h
+    jp l0419h
 
 l0413h:
     ;PRINT "Do not use diskette - try again..."
@@ -536,7 +550,8 @@ l0413h:
     call print_str_eol
 
 l0419h:
-    jp l0321h           ;0419 c3 21 03
+    ;GOTO l0321h
+    jp l0321h
 
 disk_error:
     db 0eh
