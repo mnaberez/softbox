@@ -172,7 +172,7 @@ print_eol:
 
 print_str:
 ;Print string at BC
-    ld hl,l30a4h
+    ld hl,l30a3h+1
     ld (hl),b
     dec hl
     ld (hl),c
@@ -9471,7 +9471,6 @@ l30a2h:
     nop                 ;30a2 00
 l30a3h:
     nop                 ;30a3 00
-l30a4h:
     nop                 ;30a4 00
 l30a5h:
     nop                 ;30a5 00
