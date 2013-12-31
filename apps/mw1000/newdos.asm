@@ -463,6 +463,8 @@ ask_drv_type:
     cp 'A'              ;Is it 'A': 3 Mbyte (191 cyl)?
     jp nz,is_drv_type_b ;  No: jump to check for 'B'
 
+    ;REM User selected 'A' for 3 Mbyte (191 cyl)
+
     ;heads = 2
     ld hl,heads
     ld (hl),2
@@ -471,14 +473,16 @@ ask_drv_type:
     ld hl,191
     ld (cylinders),hl
 
-    ;GOTO got_drv_type
-    jp got_drv_type
+    ;GOTO ask_hbox_conf
+    jp ask_hbox_conf
 
 is_drv_type_b:
     ;IF l3002h <> &H42 THEN GOTO is_drv_type_c
     ld a,(l3002h)
     cp 'B'              ;Is it 'B': 6 Mbyte (191 cyl)?
     jp nz,is_drv_type_c ;  No: jump to check for 'C'
+
+    ;REM User selected 'B' for 6 Mbyte (191 cyl)
 
     ;heads = 2
     ld hl,heads
@@ -488,14 +492,16 @@ is_drv_type_b:
     ld hl,191
     ld (cylinders),hl
 
-    ;GOTO got_drv_type
-    jp got_drv_type
+    ;GOTO ask_hbox_conf
+    jp ask_hbox_conf
 
 is_drv_type_c:
     ;IF l3002h <> &H43 THEN GOTO is_drv_type_d
     ld a,(l3002h)
     cp 'C'              ;Is it 'C': 12 Mbyte (191 cyl)?
     jp nz,is_drv_type_d ;  No: jump to check for 'D'
+
+    ;REM User selected 'C' for 12 Mbyte (191 cyl)
 
     ;heads = 8
     ld hl,heads
@@ -505,14 +511,16 @@ is_drv_type_c:
     ld hl,191
     ld (cylinders),hl
 
-    ;GOTO got_drv_type
-    jp got_drv_type
+    ;GOTO ask_hbox_conf
+    jp ask_hbox_conf
 
 is_drv_type_d:
     ;IF l3002h <> &H44 THEN GOTO is_drv_type_e
     ld a,(l3002h)
     cp 'D'              ;Is it 'D': 5 Mbyte (320 cyl)?
     jp nz,is_drv_type_e ;  No: jump to check for 'E'
+
+    ;REM User selected 'D' for 5 Mbyte (320 cyl)
 
     ;heads = 2
     ld hl,heads
@@ -522,14 +530,16 @@ is_drv_type_d:
     ld hl,320
     ld (cylinders),hl
 
-    ;GOTO got_drv_type
-    jp got_drv_type
+    ;GOTO ask_hbox_conf
+    jp ask_hbox_conf
 
 is_drv_type_e:
     ;IF l3002h <> &H45 THEN GOTO is_drv_type_f
     ld a,(l3002h)
     cp 'E'              ;Is it 'E': 10 Mbyte (320 cyl)?
     jp nz,is_drv_type_f ;  No: jump to check for 'F'
+
+    ;REM User selected 'E' for 10 Mbyte (320 cyl)
 
     ;heads = 4
     ld hl,heads
@@ -539,14 +549,16 @@ is_drv_type_e:
     ld hl,320
     ld (cylinders),hl
 
-    ;GOTO got_drv_type
-    jp got_drv_type
+    ;GOTO ask_hbox_conf
+    jp ask_hbox_conf
 
 is_drv_type_f:
     ;IF l3002h <> &H46 THEN GOTO bad_drv_type
     ld a,(l3002h)
     cp 'F'              ;Is it 'F': 15 Mbyte (320 cyl)?
     jp nz,bad_drv_type  ;  No: bad drive type entered
+
+    ;REM User selected 'E' for 15 Mbyte (320 cyl)
 
     ;heads = 6
     ld hl,heads
@@ -556,29 +568,36 @@ is_drv_type_f:
     ld hl,320
     ld (cylinders),hl
 
-    ;GOTO got_drv_type
-    jp got_drv_type
+    ;GOTO ask_hbox_conf
+    jp ask_hbox_conf
 
 bad_drv_type:
     ;GOTO ask_drv_type
     jp ask_drv_type
 
-got_drv_type:
-    call print_eol      ;0442 cd 27 02
+ask_hbox_conf:
+    ;PRINT
+    call print_eol
+
     ;PRINT "Configure entire drive as HardBox"
-    ld bc,l0cc9h        ;0445 01 c9 0c
-    call print_str      ;0448 cd 32 02
-    call print_eol      ;044b cd 27 02
+    ld bc,l0cc9h
+    call print_str
+    call print_eol
+
     ;PRINT "or just the last half (E/H) ? "
-    ld bc,l0cebh        ;044e 01 eb 0c
-    call print_str      ;0451 cd 32 02
+    ld bc,l0cebh
+    call print_str
 
     ;GOSUB readline
     call readline
 
-    ld a,(l3002h)       ;0457 3a 02 30
-    cp 48h              ;045a fe 48
-    jp nz,l0478h        ;045c c2 78 04
+    ;IF l3002h <> &H48 THEN GOTO not_half_hbox
+    ld a,(l3002h)
+    cp 'H'              ;Is it 'H': use last half only for HardBox?
+    jp nz,not_half_hbox ;  No: jump to not_half_hbox
+
+    ;REM User selected 'H' for use last half for HardBox
+
     ld hl,l3003h        ;045f 21 03 30
     ld (hl),01h         ;0462 36 01
     ld hl,(cylinders)   ;0464 2a 06 30
@@ -591,20 +610,29 @@ got_drv_type:
     ld l,c              ;0471 69
     ld (4034h),hl       ;0472 22 34 40
     jp l0497h           ;0475 c3 97 04
-l0478h:
-    ld a,(l3002h)       ;0478 3a 02 30
-    cp 45h              ;047b fe 45
-    jp nz,l048eh        ;047d c2 8e 04
+
+not_half_hbox:
+    ;IF l3002h <> &H45 THEN GOTO bad_conf_hbox
+    ld a,(l3002h)
+    cp 'E'              ;Is it 'E': use entire drive for HardBox?
+    jp nz,bad_conf_hbox ;  No: jump to bad_conf_hbox
+
+    ;REM User selected 'E' for use entire drive for HardBox
+
     ld hl,l3003h        ;0480 21 03 30
     ld (hl),00h         ;0483 36 00
     ld hl,0001h         ;0485 21 01 00
     ld (4034h),hl       ;0488 22 34 40
     jp l0497h           ;048b c3 97 04
-l048eh:
+
+bad_conf_hbox:
     ;PRINT "Please answer E or H : "
-    ld bc,l0d0ah        ;048e 01 0a 0d
-    call print_str      ;0491 cd 32 02
-    jp got_drv_type           ;0494 c3 42 04
+    ld bc,l0d0ah
+    call print_str
+
+    ;GOTO ask_hbox_conf
+    jp ask_hbox_conf
+
 l0497h:
     ld a,(heads)        ;0497 3a 01 30
     ld l,a              ;049a 6f
