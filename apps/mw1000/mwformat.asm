@@ -698,7 +698,7 @@ bad_drv_type:
     jp ask_drv_type
 
 got_drv_type:
-    ;PRINT CHR$(26) ' Clear screen
+    ;PRINT CHR$(26); ' Clear screen
     ld c,1ah
     call print_char
 
@@ -737,7 +737,7 @@ got_drv_type:
     ;PRINT
     call print_eol
 
-    ;PRINT "The formatted capacity is "
+    ;PRINT "The formatted capacity is ";
     ld bc,capacity_is
     call print_str
 
@@ -1075,7 +1075,8 @@ l06eeh:
     call print_str
     call print_eol
 
-    call end      ;071f cd 03 01
+    ;END
+    call end
 
 drive_err_n:
     db 0dh
