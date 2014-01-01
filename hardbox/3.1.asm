@@ -5619,36 +5619,42 @@ ENDIF
 
 corv_read_sec:
 IF version = 291
-    ld (l4a10h),de      ;1982 ed 53 10 4a
-    ld (l4a10h+2),a     ;1986 32 12 4a
-    push hl             ;1989 e5
+;Read a sector (256 bytes) from the Konan David Junior II controller
+;Note: Use only Drive 0 (Register B is ignored)
+;
+; (l4a10h) = Sector address (20 bit address)
+;       HL = DMA buffer address
+;
+    ld (l4a10h),de      ;Store the sector address to access from corv_send_para
+    ld (l4a10h+2),a
+    push hl             ;Store the DMA buffer address
 
-    ld a,21h            ;198a 3e 21
-    call corv_send_cmd  ;198c cd f0 19
-    call corv_send_para ;198f cd 29 1a
+    ld a,21h            ;21h = Read a sector (Type 2 command)
+    call corv_send_cmd
+    call corv_send_para ;Send sector address
 
-    call corv_read_err  ;1992 cd 0d 1a
-    pop hl              ;1995 e1
-    jr nz,corv_err      ;1996 20 47
+    call corv_read_err  ;Check the status
+    pop hl              ;Restore the DMA buffer address
+    jr nz,corv_err      ;Handle error if occurred
 
-    ld a,41h            ;1998 3e 41
-    call corv_send_cmd  ;199a cd f0 19
+    ld a,41h            ;41h = Read from buffer (Type 4 command)
+    call corv_send_cmd
 
-    ld b,00h            ;199d 06 00
+    ld b,00h            ;B = 0 (256 bytes to send)
 l199fh:
-    in a,(corvus)       ;199f db 18
-    ld (hl),a           ;19a1 77
-    inc hl              ;19a2 23
-    ex (sp),hl          ;19a3 e3
-    ex (sp),hl          ;19a4 e3
-    djnz l199fh         ;19a5 10 f8
+    in a,(corvus)       ;Read data byte from the controller buffer
+    ld (hl),a           ;Store it to local buffer
+    inc hl
+    ex (sp),hl          ;Short delay
+    ex (sp),hl
+    djnz l199fh         ;Do it for the next byte
 
-    call corv_read_err  ;19a7 cd 0d 1a
-    ret z               ;19aa c8
+    call corv_read_err  ;Check the status
+    ret z               ;Return if no error
 
-    ld (errtrk),a       ;19ab 32 51 20
+    ld (errtrk),a       ;Store error code as error track
     ld a,error_22       ;"READ ERROR"
-    jp corv_err         ;19b0 c3 df 19
+    jp corv_err         ;Handle error code
 ELSE
 ;Reads a sector (256 bytes) from the Corvus hard drive
 ;
@@ -5685,42 +5691,50 @@ ENDIF
 
 corv_writ_sec:
 IF version = 291
-    ld (l4a10h),de      ;19b3 ed 53 10 4a
-    ld (l4a10h+2),a     ;19b7 32 12 4a
+;Write a sector (256 bytes) to the Konan David Junior II controller
+;Note: Use only Drive 0 (Register B is ignored)
+;
+; (l4a10h) = Sector address (20 bit address)
+;       HL = DMA buffer address
+;
+    ld (l4a10h),de      ;Store the sector address to access from corv_send_para
+    ld (l4a10h+2),a
 
-    ld a,42h            ;19ba 3e 42
-    call corv_send_cmd  ;19bc cd f0 19
+    ld a,42h            ;42h = Write to buffer (Type 4 command)
+    call corv_send_cmd
 
-    ld b,00h            ;19bf 06 00
+    ld b,00h            ;B = 0 (256 bytes to send)
 l19c1h:
-    ld a,(hl)           ;19c1 7e
-    out (corvus),a      ;19c2 d3 18
-    inc hl              ;19c4 23
-    ex (sp),hl          ;19c5 e3
-    ex (sp),hl          ;19c6 e3
-    djnz l19c1h         ;19c7 10 f8
+    ld a,(hl)           ;Get data byte from local buffer
+    out (corvus),a      ;Send it to the controller buffer
+    inc hl
+    ex (sp),hl          ;Short delay
+    ex (sp),hl
+    djnz l19c1h         ;Do it for the next byte
 
-    call corv_read_err  ;19c9 cd 0d 1a
-    jr nz,corv_err      ;19cc 20 11
+    call corv_read_err  ;Check the status
+    jr nz,corv_err      ;Handle error if occurred
 
-    ld a,22h            ;19ce 3e 22
-    call corv_send_cmd  ;19d0 cd f0 19
-    call corv_send_para ;19d3 cd 29 1a
+    ld a,22h            ;22h = Write a sector (Type 2 command)
+    call corv_send_cmd
+    call corv_send_para ;Send sector address
 
-    call corv_read_err  ;19d6 cd 0d 1a
-    ret z               ;19d9 c8
+    call corv_read_err  ;Check the status
+    ret z               ;Return if no error
 
-    ld (errtrk),a       ;19da 32 51 20
+    ld (errtrk),a       ;Store error code as error track
     ld a,error_25       ;"WRITE ERROR"
 
 corv_err:
-    push af             ;19df f5
-    ld hl,(l4a10h)      ;19e0 2a 10 4a
-    ld (errsec),hl      ;19e3 22 54 20
-    ld a,(l4a10h+2)     ;19e6 3a 12 4a
-    ld (errsec+2),a     ;19e9 32 56 20
-    pop af              ;19ec f1
-    jp error_out        ;19ed c3 db 05
+    push af
+
+    ld hl,(l4a10h)      ;Store sector address as error sector
+    ld (errsec),hl
+    ld a,(l4a10h+2)
+    ld (errsec+2),a
+
+    pop af
+    jp error_out        ;Writes the error message "READ ERROR" into the status buffer
 ELSE
 ;Write a sector (256 bytes) to the Corvus hard drive
 ;
@@ -5755,96 +5769,134 @@ ENDIF
 
 IF version = 291
 corv_send_cmd:
-;Send the command to Mini-Winchester hard drive
+;Send the command to the Konan David Junior II controller
 ;
 ;  A = Command
-;        21h = Read Sector with Address into Buffer
-;        41h = Read Sector Data from Buffer
-;        42h = Write Sector Data into Buffer
-;        22h = Write Sector with Address from Buffer
+;        01h = Abort command (unused)
+;        02h = Init (unused)
+;        07h = Init1 (unused)
+;        21h = Read sector into buffer
+;        22h = Write sector from buffer
+;        23h = Read ID (unused)
+;        24h = Status (unused)
+;        25h = Drive status (unused)
+;        26h = Format spare (unused)
+;        27h = Format (unused)
+;        28h = Seek (unused)
+;        2Ah = Append Map (unused)
+;        41h = Read from buffer
+;        42h = Write into buffer
 ;
     ld b,a              ;Save the command
 
-    xor a               ;19f1 af
-    out (corvus),a      ;Put byte (00h) on Mini-Winchester data bus
+    xor a               ;00h = All before is done
+    out (corvus),a      ;Send byte (00h) to the Konan David Junior II controller
 
 l19f4h:
-    in a,(corvus)       ;19f4 db 18
-    cp 10100000b        ;19f6 fe a0
-    jr nz,l19f4h        ;19f8 20 fa
+    in a,(corvus)       ;Read from Konan David Junior II controller
+    cp 0a0h
+    jr nz,l19f4h        ;Wait until readed data = 0a0h (Ready to received commands) 
 
-    ld a,b              ;19fa 78
-    out (corvus),a      ;Put byte (command) on Mini-Winchester data bus
+    ld a,b              ;Restore the command
+    out (corvus),a      ;Send byte (command) to the Konan David Junior II controller
 
 l19fdh:
-    in a,(corvus)       ;19fd db 18
-    cp 10100001b        ;19ff fe a1
-    jr nz,l19fdh        ;1a01 20 fa
+    in a,(corvus)       ;Read from Konan David Junior II controller
+    cp 0a1h
+    jr nz,l19fdh        ;Wait until readed data = 0a1h (Has received the command)
 
-    ld a,255            ;1a03 3e ff
-    out (corvus),a      ;Put byte (0ffh) on Mini-Winchester data bus
+    ld a,0ffh           ;0ffh = Allow to execute the command
+    out (corvus),a      ;Send byte (0ffh) to the Konan David Junior II controller
 
     ld b,20             ;B=14h
 l1a09h:
     nop
-    djnz l1a09h         ;Delay loop
+    djnz l1a09h         ;Delay loop (min. 50 us)
 
-    ret                 ;1a0c c9
+    ret
 
 corv_read_err:
-;Read the error code from a Mini-Winchester hard drive.
+;Read the status code from the Konan David Junior II controller
 ;
-;Returns the error code in A (0=OK) and also changes
-;the Z flag: Z=1 if OK, Z=0 if error.
+;Returns the status code in A and also changes
+;the Z flag: Z=1 if OK, Z=0 if hard error.
 ;
-;  00 Header Write Error
-;  02 Header Read Error
-;  04 Data Read Error
-;  06 Write Fault
-;  07 Disk Not Ready
-;  09 Illegal Command
+;The upper 3 bits of the error code are flags:
 ;
-    ld a,255            ;1a0d 3e ff
-    out (corvus),a      ;Put byte (0ffh) on Mini-Winchester data bus
+;  Bit 7: Clear if status is ready (will wait until is cleared).
+;  Bit 6: Set if a hard error occurred.
+;  Bit 5: Set if there was a recoverable error.
+;
+;The lower 5 bits of the error code are reserved for the code itself.
+;
+;  01 Header Read (Read)
+;  02 Header Write (Write)
+;  04 Data Read (Read)
+;
+;  20 Data Corrected (Read)
+;
+;  40 Header Read Error (Read)
+;  41 Header Read ID Error (Read ID)
+;  42 Header Write Error (Write)
+;  43 Seek Error (Seek)
+;  44 Data Read Error (Read)
+;  45 Write Protected (Write)
+;  46 Write Fault (Drive Select)
+;  47 Drive Not Ready (Drive Select)
+;  48 Out of Spares (Format)
+;  49 Illegal Command (Command)
+;  4A Accessed Spare Track Error (Read/Write)
+;
+    ld a,0ffh           ;0ffh = Request to Read status byte
+    out (corvus),a      ;Send byte (0ffh) to the Konan David Junior II controller
 
 l1a11h:
-    in a,(corvus)
+    in a,(corvus)       ;Read from Konan David Junior II controller
     inc a
-    jr nz,l1a11h        ;Wait until readed data = 255
+    jr nz,l1a11h        ;Wait until readed data = 0ffh (controller no longer in its internal DMA mode)
 
-    ld a,255-00000001b  ;1a16 3e fe
-    out (corvus),a      ;Put byte (0feh) on Mini-Winchester data bus
+    ld a,0feh           ;0feh = Read status byte
+    out (corvus),a      ;Send byte (0feh) to the Konan David Junior II controller
 
 l1a1ah:
-    in a,(corvus)
+    in a,(corvus)       ;Check if bit 7 (status byte is ready to read)
     rla
-    jr c,l1a1ah         ;Wait until Bit 7 = Low
+    jr c,l1a1ah         ;Wait until bit 7 is cleared (now status is ready)
 
-    in a,(corvus)       ;1a1f db 18
-    bit 6,a             ;1a21 cb 77
-    push af             ;1a23 f5
+    in a,(corvus)       ;Read the status byte from the Konan David Junior II controller
+    bit 6,a             ;Test bit 6 for hard error
+    push af
 
-    xor a               ;1a24 af
-    out (corvus),a      ;Put byte (00h) on Mini-Winchester data bus
+    xor a               ;00h = Acknowledge the status is readed
+    out (corvus),a      ;Send byte (00h) to the Konan David Junior II controller
 
-    pop af              ;1a27 f1
-    ret                 ;1a28 c9
+    pop af
+    ret
 
 corv_send_para:
-;Send an eight bytes parameter block to the Mini-Winchester hard drive
+;Send an eight bytes address block to the Konan David Junior II controller
+;Note: Use only Drive 0 (Register B is ignored)
 ;
-; (l4a10h) = 24 bit absolute sector number
+; (l4a10h) = Sector address (20 bit address)
+;       HL = DMA buffer address
 ;
-; 1. Byte:              00h (drive number?)
+;Sample translating for 8 heads:
+;  +2  Hi   +1  Mi   +0  Lo
+; ----3210 76543210 76543210 (Only using 20 Bit)
+;                      ^^^^^..: 0 ..   31 =   sector number (31 sectors for 256 bytes sectors)
+;                   ^^^.......: 0 ..    7 =     head number (max. 8 heads are allowed)
+;     ^^^^ ^^^^^^^^...........: 0 .. 4095 = cylinder number (can be up to 32000)
+;
+; 1. Byte:            Drive (0)
 ; 2. Byte:             Head (0 .. (l0133h))
 ; 3. and 4. Bytes: Cylinder ((l0134h) .. max. cylinder number)
 ; 5. Byte:           Sector (0 .. 31)
-; 6. Byte:              00h
-; 7. Byte:              00h
-; 8. Byte:              00h
+; 6. Byte:         Reserved (00h)
+; 7. Byte:         Reserved (00h)
+; 8. Byte:         Reserved (00h)
 ;
-    xor a               ;1a29 af
-    out (corvus),a      ;Put 1. Byte on Mini-Winchester data bus
+    xor a               ;Take a zero for the drive number
+    out (corvus),a      ;Send 1. Byte (Drive number) to the Konan David Junior II controller
 
     ld hl,(l4a10h)
     ld a,(l4a10h+2)     ;AHL = (l4a10h)
@@ -5888,28 +5940,27 @@ l1a57h:
     dec a               ;A = A - 1
     jr nz,l1a4bh        ;1a5c 20 ed
 
-    ld a,l              ;1a5e 7d
-    out (corvus),a      ;Put 2. Byte on Mini-Winchester data bus
+    ld a,l              ;Take the low byte
+    out (corvus),a      ;Send 2. Byte (Head number) to the Konan David Junior II controller
 
-    ld hl,(l0134h)
+    ld hl,(l0134h)      ;Add to the cylinder count the starting cylinder value
     add hl,de           ;HL = (l0134h) + DE
 
-    ld a,l              ;1a65 7d
-    out (corvus),a      ;Put 3. Byte on Mini-Winchester data bus
+    ld a,l              ;Take the low byte of the cylinder number
+    out (corvus),a      ;Send 3. Byte (Cylinder number low byte) to the Konan David Junior II controller
 
-    ld a,h              ;1a68 7c
-    out (corvus),a      ;Put 4. Byte on Mini-Winchester data bus
+    ld a,h              ;Take the high byte of the cylinder number
+    out (corvus),a      ;Send 4. Byte (Cylinder number high byte) to the Konan David Junior II controller
 
-    ld a,(l4a10h)       ;1a6b 3a 10 4a
-    and 1fh             ;1a6e e6 1f
-    out (corvus),a      ;Put 5. Byte on Mini-Winchester data bus
+    ld a,(l4a10h)       ;From the Sector address
+    and 1fh             ;take the lowest five bits to generate the sector number
+    out (corvus),a      ;Send 5. Byte (Sector number) to the Konan David Junior II controller
 
-    xor a               ;1a72 af
-    out (corvus),a      ;Put &: Byte on Mini-Winchester data bus
-
-    out (corvus),a      ;Put 7. byte on Mini-Winchester data bus
-    out (corvus),a      ;Put 8. Byte on Mini-Winchester data bus
-    ret                 ;1a79 c9
+    xor a               ;All three reserved bytes are zero
+    out (corvus),a      ;Send 6. Byte (Reserved) to the Konan David Junior II controller
+    out (corvus),a      ;Send 7. byte (Reserved) to the Konan David Junior II controller
+    out (corvus),a      ;Send 8. Byte (Reserved) to the Konan David Junior II controller
+    ret
 ELSE
 corv_read_err:
 ;Read the error code from a Corvus hard drive.
