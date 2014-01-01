@@ -101,20 +101,20 @@ main:
 
     ;POKE &H4033, 1
     ld a,01h
-    ld (4033h),a
+    ld (4033h),a        ;TODO: heads = 1?
 
     ;l010ah = &H4000
     ld hl,4000h
-    ld (l010ah),hl
+    ld (l010ah),hl      ;TODO: buffer address?
 
     ;l010ch = &H20
     ld hl,0020h
-    ld (l010ch),hl
+    ld (l010ch),hl      ;TODO: transfer 32 sectors (= 1 full track)?
 
     ;CALL mw_read (l010ah, l010ch, l010eh)
-    ld bc,l010ah
-    ld de,l010ch
-    ld hl,l010eh
+    ld bc,l010ah        ;bc = pointer to buffer address?
+    ld de,l010ch        ;de = pointer to number of sectors?
+    ld hl,l010eh        ;hl = pointer to error?
     call mw_read
 
     ;GOSUB check_error
@@ -609,11 +609,16 @@ buffin:
     jp bdos
 
 mw_read:
-    ld (var_4),hl       ;0546 22 32 06
-    xor a               ;0549 af
-    ld (hl),a           ;054a 77
-    inc hl              ;054b 23
-    ld (hl),a           ;054c 77
+;Read a sector from the Konan David Junior II controller.
+;
+    ld (err_ptr),hl     ;Save pointer to error word
+
+                        ;Initialize error word to 0:
+    xor a               ;  A=0
+    ld (hl),a           ;  Error word low byte = 0
+    inc hl              ;  Increment to high byte
+    ld (hl),a           ;  Error word high byte = 0
+
     ld (var_3),a        ;054d 32 31 06
     ld a,(de)           ;0550 1a
     ld (var_1),a        ;0551 32 2f 06
@@ -627,34 +632,43 @@ l0559h:
     ld a,(bc)           ;055c 0a
     ld h,a              ;055d 67
     push hl             ;055e e5
-    ld a,21h            ;055f 3e 21
-l0561h:
-    call mw_sub_05c0h   ;0561 cd c0 05
-    call mw_sub_05f9h   ;0564 cd f9 05
-    call mw_sub_05ddh   ;0567 cd dd 05
-    pop hl              ;056a e1
-    jr nz,l05bbh        ;056b 20 4e
-    ld a,41h            ;056d 3e 41
-    call mw_sub_05c0h   ;056f cd c0 05
-    ld b,00h            ;0572 06 00
-l0574h:
-    in a,(corvus)       ;0574 db 18
-    ld (hl),a           ;0576 77
-l0577h:
-    inc hl              ;0577 23
-    ex (sp),hl          ;0578 e3
-    ex (sp),hl          ;0579 e3
-    djnz l0574h         ;057a 10 f8
-    call mw_sub_05ddh   ;057c cd dd 05
-    ret z               ;057f c8
-    jp l05bbh           ;0580 c3 bb 05
+
+    ld a,21h            ;A = 21h (Read Disk)
+    call mw_comout      ;Send command
+    call mw_send_addr   ;Send disk/track/sector sequence
+
+    call mw_status      ;Read status
+    pop hl
+    jr nz,mw_error      ;Status not OK?  Jump to handle error.
+
+    ld a,41h            ;A = 41h (Read Buffer)
+    call mw_comout      ;Send command
+
+                        ;Transfer 256 bytes from David Junior II:
+    ld b,00h            ;  Seed loop index to count 256 bytes
+l0574h:                 ;
+    in a,(corvus)       ;  Read data byte from David Junior II
+    ld (hl),a           ;  Store it in our buffer
+    inc hl              ;  Increment buffer pointer
+    ex (sp),hl          ;  Delay
+    ex (sp),hl          ;  Delay
+    djnz l0574h         ;  Decrement B, loop until B=0
+
+    call mw_status      ;Read David Junior II status.  Is it OK?
+    ret z               ;  Yes: return.
+    jp mw_error         ;  No: jump to handle error.
 
 mw_write:
-    ld (var_4),hl       ;0583 22 32 06
-    xor a               ;0586 af
-    ld (hl),a           ;0587 77
-    inc hl              ;0588 23
-    ld (hl),a           ;0589 77
+;Write a sector to the Konan David Junior II controller.
+;
+    ld (err_ptr),hl     ;Save pointer to error word
+
+                        ;Initialize error word to 0:
+    xor a               ;  A=0
+    ld (hl),a           ;  Error word low byte = 0
+    inc hl              ;  Increment to high byte
+    ld (hl),a           ;  Error word high byte = 0
+
     ld (var_3),a        ;058a 32 31 06
     ld a,(de)           ;058d 1a
 l058eh:
@@ -668,104 +682,124 @@ l0596h:
     inc bc              ;0598 03
     ld a,(bc)           ;0599 0a
     ld h,a              ;059a 67
-    ld a,42h            ;059b 3e 42
-    call mw_sub_05c0h   ;059d cd c0 05
-    ld b,00h            ;05a0 06 00
-l05a2h:
-    ld a,(hl)           ;05a2 7e
-    out (corvus),a      ;05a3 d3 18
-    inc hl              ;05a5 23
-    ex (sp),hl          ;05a6 e3
-    ex (sp),hl          ;05a7 e3
-    djnz l05a2h         ;05a8 10 f8
-    call mw_sub_05ddh   ;05aa cd dd 05
-    jr nz,l05bbh        ;05ad 20 0c
-    ld a,22h            ;05af 3e 22
-    call mw_sub_05c0h   ;05b1 cd c0 05
-    call mw_sub_05f9h   ;05b4 cd f9 05
-    call mw_sub_05ddh   ;05b7 cd dd 05
-    ret z               ;05ba c8
-l05bbh:
-    ld hl,(var_4)       ;05bb 2a 32 06
-    ld (hl),a           ;05be 77
-    ret                 ;05bf c9
 
-mw_sub_05c0h:
-    ld b,a              ;05c0 47
-    xor a               ;05c1 af
-    out (corvus),a      ;05c2 d3 18
-l05c4h:
-    in a,(corvus)       ;05c4 db 18
-    cp 0a0h             ;05c6 fe a0
-    jr nz,l05c4h        ;05c8 20 fa
-    ld a,b              ;05ca 78
-    out (corvus),a      ;05cb d3 18
-l05cdh:
-    in a,(corvus)       ;05cd db 18
-    cp 0a1h             ;05cf fe a1
-    jr nz,l05cdh        ;05d1 20 fa
-    ld a,0ffh           ;05d3 3e ff
-    out (corvus),a      ;05d5 d3 18
-    ld b,14h            ;05d7 06 14
-l05d9h:
-    nop                 ;05d9 00
-    djnz l05d9h         ;05da 10 fd
-    ret                 ;05dc c9
+    ld a,42h            ;A = 42h (Write Buffer)
+    call mw_comout      ;Send Command
 
-mw_sub_05ddh:
-    ld a,0ffh           ;05dd 3e ff
-    out (corvus),a      ;05df d3 18
+                        ;Transfer 256 bytes to David Junior II:
+    ld b,00h            ;  Seed loop index to count 256 bytes
+l05a2h:                 ;
+    ld a,(hl)           ;  Read data byte our buffer
+    out (corvus),a      ;  Write it to the David Junior II
+    inc hl              ;  Increment buffer pointer
+    ex (sp),hl          ;  Delay
+    ex (sp),hl          ;  Delay
+    djnz l05a2h         ;  Decrement B, loop until B=0
+
+    call mw_status      ;Read David Junior II status.  Is it OK?
+    jr nz,mw_error      ;  No: jump to handle error.
+
+    ld a,22h            ;A = 22h (Write Disk)
+    call mw_comout      ;Send Command
+    call mw_send_addr   ;Send disk/track/sector sequence
+
+    call mw_status      ;Read David Junior II status.  Is it OK?
+    ret z               ;  Yes: return.
+                        ;  No: fall through to mw_error to handle error.
+
+mw_error:
+;An error occurred from the Konan David Junior II controller.
+;
+    ld hl,(err_ptr)     ;HL = pointer to error word
+    ld (hl),a           ;Save A as error word low byte (high byte always 0)
+    ret
+
+mw_comout:
+;Send the command in A to the Konan David Junior II controller.
+;
+    ld b,a              ;Save command
+    xor a
+    out (corvus),a      ;Clear David Junior II port
+mw_rdy1:
+    in a,(corvus)
+    cp 0a0h
+    jr nz,mw_rdy1       ;Wait for David Junior II to go ready
+    ld a,b              ;Recall command
+    out (corvus),a      ;Send command
+mw_rdy2:
+    in a,(corvus)
+    cp 0a1h
+    jr nz,mw_rdy2       ;Wait until the David Junior II has it
+    ld a,0ffh
+    out (corvus),a      ;Send execute code
+    ld b,14h
+mw_rdy3:
+    nop
+    djnz mw_rdy3        ;Delay loop
+    ret
+
+mw_status:
+;Get status from the Konan David Junior II, return it in A.
+;
+    ld a,0ffh
+    out (corvus),a      ;Transfer done
 l05e1h:
-    in a,(corvus)       ;05e1 db 18
-    inc a               ;05e3 3c
-    jr nz,l05e1h        ;05e4 20 fb
-    ld a,0feh           ;05e6 3e fe
-    out (corvus),a      ;05e8 d3 18
+    in a,(corvus)
+    inc a
+    jr nz,l05e1h        ;Wait for David Junior II to get out
+                        ;  of internal DMA mode
+    ld a,0feh
+    out (corvus),a      ;Signal that we are ready for status
 l05eah:
-    in a,(corvus)       ;05ea db 18
-    rla                 ;05ec 17
-    jr c,l05eah         ;05ed 38 fb
-    in a,(corvus)       ;05ef db 18
-    bit 6,a             ;05f1 cb 77
-    push af             ;05f3 f5
-    xor a               ;05f4 af
-    out (corvus),a      ;05f5 d3 18
-    pop af              ;05f7 f1
-    ret                 ;05f8 c9
+    in a,(corvus)
+    rla
+    jr c,l05eah         ;Wait for status
 
-mw_sub_05f9h:
-    xor a               ;05f9 af
-    out (corvus),a      ;05fa d3 18
-    ld hl,(var_1)       ;05fc 2a 2f 06
-    ld a,(var_3)        ;05ff 3a 31 06
-    ld b,05h            ;0602 06 05
+    in a,(corvus)       ;Read status byte
+    bit 6,a             ;Bit 6 of David Junior status is set if error
+                        ;  Z = opposite of bit 6 (Z=1 if OK, Z=0 if error)
+    push af             ;Save status byte
+    xor a
+    out (corvus),a      ;Clear the port to acknowledge receiving the status
+    pop af              ;Recall status byte
+    ret
+
+mw_send_addr:
+;Send an 8-byte address to the David Junior II controller.
+;
+    xor a
+    out (corvus),a      ;Send byte 0: unit number (always 0)
+    ld hl,(var_1)
+    ld a,(var_3)
+    ld b,05h
 l0604h:
-    rra                 ;0604 1f
-    rr h                ;0605 cb 1c
-    rr l                ;0607 cb 1d
+    rra
+    rr h
+    rr l
 l0609h:
-    djnz l0604h         ;0609 10 f9
-    ld a,(4033h)        ;060b 3a 33 40
-    ld b,a              ;060e 47
-    and l               ;060f a5
-    out (corvus),a      ;0610 d3 18
+    djnz l0604h         ;Decrement B, loop until B=0
+
+    ld a,(4033h)
+    ld b,a
+    and l
+    out (corvus),a      ;Send byte 1: Head number (0..7)
 l0612h:
-    srl h               ;0612 cb 3c
-    rr l                ;0614 cb 1d
-    srl b               ;0616 cb 38
-    jr nz,l0612h        ;0618 20 f8
-    ld a,l              ;061a 7d
-    out (corvus),a      ;061b d3 18
-    ld a,h              ;061d 7c
-    out (corvus),a      ;061e d3 18
-    ld a,(var_1)        ;0620 3a 2f 06
-    and 1fh             ;0623 e6 1f
-    out (corvus),a      ;0625 d3 18
-    xor a               ;0627 af
-    out (corvus),a      ;0628 d3 18
-    out (corvus),a      ;062a d3 18
-    out (corvus),a      ;062c d3 18
-    ret                 ;062e c9
+    srl h
+    rr l
+    srl b
+    jr nz,l0612h
+    ld a,l
+    out (corvus),a      ;Send byte 2: Track low (0..FF)
+    ld a,h
+    out (corvus),a      ;Send byte 3: Track high (0 or 1)
+    ld a,(var_1)
+    and 1fh
+    out (corvus),a      ;Send byte 4: Sector
+    xor a
+    out (corvus),a      ;Send byte 5: Reserved
+    out (corvus),a      ;Send byte 6: Reserved
+    out (corvus),a      ;Send byte 7: Reserved
+    ret
 
 var_1:
     db 20h
@@ -773,8 +807,8 @@ var_2:
     db 02h
 var_3:
     db 21h
-var_4:
-    dw 0
+err_ptr:
+    dw 0                ;Pointer: error code
 
 ; Start of KLIB.REL =========================================================
 
