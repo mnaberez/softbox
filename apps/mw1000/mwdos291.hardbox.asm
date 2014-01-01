@@ -915,7 +915,6 @@ l0707h:
     ld a,(hl)
     ld b,00h
     cp "S"              ;check for "SEQ"
-sub_0716h:
     jr z,l0748h
     ld b,01h
     cp "U"              ;check for "USR"
@@ -1803,7 +1802,6 @@ l0e0dh:
     pop de              ;0e4f d1
     push de             ;0e50 d5
     ld a,(ix+13h)       ;0e51 dd 7e 13
-sub_0e54h:
     cp e                ;0e54 bb
     jr nz,l0e61h        ;0e55 20 0a
     ld a,(ix+14h)       ;0e57 dd 7e 14
@@ -2824,7 +2822,6 @@ l1548h:
     push bc             ;1548 c5
     call dir_get_next      ;1549 cd a6 15
     ld hl,(4608h)       ;154c 2a 08 46
-l154fh:
     pop bc              ;154f c1
     ret c               ;1550 d8
     push ix             ;1551 dd e5

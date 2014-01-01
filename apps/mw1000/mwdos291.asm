@@ -35,7 +35,6 @@ l0118h:
     dw 0
 l011ah:
     dw 0
-l011ch:
     dw 0
     dw 0
     dw 0
@@ -367,7 +366,6 @@ l02fah:
     ld a,l              ;0301 7d
     and e               ;0302 a3
     ld l,a              ;0303 6f
-l0304h:
     ld a,h              ;0304 7c
     or l                ;0305 b5
     jp z,l0313h         ;0306 ca 13 03
@@ -602,7 +600,6 @@ l0518h:
 
 mw_write:
     ld (var_4),hl       ;0527 22 d6 05
-l052ah:
     xor a               ;052a af
 l052bh:
     ld (hl),a           ;052b 77
@@ -699,7 +696,6 @@ l05a8h:
     rr h                ;05a9 cb 1c
 l05abh:
     rr l                ;05ab cb 1d
-l05adh:
     djnz l05a8h         ;05ad 10 f9
     ld a,(4033h)        ;05af 3a 33 40
     ld b,a              ;05b2 47
@@ -2163,7 +2159,6 @@ l0e40h:
     call l1045h         ;0e4d cd 45 10
     call sub_0ffbh      ;0e50 cd fb 0f
     inc hl              ;0e53 23
-sub_0e54h:
     ld e,(hl)           ;0e54 5e
     inc hl              ;0e55 23
     ld d,(hl)           ;0e56 56
@@ -5076,7 +5071,6 @@ l4110h:
     call sub_192dh      ;4145 cd 2d 19
     ld hl,(200bh)       ;4148 2a 0b 20
     ld (202ah),hl       ;414b 22 2a 20
-sub_414eh:
     ld a,(2009h)        ;414e 3a 09 20
     ld e,a              ;4151 5f
     ld d,00h            ;4152 16 00
@@ -6873,7 +6867,6 @@ cmd_new:
     ld bc,0010h         ;4f2f 01 10 00
 l4f32h:
     ld a,(hl)           ;4f32 7e
-sub_4f33h:
     or a                ;4f33 b7
     jr nz,l4f38h        ;4f34 20 02
     ld (hl),20h         ;4f36 36 20
@@ -7025,7 +7018,6 @@ l5054h:
     push af             ;5054 f5
     ld ix,2054h         ;5055 dd 21 54 20
     inc (ix+00h)        ;5059 dd 34 00
-sub_505ch:
     jr nz,l5066h        ;505c 20 08
     inc (ix+01h)        ;505e dd 34 01
     jr nz,l5066h        ;5061 20 03
@@ -7427,7 +7419,6 @@ l5342h:
     inc iy              ;534f fd 23
     inc iy              ;5351 fd 23
     inc iy              ;5353 fd 23
-sub_5355h:
     djnz l5342h         ;5355 10 eb
 l5357h:
     ld (hl),22h         ;5357 36 22
@@ -7561,7 +7552,6 @@ l5448h:
     call sub_15a6h      ;5449 cd a6 15
 l544ch:
     ld hl,(l4608h)      ;544c 2a 08 46
-l544fh:
     pop bc              ;544f c1
     ret c               ;5450 d8
     push ix             ;5451 dd e5
@@ -8282,7 +8272,6 @@ l594bh:
     or a                ;594e b7
     sbc hl,bc           ;594f ed 42
     jr nc,l5956h        ;5951 30 03
-l5953h:
     add hl,bc           ;5953 09
     jr l5957h           ;5954 18 01
 l5956h:

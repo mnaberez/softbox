@@ -625,7 +625,6 @@ mw_read:
     inc de              ;0554 13
     ld a,(de)           ;0555 1a
     ld (var_2),a        ;0556 32 30 06
-l0559h:
     ld a,(bc)           ;0559 0a
     ld l,a              ;055a 6f
     inc bc              ;055b 03
@@ -671,12 +670,10 @@ mw_write:
 
     ld (var_3),a        ;058a 32 31 06
     ld a,(de)           ;058d 1a
-l058eh:
     ld (var_1),a        ;058e 32 2f 06
     inc de              ;0591 13
     ld a,(de)           ;0592 1a
     ld (var_2),a        ;0593 32 30 06
-l0596h:
     ld a,(bc)           ;0596 0a
     ld l,a              ;0597 6f
     inc bc              ;0598 03
@@ -776,7 +773,6 @@ l0604h:
     rra
     rr h
     rr l
-l0609h:
     djnz l0604h         ;Decrement B, loop until B=0
 
     ld a,(4033h)

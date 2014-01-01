@@ -41,7 +41,6 @@ l0130h:
     ld c,0ffh           ;0138 0e ff
     call sub_0107h      ;013a cd 07 01
     ld hl,l0c4ch        ;013d 21 4c 0c
-l0140h:
     ld (hl),01h         ;0140 36 01
     jp l0149h           ;0142 c3 49 01
 l0145h:
