@@ -1,6 +1,27 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=newdos.asm newdos.com
 
+;TODO: 0292 is print_int label!
+
+l4000h: equ 4000h       ;opcode "jp" (1 Byte)
+l4001h: equ 4001h       ;jump address (2 Bytes)
+
+                        ;here starts the user area
+l4003h: equ 4003h       ;Physical drive number (1 .. 4, 1 Byte)
+l4004h: equ 4004h       ;Starting sector number on drive (An Absolute Sector Number, 3 Bytes)
+l4007h: equ 4007h       ;User area size in kilobytes, there are 4 blocks (2 Bytes)
+l4009h: equ 4009h       ;Type of user area (Single user or Multi-user) (1 Byte)
+l400ah: equ 400ah       ;Maximum numbers of files allowed (2 Bytes)
+l400ch: equ 400ch       ;direct access size (2 Bytes)
+l400eh: equ 400eh       ;tracks per drive (2 Bytes)
+l4010h: equ 4010h       ;sectors per track (3 Bytes)
+l4023h: equ 4023h       ;user name (16 Bytes)
+
+                        ;here starts the global area
+l4033h: equ 4033h       ;Max. head number (1 Byte)
+l4034h: equ 4034h       ;First cylinder number using for HardBox (2 Bytes)
+l4036h: equ 4036h       ;IEEE-488 primary address (1 Byte)
+
     org 0100h
 
     jp start
@@ -11,7 +32,7 @@ end:
     ret
 
 check_error:
-    ;IF (l0c3ch AND &H40) <> 0 THEN GOTO got_error
+    ;IF (l3000h AND &H40) <> 0 THEN GOTO got_error
     ld a,(l3000h)
     and 40h
     jp nz,got_error
@@ -176,7 +197,6 @@ l01c7h:
     ld h,a              ;01fd 67
     add hl,bc           ;01fe 09
     ld a,(hl)           ;01ff 7e
-l0200h:
     ld l,a              ;0200 6f
     rla                 ;0201 17
     sbc a,a             ;0202 9f
@@ -268,6 +288,7 @@ l028ch:
     call sub_13c5h      ;028c cd c5 13
     ld (bc),a           ;028f 02
     and (hl)            ;0290 a6
+;TODO: 0292 is print_int label!
     jr nc,$+35          ;0291 30 21
     xor c               ;0293 a9
     jr nc,l0306h        ;0294 30 70
@@ -598,8 +619,11 @@ ask_hbox_conf:
 
     ;REM User selected 'H' for use last half for HardBox
 
+    ;l3003h = 1
     ld hl,l3003h        ;045f 21 03 30
     ld (hl),01h         ;0462 36 01
+
+    ;l4034h = (cylinders / 2) + 1
     ld hl,(cylinders)   ;0464 2a 06 30
     ld b,h              ;0467 44
     ld c,l              ;0468 4d
@@ -608,7 +632,7 @@ ask_hbox_conf:
     inc bc              ;046f 03
     ld h,b              ;0470 60
     ld l,c              ;0471 69
-    ld (4034h),hl       ;0472 22 34 40
+    ld (l4034h),hl      ;0472 22 34 40
 
     ;GOTO got_hbox_conf
     jp got_hbox_conf
@@ -621,10 +645,15 @@ not_half_hbox:
 
     ;REM User selected 'E' for use entire drive for HardBox
 
+    ;l3003h = 0
     ld hl,l3003h        ;0480 21 03 30
     ld (hl),00h         ;0483 36 00
+
+    ;l4034h = 1
     ld hl,0001h         ;0485 21 01 00
-    ld (4034h),hl       ;0488 22 34 40
+    ld (l4034h),hl      ;0488 22 34 40
+
+    ;GOTO got_hbox_conf
     jp got_hbox_conf    ;048b c3 97 04
 
 bad_hbox_conf:
@@ -636,6 +665,7 @@ bad_hbox_conf:
     jp ask_hbox_conf
 
 got_hbox_conf:
+    ;l4007h = heads*(cylinders-l4034h)*8
     ld a,(heads)        ;0497 3a 01 30
     ld l,a              ;049a 6f
     rla                 ;049b 17
@@ -645,7 +675,7 @@ got_hbox_conf:
     ld d,a              ;04a1 57
     ld a,l              ;04a2 7d
     ld b,h              ;04a3 44
-    ld hl,(4034h)       ;04a4 2a 34 40
+    ld hl,(l4034h)      ;04a4 2a 34 40
     sub l               ;04a7 95
     ld c,a              ;04a8 4f
     ld a,b              ;04a9 78
@@ -661,7 +691,7 @@ got_hbox_conf:
     add hl,hl           ;04b5 29
     add hl,hl           ;04b6 29
     add hl,hl           ;04b7 29
-    ld (4007h),hl       ;04b8 22 07 40
+    ld (l4007h),hl      ;04b8 22 07 40
 
 ask_direct:
     ;PRINT
@@ -679,10 +709,11 @@ ask_direct:
     ;GOSUB readline
     call readline
 
+    ;l400ch = 0 : l4010h = 0 : l400eh = 0
     ld hl,0000h         ;04d0 21 00 00
-    ld (400ch),hl       ;04d3 22 0c 40
-    ld (4010h),hl       ;04d6 22 10 40
-    ld (400eh),hl       ;04d9 22 0e 40
+    ld (l400ch),hl      ;direct access size = 0
+    ld (l4010h),hl      ;sectors per track = 0
+    ld (l400eh),hl      ;tracks per drive = 0
 
     ;IF l3002h <> &H4E THEN GOTO l04f0h
     ld a,(l3002h)
@@ -691,9 +722,9 @@ ask_direct:
 
     ;REM User selected 'N' for no direct access
 
-    ld (400ch),hl       ;04e4 22 0c 40
-    ld (4010h),hl       ;04e7 22 10 40
-    ld (400eh),hl       ;04ea 22 0e 40
+    ld (l400ch),hl      ;04e4 22 0c 40
+    ld (l4010h),hl      ;04e7 22 10 40
+    ld (l400eh),hl      ;04ea 22 0e 40
 
     ;GOTO l05dfh
     jp l05dfh
@@ -716,14 +747,13 @@ l04f8h:
     call print_str
     call print_eol
 
+    ;PRINT l4007h-10;"may be reserved for direct access"
     ld bc,0fff6h        ;0506 01 f6 ff
-    ld hl,(4007h)       ;0509 2a 07 40
+    ld hl,(l4007h)      ;0509 2a 07 40
     add hl,bc           ;050c 09
     ld b,h              ;050d 44
     ld c,l              ;050e 4d
     call 0292h          ;050f cd 92 02
-
-    ;PRINT "may be reserved for direct access"
     ld bc,l0d94h
     call print_str
     call print_eol
@@ -765,14 +795,15 @@ l04f8h:
 
     ;REM User selected 'E' for 8050 emulation
 
+    ;l400ch = 1117 : l4010h = 29 : l400eh = 77
     ld hl,1117
-    ld (400ch),hl       ;direct access size = 1117
+    ld (l400ch),hl      ;direct access size = 1117
 
     ld hl,29
-    ld (4010h),hl       ;sectors per track = 29
+    ld (l4010h),hl      ;sectors per track = 29
 
     ld hl,77
-    ld (400eh),hl       ;tracks per drive = 77
+    ld (l400eh),hl      ;tracks per drive = 77
 
     ;GOTO l05d3h
     jp l05d3h
@@ -780,11 +811,12 @@ l04f8h:
 l0568h:
     ;REM User did not select 8050 emulation
 
+    ;l400ch = l3004h
     ld hl,(l3004h)      ;0568 2a 04 30
-    ld (400ch),hl       ;056b 22 0c 40
+    ld (l400ch),hl      ;056b 22 0c 40
 
     ;IF &H400C = 0 THEN GOTO l04f8h
-    ld hl,(400ch)
+    ld hl,(l400ch)
     ld a,l
     or h
     jp z,l04f8h
@@ -832,8 +864,9 @@ l0568h:
     ;GOSUB readline
     call readline
 
+    ;l4010h = l3004h
     ld hl,(l3004h)      ;05bb 2a 04 30
-    ld (4010h),hl       ;05be 22 10 40
+    ld (l4010h),hl      ;05be 22 10 40
 
     ;PRINT
     call print_eol
@@ -845,8 +878,9 @@ l0568h:
     ;GOSUB readline
     call readline
 
+    ;l400eh = l3004h
     ld hl,(l3004h)      ;05cd 2a 04 30
-    ld (400eh),hl       ;05d0 22 0e 40
+    ld (l400eh),hl      ;05d0 22 0e 40
 
 l05d3h:
     jp l05dfh           ;05d3 c3 df 05
@@ -860,12 +894,13 @@ l05d6h:
     jp ask_direct
 
 l05dfh:
+    ;l301ah = heads * l4034h * 32
     ld a,(heads)        ;05df 3a 01 30
     ld l,a              ;05e2 6f
     rla                 ;05e3 17
     sbc a,a             ;05e4 9f
     push hl             ;05e5 e5
-    ld hl,(4034h)       ;05e6 2a 34 40
+    ld hl,(l4034h)      ;05e6 2a 34 40
     ld b,h              ;05e9 44
     ld c,l              ;05ea 4d
     pop hl              ;05eb e1
@@ -879,10 +914,12 @@ l05dfh:
     add hl,hl           ;05f5 29
     add hl,hl           ;05f6 29
     ld (l301ah),hl      ;05f7 22 1a 30
-    ld hl,(4007h)       ;05fa 2a 07 40
+
+    ;l3008h = l4007h-l400ch
+    ld hl,(l4007h)      ;05fa 2a 07 40
     ld a,l              ;05fd 7d
     ex de,hl            ;05fe eb
-    ld hl,(400ch)       ;05ff 2a 0c 40
+    ld hl,(l400ch)      ;05ff 2a 0c 40
     sub l               ;0602 95
     ld e,a              ;0603 5f
     ld a,d              ;0604 7a
@@ -890,6 +927,8 @@ l05dfh:
     ld h,a              ;0606 67
     ld l,e              ;0607 6b
     ld (l3008h),hl      ;0608 22 08 30
+
+    ;l400ah = sub_12f6h(l3008h, 5)
     ld hl,(l3008h)      ;060b 2a 08 30
     ld b,h              ;060e 44
     ld c,l              ;060f 4d
@@ -897,25 +936,39 @@ l05dfh:
     call sub_12f6h      ;0613 cd f6 12
     ld h,b              ;0616 60
     ld l,c              ;0617 69
-    ld (400ah),hl       ;0618 22 0a 40
-    ld hl,4000h         ;061b 21 00 40
+    ld (l400ah),hl      ;0618 22 0a 40
+
+    ;l4000h = 0c3h
+    ld hl,l4000h        ;061b 21 00 40
     ld (hl),0c3h        ;061e 36 c3
-    ld hl,l0200h        ;0620 21 00 02
-    ld (4001h),hl       ;0623 22 01 40
-    ld hl,4003h         ;0626 21 03 40
+
+    ;l4001h = 0200h
+    ld hl,0200h         ;0620 21 00 02
+    ld (l4001h),hl      ;0623 22 01 40
+
+    ;l4003h = 1
+    ld hl,l4003h        ;0626 21 03 40
     ld (hl),01h         ;0629 36 01
+
+    ;l4004h = 0
     ld hl,0000h         ;062b 21 00 00
-    ld (4004h),hl       ;062e 22 04 40
-    ld hl,4006h         ;0631 21 06 40
+    ld (l4004h),hl      ;062e 22 04 40
+
+    ;l4006h = 0
+    ld hl,l4006h        ;0631 21 06 40
     ld (hl),00h         ;0634 36 00
+
+    ;l4009h = 0
     inc hl              ;0636 23
     inc hl              ;0637 23
     inc hl              ;0638 23
     ld (hl),00h         ;0639 36 00
-    ld hl,4012h         ;063b 21 12 40
+
+    ;l4010h+2 = 0
+    ld hl,l4010h+2      ;063b 21 12 40
     ld (hl),00h         ;063e 36 00
 
-    ld hl,4023h         ;0640 21 23 40
+    ld hl,l4023h        ;0640 21 23 40
     ld (hl),'H'         ;0643 36 48
     inc hl              ;0645 23
     ld (hl),'A'         ;0646 36 41
@@ -948,12 +1001,13 @@ l05dfh:
     inc hl              ;066f 23
     ld (hl),' '         ;0670 36 20
 
+    ;l4033 = heads - 1
     ld a,(heads)        ;0672 3a 01 30
     dec a               ;0675 3d
-    ld (4033h),a        ;0676 32 33 40
+    ld (l4033h),a       ;0676 32 33 40
 
     ;POKE &H4036, 8 ' IEEE-488 primary address
-    ld hl,4036h
+    ld hl,l4036h
     ld (hl),08h
 
     ;PRINT CHR$(26);
@@ -965,66 +1019,53 @@ l05dfh:
     call print_str
     call print_eol
 
-    ;PRINT "User area size :           "
+    ;PRINT "User area size :           ";l4007h;" Kbytes"
     ld bc,l0f9dh
     call print_str
-
-    ld hl,(4007h)       ;0692 2a 07 40
+    ld hl,(l4007h)      ;0692 2a 07 40
     ld b,h              ;0695 44
     ld c,l              ;0696 4d
     call 0292h          ;0697 cd 92 02
-
-    ;PRINT " Kbytes"
     ld bc,l0fb9h
     call print_str
     call print_eol
 
-    ;PRINT "Direct access size :       "
+    ;PRINT "Direct access size :       ";l400ch;" Kbytes"
     ld bc,l0fc1h
     call print_str
-
-    ld hl,(400ch)       ;06a9 2a 0c 40
+    ld hl,(l400ch)      ;06a9 2a 0c 40
     ld b,h              ;06ac 44
     ld c,l              ;06ad 4d
     call 0292h          ;06ae cd 92 02
-
-    ;PRINT " Kbytes"
     ld bc,l0fddh
     call print_str
     call print_eol
 
-    ;PRINT "Direct sectors per track : "
+    ;PRINT "Direct sectors per track : ";l4010h;
     ld bc,l0fe5h
     call print_str
-
-    ld hl,(4010h)       ;06c0 2a 10 40
+    ld hl,(l4010h)       ;06c0 2a 10 40
     ld b,h              ;06c3 44
     ld c,l              ;06c4 4d
     call 0292h          ;06c5 cd 92 02
-
-    ;PRINT
     call print_eol      ;06c8 cd 27 02
 
-    ;PRINT "Direct tracks per drive :  "
+    ;PRINT "Direct tracks per drive :  ";l400eh
     ld bc,l1001h        ;06cb 01 01 10
     call print_str      ;06ce cd 32 02
-    ld hl,(400eh)       ;06d1 2a 0e 40
+    ld hl,(l400eh)      ;06d1 2a 0e 40
     ld b,h              ;06d4 44
     ld c,l              ;06d5 4d
     call 0292h          ;06d6 cd 92 02
-
-    ;PRINT
     call print_eol
 
-    ;PRINT "Max number of files :      "
+    ;PRINT "Max number of files :      ";l400ah
     ld bc,l101dh        ;06dc 01 1d 10
     call print_str      ;06df cd 32 02
-    ld hl,(400ah)       ;06e2 2a 0a 40
+    ld hl,(l400ah)      ;06e2 2a 0a 40
     ld b,h              ;06e5 44
     ld c,l              ;06e6 4d
     call 0292h          ;06e7 cd 92 02
-
-    ;PRINT
     call print_eol
 
     ;PRINT
@@ -1043,10 +1084,9 @@ l05dfh:
     call print_str
     call print_eol
 
-    ;PRINT "Tracks per cylinder :      ";
+    ;PRINT "Tracks per cylinder :      ";heads
     ld bc,l1071h
     call print_str
-
     ld a,(heads)        ;070b 3a 01 30
     ld l,a              ;070e 6f
     rla                 ;070f 17
@@ -1054,26 +1094,20 @@ l05dfh:
     ld b,a              ;0711 47
     ld c,l              ;0712 4d
     call 0292h          ;0713 cd 92 02
-
-    ;PRINT
     call print_eol
 
-    ;PRINT "Total cylinders on drive : ";
+    ;PRINT "Total cylinders on drive : ";cylinders
     ld bc,l108dh
     call print_str
-
     ld hl,(cylinders)   ;071f 2a 06 30
     ld b,h              ;0722 44
     ld c,l              ;0723 4d
     call 0292h          ;0724 cd 92 02
-
-    ;PRINT
     call print_eol
 
-    ;PRINT "Total kbyte capacity :     ";
+    ;PRINT "Total kbyte capacity :     ";heads*cylinders*8
     ld bc,l10a9h
     call print_str
-
     ld a,(heads)        ;0730 3a 01 30
     ld l,a              ;0733 6f
     rla                 ;0734 17
@@ -1093,30 +1127,24 @@ l05dfh:
     ld b,h              ;0746 44
     ld c,l              ;0747 4d
     call 0292h          ;0748 cd 92 02
-
-    ;PRINT
     call print_eol
 
-    ;PRINT "First user cylinder :      "
+    ;PRINT "First user cylinder :      ";l4034h
     ld bc,l10c5h
     call print_str
-
-    ld hl,(4034h)       ;0754 2a 34 40
+    ld hl,(l4034h)      ;0754 2a 34 40
     ld b,h              ;0757 44
     ld c,l              ;0758 4d
     call 0292h          ;0759 cd 92 02
-
-    ;PRINT
     call print_eol
 
-    ;PRINT "Number of user cylinders : ";
+    ;PRINT "Number of user cylinders : ";cylinders-l4034h
     ld bc,l10e1h
     call print_str
-
     ld hl,(cylinders)   ;0765 2a 06 30
     ld a,l              ;0768 7d
     ex de,hl            ;0769 eb
-    ld hl,(4034h)       ;076a 2a 34 40
+    ld hl,(l4034h)      ;076a 2a 34 40
     sub l               ;076d 95
     ld e,a              ;076e 5f
     ld a,d              ;076f 7a
@@ -1124,20 +1152,15 @@ l05dfh:
     ld b,a              ;0771 47
     ld c,e              ;0772 4b
     call 0292h          ;0773 cd 92 02
-
-    ;PRINT
     call print_eol      ;0776 cd 27 02
 
-    ;PRINT "User area starts at :      ";
+    ;PRINT "User area starts at :      ";l301ah
     ld bc,l10fdh
     call print_str
-
     ld hl,(l301ah)      ;077f 2a 1a 30
     ld b,h              ;0782 44
     ld c,l              ;0783 4d
     call 0292h          ;0784 cd 92 02
-
-    ;PRINT
     call print_eol
 
     ;PRINT
@@ -1203,9 +1226,10 @@ l07cah:
     call print_str
     call print_eol
 
+    ;CALL mw_write(&H20,&H4000):CALL check_error
     ld de,0020h         ;07e1 11 20 00
     ld bc,4000h         ;07e4 01 00 40
-    call mw_write      ;07e7 cd 00 12
+    call mw_write       ;07e7 cd 00 12
     call check_error
 
     ;PRINT "Formatting directory ..."
@@ -1216,31 +1240,42 @@ l07cah:
     ld hl,0000h         ;07f6 21 00 00
     ld (l3016h),hl      ;07f9 22 16 30
     jp l08feh           ;07fc c3 fe 08
+
 l07ffh:
     ld c,04h            ;07ff 0e 04
     ld hl,(l3016h)      ;0801 2a 16 30
     jp l0808h           ;0804 c3 08 08
+
 l0807h:
     add hl,hl           ;0807 29
 l0808h:
     dec c               ;0808 0d
     jp p,l0807h         ;0809 f2 07 08
+
     ld (l3018h),hl      ;080c 22 18 30
+
+    ;POKE l3018h+&H7000,&H48 (???)
     ld bc,7000h         ;080f 01 00 70
     ld hl,(l3018h)      ;0812 2a 18 30
     add hl,bc           ;0815 09
     ld (hl),'H'         ;0816 36 48
+
+    ;POKE l3018h+1+&H7000,&H41 (???)
     ld hl,(l3018h)      ;0818 2a 18 30
     inc hl              ;081b 23
     ld bc,7000h         ;081c 01 00 70
     add hl,bc           ;081f 09
     ld (hl),'A'         ;0820 36 41
+
+    ;POKE l3018h+2+&H7000,&H52 (???)
     ld hl,(l3018h)      ;0822 2a 18 30
     inc hl              ;0825 23
     inc hl              ;0826 23
     ld bc,7000h         ;0827 01 00 70
     add hl,bc           ;082a 09
     ld (hl),'R'         ;082b 36 52
+
+    ;POKE l3018h+3+&H7000,&H44 (???)
     ld hl,(l3018h)      ;082d 2a 18 30
     inc hl              ;0830 23
     inc hl              ;0831 23
@@ -1248,78 +1283,104 @@ l0808h:
     ld bc,7000h         ;0833 01 00 70
     add hl,bc           ;0836 09
     ld (hl),'D'         ;0837 36 44
+
+    ;POKE l3018h+4+&H7000,&H42 (???)
     ld bc,0004h         ;0839 01 04 00
     ld hl,(l3018h)      ;083c 2a 18 30
     add hl,bc           ;083f 09
     ld bc,7000h         ;0840 01 00 70
     add hl,bc           ;0843 09
     ld (hl),'B'         ;0844 36 42
+
+    ;POKE l3018h+5+&H7000,&H4f (???)
     ld bc,0005h         ;0846 01 05 00
     ld hl,(l3018h)      ;0849 2a 18 30
     add hl,bc           ;084c 09
     ld bc,7000h         ;084d 01 00 70
     add hl,bc           ;0850 09
     ld (hl),'O'         ;0851 36 4f
+
+    ;POKE l3018h+6+&H7000,&H58 (???)
     ld bc,0006h         ;0853 01 06 00
     ld hl,(l3018h)      ;0856 2a 18 30
     add hl,bc           ;0859 09
     ld bc,7000h         ;085a 01 00 70
     add hl,bc           ;085d 09
     ld (hl),'X'         ;085e 36 58
+
+    ;POKE l3018h+7+&H7000,&H20 (???)
     ld bc,0007h         ;0860 01 07 00
     ld hl,(l3018h)      ;0863 2a 18 30
     add hl,bc           ;0866 09
     ld bc,7000h         ;0867 01 00 70
     add hl,bc           ;086a 09
     ld (hl),' '         ;086b 36 20
+
+    ;POKE l3018h+8+&H7000,&H20 (???)
     ld bc,0008h         ;086d 01 08 00
     ld hl,(l3018h)      ;0870 2a 18 30
     add hl,bc           ;0873 09
     ld bc,7000h         ;0874 01 00 70
     add hl,bc           ;0877 09
     ld (hl),' '         ;0878 36 20
+
+    ;POKE l3018h+9+&H7000,&H20 (???)
     ld bc,0009h         ;087a 01 09 00
     ld hl,(l3018h)      ;087d 2a 18 30
     add hl,bc           ;0880 09
     ld bc,7000h         ;0881 01 00 70
     add hl,bc           ;0884 09
     ld (hl),' '         ;0885 36 20
+
+    ;POKE l3018h+10+&H7000,&H20 (???)
     ld bc,000ah         ;0887 01 0a 00
     ld hl,(l3018h)      ;088a 2a 18 30
     add hl,bc           ;088d 09
     ld bc,7000h         ;088e 01 00 70
     add hl,bc           ;0891 09
     ld (hl),' '         ;0892 36 20
+
+    ;POKE l3018h+11+&H7000,&H20 (???)
     ld bc,000bh         ;0894 01 0b 00
     ld hl,(l3018h)      ;0897 2a 18 30
     add hl,bc           ;089a 09
     ld bc,7000h         ;089b 01 00 70
     add hl,bc           ;089e 09
     ld (hl),' '         ;089f 36 20
+
+    ;POKE l3018h+12+&H7000,&H20 (???)
     ld bc,000ch         ;08a1 01 0c 00
     ld hl,(l3018h)      ;08a4 2a 18 30
     add hl,bc           ;08a7 09
     ld bc,7000h         ;08a8 01 00 70
     add hl,bc           ;08ab 09
     ld (hl),' '         ;08ac 36 20
+
+    ;POKE l3018h+13+&H7000,&H20 (???)
     ld bc,000dh         ;08ae 01 0d 00
     ld hl,(l3018h)      ;08b1 2a 18 30
     add hl,bc           ;08b4 09
     ld bc,7000h         ;08b5 01 00 70
     add hl,bc           ;08b8 09
     ld (hl),' '         ;08b9 36 20
+
+    ;POKE l3018h+14+&H7000,&H20 (???)
     ld bc,000eh         ;08bb 01 0e 00
     ld hl,(l3018h)      ;08be 2a 18 30
     add hl,bc           ;08c1 09
     ld bc,7000h         ;08c2 01 00 70
     add hl,bc           ;08c5 09
     ld (hl),' '         ;08c6 36 20
+
+    ;POKE l3018h+15+&H7000,&H20 (???)
     ld bc,000fh         ;08c8 01 0f 00
     ld hl,(l3018h)      ;08cb 2a 18 30
     add hl,bc           ;08ce 09
     ld bc,7000h         ;08cf 01 00 70
     add hl,bc           ;08d2 09
     ld (hl),' '         ;08d3 36 20
+
+    ;l3018h = l3016h * 2 + 160
     ld bc,00a0h         ;08d5 01 a0 00
     ld hl,(l3016h)      ;08d8 2a 16 30
     add hl,bc           ;08db 09
@@ -1327,40 +1388,57 @@ l0808h:
     ld hl,(l3016h)      ;08dd 2a 16 30
     add hl,de           ;08e0 19
     ld (l3018h),hl      ;08e1 22 18 30
+
+    ;POKE l1318h+&H7000,&H4b
     ld bc,7000h         ;08e4 01 00 70
     ld hl,(l3018h)      ;08e7 2a 18 30
     add hl,bc           ;08ea 09
     ld (hl),'K'         ;08eb 36 4b
+
+    ;POKE l1318h+1+&H7000,&H46
     ld hl,(l3018h)      ;08ed 2a 18 30
     inc hl              ;08f0 23
     ld bc,7000h         ;08f1 01 00 70
     add hl,bc           ;08f4 09
     ld (hl),'F'         ;08f5 36 46
+
+    ;l3016h = l3016h + 1
     ld hl,(l3016h)      ;08f7 2a 16 30
     inc hl              ;08fa 23
     ld (l3016h),hl      ;08fb 22 16 30
+
 l08feh:
     ld bc,0fff6h        ;08fe 01 f6 ff
     ld hl,(l3016h)      ;0901 2a 16 30
     add hl,bc           ;0904 09
     add hl,hl           ;0905 29
     jp c,l07ffh         ;0906 da ff 07
+
+    ;CALL mw_write(&H7000,l301ah):CALL check_error
     ld hl,(l301ah)      ;0909 2a 1a 30
     ex de,hl            ;090c eb
     ld bc,7000h         ;090d 01 00 70
     call mw_write      ;0910 cd 00 12
     call check_error
+
+    ;l3016h = 0
     ld hl,0000h         ;0916 21 00 00
     ld (l3016h),hl      ;0919 22 16 30
+
     jp l092fh           ;091c c3 2f 09
+
 l091fh:
+    ;POKE l3016h+&H7000,&HE5
     ld bc,7000h         ;091f 01 00 70
     ld hl,(l3016h)      ;0922 2a 16 30
     add hl,bc           ;0925 09
     ld (hl),0e5h        ;0926 36 e5
+
+    ;l3016h = l3016h + 1
     ld hl,(l3016h)      ;0928 2a 16 30
     inc hl              ;092b 23
     ld (l3016h),hl      ;092c 22 16 30
+
 l092fh:
     ld bc,0ff00h        ;092f 01 00 ff
     ld hl,(l3016h)      ;0932 2a 16 30
@@ -1368,7 +1446,7 @@ l092fh:
     add hl,hl           ;0936 29
     jp c,l091fh         ;0937 da 1f 09
     ld c,02h            ;093a 0e 02
-    ld hl,(400ah)       ;093c 2a 0a 40
+    ld hl,(l400ah)      ;093c 2a 0a 40
     jp l0949h           ;093f c3 49 09
 l0942h:
     or a                ;0942 b7
@@ -1387,7 +1465,9 @@ l0949h:
     ld hl,(l300ah)      ;0956 2a 0a 30
     ld (l301ch),hl      ;0959 22 1c 30
     jp l0981h           ;095c c3 81 09
+
 l095fh:
+    ;CALL mw_write(&H7000,l3016h+l301ah+4):CALL check_error
     ld bc,0004h         ;095f 01 04 00
     ld hl,(l301ah)      ;0962 2a 1a 30
     add hl,bc           ;0965 09
@@ -1398,11 +1478,16 @@ l095fh:
     ld bc,7000h         ;096c 01 00 70
     call mw_write      ;096f cd 00 12
     call check_error
+
+    ;PRINT ".";
     ld c,'.'            ;0975 0e 2e
     call print_char     ;0977 cd 19 02
+
+    ;l3016h = l3016h + 1
     ld hl,(l3016h)      ;097a 2a 16 30
     inc hl              ;097d 23
     ld (l3016h),hl      ;097e 22 16 30
+
 l0981h:
     ld hl,(l301ch)      ;0981 2a 1c 30
     ld a,l              ;0984 7d
@@ -1412,7 +1497,8 @@ l0981h:
     ld a,d              ;098a 7a
     sbc a,h             ;098b 9c
     jp p,l095fh         ;098c f2 5f 09
-    ld hl,(400ch)       ;098f 2a 0c 40
+
+    ld hl,(l400ch)      ;098f 2a 0c 40
     ld a,l              ;0992 7d
     or h                ;0993 b4
     jp z,l0aeah         ;0994 ca ea 0a
@@ -1422,10 +1508,10 @@ l0981h:
     call print_str
     call print_eol
 
-    ld hl,(400ah)       ;09a0 2a 0a 40
+    ld hl,(l400ah)      ;09a0 2a 0a 40
     ld (l3012h),hl      ;09a3 22 12 30
     ld c,08h            ;09a6 0e 08
-    ld hl,(4007h)       ;09a8 2a 07 40
+    ld hl,(l4007h)      ;09a8 2a 07 40
     jp l09b5h           ;09ab c3 b5 09
 l09aeh:
     or a                ;09ae b7
@@ -1439,11 +1525,11 @@ l09b5h:
     dec c               ;09b5 0d
     jp p,l09aeh         ;09b6 f2 ae 09
     ex de,hl            ;09b9 eb
-    ld hl,(400ah)       ;09ba 2a 0a 40
+    ld hl,(l400ah)      ;09ba 2a 0a 40
     add hl,de           ;09bd 19
     ld (l3010h),hl      ;09be 22 10 30
     ld c,09h            ;09c1 0e 09
-    ld hl,(400ch)       ;09c3 2a 0c 40
+    ld hl,(l400ch)      ;09c3 2a 0c 40
     jp l09d0h           ;09c6 c3 d0 09
 l09c9h:
     or a                ;09c9 b7
@@ -1459,7 +1545,7 @@ l09d0h:
     inc hl              ;09d4 23
     ld (l300ch),hl      ;09d5 22 0c 30
     ld c,05h            ;09d8 0e 05
-    ld hl,(400ah)       ;09da 2a 0a 40
+    ld hl,(l400ah)      ;09da 2a 0a 40
     jp l09e7h           ;09dd c3 e7 09
 l09e0h:
     or a                ;09e0 b7
@@ -1473,7 +1559,7 @@ l09e7h:
     dec c               ;09e7 0d
     jp p,l09e0h         ;09e8 f2 e0 09
     ex de,hl            ;09eb eb
-    ld hl,(4007h)       ;09ec 2a 07 40
+    ld hl,(l4007h)      ;09ec 2a 07 40
     ld a,l              ;09ef 7d
     sub e               ;09f0 93
     ld l,a              ;09f1 6f
@@ -1522,7 +1608,7 @@ l0a1eh:
     sbc a,h             ;0a26 9c
     ld d,a              ;0a27 57
     ld a,e              ;0a28 7b
-    ld hl,(400ch)       ;0a29 2a 0c 40
+    ld hl,(l400ch)      ;0a29 2a 0c 40
     sub l               ;0a2c 95
     ld e,a              ;0a2d 5f
     ld a,d              ;0a2e 7a
@@ -1551,7 +1637,7 @@ l0a1eh:
     add hl,bc           ;0a4f 09
     ld c,03h            ;0a50 0e 03
     ex de,hl            ;0a52 eb
-    ld hl,(400ah)       ;0a53 2a 0a 40
+    ld hl,(l400ah)      ;0a53 2a 0a 40
     jp l0a60h           ;0a56 c3 60 0a
 l0a59h:
     or a                ;0a59 b7
@@ -1614,20 +1700,27 @@ l0aa3h:
     dec hl              ;0ab7 2b
     ld (l301ch),hl      ;0ab8 22 1c 30
     jp l0adch           ;0abb c3 dc 0a
+
 l0abeh:
+    ;CALL mw_write(&H7000,l300eh+l3016h):CALL check_error
     ld hl,(l3016h)      ;0abe 2a 16 30
     ex de,hl            ;0ac1 eb
     ld hl,(l300eh)      ;0ac2 2a 0e 30
     add hl,de           ;0ac5 19
     ex de,hl            ;0ac6 eb
     ld bc,7000h         ;0ac7 01 00 70
-    call mw_write      ;0aca cd 00 12
+    call mw_write       ;0aca cd 00 12
     call check_error
+
+    ;PRINT ".";
     ld c,'.'            ;0ad0 0e 2e
     call print_char     ;0ad2 cd 19 02
+
+    ;l3016h = l3016h + 1
     ld hl,(l3016h)      ;0ad5 2a 16 30
     inc hl              ;0ad8 23
     ld (l3016h),hl      ;0ad9 22 16 30
+
 l0adch:
     ld hl,(l301ch)      ;0adc 2a 1c 30
     ld a,l              ;0adf 7d
@@ -2014,7 +2107,7 @@ l126ch:
     rr h                ;126d cb 1c
     rr l                ;126f cb 1d
     djnz l126ch         ;1271 10 f9
-    ld a,(4033h)        ;1273 3a 33 40
+    ld a,(l4033h)       ;1273 3a 33 40
     ld b,a              ;1276 47
     and l               ;1277 a5
     out (18h),a         ;1278 d3 18
@@ -2044,7 +2137,7 @@ l1299h:
 
 ; End of Unknown Library ====================================================
 
-sub_129ah:
+sub_129ah:              ;Library MUL
     xor a               ;129a af
     ld h,a              ;129b 67
     add a,b             ;129c 80
@@ -2122,7 +2215,8 @@ l12e7h:
 l12f2h:
     ld de,0000h         ;12f2 11 00 00
     ret                 ;12f5 c9
-sub_12f6h:
+
+sub_12f6h:              ;Library DIV
     xor a               ;12f6 af
     ld h,b              ;12f7 60
     ld l,c              ;12f8 69
