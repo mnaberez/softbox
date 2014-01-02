@@ -1326,7 +1326,7 @@ l0aa9h:
     jp nc,l0ac7h        ;0aba d2 c7 0a
     ld hl,l3002h        ;0abd 21 02 30
     ld c,(hl)           ;0ac0 4e
-    call sub_21e3h      ;0ac1 cd e3 21
+    call cwrite_        ;0ac1 cd e3 21
     jp l0af0h           ;0ac4 c3 f0 0a
 l0ac7h:
     ld hl,l3002h        ;0ac7 21 02 30
@@ -1334,7 +1334,7 @@ l0ac7h:
     call sub_0113h      ;0acb cd 13 01
     ld hl,l3002h        ;0ace 21 02 30
     ld c,(hl)           ;0ad1 4e
-    call sub_2240h      ;0ad2 cd 40 22
+    call savesy         ;0ad2 cd 40 22
     call sub_011eh      ;0ad5 cd 1e 01
     or a                ;0ad8 b7
     jp z,l0af0h         ;0ad9 ca f0 0a
@@ -1412,7 +1412,7 @@ l0b42h:
     jp nc,l0b87h        ;0b7a d2 87 0b
     ld hl,l3002h        ;0b7d 21 02 30
     ld c,(hl)           ;0b80 4e
-    call sub_21b0h      ;0b81 cd b0 21
+    call cread_         ;0b81 cd b0 21
     jp l0b9fh           ;0b84 c3 9f 0b
 l0b87h:
     ld hl,l3002h        ;0b87 21 02 30
@@ -1420,7 +1420,7 @@ l0b87h:
     call sub_0113h      ;0b8b cd 13 01
     ld hl,l3002h        ;0b8e 21 02 30
     ld c,(hl)           ;0b91 4e
-    call sub_2145h      ;0b92 cd 45 21
+    call rdsys          ;0b92 cd 45 21
     call sub_011eh      ;0b95 cd 1e 01
     or a                ;0b98 b7
     jp z,l0b9fh         ;0b99 ca 9f 0b
@@ -3219,408 +3219,390 @@ l2122h:
     db 14h
     db "Alter which (1-4) ? "
 
-    db 01h
-    nop                 ;2138 00
-    inc e               ;2139 1c
-    ld hl,4000h         ;213a 21 00 40
-    ld de,0d400h        ;213d 11 00 d4
-    ldir                ;2140 ed b0
-    jp 0f075h           ;2142 c3 75 f0
-sub_2145h:
-    ld a,c              ;2145 79
-    ld (l2422h),a       ;2146 32 22 24
-    call 0f054h         ;2149 cd 54 f0
-    ld e,00h            ;214c 1e 00
-    push de             ;214e d5
-    call sub_221ch      ;214f cd 1c 22
-    ld a,(l2422h)       ;2152 3a 22 24
-    call 0f05ah         ;2155 cd 5a f0
-    ld (l2423h),a       ;2158 32 23 24
-    ld hl,4000h         ;215b 21 00 40
-    ld bc,1c00h         ;215e 01 00 1c
-    pop de              ;2161 d1
-    or a                ;2162 b7
-    ret nz              ;2163 c0
-    push de             ;2164 d5
-    call 0f039h         ;2165 cd 39 f0
+; Start of LOADSAV2.REL =====================================================
+
+;Execute a new CP/M system.  The buffer at 4000h contains a new
+;CP/M system image (7168 bytes = CCP + BDOS + BIOS config + BIOS storage).
+;Copy the new system into place and then jump to the BIOS to start it.
+exsys:
+    ld bc,1c00h
+    ld hl,4000h
+    ld de,0d400h
+    ldir
+    jp 0f075h
+
+rdsys:
+;Read the "CP/M" and "K" files from an IEEE-488 drive into memory.
+    ld a,c
+    ld (l2422h),a
+    call 0f054h
+    ld e,00h
+    push de
+    call sub_221ch
+    ld a,(l2422h)
+    call 0f05ah
+    ld (l2423h),a
+    ld hl,4000h
+    ld bc,1c00h
+    pop de
+    or a
+    ret nz
+    push de
+    call 0f039h
 l2168h:
-    call 0f03fh         ;2168 cd 3f f0
-    ld (hl),a           ;216b 77
-    inc hl              ;216c 23
-    dec bc              ;216d 0b
-    ld a,b              ;216e 78
-    or c                ;216f b1
-    jr nz,l2168h        ;2170 20 f6
-    call 0f03ch         ;2172 cd 3c f0
-    pop de              ;2175 d1
-    push de             ;2176 d5
-    call 0f060h         ;2177 cd 60 f0
-    pop de              ;217a d1
-    push de             ;217b d5
-    call sub_222eh      ;217c cd 2e 22
-    ld a,(l2422h)       ;217f 3a 22 24
-    call 0f05ah         ;2182 cd 5a f0
-    ld (l2423h),a       ;2185 32 23 24
-    ld hl,6000h         ;2188 21 00 60
-    ld bc,0800h         ;218b 01 00 08
-    pop de              ;218e d1
-    or a                ;218f b7
-    ret nz              ;2190 c0
-    push de             ;2191 d5
-    call 0f039h         ;2192 cd 39 f0
+    call 0f03fh
+    ld (hl),a
+    inc hl
+    dec bc
+    ld a,b
+    or c
+    jr nz,l2168h
+    call 0f03ch
+    pop de
+    push de
+    call 0f060h
+    pop de
+    push de
+    call sub_222eh
+    ld a,(l2422h)
+    call 0f05ah
+    ld (l2423h),a
+    ld hl,6000h
+    ld bc,0800h
+    pop de
+    or a
+    ret nz
+    push de
+    call 0f039h
 l2195h:
-    call 0f03fh         ;2195 cd 3f f0
-    ld (hl),a           ;2198 77
-    inc hl              ;2199 23
-    dec bc              ;219a 0b
-    ld a,b              ;219b 78
-    or c                ;219c b1
-    jr nz,l2195h        ;219d 20 f6
-    call 0f03ch         ;219f cd 3c f0
-    pop de              ;21a2 d1
-    call 0f060h         ;21a3 cd 60 f0
-    ld a,(l2422h)       ;21a6 3a 22 24
-    call 0f05ah         ;21a9 cd 5a f0
-    ld (l2423h),a       ;21ac 32 23 24
-    ret                 ;21af c9
-sub_21b0h:
-    call 0f01bh         ;21b0 cd 1b f0
-    ld de,4000h         ;21b3 11 00 40
-    ld bc,0000h         ;21b6 01 00 00
+    call 0f03fh
+    ld (hl),a
+    inc hl
+    dec bc
+    ld a,b
+    or c
+    jr nz,l2195h
+    call 0f03ch
+    pop de
+    call 0f060h
+    ld a,(l2422h)
+    call 0f05ah
+    ld (l2423h),a
+    ret
+
+cread_:
+;Read CP/M image from a hard drive.
+    call 0f01bh
+    ld de,4000h
+    ld bc,0000h
 l21b9h:
-    call 0f01eh         ;21b9 cd 1e f0
-    push bc             ;21bc c5
-    ld bc,0000h         ;21bd 01 00 00
+    call 0f01eh
+    push bc
+    ld bc,0000h
 l21c0h:
-    call 0f021h         ;21c0 cd 21 f0
-    push bc             ;21c3 c5
-    push de             ;21c4 d5
-    call 0f027h         ;21c5 cd 27 f0
-    or a                ;21c8 b7
-    jr nz,l2216h        ;21c9 20 4b
-    pop de              ;21cb d1
-    ld bc,0080h         ;21cc 01 80 00
-    ld hl,0080h         ;21cf 21 80 00
-    ldir                ;21d2 ed b0
-    pop bc              ;21d4 c1
-    inc c               ;21d5 0c
-    ld a,c              ;21d6 79
-    cp 40h              ;21d7 fe 40
-    jr nz,l21c0h        ;21d9 20 e5
-    pop bc              ;21db c1
-    inc c               ;21dc 0c
-    ld a,c              ;21dd 79
-    cp 02h              ;21de fe 02
-    jr nz,l21b9h        ;21e0 20 d7
-    ret                 ;21e2 c9
-sub_21e3h:
-    call 0f01bh         ;21e3 cd 1b f0
-    ld hl,4000h         ;21e6 21 00 40
-    ld bc,0000h         ;21e9 01 00 00
+    call 0f021h
+    push bc
+    push de
+    call 0f027h
+    or a
+    jr nz,l2216h
+    pop de
+    ld bc,0080h
+    ld hl,0080h
+    ldir
+    pop bc
+    inc c
+    ld a,c
+    cp 40h
+    jr nz,l21c0h
+    pop bc
+    inc c
+    ld a,c
+    cp 02h
+    jr nz,l21b9h
+    ret
+
+cwrite_:
+;Write CP/M image to a hard drive.
+    call 0f01bh
+    ld hl,4000h
+    ld bc,0000h
 l21ech:
-    call 0f01eh         ;21ec cd 1e f0
-    push bc             ;21ef c5
-    ld bc,0000h         ;21f0 01 00 00
+    call 0f01eh
+    push bc
+    ld bc,0000h
 l21f3h:
-    call 0f021h         ;21f3 cd 21 f0
-    push bc             ;21f6 c5
-    ld bc,0080h         ;21f7 01 80 00
-    ld de,0080h         ;21fa 11 80 00
-    ldir                ;21fd ed b0
-    push hl             ;21ff e5
-    call 0f02ah         ;2200 cd 2a f0
-    or a                ;2203 b7
-    jr nz,l2216h        ;2204 20 10
-    pop hl              ;2206 e1
-    pop bc              ;2207 c1
-    inc c               ;2208 0c
-    ld a,c              ;2209 79
-    cp 40h              ;220a fe 40
-    jr nz,l21f3h        ;220c 20 e5
-    pop bc              ;220e c1
-    inc c               ;220f 0c
-    ld a,c              ;2210 79
-    cp 02h              ;2211 fe 02
-    jr nz,l21ech        ;2213 20 d7
-    ret                 ;2215 c9
+    call 0f021h
+    push bc
+    ld bc,0080h
+    ld de,0080h
+    ldir
+    push hl
+    call 0f02ah
+    or a
+    jr nz,l2216h
+    pop hl
+    pop bc
+    inc c
+    ld a,c
+    cp 40h
+    jr nz,l21f3h
+    pop bc
+    inc c
+    ld a,c
+    cp 02h
+    jr nz,l21ech
+    ret
 l2216h:
-    pop hl              ;2216 e1
-    pop hl              ;2217 e1
-    pop hl              ;2218 e1
-    jp l23b7h           ;2219 c3 b7 23
+    pop hl
+    pop hl
+    pop hl
+    jp l23b7h
+
 sub_221ch:
-    ld c,06h            ;221c 0e 06
-    ld hl,2410h         ;221e 21 10 24
-    ld a,(l2422h)       ;2221 3a 22 24
-    rra                 ;2224 1f
-    jp nc,0f05dh        ;2225 d2 5d f0
-    ld hl,l2416h        ;2228 21 16 24
-    jp 0f05dh           ;222b c3 5d f0
+;Open "CP/M" file on an IEEE-488 drive
+    ld c,06h
+    ld hl,2410h
+    ld a,(l2422h)
+    rra
+    jp nc,0f05dh
+    ld hl,l2416h
+    jp 0f05dh
+
 sub_222eh:
-    ld c,03h            ;222e 0e 03
-    ld hl,l241ch        ;2230 21 1c 24
-    ld a,(l2422h)       ;2233 3a 22 24
-    rra                 ;2236 1f
-    jp nc,0f05dh        ;2237 d2 5d f0
-    ld hl,l241fh        ;223a 21 1f 24
-    jp 0f05dh           ;223d c3 5d f0
-sub_2240h:
-    ld a,c              ;2240 79
-    ld (l2422h),a       ;2241 32 22 24
-    call 0f054h         ;2244 cd 54 f0
-    push de             ;2247 d5
-    ld e,0fh            ;2248 1e 0f
-    ld hl,l2408h        ;224a 21 08 24
-    ld a,(l2422h)       ;224d 3a 22 24
-    rra                 ;2250 1f
-    jr nc,l2256h        ;2251 30 03
-    ld hl,240ch         ;2253 21 0c 24
+;Open "K" file on an IEEE-488 drive
+    ld c,03h
+    ld hl,l241ch
+    ld a,(l2422h)
+    rra
+    jp nc,0f05dh
+    ld hl,l241fh
+    jp 0f05dh
+
+savesy:
+;Read the CP/M system image from an IEEE-488 drive.
+    ld a,c
+    ld (l2422h),a
+    call 0f054h
+    push de
+    ld e,0fh
+    ld hl,l2408h
+    ld a,(l2422h)
+    rra
+    jr nc,l2256h
+    ld hl,240ch
 l2256h:
-    ld c,04h            ;2256 0e 04
-    call 0f05dh         ;2258 cd 5d f0
-    ld a,(l2422h)       ;225b 3a 22 24
-    call 0f05ah         ;225e cd 5a f0
-    ld (l2423h),a       ;2261 32 23 24
-    pop de              ;2264 d1
-    cp 01h              ;2265 fe 01
-    ret nz              ;2267 c0
-    ld e,01h            ;2268 1e 01
-    push de             ;226a d5
-    call sub_222eh      ;226b cd 2e 22
-    ld a,(l2422h)       ;226e 3a 22 24
-    call 0f05ah         ;2271 cd 5a f0
-    ld (l2423h),a       ;2274 32 23 24
-    pop de              ;2277 d1
-    or a                ;2278 b7
-    ret nz              ;2279 c0
-    push de             ;227a d5
-    call 0f033h         ;227b cd 33 f0
-    ld hl,6000h         ;227e 21 00 60
-    ld bc,0800h         ;2281 01 00 08
+    ld c,04h
+    call 0f05dh
+    ld a,(l2422h)
+    call 0f05ah
+    ld (l2423h),a
+    pop de
+    cp 01h
+    ret nz
+    ld e,01h
+    push de
+    call sub_222eh
+    ld a,(l2422h)
+    call 0f05ah
+    ld (l2423h),a
+    pop de
+    or a
+    ret nz
+    push de
+    call 0f033h
+    ld hl,6000h
+    ld bc,0800h
 l2284h:
-    ld a,(hl)           ;2284 7e
-    call 0f042h         ;2285 cd 42 f0
-    inc hl              ;2288 23
-    dec bc              ;2289 0b
-    ld a,b              ;228a 78
-    or c                ;228b b1
-    jr nz,l2284h        ;228c 20 f6
-    call 0f036h         ;228e cd 36 f0
-    pop de              ;2291 d1
-    push de             ;2292 d5
-    call 0f060h         ;2293 cd 60 f0
-    pop de              ;2296 d1
-    push de             ;2297 d5
-    call sub_221ch      ;2298 cd 1c 22
-    ld a,(l2422h)       ;229b 3a 22 24
-    call 0f05ah         ;229e cd 5a f0
-    ld (l2423h),a       ;22a1 32 23 24
-    pop de              ;22a4 d1
-    or a                ;22a5 b7
-    ret nz              ;22a6 c0
-    push de             ;22a7 d5
-    call 0f033h         ;22a8 cd 33 f0
-    ld hl,4000h         ;22ab 21 00 40
-    ld bc,1c00h         ;22ae 01 00 1c
+    ld a,(hl)
+    call 0f042h
+    inc hl
+    dec bc
+    ld a,b
+    or c
+    jr nz,l2284h
+    call 0f036h
+    pop de
+    push de
+    call 0f060h
+    pop de
+    push de
+    call sub_221ch
+    ld a,(l2422h)
+    call 0f05ah
+    ld (l2423h),a
+    pop de
+    or a
+    ret nz
+    push de
+    call 0f033h
+    ld hl,4000h
+    ld bc,1c00h
 l22b1h:
-    ld a,(hl)           ;22b1 7e
-    call 0f042h         ;22b2 cd 42 f0
-    inc hl              ;22b5 23
-    dec bc              ;22b6 0b
-    ld a,b              ;22b7 78
-    or c                ;22b8 b1
-    jr nz,l22b1h        ;22b9 20 f6
-    call 0f036h         ;22bb cd 36 f0
-    pop de              ;22be d1
-    call 0f060h         ;22bf cd 60 f0
-    ld a,(l2422h)       ;22c2 3a 22 24
-    call 0f05ah         ;22c5 cd 5a f0
-    ld (l2423h),a       ;22c8 32 23 24
-    ret                 ;22cb c9
-    ld a,c              ;22cc 79
-    ld (l2422h),a       ;22cd 32 22 24
-    call 0f054h         ;22d0 cd 54 f0
-    ld a,(l2422h)       ;22d3 3a 22 24
-    and 01h             ;22d6 e6 01
-    add a,30h           ;22d8 c6 30
-    ld (l23e4h),a       ;22da 32 e4 23
-    ld e,0fh            ;22dd 1e 0f
-    ld c,14h            ;22df 0e 14
-    ld hl,23e3h         ;22e1 21 e3 23
-    call 0f05dh         ;22e4 cd 5d f0
-    ld a,(l2422h)       ;22e7 3a 22 24
-    call 0f05ah         ;22ea cd 5a f0
-    ld (l2423h),a       ;22ed 32 23 24
-    or a                ;22f0 b7
-    ret nz              ;22f1 c0
-    ld a,(l2422h)       ;22f2 3a 22 24
-    call 0f078h         ;22f5 cd 78 f0
-    ld hl,4000h         ;22f8 21 00 40
-    ld de,4001h         ;22fb 11 01 40
-    ld bc,00ffh         ;22fe 01 ff 00
-    ld (hl),0e5h        ;2301 36 e5
-    ldir                ;2303 ed b0
-    ld a,0fh            ;2305 3e 0f
-    ld (l2407h),a       ;2307 32 07 24
-    ld a,01h            ;230a 3e 01
-    ld (l2406h),a       ;230c 32 06 24
+    ld a,(hl)
+    call 0f042h
+    inc hl
+    dec bc
+    ld a,b
+    or c
+    jr nz,l22b1h
+    call 0f036h
+    pop de
+    call 0f060h
+    ld a,(l2422h)
+    call 0f05ah
+    ld (l2423h),a
+    ret
+
+format:
+;Format an IEEE-488 drive for SoftBox use.
+    ld a,c
+    ld (l2422h),a
+    call 0f054h
+    ld a,(l2422h)
+    and 01h
+    add a,30h
+    ld (l23e4h),a
+    ld e,0fh
+    ld c,14h
+    ld hl,23e3h
+    call 0f05dh
+    ld a,(l2422h)
+    call 0f05ah
+    ld (l2423h),a
+    or a
+    ret nz
+    ld a,(l2422h)
+    call 0f078h
+    ld hl,4000h
+    ld de,4001h
+    ld bc,00ffh
+    ld (hl),0e5h
+    ldir
+    ld a,0fh
+    ld (l2407h),a
+    ld a,01h
+    ld (l2406h),a
 l230fh:
-    call sub_2325h      ;230f cd 25 23
-    ld a,(l2422h)       ;2312 3a 22 24
-    call 0f05ah         ;2315 cd 5a f0
-    ld (l2423h),a       ;2318 32 23 24
-    or a                ;231b b7
-    ret nz              ;231c c0
-    ld hl,l2407h        ;231d 21 07 24
-    dec (hl)            ;2320 35
-    jp p,l230fh         ;2321 f2 0f 23
-    ret                 ;2324 c9
+;Clear the CP/M directory by filling it with E5 ("unused").
+    call sub_2325h
+    ld a,(l2422h)
+    call 0f05ah
+    ld (l2423h),a
+    or a
+    ret nz
+    ld hl,l2407h
+    dec (hl)
+    jp p,l230fh
+    ret
 sub_2325h:
-    ld hl,l23feh        ;2325 21 fe 23
-    ld c,06h            ;2328 0e 06
-    ld a,(l2422h)       ;232a 3a 22 24
-    call 0f057h         ;232d cd 57 f0
-    call 0f04bh         ;2330 cd 4b f0
-    ld a,(4000h)        ;2333 3a 00 40
-    call 0f045h         ;2336 cd 45 f0
-    call 0f036h         ;2339 cd 36 f0
-    ld hl,l23f7h        ;233c 21 f7 23
-    ld c,07h            ;233f 0e 07
-    ld a,(l2422h)       ;2341 3a 22 24
-    call 0f057h         ;2344 cd 57 f0
-    call 0f04bh         ;2347 cd 4b f0
-    call 0f048h         ;234a cd 48 f0
-    call 0f036h         ;234d cd 36 f0
-    ld a,(l2422h)       ;2350 3a 22 24
-    call 0f054h         ;2353 cd 54 f0
-    ld e,02h            ;2356 1e 02
-    call 0f033h         ;2358 cd 33 f0
-    ld hl,4001h         ;235b 21 01 40
-    ld c,0ffh           ;235e 0e ff
-    call 0f04bh         ;2360 cd 4b f0
-    call 0f036h         ;2363 cd 36 f0
-    ld a,(l2422h)       ;2366 3a 22 24
-    call 0f057h         ;2369 cd 57 f0
-    ld hl,l23deh        ;236c 21 de 23
-    ld c,05h            ;236f 0e 05
-    call 0f04bh         ;2371 cd 4b f0
-    ld a,(l2422h)       ;2374 3a 22 24
-    and 01h             ;2377 e6 01
-    add a,30h           ;2379 c6 30
-    call 0f042h         ;237b cd 42 f0
-    ld a,(l2406h)       ;237e 3a 06 24
-    call 0f04eh         ;2381 cd 4e f0
-    ld a,(l2407h)       ;2384 3a 07 24
-    call 0f04eh         ;2387 cd 4e f0
-    call 0f048h         ;238a cd 48 f0
-    jp 0f036h           ;238d c3 36 f0
-    call 0f01bh         ;2390 cd 1b f0
-    ld hl,0080h         ;2393 21 80 00
+;Write a sector to an IEEE-488 drive.
+    ld hl,l23feh
+    ld c,06h
+    ld a,(l2422h)
+    call 0f057h
+    call 0f04bh
+    ld a,(4000h)
+    call 0f045h
+    call 0f036h
+    ld hl,l23f7h
+    ld c,07h
+    ld a,(l2422h)
+    call 0f057h
+    call 0f04bh
+    call 0f048h
+    call 0f036h
+    ld a,(l2422h)
+    call 0f054h
+    ld e,02h
+    call 0f033h
+    ld hl,4001h
+    ld c,0ffh
+    call 0f04bh
+    call 0f036h
+    ld a,(l2422h)
+    call 0f057h
+    ld hl,l23deh
+    ld c,05h
+    call 0f04bh
+    ld a,(l2422h)
+    and 01h
+    add a,30h
+    call 0f042h
+    ld a,(l2406h)
+    call 0f04eh
+    ld a,(l2407h)
+    call 0f04eh
+    call 0f048h
+    jp 0f036h
+
+cform:
+;Format a hard drive for Softbox use.
+    call 0f01bh
+    ld hl,0080h
 l2396h:
-    ld (hl),0e5h        ;2396 36 e5
-    inc l               ;2398 2c
-    jr nz,l2396h        ;2399 20 fb
-    ld bc,0002h         ;239b 01 02 00
-    call 0f01eh         ;239e cd 1e f0
-    ld bc,0000h         ;23a1 01 00 00
+    ld (hl),0e5h
+    inc l
+    jr nz,l2396h
+    ld bc,0002h
+    call 0f01eh
+    ld bc,0000h
 l23a4h:
-    push bc             ;23a4 c5
-    call 0f021h         ;23a5 cd 21 f0
-    call 0f02ah         ;23a8 cd 2a f0
-    pop bc              ;23ab c1
-    or a                ;23ac b7
-    jp nz,l23b7h        ;23ad c2 b7 23
-    inc bc              ;23b0 03
-    ld a,c              ;23b1 79
-    cp 40h              ;23b2 fe 40
-    jr nz,l23a4h        ;23b4 20 ee
-    ret                 ;23b6 c9
+    push bc
+    call 0f021h
+    call 0f02ah
+    pop bc
+    or a
+    jp nz,l23b7h
+    inc bc
+    ld a,c
+    cp 40h
+    jr nz,l23a4h
+    ret
+
 l23b7h:
-    ld de,l23c4h        ;23b7 11 c4 23
-    ld c,09h            ;23ba 0e 09
-    call 0005h          ;23bc cd 05 00
-    ld c,01h            ;23bf 0e 01
-    jp 0005h            ;23c1 c3 05 00
+;Display "Hit any key to abort" message, wait for a key, and then return.
+    ld de,l23c4h
+    ld c,09h
+    call 0005h
+    ld c,01h
+    jp 0005h
+
 l23c4h:
-    dec c               ;23c4 0d
-    ld a,(bc)           ;23c5 0a
-    ld c,b              ;23c6 48
-    ld l,c              ;23c7 69
-    ld (hl),h           ;23c8 74
-    jr nz,l242ch        ;23c9 20 61
-    ld l,(hl)           ;23cb 6e
-    ld a,c              ;23cc 79
-    jr nz,l243ah        ;23cd 20 6b
-    ld h,l              ;23cf 65
-    ld a,c              ;23d0 79
-    jr nz,l2447h        ;23d1 20 74
-    ld l,a              ;23d3 6f
-    jr nz,l2437h        ;23d4 20 61
-    ld h,d              ;23d6 62
-    ld l,a              ;23d7 6f
-    ld (hl),d           ;23d8 72
-    ld (hl),h           ;23d9 74
-    jr nz,l2416h        ;23da 20 3a
-    jr nz,l2402h        ;23dc 20 24
+    db 0dh,0ah,"Hit any key to abort : $"
+
 l23deh:
-    ld d,l              ;23de 55
-    ld (3220h),a        ;23df 32 20 32
-    jr nz,l2432h        ;23e2 20 4e
+    db "U2 2 "
+l0874h:
+    db "N"
 l23e4h:
-    jr nc,$+60          ;23e4 30 3a
-    ld b,e              ;23e6 43
-    ld d,b              ;23e7 50
-    cpl                 ;23e8 2f
-    ld c,l              ;23e9 4d
-    jr nz,l2442h        ;23ea 20 56
-    ld (322eh),a        ;23ec 32 2e 32
-    jr nz,l2435h        ;23ef 20 44
-    ld c,c              ;23f1 49
-    ld d,e              ;23f2 53
-    ld c,e              ;23f3 4b
-    inc l               ;23f4 2c
-    ld e,b              ;23f5 58
-    ld e,b              ;23f6 58
+    db "0:CP/M V2.2 DISK,XX"
 l23f7h:
-    ld b,d              ;23f7 42
-    dec l               ;23f8 2d
-    ld d,b              ;23f9 50
-    jr nz,l242eh        ;23fa 20 32
-    jr nz,l242fh        ;23fc 20 31
+    db "B-P 2 1"
 l23feh:
-    ld c,l              ;23fe 4d
-    dec l               ;23ff 2d
-    ld d,a              ;2400 57
-    nop                 ;2401 00
-l2402h:
-    inc de              ;2402 13
-    ld bc,3223h         ;2403 01 23 32
+    db "M-W",00h,13h,01h
+    db "#2"
 l2406h:
-    nop                 ;2406 00
+    db 0
 l2407h:
-    nop                 ;2407 00
+    db 0
 l2408h:
-    ld d,e              ;2408 53
-    jr nc,l2445h        ;2409 30 3a
-    ld hl,(3153h)       ;240b 2a 53 31
-    ld a,(l302ah)       ;240e 3a 2a 30
-    ld a,(5043h)        ;2411 3a 43 50
-    cpl                 ;2414 2f
-    ld c,l              ;2415 4d
+    db "S0:*"
+    db "S1:*"
+    db "0:CP/M"
 l2416h:
-    ld sp,433ah         ;2416 31 3a 43
-    ld d,b              ;2419 50
-    cpl                 ;241a 2f
-    ld c,l              ;241b 4d
+    db "1:CP/M"
 l241ch:
-    jr nc,l2458h        ;241c 30 3a
-    ld c,e              ;241e 4b
+    db "0:K"
 l241fh:
-    ld sp,4b3ah         ;241f 31 3a 4b
+    db "1:K"
 l2422h:
-    nop                 ;2422 00
+    db 0
 l2423h:
-    nop                 ;2423 00
+    db 0
+
+; End of LOADSAV2.REL =======================================================
+
 l2424h:
     nop                 ;2424 00
 l2425h:
