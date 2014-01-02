@@ -950,12 +950,12 @@ l05dfh:
     ld hl,l4003h        ;0626 21 03 40
     ld (hl),01h         ;0629 36 01
 
-    ;l4004h = 0
+    ;l4004h = 0 ' Starting sector number (first 2 of 3 bytes)
     ld hl,0000h         ;062b 21 00 00
     ld (l4004h),hl      ;062e 22 04 40
 
-    ;l4006h = 0
-    ld hl,l4006h        ;0631 21 06 40
+    ;l4006h = 0  ' Starting sector number (last byte)
+    ld hl,l4004h+2      ;0631 21 06 40
     ld (hl),00h         ;0634 36 00
 
     ;l4009h = 0
