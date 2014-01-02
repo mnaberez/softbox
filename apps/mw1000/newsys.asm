@@ -300,7 +300,7 @@ sub_0300h:
 sub_0306h:
     jp l05edh           ;0306 c3 ed 05
 sub_0309h:
-    ld bc,l0c93h+2      ;0309 01 95 0c
+    ld bc,l0c95h        ;0309 01 95 0c
     call sub_0184h      ;030c cd 84 01
     call sub_0216h      ;030f cd 16 02
     call sub_0179h      ;0312 cd 79 01
@@ -323,7 +323,7 @@ sub_0309h:
     ld a,(hl)           ;032f 7e
     cp 04h              ;0330 fe 04
     jp nz,l0358h        ;0332 c2 58 03
-    ld bc,0cb0h         ;0335 01 b0 0c
+    ld bc,l0cb0h        ;0335 01 b0 0c
     call sub_0184h      ;0338 cd 84 01
     call sub_0216h      ;033b cd 16 02
     call sub_0179h      ;033e cd 79 01
@@ -345,11 +345,11 @@ l0358h:
     ret                 ;0358 c9
 l0359h:
     call sub_0300h      ;0359 cd 00 03
-    ld bc,0cd3h         ;035c 01 d3 0c
+    ld bc,l0cd3h        ;035c 01 d3 0c
     call sub_0184h      ;035f cd 84 01
     call sub_0179h      ;0362 cd 79 01
     call sub_0179h      ;0365 cd 79 01
-    ld bc,0cf1h         ;0368 01 f1 0c
+    ld bc,l0cf1h        ;0368 01 f1 0c
     call sub_01a9h      ;036b cd a9 01
     call sub_0179h      ;036e cd 79 01
     ld bc,l0d0eh        ;0371 01 0e 0d
@@ -426,16 +426,14 @@ l0424h:
     ld hl,l3017h        ;042c 21 17 30
     ld (hl),06h         ;042f 36 06
     ld hl,0140h         ;0431 21 40 01
-l0434h:
     ld (l301ah),hl      ;0434 22 1a 30
-l0437h:
     jp l0483h           ;0437 c3 83 04
 l043ah:
     ld a,(l24cch)       ;043a 3a cc 24
     cp 5ah              ;043d fe 5a
     jp nz,l0480h        ;043f c2 80 04
 l0442h:
-    ld bc,0de2h         ;0442 01 e2 0d
+    ld bc,l0de2h        ;0442 01 e2 0d
     call sub_0184h      ;0445 cd 84 01
     call sub_0216h      ;0448 cd 16 02
     ld a,(l24c8h)       ;044b 3a c8 24
@@ -448,7 +446,7 @@ l0442h:
     jp z,l046eh         ;045d ca 6e 04
     cp 08h              ;0460 fe 08
     jp z,l046eh         ;0462 ca 6e 04
-    ld bc,0dffh         ;0465 01 ff 0d
+    ld bc,l0dffh        ;0465 01 ff 0d
     call sub_01a9h      ;0468 cd a9 01
     jp l0442h           ;046b c3 42 04
 l046eh:
@@ -475,7 +473,7 @@ l0483h:
     add hl,de           ;0494 19
     ld (hl),c           ;0495 71
 l0496h:
-    ld bc,0e35h         ;0496 01 35 0e
+    ld bc,l0e35h        ;0496 01 35 0e
     call sub_01a9h      ;0499 cd a9 01
     ld bc,l0e53h        ;049c 01 53 0e
     call sub_0184h      ;049f cd 84 01
@@ -556,7 +554,7 @@ l050ah:
     inc hl              ;052d 23
     ld (580dh),hl       ;052e 22 0d 58
 l0531h:
-    ld bc,0e73h         ;0531 01 73 0e
+    ld bc,l0e73h        ;0531 01 73 0e
     call sub_0184h      ;0534 cd 84 01
     call sub_0216h      ;0537 cd 16 02
     call sub_0179h      ;053a cd 79 01
@@ -572,7 +570,7 @@ l0531h:
 l0555h:
     jp l0531h           ;0555 c3 31 05
 l0558h:
-    ld bc,0e8fh         ;0558 01 8f 0e
+    ld bc,l0e8fh        ;0558 01 8f 0e
     call sub_0184h      ;055b cd 84 01
     call sub_0216h      ;055e cd 16 02
     call sub_0179h      ;0561 cd 79 01
@@ -586,7 +584,7 @@ l0574h:
     ld a,(l24cch)       ;0574 3a cc 24
     cp 4eh              ;0577 fe 4e
     jp nz,l05a3h        ;0579 c2 a3 05
-    ld bc,0eb2h         ;057c 01 b2 0e
+    ld bc,l0eb2h        ;057c 01 b2 0e
     call sub_0184h      ;057f cd 84 01
     call sub_0216h      ;0582 cd 16 02
     call sub_0179h      ;0585 cd 79 01
@@ -656,9 +654,9 @@ l05afh:
     ret                 ;05ec c9
 l05edh:
     call sub_0300h      ;05ed cd 00 03
-    ld bc,0ecch         ;05f0 01 cc 0e
+    ld bc,l0ecch        ;05f0 01 cc 0e
     call sub_01a9h      ;05f3 cd a9 01
-    ld bc,0ee3h         ;05f6 01 e3 0e
+    ld bc,l0ee3h        ;05f6 01 e3 0e
     call sub_01a9h      ;05f9 cd a9 01
     call sub_0179h      ;05fc cd 79 01
     call sub_0179h      ;05ff cd 79 01
@@ -676,10 +674,9 @@ l060ah:
     ld a,(l3016h)       ;061a 3a 16 30
     add a,a             ;061d 87
     add a,42h           ;061e c6 42
-l0620h:
     ld c,a              ;0620 4f
     call sub_016bh      ;0621 cd 6b 01
-    ld bc,0efdh         ;0624 01 fd 0e
+    ld bc,l0efdh        ;0624 01 fd 0e
     call sub_0184h      ;0627 cd 84 01
     ld a,(l3016h)       ;062a 3a 16 30
     ld l,a              ;062d 6f
@@ -719,7 +716,7 @@ l0657h:
     ld a,(hl)           ;0662 7e
     cp 01h              ;0663 fe 01
     jp nz,l0685h        ;0665 c2 85 06
-    ld bc,0f1ah         ;0668 01 1a 0f
+    ld bc,l0f1ah        ;0668 01 1a 0f
     call sub_0184h      ;066b cd 84 01
     ld a,(l3016h)       ;066e 3a 16 30
     ld l,a              ;0671 6f
@@ -747,7 +744,7 @@ l0685h:
     ld a,(hl)           ;0690 7e
     cp 06h              ;0691 fe 06
     jp nz,l06b3h        ;0693 c2 b3 06
-    ld bc,0f2fh         ;0696 01 2f 0f
+    ld bc,l0f2fh        ;0696 01 2f 0f
     call sub_0184h      ;0699 cd 84 01
     ld a,(l3016h)       ;069c 3a 16 30
     ld l,a              ;069f 6f
@@ -775,7 +772,7 @@ l06b3h:
     ld a,(hl)           ;06be 7e
     or a                ;06bf b7
     jp p,l06cch         ;06c0 f2 cc 06
-    ld bc,0f44h         ;06c3 01 44 0f
+    ld bc,l0f44h        ;06c3 01 44 0f
     call sub_0184h      ;06c6 cd 84 01
     jp l0857h           ;06c9 c3 57 08
 l06cch:
@@ -794,7 +791,7 @@ l06cch:
     ld a,(hl)           ;06e4 7e
     cp 02h              ;06e5 fe 02
     jp nz,l06f0h        ;06e7 c2 f0 06
-    ld hl,0f5bh         ;06ea 21 5b 0f
+    ld hl,l0f5bh        ;06ea 21 5b 0f
     jp l0738h           ;06ed c3 38 07
 l06f0h:
     ld a,(l3016h)       ;06f0 3a 16 30
@@ -807,7 +804,7 @@ l06f0h:
     ld a,(hl)           ;06fb 7e
     cp 03h              ;06fc fe 03
     jp nz,l0707h        ;06fe c2 07 07
-    ld hl,0f61h         ;0701 21 61 0f
+    ld hl,l0f61h        ;0701 21 61 0f
     jp l0738h           ;0704 c3 38 07
 l0707h:
     ld a,(l3016h)       ;0707 3a 16 30
@@ -820,7 +817,7 @@ l0707h:
     ld a,(hl)           ;0712 7e
     cp 04h              ;0713 fe 04
     jp nz,l071eh        ;0715 c2 1e 07
-    ld hl,0f67h         ;0718 21 67 0f
+    ld hl,l0f67h        ;0718 21 67 0f
     jp l0738h           ;071b c3 38 07
 l071eh:
     ld a,(l3016h)       ;071e 3a 16 30
@@ -836,7 +833,7 @@ l071eh:
     ld hl,l0f6dh        ;072f 21 6d 0f
     jp l0738h           ;0732 c3 38 07
 l0735h:
-    ld hl,0f73h         ;0735 21 73 0f
+    ld hl,l0f73h        ;0735 21 73 0f
 l0738h:
     ld b,h              ;0738 44
     ld c,l              ;0739 4d
@@ -903,7 +900,7 @@ l0780h:
     dec a               ;0796 3d
     add a,a             ;0797 87
     ld (l3017h),a       ;0798 32 17 30
-    ld bc,0f84h         ;079b 01 84 0f
+    ld bc,l0f84h        ;079b 01 84 0f
     call sub_0184h      ;079e cd 84 01
     ld a,(l3018h)       ;07a1 3a 18 30
     ld l,a              ;07a4 6f
@@ -913,7 +910,7 @@ l0780h:
     ld c,l              ;07a8 4d
     call l01f5h+1       ;07a9 cd f6 01
     call sub_0179h      ;07ac cd 79 01
-    ld bc,0f97h         ;07af 01 97 0f
+    ld bc,l0f97h        ;07af 01 97 0f
     call sub_0184h      ;07b2 cd 84 01
     ld a,(l3018h)       ;07b5 3a 18 30
     ld l,a              ;07b8 6f
@@ -980,7 +977,7 @@ l07f8h:
     ld b,a              ;0816 47
     ld c,l              ;0817 4d
     call l01f5h+1       ;0818 cd f6 01
-    ld bc,0fcbh         ;081b 01 cb 0f
+    ld bc,l0fcbh        ;081b 01 cb 0f
     call sub_0184h      ;081e cd 84 01
     ld a,(l3019h)       ;0821 3a 19 30
     ld l,a              ;0824 6f
@@ -1041,7 +1038,7 @@ l087eh:
     or a                ;088d b7
     rra                 ;088e 1f
     ld (l3016h),a       ;088f 32 16 30
-    ld bc,1001h         ;0892 01 01 10
+    ld bc,l1001h        ;0892 01 01 10
     call sub_0184h      ;0895 cd 84 01
     call sub_0216h      ;0898 cd 16 02
     call sub_0179h      ;089b cd 79 01
@@ -1049,7 +1046,7 @@ l087eh:
     cp 46h              ;08a1 fe 46
     jp nz,l0909h        ;08a3 c2 09 09
 l08a6h:
-    ld bc,1024h         ;08a6 01 24 10
+    ld bc,l1024h        ;08a6 01 24 10
     call sub_0184h      ;08a9 cd 84 01
     call sub_0216h      ;08ac cd 16 02
     call sub_0179h      ;08af cd 79 01
@@ -1117,7 +1114,7 @@ l091eh:
     ld a,01h            ;0926 3e 01
     cp 01h              ;0928 fe 01
     jp z,l0990h         ;092a ca 90 09
-    ld bc,104ah         ;092d 01 4a 10
+    ld bc,l104ah        ;092d 01 4a 10
     call sub_0184h      ;0930 cd 84 01
     call sub_0216h      ;0933 cd 16 02
     call sub_0179h      ;0936 cd 79 01
@@ -1180,7 +1177,7 @@ sub_0997h:
     ld a,(4007h)        ;099a 3a 07 40
     or a                ;099d b7
     jp nz,l09adh        ;099e c2 ad 09
-    ld bc,1066h         ;09a1 01 66 10
+    ld bc,l1066h        ;09a1 01 66 10
     call sub_01a9h      ;09a4 cd a9 01
     call sub_0179h      ;09a7 cd 79 01
     jp l09ddh           ;09aa c3 dd 09
@@ -1212,14 +1209,14 @@ l09d3h:
     jp p,l09c0h         ;09da f2 c0 09
 l09ddh:
     call sub_0179h      ;09dd cd 79 01
-    ld bc,10a1h         ;09e0 01 a1 10
+    ld bc,l10a1h        ;09e0 01 a1 10
     call sub_0184h      ;09e3 cd 84 01
     call sub_0216h      ;09e6 cd 16 02
     call sub_0179h      ;09e9 cd 79 01
     ld a,(l24cch)       ;09ec 3a cc 24
     cp 59h              ;09ef fe 59
     jp nz,l0a48h        ;09f1 c2 48 0a
-    ld bc,10c0h         ;09f4 01 c0 10
+    ld bc,l10c0h        ;09f4 01 c0 10
     call sub_01a9h      ;09f7 cd a9 01
     call sub_0216h      ;09fa cd 16 02
     call sub_0179h      ;09fd cd 79 01
@@ -1271,7 +1268,7 @@ sub_0a49h:
     call 2137h          ;0a49 cd 37 21
     ret                 ;0a4c c9
 l0a4dh:
-    ld bc,10e0h         ;0a4d 01 e0 10
+    ld bc,l10e0h        ;0a4d 01 e0 10
     call sub_0184h      ;0a50 cd 84 01
     call sub_0216h      ;0a53 cd 16 02
     call sub_0179h      ;0a56 cd 79 01
@@ -1313,7 +1310,7 @@ l0a87h:
     add hl,bc           ;0a9b 09
     add hl,hl           ;0a9c 29
     jp c,l0aa9h         ;0a9d da a9 0a
-    ld bc,10ffh         ;0aa0 01 ff 10
+    ld bc,l10ffh        ;0aa0 01 ff 10
     call sub_01a9h      ;0aa3 cd a9 01
     jp l0a4dh           ;0aa6 c3 4d 0a
 l0aa9h:
@@ -1353,7 +1350,7 @@ l0af0h:
 l0af1h:
     call sub_0300h      ;0af1 cd 00 03
     call sub_0179h      ;0af4 cd 79 01
-    ld bc,1122h         ;0af7 01 22 11
+    ld bc,l1122h        ;0af7 01 22 11
     call sub_01a9h      ;0afa cd a9 01
     ld bc,l1137h        ;0afd 01 37 11
     call sub_01a9h      ;0b00 cd a9 01
@@ -1439,7 +1436,7 @@ l0ba8h:
 l0babh:
     call sub_0300h      ;0bab cd 00 03
     call sub_0179h      ;0bae cd 79 01
-    ld bc,119dh         ;0bb1 01 9d 11
+    ld bc,l119dh        ;0bb1 01 9d 11
     call sub_01a9h      ;0bb4 cd a9 01
     ld bc,l11b2h        ;0bb7 01 b2 11
     call sub_01a9h      ;0bba cd a9 01
@@ -1810,11 +1807,9 @@ l1280h:
 sub_12a9h:
     ld bc,l1b70h        ;12a9 01 70 1b
     call sub_0184h      ;12ac cd 84 01
-l12afh:
     call sub_0216h      ;12af cd 16 02
     call sub_0179h      ;12b2 cd 79 01
     ld a,(l24cch)       ;12b5 3a cc 24
-l12b8h:
     ld l,a              ;12b8 6f
     rla                 ;12b9 17
     sbc a,a             ;12ba 9f
@@ -1825,7 +1820,6 @@ l12b8h:
     ld hl,(l24c8h)      ;12c3 2a c8 24
     add hl,hl           ;12c6 29
     jp c,l12ech         ;12c7 da ec 12
-l12cah:
     ld bc,0fffch        ;12ca 01 fc ff
     ld hl,(l24c8h)      ;12cd 2a c8 24
     add hl,bc           ;12d0 09
@@ -1847,7 +1841,7 @@ l12e4h:
 l12ech:
     ret                 ;12ec c9
 sub_12edh:
-    ld bc,1b90h         ;12ed 01 90 1b
+    ld bc,l1b90h        ;12ed 01 90 1b
     call sub_0184h      ;12f0 cd 84 01
     call sub_0216h      ;12f3 cd 16 02
     call sub_0179h      ;12f6 cd 79 01
@@ -1875,7 +1869,7 @@ l130fh:
 l1323h:
     ret                 ;1323 c9
 sub_1324h:
-    ld bc,1bb0h         ;1324 01 b0 1b
+    ld bc,l1bb0h        ;1324 01 b0 1b
     call sub_0184h      ;1327 cd 84 01
     call sub_0216h      ;132a cd 16 02
     call sub_0179h      ;132d cd 79 01
@@ -1906,7 +1900,7 @@ l1368h:
     ret                 ;1368 c9
 sub_1369h:
     call sub_0179h      ;1369 cd 79 01
-    ld bc,1bd1h         ;136c 01 d1 1b
+    ld bc,l1bd1h        ;136c 01 d1 1b
     call sub_0184h      ;136f cd 84 01
     call sub_0216h      ;1372 cd 16 02
     call sub_0179h      ;1375 cd 79 01
@@ -1973,9 +1967,9 @@ l13edh:
 l13eeh:
     call sub_0300h      ;13ee cd 00 03
     call sub_0179h      ;13f1 cd 79 01
-    ld bc,1bfeh         ;13f4 01 fe 1b
+    ld bc,l1bfeh        ;13f4 01 fe 1b
     call sub_01a9h      ;13f7 cd a9 01
-    ld bc,1c15h         ;13fa 01 15 1c
+    ld bc,l1c15h        ;13fa 01 15 1c
     call sub_01a9h      ;13fd cd a9 01
     call sub_0179h      ;1400 cd 79 01
     ld bc,l1c2ch        ;1403 01 2c 1c
@@ -2010,7 +2004,7 @@ l1441h:
     ld a,(l3028h)       ;1441 3a 28 30
     cp 80h              ;1444 fe 80
     jp nz,l144fh        ;1446 c2 4f 14
-    ld hl,l1c60h+2      ;1449 21 62 1c
+    ld hl,l1c62h        ;1449 21 62 1c
     jp l1460h           ;144c c3 60 14
 l144fh:
     ld a,(l3028h)       ;144f 3a 28 30
@@ -2019,7 +2013,7 @@ l144fh:
     ld hl,l1c66h        ;1457 21 66 1c
     jp l1460h           ;145a c3 60 14
 l145dh:
-    ld hl,l1c66h+2      ;145d 21 68 1c
+    ld hl,l1c68h        ;145d 21 68 1c
 l1460h:
     ld b,h              ;1460 44
     ld c,l              ;1461 4d
@@ -2047,7 +2041,7 @@ l148ch:
     ld hl,l1c8dh        ;1496 21 8d 1c
     jp l149fh           ;1499 c3 9f 14
 l149ch:
-    ld hl,1c92h         ;149c 21 92 1c
+    ld hl,l1c92h        ;149c 21 92 1c
 l149fh:
     ld b,h              ;149f 44
     ld c,l              ;14a0 4d
@@ -2097,7 +2091,7 @@ l1504h:
     ld c,l              ;1505 4d
     call sub_01a9h      ;1506 cd a9 01
     call sub_0179h      ;1509 cd 79 01
-    ld bc,1cd4h         ;150c 01 d4 1c
+    ld bc,l1cd4h        ;150c 01 d4 1c
     call sub_0184h      ;150f cd 84 01
     call sub_0216h      ;1512 cd 16 02
     call sub_0179h      ;1515 cd 79 01
@@ -2148,7 +2142,7 @@ sub_1564h:
     jp l1697h           ;1564 c3 97 16
 sub_1567h:
     call sub_0179h      ;1567 cd 79 01
-    ld bc,1cf2h         ;156a 01 f2 1c
+    ld bc,l1cf2h        ;156a 01 f2 1c
     call sub_01a9h      ;156d cd a9 01
     ld bc,l1d09h        ;1570 01 09 1d
     call sub_01a9h      ;1573 cd a9 01
@@ -2197,7 +2191,7 @@ l15ceh:
 l15e0h:
     ret                 ;15e0 c9
 sub_15e1h:
-    ld bc,1d77h         ;15e1 01 77 1d
+    ld bc,l1d77h        ;15e1 01 77 1d
     call sub_0184h      ;15e4 cd 84 01
     call sub_0216h      ;15e7 cd 16 02
     call sub_0179h      ;15ea cd 79 01
@@ -2219,7 +2213,7 @@ l1600h:
 l1612h:
     ret                 ;1612 c9
 sub_1613h:
-    ld bc,1d8bh         ;1613 01 8b 1d
+    ld bc,l1d8bh        ;1613 01 8b 1d
     call sub_0184h      ;1616 cd 84 01
     call sub_0216h      ;1619 cd 16 02
     call sub_0179h      ;161c cd 79 01
@@ -2242,7 +2236,7 @@ l1644h:
     ret                 ;1644 c9
 sub_1645h:
     call sub_0179h      ;1645 cd 79 01
-    ld bc,1d9fh         ;1648 01 9f 1d
+    ld bc,l1d9fh        ;1648 01 9f 1d
     call sub_01a9h      ;164b cd a9 01
     ld bc,l1dc0h        ;164e 01 c0 1d
     call sub_01a9h      ;1651 cd a9 01
@@ -2277,9 +2271,9 @@ l1696h:
 l1697h:
     call sub_0300h      ;1697 cd 00 03
     call sub_0179h      ;169a cd 79 01
-    ld bc,1e0dh         ;169d 01 0d 1e
+    ld bc,l1e0dh        ;169d 01 0d 1e
     call sub_01a9h      ;16a0 cd a9 01
-    ld bc,1e24h         ;16a3 01 24 1e
+    ld bc,l1e24h        ;16a3 01 24 1e
     call sub_01a9h      ;16a6 cd a9 01
     call sub_0179h      ;16a9 cd 79 01
     ld bc,l1e3bh        ;16ac 01 3b 1e
@@ -2338,23 +2332,23 @@ l171ch:
     and 0c0h            ;171f e6 c0
     cp 40h              ;1721 fe 40
     jp nz,l172ch        ;1723 c2 2c 17
-    ld hl,1ec6h         ;1726 21 c6 1e
+    ld hl,l1ec6h        ;1726 21 c6 1e
     jp l173fh           ;1729 c3 3f 17
 l172ch:
     ld a,(5660h)        ;172c 3a 60 56
     and 0c0h            ;172f e6 c0
     cp 80h              ;1731 fe 80
     jp nz,l173ch        ;1733 c2 3c 17
-    ld hl,1ecbh         ;1736 21 cb 1e
+    ld hl,l1ecbh        ;1736 21 cb 1e
     jp l173fh           ;1739 c3 3f 17
 l173ch:
-    ld hl,1ed0h         ;173c 21 d0 1e
+    ld hl,l1ed0h        ;173c 21 d0 1e
 l173fh:
     ld b,h              ;173f 44
     ld c,l              ;1740 4d
     call sub_01a9h      ;1741 cd a9 01
     call sub_0179h      ;1744 cd 79 01
-    ld bc,1ed5h         ;1747 01 d5 1e
+    ld bc,l1ed5h        ;1747 01 d5 1e
     call sub_0184h      ;174a cd 84 01
     ld a,(5660h)        ;174d 3a 60 56
     and 0ch             ;1750 e6 0c
@@ -2362,13 +2356,13 @@ l173fh:
     ld hl,l1ef1h        ;1755 21 f1 1e
     jp l175eh           ;1758 c3 5e 17
 l175bh:
-    ld hl,1ef6h         ;175b 21 f6 1e
+    ld hl,l1ef6h        ;175b 21 f6 1e
 l175eh:
     ld b,h              ;175e 44
     ld c,l              ;175f 4d
     call sub_01a9h      ;1760 cd a9 01
     call sub_0179h      ;1763 cd 79 01
-    ld bc,1efbh         ;1766 01 fb 1e
+    ld bc,l1efbh        ;1766 01 fb 1e
     call sub_0184h      ;1769 cd 84 01
     ld a,(5660h)        ;176c 3a 60 56
     and 30h             ;176f e6 30
@@ -2376,13 +2370,13 @@ l175eh:
     ld hl,l1f17h        ;1774 21 17 1f
     jp l177dh           ;1777 c3 7d 17
 l177ah:
-    ld hl,1f1ch         ;177a 21 1c 1f
+    ld hl,l1f1ch        ;177a 21 1c 1f
 l177dh:
     ld b,h              ;177d 44
     ld c,l              ;177e 4d
     call sub_01a9h      ;177f cd a9 01
     call sub_0179h      ;1782 cd 79 01
-    ld bc,1f21h         ;1785 01 21 1f
+    ld bc,l1f21h        ;1785 01 21 1f
     call sub_0184h      ;1788 cd 84 01
     ld a,(566dh)        ;178b 3a 6d 56
     or a                ;178e b7
@@ -2393,16 +2387,16 @@ l1798h:
     ld a,(566dh)        ;1798 3a 6d 56
     cp 01h              ;179b fe 01
     jp nz,l17a6h        ;179d c2 a6 17
-    ld hl,1f47h         ;17a0 21 47 1f
+    ld hl,l1f47h        ;17a0 21 47 1f
     jp l17b7h           ;17a3 c3 b7 17
 l17a6h:
     ld a,(566dh)        ;17a6 3a 6d 56
     cp 02h              ;17a9 fe 02
     jp nz,l17b4h        ;17ab c2 b4 17
-    ld hl,1f51h         ;17ae 21 51 1f
+    ld hl,l1f51h        ;17ae 21 51 1f
     jp l17b7h           ;17b1 c3 b7 17
 l17b4h:
-    ld hl,1f56h         ;17b4 21 56 1f
+    ld hl,l1f56h        ;17b4 21 56 1f
 l17b7h:
     ld b,h              ;17b7 44
     ld c,l              ;17b8 4d
@@ -2456,7 +2450,7 @@ l180dh:
 l181fh:
     ld a,(l24c8h)       ;181f 3a c8 24
     ld (l3029h),a       ;1822 32 29 30
-    ld bc,1f7fh         ;1825 01 7f 1f
+    ld bc,l1f7fh         ;1825 01 7f 1f
     call sub_0184h      ;1828 cd 84 01
     call sub_0216h      ;182b cd 16 02
     call sub_0179h      ;182e cd 79 01
@@ -2492,7 +2486,7 @@ l1872h:
 sub_1876h:
     jp l1a46h           ;1876 c3 46 1a
 sub_1879h:
-    ld bc,1f8fh         ;1879 01 8f 1f
+    ld bc,l1f8fh        ;1879 01 8f 1f
     call sub_0184h      ;187c cd 84 01
     call sub_0216h      ;187f cd 16 02
     call sub_0179h      ;1882 cd 79 01
@@ -2531,7 +2525,7 @@ sub_18bah:
     ld (5667h),a        ;18bf 32 67 56
     ret                 ;18c2 c9
 sub_18c3h:
-    ld bc,1fb0h         ;18c3 01 b0 1f
+    ld bc,l1fb0h        ;18c3 01 b0 1f
     call sub_0184h      ;18c6 cd 84 01
     call sub_0216h      ;18c9 cd 16 02
     call sub_0179h      ;18cc cd 79 01
@@ -2555,7 +2549,7 @@ l18f4h:
     cp 48h              ;18f7 fe 48
     jp nz,l1997h        ;18f9 c2 97 19
 l18fch:
-    ld bc,1fddh         ;18fc 01 dd 1f
+    ld bc,l1fddh        ;18fc 01 dd 1f
     call sub_0184h      ;18ff cd 84 01
     call sub_0216h      ;1902 cd 16 02
     call sub_0179h      ;1905 cd 79 01
@@ -2741,7 +2735,7 @@ l1997h:
 l1a2ah:
     ret                 ;1a2a c9
 sub_1a2bh:
-    ld bc,2001h         ;1a2b 01 01 20
+    ld bc,l2001h        ;1a2b 01 01 20
     call sub_0184h      ;1a2e cd 84 01
     call sub_0216h      ;1a31 cd 16 02
     call sub_0179h      ;1a34 cd 79 01
@@ -2756,7 +2750,7 @@ l1a45h:
 l1a46h:
     call sub_0300h      ;1a46 cd 00 03
     call sub_0179h      ;1a49 cd 79 01
-    ld bc,2018h         ;1a4c 01 18 20
+    ld bc,l2018h        ;1a4c 01 18 20
     call sub_01a9h      ;1a4f cd a9 01
     ld bc,l2030h        ;1a52 01 30 20
     call sub_01a9h      ;1a55 cd a9 01
@@ -2817,7 +2811,7 @@ l1acah:
     ld a,(5668h)        ;1ad4 3a 68 56
     cp 1bh              ;1ad7 fe 1b
     jp nz,l1ae2h        ;1ad9 c2 e2 1a
-    ld hl,20beh         ;1adc 21 be 20
+    ld hl,l20beh        ;1adc 21 be 20
     jp l1af3h           ;1adf c3 f3 1a
 l1ae2h:
     ld a,(5668h)        ;1ae2 3a 68 56
@@ -2830,7 +2824,7 @@ l1af0h:
 l1af3h:
     jp l1af9h           ;1af3 c3 f9 1a
 l1af6h:
-    ld hl,20fch         ;1af6 21 fc 20
+    ld hl,l20fch        ;1af6 21 fc 20
 l1af9h:
     ld b,h              ;1af9 44
     ld c,l              ;1afa 4d
@@ -2859,7 +2853,6 @@ l1b2dh:
     ld hl,(l24c8h)      ;1b2d 2a c8 24
     dec hl              ;1b30 2b
     ld a,h              ;1b31 7c
-l1b32h:
     or l                ;1b32 b5
     jp nz,l1b3ch        ;1b33 c2 3c 1b
     call sub_1879h      ;1b36 cd 79 18
@@ -3228,25 +3221,20 @@ l2122h:
 
     db 01h
     nop                 ;2138 00
-l2139h:
     inc e               ;2139 1c
     ld hl,4000h         ;213a 21 00 40
     ld de,0d400h        ;213d 11 00 d4
-l2140h:
     ldir                ;2140 ed b0
-l2142h:
     jp 0f075h           ;2142 c3 75 f0
 sub_2145h:
     ld a,c              ;2145 79
     ld (l2422h),a       ;2146 32 22 24
     call 0f054h         ;2149 cd 54 f0
-l214ch:
     ld e,00h            ;214c 1e 00
     push de             ;214e d5
     call sub_221ch      ;214f cd 1c 22
     ld a,(l2422h)       ;2152 3a 22 24
     call 0f05ah         ;2155 cd 5a f0
-l2158h:
     ld (l2423h),a       ;2158 32 23 24
     ld hl,4000h         ;215b 21 00 40
     ld bc,1c00h         ;215e 01 00 1c
@@ -3264,7 +3252,6 @@ l2168h:
     or c                ;216f b1
     jr nz,l2168h        ;2170 20 f6
     call 0f03ch         ;2172 cd 3c f0
-l2175h:
     pop de              ;2175 d1
     push de             ;2176 d5
     call 0f060h         ;2177 cd 60 f0
@@ -4904,7 +4891,6 @@ l2615h:
     nop                 ;292f 00
     nop                 ;2930 00
     nop                 ;2931 00
-l2932h:
     nop                 ;2932 00
     nop                 ;2933 00
     nop                 ;2934 00
@@ -5911,7 +5897,6 @@ l2932h:
     nop                 ;2d1d 00
     nop                 ;2d1e 00
     nop                 ;2d1f 00
-l2d20h:
     nop                 ;2d20 00
     nop                 ;2d21 00
     nop                 ;2d22 00
@@ -6724,15 +6709,11 @@ l302ah:
     nop                 ;302d 00
     nop                 ;302e 00
     nop                 ;302f 00
-l3030h:
     nop                 ;3030 00
-l3031h:
     nop                 ;3031 00
-l3032h:
     nop                 ;3032 00
     nop                 ;3033 00
     nop                 ;3034 00
-l3035h:
     nop                 ;3035 00
     nop                 ;3036 00
     nop                 ;3037 00
