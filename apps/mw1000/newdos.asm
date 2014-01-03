@@ -366,7 +366,6 @@ l02fah:
     and 0fh             ;02ff e6 0f
     ld (l30afh),a       ;0301 32 af 30
     cp 10               ;0304 fe 0a
-l0306h:
     jp m,l030eh         ;0306 fa 0e 03
     add a,'A'-10        ;0309 c6 37
     jp l0313h           ;030b c3 13 03

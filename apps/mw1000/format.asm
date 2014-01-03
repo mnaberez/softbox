@@ -230,7 +230,6 @@ readline:
     or a                ;022f b7
     jp nz,l023bh        ;0230 c2 3b 02
     ld hl,l3003h        ;0233 21 03 30
-l0236h:
     ld (hl),0dh         ;0236 36 0d
     jp l02ffh           ;0238 c3 ff 02
 l023bh:
