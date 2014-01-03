@@ -24,8 +24,11 @@ sub_011eh:
     ld a,(l2423h)       ;011e 3a 23 24
     or a                ;0121 b7
     jp z,l0162h         ;0122 ca 62 01
-    ld bc,l0c84h        ;0125 01 84 0c
-    call print_str      ;0128 cd 84 01
+
+    ;PRINT "Disk error :  ";
+    ld bc,l0c84h
+    call print_str
+
     ld hl,l3008h        ;012b 21 08 30
     ld (hl),00h         ;012e 36 00
     jp l0157h           ;0130 c3 57 01
@@ -165,8 +168,11 @@ l01f5h:
     ld a,l              ;01ff 7d
     or h                ;0200 b4
     jp nz,l020dh        ;0201 c2 0d 02
-    ld bc,l0c93h        ;0204 01 93 0c
-    call print_str      ;0207 cd 84 01
+
+    ;PRINT "0";
+    ld bc,l0c93h
+    call print_str
+
     jp l0215h           ;020a c3 15 02
 l020dh:
     ld hl,(l3011h)      ;020d 2a 11 30
@@ -175,7 +181,7 @@ l020dh:
     call sub_01bbh      ;0212 cd bb 01
 l0215h:
     ret                 ;0215 c9
-sub_0216h:
+readline:
     ld hl,l2424h        ;0216 21 24 24
     ld (hl),50h         ;0219 36 50
     ld de,l2424h        ;021b 11 24 24
@@ -312,10 +318,16 @@ sub_0300h:
 sub_0306h:
     jp l05edh           ;0306 c3 ed 05
 sub_0309h:
-    ld bc,l0c95h        ;0309 01 95 0c
-    call print_str      ;030c cd 84 01
-    call sub_0216h      ;030f cd 16 02
-    call print_eol      ;0312 cd 79 01
+    ;PRINT "Device number for drive ? ";
+    ld bc,l0c95h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l3016h)       ;0315 3a 16 30
     ld l,a              ;0318 6f
     rla                 ;0319 17
@@ -335,10 +347,17 @@ sub_0309h:
     ld a,(hl)           ;032f 7e
     cp 04h              ;0330 fe 04
     jp nz,l0358h        ;0332 c2 58 03
-    ld bc,l0cb0h        ;0335 01 b0 0c
-    call print_str      ;0338 cd 84 01
-    call sub_0216h      ;033b cd 16 02
-    call print_eol      ;033e cd 79 01
+
+    ;PRINT "Configure as 1 or 2 CP/M drives ? ";
+    ld bc,l0cb0h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld hl,(l24c8h)      ;0341 2a c8 24
     dec hl              ;0344 2b
     dec hl              ;0345 2b
@@ -357,36 +376,77 @@ l0358h:
     ret                 ;0358 c9
 l0359h:
     call sub_0300h      ;0359 cd 00 03
-    ld bc,l0cd3h        ;035c 01 d3 0c
-    call print_str      ;035f cd 84 01
-    call print_eol      ;0362 cd 79 01
-    call print_eol      ;0365 cd 79 01
-    ld bc,l0cf1h        ;0368 01 f1 0c
-    call print_str_eol  ;036b cd a9 01
-    call print_eol      ;036e cd 79 01
-    ld bc,l0d0eh        ;0371 01 0e 0d
-    call print_str_eol  ;0374 cd a9 01
-    call print_eol      ;0377 cd 79 01
-    ld bc,l0d2bh        ;037a 01 2b 0d
-    call print_str_eol  ;037d cd a9 01
-    call print_eol      ;0380 cd 79 01
-    ld bc,l0d48h        ;0383 01 48 0d
-    call print_str_eol  ;0386 cd a9 01
-    call print_eol      ;0389 cd 79 01
-    ld bc,l0d65h        ;038c 01 65 0d
-    call print_str_eol  ;038f cd a9 01
-    call print_eol      ;0392 cd 79 01
-    ld bc,l0d82h        ;0395 01 82 0d
-    call print_str_eol  ;0398 cd a9 01
-    call print_eol      ;039b cd 79 01
-    ld bc,l0d9fh        ;039e 01 9f 0d
-    call print_str_eol  ;03a1 cd a9 01
-    call print_eol      ;03a4 cd 79 01
-    call print_eol      ;03a7 cd 79 01
-    ld bc,l0dc3h        ;03aa 01 c3 0d
-    call print_str      ;03ad cd 84 01
-    call sub_0216h      ;03b0 cd 16 02
-    call print_eol      ;03b3 cd 79 01
+
+    ;PRINT "Winchester sizes supported : "
+    ld bc,l0cd3h
+    call print_str
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "A.   3  Mbyte      (191 cyl)"
+    ld bc,l0cf1h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "B.   6  Mbyte      (191 cyl)"
+    ld bc,l0d0eh
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "C.   12 Mbyte      (191 cyl)"
+    ld bc,l0d2bh
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "D.   5  Mbyte      (320 cyl)"
+    ld bc,l0d48h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "E.   10 Mbyte      (320 cyl)"
+    ld bc,l0d65h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "F.   15 Mbyte      (320 cyl)"
+    ld bc,l0d82h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Z.   User supplied Head & Cyl count"
+    ld bc,l0d9fh
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Which drive type (A-F or Z) ? ";
+    ld bc,l0dc3h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;03b6 3a cc 24
     cp 41h              ;03b9 fe 41
     jp nz,l03cch        ;03bb c2 cc 03
@@ -445,9 +505,13 @@ l043ah:
     cp 5ah              ;043d fe 5a
     jp nz,l0480h        ;043f c2 80 04
 l0442h:
-    ld bc,l0de2h        ;0442 01 e2 0d
-    call print_str      ;0445 cd 84 01
-    call sub_0216h      ;0448 cd 16 02
+    ;PRINT "Enter the number of Heads : ";
+    ld bc,l0de2h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
     ld a,(l24c8h)       ;044b 3a c8 24
     ld (l3017h),a       ;044e 32 17 30
     cp 02h              ;0451 fe 02
@@ -458,13 +522,20 @@ l0442h:
     jp z,l046eh         ;045d ca 6e 04
     cp 08h              ;0460 fe 08
     jp z,l046eh         ;0462 ca 6e 04
-    ld bc,l0dffh        ;0465 01 ff 0d
-    call print_str_eol  ;0468 cd a9 01
-    jp l0442h           ;046b c3 42 04
+
+    ;PRINT "Must be 2, 4, 6 or 8";
+    ld bc,l0dffh
+    call print_str_eol
+
+    jp l0442h
 l046eh:
-    ld bc,l0e14h        ;046e 01 14 0e
-    call print_str      ;0471 cd 84 01
-    call sub_0216h      ;0474 cd 16 02
+    ;PRINT "Enter the number of Cylinders : ";
+    ld bc,l0e14h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
     ld hl,(l24c8h)      ;0477 2a c8 24
     ld (l301ah),hl      ;047a 22 1a 30
     jp l0483h           ;047d c3 83 04
@@ -485,12 +556,20 @@ l0483h:
     add hl,de           ;0494 19
     ld (hl),c           ;0495 71
 l0496h:
-    ld bc,l0e35h        ;0496 01 35 0e
-    call print_str_eol  ;0499 cd a9 01
-    ld bc,l0e53h        ;049c 01 53 0e
-    call print_str      ;049f cd 84 01
-    call sub_0216h      ;04a2 cd 16 02
-    call print_eol      ;04a5 cd 79 01
+    ;PRINT "Use the ENTIRE drive for CP/M"
+    ld bc,l0e35h
+    call print_str_eol
+
+    ;PRINT "or just the first HALF (E/H) ? ";
+    ld bc,l0e53h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;04a8 3a cc 24
     cp 48h              ;04ab fe 48
     jp nz,l04c0h        ;04ad c2 c0 04
@@ -566,10 +645,16 @@ l050ah:
     inc hl              ;052d 23
     ld (580dh),hl       ;052e 22 0d 58
 l0531h:
-    ld bc,l0e73h        ;0531 01 73 0e
-    call print_str      ;0534 cd 84 01
-    call sub_0216h      ;0537 cd 16 02
-    call print_eol      ;053a cd 79 01
+    ;PRINT "Physical unit # (0 or 1) ? ";
+    ld bc,l0e73h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;053d 3a cc 24
     cp 30h              ;0540 fe 30
     jp m,l0555h         ;0542 fa 55 05
@@ -582,10 +667,16 @@ l0531h:
 l0555h:
     jp l0531h           ;0555 c3 31 05
 l0558h:
-    ld bc,l0e8fh        ;0558 01 8f 0e
-    call print_str      ;055b cd 84 01
-    call sub_0216h      ;055e cd 16 02
-    call print_eol      ;0561 cd 79 01
+    ;PRINT "Start surface #'s from 0  (Y/N) ? ";
+    ld bc,l0e8fh
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;0564 3a cc 24
     cp 59h              ;0567 fe 59
     jp nz,l0574h        ;0569 c2 74 05
@@ -596,10 +687,17 @@ l0574h:
     ld a,(l24cch)       ;0574 3a cc 24
     cp 4eh              ;0577 fe 4e
     jp nz,l05a3h        ;0579 c2 a3 05
-    ld bc,l0eb2h        ;057c 01 b2 0e
-    call print_str      ;057f cd 84 01
-    call sub_0216h      ;0582 cd 16 02
-    call print_eol      ;0585 cd 79 01
+
+    ;PRINT "Offset for surface #'s ? ";
+    ld bc,l0eb2h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld hl,(l24c8h)      ;0588 2a c8 24
     add hl,hl           ;058b 29
     jp c,l0558h         ;058c da 58 05
@@ -666,12 +764,21 @@ l05afh:
     ret                 ;05ec c9
 l05edh:
     call sub_0300h      ;05ed cd 00 03
-    ld bc,l0ecch        ;05f0 01 cc 0e
-    call print_str_eol  ;05f3 cd a9 01
-    ld bc,l0ee3h        ;05f6 01 e3 0e
-    call print_str_eol  ;05f9 cd a9 01
-    call print_eol      ;05fc cd 79 01
-    call print_eol      ;05ff cd 79 01
+
+    ;PRINT "Disk Drive Assignment."
+    ld bc,l0ecch
+    call print_str_eol
+
+    ;PRINT "---- ----- -----------"
+    ld bc,l0ee3h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
     ld hl,l3016h        ;0602 21 16 30
     ld (hl),00h         ;0605 36 00
     jp l085eh           ;0607 c3 5e 08
@@ -681,15 +788,21 @@ l060ah:
     add a,41h           ;060e c6 41
     ld c,a              ;0610 4f
     call print_char     ;0611 cd 6b 01
-    ld bc,l0efah        ;0614 01 fa 0e
-    call print_str      ;0617 cd 84 01
+
+    ;PRINT ", ";
+    ld bc,l0efah
+    call print_str
+
     ld a,(l3016h)       ;061a 3a 16 30
     add a,a             ;061d 87
     add a,42h           ;061e c6 42
     ld c,a              ;0620 4f
     call print_char     ;0621 cd 6b 01
-    ld bc,l0efdh        ;0624 01 fd 0e
-    call print_str      ;0627 cd 84 01
+
+    ;PRINT ":      ";
+    ld bc,l0efdh
+    call print_str
+
     ld a,(l3016h)       ;062a 3a 16 30
     ld l,a              ;062d 6f
     rla                 ;062e 17
@@ -700,8 +813,11 @@ l060ah:
     ld a,(hl)           ;0635 7e
     or a                ;0636 b7
     jp nz,l0657h        ;0637 c2 57 06
-    ld bc,l0f05h        ;063a 01 05 0f
-    call print_str      ;063d cd 84 01
+
+    ;PRINT "3040/4040  Device # ";
+    ld bc,l0f05h
+    call print_str
+
     ld a,(l3016h)       ;0640 3a 16 30
     ld l,a              ;0643 6f
     rla                 ;0644 17
@@ -728,8 +844,11 @@ l0657h:
     ld a,(hl)           ;0662 7e
     cp 01h              ;0663 fe 01
     jp nz,l0685h        ;0665 c2 85 06
-    ld bc,l0f1ah        ;0668 01 1a 0f
-    call print_str      ;066b cd 84 01
+
+    ;PRINT "8050       Device # ";
+    ld bc,l0f1ah
+    call print_str
+
     ld a,(l3016h)       ;066e 3a 16 30
     ld l,a              ;0671 6f
     rla                 ;0672 17
@@ -756,8 +875,11 @@ l0685h:
     ld a,(hl)           ;0690 7e
     cp 06h              ;0691 fe 06
     jp nz,l06b3h        ;0693 c2 b3 06
-    ld bc,l0f2fh        ;0696 01 2f 0f
-    call print_str      ;0699 cd 84 01
+
+    ;PRINT "8250       Device # ";
+    ld bc,l0f2fh
+    call print_str
+
     ld a,(l3016h)       ;069c 3a 16 30
     ld l,a              ;069f 6f
     rla                 ;06a0 17
@@ -784,15 +906,21 @@ l06b3h:
     ld a,(hl)           ;06be 7e
     or a                ;06bf b7
     jp p,l06cch         ;06c0 f2 cc 06
-    ld bc,l0f44h        ;06c3 01 44 0f
-    call print_str      ;06c6 cd 84 01
+
+    ;PRINT "Not used  ";
+    ld bc,l0f44h
+    call print_str
+
     jp l0857h           ;06c9 c3 57 08
 l06cch:
     ld a,01h            ;06cc 3e 01
     cp 01h              ;06ce fe 01
     jp z,l075ah         ;06d0 ca 5a 07
-    ld bc,l0f4fh        ;06d3 01 4f 0f
-    call print_str      ;06d6 cd 84 01
+
+    ;PRINT "Corvus     ";
+    ld bc,l0f4fh
+    call print_str
+
     ld a,(l3016h)       ;06d9 3a 16 30
     ld l,a              ;06dc 6f
     rla                 ;06dd 17
@@ -850,8 +978,11 @@ l0738h:
     ld b,h              ;0738 44
     ld c,l              ;0739 4d
     call print_str      ;073a cd 84 01
-    ld bc,l0f7ah        ;073d 01 7a 0f
-    call print_str      ;0740 cd 84 01
+
+    ;PRINT "Device # ";
+    ld bc,l0f7ah
+    call print_str
+
     ld a,(l3016h)       ;0743 3a 16 30
     ld l,a              ;0746 6f
     rla                 ;0747 17
@@ -912,8 +1043,11 @@ l0780h:
     dec a               ;0796 3d
     add a,a             ;0797 87
     ld (l3017h),a       ;0798 32 17 30
-    ld bc,l0f84h        ;079b 01 84 0f
-    call print_str      ;079e cd 84 01
+
+    ;PRINT "Winchester Unit # ";
+    ld bc,l0f84h
+    call print_str
+
     ld a,(l3018h)       ;07a1 3a 18 30
     ld l,a              ;07a4 6f
     rla                 ;07a5 17
@@ -921,9 +1055,14 @@ l0780h:
     ld b,a              ;07a7 47
     ld c,l              ;07a8 4d
     call l01f5h+1       ;07a9 cd f6 01
-    call print_eol      ;07ac cd 79 01
-    ld bc,l0f97h        ;07af 01 97 0f
-    call print_str      ;07b2 cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "           (";
+    ld bc,l0f97h
+    call print_str
+
     ld a,(l3018h)       ;07b5 3a 18 30
     ld l,a              ;07b8 6f
     rla                 ;07b9 17
@@ -936,8 +1075,11 @@ l0780h:
     inc hl              ;07c2 23
     ld b,(hl)           ;07c3 46
     call l01f5h+1       ;07c4 cd f6 01
-    ld bc,l0fa4h        ;07c7 01 a4 0f
-    call print_str      ;07ca cd 84 01
+
+    ;PRINT " cyl,  ";
+    ld bc,l0fa4h
+    call print_str
+
     ld a,(l3017h)       ;07cd 3a 17 30
     ld l,a              ;07d0 6f
     rla                 ;07d1 17
@@ -977,11 +1119,16 @@ l07f8h:
     ld b,d              ;07fc 42
     ld c,e              ;07fd 4b
     call l01f5h+1       ;07fe cd f6 01
-    ld bc,l0fach        ;0801 01 ac 0f
-    call print_str      ;0804 cd 84 01
-    call print_eol      ;0807 cd 79 01
-    ld bc,l0fbah        ;080a 01 ba 0f
-    call print_str      ;080d cd 84 01
+
+    ;PRINT " Mbyte drive,"
+    ld bc,l0fach
+    call print_str
+    call print_eol
+
+    ;PRINT "           Head ";
+    ld bc,l0fbah
+    call print_str
+
     ld a,(l3019h)       ;0810 3a 19 30
     ld l,a              ;0813 6f
     rla                 ;0814 17
@@ -989,8 +1136,11 @@ l07f8h:
     ld b,a              ;0816 47
     ld c,l              ;0817 4d
     call l01f5h+1       ;0818 cd f6 01
-    ld bc,l0fcbh        ;081b 01 cb 0f
-    call print_str      ;081e cd 84 01
+
+    ;PRINT "-";
+    ld bc,l0fcbh
+    call print_str
+
     ld a,(l3019h)       ;0821 3a 19 30
     ld l,a              ;0824 6f
     rla                 ;0825 17
@@ -1006,8 +1156,11 @@ l07f8h:
     ld b,h              ;0831 44
     ld c,l              ;0832 4d
     call l01f5h+1       ;0833 cd f6 01
-    ld bc,l0fcdh        ;0836 01 cd 0f
-    call print_str      ;0839 cd 84 01
+
+    ;PRINT "  Cyls 1-";
+    ld bc,l0fcdh
+    call print_str
+
     ld a,(l3018h)       ;083c 3a 18 30
     ld l,a              ;083f 6f
     rla                 ;0840 17
@@ -1020,22 +1173,38 @@ l07f8h:
     inc hl              ;0849 23
     ld b,(hl)           ;084a 46
     call l01f5h+1       ;084b cd f6 01
-    ld bc,l0fd7h        ;084e 01 d7 0f
-    call print_str      ;0851 cd 84 01
-    call print_eol      ;0854 cd 79 01
+
+    ;PRINT " used)"
+    ld bc,l0fd7h
+    call print_str
+
+    ;PRINT
+    call print_eol
+
 l0857h:
-    call print_eol      ;0857 cd 79 01
+    ;PRINT
+    call print_eol
+
     ld hl,l3016h        ;085a 21 16 30
     inc (hl)            ;085d 34
 l085eh:
     ld a,(l3016h)       ;085e 3a 16 30
     cp 08h              ;0861 fe 08
     jp m,l060ah         ;0863 fa 0a 06
-    call print_eol      ;0866 cd 79 01
-    ld bc,l0fdeh        ;0869 01 de 0f
-    call print_str      ;086c cd 84 01
-    call sub_0216h      ;086f cd 16 02
-    call print_eol      ;0872 cd 79 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Alter which drive pair (A to O) ? ";
+    ld bc,l0fdeh
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;0875 3a cc 24
     cp 0dh              ;0878 fe 0d
     jp nz,l087eh        ;087a c2 7e 08
@@ -1050,18 +1219,31 @@ l087eh:
     or a                ;088d b7
     rra                 ;088e 1f
     ld (l3016h),a       ;088f 32 16 30
-    ld bc,l1001h        ;0892 01 01 10
-    call print_str      ;0895 cd 84 01
-    call sub_0216h      ;0898 cd 16 02
-    call print_eol      ;089b cd 79 01
+
+    ;PRINT "F(loppy),  H(ard) or  U(nused)  ? ";
+    ld bc,l1001h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;089e 3a cc 24
     cp 46h              ;08a1 fe 46
     jp nz,l0909h        ;08a3 c2 09 09
 l08a6h:
-    ld bc,l1024h        ;08a6 01 24 10
-    call print_str      ;08a9 cd 84 01
-    call sub_0216h      ;08ac cd 16 02
-    call print_eol      ;08af cd 79 01
+    ;PRINT "Type (A=3040/4040, B=8050, C=8250) ? ";
+    ld bc,l1024h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;08b2 3a cc 24
     cp 41h              ;08b5 fe 41
     jp nz,l08cdh        ;08b7 c2 cd 08
@@ -1126,10 +1308,17 @@ l091eh:
     ld a,01h            ;0926 3e 01
     cp 01h              ;0928 fe 01
     jp z,l0990h         ;092a ca 90 09
-    ld bc,l104ah        ;092d 01 4a 10
-    call print_str      ;0930 cd 84 01
-    call sub_0216h      ;0933 cd 16 02
-    call print_eol      ;0936 cd 79 01
+
+    ;PRINT "5, 10, or 20 Mbyte drive ? ";
+    ld bc,l104ah
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld bc,0fffbh        ;0939 01 fb ff
     ld hl,(l24c8h)      ;093c 2a c8 24
     add hl,bc           ;093f 09
@@ -1189,13 +1378,20 @@ sub_0997h:
     ld a,(4007h)        ;099a 3a 07 40
     or a                ;099d b7
     jp nz,l09adh        ;099e c2 ad 09
-    ld bc,l1066h        ;09a1 01 66 10
-    call print_str_eol  ;09a4 cd a9 01
-    call print_eol      ;09a7 cd 79 01
+
+    ;PRINT "No current autoload command"
+    ld bc,l1066h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
     jp l09ddh           ;09aa c3 dd 09
 l09adh:
-    ld bc,l1082h        ;09ad 01 82 10
-    call print_str_eol  ;09b0 cd a9 01
+    ;PRINT "Current autoload command is : "
+    ld bc,l1082h
+    call print_str_eol
+
     ld hl,l301eh        ;09b3 21 1e 30
     ld (hl),01h         ;09b6 36 01
     ld a,(4007h)        ;09b8 3a 07 40
@@ -1220,18 +1416,33 @@ l09d3h:
     cp (hl)             ;09d9 be
     jp p,l09c0h         ;09da f2 c0 09
 l09ddh:
-    call print_eol      ;09dd cd 79 01
-    ld bc,l10a1h        ;09e0 01 a1 10
-    call print_str      ;09e3 cd 84 01
-    call sub_0216h      ;09e6 cd 16 02
-    call print_eol      ;09e9 cd 79 01
+    ;PRINT
+    call print_eol
+
+    ;PRINT "New autoload command  (Y/N) ? ";
+    ld bc,l10a1h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;09ec 3a cc 24
     cp 59h              ;09ef fe 59
     jp nz,l0a48h        ;09f1 c2 48 0a
-    ld bc,l10c0h        ;09f4 01 c0 10
-    call print_str_eol  ;09f7 cd a9 01
-    call sub_0216h      ;09fa cd 16 02
-    call print_eol      ;09fd cd 79 01
+
+    ;PRINT "Please enter the new command : "
+    ld bc,l10c0h
+    call print_str_eol
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l2425h)       ;0a00 3a 25 24
     ld (4007h),a        ;0a03 32 07 40
     ld hl,l301eh        ;0a06 21 1e 30
@@ -1280,10 +1491,16 @@ sub_0a49h:
     call 2137h          ;0a49 cd 37 21
     ret                 ;0a4c c9
 l0a4dh:
-    ld bc,l10e0h        ;0a4d 01 e0 10
-    call print_str      ;0a50 cd 84 01
-    call sub_0216h      ;0a53 cd 16 02
-    call print_eol      ;0a56 cd 79 01
+    ;PRINT "Save on which drive (A - P) ? ";
+    ld bc,l10e0h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;0a59 3a cc 24
     cp 41h              ;0a5c fe 41
     jp p,l0a66h         ;0a5e f2 66 0a
@@ -1322,8 +1539,11 @@ l0a87h:
     add hl,bc           ;0a9b 09
     add hl,hl           ;0a9c 29
     jp c,l0aa9h         ;0a9d da a9 0a
-    ld bc,l10ffh        ;0aa0 01 ff 10
-    call print_str_eol  ;0aa3 cd a9 01
+
+    ;PRINT "Drive not in system"
+    ld bc,l10ffh
+    call print_str_eol
+
     jp l0a4dh           ;0aa6 c3 4d 0a
 l0aa9h:
     ld hl,(l3020h)      ;0aa9 2a 20 30
@@ -1350,10 +1570,17 @@ l0ac7h:
     call sub_011eh      ;0ad5 cd 1e 01
     or a                ;0ad8 b7
     jp z,l0af0h         ;0ad9 ca f0 0a
-    ld bc,l1113h        ;0adc 01 13 11
-    call print_str      ;0adf cd 84 01
-    call sub_0216h      ;0ae2 cd 16 02
-    call print_eol      ;0ae5 cd 79 01
+
+    ;PRINT "Retry (Y/N) ? ";
+    ld bc,l1113h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;0ae8 3a cc 24
     cp 59h              ;0aeb fe 59
     jp z,l0ac7h         ;0aed ca c7 0a
@@ -1362,25 +1589,47 @@ l0af0h:
 l0af1h:
     call sub_0300h      ;0af1 cd 00 03
     call print_eol      ;0af4 cd 79 01
-    ld bc,l1122h        ;0af7 01 22 11
-    call print_str_eol  ;0afa cd a9 01
-    ld bc,l1137h        ;0afd 01 37 11
-    call print_str_eol  ;0b00 cd a9 01
-    call print_eol      ;0b03 cd 79 01
+
+    ;PRINT "CP/M Reconfiguration"
+    ld bc,l1122h
+    call print_str_eol
+
+    ;PRINT "---- ---------------"
+    ld bc,l1137h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
     ld a,01h            ;0b06 3e 01
     cp 01h              ;0b08 fe 01
     jp nz,l0b13h        ;0b0a c2 13 0b
-    ld bc,l114ch        ;0b0d 01 4c 11
-    call print_str_eol  ;0b10 cd a9 01
+
+    ;PRINT "Mini-Winchester version"
+    ld bc,l114ch
+    call print_str_eol
+
 l0b13h:
-    ld bc,l1164h        ;0b13 01 64 11
-    call print_str_eol  ;0b16 cd a9 01
-    call print_eol      ;0b19 cd 79 01
-    call print_eol      ;0b1c cd 79 01
-    ld bc,l1185h        ;0b1f 01 85 11
-    call print_str      ;0b22 cd 84 01
-    call sub_0216h      ;0b25 cd 16 02
-    call print_eol      ;0b28 cd 79 01
+    ;PRINT "Revision C2.2  --   9 March 1984"
+    ld bc,l1164h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Source drive (A - P) ? ";
+    ld bc,l1185h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;0b2b 3a cc 24
     cp 0dh              ;0b2e fe 0d
     jp z,l0af1h         ;0b30 ca f1 0a
@@ -1447,40 +1696,87 @@ l0ba8h:
     jp l0af1h           ;0ba8 c3 f1 0a
 l0babh:
     call sub_0300h      ;0bab cd 00 03
-    call print_eol      ;0bae cd 79 01
-    ld bc,l119dh        ;0bb1 01 9d 11
-    call print_str_eol  ;0bb4 cd a9 01
-    ld bc,l11b2h        ;0bb7 01 b2 11
-    call print_str_eol  ;0bba cd a9 01
-    call print_eol      ;0bbd cd 79 01
-    ld bc,l11c7h        ;0bc0 01 c7 11
-    call print_str_eol  ;0bc3 cd a9 01
-    call print_eol      ;0bc6 cd 79 01
-    ld bc,l11dch        ;0bc9 01 dc 11
-    call print_str_eol  ;0bcc cd a9 01
-    call print_eol      ;0bcf cd 79 01
-    ld bc,l11f6h        ;0bd2 01 f6 11
-    call print_str_eol  ;0bd5 cd a9 01
-    call print_eol      ;0bd8 cd 79 01
-    ld bc,l1209h        ;0bdb 01 09 12
-    call print_str_eol  ;0bde cd a9 01
-    call print_eol      ;0be1 cd 79 01
-    ld bc,l1225h        ;0be4 01 25 12
-    call print_str_eol  ;0be7 cd a9 01
-    call print_eol      ;0bea cd 79 01
-    ld bc,l123fh        ;0bed 01 3f 12
-    call print_str_eol  ;0bf0 cd a9 01
-    call print_eol      ;0bf3 cd 79 01
-    ld bc,l1253h        ;0bf6 01 53 12
-    call print_str_eol  ;0bf9 cd a9 01
-    call print_eol      ;0bfc cd 79 01
-    ld bc,l126ah        ;0bff 01 6a 12
-    call print_str_eol  ;0c02 cd a9 01
-    call print_eol      ;0c05 cd 79 01
-    ld bc,l1280h        ;0c08 01 80 12
-    call print_str      ;0c0b cd 84 01
-    call sub_0216h      ;0c0e cd 16 02
-    call print_eol      ;0c11 cd 79 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "CP/M Reconfiguration"
+    ld bc,l119dh
+    call print_str_eol
+
+    ;PRINT "---- ---------------"
+    ld bc,l11b2h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "A = Autoload command"
+    ld bc,l11c7h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "D = Disk Drive Assignment"
+    ld bc,l11dch
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "I = I/O Assignment"
+    ld bc,l11f6h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "P = Pet Terminal Parameters"
+    ld bc,l1209h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "R = RS232 Characteristics"
+    ld bc,l1225h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "S = Save New System"
+    ld bc,l123fh
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "E = Execute New System"
+    ld bc,l1253h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Q = Quit This Program"
+    ld bc,l126ah
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Please enter the appropriate letter: ";
+    ld bc,l1280h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;0c14 3a cc 24
     cp 'A'              ;0c17 fe 41
     jp nz,l0c22h        ;0c19 c2 22 0c
@@ -1817,10 +2113,16 @@ l1280h:
     db 0c3h
     xor 13h             ;12a7 ee 13
 sub_12a9h:
-    ld bc,l1b70h        ;12a9 01 70 1b
-    call print_str      ;12ac cd 84 01
-    call sub_0216h      ;12af cd 16 02
-    call print_eol      ;12b2 cd 79 01
+    ;PRINT "New charater length (5 to 8) ? ";
+    ld bc,l1b70h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;12b5 3a cc 24
     ld l,a              ;12b8 6f
     rla                 ;12b9 17
@@ -1853,10 +2155,16 @@ l12e4h:
 l12ech:
     ret                 ;12ec c9
 sub_12edh:
-    ld bc,l1b90h        ;12ed 01 90 1b
-    call print_str      ;12f0 cd 84 01
-    call sub_0216h      ;12f3 cd 16 02
-    call print_eol      ;12f6 cd 79 01
+    ;PRINT "Number of stop bits (1 or 2) ? ";
+    ld bc,l1b90h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld hl,(l24c8h)      ;12f9 2a c8 24
     dec hl              ;12fc 2b
     ld a,h              ;12fd 7c
@@ -1881,10 +2189,16 @@ l130fh:
 l1323h:
     ret                 ;1323 c9
 sub_1324h:
-    ld bc,l1bb0h        ;1324 01 b0 1b
-    call print_str      ;1327 cd 84 01
-    call sub_0216h      ;132a cd 16 02
-    call print_eol      ;132d cd 79 01
+    ;PRINT "O(dd), E(ven), or N(o) parity ? ";
+    ld bc,l1bb0h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;1330 3a cc 24
     cp 4fh              ;1333 fe 4f
     jp nz,l1345h        ;1335 c2 45 13
@@ -1911,11 +2225,19 @@ l1358h:
 l1368h:
     ret                 ;1368 c9
 sub_1369h:
-    call print_eol      ;1369 cd 79 01
-    ld bc,l1bd1h        ;136c 01 d1 1b
-    call print_str      ;136f cd 84 01
-    call sub_0216h      ;1372 cd 16 02
-    call print_eol      ;1375 cd 79 01
+    ;PRINT
+    call print_eol
+
+    ;PRINT "110, 300, 1200, 4800, 9600, or 19200 baud ? ";
+    ld bc,l1bd1h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld bc,0ff92h        ;1378 01 92 ff
     ld hl,(l24c8h)      ;137b 2a c8 24
     add hl,bc           ;137e 09
@@ -1978,14 +2300,25 @@ l13edh:
     ret                 ;13ed c9
 l13eeh:
     call sub_0300h      ;13ee cd 00 03
-    call print_eol      ;13f1 cd 79 01
-    ld bc,l1bfeh        ;13f4 01 fe 1b
-    call print_str_eol  ;13f7 cd a9 01
-    ld bc,l1c15h        ;13fa 01 15 1c
-    call print_str_eol  ;13fd cd a9 01
-    call print_eol      ;1400 cd 79 01
-    ld bc,l1c2ch        ;1403 01 2c 1c
-    call print_str      ;1406 cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "RS232 Characteristics."
+    ld bc,l1bfeh
+    call print_str_eol
+
+    ;PRINT "----- ----------------"
+    ld bc,l1c15h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT " 1.  Character size :<tab><tab>";
+    ld bc,l1c2ch
+    call print_str
+
     ld a,(5664h)        ;1409 3a 64 56
     and 0ch             ;140c e6 0c
     ld l,a              ;140e 6f
@@ -2001,10 +2334,17 @@ l1417h:
     add a,35h           ;141c c6 35
     ld c,a              ;141e 4f
     call print_char     ;141f cd 6b 01
-    call print_eol      ;1422 cd 79 01
-    call print_eol      ;1425 cd 79 01
-    ld bc,l1c44h        ;1428 01 44 1c
-    call print_str      ;142b cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT " 2.  Number of stop bits :<tab>";
+    ld bc,l1c44h
+    call print_str
+
     ld a,(5664h)        ;142e 3a 64 56
     and 0c0h            ;1431 e6 c0
     ld (l3028h),a       ;1433 32 28 30
@@ -2030,9 +2370,14 @@ l1460h:
     ld b,h              ;1460 44
     ld c,l              ;1461 4d
     call print_str_eol  ;1462 cd a9 01
-    call print_eol      ;1465 cd 79 01
-    ld bc,l1c72h        ;1468 01 72 1c
-    call print_str      ;146b cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT " 3.  Parity :<tab><tab><tab>";
+    ld bc,l1c72h
+    call print_str
+
     ld a,(5664h)        ;146e 3a 64 56
     and 10h             ;1471 e6 10
     jp nz,l147ch        ;1473 c2 7c 14
@@ -2058,9 +2403,14 @@ l149fh:
     ld b,h              ;149f 44
     ld c,l              ;14a0 4d
     call print_str_eol  ;14a1 cd a9 01
-    call print_eol      ;14a4 cd 79 01
-    ld bc,l1c97h        ;14a7 01 97 1c
-    call print_str      ;14aa cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT " 4.  Baud rate :<tab><tab>";
+    ld bc,l1c97h
+    call print_str
+
     ld a,(5665h)        ;14ad 3a 65 56
     cp 22h              ;14b0 fe 22
     jp nz,l14bbh        ;14b2 c2 bb 14
@@ -2102,11 +2452,20 @@ l1504h:
     ld b,h              ;1504 44
     ld c,l              ;1505 4d
     call print_str_eol  ;1506 cd a9 01
-    call print_eol      ;1509 cd 79 01
-    ld bc,l1cd4h        ;150c 01 d4 1c
-    call print_str      ;150f cd 84 01
-    call sub_0216h      ;1512 cd 16 02
-    call print_eol      ;1515 cd 79 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Alter which characteristic ? ";
+    ld bc,l1cd4h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld hl,(l24c8h)      ;1518 2a c8 24
     ld a,l              ;151b 7d
     or h                ;151c b4
@@ -2153,20 +2512,38 @@ l1560h:
 sub_1564h:
     jp l1697h           ;1564 c3 97 16
 sub_1567h:
-    call print_eol      ;1567 cd 79 01
-    ld bc,l1cf2h        ;156a 01 f2 1c
-    call print_str_eol  ;156d cd a9 01
-    ld bc,l1d09h        ;1570 01 09 1d
-    call print_str_eol  ;1573 cd a9 01
-    ld bc,l1d1dh        ;1576 01 1d 1d
-    call print_str_eol  ;1579 cd a9 01
-    ld bc,l1d37h        ;157c 01 37 1d
-    call print_str_eol  ;157f cd a9 01
-    call print_eol      ;1582 cd 79 01
-    ld bc,l1d53h        ;1585 01 53 1d
-    call print_str      ;1588 cd 84 01
-    call sub_0216h      ;158b cd 16 02
-    call print_eol      ;158e cd 79 01
+    ;PRINT
+    call print_eol
+
+    ;PRINT "T(TY: -- RS232 printer";
+    ld bc,l1cf2h
+    call print_str_eol
+
+    ;PRINT "C(RT: -- PET screen";
+    ld bc,l1d09h
+    call print_str_eol
+
+    ;PRINT "L(PT: -- PET IEEE printer";
+    ld bc,l1d1dh
+    call print_str_eol
+
+    ;PRINT "U(L1: -- ASCII IEEE printer"
+    ld bc,l1d37h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Which list device (T, C, L or U) ? ";
+    ld bc,l1d53h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;1591 3a cc 24
     cp 54h              ;1594 fe 54
     jp nz,l15a4h        ;1596 c2 a4 15
@@ -2203,10 +2580,16 @@ l15ceh:
 l15e0h:
     ret                 ;15e0 c9
 sub_15e1h:
-    ld bc,l1d77h        ;15e1 01 77 1d
-    call print_str      ;15e4 cd 84 01
-    call sub_0216h      ;15e7 cd 16 02
-    call print_eol      ;15ea cd 79 01
+    ;PRINT "T(TY:) or P(TR:) ? ";
+    ld bc,l1d77h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;15ed 3a cc 24
     cp 54h              ;15f0 fe 54
     jp nz,l1600h        ;15f2 c2 00 16
@@ -2225,10 +2608,16 @@ l1600h:
 l1612h:
     ret                 ;1612 c9
 sub_1613h:
-    ld bc,l1d8bh        ;1613 01 8b 1d
-    call print_str      ;1616 cd 84 01
-    call sub_0216h      ;1619 cd 16 02
-    call print_eol      ;161c cd 79 01
+    ;PRINT "T(TY:) or P(TP:) ? ";
+    ld bc,l1d8bh
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;161f 3a cc 24
     cp 54h              ;1622 fe 54
     jp nz,l1632h        ;1624 c2 32 16
@@ -2247,18 +2636,32 @@ l1632h:
 l1644h:
     ret                 ;1644 c9
 sub_1645h:
-    call print_eol      ;1645 cd 79 01
-    ld bc,l1d9fh        ;1648 01 9f 1d
-    call print_str_eol  ;164b cd a9 01
-    ld bc,l1dc0h        ;164e 01 c0 1d
-    call print_str_eol  ;1651 cd a9 01
-    ld bc,l1dc9h        ;1654 01 c9 1d
-    call print_str_eol  ;1657 cd a9 01
-    call print_eol      ;165a cd 79 01
-    ld bc,l1de7h        ;165d 01 e7 1d
-    call print_str      ;1660 cd 84 01
-    call sub_0216h      ;1663 cd 16 02
-    call print_eol      ;1666 cd 79 01
+    ;PRINT
+    call print_eol
+
+    ;PRINT "3 = 3022 or 3023 or 4022 or 4023";
+    ld bc,l1d9fh
+    call print_str_eol
+
+    ;PRINT "8 = 8024";
+    ld bc,l1dc0h
+    call print_str_eol
+
+    ;PRINT "D = 8026 or 8027 (Daisywheel)"
+    ld bc,l1dc9h
+    call print_str_eol
+    call print_eol
+
+    ;PRINT "Which type of printer (3, 8, or D) ? ";
+    ld bc,l1de7h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;1669 3a cc 24
     cp 33h              ;166c fe 33
     jp nz,l1679h        ;166e c2 79 16
@@ -2282,14 +2685,25 @@ l1696h:
     ret                 ;1696 c9
 l1697h:
     call sub_0300h      ;1697 cd 00 03
-    call print_eol      ;169a cd 79 01
-    ld bc,l1e0dh        ;169d 01 0d 1e
-    call print_str_eol  ;16a0 cd a9 01
-    ld bc,l1e24h        ;16a3 01 24 1e
-    call print_str_eol  ;16a6 cd a9 01
-    call print_eol      ;16a9 cd 79 01
-    ld bc,l1e3bh        ;16ac 01 3b 1e
-    call print_str      ;16af cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "I/O Device Assignment."
+    ld bc,l1e0dh
+    call print_str_eol
+
+    ;PRINT "--- ------ -----------"
+    ld bc,l1e24h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT " 1.  PET Printer device # :<tab>";
+    ld bc,l1e3bh
+    call print_str
+
     ld a,(5661h)        ;16b2 3a 61 56
     ld l,a              ;16b5 6f
     rla                 ;16b6 17
@@ -2297,10 +2711,17 @@ l1697h:
     ld b,a              ;16b8 47
     ld c,l              ;16b9 4d
     call l01f5h+1       ;16ba cd f6 01
-    call print_eol      ;16bd cd 79 01
-    call print_eol      ;16c0 cd 79 01
-    ld bc,l1e58h        ;16c3 01 58 1e
-    call print_str      ;16c6 cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT " 2.  ASCII list device # :<tab>";
+    ld bc,l1e58h
+    call print_str
+
     ld a,(5666h)        ;16c9 3a 66 56
     ld l,a              ;16cc 6f
     rla                 ;16cd 17
@@ -2308,10 +2729,17 @@ l1697h:
     ld b,a              ;16cf 47
     ld c,l              ;16d0 4d
     call l01f5h+1       ;16d1 cd f6 01
-    call print_eol      ;16d4 cd 79 01
-    call print_eol      ;16d7 cd 79 01
-    ld bc,l1e74h        ;16da 01 74 1e
-    call print_str      ;16dd cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT " 3.  Reader device # :<tab><tab>";
+    ld bc,l1e74h
+    call print_str
+
     ld a,(5662h)        ;16e0 3a 62 56
     ld l,a              ;16e3 6f
     rla                 ;16e4 17
@@ -2319,10 +2747,17 @@ l1697h:
     ld b,a              ;16e6 47
     ld c,l              ;16e7 4d
     call l01f5h+1       ;16e8 cd f6 01
-    call print_eol      ;16eb cd 79 01
-    call print_eol      ;16ee cd 79 01
-    ld bc,l1e8dh        ;16f1 01 8d 1e
-    call print_str      ;16f4 cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT " 4.  Punch device # :<tab><tab>";
+    ld bc,l1e8dh
+    call print_str
+
     ld a,(5663h)        ;16f7 3a 63 56
     ld l,a              ;16fa 6f
     rla                 ;16fb 17
@@ -2330,10 +2765,17 @@ l1697h:
     ld b,a              ;16fd 47
     ld c,l              ;16fe 4d
     call l01f5h+1       ;16ff cd f6 01
-    call print_eol      ;1702 cd 79 01
-    call print_eol      ;1705 cd 79 01
-    ld bc,l1ea5h        ;1708 01 a5 1e
-    call print_str      ;170b cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT " 5.  Default LST: device :<tab>";
+    ld bc,l1ea5h
+    call print_str
+
     ld a,(5660h)        ;170e 3a 60 56
     and 0c0h            ;1711 e6 c0
     jp nz,l171ch        ;1713 c2 1c 17
@@ -2359,9 +2801,14 @@ l173fh:
     ld b,h              ;173f 44
     ld c,l              ;1740 4d
     call print_str_eol  ;1741 cd a9 01
-    call print_eol      ;1744 cd 79 01
-    ld bc,l1ed5h        ;1747 01 d5 1e
-    call print_str      ;174a cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT " 6.  Default RDR: device :<tab>";
+    ld bc,l1ed5h
+    call print_str
+
     ld a,(5660h)        ;174d 3a 60 56
     and 0ch             ;1750 e6 0c
     jp nz,l175bh        ;1752 c2 5b 17
@@ -2373,9 +2820,14 @@ l175eh:
     ld b,h              ;175e 44
     ld c,l              ;175f 4d
     call print_str_eol  ;1760 cd a9 01
-    call print_eol      ;1763 cd 79 01
-    ld bc,l1efbh        ;1766 01 fb 1e
-    call print_str      ;1769 cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT " 7.  Default PUN: device :<tab>";
+    ld bc,l1efbh
+    call print_str
+
     ld a,(5660h)        ;176c 3a 60 56
     and 30h             ;176f e6 30
     jp nz,l177ah        ;1771 c2 7a 17
@@ -2387,9 +2839,14 @@ l177dh:
     ld b,h              ;177d 44
     ld c,l              ;177e 4d
     call print_str_eol  ;177f cd a9 01
-    call print_eol      ;1782 cd 79 01
-    ld bc,l1f21h        ;1785 01 21 1f
-    call print_str      ;1788 cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT " 8.  PET Printer type :   <tab>";
+    ld bc,l1f21h
+    call print_str
+
     ld a,(566dh)        ;178b 3a 6d 56
     or a                ;178e b7
     jp nz,l1798h        ;178f c2 98 17
@@ -2413,12 +2870,23 @@ l17b7h:
     ld b,h              ;17b7 44
     ld c,l              ;17b8 4d
     call print_str_eol  ;17b9 cd a9 01
-    call print_eol      ;17bc cd 79 01
-    call print_eol      ;17bf cd 79 01
-    ld bc,l1f5bh        ;17c2 01 5b 1f
-    call print_str      ;17c5 cd 84 01
-    call sub_0216h      ;17c8 cd 16 02
-    call print_eol      ;17cb cd 79 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Alter which characteristic (1-8) ? ";
+    ld bc,l1f5bh
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;17ce 3a cc 24
     cp 0dh              ;17d1 fe 0d
     jp nz,l17d7h        ;17d3 c2 d7 17
@@ -2462,10 +2930,17 @@ l180dh:
 l181fh:
     ld a,(l24c8h)       ;181f 3a c8 24
     ld (l3029h),a       ;1822 32 29 30
-    ld bc,l1f7fh         ;1825 01 7f 1f
-    call print_str      ;1828 cd 84 01
-    call sub_0216h      ;182b cd 16 02
-    call print_eol      ;182e cd 79 01
+
+    ;PRINT "New device # ? ";
+    ld bc,l1f7fh
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l3029h)       ;1831 3a 29 30
     cp 01h              ;1834 fe 01
     jp nz,l1842h        ;1836 c2 42 18
@@ -2498,10 +2973,16 @@ l1872h:
 sub_1876h:
     jp l1a46h           ;1876 c3 46 1a
 sub_1879h:
-    ld bc,l1f8fh        ;1879 01 8f 1f
-    call print_str      ;187c cd 84 01
-    call sub_0216h      ;187f cd 16 02
-    call print_eol      ;1882 cd 79 01
+    ;PRINT "Number of columns (1, 2 or 4) ? ";
+    ld bc,l1f8fh
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld hl,(l24c8h)      ;1885 2a c8 24
     dec hl              ;1888 2b
     ld a,h              ;1889 7c
@@ -2537,10 +3018,16 @@ sub_18bah:
     ld (5667h),a        ;18bf 32 67 56
     ret                 ;18c2 c9
 sub_18c3h:
-    ld bc,l1fb0h        ;18c3 01 b0 1f
-    call print_str      ;18c6 cd 84 01
-    call sub_0216h      ;18c9 cd 16 02
-    call print_eol      ;18cc cd 79 01
+    ;PRINT "Screen type A(DM3A), H(Z1500), or T(V912) ? ";
+    ld bc,l1fb0h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;18cf 3a cc 24
     cp 41h              ;18d2 fe 41
     jp nz,l18e2h        ;18d4 c2 e2 18
@@ -2561,10 +3048,16 @@ l18f4h:
     cp 48h              ;18f7 fe 48
     jp nz,l1997h        ;18f9 c2 97 19
 l18fch:
-    ld bc,l1fddh        ;18fc 01 dd 1f
-    call print_str      ;18ff cd 84 01
-    call sub_0216h      ;1902 cd 16 02
-    call print_eol      ;1905 cd 79 01
+    ;PRINT "Lead-in code E(scape) or T(ilde) ? ";
+    ld bc,l1fddh
+    call print_str
+
+    ;PRINT
+    call readline
+
+    ;GOSUB readline
+    call print_eol
+
     ld a,(l24cch)       ;1908 3a cc 24
     cp 45h              ;190b fe 45
     jp nz,l1918h        ;190d c2 18 19
@@ -2747,10 +3240,16 @@ l1997h:
 l1a2ah:
     ret                 ;1a2a c9
 sub_1a2bh:
-    ld bc,l2001h        ;1a2b 01 01 20
-    call print_str      ;1a2e cd 84 01
-    call sub_0216h      ;1a31 cd 16 02
-    call print_eol      ;1a34 cd 79 01
+    ;PRINT "New clock frequency ? ";
+    ld bc,l2001h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld hl,(l24c8h)      ;1a37 2a c8 24
     ld a,l              ;1a3a 7d
     or h                ;1a3b b4
@@ -2760,15 +3259,26 @@ sub_1a2bh:
 l1a45h:
     ret                 ;1a45 c9
 l1a46h:
-    call sub_0300h      ;1a46 cd 00 03
-    call print_eol      ;1a49 cd 79 01
-    ld bc,l2018h        ;1a4c 01 18 20
-    call print_str_eol  ;1a4f cd a9 01
-    ld bc,l2030h        ;1a52 01 30 20
-    call print_str_eol  ;1a55 cd a9 01
-    call print_eol      ;1a58 cd 79 01
-    ld bc,l2048h        ;1a5b 01 48 20
-    call print_str      ;1a5e cd 84 01
+    call sub_0300h
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Pet terminal parameters";
+    ld bc,l2018h
+    call print_str_eol
+
+    ;PRINT "--- -------- ----------"
+    ld bc,l2030h
+    call print_str_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "1.  Columns in DIR listing :  ";
+    ld bc,l2048h
+    call print_str
+
     ld a,(44b2h)        ;1a61 3a b2 44
     or a                ;1a64 b7
     jp nz,l1a6eh        ;1a65 c2 6e 1a
@@ -2786,9 +3296,14 @@ l1a7fh:
     ld b,h              ;1a7f 44
     ld c,l              ;1a80 4d
     call print_str_eol  ;1a81 cd a9 01
-    call print_eol      ;1a84 cd 79 01
-    ld bc,l206dh        ;1a87 01 6d 20
-    call print_str      ;1a8a cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "2.  CRT in upper case mode :  ";
+    ld bc,l206dh
+    call print_str
+
     ld a,(5667h)        ;1a8d 3a 67 56
     and 80h             ;1a90 e6 80
     jp z,l1a9bh         ;1a92 ca 9b 1a
@@ -2800,9 +3315,14 @@ l1a9eh:
     ld b,h              ;1a9e 44
     ld c,l              ;1a9f 4d
     call print_str_eol  ;1aa0 cd a9 01
-    call print_eol      ;1aa3 cd 79 01
-    ld bc,l2093h        ;1aa6 01 93 20
-    call print_str      ;1aa9 cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "3.  CRT terminal emulation :  ";
+    ld bc,l2093h
+    call print_str
+
     ld a,(5667h)        ;1aac 3a 67 56
     and 7fh             ;1aaf e6 7f
     jp nz,l1abah        ;1ab1 c2 ba 1a
@@ -2841,9 +3361,14 @@ l1af9h:
     ld b,h              ;1af9 44
     ld c,l              ;1afa 4d
     call print_str_eol  ;1afb cd a9 01
-    call print_eol      ;1afe cd 79 01
-    ld bc,l2103h        ;1b01 01 03 21
-    call print_str      ;1b04 cd 84 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "4.  Clock frequency (Hz) :    ";
+    ld bc,l2103h
+    call print_str
+
     ld a,(6005h)        ;1b07 3a 05 60
     ld l,a              ;1b0a 6f
     rla                 ;1b0b 17
@@ -2851,12 +3376,23 @@ l1af9h:
     ld b,a              ;1b0d 47
     ld c,l              ;1b0e 4d
     call l01f5h+1       ;1b0f cd f6 01
-    call print_eol      ;1b12 cd 79 01
-    call print_eol      ;1b15 cd 79 01
-    ld bc,l2122h        ;1b18 01 22 21
-    call print_str      ;1b1b cd 84 01
-    call sub_0216h      ;1b1e cd 16 02
-    call print_eol      ;1b21 cd 79 01
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT
+    call print_eol
+
+    ;PRINT "Alter which (1-4) ? ";
+    ld bc,l2122h
+    call print_str
+
+    ;GOSUB readline
+    call readline
+
+    ;PRINT
+    call print_eol
+
     ld a,(l24cch)       ;1b24 3a cc 24
     cp 0dh              ;1b27 fe 0d
     jp nz,l1b2dh        ;1b29 c2 2d 1b
