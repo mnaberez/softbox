@@ -151,9 +151,9 @@ readline:
 l01abh:
     ld a,(l3020h)       ;01ab 3a 20 30
     ld (l3002h),a       ;01ae 32 02 30
-    cp 61h              ;01b1 fe 61
+    cp 'a'              ;01b1 fe 61
     jp m,l01c2h         ;01b3 fa c2 01
-    cp 7bh              ;01b6 fe 7b
+    cp 'z'+1            ;01b6 fe 7b
     jp p,l01c2h         ;01b8 f2 c2 01
     ld hl,l3002h        ;01bb 21 02 30
     ld a,(hl)           ;01be 7e
@@ -171,7 +171,7 @@ l01c7h:
     ld h,a              ;01d0 67
     add hl,bc           ;01d1 09
     ld a,(hl)           ;01d2 7e
-    cp 30h              ;01d3 fe 30
+    cp '0'              ;01d3 fe 30
     jp m,l0218h         ;01d5 fa 18 02
     ld a,(l30a1h)       ;01d8 3a a1 30
     ld l,a              ;01db 6f
@@ -181,7 +181,7 @@ l01c7h:
     ld h,a              ;01e1 67
     add hl,bc           ;01e2 09
     ld a,(hl)           ;01e3 7e
-    cp 3ah              ;01e4 fe 3a
+    cp '9'+1            ;01e4 fe 3a
     jp p,l0218h         ;01e6 f2 18 02
     ld hl,(l3004h)      ;01e9 2a 04 30
     ld b,h              ;01ec 44
@@ -278,7 +278,7 @@ sub_0257h:
     ld de,000ah         ;027f 11 0a 00
     call sub_12f6h      ;0282 cd f6 12
     ld a,l              ;0285 7d
-    add a,30h           ;0286 c6 30
+    add a,'0'           ;0286 c6 30
     ld c,a              ;0288 4f
     call print_char     ;0289 cd 19 02
 l028ch:
@@ -306,16 +306,20 @@ l02a9h:
     call sub_0257h      ;02ae cd 57 02
 l02b1h:
     ret                 ;02b1 c9
-    ld hl,l30abh        ;02b2 21 ab 30
+
+    ld hl,l30aah+1      ;02b2 21 ab 30
     ld (hl),b           ;02b5 70
     dec hl              ;02b6 2b
     ld (hl),c           ;02b7 71
     ld hl,(l30aah)      ;02b8 2a aa 30
     add hl,hl           ;02bb 29
     jp nc,l02d5h        ;02bc d2 d5 02
+
     ;PRINT "-"
     ld bc,l0b93h        ;02bf 01 93 0b
     call print_str      ;02c2 cd 32 02
+
+    ;l30aah = -l30aah
     ld hl,(l30aah)      ;02c5 2a aa 30
     ld a,l              ;02c8 7d
     cpl                 ;02c9 2f
@@ -325,14 +329,16 @@ l02b1h:
     cpl                 ;02ce 2f
     adc a,00h           ;02cf ce 00
     ld h,a              ;02d1 67
-l02d2h:
     ld (l30aah),hl      ;02d2 22 aa 30
+
 l02d5h:
+    ;PRINT l30aah
     ld hl,(l30aah)      ;02d5 2a aa 30
     ld b,h              ;02d8 44
     ld c,l              ;02d9 4d
     call print_int      ;02da cd 92 02
     ret                 ;02dd c9
+
     ld hl,l30adh        ;02de 21 ad 30
     ld (hl),b           ;02e1 70
     dec hl              ;02e2 2b
@@ -359,14 +365,14 @@ l02fah:
     ld a,l              ;02fe 7d
     and 0fh             ;02ff e6 0f
     ld (l30afh),a       ;0301 32 af 30
-    cp 0ah              ;0304 fe 0a
+    cp 10               ;0304 fe 0a
 l0306h:
     jp m,l030eh         ;0306 fa 0e 03
-    add a,37h           ;0309 c6 37
+    add a,'A'-10        ;0309 c6 37
     jp l0313h           ;030b c3 13 03
 l030eh:
     ld a,(l30afh)       ;030e 3a af 30
-    add a,30h           ;0311 c6 30
+    add a,'0'           ;0311 c6 30
 l0313h:
     ld c,a              ;0313 4f
     call print_char     ;0314 cd 19 02
@@ -9819,7 +9825,6 @@ l30a8h:
     nop                 ;30a9 00
 l30aah:
     nop                 ;30aa 00
-l30abh:
     nop                 ;30ab 00
 l30ach:
     nop                 ;30ac 00
