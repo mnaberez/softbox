@@ -174,6 +174,7 @@ l01f5h:
     call print_str
 
     jp l0215h           ;020a c3 15 02
+
 l020dh:
     ld hl,(l3011h)      ;020d 2a 11 30
     ld b,h              ;0210 44
@@ -181,6 +182,7 @@ l020dh:
     call sub_01bbh      ;0212 cd bb 01
 l0215h:
     ret                 ;0215 c9
+
 readline:
     ld hl,l2424h        ;0216 21 24 24
     ld (hl),50h         ;0219 36 50
@@ -188,12 +190,12 @@ readline:
     ld c,0ah            ;021e 0e 0a
     call 0005h          ;0220 cd 05 00
     ld hl,0000h         ;0223 21 00 00
-    ld (l24c8h),hl      ;0226 22 c8 24
+    ld (nn),hl          ;0226 22 c8 24
     ld (l24cah),hl      ;0229 22 ca 24
     ld a,(l2425h)       ;022c 3a 25 24
     or a                ;022f b7
     jp nz,l023bh        ;0230 c2 3b 02
-    ld hl,l24cch        ;0233 21 cc 24
+    ld hl,rr            ;0233 21 cc 24
     ld (hl),0dh         ;0236 36 0d
     jp l02ffh           ;0238 c3 ff 02
 l023bh:
@@ -249,7 +251,7 @@ l0278h:
     jp m,l02c5h         ;028f fa c5 02
     cp 0ah              ;0292 fe 0a
     jp p,l02c5h         ;0294 f2 c5 02
-    ld hl,(l24c8h)      ;0297 2a c8 24
+    ld hl,(nn)          ;0297 2a c8 24
     ld b,h              ;029a 44
     ld c,l              ;029b 4d
     ld de,000ah         ;029c 11 0a 00
@@ -260,7 +262,7 @@ l0278h:
     sbc a,a             ;02a7 9f
     ld h,a              ;02a8 67
     add hl,de           ;02a9 19
-    ld (l24c8h),hl      ;02aa 22 c8 24
+    ld (nn),hl          ;02aa 22 c8 24
     ld c,04h            ;02ad 0e 04
     ld hl,(l24cah)      ;02af 2a ca 24
     jp l02b6h           ;02b2 c3 b6 02
@@ -308,7 +310,7 @@ l02efh:
     cp (hl)             ;02f5 be
     jp p,l0249h         ;02f6 f2 49 02
     ld a,(l2426h)       ;02f9 3a 26 24
-    ld (l24cch),a       ;02fc 32 cc 24
+    ld (rr),a           ;02fc 32 cc 24
 l02ffh:
     ret                 ;02ff c9
 sub_0300h:
@@ -335,7 +337,7 @@ sub_0309h:
     ld bc,5678h         ;031b 01 78 56
     ld h,a              ;031e 67
     add hl,bc           ;031f 09
-    ld a,(l24c8h)       ;0320 3a c8 24
+    ld a,(nn)           ;0320 3a c8 24
     ld (hl),a           ;0323 77
     ld a,(l3016h)       ;0324 3a 16 30
     ld l,a              ;0327 6f
@@ -358,7 +360,7 @@ sub_0309h:
     ;PRINT
     call print_eol
 
-    ld hl,(l24c8h)      ;0341 2a c8 24
+    ld hl,(nn)          ;0341 2a c8 24
     dec hl              ;0344 2b
     dec hl              ;0345 2b
     ld a,h              ;0346 7c
@@ -447,87 +449,162 @@ l0359h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;03b6 3a cc 24
-    cp 41h              ;03b9 fe 41
-    jp nz,l03cch        ;03bb c2 cc 03
-    ld hl,l3017h        ;03be 21 17 30
-    ld (hl),02h         ;03c1 36 02
-    ld hl,00bfh         ;03c3 21 bf 00
-    ld (l301ah),hl      ;03c6 22 1a 30
-    jp l0483h           ;03c9 c3 83 04
+    ;IF R <> &H41 THEN GOTO l03cch
+    ld a,(rr)
+    cp 'A'
+    jp nz,l03cch
+
+    ;REM User selected 'A' for 3 Mbyte (191 cyl)
+
+    ;heads = 2
+    ld hl,heads
+    ld (hl),2
+
+    ;cylinders = 2
+    ld hl,191
+    ld (cylinders),hl
+
+    ;GOTO l0483h
+    jp l0483h
+
 l03cch:
-    ld a,(l24cch)       ;03cc 3a cc 24
-    cp 42h              ;03cf fe 42
-    jp nz,l03e2h        ;03d1 c2 e2 03
-    ld hl,l3017h        ;03d4 21 17 30
-    ld (hl),04h         ;03d7 36 04
-    ld hl,00bfh         ;03d9 21 bf 00
-    ld (l301ah),hl      ;03dc 22 1a 30
-    jp l0483h           ;03df c3 83 04
+    ;IF R <> &H42 THEN GOTO l03e2h
+    ld a,(rr)
+    cp 'B'
+    jp nz,l03e2h
+
+    ;REM User selected 'B' for 6 Mbyte (191 cyl)
+
+    ;heads = 4
+    ld hl,heads
+    ld (hl),4
+
+    ;cylinders = 191
+    ld hl,191
+    ld (cylinders),hl
+
+    ;GOTO l0483h
+    jp l0483h
+
 l03e2h:
-    ld a,(l24cch)       ;03e2 3a cc 24
-    cp 43h              ;03e5 fe 43
-    jp nz,l03f8h        ;03e7 c2 f8 03
-    ld hl,l3017h        ;03ea 21 17 30
-    ld (hl),08h         ;03ed 36 08
-    ld hl,00bfh         ;03ef 21 bf 00
-    ld (l301ah),hl      ;03f2 22 1a 30
-    jp l0483h           ;03f5 c3 83 04
+    ;IF R <> &H43 THEN GOTO l03f8h
+    ld a,(rr)
+    cp 'C'
+    jp nz,l03f8h
+
+    ;REM User selected 'C' for 12 Mbyte (191 cyl)
+
+    ;heads = 8
+    ld hl,heads
+    ld (hl),8
+
+    ;cylinders = 191
+    ld hl,191
+    ld (cylinders),hl
+
+    ;GOTO l0483h
+    jp l0483h
+
 l03f8h:
-    ld a,(l24cch)       ;03f8 3a cc 24
-    cp 44h              ;03fb fe 44
-    jp nz,l040eh        ;03fd c2 0e 04
-    ld hl,l3017h        ;0400 21 17 30
-    ld (hl),02h         ;0403 36 02
-    ld hl,0140h         ;0405 21 40 01
-    ld (l301ah),hl      ;0408 22 1a 30
-    jp l0483h           ;040b c3 83 04
+    ;IF R <> &H44 THEN GOTO l040eh
+    ld a,(rr)
+    cp 'D'
+    jp nz,l040eh
+
+    ;REM User selected 'D' for 5 Mbyte (320 cyl)
+
+    ;heads = 2
+    ld hl,heads
+    ld (hl),2
+
+    ;cylinders = 320
+    ld hl,320
+    ld (cylinders),hl
+
+    ;GOTO l0483h
+    jp l0483h
+
 l040eh:
-    ld a,(l24cch)       ;040e 3a cc 24
-    cp 45h              ;0411 fe 45
-    jp nz,l0424h        ;0413 c2 24 04
-    ld hl,l3017h        ;0416 21 17 30
-    ld (hl),04h         ;0419 36 04
-    ld hl,0140h         ;041b 21 40 01
-    ld (l301ah),hl      ;041e 22 1a 30
-    jp l0483h           ;0421 c3 83 04
+    ;IF R <> &H45 THEN GOTO l0424h
+    ld a,(rr)
+    cp 'E'
+    jp nz,l0424h
+
+    ;REM User selected 'E' for 10 Mbyte (320 cyl)
+
+    ;heads = 4
+    ld hl,heads
+    ld (hl),4
+
+    ;cylinders = 320
+    ld hl,320
+    ld (cylinders),hl
+
+    ;GOTO l0483h
+    jp l0483h
+
 l0424h:
-    ld a,(l24cch)       ;0424 3a cc 24
-    cp 46h              ;0427 fe 46
-    jp nz,l043ah        ;0429 c2 3a 04
-    ld hl,l3017h        ;042c 21 17 30
-    ld (hl),06h         ;042f 36 06
-    ld hl,0140h         ;0431 21 40 01
-    ld (l301ah),hl      ;0434 22 1a 30
-    jp l0483h           ;0437 c3 83 04
+    ;IF R <> 46H THEN GOTO l043ah
+    ld a,(rr)
+    cp 'F'
+    jp nz,l043ah
+
+    ;REM User selected 'F' for 15 Mbyte (320 cyl)
+
+    ;heads = 6
+    ld hl,heads
+    ld (hl),6
+
+    ;heads = 320
+    ld hl,320
+    ld (cylinders),hl
+
+    ;GOTO l0483h
+    jp l0483h
+
 l043ah:
-    ld a,(l24cch)       ;043a 3a cc 24
-    cp 5ah              ;043d fe 5a
-    jp nz,l0480h        ;043f c2 80 04
+    ;IF R <> &H5A THEN GOTO l0480h
+    ld a,(rr)
+    cp 'Z'
+    jp nz,l0480h
+
 l0442h:
     ;PRINT "Enter the number of Heads : ";
     ld bc,l0de2h
     call print_str
 
+    ;REM User selected 'Z' for arbitrary heads/cylinders
+
     ;GOSUB readline
     call readline
 
-    ld a,(l24c8h)       ;044b 3a c8 24
-    ld (l3017h),a       ;044e 32 17 30
-    cp 02h              ;0451 fe 02
-    jp z,l046eh         ;0453 ca 6e 04
-    cp 04h              ;0456 fe 04
-    jp z,l046eh         ;0458 ca 6e 04
-    cp 06h              ;045b fe 06
-    jp z,l046eh         ;045d ca 6e 04
-    cp 08h              ;0460 fe 08
-    jp z,l046eh         ;0462 ca 6e 04
+    ;heads = N
+    ld a,(nn)
+    ld (heads),a
 
-    ;PRINT "Must be 2, 4, 6 or 8";
+    ;IF heads = 2 THEN GOTO l046eh
+    cp 2
+    jp z,l046eh
+
+    ;IF heads = 4 THEN GOTO l046eh
+    cp 4
+    jp z,l046eh
+
+    ;IF heads = 6 THEN GOTO l046eh
+    cp 6
+    jp z,l046eh
+
+    ;IF heads = 8 THEN GOTO l046eh
+    cp 8
+    jp z,l046eh
+
+    ;PRINT "Must be 2, 4, 6 or 8"
     ld bc,l0dffh
     call print_str_eol
 
+    ;GOTO l0442h
     jp l0442h
+
 l046eh:
     ;PRINT "Enter the number of Cylinders : ";
     ld bc,l0e14h
@@ -536,13 +613,19 @@ l046eh:
     ;GOSUB readline
     call readline
 
-    ld hl,(l24c8h)      ;0477 2a c8 24
-    ld (l301ah),hl      ;047a 22 1a 30
-    jp l0483h           ;047d c3 83 04
+    ;cylinders = N
+    ld hl,(nn)
+    ld (cylinders),hl
+
+    ;GOTO l0483h
+    jp l0483h
+
 l0480h:
-    jp l0359h           ;0480 c3 59 03
+    ;GOTO l0359h
+    jp l0359h
+
 l0483h:
-    ld a,(l3017h)       ;0483 3a 17 30
+    ld a,(heads)        ;0483 3a 17 30
     or a                ;0486 b7
     rra                 ;0487 1f
     inc a               ;0488 3c
@@ -570,10 +653,13 @@ l0496h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;04a8 3a cc 24
-    cp 48h              ;04ab fe 48
+    ld a,(rr)           ;04a8 3a cc 24
+    cp 'H'              ;04ab fe 48
     jp nz,l04c0h        ;04ad c2 c0 04
-    ld hl,(l301ah)      ;04b0 2a 1a 30
+
+    ;REM Use just first half for CP/M
+
+    ld hl,(cylinders)   ;04b0 2a 1a 30
     or a                ;04b3 b7
     ld a,h              ;04b4 7c
     rra                 ;04b5 1f
@@ -583,17 +669,25 @@ l0496h:
     ld l,a              ;04b9 6f
     ld (l301ch),hl      ;04ba 22 1c 30
     jp l04d4h           ;04bd c3 d4 04
+
 l04c0h:
-    ld a,(l24cch)       ;04c0 3a cc 24
-    cp 45h              ;04c3 fe 45
-    jp nz,l04d1h        ;04c5 c2 d1 04
-    ld hl,(l301ah)      ;04c8 2a 1a 30
+    ;IF R <> &H45 THEN GOTO l04d1h
+    ld a,(rr)
+    cp 'E'
+    jp nz,l04d1h
+
+    ;REM Use entire drive for CP/M
+
+    ld hl,(cylinders)   ;04c8 2a 1a 30
     ld (l301ch),hl      ;04cb 22 1c 30
     jp l04d4h           ;04ce c3 d4 04
+
 l04d1h:
-    jp l0496h           ;04d1 c3 96 04
+    ;GOTO l0496h ' Bad input
+    jp l0496h
+
 l04d4h:
-    ld a,(l3017h)       ;04d4 3a 17 30
+    ld a,(heads)        ;04d4 3a 17 30
     ld l,a              ;04d7 6f
     rla                 ;04d8 17
     sbc a,a             ;04d9 9f
@@ -655,14 +749,15 @@ l0531h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;053d 3a cc 24
-    cp 30h              ;0540 fe 30
+    ld a,(rr)           ;053d 3a cc 24
+    cp '0'              ;0540 fe 30
     jp m,l0555h         ;0542 fa 55 05
-    cp 32h              ;0545 fe 32
+    cp '2'              ;0545 fe 32
     jp p,l0555h         ;0547 f2 55 05
-    ld a,(l24cch)       ;054a 3a cc 24
+    ld a,(rr)           ;054a 3a cc 24
     add a,0d0h          ;054d c6 d0
-    ld (l3018h),a       ;054f 32 18 30
+    ld (unit),a         ;054f 32 18 30
+
     jp l0558h           ;0552 c3 58 05
 l0555h:
     jp l0531h           ;0555 c3 31 05
@@ -677,16 +772,19 @@ l0558h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;0564 3a cc 24
-    cp 59h              ;0567 fe 59
-    jp nz,l0574h        ;0569 c2 74 05
+    ;IF R <> &H59 THEN GOTO l04d1h
+    ld a,(rr)
+    cp 'Y'
+    jp nz,l0574h
+
     ld hl,l3019h        ;056c 21 19 30
     ld (hl),00h         ;056f 36 00
     jp l05a6h           ;0571 c3 a6 05
 l0574h:
-    ld a,(l24cch)       ;0574 3a cc 24
-    cp 4eh              ;0577 fe 4e
-    jp nz,l05a3h        ;0579 c2 a3 05
+    ;IF R <> &H4E THEN GOTO l05a3h
+    ld a,(rr)
+    cp 'N'
+    jp nz,l05a3h
 
     ;PRINT "Offset for surface #'s ? ";
     ld bc,l0eb2h
@@ -698,15 +796,15 @@ l0574h:
     ;PRINT
     call print_eol
 
-    ld hl,(l24c8h)      ;0588 2a c8 24
+    ld hl,(nn)          ;0588 2a c8 24
     add hl,hl           ;058b 29
     jp c,l0558h         ;058c da 58 05
     ld bc,0fff0h        ;058f 01 f0 ff
-    ld hl,(l24c8h)      ;0592 2a c8 24
+    ld hl,(nn)          ;0592 2a c8 24
     add hl,bc           ;0595 09
     add hl,hl           ;0596 29
     jp nc,l0558h        ;0597 d2 58 05
-    ld a,(l24c8h)       ;059a 3a c8 24
+    ld a,(nn)           ;059a 3a c8 24
     ld (l3019h),a       ;059d 32 19 30
     jp l05a6h           ;05a0 c3 a6 05
 l05a3h:
@@ -720,7 +818,7 @@ l05aeh:
 l05afh:
     dec c               ;05af 0d
     jp p,l05aeh         ;05b0 f2 ae 05
-    ld hl,l3018h        ;05b3 21 18 30
+    ld hl,unit          ;05b3 21 18 30
     add a,(hl)          ;05b6 86
     dec hl              ;05b7 2b
     dec hl              ;05b8 2b
@@ -733,7 +831,7 @@ l05afh:
     ld h,a              ;05c1 67
     add hl,de           ;05c2 19
     ld (hl),c           ;05c3 71
-    ld a,(l3018h)       ;05c4 3a 18 30
+    ld a,(unit)         ;05c4 3a 18 30
     ld l,a              ;05c7 6f
     rla                 ;05c8 17
     sbc a,a             ;05c9 9f
@@ -742,12 +840,12 @@ l05afh:
     ld bc,5648h         ;05cc 01 48 56
     add hl,bc           ;05cf 09
     ex de,hl            ;05d0 eb
-    ld hl,(l301ah)      ;05d1 2a 1a 30
+    ld hl,(cylinders)   ;05d1 2a 1a 30
     ex de,hl            ;05d4 eb
     ld (hl),e           ;05d5 73
     inc hl              ;05d6 23
     ld (hl),d           ;05d7 72
-    ld a,(l3018h)       ;05d8 3a 18 30
+    ld a,(unit)         ;05d8 3a 18 30
     ld l,a              ;05db 6f
     rla                 ;05dc 17
     sbc a,a             ;05dd 9f
@@ -811,11 +909,11 @@ l060ah:
     ld h,a              ;0633 67
     add hl,bc           ;0634 09
     ld a,(hl)           ;0635 7e
-    or a                ;0636 b7
+    or a                ;Drive Type 0 = CBM 3040/4040
     jp nz,l0657h        ;0637 c2 57 06
 
     ;PRINT "3040/4040  Device # ";
-    ld bc,l0f05h
+    ld bc,cbm3040
     call print_str
 
     ld a,(l3016h)       ;0640 3a 16 30
@@ -842,11 +940,11 @@ l0657h:
     ld h,a              ;0660 67
     add hl,bc           ;0661 09
     ld a,(hl)           ;0662 7e
-    cp 01h              ;0663 fe 01
+    cp 01h              ;Drive Type 1 = CBM 8050
     jp nz,l0685h        ;0665 c2 85 06
 
     ;PRINT "8050       Device # ";
-    ld bc,l0f1ah
+    ld bc,cbm8050
     call print_str
 
     ld a,(l3016h)       ;066e 3a 16 30
@@ -873,11 +971,11 @@ l0685h:
     ld h,a              ;068e 67
     add hl,bc           ;068f 09
     ld a,(hl)           ;0690 7e
-    cp 06h              ;0691 fe 06
+    cp 06h              ;Drive Type 6 = CBM 8250
     jp nz,l06b3h        ;0693 c2 b3 06
 
     ;PRINT "8250       Device # ";
-    ld bc,l0f2fh
+    ld bc,cbm_8250
     call print_str
 
     ld a,(l3016h)       ;069c 3a 16 30
@@ -908,17 +1006,18 @@ l06b3h:
     jp p,l06cch         ;06c0 f2 cc 06
 
     ;PRINT "Not used  ";
-    ld bc,l0f44h
+    ld bc,not_used
     call print_str
 
     jp l0857h           ;06c9 c3 57 08
 l06cch:
-    ld a,01h            ;06cc 3e 01
-    cp 01h              ;06ce fe 01
-    jp z,l075ah         ;06d0 ca 5a 07
+    ;IF 1=1 THEN GOTO l075ah
+    ld a,01h
+    cp 01h
+    jp z,l075ah
 
     ;PRINT "Corvus     ";
-    ld bc,l0f4fh
+    ld bc,corvus_space
     call print_str
 
     ld a,(l3016h)       ;06d9 3a 16 30
@@ -929,10 +1028,11 @@ l06cch:
     ld h,a              ;06e2 67
     add hl,bc           ;06e3 09
     ld a,(hl)           ;06e4 7e
-    cp 02h              ;06e5 fe 02
+    cp 02h              ;Drive Type 2 = Corvus 10 MB
     jp nz,l06f0h        ;06e7 c2 f0 06
-    ld hl,l0f5bh        ;06ea 21 5b 0f
+    ld hl,size_10mb     ;06ea 21 5b 0f
     jp l0738h           ;06ed c3 38 07
+
 l06f0h:
     ld a,(l3016h)       ;06f0 3a 16 30
     ld l,a              ;06f3 6f
@@ -942,10 +1042,11 @@ l06f0h:
     ld h,a              ;06f9 67
     add hl,bc           ;06fa 09
     ld a,(hl)           ;06fb 7e
-    cp 03h              ;06fc fe 03
+    cp 03h              ;Drive Type 3 = Corvus 20 MB
     jp nz,l0707h        ;06fe c2 07 07
-    ld hl,l0f61h        ;0701 21 61 0f
+    ld hl,size_20mb     ;0701 21 61 0f
     jp l0738h           ;0704 c3 38 07
+
 l0707h:
     ld a,(l3016h)       ;0707 3a 16 30
     ld l,a              ;070a 6f
@@ -955,10 +1056,11 @@ l0707h:
     ld h,a              ;0710 67
     add hl,bc           ;0711 09
     ld a,(hl)           ;0712 7e
-    cp 04h              ;0713 fe 04
+    cp 04h              ;Drive Type 4 = Corvus 5 MB
     jp nz,l071eh        ;0715 c2 1e 07
-    ld hl,l0f67h        ;0718 21 67 0f
+    ld hl,size_5mb      ;0718 21 67 0f
     jp l0738h           ;071b c3 38 07
+
 l071eh:
     ld a,(l3016h)       ;071e 3a 16 30
     ld l,a              ;0721 6f
@@ -968,10 +1070,11 @@ l071eh:
     ld h,a              ;0727 67
     add hl,bc           ;0728 09
     ld a,(hl)           ;0729 7e
-    cp 05h              ;072a fe 05
+    cp 05h              ;Drive Type 5 = Corvus 5 MB *
     jp nz,l0735h        ;072c c2 35 07
-    ld hl,l0f6dh        ;072f 21 6d 0f
+    ld hl,size_5mb_star ;072f 21 6d 0f
     jp l0738h           ;0732 c3 38 07
+
 l0735h:
     ld hl,l0f73h        ;0735 21 73 0f
 l0738h:
@@ -980,7 +1083,7 @@ l0738h:
     call print_str      ;073a cd 84 01
 
     ;PRINT "Device # ";
-    ld bc,l0f7ah
+    ld bc,device_num
     call print_str
 
     ld a,(l3016h)       ;0743 3a 16 30
@@ -1008,7 +1111,7 @@ l075ah:
     add hl,bc           ;0764 09
     ld a,(hl)           ;0765 7e
     and 01h             ;0766 e6 01
-    ld (l3018h),a       ;0768 32 18 30
+    ld (unit),a         ;0768 32 18 30
     ld a,(l3016h)       ;076b 3a 16 30
     ld l,a              ;076e 6f
     rla                 ;076f 17
@@ -1042,13 +1145,13 @@ l0780h:
     ld a,(hl)           ;0795 7e
     dec a               ;0796 3d
     add a,a             ;0797 87
-    ld (l3017h),a       ;0798 32 17 30
+    ld (heads),a        ;0798 32 17 30
 
     ;PRINT "Winchester Unit # ";
-    ld bc,l0f84h
+    ld bc,win_unit_num
     call print_str
 
-    ld a,(l3018h)       ;07a1 3a 18 30
+    ld a,(unit)         ;07a1 3a 18 30
     ld l,a              ;07a4 6f
     rla                 ;07a5 17
     sbc a,a             ;07a6 9f
@@ -1063,7 +1166,7 @@ l0780h:
     ld bc,l0f97h
     call print_str
 
-    ld a,(l3018h)       ;07b5 3a 18 30
+    ld a,(unit)         ;07b5 3a 18 30
     ld l,a              ;07b8 6f
     rla                 ;07b9 17
     sbc a,a             ;07ba 9f
@@ -1077,15 +1180,15 @@ l0780h:
     call l01f5h+1       ;07c4 cd f6 01
 
     ;PRINT " cyl,  ";
-    ld bc,l0fa4h
+    ld bc,cyl_comma
     call print_str
 
-    ld a,(l3017h)       ;07cd 3a 17 30
+    ld a,(heads)        ;07cd 3a 17 30
     ld l,a              ;07d0 6f
     rla                 ;07d1 17
     sbc a,a             ;07d2 9f
     ld h,a              ;07d3 67
-    ld a,(l3018h)       ;07d4 3a 18 30
+    ld a,(unit)         ;07d4 3a 18 30
     ld c,a              ;07d7 4f
     rla                 ;07d8 17
     sbc a,a             ;07d9 9f
@@ -1121,7 +1224,7 @@ l07f8h:
     call l01f5h+1       ;07fe cd f6 01
 
     ;PRINT " Mbyte drive,"
-    ld bc,l0fach
+    ld bc,mbyte_drive
     call print_str
     call print_eol
 
@@ -1146,7 +1249,7 @@ l07f8h:
     rla                 ;0825 17
     sbc a,a             ;0826 9f
     ld h,a              ;0827 67
-    ld a,(l3017h)       ;0828 3a 17 30
+    ld a,(heads)        ;0828 3a 17 30
     ld c,a              ;082b 4f
     rla                 ;082c 17
     sbc a,a             ;082d 9f
@@ -1161,7 +1264,7 @@ l07f8h:
     ld bc,l0fcdh
     call print_str
 
-    ld a,(l3018h)       ;083c 3a 18 30
+    ld a,(unit)         ;083c 3a 18 30
     ld l,a              ;083f 6f
     rla                 ;0840 17
     sbc a,a             ;0841 9f
@@ -1205,15 +1308,15 @@ l085eh:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;0875 3a cc 24
+    ld a,(rr)           ;0875 3a cc 24
     cp 0dh              ;0878 fe 0d
     jp nz,l087eh        ;087a c2 7e 08
     ret                 ;087d c9
 l087eh:
-    ld a,(l24cch)       ;087e 3a cc 24
-    cp 41h              ;0881 fe 41
+    ld a,(rr)           ;087e 3a cc 24
+    cp 'A'              ;0881 fe 41
     jp m,l0993h         ;0883 fa 93 09
-    cp 51h              ;0886 fe 51
+    cp 'P'+1            ;0886 fe 51
     jp p,l0993h         ;0888 f2 93 09
     add a,0bfh          ;088b c6 bf
     or a                ;088d b7
@@ -1230,8 +1333,8 @@ l087eh:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;089e 3a cc 24
-    cp 46h              ;08a1 fe 46
+    ld a,(rr)           ;089e 3a cc 24
+    cp 'F'              ;08a1 fe 46
     jp nz,l0909h        ;08a3 c2 09 09
 l08a6h:
     ;PRINT "Type (A=3040/4040, B=8050, C=8250) ? ";
@@ -1244,8 +1347,8 @@ l08a6h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;08b2 3a cc 24
-    cp 41h              ;08b5 fe 41
+    ld a,(rr)           ;08b2 3a cc 24
+    cp 'A'              ;08b5 fe 41
     jp nz,l08cdh        ;08b7 c2 cd 08
     ld a,(l3016h)       ;08ba 3a 16 30
     ld l,a              ;08bd 6f
@@ -1258,8 +1361,8 @@ l08a6h:
     call sub_0309h      ;08c7 cd 09 03
     jp l0906h           ;08ca c3 06 09
 l08cdh:
-    ld a,(l24cch)       ;08cd 3a cc 24
-    cp 42h              ;08d0 fe 42
+    ld a,(rr)           ;08cd 3a cc 24
+    cp 'B'              ;08d0 fe 42
     jp nz,l08e8h        ;08d2 c2 e8 08
     ld a,(l3016h)       ;08d5 3a 16 30
     ld l,a              ;08d8 6f
@@ -1272,8 +1375,8 @@ l08cdh:
     call sub_0309h      ;08e2 cd 09 03
     jp l0906h           ;08e5 c3 06 09
 l08e8h:
-    ld a,(l24cch)       ;08e8 3a cc 24
-    cp 43h              ;08eb fe 43
+    ld a,(rr)           ;08e8 3a cc 24
+    cp 'C'              ;08eb fe 43
     jp nz,l0903h        ;08ed c2 03 09
     ld a,(l3016h)       ;08f0 3a 16 30
     ld l,a              ;08f3 6f
@@ -1290,8 +1393,8 @@ l0903h:
 l0906h:
     jp l091eh           ;0906 c3 1e 09
 l0909h:
-    ld a,(l24cch)       ;0909 3a cc 24
-    cp 55h              ;090c fe 55
+    ld a,(rr)           ;0909 3a cc 24
+    cp 'U'              ;090c fe 55
     jp nz,l091eh        ;090e c2 1e 09
     ld a,(l3016h)       ;0911 3a 16 30
     ld l,a              ;0914 6f
@@ -1302,12 +1405,15 @@ l0909h:
     add hl,bc           ;091b 09
     ld (hl),0ffh        ;091c 36 ff
 l091eh:
-    ld a,(l24cch)       ;091e 3a cc 24
-    cp 48h              ;0921 fe 48
-    jp nz,l0993h        ;0923 c2 93 09
-    ld a,01h            ;0926 3e 01
-    cp 01h              ;0928 fe 01
-    jp z,l0990h         ;092a ca 90 09
+    ;IF R <> &H59 THEN GOTO l0993h
+    ld a,(rr)
+    cp 'H'
+    jp nz,l0993h
+
+    ;IF 1=1 THEN GOTO l0990h
+    ld a,01h
+    cp 01h
+    jp z,l0990h
 
     ;PRINT "5, 10, or 20 Mbyte drive ? ";
     ld bc,l104ah
@@ -1320,7 +1426,7 @@ l091eh:
     call print_eol
 
     ld bc,0fffbh        ;0939 01 fb ff
-    ld hl,(l24c8h)      ;093c 2a c8 24
+    ld hl,(nn)          ;093c 2a c8 24
     add hl,bc           ;093f 09
     ld a,h              ;0940 7c
     or l                ;0941 b5
@@ -1336,7 +1442,7 @@ l091eh:
     jp l098ah           ;0952 c3 8a 09
 l0955h:
     ld bc,0fff6h        ;0955 01 f6 ff
-    ld hl,(l24c8h)      ;0958 2a c8 24
+    ld hl,(nn)          ;0958 2a c8 24
     add hl,bc           ;095b 09
     ld a,h              ;095c 7c
     or l                ;095d b5
@@ -1352,7 +1458,7 @@ l0955h:
     jp l098ah           ;096e c3 8a 09
 l0971h:
     ld bc,0ffech        ;0971 01 ec ff
-    ld hl,(l24c8h)      ;0974 2a c8 24
+    ld hl,(nn)          ;0974 2a c8 24
     add hl,bc           ;0977 09
     ld a,h              ;0978 7c
     or l                ;0979 b5
@@ -1429,9 +1535,10 @@ l09ddh:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;09ec 3a cc 24
-    cp 59h              ;09ef fe 59
-    jp nz,l0a48h        ;09f1 c2 48 0a
+    ;IF R <> &H59 THEN GOTO l0a48h
+    ld a,(rr)
+    cp 'Y'
+    jp nz,l0a48h
 
     ;PRINT "Please enter the new command : "
     ld bc,l10c0h
@@ -1501,13 +1608,13 @@ l0a4dh:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;0a59 3a cc 24
-    cp 41h              ;0a5c fe 41
+    ld a,(rr)           ;0a59 3a cc 24
+    cp 'A'              ;0a5c fe 41
     jp p,l0a66h         ;0a5e f2 66 0a
-    cp 51h              ;0a61 fe 51
+    cp 'P'+1            ;0a61 fe 51
     jp p,l0af0h         ;0a63 f2 f0 0a
 l0a66h:
-    ld a,(l24cch)       ;0a66 3a cc 24
+    ld a,(rr)           ;0a66 3a cc 24
     ld l,a              ;0a69 6f
     rla                 ;0a6a 17
     sbc a,a             ;0a6b 9f
@@ -1581,11 +1688,14 @@ l0ac7h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;0ae8 3a cc 24
-    cp 59h              ;0aeb fe 59
-    jp z,l0ac7h         ;0aed ca c7 0a
+    ;IF R = &H59 THEN GOTO l0ac7h
+    ld a,(rr)
+    cp 'Y'
+    jp z,l0ac7h
+
 l0af0h:
     ret                 ;0af0 c9
+
 l0af1h:
     call sub_0300h      ;0af1 cd 00 03
     call print_eol      ;0af4 cd 79 01
@@ -1601,9 +1711,10 @@ l0af1h:
     ;PRINT
     call print_eol
 
-    ld a,01h            ;0b06 3e 01
-    cp 01h              ;0b08 fe 01
-    jp nz,l0b13h        ;0b0a c2 13 0b
+    ;IF 1=1 THEN GOTO l0b13h
+    ld a,01h
+    cp 01h
+    jp nz,l0b13h
 
     ;PRINT "Mini-Winchester version"
     ld bc,l114ch
@@ -1630,17 +1741,17 @@ l0b13h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;0b2b 3a cc 24
+    ld a,(rr)           ;0b2b 3a cc 24
     cp 0dh              ;0b2e fe 0d
     jp z,l0af1h         ;0b30 ca f1 0a
-    cp 5fh              ;0b33 fe 5f
+    cp '_'              ;0b33 fe 5f
     jp z,l0babh         ;0b35 ca ab 0b
-    cp 41h              ;0b38 fe 41
+    cp 'A'              ;0b38 fe 41
     jp p,l0b42h         ;0b3a f2 42 0b
     cp 51h              ;0b3d fe 51
     jp p,l0ba8h         ;0b3f f2 a8 0b
 l0b42h:
-    ld a,(l24cch)       ;0b42 3a cc 24
+    ld a,(rr)       ;0b42 3a cc 24
     ld l,a              ;0b45 6f
     rla                 ;0b46 17
     sbc a,a             ;0b47 9f
@@ -1777,54 +1888,79 @@ l0babh:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;0c14 3a cc 24
-    cp 'A'              ;0c17 fe 41
-    jp nz,l0c22h        ;0c19 c2 22 0c
+    ;IF R <> &H41 THEN GOTO l0c22h
+    ld a,(rr)
+    cp 'A'
+    jp nz,l0c22h
+
     call sub_0997h      ;0c1c cd 97 09
     jp l0c81h           ;0c1f c3 81 0c
 l0c22h:
-    ld a,(l24cch)       ;0c22 3a cc 24
-    cp 'D'              ;0c25 fe 44
-    jp nz,l0c30h        ;0c27 c2 30 0c
+    ;IF R <> &H44 THEN GOTO l0c30h
+    ld a,(rr)
+    cp 'D'
+    jp nz,l0c30h
+
     call sub_0306h      ;0c2a cd 06 03
     jp l0c81h           ;0c2d c3 81 0c
+
 l0c30h:
-    ld a,(l24cch)       ;0c30 3a cc 24
-    cp 'I'              ;0c33 fe 49
-    jp nz,l0c3eh        ;0c35 c2 3e 0c
+    ;IF R <> &H49 THEN GOTO l0c3eh
+    ld a,(rr)
+    cp 'I'
+    jp nz,l0c3eh
+
     call sub_1564h      ;0c38 cd 64 15
     jp l0c81h           ;0c3b c3 81 0c
+
 l0c3eh:
-    ld a,(l24cch)       ;0c3e 3a cc 24
-    cp 'P'              ;0c41 fe 50
-    jp nz,l0c4ch        ;0c43 c2 4c 0c
+    ;IF R <> &H50 THEN GOTO l0c4ch
+    ld a,(rr)
+    cp 'P'
+    jp nz,l0c4ch
+
     call sub_1876h      ;0c46 cd 76 18
     jp l0c81h           ;0c49 c3 81 0c
+
 l0c4ch:
-    ld a,(l24cch)       ;0c4c 3a cc 24
-    cp 'R'              ;0c4f fe 52
-    jp nz,l0c5ah        ;0c51 c2 5a 0c
+    ;IF R <> &H52 THEN GOTO l0c5ah
+    ld a,(rr)
+    cp 'R'
+    jp nz,l0c5ah
+
     call 12a6h          ;0c54 cd a6 12
     jp l0c81h           ;0c57 c3 81 0c
+
 l0c5ah:
-    ld a,(l24cch)       ;0c5a 3a cc 24
-    cp 'S'              ;0c5d fe 53
-    jp nz,l0c68h        ;0c5f c2 68 0c
+    ;IF R <> &H53 THEN GOTO l0c68h
+    ld a,(rr)
+    cp 'S'
+    jp nz,l0c68h
+
     call l0a4dh         ;0c62 cd 4d 0a
     jp l0c81h           ;0c65 c3 81 0c
+
 l0c68h:
-    ld a,(l24cch)       ;0c68 3a cc 24
-    cp 'E'              ;0c6b fe 45
-    jp nz,l0c76h        ;0c6d c2 76 0c
+    ;IF R <> &H45 THEN GOTO l0c76h
+    ld a,(rr)
+    cp 'E'
+    jp nz,l0c76h
+
     call sub_0a49h      ;0c70 cd 49 0a
     jp l0c81h           ;0c73 c3 81 0c
+
 l0c76h:
-    ld a,(l24cch)       ;0c76 3a cc 24
-    cp 'Q'              ;0c79 fe 51
-    jp nz,l0c81h        ;0c7b c2 81 0c
-    call end            ;0c7e cd 67 01
+    ;IF R <> &H51 THEN GOTO l0c81h
+    ld a,(rr)
+    cp 'Q'
+    jp nz,l0c81h
+
+    ;END
+    call end
+
 l0c81h:
-    jp l0babh           ;0c81 c3 ab 0b
+    ;GOTO l0babh
+    jp l0babh
 
 l0c84h:
     db 0eh
@@ -1926,39 +2062,39 @@ l0efdh:
     db 07h
     db ":      "
 
-l0f05h:
+cbm3040:
     db 14h
     db "3040/4040  Device # "
 
-l0f1ah:
+cbm8050:
     db 14h
     db "8050       Device # "
 
-l0f2fh:
+cbm_8250:
     db 14h
     db "8250       Device # "
 
-l0f44h:
+not_used:
     db 0ah
     db "Not used  "
 
-l0f4fh:
+corvus_space:
     db 0bh
     db "Corvus     "
 
-l0f5bh:
+size_10mb:
     db 05h
     db "10Mb "
 
-l0f61h:
+size_20mb:
     db 05h
     db "20Mb "
 
-l0f67h:
+size_5mb:
     db 05h
     db "5Mb  "
 
-l0f6dh:
+size_5mb_star:
     db 05h
     db "5Mb* "
 
@@ -1966,11 +2102,11 @@ l0f73h:
     db 06h
     db "      "
 
-l0f7ah:
+device_num:
     db 09h
     db "Device # "
 
-l0f84h:
+win_unit_num:
     db 12h
     db "Winchester Unit # "
 
@@ -1978,11 +2114,11 @@ l0f97h:
     db 0ch
     db "           ("
 
-l0fa4h:
+cyl_comma:
     db 07h
     db " cyl,  "
 
-l0fach:
+mbyte_drive:
     db 0dh
     db " Mbyte drive,"
 
@@ -2123,19 +2259,19 @@ sub_12a9h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;12b5 3a cc 24
+    ld a,(rr)           ;12b5 3a cc 24
     ld l,a              ;12b8 6f
     rla                 ;12b9 17
     sbc a,a             ;12ba 9f
     ld bc,0ffcbh        ;12bb 01 cb ff
     ld h,a              ;12be 67
     add hl,bc           ;12bf 09
-    ld (l24c8h),hl      ;12c0 22 c8 24
-    ld hl,(l24c8h)      ;12c3 2a c8 24
+    ld (nn),hl          ;12c0 22 c8 24
+    ld hl,(nn)          ;12c3 2a c8 24
     add hl,hl           ;12c6 29
     jp c,l12ech         ;12c7 da ec 12
     ld bc,0fffch        ;12ca 01 fc ff
-    ld hl,(l24c8h)      ;12cd 2a c8 24
+    ld hl,(nn)          ;12cd 2a c8 24
     add hl,bc           ;12d0 09
     add hl,hl           ;12d1 29
     jp nc,l12ech        ;12d2 d2 ec 12
@@ -2143,7 +2279,7 @@ sub_12a9h:
     and 0f3h            ;12d8 e6 f3
     ld b,02h            ;12da 06 02
     ld c,a              ;12dc 4f
-    ld a,(l24c8h)       ;12dd 3a c8 24
+    ld a,(nn)           ;12dd 3a c8 24
     jp l12e4h           ;12e0 c3 e4 12
 l12e3h:
     add a,a             ;12e3 87
@@ -2165,7 +2301,7 @@ sub_12edh:
     ;PRINT
     call print_eol
 
-    ld hl,(l24c8h)      ;12f9 2a c8 24
+    ld hl,(nn)          ;12f9 2a c8 24
     dec hl              ;12fc 2b
     ld a,h              ;12fd 7c
     or l                ;12fe b5
@@ -2176,7 +2312,7 @@ sub_12edh:
     ld (5664h),a        ;1309 32 64 56
     jp l1323h           ;130c c3 23 13
 l130fh:
-    ld hl,(l24c8h)      ;130f 2a c8 24
+    ld hl,(nn)          ;130f 2a c8 24
     dec hl              ;1312 2b
     dec hl              ;1313 2b
     ld a,h              ;1314 7c
@@ -2199,31 +2335,40 @@ sub_1324h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;1330 3a cc 24
-    cp 4fh              ;1333 fe 4f
-    jp nz,l1345h        ;1335 c2 45 13
+    ;IF R <> &H4F THEN GOTO l1345h
+    ld a,(rr)
+    cp 'O'
+    jp nz,l1345h
+
     ld a,(5664h)        ;1338 3a 64 56
     and 0cfh            ;133b e6 cf
     or 10h              ;133d f6 10
     ld (5664h),a        ;133f 32 64 56
     jp l1368h           ;1342 c3 68 13
+
 l1345h:
-    ld a,(l24cch)       ;1345 3a cc 24
-    cp 45h              ;1348 fe 45
-    jp nz,l1358h        ;134a c2 58 13
+    ;IF R <> &H45 THEN GOTO l1358h
+    ld a,(rr)
+    cp 'E'
+    jp nz,l1358h
+
     ld a,(5664h)        ;134d 3a 64 56
     or 30h              ;1350 f6 30
     ld (5664h),a        ;1352 32 64 56
     jp l1368h           ;1355 c3 68 13
+
 l1358h:
-    ld a,(l24cch)       ;1358 3a cc 24
-    cp 4eh              ;135b fe 4e
-    jp nz,l1368h        ;135d c2 68 13
+    ;IF R <> &H4E THEN GOTO l1368h
+    ld a,(rr)
+    cp 'N'
+    jp nz,l1368h
+
     ld a,(5664h)        ;1360 3a 64 56
     and 0efh            ;1363 e6 ef
     ld (5664h),a        ;1365 32 64 56
 l1368h:
     ret                 ;1368 c9
+
 sub_1369h:
     ;PRINT
     call print_eol
@@ -2239,7 +2384,7 @@ sub_1369h:
     call print_eol
 
     ld bc,0ff92h        ;1378 01 92 ff
-    ld hl,(l24c8h)      ;137b 2a c8 24
+    ld hl,(nn)          ;137b 2a c8 24
     add hl,bc           ;137e 09
     ld a,h              ;137f 7c
     or l                ;1380 b5
@@ -2249,7 +2394,7 @@ sub_1369h:
     jp l13edh           ;1389 c3 ed 13
 l138ch:
     ld bc,0fed4h        ;138c 01 d4 fe
-    ld hl,(l24c8h)      ;138f 2a c8 24
+    ld hl,(nn)          ;138f 2a c8 24
     add hl,bc           ;1392 09
     ld a,h              ;1393 7c
     or l                ;1394 b5
@@ -2259,7 +2404,7 @@ l138ch:
     jp l13edh           ;139d c3 ed 13
 l13a0h:
     ld bc,0fb50h        ;13a0 01 50 fb
-    ld hl,(l24c8h)      ;13a3 2a c8 24
+    ld hl,(nn)          ;13a3 2a c8 24
     add hl,bc           ;13a6 09
     ld a,h              ;13a7 7c
     or l                ;13a8 b5
@@ -2269,7 +2414,7 @@ l13a0h:
     jp l13edh           ;13b1 c3 ed 13
 l13b4h:
     ld bc,0ed40h        ;13b4 01 40 ed
-    ld hl,(l24c8h)      ;13b7 2a c8 24
+    ld hl,(nn)          ;13b7 2a c8 24
     add hl,bc           ;13ba 09
     ld a,h              ;13bb 7c
     or l                ;13bc b5
@@ -2279,7 +2424,7 @@ l13b4h:
     jp l13edh           ;13c5 c3 ed 13
 l13c8h:
     ld bc,0da80h        ;13c8 01 80 da
-    ld hl,(l24c8h)      ;13cb 2a c8 24
+    ld hl,(nn)          ;13cb 2a c8 24
     add hl,bc           ;13ce 09
     ld a,h              ;13cf 7c
     or l                ;13d0 b5
@@ -2289,7 +2434,7 @@ l13c8h:
     jp l13edh           ;13d9 c3 ed 13
 l13dch:
     ld bc,0b500h        ;13dc 01 00 b5
-    ld hl,(l24c8h)      ;13df 2a c8 24
+    ld hl,(nn)          ;13df 2a c8 24
     add hl,bc           ;13e2 09
     ld a,h              ;13e3 7c
     or l                ;13e4 b5
@@ -2466,13 +2611,13 @@ l1504h:
     ;PRINT
     call print_eol
 
-    ld hl,(l24c8h)      ;1518 2a c8 24
+    ld hl,(nn)          ;1518 2a c8 24
     ld a,l              ;151b 7d
     or h                ;151c b4
     jp nz,l1521h        ;151d c2 21 15
     ret                 ;1520 c9
 l1521h:
-    ld hl,(l24c8h)      ;1521 2a c8 24
+    ld hl,(nn)          ;1521 2a c8 24
     dec hl              ;1524 2b
     ld a,h              ;1525 7c
     or l                ;1526 b5
@@ -2480,7 +2625,7 @@ l1521h:
     call sub_12a9h      ;152a cd a9 12
     jp l1560h           ;152d c3 60 15
 l1530h:
-    ld hl,(l24c8h)      ;1530 2a c8 24
+    ld hl,(nn)          ;1530 2a c8 24
     dec hl              ;1533 2b
     dec hl              ;1534 2b
     ld a,h              ;1535 7c
@@ -2489,7 +2634,7 @@ l1530h:
     call sub_12edh      ;153a cd ed 12
     jp l1560h           ;153d c3 60 15
 l1540h:
-    ld hl,(l24c8h)      ;1540 2a c8 24
+    ld hl,(nn)          ;1540 2a c8 24
     dec hl              ;1543 2b
     dec hl              ;1544 2b
     dec hl              ;1545 2b
@@ -2500,7 +2645,7 @@ l1540h:
     jp l1560h           ;154e c3 60 15
 l1551h:
     ld bc,0fffch        ;1551 01 fc ff
-    ld hl,(l24c8h)      ;1554 2a c8 24
+    ld hl,(nn)          ;1554 2a c8 24
     add hl,bc           ;1557 09
     ld a,h              ;1558 7c
     or l                ;1559 b5
@@ -2544,41 +2689,53 @@ sub_1567h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;1591 3a cc 24
-    cp 54h              ;1594 fe 54
-    jp nz,l15a4h        ;1596 c2 a4 15
+    ;IF R <> &H54 THEN GOTO l15a4h
+    ld a,(rr)
+    cp 54h
+    jp nz,l15a4h
+
     ld a,(5660h)        ;1599 3a 60 56
     and 3fh             ;159c e6 3f
     ld (5660h),a        ;159e 32 60 56
     jp l15e0h           ;15a1 c3 e0 15
+
 l15a4h:
-    ld a,(l24cch)       ;15a4 3a cc 24
-    cp 43h              ;15a7 fe 43
-    jp nz,l15b9h        ;15a9 c2 b9 15
+    ;IF R <> &H43 THEN GOTO l15b9h
+    ld a,(rr)
+    cp 43h
+    jp nz,l15b9h
+
     ld a,(5660h)        ;15ac 3a 60 56
     and 3fh             ;15af e6 3f
     or 40h              ;15b1 f6 40
     ld (5660h),a        ;15b3 32 60 56
     jp l15e0h           ;15b6 c3 e0 15
+
 l15b9h:
-    ld a,(l24cch)       ;15b9 3a cc 24
-    cp 4ch              ;15bc fe 4c
-    jp nz,l15ceh        ;15be c2 ce 15
+    ;IF R <> &H4C THEN GOTO l15ceh
+    ld a,(rr)
+    cp 'L'
+    jp nz,l15ceh
+
     ld a,(5660h)        ;15c1 3a 60 56
     and 3fh             ;15c4 e6 3f
     or 80h              ;15c6 f6 80
     ld (5660h),a        ;15c8 32 60 56
     jp l15e0h           ;15cb c3 e0 15
+
 l15ceh:
-    ld a,(l24cch)       ;15ce 3a cc 24
-    cp 55h              ;15d1 fe 55
-    jp nz,l15e0h        ;15d3 c2 e0 15
+    ;IF R <> &H55 THEN GOTO l15e0h
+    ld a,(rr)
+    cp 'U'
+    jp nz,l15e0h
+
     ld a,(5660h)        ;15d6 3a 60 56
     and 3fh             ;15d9 e6 3f
     or 0c0h             ;15db f6 c0
     ld (5660h),a        ;15dd 32 60 56
 l15e0h:
     ret                 ;15e0 c9
+
 sub_15e1h:
     ;PRINT "T(TY:) or P(TR:) ? ";
     ld bc,l1d77h
@@ -2590,23 +2747,29 @@ sub_15e1h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;15ed 3a cc 24
-    cp 54h              ;15f0 fe 54
-    jp nz,l1600h        ;15f2 c2 00 16
+    ;IF R <> &H54 THEN GOTO l1600h
+    ld a,(rr)
+    cp 'T'
+    jp nz,l1600h
+
     ld a,(5660h)        ;15f5 3a 60 56
     and 0f3h            ;15f8 e6 f3
     ld (5660h),a        ;15fa 32 60 56
     jp l1612h           ;15fd c3 12 16
+
 l1600h:
-    ld a,(l24cch)       ;1600 3a cc 24
-    cp 50h              ;1603 fe 50
-    jp nz,l1612h        ;1605 c2 12 16
+    ;IF R <> &H50 THEN GOTO l1612h
+    ld a,(rr)
+    cp 'P'
+    jp nz,l1612h
+
     ld a,(5660h)        ;1608 3a 60 56
     and 0f3h            ;160b e6 f3
     or 04h              ;160d f6 04
     ld (5660h),a        ;160f 32 60 56
 l1612h:
     ret                 ;1612 c9
+
 sub_1613h:
     ;PRINT "T(TY:) or P(TP:) ? ";
     ld bc,l1d8bh
@@ -2618,23 +2781,29 @@ sub_1613h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;161f 3a cc 24
-    cp 54h              ;1622 fe 54
+    ;IF R <> &H54 THEN GOTO l1632h
+    ld a,(rr)           ;161f 3a cc 24
+    cp 'T'              ;1622 fe 54
     jp nz,l1632h        ;1624 c2 32 16
+
     ld a,(5660h)        ;1627 3a 60 56
     and 0cfh            ;162a e6 cf
     ld (5660h),a        ;162c 32 60 56
     jp l1644h           ;162f c3 44 16
+
 l1632h:
-    ld a,(l24cch)       ;1632 3a cc 24
-    cp 50h              ;1635 fe 50
-    jp nz,l1644h        ;1637 c2 44 16
+    ;IF R <> &H50 THEN GOTO l1644h
+    ld a,(rr)
+    cp 'P'
+    jp nz,l1644h
+
     ld a,(5660h)        ;163a 3a 60 56
     and 0cfh            ;163d e6 cf
     or 10h              ;163f f6 10
     ld (5660h),a        ;1641 32 60 56
 l1644h:
     ret                 ;1644 c9
+
 sub_1645h:
     ;PRINT
     call print_eol
@@ -2662,27 +2831,36 @@ sub_1645h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;1669 3a cc 24
-    cp 33h              ;166c fe 33
-    jp nz,l1679h        ;166e c2 79 16
+    ;IF R <> &H33 THEN GOTO l1679h
+    ld a,(rr)
+    cp '3'
+    jp nz,l1679h
+
     ld hl,566dh         ;1671 21 6d 56
     ld (hl),00h         ;1674 36 00
     jp l1696h           ;1676 c3 96 16
+
 l1679h:
-    ld a,(l24cch)       ;1679 3a cc 24
-    cp 38h              ;167c fe 38
-    jp nz,l1689h        ;167e c2 89 16
+    ;IF R <> &H38 THEN GOTO l1689h
+    ld a,(rr)
+    cp '8'
+    jp nz,l1689h
+
     ld hl,566dh         ;1681 21 6d 56
     ld (hl),02h         ;1684 36 02
     jp l1696h           ;1686 c3 96 16
+
 l1689h:
-    ld a,(l24cch)       ;1689 3a cc 24
-    cp 44h              ;168c fe 44
-    jp nz,l1696h        ;168e c2 96 16
+    ;IF R <> &H44 THEN GOTO l1696h
+    ld a,(rr)
+    cp 'D'
+    jp nz,l1696h
+
     ld hl,566dh         ;1691 21 6d 56
     ld (hl),01h         ;1694 36 01
 l1696h:
     ret                 ;1696 c9
+
 l1697h:
     call sub_0300h      ;1697 cd 00 03
 
@@ -2887,13 +3065,17 @@ l17b7h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;17ce 3a cc 24
-    cp 0dh              ;17d1 fe 0d
-    jp nz,l17d7h        ;17d3 c2 d7 17
-    ret                 ;17d6 c9
+    ;IF R <> &H0D THEN GOTO l17d7h
+    ld a,(rr)
+    cp 0dh
+    jp nz,l17d7h
+
+    ;RETURN
+    ret
+
 l17d7h:
     ld bc,0fffbh        ;17d7 01 fb ff
-    ld hl,(l24c8h)      ;17da 2a c8 24
+    ld hl,(nn)          ;17da 2a c8 24
     add hl,bc           ;17dd 09
     ld a,h              ;17de 7c
     or l                ;17df b5
@@ -2902,7 +3084,7 @@ l17d7h:
     jp l1872h           ;17e6 c3 72 18
 l17e9h:
     ld bc,0fffah        ;17e9 01 fa ff
-    ld hl,(l24c8h)      ;17ec 2a c8 24
+    ld hl,(nn)          ;17ec 2a c8 24
     add hl,bc           ;17ef 09
     ld a,h              ;17f0 7c
     or l                ;17f1 b5
@@ -2911,7 +3093,7 @@ l17e9h:
     jp l1872h           ;17f8 c3 72 18
 l17fbh:
     ld bc,0fff9h        ;17fb 01 f9 ff
-    ld hl,(l24c8h)      ;17fe 2a c8 24
+    ld hl,(nn)          ;17fe 2a c8 24
     add hl,bc           ;1801 09
     ld a,h              ;1802 7c
     or l                ;1803 b5
@@ -2920,7 +3102,7 @@ l17fbh:
     jp l1872h           ;180a c3 72 18
 l180dh:
     ld bc,0fff8h        ;180d 01 f8 ff
-    ld hl,(l24c8h)      ;1810 2a c8 24
+    ld hl,(nn)          ;1810 2a c8 24
     add hl,bc           ;1813 09
     ld a,h              ;1814 7c
     or l                ;1815 b5
@@ -2928,7 +3110,7 @@ l180dh:
     call sub_1645h      ;1819 cd 45 16
     jp l1872h           ;181c c3 72 18
 l181fh:
-    ld a,(l24c8h)       ;181f 3a c8 24
+    ld a,(nn)           ;181f 3a c8 24
     ld (l3029h),a       ;1822 32 29 30
 
     ;PRINT "New device # ? ";
@@ -2944,28 +3126,28 @@ l181fh:
     ld a,(l3029h)       ;1831 3a 29 30
     cp 01h              ;1834 fe 01
     jp nz,l1842h        ;1836 c2 42 18
-    ld a,(l24c8h)       ;1839 3a c8 24
+    ld a,(nn)           ;1839 3a c8 24
     ld (5661h),a        ;183c 32 61 56
     jp l1872h           ;183f c3 72 18
 l1842h:
     ld a,(l3029h)       ;1842 3a 29 30
     cp 02h              ;1845 fe 02
     jp nz,l1853h        ;1847 c2 53 18
-    ld a,(l24c8h)       ;184a 3a c8 24
+    ld a,(nn)           ;184a 3a c8 24
     ld (5666h),a        ;184d 32 66 56
     jp l1872h           ;1850 c3 72 18
 l1853h:
     ld a,(l3029h)       ;1853 3a 29 30
     cp 03h              ;1856 fe 03
     jp nz,l1864h        ;1858 c2 64 18
-    ld a,(l24c8h)       ;185b 3a c8 24
+    ld a,(nn)           ;185b 3a c8 24
     ld (5662h),a        ;185e 32 62 56
     jp l1872h           ;1861 c3 72 18
 l1864h:
     ld a,(l3029h)       ;1864 3a 29 30
     cp 04h              ;1867 fe 04
     jp nz,l1872h        ;1869 c2 72 18
-    ld a,(l24c8h)       ;186c 3a c8 24
+    ld a,(nn)           ;186c 3a c8 24
     ld (5663h),a        ;186f 32 63 56
 l1872h:
     jp l1697h           ;1872 c3 97 16
@@ -2983,40 +3165,56 @@ sub_1879h:
     ;PRINT
     call print_eol
 
-    ld hl,(l24c8h)      ;1885 2a c8 24
-    dec hl              ;1888 2b
-    ld a,h              ;1889 7c
-    or l                ;188a b5
-    jp nz,l1896h        ;188b c2 96 18
+    ;IF (N-1) <> 0 THEN GOTO l1896h
+    ld hl,(nn)
+    dec hl
+    ld a,h
+    or l
+    jp nz,l1896h
+
     ld hl,44b2h         ;188e 21 b2 44
     ld (hl),00h         ;1891 36 00
-    jp l18b9h           ;1893 c3 b9 18
+
+    ;GOTO l18b9h
+    jp l18b9h
+
 l1896h:
-    ld hl,(l24c8h)      ;1896 2a c8 24
-    dec hl              ;1899 2b
-    dec hl              ;189a 2b
-    ld a,h              ;189b 7c
-    or l                ;189c b5
-    jp nz,l18a8h        ;189d c2 a8 18
+    ;IF (N-2) <> 0 THEN GOTO l18a8h
+    ld hl,(nn)
+    dec hl
+    dec hl
+    ld a,h
+    or l
+    jp nz,l18a8h
+
     ld hl,44b2h         ;18a0 21 b2 44
     ld (hl),01h         ;18a3 36 01
-    jp l18b9h           ;18a5 c3 b9 18
+
+    ;GOTO l18b9h
+    jp l18b9h
+
 l18a8h:
-    ld bc,0fffch        ;18a8 01 fc ff
-    ld hl,(l24c8h)      ;18ab 2a c8 24
-    add hl,bc           ;18ae 09
-    ld a,h              ;18af 7c
-    or l                ;18b0 b5
-    jp nz,l18b9h        ;18b1 c2 b9 18
+    ;IF (N-3) <> 0 THEN GOTO l18b9h
+    ld bc,-4
+    ld hl,(nn)
+    add hl,bc
+    ld a,h
+    or l
+    jp nz,l18b9h
+
     ld hl,44b2h         ;18b4 21 b2 44
     ld (hl),03h         ;18b7 36 03
+
 l18b9h:
-    ret                 ;18b9 c9
+    ;RETURN
+    ret
+
 sub_18bah:
     ld a,(5667h)        ;18ba 3a 67 56
     xor 80h             ;18bd ee 80
     ld (5667h),a        ;18bf 32 67 56
     ret                 ;18c2 c9
+
 sub_18c3h:
     ;PRINT "Screen type A(DM3A), H(Z1500), or T(V912) ? ";
     ld bc,l1fb0h
@@ -3028,25 +3226,33 @@ sub_18c3h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;18cf 3a cc 24
-    cp 41h              ;18d2 fe 41
-    jp nz,l18e2h        ;18d4 c2 e2 18
+    ;IF R <> &H41 THEN GOTO l18e2h
+    ld a,(rr)
+    cp 'A'
+    jp nz,l18e2h
+
     ld a,(5667h)        ;18d7 3a 67 56
     and 80h             ;18da e6 80
     ld (5667h),a        ;18dc 32 67 56
     jp l18f4h           ;18df c3 f4 18
+
 l18e2h:
-    ld a,(l24cch)       ;18e2 3a cc 24
-    cp 54h              ;18e5 fe 54
-    jp nz,l18f4h        ;18e7 c2 f4 18
+    ;IF R <> &H54 THEN GOTO l18f4h
+    ld a,(rr)
+    cp 'T'
+    jp nz,l18f4h
+
     ld a,(5667h)        ;18ea 3a 67 56
     and 80h             ;18ed e6 80
     or 02h              ;18ef f6 02
     ld (5667h),a        ;18f1 32 67 56
+
 l18f4h:
-    ld a,(l24cch)       ;18f4 3a cc 24
-    cp 48h              ;18f7 fe 48
-    jp nz,l1997h        ;18f9 c2 97 19
+    ;IF H <> &H48 THEN GOTO l1997h
+    ld a,(rr)
+    cp 'H'
+    jp nz,l1997h
+
 l18fch:
     ;PRINT "Lead-in code E(scape) or T(ilde) ? ";
     ld bc,l1fddh
@@ -3058,21 +3264,27 @@ l18fch:
     ;GOSUB readline
     call print_eol
 
-    ld a,(l24cch)       ;1908 3a cc 24
-    cp 45h              ;190b fe 45
-    jp nz,l1918h        ;190d c2 18 19
+    ;IF R <> &H45 THEN GOTO l1918h
+    ld a,(rr)
+    cp 'E'
+    jp nz,l1918h
+
     ld hl,5668h         ;1910 21 68 56
     ld (hl),1bh         ;1913 36 1b
     jp l192bh           ;1915 c3 2b 19
+
 l1918h:
-    ld a,(l24cch)       ;1918 3a cc 24
-    cp 54h              ;191b fe 54
-    jp nz,l1928h        ;191d c2 28 19
+    ;IF R <> &H54 THEN GOTO l1928h
+    ld a,(rr)
+    cp 'T'
+    jp nz,l1928h
+
     ld hl,5668h         ;1920 21 68 56
     ld (hl),7eh         ;1923 36 7e
     jp l192bh           ;1925 c3 2b 19
 l1928h:
     jp l18fch           ;1928 c3 fc 18
+
 l192bh:
     ld a,(5667h)        ;192b 3a 67 56
     and 80h             ;192e e6 80
@@ -3250,11 +3462,11 @@ sub_1a2bh:
     ;PRINT
     call print_eol
 
-    ld hl,(l24c8h)      ;1a37 2a c8 24
+    ld hl,(nn)          ;1a37 2a c8 24
     ld a,l              ;1a3a 7d
     or h                ;1a3b b4
     jp z,l1a45h         ;1a3c ca 45 1a
-    ld a,(l24c8h)       ;1a3f 3a c8 24
+    ld a,(nn)           ;1a3f 3a c8 24
     ld (6005h),a        ;1a42 32 05 60
 l1a45h:
     ret                 ;1a45 c9
@@ -3393,12 +3605,16 @@ l1af9h:
     ;PRINT
     call print_eol
 
-    ld a,(l24cch)       ;1b24 3a cc 24
-    cp 0dh              ;1b27 fe 0d
-    jp nz,l1b2dh        ;1b29 c2 2d 1b
-    ret                 ;1b2c c9
+    ;IF R <> &H0D THEN GOTO l1b2dh
+    ld a,(rr)
+    cp 0dh
+    jp nz,l1b2dh
+
+    ;RETURN
+    ret
+
 l1b2dh:
-    ld hl,(l24c8h)      ;1b2d 2a c8 24
+    ld hl,(nn)          ;1b2d 2a c8 24
     dec hl              ;1b30 2b
     ld a,h              ;1b31 7c
     or l                ;1b32 b5
@@ -3406,7 +3622,7 @@ l1b2dh:
     call sub_1879h      ;1b36 cd 79 18
     jp l1b6ch           ;1b39 c3 6c 1b
 l1b3ch:
-    ld hl,(l24c8h)      ;1b3c 2a c8 24
+    ld hl,(nn)          ;1b3c 2a c8 24
     dec hl              ;1b3f 2b
     dec hl              ;1b40 2b
     ld a,h              ;1b41 7c
@@ -3415,7 +3631,7 @@ l1b3ch:
     call sub_18bah      ;1b46 cd ba 18
     jp l1b6ch           ;1b49 c3 6c 1b
 l1b4ch:
-    ld hl,(l24c8h)      ;1b4c 2a c8 24
+    ld hl,(nn)          ;1b4c 2a c8 24
     dec hl              ;1b4f 2b
     dec hl              ;1b50 2b
     dec hl              ;1b51 2b
@@ -3426,7 +3642,7 @@ l1b4ch:
     jp l1b6ch           ;1b5a c3 6c 1b
 l1b5dh:
     ld bc,0fffch        ;1b5d 01 fc ff
-    ld hl,(l24c8h)      ;1b60 2a c8 24
+    ld hl,(nn)          ;1b60 2a c8 24
     add hl,bc           ;1b63 09
     ld a,h              ;1b64 7c
     or l                ;1b65 b5
@@ -4330,14 +4546,13 @@ l2476h:
     nop                 ;24c5 00
     nop                 ;24c6 00
     nop                 ;24c7 00
-l24c8h:
-    nop                 ;24c8 00
-    nop                 ;24c9 00
+nn:
+    dw 0                ;Integer parsed from user input
 l24cah:
     nop                 ;24ca 00
     nop                 ;24cb 00
-l24cch:
-    nop                 ;24cc 00
+rr:
+    db 0                ;First char of user input from any prompt
 sub_24cdh:
     xor a               ;24cd af
     ld h,a              ;24ce 67
@@ -7203,15 +7418,14 @@ l3015h:
     nop                 ;3015 00
 l3016h:
     nop                 ;3016 00
-l3017h:
-    nop                 ;3017 00
-l3018h:
-    nop                 ;3018 00
+heads:
+    db 0
+unit:
+    db 0
 l3019h:
     nop                 ;3019 00
-l301ah:
-    nop                 ;301a 00
-    nop                 ;301b 00
+cylinders:
+    dw 0
 l301ch:
     nop                 ;301c 00
     nop                 ;301d 00
