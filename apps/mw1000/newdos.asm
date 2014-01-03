@@ -1,7 +1,6 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=newdos.asm newdos.com
 
-;TODO: 0292 is print_int label!
 
 l4000h: equ 4000h       ;opcode "jp" (1 Byte)
 l4001h: equ 4001h       ;jump address (2 Bytes)
@@ -152,9 +151,9 @@ readline:
 l01abh:
     ld a,(l3020h)       ;01ab 3a 20 30
     ld (l3002h),a       ;01ae 32 02 30
-    cp 61h              ;01b1 fe 61
+    cp 'a'              ;01b1 fe 61
     jp m,l01c2h         ;01b3 fa c2 01
-    cp 7bh              ;01b6 fe 7b
+    cp 'z'+1            ;01b6 fe 7b
     jp p,l01c2h         ;01b8 f2 c2 01
     ld hl,l3002h        ;01bb 21 02 30
     ld a,(hl)           ;01be 7e
@@ -172,7 +171,7 @@ l01c7h:
     ld h,a              ;01d0 67
     add hl,bc           ;01d1 09
     ld a,(hl)           ;01d2 7e
-    cp 30h              ;01d3 fe 30
+    cp '0'              ;01d3 fe 30
     jp m,l0218h         ;01d5 fa 18 02
     ld a,(l30a1h)       ;01d8 3a a1 30
     ld l,a              ;01db 6f
@@ -182,7 +181,7 @@ l01c7h:
     ld h,a              ;01e1 67
     add hl,bc           ;01e2 09
     ld a,(hl)           ;01e3 7e
-    cp 3ah              ;01e4 fe 3a
+    cp '9'+1            ;01e4 fe 3a
     jp p,l0218h         ;01e6 f2 18 02
     ld hl,(l3004h)      ;01e9 2a 04 30
     ld b,h              ;01ec 44
@@ -257,12 +256,10 @@ l023fh:
 
 sub_0257h:
     call sub_1382h      ;0257 cd 82 13
-    nop                 ;025a 00
-    ld (bc),a           ;025b 02
-    and (hl)            ;025c a6
-    jr nc,$+35          ;025d 30 21
-    and a               ;025f a7
-    jr nc,l02d2h        ;0260 30 70
+    db 00h, 02h
+    dw l30a6h
+    ld hl,l30a6h+1      ;025e 21 a7 30
+    ld (hl),b           ;0261 70
     dec hl              ;0262 2b
     ld (hl),c           ;0263 71
     ld hl,(l30a6h)      ;0264 2a a6 30
@@ -281,17 +278,17 @@ sub_0257h:
     ld de,000ah         ;027f 11 0a 00
     call sub_12f6h      ;0282 cd f6 12
     ld a,l              ;0285 7d
-    add a,30h           ;0286 c6 30
+    add a,'0'           ;0286 c6 30
     ld c,a              ;0288 4f
     call print_char     ;0289 cd 19 02
 l028ch:
     call sub_13c5h      ;028c cd c5 13
-    ld (bc),a           ;028f 02
-    and (hl)            ;0290 a6
-;TODO: 0292 is print_int label!
-    jr nc,$+35          ;0291 30 21
-    xor c               ;0293 a9
-    jr nc,l0306h        ;0294 30 70
+    db 02h
+    dw l30a6h
+
+print_int:
+    ld hl,l30a8h+1      ;0292 21 a9 30
+    ld (hl),b           ;0295 70
     dec hl              ;0296 2b
     ld (hl),c           ;0297 71
     ld hl,(l30a8h)      ;0298 2a a8 30
@@ -309,16 +306,20 @@ l02a9h:
     call sub_0257h      ;02ae cd 57 02
 l02b1h:
     ret                 ;02b1 c9
-    ld hl,l30abh        ;02b2 21 ab 30
+
+    ld hl,l30aah+1      ;02b2 21 ab 30
     ld (hl),b           ;02b5 70
     dec hl              ;02b6 2b
     ld (hl),c           ;02b7 71
     ld hl,(l30aah)      ;02b8 2a aa 30
     add hl,hl           ;02bb 29
     jp nc,l02d5h        ;02bc d2 d5 02
+
     ;PRINT "-"
     ld bc,l0b93h        ;02bf 01 93 0b
     call print_str      ;02c2 cd 32 02
+
+    ;l30aah = -l30aah
     ld hl,(l30aah)      ;02c5 2a aa 30
     ld a,l              ;02c8 7d
     cpl                 ;02c9 2f
@@ -328,14 +329,16 @@ l02b1h:
     cpl                 ;02ce 2f
     adc a,00h           ;02cf ce 00
     ld h,a              ;02d1 67
-l02d2h:
     ld (l30aah),hl      ;02d2 22 aa 30
+
 l02d5h:
+    ;PRINT l30aah
     ld hl,(l30aah)      ;02d5 2a aa 30
     ld b,h              ;02d8 44
     ld c,l              ;02d9 4d
-    call 0292h          ;02da cd 92 02
+    call print_int      ;02da cd 92 02
     ret                 ;02dd c9
+
     ld hl,l30adh        ;02de 21 ad 30
     ld (hl),b           ;02e1 70
     dec hl              ;02e2 2b
@@ -362,14 +365,14 @@ l02fah:
     ld a,l              ;02fe 7d
     and 0fh             ;02ff e6 0f
     ld (l30afh),a       ;0301 32 af 30
-    cp 0ah              ;0304 fe 0a
+    cp 10               ;0304 fe 0a
 l0306h:
     jp m,l030eh         ;0306 fa 0e 03
-    add a,37h           ;0309 c6 37
+    add a,'A'-10        ;0309 c6 37
     jp l0313h           ;030b c3 13 03
 l030eh:
     ld a,(l30afh)       ;030e 3a af 30
-    add a,30h           ;0311 c6 30
+    add a,'0'           ;0311 c6 30
 l0313h:
     ld c,a              ;0313 4f
     call print_char     ;0314 cd 19 02
@@ -753,7 +756,7 @@ l04f8h:
     add hl,bc           ;050c 09
     ld b,h              ;050d 44
     ld c,l              ;050e 4d
-    call 0292h          ;050f cd 92 02
+    call print_int      ;050f cd 92 02
     ld bc,l0d94h
     call print_str
     call print_eol
@@ -1025,7 +1028,7 @@ l05dfh:
     ld hl,(l4007h)      ;0692 2a 07 40
     ld b,h              ;0695 44
     ld c,l              ;0696 4d
-    call 0292h          ;0697 cd 92 02
+    call print_int      ;0697 cd 92 02
     ld bc,l0fb9h
     call print_str
     call print_eol
@@ -1036,7 +1039,7 @@ l05dfh:
     ld hl,(l400ch)      ;06a9 2a 0c 40
     ld b,h              ;06ac 44
     ld c,l              ;06ad 4d
-    call 0292h          ;06ae cd 92 02
+    call print_int      ;06ae cd 92 02
     ld bc,l0fddh
     call print_str
     call print_eol
@@ -1047,7 +1050,7 @@ l05dfh:
     ld hl,(l4010h)       ;06c0 2a 10 40
     ld b,h              ;06c3 44
     ld c,l              ;06c4 4d
-    call 0292h          ;06c5 cd 92 02
+    call print_int      ;06c5 cd 92 02
     call print_eol      ;06c8 cd 27 02
 
     ;PRINT "Direct tracks per drive :  ";l400eh
@@ -1056,7 +1059,7 @@ l05dfh:
     ld hl,(l400eh)      ;06d1 2a 0e 40
     ld b,h              ;06d4 44
     ld c,l              ;06d5 4d
-    call 0292h          ;06d6 cd 92 02
+    call print_int      ;06d6 cd 92 02
     call print_eol
 
     ;PRINT "Max number of files :      ";l400ah
@@ -1065,7 +1068,7 @@ l05dfh:
     ld hl,(l400ah)      ;06e2 2a 0a 40
     ld b,h              ;06e5 44
     ld c,l              ;06e6 4d
-    call 0292h          ;06e7 cd 92 02
+    call print_int      ;06e7 cd 92 02
     call print_eol
 
     ;PRINT
@@ -1093,7 +1096,7 @@ l05dfh:
     sbc a,a             ;0710 9f
     ld b,a              ;0711 47
     ld c,l              ;0712 4d
-    call 0292h          ;0713 cd 92 02
+    call print_int      ;0713 cd 92 02
     call print_eol
 
     ;PRINT "Total cylinders on drive : ";cylinders
@@ -1102,7 +1105,7 @@ l05dfh:
     ld hl,(cylinders)   ;071f 2a 06 30
     ld b,h              ;0722 44
     ld c,l              ;0723 4d
-    call 0292h          ;0724 cd 92 02
+    call print_int      ;0724 cd 92 02
     call print_eol
 
     ;PRINT "Total kbyte capacity :     ";heads*cylinders*8
@@ -1126,7 +1129,7 @@ l05dfh:
     add hl,hl           ;0745 29
     ld b,h              ;0746 44
     ld c,l              ;0747 4d
-    call 0292h          ;0748 cd 92 02
+    call print_int      ;0748 cd 92 02
     call print_eol
 
     ;PRINT "First user cylinder :      ";l4034h
@@ -1135,7 +1138,7 @@ l05dfh:
     ld hl,(l4034h)      ;0754 2a 34 40
     ld b,h              ;0757 44
     ld c,l              ;0758 4d
-    call 0292h          ;0759 cd 92 02
+    call print_int      ;0759 cd 92 02
     call print_eol
 
     ;PRINT "Number of user cylinders : ";cylinders-l4034h
@@ -1151,7 +1154,7 @@ l05dfh:
     sbc a,h             ;0770 9c
     ld b,a              ;0771 47
     ld c,e              ;0772 4b
-    call 0292h          ;0773 cd 92 02
+    call print_int      ;0773 cd 92 02
     call print_eol      ;0776 cd 27 02
 
     ;PRINT "User area starts at :      ";l301ah
@@ -1160,7 +1163,7 @@ l05dfh:
     ld hl,(l301ah)      ;077f 2a 1a 30
     ld b,h              ;0782 44
     ld c,l              ;0783 4d
-    call 0292h          ;0784 cd 92 02
+    call print_int      ;0784 cd 92 02
     call print_eol
 
     ;PRINT
@@ -2338,6 +2341,7 @@ l1375h:
     ld c,a              ;137f 4f
     inc bc              ;1380 03
     ret                 ;1381 c9
+
 sub_1382h:
     pop hl              ;1382 e1
     push bc             ;1383 c5
@@ -2398,6 +2402,7 @@ l13c1h:
     pop de              ;13c2 d1
     pop bc              ;13c3 c1
     jp (hl)             ;13c4 e9
+
 sub_13c5h:
     ex (sp),hl          ;13c5 e3
     push af             ;13c6 f5
@@ -9820,7 +9825,6 @@ l30a8h:
     nop                 ;30a9 00
 l30aah:
     nop                 ;30aa 00
-l30abh:
     nop                 ;30ab 00
 l30ach:
     nop                 ;30ac 00
