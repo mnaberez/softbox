@@ -1,7 +1,6 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=newdos.asm newdos.com
 
-;TODO: 0292 is print_int label!
 
 l4000h: equ 4000h       ;opcode "jp" (1 Byte)
 l4001h: equ 4001h       ;jump address (2 Bytes)
@@ -257,12 +256,10 @@ l023fh:
 
 sub_0257h:
     call sub_1382h      ;0257 cd 82 13
-    nop                 ;025a 00
-    ld (bc),a           ;025b 02
-    and (hl)            ;025c a6
-    jr nc,$+35          ;025d 30 21
-    and a               ;025f a7
-    jr nc,l02d2h        ;0260 30 70
+    db 00h, 02h
+    dw l30a6h
+    ld hl,l30a6h+1      ;025e 21 a7 30
+    ld (hl),b           ;0261 70
     dec hl              ;0262 2b
     ld (hl),c           ;0263 71
     ld hl,(l30a6h)      ;0264 2a a6 30
@@ -286,12 +283,12 @@ sub_0257h:
     call print_char     ;0289 cd 19 02
 l028ch:
     call sub_13c5h      ;028c cd c5 13
-    ld (bc),a           ;028f 02
-    and (hl)            ;0290 a6
-;TODO: 0292 is print_int label!
-    jr nc,$+35          ;0291 30 21
-    xor c               ;0293 a9
-    jr nc,l0306h        ;0294 30 70
+    db 02h
+    dw l30a6h
+
+print_int:
+    ld lh,l30a8h+1      ;0292 21 a9 30
+    ld (hl),b           ;0295 70
     dec hl              ;0296 2b
     ld (hl),c           ;0297 71
     ld hl,(l30a8h)      ;0298 2a a8 30
@@ -334,7 +331,7 @@ l02d5h:
     ld hl,(l30aah)      ;02d5 2a aa 30
     ld b,h              ;02d8 44
     ld c,l              ;02d9 4d
-    call 0292h          ;02da cd 92 02
+    call print_int      ;02da cd 92 02
     ret                 ;02dd c9
     ld hl,l30adh        ;02de 21 ad 30
     ld (hl),b           ;02e1 70
@@ -753,7 +750,7 @@ l04f8h:
     add hl,bc           ;050c 09
     ld b,h              ;050d 44
     ld c,l              ;050e 4d
-    call 0292h          ;050f cd 92 02
+    call print_int      ;050f cd 92 02
     ld bc,l0d94h
     call print_str
     call print_eol
@@ -1025,7 +1022,7 @@ l05dfh:
     ld hl,(l4007h)      ;0692 2a 07 40
     ld b,h              ;0695 44
     ld c,l              ;0696 4d
-    call 0292h          ;0697 cd 92 02
+    call print_int      ;0697 cd 92 02
     ld bc,l0fb9h
     call print_str
     call print_eol
@@ -1036,7 +1033,7 @@ l05dfh:
     ld hl,(l400ch)      ;06a9 2a 0c 40
     ld b,h              ;06ac 44
     ld c,l              ;06ad 4d
-    call 0292h          ;06ae cd 92 02
+    call print_int      ;06ae cd 92 02
     ld bc,l0fddh
     call print_str
     call print_eol
@@ -1047,7 +1044,7 @@ l05dfh:
     ld hl,(l4010h)       ;06c0 2a 10 40
     ld b,h              ;06c3 44
     ld c,l              ;06c4 4d
-    call 0292h          ;06c5 cd 92 02
+    call print_int      ;06c5 cd 92 02
     call print_eol      ;06c8 cd 27 02
 
     ;PRINT "Direct tracks per drive :  ";l400eh
@@ -1056,7 +1053,7 @@ l05dfh:
     ld hl,(l400eh)      ;06d1 2a 0e 40
     ld b,h              ;06d4 44
     ld c,l              ;06d5 4d
-    call 0292h          ;06d6 cd 92 02
+    call print_int      ;06d6 cd 92 02
     call print_eol
 
     ;PRINT "Max number of files :      ";l400ah
@@ -1065,7 +1062,7 @@ l05dfh:
     ld hl,(l400ah)      ;06e2 2a 0a 40
     ld b,h              ;06e5 44
     ld c,l              ;06e6 4d
-    call 0292h          ;06e7 cd 92 02
+    call print_int      ;06e7 cd 92 02
     call print_eol
 
     ;PRINT
@@ -1093,7 +1090,7 @@ l05dfh:
     sbc a,a             ;0710 9f
     ld b,a              ;0711 47
     ld c,l              ;0712 4d
-    call 0292h          ;0713 cd 92 02
+    call print_int      ;0713 cd 92 02
     call print_eol
 
     ;PRINT "Total cylinders on drive : ";cylinders
@@ -1102,7 +1099,7 @@ l05dfh:
     ld hl,(cylinders)   ;071f 2a 06 30
     ld b,h              ;0722 44
     ld c,l              ;0723 4d
-    call 0292h          ;0724 cd 92 02
+    call print_int      ;0724 cd 92 02
     call print_eol
 
     ;PRINT "Total kbyte capacity :     ";heads*cylinders*8
@@ -1126,7 +1123,7 @@ l05dfh:
     add hl,hl           ;0745 29
     ld b,h              ;0746 44
     ld c,l              ;0747 4d
-    call 0292h          ;0748 cd 92 02
+    call print_int      ;0748 cd 92 02
     call print_eol
 
     ;PRINT "First user cylinder :      ";l4034h
@@ -1135,7 +1132,7 @@ l05dfh:
     ld hl,(l4034h)      ;0754 2a 34 40
     ld b,h              ;0757 44
     ld c,l              ;0758 4d
-    call 0292h          ;0759 cd 92 02
+    call print_int      ;0759 cd 92 02
     call print_eol
 
     ;PRINT "Number of user cylinders : ";cylinders-l4034h
@@ -1151,7 +1148,7 @@ l05dfh:
     sbc a,h             ;0770 9c
     ld b,a              ;0771 47
     ld c,e              ;0772 4b
-    call 0292h          ;0773 cd 92 02
+    call print_int      ;0773 cd 92 02
     call print_eol      ;0776 cd 27 02
 
     ;PRINT "User area starts at :      ";l301ah
@@ -1160,7 +1157,7 @@ l05dfh:
     ld hl,(l301ah)      ;077f 2a 1a 30
     ld b,h              ;0782 44
     ld c,l              ;0783 4d
-    call 0292h          ;0784 cd 92 02
+    call print_int      ;0784 cd 92 02
     call print_eol
 
     ;PRINT
@@ -2338,6 +2335,7 @@ l1375h:
     ld c,a              ;137f 4f
     inc bc              ;1380 03
     ret                 ;1381 c9
+
 sub_1382h:
     pop hl              ;1382 e1
     push bc             ;1383 c5
@@ -2398,6 +2396,7 @@ l13c1h:
     pop de              ;13c2 d1
     pop bc              ;13c3 c1
     jp (hl)             ;13c4 e9
+
 sub_13c5h:
     ex (sp),hl          ;13c5 e3
     push af             ;13c6 f5
