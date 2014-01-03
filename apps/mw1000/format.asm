@@ -165,12 +165,10 @@ print_str_eol:
 
 sub_01bbh:
     call sub_0a46h      ;01bb cd 46 0a
-    nop                 ;01be 00
-    ld (bc),a           ;01bf 02
-    or e                ;01c0 b3
-    jr nc,$+35          ;01c1 30 21
-    or h                ;01c3 b4
-    jr nc,l0236h        ;01c4 30 70
+    db 00h, 02h
+    dw l30b3h
+    ld hl,30b3h+1       ;01c2 21 b4 30
+    ld (hl),b           ;01c5 70
     dec hl              ;01c6 2b
     ld (hl),c           ;01c7 71
     ld hl,(l30b3h)      ;01c8 2a b3 30
@@ -194,11 +192,11 @@ sub_01bbh:
     call print_char     ;01ed cd 6b 01
 l01f0h:
     call sub_0a89h      ;01f0 cd 89 0a
-    ld (bc),a           ;01f3 02
-    or e                ;01f4 b3
-    jr nc,$+35          ;01f5 30 21
-    or (hl)             ;01f7 b6
-    jr nc,$+114         ;01f8 30 70
+    db 02h
+    dw l30b3h
+l01f6:
+    ld hl,l30b5h+1      ;01f6 21 b6 30
+    ld (hl),b           ;01f9 70
     dec hl              ;01fa 2b
     ld (hl),c           ;01fb 71
     ld hl,(l30b5h)      ;01fc 2a b5 30
