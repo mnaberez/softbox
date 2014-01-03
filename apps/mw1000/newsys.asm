@@ -112,11 +112,9 @@ sub_01a9h:
     ret                 ;01ba c9
 sub_01bbh:
     call sub_25b5h      ;01bb cd b5 25
-    nop                 ;01be 00
-    ld (bc),a           ;01bf 02
-    rrca                ;01c0 0f
-    jr nc,$+35          ;01c1 30 21
-    djnz l01f5h         ;01c3 10 30
+    db 00h, 02h
+    dw l300fh
+    ld hl,l300fh+1      ;01c2 21 10 30
     ld (hl),b           ;01c5 70
     dec hl              ;01c6 2b
     ld (hl),c           ;01c7 71
@@ -141,12 +139,12 @@ sub_01bbh:
     call sub_016bh      ;01ed cd 6b 01
 l01f0h:
     call sub_25f8h      ;01f0 cd f8 25
-    ld (bc),a           ;01f3 02
-    rrca                ;01f4 0f
-l01f5h:
-    jr nc,$+35          ;01f5 30 21
-    ld (de),a           ;01f7 12
-    jr nc,$+114         ;01f8 30 70
+    db 02h
+    dw l300fh
+
+print_int:
+    ld hl,l3011h+1      ;01f6 21 12 30
+    ld (hl),b           ;01f9 70
     dec hl              ;01fa 2b
     ld (hl),c           ;01fb 71
     ld hl,(l3011h)      ;01fc 2a 11 30
@@ -703,7 +701,7 @@ l060ah:
     sbc a,a             ;064e 9f
     ld b,a              ;064f 47
     ld c,l              ;0650 4d
-    call l01f5h+1       ;0651 cd f6 01
+    call print_int      ;0651 cd f6 01
     jp l0857h           ;0654 c3 57 08
 l0657h:
     ld a,(l3016h)       ;0657 3a 16 30
@@ -731,7 +729,7 @@ l0657h:
     sbc a,a             ;067c 9f
     ld b,a              ;067d 47
     ld c,l              ;067e 4d
-    call l01f5h+1       ;067f cd f6 01
+    call print_int      ;067f cd f6 01
     jp l0857h           ;0682 c3 57 08
 l0685h:
     ld a,(l3016h)       ;0685 3a 16 30
@@ -759,7 +757,7 @@ l0685h:
     sbc a,a             ;06aa 9f
     ld b,a              ;06ab 47
     ld c,l              ;06ac 4d
-    call l01f5h+1       ;06ad cd f6 01
+    call print_int      ;06ad cd f6 01
     jp l0857h           ;06b0 c3 57 08
 l06b3h:
     ld a,(l3016h)       ;06b3 3a 16 30
@@ -853,7 +851,7 @@ l0738h:
     sbc a,a             ;0751 9f
     ld b,a              ;0752 47
     ld c,l              ;0753 4d
-    call l01f5h+1       ;0754 cd f6 01
+    call print_int      ;0754 cd f6 01
     jp l0857h           ;0757 c3 57 08
 l075ah:
     ld a,(l3016h)       ;075a 3a 16 30
@@ -908,7 +906,7 @@ l0780h:
     sbc a,a             ;07a6 9f
     ld b,a              ;07a7 47
     ld c,l              ;07a8 4d
-    call l01f5h+1       ;07a9 cd f6 01
+    call print_int      ;07a9 cd f6 01
     call sub_0179h      ;07ac cd 79 01
     ld bc,l0f97h        ;07af 01 97 0f
     call sub_0184h      ;07b2 cd 84 01
@@ -923,7 +921,7 @@ l0780h:
     ld c,(hl)           ;07c1 4e
     inc hl              ;07c2 23
     ld b,(hl)           ;07c3 46
-    call l01f5h+1       ;07c4 cd f6 01
+    call print_int      ;07c4 cd f6 01
     ld bc,l0fa4h        ;07c7 01 a4 0f
     call sub_0184h      ;07ca cd 84 01
     ld a,(l3017h)       ;07cd 3a 17 30
@@ -964,7 +962,7 @@ l07f8h:
     jp p,l07f1h         ;07f9 f2 f1 07
     ld b,d              ;07fc 42
     ld c,e              ;07fd 4b
-    call l01f5h+1       ;07fe cd f6 01
+    call print_int      ;07fe cd f6 01
     ld bc,l0fach        ;0801 01 ac 0f
     call sub_0184h      ;0804 cd 84 01
     call sub_0179h      ;0807 cd 79 01
@@ -976,7 +974,7 @@ l07f8h:
     sbc a,a             ;0815 9f
     ld b,a              ;0816 47
     ld c,l              ;0817 4d
-    call l01f5h+1       ;0818 cd f6 01
+    call print_int      ;0818 cd f6 01
     ld bc,l0fcbh        ;081b 01 cb 0f
     call sub_0184h      ;081e cd 84 01
     ld a,(l3019h)       ;0821 3a 19 30
@@ -993,7 +991,7 @@ l07f8h:
     add hl,bc           ;0830 09
     ld b,h              ;0831 44
     ld c,l              ;0832 4d
-    call l01f5h+1       ;0833 cd f6 01
+    call print_int      ;0833 cd f6 01
     ld bc,l0fcdh        ;0836 01 cd 0f
     call sub_0184h      ;0839 cd 84 01
     ld a,(l3018h)       ;083c 3a 18 30
@@ -1007,7 +1005,7 @@ l07f8h:
     ld c,(hl)           ;0848 4e
     inc hl              ;0849 23
     ld b,(hl)           ;084a 46
-    call l01f5h+1       ;084b cd f6 01
+    call print_int      ;084b cd f6 01
     ld bc,l0fd7h        ;084e 01 d7 0f
     call sub_0184h      ;0851 cd 84 01
     call sub_0179h      ;0854 cd 79 01
@@ -2284,7 +2282,7 @@ l1697h:
     sbc a,a             ;16b7 9f
     ld b,a              ;16b8 47
     ld c,l              ;16b9 4d
-    call l01f5h+1       ;16ba cd f6 01
+    call print_int      ;16ba cd f6 01
     call sub_0179h      ;16bd cd 79 01
     call sub_0179h      ;16c0 cd 79 01
     ld bc,l1e58h        ;16c3 01 58 1e
@@ -2295,7 +2293,7 @@ l1697h:
     sbc a,a             ;16ce 9f
     ld b,a              ;16cf 47
     ld c,l              ;16d0 4d
-    call l01f5h+1       ;16d1 cd f6 01
+    call print_int      ;16d1 cd f6 01
     call sub_0179h      ;16d4 cd 79 01
     call sub_0179h      ;16d7 cd 79 01
     ld bc,l1e74h        ;16da 01 74 1e
@@ -2306,7 +2304,7 @@ l1697h:
     sbc a,a             ;16e5 9f
     ld b,a              ;16e6 47
     ld c,l              ;16e7 4d
-    call l01f5h+1       ;16e8 cd f6 01
+    call print_int      ;16e8 cd f6 01
     call sub_0179h      ;16eb cd 79 01
     call sub_0179h      ;16ee cd 79 01
     ld bc,l1e8dh        ;16f1 01 8d 1e
@@ -2317,7 +2315,7 @@ l1697h:
     sbc a,a             ;16fc 9f
     ld b,a              ;16fd 47
     ld c,l              ;16fe 4d
-    call l01f5h+1       ;16ff cd f6 01
+    call print_int      ;16ff cd f6 01
     call sub_0179h      ;1702 cd 79 01
     call sub_0179h      ;1705 cd 79 01
     ld bc,l1ea5h        ;1708 01 a5 1e
@@ -2838,7 +2836,7 @@ l1af9h:
     sbc a,a             ;1b0c 9f
     ld b,a              ;1b0d 47
     ld c,l              ;1b0e 4d
-    call l01f5h+1       ;1b0f cd f6 01
+    call print_int      ;1b0f cd f6 01
     call sub_0179h      ;1b12 cd 79 01
     call sub_0179h      ;1b15 cd 79 01
     ld bc,l2122h        ;1b18 01 22 21
