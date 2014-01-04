@@ -1,6 +1,7 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=newsys.asm newsys.com
 
+;TODO: 0d400h ????
 ;TODO: 0eac0h ????
 
 warm:          equ  0000h ;Warm start entry point
@@ -4678,22 +4679,22 @@ l2216h:
 
 sub_221ch:
 ;Open "CP/M" file on an IEEE-488 drive
-    ld c,06h
-    ld hl,2410h
+    ld c,l2410h_len
+    ld hl,l2410h        ;"0:CP/M"
     ld a,(l2422h)
     rra
     jp nc,open          ;Open a file on an IEEE-488 device
-    ld hl,l2416h
+    ld hl,l2416h        ;"1:CP/M"
     jp open             ;Open a file on an IEEE-488 device
 
 sub_222eh:
 ;Open "K" file on an IEEE-488 drive
-    ld c,03h
-    ld hl,l241ch
+    ld c,l241ch_len
+    ld hl,l241ch        ;"0:K"
     ld a,(l2422h)
     rra
     jp nc,open          ;Open a file on an IEEE-488 device
-    ld hl,l241fh
+    ld hl,l241fh        ;"1:K"
     jp open             ;Open a file on an IEEE-488 device
 
 savesy:
@@ -4703,13 +4704,13 @@ savesy:
     call dskdev         ;Get device address for a CP/M drive number
     push de
     ld e,0fh
-    ld hl,l2408h
+    ld hl,l2408h        ;"S0:*"
     ld a,(l2422h)
     rra
     jr nc,l2256h
-    ld hl,240ch
+    ld hl,l240ch        ;"S1:*"
 l2256h:
-    ld c,04h
+    ld c,l2408h_len
     call open           ;Open a file on an IEEE-488 device
     ld a,(l2422h)
     call dsksta         ;Read the error channel of an IEEE-488 device
@@ -4778,11 +4779,11 @@ format:
     call dskdev         ;Get device address for a CP/M drive number
     ld a,(l2422h)
     and 01h
-    add a,30h
-    ld (l23e4h),a
+    add a,'0'
+    ld (l23e3h+1),a
     ld e,0fh
-    ld c,14h
-    ld hl,23e3h
+    ld c,l23e3h_len
+    ld hl,l23e3h        ;"N0:CP/M V2.2 DISK,XX"
     call open           ;Open a file on an IEEE-488 device
     ld a,(l2422h)
     call dsksta         ;Read the error channel of an IEEE-488 device
@@ -4812,18 +4813,19 @@ l230fh:
     dec (hl)
     jp p,l230fh
     ret
+
 sub_2325h:
 ;Write a sector to an IEEE-488 drive.
-    ld hl,l23feh
-    ld c,06h
+    ld hl,l23feh        ;"M-W",00h,13h,01h
+    ld c,l23feh_len
     ld a,(l2422h)
     call diskcmd        ;Open the command channel on IEEE-488 device
     call ieeemsg        ;Send string to the current IEEE-488 device
     ld a,(4000h)
     call wreoi          ;Send byte to IEEE-488 device with EOI asserted
     call unlisten       ;Send UNLISTEN to all IEEE-488 devices
-    ld hl,l23f7h
-    ld c,07h
+    ld hl,l23f7h        ;"B-P 2 1"
+    ld c,l23f7h_len
     ld a,(l2422h)
     call diskcmd        ;Open the command channel on IEEE-488 device
     call ieeemsg        ;Send string to the current IEEE-488 device
@@ -4839,12 +4841,12 @@ sub_2325h:
     call unlisten       ;Send UNLISTEN to all IEEE-488 devices
     ld a,(l2422h)
     call diskcmd        ;Open the command channel on IEEE-488 device
-    ld hl,l23deh
-    ld c,05h
+    ld hl,l23deh        ;"U2 2 "
+    ld c,l23deh_len
     call ieeemsg        ;Send string to the current IEEE-488 device
     ld a,(l2422h)
     and 01h
-    add a,30h
+    add a,'0'
     call wrieee         ;Send byte to an IEEE-488 device
     ld a,(l2406h)
     call ieeenum        ;Send number as decimal string to IEEE-488 dev
@@ -4879,7 +4881,7 @@ l23a4h:
 
 l23b7h:
 ;Display "Hit any key to abort" message, wait for a key, and then return.
-    ld de,l23c4h
+    ld de,l23c4h        ;cr,lf,"Hit any key to abort : $"
     ld c,cwritestr
     call bdos           ;BDOS entry point
     ld c,cread
@@ -4890,29 +4892,49 @@ l23c4h:
 
 l23deh:
     db "U2 2 "
-l0874h:
-    db "N"
-l23e4h:
-    db "0:CP/M V2.2 DISK,XX"
+l23deh_len: equ $-l23deh
+
+l23e3h:
+    db "N0:CP/M V2.2 DISK,XX"
+l23e3h_len: equ $-l23e3h
+
 l23f7h:
     db "B-P 2 1"
+l23f7h_len: equ $-l23f7h
+
 l23feh:
     db "M-W",00h,13h,01h
+l23feh_len: equ $-l23feh
+
+l2404h:                 ;unused !!!
     db "#2"
+
 l2406h:
     db 0
 l2407h:
     db 0
+
 l2408h:
     db "S0:*"
+l2408h_len equ $-l2408h
+
+l240ch:
     db "S1:*"
+
+l2410h:
     db "0:CP/M"
+l2410h_len: $-l2410h
+
 l2416h:
     db "1:CP/M"
+
 l241ch:
     db "0:K"
+l241ch_len: equ $-l241ch
+
 l241fh:
     db "1:K"
+
 l2422h:
     db 0
 l2423h:
