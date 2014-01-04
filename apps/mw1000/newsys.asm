@@ -653,6 +653,9 @@ ask_drv_heads:
     ;GOSUB readline
     call readline
 
+    ;TODO: This is a bug.  There should be a "call print_eol" here.
+    ;The next prompt will be written over the current line.
+
     ;heads = N
     ld a,(nn)
     ld (heads),a
@@ -687,6 +690,9 @@ ask_drv_cyl:
 
     ;GOSUB readline
     call readline
+
+    ;TODO: This is a bug.  There should be a "call print_eol" here.
+    ;The next prompt will be written over the current line.
 
     ;cylinders = N
     ld hl,(nn)
@@ -3360,9 +3366,9 @@ sub_1613h:
     call print_eol
 
     ;IF R <> &H54 THEN GOTO l1632h
-    ld a,(rr)           ;161f 3a cc 24
-    cp 'T'              ;1622 fe 54
-    jp nz,l1632h        ;1624 c2 32 16
+    ld a,(rr)
+    cp 'T'
+    jp nz,l1632h
 
     ;POKE &H5660, PEEK(&H5660) AND &HCF
     ld a,(5660h)
@@ -3904,10 +3910,10 @@ l18fch:
     ld bc,l1fddh
     call print_str
 
-    ;PRINT
+    ;GOSUB readline
     call readline
 
-    ;GOSUB readline
+    ;PRINT
     call print_eol
 
     ;IF R <> &H45 THEN GOTO l1918h
