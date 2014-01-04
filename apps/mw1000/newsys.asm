@@ -4539,10 +4539,10 @@ l2122h:
 
 ; Start of LOADSAV2.REL =====================================================
 
+exsys:
 ;Execute a new CP/M system.  The buffer at 4000h contains a new
 ;CP/M system image (7168 bytes = CCP + BDOS + BIOS config + BIOS storage).
 ;Copy the new system into place and then jump to the BIOS to start it.
-exsys:
     ld bc,1c00h
     ld hl,4000h
     ld de,0d400h
@@ -4791,7 +4791,7 @@ format:
     or a
     ret nz
     ld a,(l2422h)
-    call 0f078h
+    call idrive         ;Initialize an IEEE-488 disk drive
     ld hl,4000h
     ld de,4001h
     ld bc,00ffh
