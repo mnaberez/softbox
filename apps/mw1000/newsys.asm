@@ -95,7 +95,7 @@ print_eol:
 
 print_str:
 ;Print string at BC
-    ld hl,l300bh
+    ld hl,l300ah+1
     ld (hl),b
     dec hl
     ld (hl),c
@@ -118,7 +118,7 @@ l0191h:
 
 print_str_eol:
 ;Print string at BC followed by CR+LF
-    ld hl,l300eh
+    ld hl,l300dh+1
     ld (hl),b
     dec hl
     ld (hl),c
@@ -7900,13 +7900,11 @@ l3009h:
     nop                 ;3009 00
 l300ah:
     nop                 ;300a 00
-l300bh:
     nop                 ;300b 00
 l300ch:
     nop                 ;300c 00
 l300dh:
     nop                 ;300d 00
-l300eh:
     nop                 ;300e 00
 l300fh:
     nop                 ;300f 00
