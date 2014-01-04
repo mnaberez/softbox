@@ -1,5 +1,15 @@
-; z80dasm 1.1.3
-; command line: z80dasm --origin=256 --address --labels --output=mwdos291.asm mwdos291.com
+;MWDOS291.COM
+;  Write the HardBox firmware to the hard disk on the MW-1000.
+;
+;The MW-1000 uses the SoftBox memory map and ROMs that are based on
+;the SoftBox ROMs.  To provide HardBox functionality on the MW-1000,
+;the HardBox ROM code was relocated to run from RAM.  This code is
+;stored on the MW-1000's hard disk and loaded into RAM when needed.
+;
+;This program was not written in assembly language.  It was written
+;in MBASIC and compiled with BASCOM.  This is a disassembly of
+;the compiled program.
+;
 
     org 0100h
 

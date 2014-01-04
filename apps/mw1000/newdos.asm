@@ -1,5 +1,10 @@
-; z80dasm 1.1.3
-; command line: z80dasm --origin=256 --address --labels --output=newdos.asm newdos.com
+;NEWDOS.COM
+;  Configure HardBox settings on the MW-1000.
+;
+;This program was not written in assembly language.  It was written
+;in a high level language but the compiler is unknown.  This is a
+;disassembly of the compiled program.
+;
 
 corvus:        equ  18h   ;Corvus data bus
 

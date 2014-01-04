@@ -2,11 +2,15 @@
 devnum.com
 ----------
 
+MBASIC program compiled with BASCOM.
+
     Alter PET DOS device number of Mini-Winchester
     ----- --- --- ------ ------ -- ---------------
 
 format.com
 ----------
+
+Unknown compiler.
 
     Disk formatting program
     For Softbox CP/M
@@ -17,12 +21,16 @@ format.com
 mwdos291.com
 ------------
 
+MBASIC program compiled with BASCOM.
+
     DOS firmware updating program
     for Mini-Winchester
     --- ---------------
 
 mwformat.com
 ------------
+
+MBASIC program compiled with BASCOM.
 
     SoftBox Mini-Winchester Format Program
     ------- ---- ---------- ------ -------
@@ -32,12 +40,16 @@ mwformat.com
 newdos.com
 ----------
 
+Unknown compiler.
+
     HardBox configuration program
     For Mini-Winchester
     --- ---------------
 
 newsys.com
 ----------
+
+Unknown compiler.
 
     CP/M Reconfiguration
     ---- ---------------

@@ -1,5 +1,14 @@
-; z80dasm 1.1.3
-; command line: z80dasm --origin=256 --address --labels --output=devnum.asm devnum.com
+;DEVNUM.COM
+;  Change the HardBox device number on the MW-1000.
+;
+;The MW-1000 stores the IEEE-488 primary address for its HardBox mode
+;on the hard disk.  This is different than the original HardBox product
+;where the address is configured with DIP switches.
+;
+;This program was not written in assembly language.  It was written
+;in MBASIC and compiled with BASCOM.  This is a disassembly of
+;the compiled program.
+;
 
 corvus:        equ  18h   ;Corvus data bus
 

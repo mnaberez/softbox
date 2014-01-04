@@ -1,5 +1,15 @@
-; z80dasm 1.1.3
-; command line: z80dasm --origin=256 --address --labels --output=format.asm format.com
+;FORMAT.COM
+;  Format a disk for use with SoftBox CP/M (MW-1000 version).
+;
+;Both CBM floppy drives and MW-1000 hard drives are supported.  For a CBM
+;floppy, the disk may be unformatted because the program will first format it
+;with CBM DOS before writing the CP/M filesystem.  For an MW-1000 hard drive,
+;the drive must already have been low-level formatted using MWFORMAT.COM.
+;
+;This program was not written in assembly language.  It was written
+;in a high level language but the compiler is unknown.  This is a
+;disassembly of the compiled program.
+;
 
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point

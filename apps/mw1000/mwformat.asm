@@ -1,5 +1,10 @@
-; z80dasm 1.1.3
-; command line: z80dasm --origin=256 --address --labels --output=mwformat.asm mwformat.com
+;MWFORMAT.COM
+;  Low-level format a hard disk on the MW-1000.
+;
+;This program was not written in assembly language.  It was written
+;in a high level language but the compiler is unknown.  This is a
+;disassembly of the compiled program.
+;
 
     org 0100h
 
