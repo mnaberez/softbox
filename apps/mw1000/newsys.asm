@@ -270,7 +270,7 @@ l0249h:
     ld (hl),a           ;0266 77
     cp 'a'              ;0267 fe 61
     jp m,l0278h         ;0269 fa 78 02
-    cp 'z'-1            ;026c fe 7b
+    cp 'z'+1            ;026c fe 7b
     jp p,l0278h         ;026e f2 78 02
     ld hl,l3014h        ;0271 21 14 30
     ld a,(hl)           ;0274 7e
@@ -4613,17 +4613,17 @@ cread_:
     call seldsk         ;Select disk drive
     ld de,4000h
     ld bc,0000h
-l21b9h:
+cread2:
     call settrk         ;Set track number
     push bc
     ld bc,0000h
-l21c0h:
+cread1:
     call setsec         ;Set sector number
     push bc
     push de
     call read           ;Read selected sector
     or a
-    jr nz,l2216h
+    jr nz,cwrit3
     pop de
     ld bc,0080h
     ld hl,0080h
@@ -4632,12 +4632,12 @@ l21c0h:
     inc c
     ld a,c
     cp 40h
-    jr nz,l21c0h
+    jr nz,cread1
     pop bc
     inc c
     ld a,c
     cp 02h
-    jr nz,l21b9h
+    jr nz,cread2
     ret
 
 cwrite_:
@@ -4645,11 +4645,11 @@ cwrite_:
     call seldsk         ;Select disk drive
     ld hl,4000h
     ld bc,0000h
-l21ech:
+cwrit2:
     call settrk         ;Set track number
     push bc
     ld bc,0000h
-l21f3h:
+cwrit1:
     call setsec         ;Set sector number
     push bc
     ld bc,0080h
@@ -4658,20 +4658,20 @@ l21f3h:
     push hl
     call write          ;Write selected sector
     or a
-    jr nz,l2216h
+    jr nz,cwrit3
     pop hl
     pop bc
     inc c
     ld a,c
     cp 40h
-    jr nz,l21f3h
+    jr nz,cwrit1
     pop bc
     inc c
     ld a,c
     cp 02h
-    jr nz,l21ech
+    jr nz,cwrit2
     ret
-l2216h:
+cwrit3:
     pop hl
     pop hl
     pop hl
@@ -4916,14 +4916,14 @@ l2407h:
 
 l2408h:
     db "S0:*"
-l2408h_len equ $-l2408h
+l2408h_len: equ $-l2408h
 
 l240ch:
     db "S1:*"
 
 l2410h:
     db "0:CP/M"
-l2410h_len: $-l2410h
+l2410h_len: equ $-l2410h
 
 l2416h:
     db "1:CP/M"
