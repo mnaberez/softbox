@@ -402,7 +402,7 @@ drv_dev_done:
     ;RETURN
     ret
 
-l0359h:
+ask_drv_type:
     ;GOSUB clear_screen
     call clear_screen
 
@@ -476,10 +476,10 @@ l0359h:
     ;PRINT
     call print_eol
 
-    ;IF R <> &H41 THEN GOTO l03cch
+    ;IF R <> &H41 THEN GOTO is_drv_type_b
     ld a,(rr)
-    cp 'A'
-    jp nz,l03cch
+    cp 'A'              ;Is it 'A': 3 Mbyte (191 cyl)?
+    jp nz,is_drv_type_b ;  No: jump to check for 'B'
 
     ;REM User selected 'A' for 3 Mbyte (191 cyl)
 
@@ -487,18 +487,18 @@ l0359h:
     ld hl,heads
     ld (hl),2
 
-    ;cylinders = 2
+    ;cylinders = 191
     ld hl,191
     ld (cylinders),hl
 
     ;GOTO l0483h
     jp l0483h
 
-l03cch:
-    ;IF R <> &H42 THEN GOTO l03e2h
+is_drv_type_b:
+    ;IF R <> &H42 THEN GOTO is_drv_type_c
     ld a,(rr)
-    cp 'B'
-    jp nz,l03e2h
+    cp 'B'              ;Is it 'B': 6 Mbyte (191 cyl)?
+    jp nz,is_drv_type_c ;  No: jump to check for 'C'
 
     ;REM User selected 'B' for 6 Mbyte (191 cyl)
 
@@ -513,11 +513,11 @@ l03cch:
     ;GOTO l0483h
     jp l0483h
 
-l03e2h:
-    ;IF R <> &H43 THEN GOTO l03f8h
+is_drv_type_c:
+    ;IF R <> &H43 THEN GOTO is_drv_type_d
     ld a,(rr)
-    cp 'C'
-    jp nz,l03f8h
+    cp 'C'              ;Is it 'C': 12 Mbyte (191 cyl)?
+    jp nz,is_drv_type_d ;  No: jump to check for 'D'
 
     ;REM User selected 'C' for 12 Mbyte (191 cyl)
 
@@ -532,11 +532,11 @@ l03e2h:
     ;GOTO l0483h
     jp l0483h
 
-l03f8h:
-    ;IF R <> &H44 THEN GOTO l040eh
+is_drv_type_d:
+    ;IF R <> &H44 THEN GOTO is_drv_type_e
     ld a,(rr)
-    cp 'D'
-    jp nz,l040eh
+    cp 'D'              ;Is it 'D': 5 Mbyte (320 cyl)?
+    jp nz,is_drv_type_e ;  No: jump to check for 'E'
 
     ;REM User selected 'D' for 5 Mbyte (320 cyl)
 
@@ -551,11 +551,11 @@ l03f8h:
     ;GOTO l0483h
     jp l0483h
 
-l040eh:
-    ;IF R <> &H45 THEN GOTO l0424h
+is_drv_type_e:
+    ;IF R <> &H45 THEN GOTO is_drv_type_f
     ld a,(rr)
-    cp 'E'
-    jp nz,l0424h
+    cp 'E'              ;Is it 'E': 10 Mbyte (320 cyl)?
+    jp nz,is_drv_type_f ;  No: jump to check for 'F'
 
     ;REM User selected 'E' for 10 Mbyte (320 cyl)
 
@@ -570,11 +570,11 @@ l040eh:
     ;GOTO l0483h
     jp l0483h
 
-l0424h:
-    ;IF R <> 46H THEN GOTO l043ah
+is_drv_type_f:
+    ;IF R <> &H46H THEN GOTO is_drv_type_z
     ld a,(rr)
-    cp 'F'
-    jp nz,l043ah
+    cp 'F'              ;Is it 'F': 15 Mbyte (320 cyl)?
+    jp nz,is_drv_type_z ;  No: jump to check for 'Z'
 
     ;REM User selected 'F' for 15 Mbyte (320 cyl)
 
@@ -582,20 +582,20 @@ l0424h:
     ld hl,heads
     ld (hl),6
 
-    ;heads = 320
+    ;cylinders = 320
     ld hl,320
     ld (cylinders),hl
 
     ;GOTO l0483h
     jp l0483h
 
-l043ah:
-    ;IF R <> &H5A THEN GOTO l0480h
+is_drv_type_z:
+    ;IF R <> &H5A THEN GOTO bad_drv_type
     ld a,(rr)
-    cp 'Z'
-    jp nz,l0480h
+    cp 'Z'              ;Is it 'Z': User supplied Head & Cyl count?
+    jp nz,bad_drv_type  ;  No: bad drive type entered
 
-l0442h:
+ask_drv_heads:
     ;PRINT "Enter the number of Heads : ";
     ld bc,l0de2h
     call print_str
@@ -609,30 +609,30 @@ l0442h:
     ld a,(nn)
     ld (heads),a
 
-    ;IF heads = 2 THEN GOTO l046eh
+    ;IF heads = 2 THEN GOTO ask_drv_cyl
     cp 2
-    jp z,l046eh
+    jp z,ask_drv_cyl
 
-    ;IF heads = 4 THEN GOTO l046eh
+    ;IF heads = 4 THEN GOTO ask_drv_cyl
     cp 4
-    jp z,l046eh
+    jp z,ask_drv_cyl
 
-    ;IF heads = 6 THEN GOTO l046eh
+    ;IF heads = 6 THEN GOTO ask_drv_cyl
     cp 6
-    jp z,l046eh
+    jp z,ask_drv_cyl
 
-    ;IF heads = 8 THEN GOTO l046eh
+    ;IF heads = 8 THEN GOTO ask_drv_cyl
     cp 8
-    jp z,l046eh
+    jp z,ask_drv_cyl
 
     ;PRINT "Must be 2, 4, 6 or 8"
     ld bc,l0dffh
     call print_str_eol
 
-    ;GOTO l0442h
-    jp l0442h
+    ;GOTO ask_drv_heads
+    jp ask_drv_heads
 
-l046eh:
+ask_drv_cyl:
     ;PRINT "Enter the number of Cylinders : ";
     ld bc,l0e14h
     call print_str
@@ -647,11 +647,12 @@ l046eh:
     ;GOTO l0483h
     jp l0483h
 
-l0480h:
-    ;GOTO l0359h
-    jp l0359h
+bad_drv_type:
+    ;GOTO ask_drv_type
+    jp ask_drv_type
 
 l0483h:
+    ;POKE &H5670+l3016h, (heads/2)-1
     ld a,(heads)        ;0483 3a 17 30
     or a                ;0486 b7
     rra                 ;0487 1f
@@ -665,7 +666,8 @@ l0483h:
     ld h,a              ;0493 67
     add hl,de           ;0494 19
     ld (hl),c           ;0495 71
-l0496h:
+
+ask_sbox_conf:
     ;PRINT "Use the ENTIRE drive for CP/M"
     ld bc,l0e35h
     call print_str_eol
@@ -680,13 +682,14 @@ l0496h:
     ;PRINT
     call print_eol
 
-    ;IF R <> &H48 THEN GOTO l04c0h
+    ;IF R <> &H48 THEN GOTO not_half_sbox
     ld a,(rr)
-    cp 'H'
-    jp nz,l04c0h
+    cp 'H'              ;Is it 'H': use first half only for SoftBox?
+    jp nz,not_half_sbox ;  No: jump to not_half_sbox
 
-    ;REM Use just first half for CP/M
+    ;REM User selected 'H' for use first half for CP/M
 
+    ;l301ch = cylinders/2
     ld hl,(cylinders)   ;04b0 2a 1a 30
     or a                ;04b3 b7
     ld a,h              ;04b4 7c
@@ -696,25 +699,31 @@ l0496h:
     rra                 ;04b8 1f
     ld l,a              ;04b9 6f
     ld (l301ch),hl      ;04ba 22 1c 30
-    jp l04d4h           ;04bd c3 d4 04
 
-l04c0h:
-    ;IF R <> &H45 THEN GOTO l04d1h
+    ;GOTO got_sbox_conf
+    jp got_sbox_conf
+
+not_half_sbox:
+    ;IF R <> &H45 THEN GOTO bad_sbox_conf
     ld a,(rr)
-    cp 'E'
-    jp nz,l04d1h
+    cp 'E'              ;Is it 'E': use entire drive for HardBox?
+    jp nz,bad_sbox_conf ;  No: jump to bad_hbox_conf
 
-    ;REM Use entire drive for CP/M
+    ;REM User selected 'E' for use entire drive for CP/M
 
+    ;l301ch = cylinders
     ld hl,(cylinders)   ;04c8 2a 1a 30
     ld (l301ch),hl      ;04cb 22 1c 30
-    jp l04d4h           ;04ce c3 d4 04
 
-l04d1h:
-    ;GOTO l0496h ' Bad input
-    jp l0496h
+    ;GOTO got_sbox_conf
+    jp got_sbox_conf
 
-l04d4h:
+bad_sbox_conf:
+    ;GOTO ask_sbox_conf ' Bad input
+    jp ask_sbox_conf
+
+got_sbox_conf:
+    ;POKE &H5805, sub_24cdh(l301ch, heads/2)
     ld a,(heads)        ;04d4 3a 17 30
     ld l,a              ;04d7 6f
     rla                 ;04d8 17
@@ -737,14 +746,20 @@ l04d4h:
     dec de              ;04ed 1b
     ex de,hl            ;04ee eb
     ld (5805h),hl       ;04ef 22 05 58
-    ld bc,0ff00h        ;04f2 01 00 ff
+
+    ld bc,-256          ;04f2 01 00 ff
     ld hl,(5805h)       ;04f5 2a 05 58
     add hl,bc           ;04f8 09
     add hl,hl           ;04f9 29
     jp c,l0505h         ;04fa da 05 05
+
+    ;POKE &H5804, 3
     ld hl,5804h         ;04fd 21 04 58
     ld (hl),03h         ;0500 36 03
+
+    ;GOTO l050ah
     jp l050ah           ;0502 c3 0a 05
+
 l0505h:
     ld hl,5804h         ;0505 21 04 58
     ld (hl),07h         ;0508 36 07
@@ -810,7 +825,7 @@ l0558h:
     ;PRINT
     call print_eol
 
-    ;IF R <> &H59 THEN GOTO l04d1h
+    ;IF R <> &H59 THEN GOTO bad_sbox_conf
     ld a,(rr)
     cp 'Y'
     jp nz,l0574h
@@ -854,10 +869,10 @@ l0574h:
     ld (firstsec),a     ;059d 32 19 30
     jp l05a6h           ;05a0 c3 a6 05
 l05a3h:
-    jp l0496h           ;05a3 c3 96 04
+    jp ask_sbox_conf    ;05a3 c3 96 04
 l05a6h:
     ld c,04h            ;05a6 0e 04
-    ld a,(firstsec)       ;05a8 3a 19 30
+    ld a,(firstsec)     ;05a8 3a 19 30
     jp l05afh           ;05ab c3 af 05
 l05aeh:
     add a,a             ;05ae 87
@@ -1662,7 +1677,7 @@ l098ah:
     jp l0993h           ;098d c3 93 09
 
 l0990h:
-    call l0359h         ;0990 cd 59 03
+    call ask_drv_type         ;0990 cd 59 03
 l0993h:
     jp l05edh           ;0993 c3 ed 05
     ret                 ;0996 c9
