@@ -157,7 +157,7 @@ l01abh:
     jp p,l01c2h         ;01b8 f2 c2 01
     ld hl,l3002h        ;01bb 21 02 30
     ld a,(hl)           ;01be 7e
-    add a,0e0h          ;01bf c6 e0
+    add a,-'a'-'A'      ;01bf c6 e0
     ld (hl),a           ;01c1 77
 l01c2h:
     ld hl,l30a1h        ;01c2 21 a1 30
@@ -516,7 +516,7 @@ is_drv_type_b:
 
     ;REM User selected 'B' for 6 Mbyte (191 cyl)
 
-    ;heads = 2
+    ;heads = 4
     ld hl,heads
     ld (hl),4
 
@@ -590,7 +590,7 @@ is_drv_type_f:
     cp 'F'              ;Is it 'F': 15 Mbyte (320 cyl)?
     jp nz,bad_drv_type  ;  No: bad drive type entered
 
-    ;REM User selected 'E' for 15 Mbyte (320 cyl)
+    ;REM User selected 'F' for 15 Mbyte (320 cyl)
 
     ;heads = 6
     ld hl,heads
