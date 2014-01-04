@@ -722,7 +722,7 @@ ask_sbox_conf:
 
     ;IF R <> &H48 THEN GOTO not_half_sbox
     ld a,(rr)
-    cp 'H'              ;Is it 'H': use first half only for SoftBox?
+    cp 'H'              ;Is it 'H': use first half only for CP/M?
     jp nz,not_half_sbox ;  No: jump to not_half_sbox
 
     ;REM User selected 'H' for use first half for CP/M
@@ -744,7 +744,7 @@ ask_sbox_conf:
 not_half_sbox:
     ;IF R <> &H45 THEN GOTO bad_sbox_conf
     ld a,(rr)
-    cp 'E'              ;Is it 'E': use entire drive for HardBox?
+    cp 'E'              ;Is it 'E': use entire drive for CP/M?
     jp nz,bad_sbox_conf ;  No: jump to bad_hbox_conf
 
     ;REM User selected 'E' for use entire drive for CP/M
