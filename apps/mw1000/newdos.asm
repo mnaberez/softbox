@@ -1,25 +1,26 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=newdos.asm newdos.com
 
+corvus:        equ  18h   ;Corvus data bus
 
-l4000h: equ 4000h       ;opcode "jp" (1 Byte)
-l4001h: equ 4001h       ;jump address (2 Bytes)
+l4000h:        equ 4000h  ;opcode "jp" (1 Byte)
+l4001h:        equ 4001h  ;jump address (2 Bytes)
 
-                        ;here starts the user area
-l4003h: equ 4003h       ;Physical drive number (1 .. 4, 1 Byte)
-l4004h: equ 4004h       ;Starting sector number on drive (An Absolute Sector Number, 3 Bytes)
-l4007h: equ 4007h       ;User area size in kilobytes, there are 4 blocks (2 Bytes)
-l4009h: equ 4009h       ;Type of user area (Single user or Multi-user) (1 Byte)
-l400ah: equ 400ah       ;Maximum numbers of files allowed (2 Bytes)
-l400ch: equ 400ch       ;direct access size (2 Bytes)
-l400eh: equ 400eh       ;tracks per drive (2 Bytes)
-l4010h: equ 4010h       ;sectors per track (3 Bytes)
-l4023h: equ 4023h       ;user name (16 Bytes)
+                          ;here starts the user area
+l4003h:        equ 4003h  ;Physical drive number (1 .. 4, 1 Byte)
+l4004h:        equ 4004h  ;Starting sector number on drive (An Absolute Sector Number, 3 Bytes)
+l4007h:        equ 4007h  ;User area size in kilobytes, there are 4 blocks (2 Bytes)
+l4009h:        equ 4009h  ;Type of user area (Single user or Multi-user) (1 Byte)
+l400ah:        equ 400ah  ;Maximum numbers of files allowed (2 Bytes)
+l400ch:        equ 400ch  ;direct access size (2 Bytes)
+l400eh:        equ 400eh  ;tracks per drive (2 Bytes)
+l4010h:        equ 4010h  ;sectors per track (3 Bytes)
+l4023h:        equ 4023h  ;user name (16 Bytes)
 
-                        ;here starts the global area
-l4033h: equ 4033h       ;Max. head number (1 Byte)
-l4034h: equ 4034h       ;First cylinder number using for HardBox (2 Bytes)
-l4036h: equ 4036h       ;IEEE-488 primary address (1 Byte)
+                          ;here starts the global area
+l4033h:        equ 4033h  ;Max. head number (1 Byte)
+l4034h:        equ 4034h  ;First cylinder number using for HardBox (2 Bytes)
+l4036h:        equ 4036h  ;IEEE-488 primary address (1 Byte)
 
     org 0100h
 
@@ -1422,7 +1423,7 @@ l0808h:
     ld (l3016h),hl      ;08fb 22 16 30
 
 l08feh:
-    ld bc,0fff6h        ;08fe 01 f6 ff
+    ld bc,-10           ;08fe 01 f6 ff
     ld hl,(l3016h)      ;0901 2a 16 30
     add hl,bc           ;0904 09
     add hl,hl           ;0905 29
@@ -1457,14 +1458,19 @@ l091fh:
     ld (l3016h),hl      ;092c 22 16 30
 
 l092fh:
-    ld bc,0ff00h        ;092f 01 00 ff
+    ld bc,-256          ;092f 01 00 ff
     ld hl,(l3016h)      ;0932 2a 16 30
     add hl,bc           ;0935 09
     add hl,hl           ;0936 29
     jp c,l091fh         ;0937 da 1f 09
+
+    ;l400ah = 2
     ld c,02h            ;093a 0e 02
     ld hl,(l400ah)      ;093c 2a 0a 40
+
+    ;GOTO l0949h
     jp l0949h           ;093f c3 49 09
+
 l0942h:
     or a                ;0942 b7
     ld a,h              ;0943 7c
@@ -1486,7 +1492,7 @@ l0949h:
 l095fh:
     ;REM Write absolute sector l3016h+l301ah+4 with data at &H7000
     ;CALL mw_write(&H7000,l3016h+l301ah+4)
-    ld bc,0004h         ;095f 01 04 00
+    ld bc,4             ;095f 01 04 00
     ld hl,(l301ah)      ;0962 2a 1a 30
     add hl,bc           ;0965 09
     ex de,hl            ;0966 eb
@@ -1640,7 +1646,7 @@ l0a1eh:
     ld e,a              ;0a36 5f
     ld a,d              ;0a37 7a
     sbc a,h             ;0a38 9c
-    ld bc,0fffch        ;0a39 01 fc ff
+    ld bc,-4            ;0a39 01 fc ff
     ld h,a              ;0a3c 67
     ld l,e              ;0a3d 6b
     add hl,bc           ;0a3e 09
@@ -2044,133 +2050,167 @@ l11b7h:
 ; Start of Unknown Library ==================================================
 
 mw_read:
-    xor a               ;11d6 af
-    ld (l1299h),a       ;11d7 32 99 12
-    ld (l1297h),de      ;11da ed 53 97 12
-    ld h,b              ;11de 60
-    ld l,c              ;11df 69
-    push hl             ;11e0 e5
-    ld a,21h            ;11e1 3e 21
-    call mw_sub_1228h   ;11e3 cd 28 12
-    call mw_sub_1261h      ;11e6 cd 61 12
-    call mw_sub_1245h   ;11e9 cd 45 12
-    pop hl              ;11ec e1
-    ret nz              ;11ed c0
-    ld a,41h            ;11ee 3e 41
-    call mw_sub_1228h   ;11f0 cd 28 12
-    ld b,00h            ;11f3 06 00
+;Read a sector from the Konan David Junior II controller.
+;
+; BC = buffer address
+; DE = sector address
+;
+    xor a               ;High byte from sector address is zero
+    ld (var_3),a
+    ld (var_1),de       ;Store sector address
+
+    ld h,b              ;Save buffer pointer
+    ld l,c
+    push hl
+
+    ld a,21h            ;A = 21h (Read Disk)
+    call mw_comout      ;Send command
+    call mw_send_addr   ;Send disk/track/sector sequence
+
+    call mw_status      ;Read status
+    pop hl
+    ret nz              ;Status not OK?  Return
+
+    ld a,41h            ;A = 41h (Read Buffer)
+    call mw_comout      ;Send command
+
+                        ;Transfer 256 bytes from David Junior II:
+    ld b,00h            ;  Seed loop index to count 256 bytes
 l11f5h:
-    in a,(18h)          ;11f5 db 18
-    ld (hl),a           ;11f7 77
-    inc hl              ;11f8 23
-    ex (sp),hl          ;11f9 e3
-    ex (sp),hl          ;11fa e3
-    djnz l11f5h         ;11fb 10 f8
-    jp mw_sub_1245h     ;11fd c3 45 12
+    in a,(corvus)       ;  Read data byte from David Junior II
+    ld (hl),a           ;  Store it in our buffer
+    inc hl              ;  Increment buffer pointer
+    ex (sp),hl          ;  Delay
+    ex (sp),hl          ;  Delay
+    djnz l11f5h         ;  Decrement B, loop until B=0
+
+    jp mw_status        ;Read David Junior II status.
 
 mw_write:
-    xor a               ;1200 af
-    ld (l1299h),a       ;1201 32 99 12
-    ld (l1297h),de      ;1204 ed 53 97 12
-    ld h,b              ;1208 60
-    ld l,c              ;1209 69
-    ld a,42h            ;120a 3e 42
-    call mw_sub_1228h   ;120c cd 28 12
-    ld b,00h            ;120f 06 00
+;Write a sector to the Konan David Junior II controller.
+;
+; BC = buffer address
+; DE = sector address
+;
+    xor a               ;High byte from sector address is zero
+    ld (var_3),a
+    ld (var_1),de       ;Store sector address
+ 
+    ld h,b              ;Put buffer address to HL
+    ld l,c
+
+    ld a,42h            ;A = 42h (Write Buffer)
+    call mw_comout      ;Send command
+
+                        ;Transfer 256 bytes to David Junior II:
+    ld b,00h            ;  Seed loop index to count 256 bytes
 l1211h:
-    ld a,(hl)           ;1211 7e
-    out (18h),a         ;1212 d3 18
-    inc hl              ;1214 23
-    ex (sp),hl          ;1215 e3
-    ex (sp),hl          ;1216 e3
-    djnz l1211h         ;1217 10 f8
-    call mw_sub_1245h   ;1219 cd 45 12
-    ret nz              ;121c c0
-    ld a,22h            ;121d 3e 22
-    call mw_sub_1228h   ;121f cd 28 12
-    call mw_sub_1261h      ;1222 cd 61 12
-    jp mw_sub_1245h     ;1225 c3 45 12
+    ld a,(hl)           ;  Read data byte our buffer
+    out (corvus),a      ;  Write it to the David Junior II
+    inc hl              ;  Increment buffer pointer
+    ex (sp),hl          ;  Delay
+    ex (sp),hl          ;  Delay
+    djnz l1211h         ;  Decrement B, loop until B=0
 
-mw_sub_1228h:
-    ld b,a              ;1228 47
-    xor a               ;1229 af
-    out (18h),a         ;122a d3 18
-l122ch:
-    in a,(18h)          ;122c db 18
-    cp 0a0h             ;122e fe a0
-    jr nz,l122ch        ;1230 20 fa
-    ld a,b              ;1232 78
-    out (18h),a         ;1233 d3 18
-l1235h:
-    in a,(18h)          ;1235 db 18
-    cp 0a1h             ;1237 fe a1
-    jr nz,l1235h        ;1239 20 fa
-    ld a,0ffh           ;123b 3e ff
-    out (18h),a         ;123d d3 18
-    ld b,14h            ;123f 06 14
-l1241h:
-    nop                 ;1241 00
-    djnz l1241h         ;1242 10 fd
-    ret                 ;1244 c9
+    call mw_status      ;Read David Junior II status.  Is it OK?
+    ret nz              ;No: return
 
-mw_sub_1245h:
-    ld a,0ffh           ;1245 3e ff
-    out (18h),a         ;1247 d3 18
+    ld a,22h            ;A = 22h (Write Disk)
+    call mw_comout      ;Send command
+    call mw_send_addr   ;Send disk/track/sector sequence
+    jp mw_status        ;Read status
+
+mw_comout:
+;Send the command in A to the Konan David Junior II controller.
+;
+    ld b,a              ;Save command
+    xor a
+    out (corvus),a      ;Clear David Junior II port
+mw_rdy1:
+    in a,(corvus)
+    cp 0a0h
+    jr nz,mw_rdy1       ;Wait for David Junior II to go ready
+    ld a,b              ;Recall command
+    out (corvus),a      ;Send command
+mw_rdy2:
+    in a,(corvus)
+    cp 0a1h
+    jr nz,mw_rdy2       ;Wait until the David Junior II has it
+    ld a,0ffh
+    out (corvus),a      ;Send execute code
+    ld b,14h
+mw_rdy3:
+    nop
+    djnz mw_rdy3        ;Delay loop
+    ret
+
+mw_status:
+;Get status from the Konan David Junior II, return it in A.
+;
+    ld a,0ffh
+    out (corvus),a      ;Transfer done
 l1249h:
-    in a,(18h)          ;1249 db 18
-    inc a               ;124b 3c
-    jr nz,l1249h        ;124c 20 fb
-    ld a,0feh           ;124e 3e fe
-    out (18h),a         ;1250 d3 18
+    in a,(corvus)
+    inc a
+    jr nz,l1249h        ;Wait for David Junior II to get out
+                        ;  of internal DMA mode
+    ld a,0feh
+    out (corvus),a      ;Signal that we are ready for status
 l1252h:
-    in a,(18h)          ;1252 db 18
-    rla                 ;1254 17
-    jr c,l1252h         ;1255 38 fb
-    in a,(18h)          ;1257 db 18
-    bit 6,a             ;1259 cb 77
-    push af             ;125b f5
-    xor a               ;125c af
-    out (18h),a         ;125d d3 18
-    pop af              ;125f f1
-    ret                 ;1260 c9
+    in a,(corvus)
+    rla
+    jr c,l1252h         ;Wait for status
 
-mw_sub_1261h:
-    xor a               ;1261 af
-    out (18h),a         ;1262 d3 18
-    ld hl,(l1297h)      ;1264 2a 97 12
-    ld a,(l1299h)       ;1267 3a 99 12
-    ld b,05h            ;126a 06 05
+    in a,(corvus)       ;Read status byte
+    bit 6,a             ;Bit 6 of David Junior status is set if error
+                        ;  Z = opposite of bit 6 (Z=1 if OK, Z=0 if error)
+    push af             ;Save status byte
+    xor a
+    out (corvus),a      ;Clear the port to acknowledge receiving the status
+    pop af              ;Recall status byte
+    ret
+
+mw_send_addr:
+;Send an 8-byte address to the David Junior II controller.
+;
+    xor a
+    out (corvus),a      ;Send byte 0: unit number (always 0)
+
+    ld hl,(var_1)
+    ld a,(var_3)
+    ld b,05h
 l126ch:
-    rra                 ;126c 1f
-    rr h                ;126d cb 1c
-    rr l                ;126f cb 1d
-    djnz l126ch         ;1271 10 f9
-    ld a,(l4033h)       ;1273 3a 33 40
-    ld b,a              ;1276 47
-    and l               ;1277 a5
-    out (18h),a         ;1278 d3 18
-l127ah:
-    srl h               ;127a cb 3c
-    rr l                ;127c cb 1d
-    srl b               ;127e cb 38
-    jr nz,l127ah        ;1280 20 f8
-    ld a,l              ;1282 7d
-    out (18h),a         ;1283 d3 18
-    ld a,h              ;1285 7c
-    out (18h),a         ;1286 d3 18
-    ld a,(l1297h)       ;1288 3a 97 12
-    and 1fh             ;128b e6 1f
-    out (18h),a         ;128d d3 18
-    xor a               ;128f af
-    out (18h),a         ;1290 d3 18
-    out (18h),a         ;1292 d3 18
-    out (18h),a         ;1294 d3 18
-    ret                 ;1296 c9
+    rra
+    rr h
+    rr l
+    djnz l126ch         ;Decrement B, loop until B=0
 
-l1297h:
+    ld a,(l4033h)
+    ld b,a
+    and l
+    out (corvus),a      ;Send byte 1: Head number (0..7)
+l127ah:
+    srl h
+    rr l
+    srl b
+    jr nz,l127ah
+    ld a,l
+    out (corvus),a      ;Send byte 2: Track low (0..FF)
+    ld a,h
+    out (corvus),a      ;Send byte 3: Track high (0 or 1)
+    ld a,(var_1)
+    and 1fh
+    out (corvus),a      ;Send byte 4: Sector
+    xor a
+    out (corvus),a      ;Send byte 5: Reserved
+    out (corvus),a      ;Send byte 6: Reserved
+    out (corvus),a      ;Send byte 7: Reserved
+    ret
+
+var_1:
     nop                 ;1297 00
     nop                 ;1298 00
-l1299h:
+var_3:
     nop                 ;1299 00
 
 ; End of Unknown Library ====================================================
