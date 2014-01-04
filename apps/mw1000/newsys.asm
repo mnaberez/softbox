@@ -1,11 +1,10 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=newsys.asm newsys.com
 
-;TODO: 0d400h ????
-;TODO: 0eac0h ????
-
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
+ccp_base:      equ 0d400h ;Start of CCP area
+errbuf:        equ 0eac0h ;Last error message returned from CBM DOS
 seldsk:        equ 0f01bh ;Select disk drive
 settrk:        equ 0f01eh ;Set track number
 setsec:        equ 0f021h ;Set sector number
@@ -80,7 +79,7 @@ l0133h:
     ld l,a              ;0136 6f
     rla                 ;0137 17
     sbc a,a             ;0138 9f
-    ld bc,0eac0h        ;0139 01 c0 ea
+    ld bc,errbuf        ;0139 01 c0 ea
     ld h,a              ;013c 67
     add hl,bc           ;013d 09
     ld c,(hl)           ;013e 4e
@@ -89,7 +88,7 @@ l0133h:
     ld l,a              ;0145 6f
     rla                 ;0146 17
     sbc a,a             ;0147 9f
-    ld bc,0eac0h        ;0148 01 c0 ea
+    ld bc,errbuf        ;0148 01 c0 ea
     ld h,a              ;014b 67
     add hl,bc           ;014c 09
     ld a,(hl)           ;014d 7e
@@ -383,23 +382,26 @@ ask_drv_dev:
     ;PRINT
     call print_eol
 
-    ld a,(l3016h)       ;0315 3a 16 30
-    ld l,a              ;0318 6f
-    rla                 ;0319 17
-    sbc a,a             ;031a 9f
-    ld bc,5678h         ;031b 01 78 56
-    ld h,a              ;031e 67
-    add hl,bc           ;031f 09
-    ld a,(nn)           ;0320 3a c8 24
-    ld (hl),a           ;0323 77
-    ld a,(l3016h)       ;0324 3a 16 30
-    ld l,a              ;0327 6f
-    rla                 ;0328 17
-    sbc a,a             ;0329 9f
-    ld bc,5670h         ;032a 01 70 56
-    ld h,a              ;032d 67
-    add hl,bc           ;032e 09
-    ld a,(hl)           ;032f 7e
+    ;POKE &H5678+D, N ' Store device number
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5678h
+    ld h,a
+    add hl,bc
+    ld a,(nn)
+    ld (hl),a
+
+    ;IF PEEK(&H5670+D) <> 4 THEN GOTO drv_dev_done
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld a,(hl)
     cp 04h              ;Drive type = 4 (Corvus 5 MB)?
     jp nz,drv_dev_done  ;  No: jump to drv_dev_done
 
@@ -426,16 +428,16 @@ ask_drv_dev:
     jp nz,drv_dev_done
 
     ;REM User selected 2 CP/M drives
-    ;REM Change drive type from 4 to 5
 
-    ld a,(l3016h)       ;034b 3a 16 30
-    ld l,a              ;034e 6f
-    rla                 ;034f 17
-    sbc a,a             ;0350 9f
-    ld bc,5670h         ;0351 01 70 56
-    ld h,a              ;0354 67
-    add hl,bc           ;0355 09
-    ld (hl),05h         ;Drive type 5 = Corvus 5MB as 2 CP/M drives
+    ;POKE &H5670+D, 5 ' Change drive type from 4 to 5
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld (hl),05h         ;Drive type 5 = Corvus 5 MB as 2 CP/M drives
 
 drv_dev_done:
     ;RETURN
@@ -691,13 +693,16 @@ bad_drv_type:
     jp ask_drv_type
 
 l0483h:
-    ;POKE &H5670+l3016h, (heads/2)-1
+    ;TODO this disassembly may be wrong.  5670h is the drive type.
+    ;if heads=2, then (2/2)-1=0, but 0 is cbm 3040/4040.
+    ;
+    ;POKE &H5670+D, (heads/2)-1
     ld a,(heads)        ;0483 3a 17 30
     or a                ;0486 b7
     rra                 ;0487 1f
     inc a               ;0488 3c
     ld c,a              ;0489 4f
-    ld a,(l3016h)       ;048a 3a 16 30
+    ld a,(dd)           ;048a 3a 16 30
     ld l,a              ;048d 6f
     rla                 ;048e 17
     sbc a,a             ;048f 9f
@@ -728,16 +733,16 @@ ask_sbox_conf:
 
     ;REM User selected 'H' for use first half for CP/M
 
-    ;l301ch = cylinders/2
-    ld hl,(cylinders)   ;04b0 2a 1a 30
-    or a                ;04b3 b7
-    ld a,h              ;04b4 7c
-    rra                 ;04b5 1f
-    ld h,a              ;04b6 67
-    ld a,l              ;04b7 7d
-    rra                 ;04b8 1f
-    ld l,a              ;04b9 6f
-    ld (l301ch),hl      ;04ba 22 1c 30
+    ;lastcyl = cylinders / 2
+    ld hl,(cylinders)
+    or a
+    ld a,h
+    rra
+    ld h,a
+    ld a,l
+    rra
+    ld l,a
+    ld (lastcyl),hl
 
     ;GOTO got_sbox_conf
     jp got_sbox_conf
@@ -750,9 +755,9 @@ not_half_sbox:
 
     ;REM User selected 'E' for use entire drive for CP/M
 
-    ;l301ch = cylinders
-    ld hl,(cylinders)   ;04c8 2a 1a 30
-    ld (l301ch),hl      ;04cb 22 1c 30
+    ;lastcyl = cylinders
+    ld hl,(cylinders)
+    ld (lastcyl),hl
 
     ;GOTO got_sbox_conf
     jp got_sbox_conf
@@ -762,7 +767,7 @@ bad_sbox_conf:
     jp ask_sbox_conf
 
 got_sbox_conf:
-    ;POKE &H5805, l301ch*heads/2
+    ;POKE &H5805, lastcyl*heads/2
     ld a,(heads)        ;04d4 3a 17 30
     ld l,a              ;04d7 6f
     rla                 ;04d8 17
@@ -776,7 +781,7 @@ got_sbox_conf:
     rra                 ;04e0 1f
     ld l,a              ;04e1 6f
     push hl             ;04e2 e5
-    ld hl,(l301ch)      ;04e3 2a 1c 30
+    ld hl,(lastcyl)     ;04e3 2a 1c 30
     ld b,h              ;04e6 44
     ld c,l              ;04e7 4d
     pop hl              ;04e8 e1
@@ -871,8 +876,8 @@ l0558h:
 
     ;REM User selected 'Y' for start surface #'s from 0
 
-    ;firstsec = 0
-    ld hl,firstsec
+    ;firsthead = 0
+    ld hl,firsthead
     ld (hl),00h
 
     ;GOTO l05a6h
@@ -905,13 +910,13 @@ l0574h:
     add hl,hl           ;0596 29
     jp nc,l0558h        ;0597 d2 58 05
     ld a,(nn)           ;059a 3a c8 24
-    ld (firstsec),a     ;059d 32 19 30
+    ld (firsthead),a    ;059d 32 19 30
     jp l05a6h           ;05a0 c3 a6 05
 l05a3h:
     jp ask_sbox_conf    ;05a3 c3 96 04
 l05a6h:
     ld c,04h            ;05a6 0e 04
-    ld a,(firstsec)     ;05a8 3a 19 30
+    ld a,(firsthead)    ;05a8 3a 19 30
     jp l05afh           ;05ab c3 af 05
 l05aeh:
     add a,a             ;05ae 87
@@ -954,7 +959,7 @@ l05afh:
     ld bc,564ch         ;05e0 01 4c 56
     add hl,bc           ;05e3 09
     ex de,hl            ;05e4 eb
-    ld hl,(l301ch)      ;05e5 2a 1c 30
+    ld hl,(lastcyl)     ;05e5 2a 1c 30
     ex de,hl            ;05e8 eb
     ld (hl),e           ;05e9 73
     inc hl              ;05ea 23
@@ -979,45 +984,48 @@ l05edh:
     ;PRINT
     call print_eol
 
-    ;l3016h = 0
-    ld hl,l3016h        ;0602 21 16 30
-    ld (hl),00h         ;0605 36 00
+    ;D = 0 ' Loop index for drives (0-7)
+    ld hl,dd
+    ld (hl),00h
 
-    jp l085eh           ;0607 c3 5e 08
+    ;GOTO l085eh
+    jp l085eh
 
 l060ah:
-    ;PRINT CHR(l3016h*2+&H41);
-    ld a,(l3016h)       ;060a 3a 16 30
-    add a,a             ;060d 87
-    add a,'A'           ;060e c6 41
-    ld c,a              ;0610 4f
-    call print_char     ;0611 cd 6b 01
+    ;REM Print drive letter pair (e.g. "A, B")
+    ;PRINT CHR$(D*2+&H41);      ' First letter in drive pair
+    ld a,(dd)
+    add a,a
+    add a,'A'
+    ld c,a
+    call print_char
 
-    ;PRINT ", ";
+    ;PRINT ", ";                ' Comma between letters in pair
     ld bc,l0efah
     call print_str
 
-    ;PRINT CHR(l3016h*2+&H42);
-    ld a,(l3016h)       ;061a 3a 16 30
-    add a,a             ;061d 87
-    add a,'B'           ;061e c6 42
-    ld c,a              ;0620 4f
-    call print_char     ;0621 cd 6b 01
+    ;PRINT CHR$(D*2+&H42);      ' Second letter in drive pair
+    ld a,(dd)
+    add a,a
+    add a,'B'
+    ld c,a
+    call print_char
 
     ;PRINT ":      ";
     ld bc,l0efdh
     call print_str
 
-    ld a,(l3016h)       ;062a 3a 16 30
-    ld l,a              ;062d 6f
-    rla                 ;062e 17
-    sbc a,a             ;062f 9f
-    ld bc,5670h         ;0630 01 70 56
-    ld h,a              ;0633 67
-    add hl,bc           ;0634 09
-    ld a,(hl)           ;0635 7e
-    or a                ;Drive type 0 = CBM 3040/4040
-    jp nz,l0657h        ;Jump if drive type is not CBM 3040/4040
+    ;IF PEEK(&H5670+D) <> 0 THEN GOTO l0657h
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld a,(hl)
+    or a                ;Is it drive type 0 (CBM 3040/4040)?
+    jp nz,l0657h        ;  No: jump to l0657h
 
     ;REM Drive type is CBM 3040/4040
 
@@ -1025,36 +1033,37 @@ l060ah:
     ld bc,cbm3040
     call print_str
 
-    ;PRINT PEEK(&H5678+l3016h);
-    ld a,(l3016h)       ;0640 3a 16 30
-    ld l,a              ;0643 6f
-    rla                 ;0644 17
-    sbc a,a             ;0645 9f
-    ld bc,5678h         ;0646 01 78 56
-    ld h,a              ;0649 67
-    add hl,bc           ;064a 09
-    ld a,(hl)           ;064b 7e
-    ld l,a              ;064c 6f
-    rla                 ;064d 17
-    sbc a,a             ;064e 9f
-    ld b,a              ;064f 47
-    ld c,l              ;0650 4d
-    call print_int      ;0651 cd f6 01
+    ;PRINT PEEK(&H5678+D);      ' Print device number
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5678h
+    ld h,a
+    add hl,bc
+    ld a,(hl)
+    ld l,a
+    rla
+    sbc a,a
+    ld b,a
+    ld c,l
+    call print_int
 
     ;GOTO l0857h
     jp l0857h
 
 l0657h:
-    ld a,(l3016h)       ;0657 3a 16 30
-    ld l,a              ;065a 6f
-    rla                 ;065b 17
-    sbc a,a             ;065c 9f
-    ld bc,5670h         ;065d 01 70 56
-    ld h,a              ;0660 67
-    add hl,bc           ;0661 09
-    ld a,(hl)           ;0662 7e
-    cp 01h              ;Drive type 1 = CBM 8050
-    jp nz,l0685h        ;Jump if drive type is not CBM 8050
+    ;IF PEEK(&H5670) <> 1 THEN GOTO l0685h
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld a,(hl)
+    cp 01h              ;Is it drive type 1 (CBM 8050)?
+    jp nz,l0685h        ;  No: jump to l0685h
 
     ;REM Drive type is CBM 8050
 
@@ -1062,37 +1071,37 @@ l0657h:
     ld bc,cbm8050
     call print_str
 
-    ;PRINT PEEK(&H5678+l3016h);
-    ld a,(l3016h)       ;066e 3a 16 30
-    ld l,a              ;0671 6f
-    rla                 ;0672 17
-    sbc a,a             ;0673 9f
-    ld bc,5678h         ;0674 01 78 56
-    ld h,a              ;0677 67
-    add hl,bc           ;0678 09
-    ld a,(hl)           ;0679 7e
-    ld l,a              ;067a 6f
-    rla                 ;067b 17
-    sbc a,a             ;067c 9f
-    ld b,a              ;067d 47
-    ld c,l              ;067e 4d
-    call print_int      ;067f cd f6 01
+    ;PRINT PEEK(&H5678+D);      ' Print device number
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5678h
+    ld h,a
+    add hl,bc
+    ld a,(hl)
+    ld l,a
+    rla
+    sbc a,a
+    ld b,a
+    ld c,l
+    call print_int
 
     ;GOTO l0857h
     jp l0857h
 
 l0685h:
-    ;IF PEEK(&H5670+l3016h) <> 6 THEN GOTO l06b3h
-    ld a,(l3016h)       ;0685 3a 16 30
-    ld l,a              ;0688 6f
-    rla                 ;0689 17
-    sbc a,a             ;068a 9f
-    ld bc,5670h         ;068b 01 70 56
-    ld h,a              ;068e 67
-    add hl,bc           ;068f 09
-    ld a,(hl)           ;0690 7e
-    cp 06h              ;Drive type 6 = CBM 8250
-    jp nz,l06b3h        ;Jump if drive type is not CBM 8250
+    ;IF PEEK(&H5670+D) <> 6 THEN GOTO l06b3h
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld a,(hl)
+    cp 06h              ;Is it drive type 6 (CBM 8250)?
+    jp nz,l06b3h        ;  No: jump to l06b3h
 
     ;REM Drive type is CBM 8250
 
@@ -1100,28 +1109,31 @@ l0685h:
     ld bc,cbm_8250
     call print_str
 
-    ;PRINT PEEK(&H5678+l3016h);
-    ld a,(l3016h)       ;069c 3a 16 30
-    ld l,a              ;069f 6f
-    rla                 ;06a0 17
-    sbc a,a             ;06a1 9f
-    ld bc,5678h         ;06a2 01 78 56
-    ld h,a              ;06a5 67
-    add hl,bc           ;06a6 09
-    ld a,(hl)           ;06a7 7e
-    ld l,a              ;06a8 6f
-    rla                 ;06a9 17
-    sbc a,a             ;06aa 9f
-    ld b,a              ;06ab 47
-    ld c,l              ;06ac 4d
-    call print_int      ;06ad cd f6 01
+    ;PRINT PEEK(&H5678+D);      ' Print device number
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5678h
+    ld h,a
+    add hl,bc
+    ld a,(hl)
+    ld l,a
+    rla
+    sbc a,a
+    ld b,a
+    ld c,l
+    call print_int
 
     ;GOTO l0857h
     jp l0857h
 
 l06b3h:
-    ;IF PEEK(&H5670+l3016h) >= 0 THEN GOTO l06cch
-    ld a,(l3016h)       ;06b3 3a 16 30
+    ;TODO this disassembly may be wrong.  the drive type is "not used"
+    ;when bit 7 is set.
+    ;
+    ;IF PEEK(&H5670+D) >= 0 THEN GOTO l06cch
+    ld a,(dd)           ;06b3 3a 16 30
     ld l,a              ;06b6 6f
     rla                 ;06b7 17
     sbc a,a             ;06b8 9f
@@ -1153,17 +1165,17 @@ l06cch:
     ld bc,corvus_space
     call print_str
 
-    ;IF PEEK(&H5670h+l3016h) <> 2 THEN GOTO l06f0h
-    ld a,(l3016h)       ;06d9 3a 16 30
-    ld l,a              ;06dc 6f
-    rla                 ;06dd 17
-    sbc a,a             ;06de 9f
-    ld bc,5670h         ;06df 01 70 56
-    ld h,a              ;06e2 67
-    add hl,bc           ;06e3 09
-    ld a,(hl)           ;06e4 7e
-    cp 02h              ;Drive Type 2 = Corvus 10 MB
-    jp nz,l06f0h        ;06e7 c2 f0 06
+    ;IF PEEK(&H5670h+D) <> 2 THEN GOTO l06f0h
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld a,(hl)
+    cp 02h              ;Is it drive type 2 (Corvus 10 MB)?
+    jp nz,l06f0h        ;  No: jump to l06f0h
 
     ;REM Drive type is Corvus 10 MB
 
@@ -1173,17 +1185,17 @@ l06cch:
     jp l0738h
 
 l06f0h:
-    ;IF PEEK(&H5670h+l3016h) <> 3 THEN GOTO l06f0h
-    ld a,(l3016h)       ;06f0 3a 16 30
-    ld l,a              ;06f3 6f
-    rla                 ;06f4 17
-    sbc a,a             ;06f5 9f
-    ld bc,5670h         ;06f6 01 70 56
-    ld h,a              ;06f9 67
-    add hl,bc           ;06fa 09
-    ld a,(hl)           ;06fb 7e
-    cp 03h              ;Drive Type 3 = Corvus 20 MB
-    jp nz,l0707h        ;06fe c2 07 07
+    ;IF PEEK(&H5670h+D) <> 3 THEN GOTO l06f0h
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld a,(hl)
+    cp 03h              ;Is it drive type 3 (Corvus 20 MB)?
+    jp nz,l0707h        ;  No: jump to l0707h
 
     ;REM Drive type is Corvus 20 MB
 
@@ -1193,17 +1205,17 @@ l06f0h:
     jp l0738h
 
 l0707h:
-    ;IF PEEK(&H5670h+l3016h) <> 4 THEN GOTO l06f0h
-    ld a,(l3016h)       ;0707 3a 16 30
-    ld l,a              ;070a 6f
-    rla                 ;070b 17
-    sbc a,a             ;070c 9f
-    ld bc,5670h         ;070d 01 70 56
-    ld h,a              ;0710 67
-    add hl,bc           ;0711 09
-    ld a,(hl)           ;0712 7e
-    cp 04h              ;Drive Type 4 = Corvus 5 MB
-    jp nz,l071eh        ;0715 c2 1e 07
+    ;IF PEEK(&H5670h+D) <> 4 THEN GOTO l06f0h
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld a,(hl)
+    cp 04h              ;Is it drive type 4 (Corvus 5 MB)?
+    jp nz,l071eh        ;  No: jump to l071eh
 
     ;REM Drive type is Corvus 5 MB
 
@@ -1213,24 +1225,24 @@ l0707h:
     jp l0738h
 
 l071eh:
-    ;IF PEEK(&H5670h+l3016h) <> 5 THEN GOTO l06f0h
-    ld a,(l3016h)       ;071e 3a 16 30
-    ld l,a              ;0721 6f
-    rla                 ;0722 17
-    sbc a,a             ;0723 9f
-    ld bc,5670h         ;0724 01 70 56
-    ld h,a              ;0727 67
-    add hl,bc           ;0728 09
-    ld a,(hl)           ;0729 7e
-    cp 05h              ;Drive Type 5 = Corvus 5 MB (as 2 CP/M drives)
-    jp nz,l0735h        ;072c c2 35 07
+    ;IF PEEK(&H5670h+D) <> 5 THEN GOTO l06f0h
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld a,(hl)
+    cp 05h              ;Is it drive type 5 (Corvus 5 MB as 2 CP/M drives)?
+    jp nz,l0735h        ;  No: jump to l0735h
 
     ;REM Drive type is Corvus 5 MB (as 2 CP/M drives)
 
     ld hl,size_5mb_as_2
 
     ;GOTO l0738h
-    jp l0738h           ;0732 c3 38 07
+    jp l0738h
 
 l0735h:
     ld hl,l0f73h        ;0735 21 73 0f
@@ -1244,30 +1256,30 @@ l0738h:
     ld bc,device_num
     call print_str
 
-    ;PRINT PEEK(&H5678+l3016h);
-    ld a,(l3016h)       ;0743 3a 16 30
-    ld l,a              ;0746 6f
-    rla                 ;0747 17
-    sbc a,a             ;Sets A=0, carry stays the same
-    ld bc,5678h         ;0749 01 78 56
-    ld h,a              ;074c 67
-    add hl,bc           ;074d 09
-    ld a,(hl)           ;074e 7e
-    ld l,a              ;074f 6f
-    rla                 ;0750 17
-    sbc a,a             ;0751 9f
-    ld b,a              ;0752 47
-    ld c,l              ;0753 4d
-    call print_int      ;0754 cd f6 01
+    ;PRINT PEEK(&H5678+D);      ' Print device number
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5678h
+    ld h,a
+    add hl,bc
+    ld a,(hl)
+    ld l,a
+    rla
+    sbc a,a
+    ld b,a
+    ld c,l
+    call print_int
 
     ;GOTO l0857h
     jp l0857h
 
 l075ah:
-    ;REM Drive type is a Mini-Winchester hard drive (Konan David Jr)
+    ;REM The system is a Mini-Winchester (Konan David Jr) not Corvus
 
-    ;unit = 1 AND PEEK(&H5678+l3016h)
-    ld a,(l3016h)       ;075a 3a 16 30
+    ;unit = 1 AND PEEK(&H5678+D)
+    ld a,(dd)           ;075a 3a 16 30
     ld l,a              ;075d 6f
     rla                 ;075e 17
     sbc a,a             ;075f 9f
@@ -1278,7 +1290,7 @@ l075ah:
     and 01h             ;0766 e6 01
     ld (unit),a         ;0768 32 18 30
 
-    ld a,(l3016h)       ;076b 3a 16 30
+    ld a,(dd)           ;076b 3a 16 30
     ld l,a              ;076e 6f
     rla                 ;076f 17
     sbc a,a             ;0770 9f
@@ -1297,7 +1309,7 @@ l0780h:
     dec c               ;0780 0d
     jp p,l077fh         ;0781 f2 7f 07
     ex de,hl            ;0784 eb
-    ld hl,firstsec      ;0785 21 19 30
+    ld hl,firsthead     ;0785 21 19 30
     ld (hl),d           ;0788 72
     dec hl              ;0789 2b
     dec hl              ;078a 2b
@@ -1314,11 +1326,16 @@ l0780h:
     add a,a             ;0797 87
     ld (heads),a        ;0798 32 17 30
 
+    ;REM Print summary of Mini-Winchester drive in this format:
+    ;REM   Winchester Unit # 0
+    ;REM   (320 cyl,  10 Mbyte drive,
+    ;REM   Head 0-3  Cyls 1-320 used)
+
     ;PRINT "Winchester Unit # ";
     ld bc,win_unit_num
     call print_str
 
-    ;PRINT unit
+    ;PRINT unit                 ' Konan David Jr drive unit # (0 or 1)
     ld a,(unit)
     ld l,a
     rla
@@ -1332,7 +1349,7 @@ l0780h:
     ld bc,l0f97h
     call print_str
 
-    ;PRINT DEEK(&H5648+unit*2)
+    ;PRINT DEEK(&H5648+unit*2)  ' Total cylinders
     ld a,(unit)         ;07b5 3a 18 30
     ld l,a              ;07b8 6f
     rla                 ;07b9 17
@@ -1350,6 +1367,7 @@ l0780h:
     ld bc,cyl_comma
     call print_str
 
+    ;TODO decompile me          ' Total drive size in megabytes
     ld a,(heads)        ;07cd 3a 17 30
     ld l,a              ;07d0 6f
     rla                 ;07d1 17
@@ -1399,8 +1417,8 @@ l07f8h:
     ld bc,l0fbah
     call print_str
 
-    ;PRINT firstsec;
-    ld a,(firstsec)
+    ;PRINT firsthead;           ' First head that MW-1000 will use
+    ld a,(firsthead)
     ld l,a
     rla
     sbc a,a
@@ -1412,8 +1430,8 @@ l07f8h:
     ld bc,l0fcbh
     call print_str
 
-    ;PRINT firstsec+heads-1;
-    ld a,(firstsec)     ;0821 3a 19 30
+    ;PRINT firsthead+heads-1;   ' Last head that MW-1000 will use
+    ld a,(firsthead)    ;0821 3a 19 30
     ld l,a              ;0824 6f
     rla                 ;0825 17
     sbc a,a             ;0826 9f
@@ -1429,11 +1447,11 @@ l07f8h:
     ld c,l              ;0832 4d
     call print_int      ;0833 cd f6 01
 
-    ;PRINT "  Cyls 1-";
+    ;PRINT "  Cyls 1-";         ' First cylinder MW-1000 will use (always 1)
     ld bc,l0fcdh
     call print_str
 
-    ;PRINT DEEK(&H564c+unit*2);
+    ;PRINT DEEK(&H564c+unit*2); ' Last cylinder MW-1000 will use
     ld a,(unit)         ;083c 3a 18 30
     ld l,a              ;083f 6f
     rla                 ;0840 17
@@ -1458,15 +1476,15 @@ l0857h:
     ;PRINT
     call print_eol
 
-    ;l3016h = l3016h + 1
-    ld hl,l3016h        ;085a 21 16 30
-    inc (hl)            ;085d 34
+    ;dd = dd + 1 ' Increment index to next drive
+    ld hl,dd
+    inc (hl)
 
 l085eh:
-    ;IF l3016h < 8 THEN GOTO l060ah
-    ld a,(l3016h)       ;085e 3a 16 30
-    cp 08h              ;0861 fe 08
-    jp m,l060ah         ;0863 fa 0a 06
+    ;IF dd < 8 THEN GOTO l060ah ' Loop until all 8 drives are printed
+    ld a,(dd)
+    cp 08h
+    jp m,l060ah
 
     ;PRINT
     call print_eol
@@ -1492,15 +1510,18 @@ l085eh:
     ret
 
 ask_flop_hard:
-    ld a,(rr)           ;087e 3a cc 24
-    cp 'A'              ;0881 fe 41
-    jp m,l0993h         ;0883 fa 93 09
-    cp 'P'+1            ;0886 fe 51
-    jp p,l0993h         ;0888 f2 93 09
-    add a,-'A'          ;088b c6 bf
-    or a                ;088d b7
-    rra                 ;088e 1f
-    ld (l3016h),a       ;088f 32 16 30
+    ;IF (R < &H41) OR (R > &H50) THEN GOTO l0993h ' Bad input
+    ld a,(rr)
+    cp 'A'
+    jp m,l0993h
+    cp 'P'+1
+    jp p,l0993h
+
+    ;D = R - &H41 ' Convert ASCII to drive index
+    add a,-'A'
+    or a
+    rra
+    ld (dd),a
 
     ;PRINT "F(loppy),  H(ard) or  U(nused)  ? ";
     ld bc,l1001h
@@ -1537,21 +1558,21 @@ ask_flop_type:
 
     ;REM User selected 'A' for 3040/4040
 
-    ;POKE &H5670+l3016h, 0
-    ld a,(l3016h)       ;08ba 3a 16 30
-    ld l,a              ;08bd 6f
-    rla                 ;08be 17
-    sbc a,a             ;08bf 9f
-    ld bc,5670h         ;08c0 01 70 56
-    ld h,a              ;08c3 67
-    add hl,bc           ;08c4 09
-    ld (hl),00h         ;08c5 36 00
+    ;POKE &H5670+D, 0 ' Store drive type 0 (CBM 3040/4040)
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld (hl),00h
 
     ;GOSUB ask_drv_dev
-    call ask_drv_dev    ;08c7 cd 09 03
+    call ask_drv_dev
 
     ;GOTO l0906h
-    jp l0906h           ;08ca c3 06 09
+    jp l0906h
 
 l08cdh:
     ;IF R <> &H42 THEN GOTO l08e8h
@@ -1561,21 +1582,21 @@ l08cdh:
 
     ;REM User selected 'B' for 8050
 
-    ;POKE &H5670+l3016h, 1
-    ld a,(l3016h)       ;08d5 3a 16 30
-    ld l,a              ;08d8 6f
-    rla                 ;08d9 17
-    sbc a,a             ;08da 9f
-    ld bc,5670h         ;08db 01 70 56
-    ld h,a              ;08de 67
-    add hl,bc           ;08df 09
-    ld (hl),01h         ;08e0 36 01
+    ;POKE &H5670+D, 1 ' Store drive type 1 (CBM 8050)
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld (hl),01h
 
     ;GOSUB ask_drv_dev
-    call ask_drv_dev    ;08e2 cd 09 03
+    call ask_drv_dev
 
     ;GOTO l0906h
-    jp l0906h           ;08e5 c3 06 09
+    jp l0906h
 
 l08e8h:
     ;IF R <> &H43 THEN GOTO l0903h
@@ -1585,29 +1606,29 @@ l08e8h:
 
     ;REM User selected 'C' for 8250
 
-    ;POKE &H5670h+l3016h, 6
-    ld a,(l3016h)       ;08f0 3a 16 30
-    ld l,a              ;08f3 6f
-    rla                 ;08f4 17
-    sbc a,a             ;08f5 9f
-    ld bc,5670h         ;08f6 01 70 56
-    ld h,a              ;08f9 67
-    add hl,bc           ;08fa 09
-    ld (hl),06h         ;08fb 36 06
+    ;POKE &H5670h+D, 6 ' Store drive type 6 (CBM 8250)
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld (hl),06h
 
     ;GOSUB ask_drv_dev
-    call ask_drv_dev    ;08fd cd 09 03
+    call ask_drv_dev
 
     ;GOTO l0906h
-    jp l0906h           ;0900 c3 06 09
+    jp l0906h
 
 l0903h:
     ;GOTO ask_flop_type
-    jp ask_flop_type    ;0903 c3 a6 08
+    jp ask_flop_type
 
 l0906h:
     ;GOTO l091eh
-    jp l091eh           ;0906 c3 1e 09
+    jp l091eh
 
 l0909h:
     ;IF R <> &H55 THEN GOTO l091eh
@@ -1617,15 +1638,15 @@ l0909h:
 
     ;REM User selected 'U' for Unused
 
-    ;POKE &H5670+l3016h, 255
-    ld a,(l3016h)       ;0911 3a 16 30
-    ld l,a              ;0914 6f
-    rla                 ;0915 17
-    sbc a,a             ;0916 9f
-    ld bc,5670h         ;0917 01 70 56
-    ld h,a              ;091a 67
-    add hl,bc           ;091b 09
-    ld (hl),0ffh        ;091c 36 ff
+    ;POKE &H5670+D, 255 ' Store drive type 255 (Not Used)
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld (hl),0ffh
 
 l091eh:
     ;IF R <> &H59 THEN GOTO l0993h
@@ -1635,12 +1656,13 @@ l091eh:
 
     ;REM User selected 'H' for Hard drive
 
+    ;REM Jump if the system is a Mini-Winchester (Konan David Jr)
     ;IF 1=1 THEN GOTO l0990h
     ld a,01h
     cp 01h
     jp z,l0990h
 
-    ;REM Drive type is a Corvus hard drive
+    ;REM The system is not a Mini-Winchester, it's for Corvus.
 
     ;PRINT "5, 10, or 20 Mbyte drive ? ";
     ld bc,l104ah
@@ -1652,71 +1674,85 @@ l091eh:
     ;PRINT
     call print_eol
 
-    ld bc,-5            ;0939 01 fb ff
-    ld hl,(nn)          ;093c 2a c8 24
-    add hl,bc           ;093f 09
-    ld a,h              ;0940 7c
-    or l                ;0941 b5
-    jp nz,l0955h        ;0942 c2 55 09
-    ld a,(l3016h)       ;0945 3a 16 30
-    ld l,a              ;0948 6f
-    rla                 ;0949 17
-    sbc a,a             ;094a 9f
-    ld bc,5670h         ;094b 01 70 56
-    ld h,a              ;094e 67
-    add hl,bc           ;094f 09
-    ld (hl),04h         ;0950 36 04
-    jp l098ah           ;0952 c3 8a 09
-l0955h:
-    ;IF nn - 10 <> 0 THEN GOTO l0971h
-    ld bc,-10           ;0955 01 f6 ff
-    ld hl,(nn)          ;0958 2a c8 24
-    add hl,bc           ;095b 09
-    ld a,h              ;095c 7c
-    or l                ;095d b5
-    jp nz,l0971h        ;095e c2 71 09
+    ;IF N <> 5 THEN GOTO l0955h
+    ld bc,-5
+    ld hl,(nn)
+    add hl,bc
+    ld a,h
+    or l
+    jp nz,l0955h
 
-    ;POKE &H5670+l3016h, 2
-    ld a,(l3016h)       ;0961 3a 16 30
-    ld l,a              ;0964 6f
-    rla                 ;0965 17
-    sbc a,a             ;0966 9f
-    ld bc,5670h         ;0967 01 70 56
-    ld h,a              ;096a 67
-    add hl,bc           ;096b 09
-    ld (hl),02h         ;096c 36 02
+    ;REM User entered 5 MB
+
+    ;POKE &H5670+D, 4 ' Store drive type 4 (Corvus 5 MB)
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld (hl),04h
 
     ;GOTO l098ah
-    jp l098ah           ;096e c3 8a 09
+    jp l098ah
+
+l0955h:
+    ;IF N <> 10 THEN GOTO l0971h
+    ld bc,-10
+    ld hl,(nn)
+    add hl,bc
+    ld a,h
+    or l
+    jp nz,l0971h
+
+    ;REM User entered 10 MB
+
+    ;POKE &H5670+D, 2 ' Store drive type 2 (Corvus 10 MB)
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld (hl),02h
+
+    ;GOTO l098ah
+    jp l098ah
 
 l0971h:
-    ;IF nn - 20 <> 0 THEN GOTO l098ah
-    ld bc,-20           ;0971 01 ec ff
-    ld hl,(nn)          ;0974 2a c8 24
-    add hl,bc           ;0977 09
-    ld a,h              ;0978 7c
-    or l                ;0979 b5
-    jp nz,l098ah        ;097a c2 8a 09
+    ;IF N <> 20 THEN GOTO l098ah
+    ld bc,-20
+    ld hl,(nn)
+    add hl,bc
+    ld a,h
+    or l
+    jp nz,l098ah
 
-    ;POKE &H5670+l3016h, 3
-    ld a,(l3016h)       ;097d 3a 16 30
-    ld l,a              ;0980 6f
-    rla                 ;0981 17
-    sbc a,a             ;0982 9f
-    ld bc,5670h         ;0983 01 70 56
-    ld h,a              ;0986 67
-    add hl,bc           ;0987 09
-    ld (hl),03h         ;0988 36 03
+    ;REM User entered 10 MB
+
+    ;POKE &H5670+D, 3 ' Store drive type 3 (Corvus 20 MB)
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld (hl),03h
 
 l098ah:
     ;GOSUB ask_drv_dev
-    call ask_drv_dev    ;098a cd 09 03
+    call ask_drv_dev
 
     ;GOTO l0993h
-    jp l0993h           ;098d c3 93 09
+    jp l0993h
 
 l0990h:
-    call ask_drv_type         ;0990 cd 59 03
+    ;GOSUB ask_drv_type
+    call ask_drv_type
+
 l0993h:
     jp l05edh           ;0993 c3 ed 05
     ret                 ;0996 c9
@@ -1745,35 +1781,40 @@ l09adh:
     ld bc,l1082h
     call print_str_eol
 
-    ld hl,l301eh        ;09b3 21 1e 30
-    ld (hl),01h         ;09b6 36 01
-    ld a,(4007h)        ;09b8 3a 07 40
-    inc hl              ;09bb 23
-    ld (hl),a           ;09bc 77
-    jp l09d3h           ;09bd c3 d3 09
+    ;AINDEX = 1
+    ld hl,aindex
+    ld (hl),01h
+
+    ;ASIZE = PEEK(&H4007) ' Number of bytes in autoload command
+    ld a,(4007h)
+    inc hl
+    ld (hl),a
+
+    ;GOTO l09d3h
+    jp l09d3h
 
 l09c0h:
-    ;PRINT CHR(PEEK(&H4007+l301eh));
-    ld a,(l301eh)       ;09c0 3a 1e 30
-    ld l,a              ;09c3 6f
-    rla                 ;09c4 17
-    sbc a,a             ;09c5 9f
-    ld bc,4007h         ;09c6 01 07 40
-    ld h,a              ;09c9 67
-    add hl,bc           ;09ca 09
-    ld c,(hl)           ;09cb 4e
-    call print_char     ;09cc cd 6b 01
+    ;PRINT CHR$(PEEK(&H4007+AINDEX));
+    ld a,(aindex)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,4007h
+    ld h,a
+    add hl,bc
+    ld c,(hl)
+    call print_char
 
-    ;l301eh = l301eh + 1
-    ld hl,l301eh        ;09cf 21 1e 30
-    inc (hl)            ;09d2 34
+    ;AINDEX = AINDEX + 1
+    ld hl,aindex
+    inc (hl)
 
 l09d3h:
-    ;IF l301fh >= l301eh THEN GOTO l09c0h
-    ld a,(l301fh)       ;09d3 3a 1f 30
-    ld hl,l301eh        ;09d6 21 1e 30
-    cp (hl)             ;09d9 be
-    jp p,l09c0h         ;09da f2 c0 09
+    ;IF ASIZE >= AINDEX THEN GOTO l09c0h
+    ld a,(asize)
+    ld hl,aindex
+    cp (hl)
+    jp p,l09c0h
 
 ask_autoload:
     ;PRINT
@@ -1806,7 +1847,7 @@ ask_autoload:
 
     ld a,(l2425h)       ;0a00 3a 25 24
     ld (4007h),a        ;0a03 32 07 40
-    ld hl,l301eh        ;0a06 21 1e 30
+    ld hl,aindex        ;0a06 21 1e 30
     ld (hl),01h         ;0a09 36 01
     ld a,(l2425h)       ;0a0b 3a 25 24
     inc hl              ;0a0e 23
@@ -1814,15 +1855,15 @@ ask_autoload:
     jp l0a30h           ;0a10 c3 30 0a
 
 l0a13h:
-    ;POKE &H4007+l301eh, l2425h(l301e)
-    ld a,(l301eh)       ;0a13 3a 1e 30
+    ;POKE &H4007+AINDEX, l2425h(l301e)
+    ld a,(aindex)       ;0a13 3a 1e 30
     ld l,a              ;0a16 6f
     rla                 ;0a17 17
     sbc a,a             ;0a18 9f
     ld bc,l2425h        ;0a19 01 25 24
     ld h,a              ;0a1c 67
     add hl,bc           ;0a1d 09
-    ld a,(l301eh)       ;0a1e 3a 1e 30
+    ld a,(aindex)       ;0a1e 3a 1e 30
     ld c,a              ;0a21 4f
     rla                 ;0a22 17
     sbc a,a             ;0a23 9f
@@ -1833,16 +1874,16 @@ l0a13h:
     add hl,de           ;0a2a 19
     ld (hl),b           ;0a2b 70
 
-    ;l301eh = l301eh + 1
-    ld hl,l301eh        ;0a2c 21 1e 30
+    ;AINDEX = AINDEX + 1
+    ld hl,aindex        ;0a2c 21 1e 30
     inc (hl)            ;0a2f 34
 
 l0a30h:
-    ;IF l301fh >= l301eh THEN GOTO l0a13h
-    ld a,(l301fh)       ;0a30 3a 1f 30
-    ld hl,l301eh        ;0a33 21 1e 30
-    cp (hl)             ;0a36 be
-    jp p,l0a13h         ;0a37 f2 13 0a
+    ;IF ASIZE >= AINDEX THEN GOTO l0a13h
+    ld a,(asize)
+    ld hl,aindex
+    cp (hl)
+    jp p,l0a13h
 
     ;POKE &H4007+l2425+1, 0
     ld a,(l2425h)       ;0a3a 3a 25 24
@@ -2853,7 +2894,7 @@ l13eeh:
     ld bc,l1c2ch
     call print_str
 
-    ;PRINT CHR(&H35+((PEEK(&H6554) AND &H0C) SHR 2));
+    ;PRINT CHR$(&H35+((PEEK(&H6554) AND &H0C) SHR 2));
     ld a,(5664h)        ;1409 3a 64 56
     and 0ch             ;140c e6 0c
     ld l,a              ;140e 6f
@@ -4545,7 +4586,7 @@ exsys:
 ;Copy the new system into place and then jump to the BIOS to start it.
     ld bc,1c00h
     ld hl,4000h
-    ld de,0d400h
+    ld de,ccp_base
     ldir
     jp runcpm           ;Perform system init and then run CP/M
 
@@ -7980,23 +8021,22 @@ l3014h:
     nop                 ;3014 00
 l3015h:
     nop                 ;3015 00
-l3016h:
-    nop                 ;3016 00
+dd:
+    db 0                ;Loop index for drives (0-7)
 heads:
-    db 0
+    db 0                ;Total number of heads on a hard drive
 unit:
-    db 0
-firstsec:
-    db 0
+    db 0                ;Unit number (0 or 1) of a hard drive
+firsthead:
+    db 0                ;First head that will be used on a hard drive
 cylinders:
-    dw 0
-l301ch:
-    nop                 ;301c 00
-    nop                 ;301d 00
-l301eh:
-    nop                 ;301e 00
-l301fh:
-    nop                 ;301f 00
+    dw 0                ;Total number of cylinders on a hard drive
+lastcyl:
+    dw 0                ;Last cylinder number that will be used for CP/M
+aindex:
+    db 0                ;Loop index for autoload command
+asize:
+    db 0                ;Size of autoload command
 l3020h:
     nop                 ;3020 00
     nop                 ;3021 00
