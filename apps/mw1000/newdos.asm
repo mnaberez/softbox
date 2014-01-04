@@ -3,24 +3,34 @@
 
 corvus:        equ  18h   ;Corvus data bus
 
-l4000h:        equ 4000h  ;opcode "jp" (1 Byte)
-l4001h:        equ 4001h  ;jump address (2 Bytes)
+warm:          equ  0000h ;Warm start entry point
+bdos:          equ  0005h ;BDOS entry point
+
+cwrite:        equ 02h    ;Console Output
+creadstr:      equ 0ah    ;Buffered Console Input
+
+bell:          equ 07h    ;Bell
+lf:            equ 0ah    ;Line Feed
+cr:            equ 0dh    ;Carriage Return
+
+l4000h:        equ  4000h ;opcode "jp" (1 Byte)
+l4001h:        equ  4001h ;jump address (2 Bytes)
 
                           ;here starts the user area
-l4003h:        equ 4003h  ;Physical drive number (1 .. 4, 1 Byte)
-l4004h:        equ 4004h  ;Starting sector number on drive (An Absolute Sector Number, 3 Bytes)
-l4007h:        equ 4007h  ;User area size in kilobytes, there are 4 blocks (2 Bytes)
-l4009h:        equ 4009h  ;Type of user area (Single user or Multi-user) (1 Byte)
-l400ah:        equ 400ah  ;Maximum numbers of files allowed (2 Bytes)
-l400ch:        equ 400ch  ;direct access size (2 Bytes)
-l400eh:        equ 400eh  ;tracks per drive (2 Bytes)
-l4010h:        equ 4010h  ;sectors per track (3 Bytes)
-l4023h:        equ 4023h  ;user name (16 Bytes)
+l4003h:        equ  4003h ;Physical drive number (1 .. 4, 1 Byte)
+l4004h:        equ  4004h ;Starting sector number on drive (An Absolute Sector Number, 3 Bytes)
+l4007h:        equ  4007h ;User area size in kilobytes, there are 4 blocks (2 Bytes)
+l4009h:        equ  4009h ;Type of user area (Single user or Multi-user) (1 Byte)
+l400ah:        equ  400ah ;Maximum numbers of files allowed (2 Bytes)
+l400ch:        equ  400ch ;direct access size (2 Bytes)
+l400eh:        equ  400eh ;tracks per drive (2 Bytes)
+l4010h:        equ  4010h ;sectors per track (3 Bytes)
+l4023h:        equ  4023h ;user name (16 Bytes)
 
                           ;here starts the global area
-l4033h:        equ 4033h  ;Max. head number (1 Byte)
-l4034h:        equ 4034h  ;First cylinder number using for HardBox (2 Bytes)
-l4036h:        equ 4036h  ;IEEE-488 primary address (1 Byte)
+l4033h:        equ  4033h ;Max. head number (1 Byte)
+l4034h:        equ  4034h ;First cylinder number using for HardBox (2 Bytes)
+l4036h:        equ  4036h ;IEEE-488 primary address (1 Byte)
 
     org 0100h
 
@@ -28,7 +38,7 @@ l4036h:        equ 4036h  ;IEEE-488 primary address (1 Byte)
 
 end:
 ;Exit back to CP/M.
-    jp 0000h            ;Jump to CP/M warm start
+    jp warm             ;Jump to CP/M warm start
     ret
 
 check_error:
@@ -138,8 +148,8 @@ readline:
     ld hl,l301eh        ;0186 21 1e 30
     ld (hl),80h         ;0189 36 80
     ld de,l301eh        ;018b 11 1e 30
-    ld c,0ah            ;018e 0e 0a
-    call 0005h          ;0190 cd 05 00
+    ld c,creadstr       ;018e 0e 0a
+    call bdos           ;0190 cd 05 00
     call print_eol      ;0193 cd 27 02
     ld hl,0000h         ;0196 21 00 00
     ld (l3004h),hl      ;0199 22 04 30
@@ -218,17 +228,17 @@ print_char:
 ;Print character in C
     ld hl,l30a2h
     ld (hl),c
-    ld c,02h
+    ld c,cwrite
     ld a,(l30a2h)
     ld e,a
-    call 0005h
+    call bdos
     ret
 
 print_eol:
 ;Print end of line (CR+LF)
-    ld c,0dh
+    ld c,cr
     call print_char
-    ld c,0ah
+    ld c,lf
     call print_char
     ret
 
@@ -270,13 +280,13 @@ sub_0257h:
     ld hl,(l30a6h)      ;026c 2a a6 30
     ld b,h              ;026f 44
     ld c,l              ;0270 4d
-    ld de,000ah         ;0271 11 0a 00
+    ld de,10            ;0271 11 0a 00
     call sub_12f6h      ;0274 cd f6 12 (Library DIV)
     call sub_0257h      ;0277 cd 57 02
     ld hl,(l30a6h)      ;027a 2a a6 30
     ld b,h              ;027d 44
     ld c,l              ;027e 4d
-    ld de,000ah         ;027f 11 0a 00
+    ld de,10            ;027f 11 0a 00
     call sub_12f6h      ;0282 cd f6 12 (Library DIV - HL=MOD)
     ld a,l              ;0285 7d
     add a,'0'           ;0286 c6 30
