@@ -700,8 +700,10 @@ bad_drv_type:
 l0483h:
     ;TODO this disassembly may be wrong.  5670h is the drive type.
     ;if heads=2, then (2/2)-1=0, but 0 is cbm 3040/4040.
+    ;TODO: wrong negation, check it again!
     ;
-    ;POKE &H5670+D, (heads/2)-1
+    ;POKE &H5670+D, (heads/2)+1
+    ;REM 2 heads => type 2, 4 heads => type 3, 6 heads => type 4 and 8 heads => type 5
     ld a,(heads)        ;0483 3a 17 30
     or a                ;0486 b7
     rra                 ;0487 1f
@@ -4989,7 +4991,7 @@ l2423h:
 ; End of LOADSAV2.REL =======================================================
 
 l2424h:
-    nop                 ;2424 00
+    db 0
 l2425h:
     nop                 ;2425 00
 l2426h:
@@ -5159,8 +5161,7 @@ l2476h:
 nn:
     dw 0                ;Integer parsed from user input
 l24cah:
-    nop                 ;24ca 00
-    nop                 ;24cb 00
+    dw 0
 rr:
     db 0                ;First char of user input from any prompt
 
@@ -5187,6 +5188,7 @@ l24e1h:
     or e                ;24e6 b3
     jp z,l2525h         ;24e7 ca 25 25
     jp l24f4h           ;24ea c3 f4 24
+
 l24edh:
     inc h               ;24ed 24
     cpl                 ;24ee 2f
@@ -5227,6 +5229,7 @@ l2505h:
 l2516h:
     add hl,hl           ;2516 29
     jp l2505h           ;2517 c3 05 25
+
 l251ah:
     pop af              ;251a f1
     rra                 ;251b 1f
@@ -5239,6 +5242,7 @@ l251ah:
     ld e,a              ;2522 5f
     inc de              ;2523 13
     ret                 ;2524 c9
+
 l2525h:
     ld de,0000h         ;2525 11 00 00
     ret                 ;2528 c9
@@ -5253,6 +5257,7 @@ sub_2529h:              ;Library BD=DIV / HL=MOD
     or e                ;2531 b3
     jp nz,l253eh        ;2532 c2 3e 25
     ret                 ;2535 c9
+
 l2536h:
     inc b               ;2536 04
     ld a,d              ;2537 7a
@@ -5270,6 +5275,7 @@ l253eh:
     jp nz,l2556h        ;2544 c2 56 25
     ld bc,0000h         ;2547 01 00 00
     ret                 ;254a c9
+
 l254bh:
     ld a,b              ;254b 78
     or 02h              ;254c f6 02
@@ -5316,6 +5322,7 @@ l256fh:
     jp c,l2582h         ;257b da 82 25
     inc bc              ;257e 03
     jp l2583h           ;257f c3 83 25
+
 l2582h:
     add hl,de           ;2582 19
 l2583h:
@@ -5331,6 +5338,7 @@ l2583h:
     rra                 ;258e 1f
     ld e,a              ;258f 5f
     jp l256fh           ;2590 c3 6f 25
+
 l2593h:
     xor a               ;2593 af
     ld a,d              ;2594 7a
@@ -5365,6 +5373,7 @@ l25a8h:
     ld c,a              ;25b2 4f
     inc bc              ;25b3 03
     ret                 ;25b4 c9
+
 sub_25b5h:
     pop hl              ;25b5 e1
     push bc             ;25b6 c5
@@ -5399,6 +5408,7 @@ l25cfh:
     inc de              ;25d8 13
     dec a               ;25d9 3d
     jp l25cfh           ;25da c3 cf 25
+
 l25ddh:
     pop hl              ;25dd e1
     ld a,(hl)           ;25de 7e
@@ -5425,6 +5435,7 @@ l25f4h:
     pop de              ;25f5 d1
     pop bc              ;25f6 c1
     jp (hl)             ;25f7 e9
+
 sub_25f8h:
     ex (sp),hl          ;25f8 e3
     push af             ;25f9 f5
@@ -5459,2573 +5470,206 @@ l2615h:
     push bc             ;261a c5
     ex de,hl            ;261b eb
     ret                 ;261c c9
-    nop                 ;261d 00
-    nop                 ;261e 00
-    nop                 ;261f 00
-    nop                 ;2620 00
-    nop                 ;2621 00
-    nop                 ;2622 00
-    nop                 ;2623 00
-    nop                 ;2624 00
-    nop                 ;2625 00
-    nop                 ;2626 00
-    nop                 ;2627 00
-    nop                 ;2628 00
-    nop                 ;2629 00
-    nop                 ;262a 00
-    nop                 ;262b 00
-    nop                 ;262c 00
-    nop                 ;262d 00
-    nop                 ;262e 00
-    nop                 ;262f 00
-    nop                 ;2630 00
-    nop                 ;2631 00
-    nop                 ;2632 00
-    nop                 ;2633 00
-    nop                 ;2634 00
-    nop                 ;2635 00
-    nop                 ;2636 00
-    nop                 ;2637 00
-    nop                 ;2638 00
-    nop                 ;2639 00
-    nop                 ;263a 00
-    nop                 ;263b 00
-    nop                 ;263c 00
-    nop                 ;263d 00
-    nop                 ;263e 00
-    nop                 ;263f 00
-    nop                 ;2640 00
-    nop                 ;2641 00
-    nop                 ;2642 00
-    nop                 ;2643 00
-    nop                 ;2644 00
-    nop                 ;2645 00
-    nop                 ;2646 00
-    nop                 ;2647 00
-    nop                 ;2648 00
-    nop                 ;2649 00
-    nop                 ;264a 00
-    nop                 ;264b 00
-    nop                 ;264c 00
-    nop                 ;264d 00
-    nop                 ;264e 00
-    nop                 ;264f 00
-    nop                 ;2650 00
-    nop                 ;2651 00
-    nop                 ;2652 00
-    nop                 ;2653 00
-    nop                 ;2654 00
-    nop                 ;2655 00
-    nop                 ;2656 00
-    nop                 ;2657 00
-    nop                 ;2658 00
-    nop                 ;2659 00
-    nop                 ;265a 00
-    nop                 ;265b 00
-    nop                 ;265c 00
-    nop                 ;265d 00
-    nop                 ;265e 00
-    nop                 ;265f 00
-    nop                 ;2660 00
-    nop                 ;2661 00
-    nop                 ;2662 00
-    nop                 ;2663 00
-    nop                 ;2664 00
-    nop                 ;2665 00
-    nop                 ;2666 00
-    nop                 ;2667 00
-    nop                 ;2668 00
-    nop                 ;2669 00
-    nop                 ;266a 00
-    nop                 ;266b 00
-    nop                 ;266c 00
-    nop                 ;266d 00
-    nop                 ;266e 00
-    nop                 ;266f 00
-    nop                 ;2670 00
-    nop                 ;2671 00
-    nop                 ;2672 00
-    nop                 ;2673 00
-    nop                 ;2674 00
-    nop                 ;2675 00
-    nop                 ;2676 00
-    nop                 ;2677 00
-    nop                 ;2678 00
-    nop                 ;2679 00
-    nop                 ;267a 00
-    nop                 ;267b 00
-    nop                 ;267c 00
-    nop                 ;267d 00
-    nop                 ;267e 00
-    nop                 ;267f 00
-    nop                 ;2680 00
-    nop                 ;2681 00
-    nop                 ;2682 00
-    nop                 ;2683 00
-    nop                 ;2684 00
-    nop                 ;2685 00
-    nop                 ;2686 00
-    nop                 ;2687 00
-    nop                 ;2688 00
-    nop                 ;2689 00
-    nop                 ;268a 00
-    nop                 ;268b 00
-    nop                 ;268c 00
-    nop                 ;268d 00
-    nop                 ;268e 00
-    nop                 ;268f 00
-    nop                 ;2690 00
-    nop                 ;2691 00
-    nop                 ;2692 00
-    nop                 ;2693 00
-    nop                 ;2694 00
-    nop                 ;2695 00
-    nop                 ;2696 00
-    nop                 ;2697 00
-    nop                 ;2698 00
-    nop                 ;2699 00
-    nop                 ;269a 00
-    nop                 ;269b 00
-    nop                 ;269c 00
-    nop                 ;269d 00
-    nop                 ;269e 00
-    nop                 ;269f 00
-    nop                 ;26a0 00
-    nop                 ;26a1 00
-    nop                 ;26a2 00
-    nop                 ;26a3 00
-    nop                 ;26a4 00
-    nop                 ;26a5 00
-    nop                 ;26a6 00
-    nop                 ;26a7 00
-    nop                 ;26a8 00
-    nop                 ;26a9 00
-    nop                 ;26aa 00
-    nop                 ;26ab 00
-    nop                 ;26ac 00
-    nop                 ;26ad 00
-    nop                 ;26ae 00
-    nop                 ;26af 00
-    nop                 ;26b0 00
-    nop                 ;26b1 00
-    nop                 ;26b2 00
-    nop                 ;26b3 00
-    nop                 ;26b4 00
-    nop                 ;26b5 00
-    nop                 ;26b6 00
-    nop                 ;26b7 00
-    nop                 ;26b8 00
-    nop                 ;26b9 00
-    nop                 ;26ba 00
-    nop                 ;26bb 00
-    nop                 ;26bc 00
-    nop                 ;26bd 00
-    nop                 ;26be 00
-    nop                 ;26bf 00
-    nop                 ;26c0 00
-    nop                 ;26c1 00
-    nop                 ;26c2 00
-    nop                 ;26c3 00
-    nop                 ;26c4 00
-    nop                 ;26c5 00
-    nop                 ;26c6 00
-    nop                 ;26c7 00
-    nop                 ;26c8 00
-    nop                 ;26c9 00
-    nop                 ;26ca 00
-    nop                 ;26cb 00
-    nop                 ;26cc 00
-    nop                 ;26cd 00
-    nop                 ;26ce 00
-    nop                 ;26cf 00
-    nop                 ;26d0 00
-    nop                 ;26d1 00
-    nop                 ;26d2 00
-    nop                 ;26d3 00
-    nop                 ;26d4 00
-    nop                 ;26d5 00
-    nop                 ;26d6 00
-    nop                 ;26d7 00
-    nop                 ;26d8 00
-    nop                 ;26d9 00
-    nop                 ;26da 00
-    nop                 ;26db 00
-    nop                 ;26dc 00
-    nop                 ;26dd 00
-    nop                 ;26de 00
-    nop                 ;26df 00
-    nop                 ;26e0 00
-    nop                 ;26e1 00
-    nop                 ;26e2 00
-    nop                 ;26e3 00
-    nop                 ;26e4 00
-    nop                 ;26e5 00
-    nop                 ;26e6 00
-    nop                 ;26e7 00
-    nop                 ;26e8 00
-    nop                 ;26e9 00
-    nop                 ;26ea 00
-    nop                 ;26eb 00
-    nop                 ;26ec 00
-    nop                 ;26ed 00
-    nop                 ;26ee 00
-    nop                 ;26ef 00
-    nop                 ;26f0 00
-    nop                 ;26f1 00
-    nop                 ;26f2 00
-    nop                 ;26f3 00
-    nop                 ;26f4 00
-    nop                 ;26f5 00
-    nop                 ;26f6 00
-    nop                 ;26f7 00
-    nop                 ;26f8 00
-    nop                 ;26f9 00
-    nop                 ;26fa 00
-    nop                 ;26fb 00
-    nop                 ;26fc 00
-    nop                 ;26fd 00
-    nop                 ;26fe 00
-    nop                 ;26ff 00
-    nop                 ;2700 00
-    nop                 ;2701 00
-    nop                 ;2702 00
-    nop                 ;2703 00
-    nop                 ;2704 00
-    nop                 ;2705 00
-    nop                 ;2706 00
-    nop                 ;2707 00
-    nop                 ;2708 00
-    nop                 ;2709 00
-    nop                 ;270a 00
-    nop                 ;270b 00
-    nop                 ;270c 00
-    nop                 ;270d 00
-    nop                 ;270e 00
-    nop                 ;270f 00
-    nop                 ;2710 00
-    nop                 ;2711 00
-    nop                 ;2712 00
-    nop                 ;2713 00
-    nop                 ;2714 00
-    nop                 ;2715 00
-    nop                 ;2716 00
-    nop                 ;2717 00
-    nop                 ;2718 00
-    nop                 ;2719 00
-    nop                 ;271a 00
-    nop                 ;271b 00
-    nop                 ;271c 00
-    nop                 ;271d 00
-    nop                 ;271e 00
-    nop                 ;271f 00
-    nop                 ;2720 00
-    nop                 ;2721 00
-    nop                 ;2722 00
-    nop                 ;2723 00
-    nop                 ;2724 00
-    nop                 ;2725 00
-    nop                 ;2726 00
-    nop                 ;2727 00
-    nop                 ;2728 00
-    nop                 ;2729 00
-    nop                 ;272a 00
-    nop                 ;272b 00
-    nop                 ;272c 00
-    nop                 ;272d 00
-    nop                 ;272e 00
-    nop                 ;272f 00
-    nop                 ;2730 00
-    nop                 ;2731 00
-    nop                 ;2732 00
-    nop                 ;2733 00
-    nop                 ;2734 00
-    nop                 ;2735 00
-    nop                 ;2736 00
-    nop                 ;2737 00
-    nop                 ;2738 00
-    nop                 ;2739 00
-    nop                 ;273a 00
-    nop                 ;273b 00
-    nop                 ;273c 00
-    nop                 ;273d 00
-    nop                 ;273e 00
-    nop                 ;273f 00
-    nop                 ;2740 00
-    nop                 ;2741 00
-    nop                 ;2742 00
-    nop                 ;2743 00
-    nop                 ;2744 00
-    nop                 ;2745 00
-    nop                 ;2746 00
-    nop                 ;2747 00
-    nop                 ;2748 00
-    nop                 ;2749 00
-    nop                 ;274a 00
-    nop                 ;274b 00
-    nop                 ;274c 00
-    nop                 ;274d 00
-    nop                 ;274e 00
-    nop                 ;274f 00
-    nop                 ;2750 00
-    nop                 ;2751 00
-    nop                 ;2752 00
-    nop                 ;2753 00
-    nop                 ;2754 00
-    nop                 ;2755 00
-    nop                 ;2756 00
-    nop                 ;2757 00
-    nop                 ;2758 00
-    nop                 ;2759 00
-    nop                 ;275a 00
-    nop                 ;275b 00
-    nop                 ;275c 00
-    nop                 ;275d 00
-    nop                 ;275e 00
-    nop                 ;275f 00
-    nop                 ;2760 00
-    nop                 ;2761 00
-    nop                 ;2762 00
-    nop                 ;2763 00
-    nop                 ;2764 00
-    nop                 ;2765 00
-    nop                 ;2766 00
-    nop                 ;2767 00
-    nop                 ;2768 00
-    nop                 ;2769 00
-    nop                 ;276a 00
-    nop                 ;276b 00
-    nop                 ;276c 00
-    nop                 ;276d 00
-    nop                 ;276e 00
-    nop                 ;276f 00
-    nop                 ;2770 00
-    nop                 ;2771 00
-    nop                 ;2772 00
-    nop                 ;2773 00
-    nop                 ;2774 00
-    nop                 ;2775 00
-    nop                 ;2776 00
-    nop                 ;2777 00
-    nop                 ;2778 00
-    nop                 ;2779 00
-    nop                 ;277a 00
-    nop                 ;277b 00
-    nop                 ;277c 00
-    nop                 ;277d 00
-    nop                 ;277e 00
-    nop                 ;277f 00
-    nop                 ;2780 00
-    nop                 ;2781 00
-    nop                 ;2782 00
-    nop                 ;2783 00
-    nop                 ;2784 00
-    nop                 ;2785 00
-    nop                 ;2786 00
-    nop                 ;2787 00
-    nop                 ;2788 00
-    nop                 ;2789 00
-    nop                 ;278a 00
-    nop                 ;278b 00
-    nop                 ;278c 00
-    nop                 ;278d 00
-    nop                 ;278e 00
-    nop                 ;278f 00
-    nop                 ;2790 00
-    nop                 ;2791 00
-    nop                 ;2792 00
-    nop                 ;2793 00
-    nop                 ;2794 00
-    nop                 ;2795 00
-    nop                 ;2796 00
-    nop                 ;2797 00
-    nop                 ;2798 00
-    nop                 ;2799 00
-    nop                 ;279a 00
-    nop                 ;279b 00
-    nop                 ;279c 00
-    nop                 ;279d 00
-    nop                 ;279e 00
-    nop                 ;279f 00
-    nop                 ;27a0 00
-    nop                 ;27a1 00
-    nop                 ;27a2 00
-    nop                 ;27a3 00
-    nop                 ;27a4 00
-    nop                 ;27a5 00
-    nop                 ;27a6 00
-    nop                 ;27a7 00
-    nop                 ;27a8 00
-    nop                 ;27a9 00
-    nop                 ;27aa 00
-    nop                 ;27ab 00
-    nop                 ;27ac 00
-    nop                 ;27ad 00
-    nop                 ;27ae 00
-    nop                 ;27af 00
-    nop                 ;27b0 00
-    nop                 ;27b1 00
-    nop                 ;27b2 00
-    nop                 ;27b3 00
-    nop                 ;27b4 00
-    nop                 ;27b5 00
-    nop                 ;27b6 00
-    nop                 ;27b7 00
-    nop                 ;27b8 00
-    nop                 ;27b9 00
-    nop                 ;27ba 00
-    nop                 ;27bb 00
-    nop                 ;27bc 00
-    nop                 ;27bd 00
-    nop                 ;27be 00
-    nop                 ;27bf 00
-    nop                 ;27c0 00
-    nop                 ;27c1 00
-    nop                 ;27c2 00
-    nop                 ;27c3 00
-    nop                 ;27c4 00
-    nop                 ;27c5 00
-    nop                 ;27c6 00
-    nop                 ;27c7 00
-    nop                 ;27c8 00
-    nop                 ;27c9 00
-    nop                 ;27ca 00
-    nop                 ;27cb 00
-    nop                 ;27cc 00
-    nop                 ;27cd 00
-    nop                 ;27ce 00
-    nop                 ;27cf 00
-    nop                 ;27d0 00
-    nop                 ;27d1 00
-    nop                 ;27d2 00
-    nop                 ;27d3 00
-    nop                 ;27d4 00
-    nop                 ;27d5 00
-    nop                 ;27d6 00
-    nop                 ;27d7 00
-    nop                 ;27d8 00
-    nop                 ;27d9 00
-    nop                 ;27da 00
-    nop                 ;27db 00
-    nop                 ;27dc 00
-    nop                 ;27dd 00
-    nop                 ;27de 00
-    nop                 ;27df 00
-    nop                 ;27e0 00
-    nop                 ;27e1 00
-    nop                 ;27e2 00
-    nop                 ;27e3 00
-    nop                 ;27e4 00
-    nop                 ;27e5 00
-    nop                 ;27e6 00
-    nop                 ;27e7 00
-    nop                 ;27e8 00
-    nop                 ;27e9 00
-    nop                 ;27ea 00
-    nop                 ;27eb 00
-    nop                 ;27ec 00
-    nop                 ;27ed 00
-    nop                 ;27ee 00
-    nop                 ;27ef 00
-    nop                 ;27f0 00
-    nop                 ;27f1 00
-    nop                 ;27f2 00
-    nop                 ;27f3 00
-    nop                 ;27f4 00
-    nop                 ;27f5 00
-    nop                 ;27f6 00
-    nop                 ;27f7 00
-    nop                 ;27f8 00
-    nop                 ;27f9 00
-    nop                 ;27fa 00
-    nop                 ;27fb 00
-    nop                 ;27fc 00
-    nop                 ;27fd 00
-    nop                 ;27fe 00
-    nop                 ;27ff 00
-    nop                 ;2800 00
-    nop                 ;2801 00
-    nop                 ;2802 00
-    nop                 ;2803 00
-    nop                 ;2804 00
-    nop                 ;2805 00
-    nop                 ;2806 00
-    nop                 ;2807 00
-    nop                 ;2808 00
-    nop                 ;2809 00
-    nop                 ;280a 00
-    nop                 ;280b 00
-    nop                 ;280c 00
-    nop                 ;280d 00
-    nop                 ;280e 00
-    nop                 ;280f 00
-    nop                 ;2810 00
-    nop                 ;2811 00
-    nop                 ;2812 00
-    nop                 ;2813 00
-    nop                 ;2814 00
-    nop                 ;2815 00
-    nop                 ;2816 00
-    nop                 ;2817 00
-    nop                 ;2818 00
-    nop                 ;2819 00
-    nop                 ;281a 00
-    nop                 ;281b 00
-    nop                 ;281c 00
-    nop                 ;281d 00
-    nop                 ;281e 00
-    nop                 ;281f 00
-    nop                 ;2820 00
-    nop                 ;2821 00
-    nop                 ;2822 00
-    nop                 ;2823 00
-    nop                 ;2824 00
-    nop                 ;2825 00
-    nop                 ;2826 00
-    nop                 ;2827 00
-    nop                 ;2828 00
-    nop                 ;2829 00
-    nop                 ;282a 00
-    nop                 ;282b 00
-    nop                 ;282c 00
-    nop                 ;282d 00
-    nop                 ;282e 00
-    nop                 ;282f 00
-    nop                 ;2830 00
-    nop                 ;2831 00
-    nop                 ;2832 00
-    nop                 ;2833 00
-    nop                 ;2834 00
-    nop                 ;2835 00
-    nop                 ;2836 00
-    nop                 ;2837 00
-    nop                 ;2838 00
-    nop                 ;2839 00
-    nop                 ;283a 00
-    nop                 ;283b 00
-    nop                 ;283c 00
-    nop                 ;283d 00
-    nop                 ;283e 00
-    nop                 ;283f 00
-    nop                 ;2840 00
-    nop                 ;2841 00
-    nop                 ;2842 00
-    nop                 ;2843 00
-    nop                 ;2844 00
-    nop                 ;2845 00
-    nop                 ;2846 00
-    nop                 ;2847 00
-    nop                 ;2848 00
-    nop                 ;2849 00
-    nop                 ;284a 00
-    nop                 ;284b 00
-    nop                 ;284c 00
-    nop                 ;284d 00
-    nop                 ;284e 00
-    nop                 ;284f 00
-    nop                 ;2850 00
-    nop                 ;2851 00
-    nop                 ;2852 00
-    nop                 ;2853 00
-    nop                 ;2854 00
-    nop                 ;2855 00
-    nop                 ;2856 00
-    nop                 ;2857 00
-    nop                 ;2858 00
-    nop                 ;2859 00
-    nop                 ;285a 00
-    nop                 ;285b 00
-    nop                 ;285c 00
-    nop                 ;285d 00
-    nop                 ;285e 00
-    nop                 ;285f 00
-    nop                 ;2860 00
-    nop                 ;2861 00
-    nop                 ;2862 00
-    nop                 ;2863 00
-    nop                 ;2864 00
-    nop                 ;2865 00
-    nop                 ;2866 00
-    nop                 ;2867 00
-    nop                 ;2868 00
-    nop                 ;2869 00
-    nop                 ;286a 00
-    nop                 ;286b 00
-    nop                 ;286c 00
-    nop                 ;286d 00
-    nop                 ;286e 00
-    nop                 ;286f 00
-    nop                 ;2870 00
-    nop                 ;2871 00
-    nop                 ;2872 00
-    nop                 ;2873 00
-    nop                 ;2874 00
-    nop                 ;2875 00
-    nop                 ;2876 00
-    nop                 ;2877 00
-    nop                 ;2878 00
-    nop                 ;2879 00
-    nop                 ;287a 00
-    nop                 ;287b 00
-    nop                 ;287c 00
-    nop                 ;287d 00
-    nop                 ;287e 00
-    nop                 ;287f 00
-    nop                 ;2880 00
-    nop                 ;2881 00
-    nop                 ;2882 00
-    nop                 ;2883 00
-    nop                 ;2884 00
-    nop                 ;2885 00
-    nop                 ;2886 00
-    nop                 ;2887 00
-    nop                 ;2888 00
-    nop                 ;2889 00
-    nop                 ;288a 00
-    nop                 ;288b 00
-    nop                 ;288c 00
-    nop                 ;288d 00
-    nop                 ;288e 00
-    nop                 ;288f 00
-    nop                 ;2890 00
-    nop                 ;2891 00
-    nop                 ;2892 00
-    nop                 ;2893 00
-    nop                 ;2894 00
-    nop                 ;2895 00
-    nop                 ;2896 00
-    nop                 ;2897 00
-    nop                 ;2898 00
-    nop                 ;2899 00
-    nop                 ;289a 00
-    nop                 ;289b 00
-    nop                 ;289c 00
-    nop                 ;289d 00
-    nop                 ;289e 00
-    nop                 ;289f 00
-    nop                 ;28a0 00
-    nop                 ;28a1 00
-    nop                 ;28a2 00
-    nop                 ;28a3 00
-    nop                 ;28a4 00
-    nop                 ;28a5 00
-    nop                 ;28a6 00
-    nop                 ;28a7 00
-    nop                 ;28a8 00
-    nop                 ;28a9 00
-    nop                 ;28aa 00
-    nop                 ;28ab 00
-    nop                 ;28ac 00
-    nop                 ;28ad 00
-    nop                 ;28ae 00
-    nop                 ;28af 00
-    nop                 ;28b0 00
-    nop                 ;28b1 00
-    nop                 ;28b2 00
-    nop                 ;28b3 00
-    nop                 ;28b4 00
-    nop                 ;28b5 00
-    nop                 ;28b6 00
-    nop                 ;28b7 00
-    nop                 ;28b8 00
-    nop                 ;28b9 00
-    nop                 ;28ba 00
-    nop                 ;28bb 00
-    nop                 ;28bc 00
-    nop                 ;28bd 00
-    nop                 ;28be 00
-    nop                 ;28bf 00
-    nop                 ;28c0 00
-    nop                 ;28c1 00
-    nop                 ;28c2 00
-    nop                 ;28c3 00
-    nop                 ;28c4 00
-    nop                 ;28c5 00
-    nop                 ;28c6 00
-    nop                 ;28c7 00
-    nop                 ;28c8 00
-    nop                 ;28c9 00
-    nop                 ;28ca 00
-    nop                 ;28cb 00
-    nop                 ;28cc 00
-    nop                 ;28cd 00
-    nop                 ;28ce 00
-    nop                 ;28cf 00
-    nop                 ;28d0 00
-    nop                 ;28d1 00
-    nop                 ;28d2 00
-    nop                 ;28d3 00
-    nop                 ;28d4 00
-    nop                 ;28d5 00
-    nop                 ;28d6 00
-    nop                 ;28d7 00
-    nop                 ;28d8 00
-    nop                 ;28d9 00
-    nop                 ;28da 00
-    nop                 ;28db 00
-    nop                 ;28dc 00
-    nop                 ;28dd 00
-    nop                 ;28de 00
-    nop                 ;28df 00
-    nop                 ;28e0 00
-    nop                 ;28e1 00
-    nop                 ;28e2 00
-    nop                 ;28e3 00
-    nop                 ;28e4 00
-    nop                 ;28e5 00
-    nop                 ;28e6 00
-    nop                 ;28e7 00
-    nop                 ;28e8 00
-    nop                 ;28e9 00
-    nop                 ;28ea 00
-    nop                 ;28eb 00
-    nop                 ;28ec 00
-    nop                 ;28ed 00
-    nop                 ;28ee 00
-    nop                 ;28ef 00
-    nop                 ;28f0 00
-    nop                 ;28f1 00
-    nop                 ;28f2 00
-    nop                 ;28f3 00
-    nop                 ;28f4 00
-    nop                 ;28f5 00
-    nop                 ;28f6 00
-    nop                 ;28f7 00
-    nop                 ;28f8 00
-    nop                 ;28f9 00
-    nop                 ;28fa 00
-    nop                 ;28fb 00
-    nop                 ;28fc 00
-    nop                 ;28fd 00
-    nop                 ;28fe 00
-    nop                 ;28ff 00
-    nop                 ;2900 00
-    nop                 ;2901 00
-    nop                 ;2902 00
-    nop                 ;2903 00
-    nop                 ;2904 00
-    nop                 ;2905 00
-    nop                 ;2906 00
-    nop                 ;2907 00
-    nop                 ;2908 00
-    nop                 ;2909 00
-    nop                 ;290a 00
-    nop                 ;290b 00
-    nop                 ;290c 00
-    nop                 ;290d 00
-    nop                 ;290e 00
-    nop                 ;290f 00
-    nop                 ;2910 00
-    nop                 ;2911 00
-    nop                 ;2912 00
-    nop                 ;2913 00
-    nop                 ;2914 00
-    nop                 ;2915 00
-    nop                 ;2916 00
-    nop                 ;2917 00
-    nop                 ;2918 00
-    nop                 ;2919 00
-    nop                 ;291a 00
-    nop                 ;291b 00
-    nop                 ;291c 00
-    nop                 ;291d 00
-    nop                 ;291e 00
-    nop                 ;291f 00
-    nop                 ;2920 00
-    nop                 ;2921 00
-    nop                 ;2922 00
-    nop                 ;2923 00
-    nop                 ;2924 00
-    nop                 ;2925 00
-    nop                 ;2926 00
-    nop                 ;2927 00
-    nop                 ;2928 00
-    nop                 ;2929 00
-    nop                 ;292a 00
-    nop                 ;292b 00
-    nop                 ;292c 00
-    nop                 ;292d 00
-    nop                 ;292e 00
-    nop                 ;292f 00
-    nop                 ;2930 00
-    nop                 ;2931 00
-    nop                 ;2932 00
-    nop                 ;2933 00
-    nop                 ;2934 00
-    nop                 ;2935 00
-    nop                 ;2936 00
-    nop                 ;2937 00
-    nop                 ;2938 00
-    nop                 ;2939 00
-    nop                 ;293a 00
-    nop                 ;293b 00
-    nop                 ;293c 00
-    nop                 ;293d 00
-    nop                 ;293e 00
-    nop                 ;293f 00
-    nop                 ;2940 00
-    nop                 ;2941 00
-    nop                 ;2942 00
-    nop                 ;2943 00
-    nop                 ;2944 00
-    nop                 ;2945 00
-    nop                 ;2946 00
-    nop                 ;2947 00
-    nop                 ;2948 00
-    nop                 ;2949 00
-    nop                 ;294a 00
-    nop                 ;294b 00
-    nop                 ;294c 00
-    nop                 ;294d 00
-    nop                 ;294e 00
-    nop                 ;294f 00
-    nop                 ;2950 00
-    nop                 ;2951 00
-    nop                 ;2952 00
-    nop                 ;2953 00
-    nop                 ;2954 00
-    nop                 ;2955 00
-    nop                 ;2956 00
-    nop                 ;2957 00
-    nop                 ;2958 00
-    nop                 ;2959 00
-    nop                 ;295a 00
-    nop                 ;295b 00
-    nop                 ;295c 00
-    nop                 ;295d 00
-    nop                 ;295e 00
-    nop                 ;295f 00
-    nop                 ;2960 00
-    nop                 ;2961 00
-    nop                 ;2962 00
-    nop                 ;2963 00
-    nop                 ;2964 00
-    nop                 ;2965 00
-    nop                 ;2966 00
-    nop                 ;2967 00
-    nop                 ;2968 00
-    nop                 ;2969 00
-    nop                 ;296a 00
-    nop                 ;296b 00
-    nop                 ;296c 00
-    nop                 ;296d 00
-    nop                 ;296e 00
-    nop                 ;296f 00
-    nop                 ;2970 00
-    nop                 ;2971 00
-    nop                 ;2972 00
-    nop                 ;2973 00
-    nop                 ;2974 00
-    nop                 ;2975 00
-    nop                 ;2976 00
-    nop                 ;2977 00
-    nop                 ;2978 00
-    nop                 ;2979 00
-    nop                 ;297a 00
-    nop                 ;297b 00
-    nop                 ;297c 00
-    nop                 ;297d 00
-    nop                 ;297e 00
-    nop                 ;297f 00
-    nop                 ;2980 00
-    nop                 ;2981 00
-    nop                 ;2982 00
-    nop                 ;2983 00
-    nop                 ;2984 00
-    nop                 ;2985 00
-    nop                 ;2986 00
-    nop                 ;2987 00
-    nop                 ;2988 00
-    nop                 ;2989 00
-    nop                 ;298a 00
-    nop                 ;298b 00
-    nop                 ;298c 00
-    nop                 ;298d 00
-    nop                 ;298e 00
-    nop                 ;298f 00
-    nop                 ;2990 00
-    nop                 ;2991 00
-    nop                 ;2992 00
-    nop                 ;2993 00
-    nop                 ;2994 00
-    nop                 ;2995 00
-    nop                 ;2996 00
-    nop                 ;2997 00
-    nop                 ;2998 00
-    nop                 ;2999 00
-    nop                 ;299a 00
-    nop                 ;299b 00
-    nop                 ;299c 00
-    nop                 ;299d 00
-    nop                 ;299e 00
-    nop                 ;299f 00
-    nop                 ;29a0 00
-    nop                 ;29a1 00
-    nop                 ;29a2 00
-    nop                 ;29a3 00
-    nop                 ;29a4 00
-    nop                 ;29a5 00
-    nop                 ;29a6 00
-    nop                 ;29a7 00
-    nop                 ;29a8 00
-    nop                 ;29a9 00
-    nop                 ;29aa 00
-    nop                 ;29ab 00
-    nop                 ;29ac 00
-    nop                 ;29ad 00
-    nop                 ;29ae 00
-    nop                 ;29af 00
-    nop                 ;29b0 00
-    nop                 ;29b1 00
-    nop                 ;29b2 00
-    nop                 ;29b3 00
-    nop                 ;29b4 00
-    nop                 ;29b5 00
-    nop                 ;29b6 00
-    nop                 ;29b7 00
-    nop                 ;29b8 00
-    nop                 ;29b9 00
-    nop                 ;29ba 00
-    nop                 ;29bb 00
-    nop                 ;29bc 00
-    nop                 ;29bd 00
-    nop                 ;29be 00
-    nop                 ;29bf 00
-    nop                 ;29c0 00
-    nop                 ;29c1 00
-    nop                 ;29c2 00
-    nop                 ;29c3 00
-    nop                 ;29c4 00
-    nop                 ;29c5 00
-    nop                 ;29c6 00
-    nop                 ;29c7 00
-    nop                 ;29c8 00
-    nop                 ;29c9 00
-    nop                 ;29ca 00
-    nop                 ;29cb 00
-    nop                 ;29cc 00
-    nop                 ;29cd 00
-    nop                 ;29ce 00
-    nop                 ;29cf 00
-    nop                 ;29d0 00
-    nop                 ;29d1 00
-    nop                 ;29d2 00
-    nop                 ;29d3 00
-    nop                 ;29d4 00
-    nop                 ;29d5 00
-    nop                 ;29d6 00
-    nop                 ;29d7 00
-    nop                 ;29d8 00
-    nop                 ;29d9 00
-    nop                 ;29da 00
-    nop                 ;29db 00
-    nop                 ;29dc 00
-    nop                 ;29dd 00
-    nop                 ;29de 00
-    nop                 ;29df 00
-    nop                 ;29e0 00
-    nop                 ;29e1 00
-    nop                 ;29e2 00
-    nop                 ;29e3 00
-    nop                 ;29e4 00
-    nop                 ;29e5 00
-    nop                 ;29e6 00
-    nop                 ;29e7 00
-    nop                 ;29e8 00
-    nop                 ;29e9 00
-    nop                 ;29ea 00
-    nop                 ;29eb 00
-    nop                 ;29ec 00
-    nop                 ;29ed 00
-    nop                 ;29ee 00
-    nop                 ;29ef 00
-    nop                 ;29f0 00
-    nop                 ;29f1 00
-    nop                 ;29f2 00
-    nop                 ;29f3 00
-    nop                 ;29f4 00
-    nop                 ;29f5 00
-    nop                 ;29f6 00
-    nop                 ;29f7 00
-    nop                 ;29f8 00
-    nop                 ;29f9 00
-    nop                 ;29fa 00
-    nop                 ;29fb 00
-    nop                 ;29fc 00
-    nop                 ;29fd 00
-    nop                 ;29fe 00
-    nop                 ;29ff 00
-    nop                 ;2a00 00
-    nop                 ;2a01 00
-    nop                 ;2a02 00
-    nop                 ;2a03 00
-    nop                 ;2a04 00
-    nop                 ;2a05 00
-    nop                 ;2a06 00
-    nop                 ;2a07 00
-    nop                 ;2a08 00
-    nop                 ;2a09 00
-    nop                 ;2a0a 00
-    nop                 ;2a0b 00
-    nop                 ;2a0c 00
-    nop                 ;2a0d 00
-    nop                 ;2a0e 00
-    nop                 ;2a0f 00
-    nop                 ;2a10 00
-    nop                 ;2a11 00
-    nop                 ;2a12 00
-    nop                 ;2a13 00
-    nop                 ;2a14 00
-    nop                 ;2a15 00
-    nop                 ;2a16 00
-    nop                 ;2a17 00
-    nop                 ;2a18 00
-    nop                 ;2a19 00
-    nop                 ;2a1a 00
-    nop                 ;2a1b 00
-    nop                 ;2a1c 00
-    nop                 ;2a1d 00
-    nop                 ;2a1e 00
-    nop                 ;2a1f 00
-    nop                 ;2a20 00
-    nop                 ;2a21 00
-    nop                 ;2a22 00
-    nop                 ;2a23 00
-    nop                 ;2a24 00
-    nop                 ;2a25 00
-    nop                 ;2a26 00
-    nop                 ;2a27 00
-    nop                 ;2a28 00
-    nop                 ;2a29 00
-    nop                 ;2a2a 00
-    nop                 ;2a2b 00
-    nop                 ;2a2c 00
-    nop                 ;2a2d 00
-    nop                 ;2a2e 00
-    nop                 ;2a2f 00
-    nop                 ;2a30 00
-    nop                 ;2a31 00
-    nop                 ;2a32 00
-    nop                 ;2a33 00
-    nop                 ;2a34 00
-    nop                 ;2a35 00
-    nop                 ;2a36 00
-    nop                 ;2a37 00
-    nop                 ;2a38 00
-    nop                 ;2a39 00
-    nop                 ;2a3a 00
-    nop                 ;2a3b 00
-    nop                 ;2a3c 00
-    nop                 ;2a3d 00
-    nop                 ;2a3e 00
-    nop                 ;2a3f 00
-    nop                 ;2a40 00
-    nop                 ;2a41 00
-    nop                 ;2a42 00
-    nop                 ;2a43 00
-    nop                 ;2a44 00
-    nop                 ;2a45 00
-    nop                 ;2a46 00
-    nop                 ;2a47 00
-    nop                 ;2a48 00
-    nop                 ;2a49 00
-    nop                 ;2a4a 00
-    nop                 ;2a4b 00
-    nop                 ;2a4c 00
-    nop                 ;2a4d 00
-    nop                 ;2a4e 00
-    nop                 ;2a4f 00
-    nop                 ;2a50 00
-    nop                 ;2a51 00
-    nop                 ;2a52 00
-    nop                 ;2a53 00
-    nop                 ;2a54 00
-    nop                 ;2a55 00
-    nop                 ;2a56 00
-    nop                 ;2a57 00
-    nop                 ;2a58 00
-    nop                 ;2a59 00
-    nop                 ;2a5a 00
-    nop                 ;2a5b 00
-    nop                 ;2a5c 00
-    nop                 ;2a5d 00
-    nop                 ;2a5e 00
-    nop                 ;2a5f 00
-    nop                 ;2a60 00
-    nop                 ;2a61 00
-    nop                 ;2a62 00
-    nop                 ;2a63 00
-    nop                 ;2a64 00
-    nop                 ;2a65 00
-    nop                 ;2a66 00
-    nop                 ;2a67 00
-    nop                 ;2a68 00
-    nop                 ;2a69 00
-    nop                 ;2a6a 00
-    nop                 ;2a6b 00
-    nop                 ;2a6c 00
-    nop                 ;2a6d 00
-    nop                 ;2a6e 00
-    nop                 ;2a6f 00
-    nop                 ;2a70 00
-    nop                 ;2a71 00
-    nop                 ;2a72 00
-    nop                 ;2a73 00
-    nop                 ;2a74 00
-    nop                 ;2a75 00
-    nop                 ;2a76 00
-    nop                 ;2a77 00
-    nop                 ;2a78 00
-    nop                 ;2a79 00
-    nop                 ;2a7a 00
-    nop                 ;2a7b 00
-    nop                 ;2a7c 00
-    nop                 ;2a7d 00
-    nop                 ;2a7e 00
-    nop                 ;2a7f 00
-    nop                 ;2a80 00
-    nop                 ;2a81 00
-    nop                 ;2a82 00
-    nop                 ;2a83 00
-    nop                 ;2a84 00
-    nop                 ;2a85 00
-    nop                 ;2a86 00
-    nop                 ;2a87 00
-    nop                 ;2a88 00
-    nop                 ;2a89 00
-    nop                 ;2a8a 00
-    nop                 ;2a8b 00
-    nop                 ;2a8c 00
-    nop                 ;2a8d 00
-    nop                 ;2a8e 00
-    nop                 ;2a8f 00
-    nop                 ;2a90 00
-    nop                 ;2a91 00
-    nop                 ;2a92 00
-    nop                 ;2a93 00
-    nop                 ;2a94 00
-    nop                 ;2a95 00
-    nop                 ;2a96 00
-    nop                 ;2a97 00
-    nop                 ;2a98 00
-    nop                 ;2a99 00
-    nop                 ;2a9a 00
-    nop                 ;2a9b 00
-    nop                 ;2a9c 00
-    nop                 ;2a9d 00
-    nop                 ;2a9e 00
-    nop                 ;2a9f 00
-    nop                 ;2aa0 00
-    nop                 ;2aa1 00
-    nop                 ;2aa2 00
-    nop                 ;2aa3 00
-    nop                 ;2aa4 00
-    nop                 ;2aa5 00
-    nop                 ;2aa6 00
-    nop                 ;2aa7 00
-    nop                 ;2aa8 00
-    nop                 ;2aa9 00
-    nop                 ;2aaa 00
-    nop                 ;2aab 00
-    nop                 ;2aac 00
-    nop                 ;2aad 00
-    nop                 ;2aae 00
-    nop                 ;2aaf 00
-    nop                 ;2ab0 00
-    nop                 ;2ab1 00
-    nop                 ;2ab2 00
-    nop                 ;2ab3 00
-    nop                 ;2ab4 00
-    nop                 ;2ab5 00
-    nop                 ;2ab6 00
-    nop                 ;2ab7 00
-    nop                 ;2ab8 00
-    nop                 ;2ab9 00
-    nop                 ;2aba 00
-    nop                 ;2abb 00
-    nop                 ;2abc 00
-    nop                 ;2abd 00
-    nop                 ;2abe 00
-    nop                 ;2abf 00
-    nop                 ;2ac0 00
-    nop                 ;2ac1 00
-    nop                 ;2ac2 00
-    nop                 ;2ac3 00
-    nop                 ;2ac4 00
-    nop                 ;2ac5 00
-    nop                 ;2ac6 00
-    nop                 ;2ac7 00
-    nop                 ;2ac8 00
-    nop                 ;2ac9 00
-    nop                 ;2aca 00
-    nop                 ;2acb 00
-    nop                 ;2acc 00
-    nop                 ;2acd 00
-    nop                 ;2ace 00
-    nop                 ;2acf 00
-    nop                 ;2ad0 00
-    nop                 ;2ad1 00
-    nop                 ;2ad2 00
-    nop                 ;2ad3 00
-    nop                 ;2ad4 00
-    nop                 ;2ad5 00
-    nop                 ;2ad6 00
-    nop                 ;2ad7 00
-    nop                 ;2ad8 00
-    nop                 ;2ad9 00
-    nop                 ;2ada 00
-    nop                 ;2adb 00
-    nop                 ;2adc 00
-    nop                 ;2add 00
-    nop                 ;2ade 00
-    nop                 ;2adf 00
-    nop                 ;2ae0 00
-    nop                 ;2ae1 00
-    nop                 ;2ae2 00
-    nop                 ;2ae3 00
-    nop                 ;2ae4 00
-    nop                 ;2ae5 00
-    nop                 ;2ae6 00
-    nop                 ;2ae7 00
-    nop                 ;2ae8 00
-    nop                 ;2ae9 00
-    nop                 ;2aea 00
-    nop                 ;2aeb 00
-    nop                 ;2aec 00
-    nop                 ;2aed 00
-    nop                 ;2aee 00
-    nop                 ;2aef 00
-    nop                 ;2af0 00
-    nop                 ;2af1 00
-    nop                 ;2af2 00
-    nop                 ;2af3 00
-    nop                 ;2af4 00
-    nop                 ;2af5 00
-    nop                 ;2af6 00
-    nop                 ;2af7 00
-    nop                 ;2af8 00
-    nop                 ;2af9 00
-    nop                 ;2afa 00
-    nop                 ;2afb 00
-    nop                 ;2afc 00
-    nop                 ;2afd 00
-    nop                 ;2afe 00
-    nop                 ;2aff 00
-    nop                 ;2b00 00
-    nop                 ;2b01 00
-    nop                 ;2b02 00
-    nop                 ;2b03 00
-    nop                 ;2b04 00
-    nop                 ;2b05 00
-    nop                 ;2b06 00
-    nop                 ;2b07 00
-    nop                 ;2b08 00
-    nop                 ;2b09 00
-    nop                 ;2b0a 00
-    nop                 ;2b0b 00
-    nop                 ;2b0c 00
-    nop                 ;2b0d 00
-    nop                 ;2b0e 00
-    nop                 ;2b0f 00
-    nop                 ;2b10 00
-    nop                 ;2b11 00
-    nop                 ;2b12 00
-    nop                 ;2b13 00
-    nop                 ;2b14 00
-    nop                 ;2b15 00
-    nop                 ;2b16 00
-    nop                 ;2b17 00
-    nop                 ;2b18 00
-    nop                 ;2b19 00
-    nop                 ;2b1a 00
-    nop                 ;2b1b 00
-    nop                 ;2b1c 00
-    nop                 ;2b1d 00
-    nop                 ;2b1e 00
-    nop                 ;2b1f 00
-    nop                 ;2b20 00
-    nop                 ;2b21 00
-    nop                 ;2b22 00
-    nop                 ;2b23 00
-    nop                 ;2b24 00
-    nop                 ;2b25 00
-    nop                 ;2b26 00
-    nop                 ;2b27 00
-    nop                 ;2b28 00
-    nop                 ;2b29 00
-    nop                 ;2b2a 00
-    nop                 ;2b2b 00
-    nop                 ;2b2c 00
-    nop                 ;2b2d 00
-    nop                 ;2b2e 00
-    nop                 ;2b2f 00
-    nop                 ;2b30 00
-    nop                 ;2b31 00
-    nop                 ;2b32 00
-    nop                 ;2b33 00
-    nop                 ;2b34 00
-    nop                 ;2b35 00
-    nop                 ;2b36 00
-    nop                 ;2b37 00
-    nop                 ;2b38 00
-    nop                 ;2b39 00
-    nop                 ;2b3a 00
-    nop                 ;2b3b 00
-    nop                 ;2b3c 00
-    nop                 ;2b3d 00
-    nop                 ;2b3e 00
-    nop                 ;2b3f 00
-    nop                 ;2b40 00
-    nop                 ;2b41 00
-    nop                 ;2b42 00
-    nop                 ;2b43 00
-    nop                 ;2b44 00
-    nop                 ;2b45 00
-    nop                 ;2b46 00
-    nop                 ;2b47 00
-    nop                 ;2b48 00
-    nop                 ;2b49 00
-    nop                 ;2b4a 00
-    nop                 ;2b4b 00
-    nop                 ;2b4c 00
-    nop                 ;2b4d 00
-    nop                 ;2b4e 00
-    nop                 ;2b4f 00
-    nop                 ;2b50 00
-    nop                 ;2b51 00
-    nop                 ;2b52 00
-    nop                 ;2b53 00
-    nop                 ;2b54 00
-    nop                 ;2b55 00
-    nop                 ;2b56 00
-    nop                 ;2b57 00
-    nop                 ;2b58 00
-    nop                 ;2b59 00
-    nop                 ;2b5a 00
-    nop                 ;2b5b 00
-    nop                 ;2b5c 00
-    nop                 ;2b5d 00
-    nop                 ;2b5e 00
-    nop                 ;2b5f 00
-    nop                 ;2b60 00
-    nop                 ;2b61 00
-    nop                 ;2b62 00
-    nop                 ;2b63 00
-    nop                 ;2b64 00
-    nop                 ;2b65 00
-    nop                 ;2b66 00
-    nop                 ;2b67 00
-    nop                 ;2b68 00
-    nop                 ;2b69 00
-    nop                 ;2b6a 00
-    nop                 ;2b6b 00
-    nop                 ;2b6c 00
-    nop                 ;2b6d 00
-    nop                 ;2b6e 00
-    nop                 ;2b6f 00
-    nop                 ;2b70 00
-    nop                 ;2b71 00
-    nop                 ;2b72 00
-    nop                 ;2b73 00
-    nop                 ;2b74 00
-    nop                 ;2b75 00
-    nop                 ;2b76 00
-    nop                 ;2b77 00
-    nop                 ;2b78 00
-    nop                 ;2b79 00
-    nop                 ;2b7a 00
-    nop                 ;2b7b 00
-    nop                 ;2b7c 00
-    nop                 ;2b7d 00
-    nop                 ;2b7e 00
-    nop                 ;2b7f 00
-    nop                 ;2b80 00
-    nop                 ;2b81 00
-    nop                 ;2b82 00
-    nop                 ;2b83 00
-    nop                 ;2b84 00
-    nop                 ;2b85 00
-    nop                 ;2b86 00
-    nop                 ;2b87 00
-    nop                 ;2b88 00
-    nop                 ;2b89 00
-    nop                 ;2b8a 00
-    nop                 ;2b8b 00
-    nop                 ;2b8c 00
-    nop                 ;2b8d 00
-    nop                 ;2b8e 00
-    nop                 ;2b8f 00
-    nop                 ;2b90 00
-    nop                 ;2b91 00
-    nop                 ;2b92 00
-    nop                 ;2b93 00
-    nop                 ;2b94 00
-    nop                 ;2b95 00
-    nop                 ;2b96 00
-    nop                 ;2b97 00
-    nop                 ;2b98 00
-    nop                 ;2b99 00
-    nop                 ;2b9a 00
-    nop                 ;2b9b 00
-    nop                 ;2b9c 00
-    nop                 ;2b9d 00
-    nop                 ;2b9e 00
-    nop                 ;2b9f 00
-    nop                 ;2ba0 00
-    nop                 ;2ba1 00
-    nop                 ;2ba2 00
-    nop                 ;2ba3 00
-    nop                 ;2ba4 00
-    nop                 ;2ba5 00
-    nop                 ;2ba6 00
-    nop                 ;2ba7 00
-    nop                 ;2ba8 00
-    nop                 ;2ba9 00
-    nop                 ;2baa 00
-    nop                 ;2bab 00
-    nop                 ;2bac 00
-    nop                 ;2bad 00
-    nop                 ;2bae 00
-    nop                 ;2baf 00
-    nop                 ;2bb0 00
-    nop                 ;2bb1 00
-    nop                 ;2bb2 00
-    nop                 ;2bb3 00
-    nop                 ;2bb4 00
-    nop                 ;2bb5 00
-    nop                 ;2bb6 00
-    nop                 ;2bb7 00
-    nop                 ;2bb8 00
-    nop                 ;2bb9 00
-    nop                 ;2bba 00
-    nop                 ;2bbb 00
-    nop                 ;2bbc 00
-    nop                 ;2bbd 00
-    nop                 ;2bbe 00
-    nop                 ;2bbf 00
-    nop                 ;2bc0 00
-    nop                 ;2bc1 00
-    nop                 ;2bc2 00
-    nop                 ;2bc3 00
-    nop                 ;2bc4 00
-    nop                 ;2bc5 00
-    nop                 ;2bc6 00
-    nop                 ;2bc7 00
-    nop                 ;2bc8 00
-    nop                 ;2bc9 00
-    nop                 ;2bca 00
-    nop                 ;2bcb 00
-    nop                 ;2bcc 00
-    nop                 ;2bcd 00
-    nop                 ;2bce 00
-    nop                 ;2bcf 00
-    nop                 ;2bd0 00
-    nop                 ;2bd1 00
-    nop                 ;2bd2 00
-    nop                 ;2bd3 00
-    nop                 ;2bd4 00
-    nop                 ;2bd5 00
-    nop                 ;2bd6 00
-    nop                 ;2bd7 00
-    nop                 ;2bd8 00
-    nop                 ;2bd9 00
-    nop                 ;2bda 00
-    nop                 ;2bdb 00
-    nop                 ;2bdc 00
-    nop                 ;2bdd 00
-    nop                 ;2bde 00
-    nop                 ;2bdf 00
-    nop                 ;2be0 00
-    nop                 ;2be1 00
-    nop                 ;2be2 00
-    nop                 ;2be3 00
-    nop                 ;2be4 00
-    nop                 ;2be5 00
-    nop                 ;2be6 00
-    nop                 ;2be7 00
-    nop                 ;2be8 00
-    nop                 ;2be9 00
-    nop                 ;2bea 00
-    nop                 ;2beb 00
-    nop                 ;2bec 00
-    nop                 ;2bed 00
-    nop                 ;2bee 00
-    nop                 ;2bef 00
-    nop                 ;2bf0 00
-    nop                 ;2bf1 00
-    nop                 ;2bf2 00
-    nop                 ;2bf3 00
-    nop                 ;2bf4 00
-    nop                 ;2bf5 00
-    nop                 ;2bf6 00
-    nop                 ;2bf7 00
-    nop                 ;2bf8 00
-    nop                 ;2bf9 00
-    nop                 ;2bfa 00
-    nop                 ;2bfb 00
-    nop                 ;2bfc 00
-    nop                 ;2bfd 00
-    nop                 ;2bfe 00
-    nop                 ;2bff 00
-    nop                 ;2c00 00
-    nop                 ;2c01 00
-    nop                 ;2c02 00
-    nop                 ;2c03 00
-    nop                 ;2c04 00
-    nop                 ;2c05 00
-    nop                 ;2c06 00
-    nop                 ;2c07 00
-    nop                 ;2c08 00
-    nop                 ;2c09 00
-    nop                 ;2c0a 00
-    nop                 ;2c0b 00
-    nop                 ;2c0c 00
-    nop                 ;2c0d 00
-    nop                 ;2c0e 00
-    nop                 ;2c0f 00
-    nop                 ;2c10 00
-    nop                 ;2c11 00
-    nop                 ;2c12 00
-    nop                 ;2c13 00
-    nop                 ;2c14 00
-    nop                 ;2c15 00
-    nop                 ;2c16 00
-    nop                 ;2c17 00
-    nop                 ;2c18 00
-    nop                 ;2c19 00
-    nop                 ;2c1a 00
-    nop                 ;2c1b 00
-    nop                 ;2c1c 00
-    nop                 ;2c1d 00
-    nop                 ;2c1e 00
-    nop                 ;2c1f 00
-    nop                 ;2c20 00
-    nop                 ;2c21 00
-    nop                 ;2c22 00
-    nop                 ;2c23 00
-    nop                 ;2c24 00
-    nop                 ;2c25 00
-    nop                 ;2c26 00
-    nop                 ;2c27 00
-    nop                 ;2c28 00
-    nop                 ;2c29 00
-    nop                 ;2c2a 00
-    nop                 ;2c2b 00
-    nop                 ;2c2c 00
-    nop                 ;2c2d 00
-    nop                 ;2c2e 00
-    nop                 ;2c2f 00
-    nop                 ;2c30 00
-    nop                 ;2c31 00
-    nop                 ;2c32 00
-    nop                 ;2c33 00
-    nop                 ;2c34 00
-    nop                 ;2c35 00
-    nop                 ;2c36 00
-    nop                 ;2c37 00
-    nop                 ;2c38 00
-    nop                 ;2c39 00
-    nop                 ;2c3a 00
-    nop                 ;2c3b 00
-    nop                 ;2c3c 00
-    nop                 ;2c3d 00
-    nop                 ;2c3e 00
-    nop                 ;2c3f 00
-    nop                 ;2c40 00
-    nop                 ;2c41 00
-    nop                 ;2c42 00
-    nop                 ;2c43 00
-    nop                 ;2c44 00
-    nop                 ;2c45 00
-    nop                 ;2c46 00
-    nop                 ;2c47 00
-    nop                 ;2c48 00
-    nop                 ;2c49 00
-    nop                 ;2c4a 00
-    nop                 ;2c4b 00
-    nop                 ;2c4c 00
-    nop                 ;2c4d 00
-    nop                 ;2c4e 00
-    nop                 ;2c4f 00
-    nop                 ;2c50 00
-    nop                 ;2c51 00
-    nop                 ;2c52 00
-    nop                 ;2c53 00
-    nop                 ;2c54 00
-    nop                 ;2c55 00
-    nop                 ;2c56 00
-    nop                 ;2c57 00
-    nop                 ;2c58 00
-    nop                 ;2c59 00
-    nop                 ;2c5a 00
-    nop                 ;2c5b 00
-    nop                 ;2c5c 00
-    nop                 ;2c5d 00
-    nop                 ;2c5e 00
-    nop                 ;2c5f 00
-    nop                 ;2c60 00
-    nop                 ;2c61 00
-    nop                 ;2c62 00
-    nop                 ;2c63 00
-    nop                 ;2c64 00
-    nop                 ;2c65 00
-    nop                 ;2c66 00
-    nop                 ;2c67 00
-    nop                 ;2c68 00
-    nop                 ;2c69 00
-    nop                 ;2c6a 00
-    nop                 ;2c6b 00
-    nop                 ;2c6c 00
-    nop                 ;2c6d 00
-    nop                 ;2c6e 00
-    nop                 ;2c6f 00
-    nop                 ;2c70 00
-    nop                 ;2c71 00
-    nop                 ;2c72 00
-    nop                 ;2c73 00
-    nop                 ;2c74 00
-    nop                 ;2c75 00
-    nop                 ;2c76 00
-    nop                 ;2c77 00
-    nop                 ;2c78 00
-    nop                 ;2c79 00
-    nop                 ;2c7a 00
-    nop                 ;2c7b 00
-    nop                 ;2c7c 00
-    nop                 ;2c7d 00
-    nop                 ;2c7e 00
-    nop                 ;2c7f 00
-    nop                 ;2c80 00
-    nop                 ;2c81 00
-    nop                 ;2c82 00
-    nop                 ;2c83 00
-    nop                 ;2c84 00
-    nop                 ;2c85 00
-    nop                 ;2c86 00
-    nop                 ;2c87 00
-    nop                 ;2c88 00
-    nop                 ;2c89 00
-    nop                 ;2c8a 00
-    nop                 ;2c8b 00
-    nop                 ;2c8c 00
-    nop                 ;2c8d 00
-    nop                 ;2c8e 00
-    nop                 ;2c8f 00
-    nop                 ;2c90 00
-    nop                 ;2c91 00
-    nop                 ;2c92 00
-    nop                 ;2c93 00
-    nop                 ;2c94 00
-    nop                 ;2c95 00
-    nop                 ;2c96 00
-    nop                 ;2c97 00
-    nop                 ;2c98 00
-    nop                 ;2c99 00
-    nop                 ;2c9a 00
-    nop                 ;2c9b 00
-    nop                 ;2c9c 00
-    nop                 ;2c9d 00
-    nop                 ;2c9e 00
-    nop                 ;2c9f 00
-    nop                 ;2ca0 00
-    nop                 ;2ca1 00
-    nop                 ;2ca2 00
-    nop                 ;2ca3 00
-    nop                 ;2ca4 00
-    nop                 ;2ca5 00
-    nop                 ;2ca6 00
-    nop                 ;2ca7 00
-    nop                 ;2ca8 00
-    nop                 ;2ca9 00
-    nop                 ;2caa 00
-    nop                 ;2cab 00
-    nop                 ;2cac 00
-    nop                 ;2cad 00
-    nop                 ;2cae 00
-    nop                 ;2caf 00
-    nop                 ;2cb0 00
-    nop                 ;2cb1 00
-    nop                 ;2cb2 00
-    nop                 ;2cb3 00
-    nop                 ;2cb4 00
-    nop                 ;2cb5 00
-    nop                 ;2cb6 00
-    nop                 ;2cb7 00
-    nop                 ;2cb8 00
-    nop                 ;2cb9 00
-    nop                 ;2cba 00
-    nop                 ;2cbb 00
-    nop                 ;2cbc 00
-    nop                 ;2cbd 00
-    nop                 ;2cbe 00
-    nop                 ;2cbf 00
-    nop                 ;2cc0 00
-    nop                 ;2cc1 00
-    nop                 ;2cc2 00
-    nop                 ;2cc3 00
-    nop                 ;2cc4 00
-    nop                 ;2cc5 00
-    nop                 ;2cc6 00
-    nop                 ;2cc7 00
-    nop                 ;2cc8 00
-    nop                 ;2cc9 00
-    nop                 ;2cca 00
-    nop                 ;2ccb 00
-    nop                 ;2ccc 00
-    nop                 ;2ccd 00
-    nop                 ;2cce 00
-    nop                 ;2ccf 00
-    nop                 ;2cd0 00
-    nop                 ;2cd1 00
-    nop                 ;2cd2 00
-    nop                 ;2cd3 00
-    nop                 ;2cd4 00
-    nop                 ;2cd5 00
-    nop                 ;2cd6 00
-    nop                 ;2cd7 00
-    nop                 ;2cd8 00
-    nop                 ;2cd9 00
-    nop                 ;2cda 00
-    nop                 ;2cdb 00
-    nop                 ;2cdc 00
-    nop                 ;2cdd 00
-    nop                 ;2cde 00
-    nop                 ;2cdf 00
-    nop                 ;2ce0 00
-    nop                 ;2ce1 00
-    nop                 ;2ce2 00
-    nop                 ;2ce3 00
-    nop                 ;2ce4 00
-    nop                 ;2ce5 00
-    nop                 ;2ce6 00
-    nop                 ;2ce7 00
-    nop                 ;2ce8 00
-    nop                 ;2ce9 00
-    nop                 ;2cea 00
-    nop                 ;2ceb 00
-    nop                 ;2cec 00
-    nop                 ;2ced 00
-    nop                 ;2cee 00
-    nop                 ;2cef 00
-    nop                 ;2cf0 00
-    nop                 ;2cf1 00
-    nop                 ;2cf2 00
-    nop                 ;2cf3 00
-    nop                 ;2cf4 00
-    nop                 ;2cf5 00
-    nop                 ;2cf6 00
-    nop                 ;2cf7 00
-    nop                 ;2cf8 00
-    nop                 ;2cf9 00
-    nop                 ;2cfa 00
-    nop                 ;2cfb 00
-    nop                 ;2cfc 00
-    nop                 ;2cfd 00
-    nop                 ;2cfe 00
-    nop                 ;2cff 00
-    nop                 ;2d00 00
-    nop                 ;2d01 00
-    nop                 ;2d02 00
-    nop                 ;2d03 00
-    nop                 ;2d04 00
-    nop                 ;2d05 00
-    nop                 ;2d06 00
-    nop                 ;2d07 00
-    nop                 ;2d08 00
-    nop                 ;2d09 00
-    nop                 ;2d0a 00
-    nop                 ;2d0b 00
-    nop                 ;2d0c 00
-    nop                 ;2d0d 00
-    nop                 ;2d0e 00
-    nop                 ;2d0f 00
-    nop                 ;2d10 00
-    nop                 ;2d11 00
-    nop                 ;2d12 00
-    nop                 ;2d13 00
-    nop                 ;2d14 00
-    nop                 ;2d15 00
-    nop                 ;2d16 00
-    nop                 ;2d17 00
-    nop                 ;2d18 00
-    nop                 ;2d19 00
-    nop                 ;2d1a 00
-    nop                 ;2d1b 00
-    nop                 ;2d1c 00
-    nop                 ;2d1d 00
-    nop                 ;2d1e 00
-    nop                 ;2d1f 00
-    nop                 ;2d20 00
-    nop                 ;2d21 00
-    nop                 ;2d22 00
-    nop                 ;2d23 00
-    nop                 ;2d24 00
-    nop                 ;2d25 00
-    nop                 ;2d26 00
-    nop                 ;2d27 00
-    nop                 ;2d28 00
-    nop                 ;2d29 00
-    nop                 ;2d2a 00
-    nop                 ;2d2b 00
-    nop                 ;2d2c 00
-    nop                 ;2d2d 00
-    nop                 ;2d2e 00
-    nop                 ;2d2f 00
-    nop                 ;2d30 00
-    nop                 ;2d31 00
-    nop                 ;2d32 00
-    nop                 ;2d33 00
-    nop                 ;2d34 00
-    nop                 ;2d35 00
-    nop                 ;2d36 00
-    nop                 ;2d37 00
-    nop                 ;2d38 00
-    nop                 ;2d39 00
-    nop                 ;2d3a 00
-    nop                 ;2d3b 00
-    nop                 ;2d3c 00
-    nop                 ;2d3d 00
-    nop                 ;2d3e 00
-    nop                 ;2d3f 00
-    nop                 ;2d40 00
-    nop                 ;2d41 00
-    nop                 ;2d42 00
-    nop                 ;2d43 00
-    nop                 ;2d44 00
-    nop                 ;2d45 00
-    nop                 ;2d46 00
-    nop                 ;2d47 00
-    nop                 ;2d48 00
-    nop                 ;2d49 00
-    nop                 ;2d4a 00
-    nop                 ;2d4b 00
-    nop                 ;2d4c 00
-    nop                 ;2d4d 00
-    nop                 ;2d4e 00
-    nop                 ;2d4f 00
-    nop                 ;2d50 00
-    nop                 ;2d51 00
-    nop                 ;2d52 00
-    nop                 ;2d53 00
-    nop                 ;2d54 00
-    nop                 ;2d55 00
-    nop                 ;2d56 00
-    nop                 ;2d57 00
-    nop                 ;2d58 00
-    nop                 ;2d59 00
-    nop                 ;2d5a 00
-    nop                 ;2d5b 00
-    nop                 ;2d5c 00
-    nop                 ;2d5d 00
-    nop                 ;2d5e 00
-    nop                 ;2d5f 00
-    nop                 ;2d60 00
-    nop                 ;2d61 00
-    nop                 ;2d62 00
-    nop                 ;2d63 00
-    nop                 ;2d64 00
-    nop                 ;2d65 00
-    nop                 ;2d66 00
-    nop                 ;2d67 00
-    nop                 ;2d68 00
-    nop                 ;2d69 00
-    nop                 ;2d6a 00
-    nop                 ;2d6b 00
-    nop                 ;2d6c 00
-    nop                 ;2d6d 00
-    nop                 ;2d6e 00
-    nop                 ;2d6f 00
-    nop                 ;2d70 00
-    nop                 ;2d71 00
-    nop                 ;2d72 00
-    nop                 ;2d73 00
-    nop                 ;2d74 00
-    nop                 ;2d75 00
-    nop                 ;2d76 00
-    nop                 ;2d77 00
-    nop                 ;2d78 00
-    nop                 ;2d79 00
-    nop                 ;2d7a 00
-    nop                 ;2d7b 00
-    nop                 ;2d7c 00
-    nop                 ;2d7d 00
-    nop                 ;2d7e 00
-    nop                 ;2d7f 00
-    nop                 ;2d80 00
-    nop                 ;2d81 00
-    nop                 ;2d82 00
-    nop                 ;2d83 00
-    nop                 ;2d84 00
-    nop                 ;2d85 00
-    nop                 ;2d86 00
-    nop                 ;2d87 00
-    nop                 ;2d88 00
-    nop                 ;2d89 00
-    nop                 ;2d8a 00
-    nop                 ;2d8b 00
-    nop                 ;2d8c 00
-    nop                 ;2d8d 00
-    nop                 ;2d8e 00
-    nop                 ;2d8f 00
-    nop                 ;2d90 00
-    nop                 ;2d91 00
-    nop                 ;2d92 00
-    nop                 ;2d93 00
-    nop                 ;2d94 00
-    nop                 ;2d95 00
-    nop                 ;2d96 00
-    nop                 ;2d97 00
-    nop                 ;2d98 00
-    nop                 ;2d99 00
-    nop                 ;2d9a 00
-    nop                 ;2d9b 00
-    nop                 ;2d9c 00
-    nop                 ;2d9d 00
-    nop                 ;2d9e 00
-    nop                 ;2d9f 00
-    nop                 ;2da0 00
-    nop                 ;2da1 00
-    nop                 ;2da2 00
-    nop                 ;2da3 00
-    nop                 ;2da4 00
-    nop                 ;2da5 00
-    nop                 ;2da6 00
-    nop                 ;2da7 00
-    nop                 ;2da8 00
-    nop                 ;2da9 00
-    nop                 ;2daa 00
-    nop                 ;2dab 00
-    nop                 ;2dac 00
-    nop                 ;2dad 00
-    nop                 ;2dae 00
-    nop                 ;2daf 00
-    nop                 ;2db0 00
-    nop                 ;2db1 00
-    nop                 ;2db2 00
-    nop                 ;2db3 00
-    nop                 ;2db4 00
-    nop                 ;2db5 00
-    nop                 ;2db6 00
-    nop                 ;2db7 00
-    nop                 ;2db8 00
-    nop                 ;2db9 00
-    nop                 ;2dba 00
-    nop                 ;2dbb 00
-    nop                 ;2dbc 00
-    nop                 ;2dbd 00
-    nop                 ;2dbe 00
-    nop                 ;2dbf 00
-    nop                 ;2dc0 00
-    nop                 ;2dc1 00
-    nop                 ;2dc2 00
-    nop                 ;2dc3 00
-    nop                 ;2dc4 00
-    nop                 ;2dc5 00
-    nop                 ;2dc6 00
-    nop                 ;2dc7 00
-    nop                 ;2dc8 00
-    nop                 ;2dc9 00
-    nop                 ;2dca 00
-    nop                 ;2dcb 00
-    nop                 ;2dcc 00
-    nop                 ;2dcd 00
-    nop                 ;2dce 00
-    nop                 ;2dcf 00
-    nop                 ;2dd0 00
-    nop                 ;2dd1 00
-    nop                 ;2dd2 00
-    nop                 ;2dd3 00
-    nop                 ;2dd4 00
-    nop                 ;2dd5 00
-    nop                 ;2dd6 00
-    nop                 ;2dd7 00
-    nop                 ;2dd8 00
-    nop                 ;2dd9 00
-    nop                 ;2dda 00
-    nop                 ;2ddb 00
-    nop                 ;2ddc 00
-    nop                 ;2ddd 00
-    nop                 ;2dde 00
-    nop                 ;2ddf 00
-    nop                 ;2de0 00
-    nop                 ;2de1 00
-    nop                 ;2de2 00
-    nop                 ;2de3 00
-    nop                 ;2de4 00
-    nop                 ;2de5 00
-    nop                 ;2de6 00
-    nop                 ;2de7 00
-    nop                 ;2de8 00
-    nop                 ;2de9 00
-    nop                 ;2dea 00
-    nop                 ;2deb 00
-    nop                 ;2dec 00
-    nop                 ;2ded 00
-    nop                 ;2dee 00
-    nop                 ;2def 00
-    nop                 ;2df0 00
-    nop                 ;2df1 00
-    nop                 ;2df2 00
-    nop                 ;2df3 00
-    nop                 ;2df4 00
-    nop                 ;2df5 00
-    nop                 ;2df6 00
-    nop                 ;2df7 00
-    nop                 ;2df8 00
-    nop                 ;2df9 00
-    nop                 ;2dfa 00
-    nop                 ;2dfb 00
-    nop                 ;2dfc 00
-    nop                 ;2dfd 00
-    nop                 ;2dfe 00
-    nop                 ;2dff 00
-    nop                 ;2e00 00
-    nop                 ;2e01 00
-    nop                 ;2e02 00
-    nop                 ;2e03 00
-    nop                 ;2e04 00
-    nop                 ;2e05 00
-    nop                 ;2e06 00
-    nop                 ;2e07 00
-    nop                 ;2e08 00
-    nop                 ;2e09 00
-    nop                 ;2e0a 00
-    nop                 ;2e0b 00
-    nop                 ;2e0c 00
-    nop                 ;2e0d 00
-    nop                 ;2e0e 00
-    nop                 ;2e0f 00
-    nop                 ;2e10 00
-    nop                 ;2e11 00
-    nop                 ;2e12 00
-    nop                 ;2e13 00
-    nop                 ;2e14 00
-    nop                 ;2e15 00
-    nop                 ;2e16 00
-    nop                 ;2e17 00
-    nop                 ;2e18 00
-    nop                 ;2e19 00
-    nop                 ;2e1a 00
-    nop                 ;2e1b 00
-    nop                 ;2e1c 00
-    nop                 ;2e1d 00
-    nop                 ;2e1e 00
-    nop                 ;2e1f 00
-    nop                 ;2e20 00
-    nop                 ;2e21 00
-    nop                 ;2e22 00
-    nop                 ;2e23 00
-    nop                 ;2e24 00
-    nop                 ;2e25 00
-    nop                 ;2e26 00
-    nop                 ;2e27 00
-    nop                 ;2e28 00
-    nop                 ;2e29 00
-    nop                 ;2e2a 00
-    nop                 ;2e2b 00
-    nop                 ;2e2c 00
-    nop                 ;2e2d 00
-    nop                 ;2e2e 00
-    nop                 ;2e2f 00
-    nop                 ;2e30 00
-    nop                 ;2e31 00
-    nop                 ;2e32 00
-    nop                 ;2e33 00
-    nop                 ;2e34 00
-    nop                 ;2e35 00
-    nop                 ;2e36 00
-    nop                 ;2e37 00
-    nop                 ;2e38 00
-    nop                 ;2e39 00
-    nop                 ;2e3a 00
-    nop                 ;2e3b 00
-    nop                 ;2e3c 00
-    nop                 ;2e3d 00
-    nop                 ;2e3e 00
-    nop                 ;2e3f 00
-    nop                 ;2e40 00
-    nop                 ;2e41 00
-    nop                 ;2e42 00
-    nop                 ;2e43 00
-    nop                 ;2e44 00
-    nop                 ;2e45 00
-    nop                 ;2e46 00
-    nop                 ;2e47 00
-    nop                 ;2e48 00
-    nop                 ;2e49 00
-    nop                 ;2e4a 00
-    nop                 ;2e4b 00
-    nop                 ;2e4c 00
-    nop                 ;2e4d 00
-    nop                 ;2e4e 00
-    nop                 ;2e4f 00
-    nop                 ;2e50 00
-    nop                 ;2e51 00
-    nop                 ;2e52 00
-    nop                 ;2e53 00
-    nop                 ;2e54 00
-    nop                 ;2e55 00
-    nop                 ;2e56 00
-    nop                 ;2e57 00
-    nop                 ;2e58 00
-    nop                 ;2e59 00
-    nop                 ;2e5a 00
-    nop                 ;2e5b 00
-    nop                 ;2e5c 00
-    nop                 ;2e5d 00
-    nop                 ;2e5e 00
-    nop                 ;2e5f 00
-    nop                 ;2e60 00
-    nop                 ;2e61 00
-    nop                 ;2e62 00
-    nop                 ;2e63 00
-    nop                 ;2e64 00
-    nop                 ;2e65 00
-    nop                 ;2e66 00
-    nop                 ;2e67 00
-    nop                 ;2e68 00
-    nop                 ;2e69 00
-    nop                 ;2e6a 00
-    nop                 ;2e6b 00
-    nop                 ;2e6c 00
-    nop                 ;2e6d 00
-    nop                 ;2e6e 00
-    nop                 ;2e6f 00
-    nop                 ;2e70 00
-    nop                 ;2e71 00
-    nop                 ;2e72 00
-    nop                 ;2e73 00
-    nop                 ;2e74 00
-    nop                 ;2e75 00
-    nop                 ;2e76 00
-    nop                 ;2e77 00
-    nop                 ;2e78 00
-    nop                 ;2e79 00
-    nop                 ;2e7a 00
-    nop                 ;2e7b 00
-    nop                 ;2e7c 00
-    nop                 ;2e7d 00
-    nop                 ;2e7e 00
-    nop                 ;2e7f 00
-    nop                 ;2e80 00
-    nop                 ;2e81 00
-    nop                 ;2e82 00
-    nop                 ;2e83 00
-    nop                 ;2e84 00
-    nop                 ;2e85 00
-    nop                 ;2e86 00
-    nop                 ;2e87 00
-    nop                 ;2e88 00
-    nop                 ;2e89 00
-    nop                 ;2e8a 00
-    nop                 ;2e8b 00
-    nop                 ;2e8c 00
-    nop                 ;2e8d 00
-    nop                 ;2e8e 00
-    nop                 ;2e8f 00
-    nop                 ;2e90 00
-    nop                 ;2e91 00
-    nop                 ;2e92 00
-    nop                 ;2e93 00
-    nop                 ;2e94 00
-    nop                 ;2e95 00
-    nop                 ;2e96 00
-    nop                 ;2e97 00
-    nop                 ;2e98 00
-    nop                 ;2e99 00
-    nop                 ;2e9a 00
-    nop                 ;2e9b 00
-    nop                 ;2e9c 00
-    nop                 ;2e9d 00
-    nop                 ;2e9e 00
-    nop                 ;2e9f 00
-    nop                 ;2ea0 00
-    nop                 ;2ea1 00
-    nop                 ;2ea2 00
-    nop                 ;2ea3 00
-    nop                 ;2ea4 00
-    nop                 ;2ea5 00
-    nop                 ;2ea6 00
-    nop                 ;2ea7 00
-    nop                 ;2ea8 00
-    nop                 ;2ea9 00
-    nop                 ;2eaa 00
-    nop                 ;2eab 00
-    nop                 ;2eac 00
-    nop                 ;2ead 00
-    nop                 ;2eae 00
-    nop                 ;2eaf 00
-    nop                 ;2eb0 00
-    nop                 ;2eb1 00
-    nop                 ;2eb2 00
-    nop                 ;2eb3 00
-    nop                 ;2eb4 00
-    nop                 ;2eb5 00
-    nop                 ;2eb6 00
-    nop                 ;2eb7 00
-    nop                 ;2eb8 00
-    nop                 ;2eb9 00
-    nop                 ;2eba 00
-    nop                 ;2ebb 00
-    nop                 ;2ebc 00
-    nop                 ;2ebd 00
-    nop                 ;2ebe 00
-    nop                 ;2ebf 00
-    nop                 ;2ec0 00
-    nop                 ;2ec1 00
-    nop                 ;2ec2 00
-    nop                 ;2ec3 00
-    nop                 ;2ec4 00
-    nop                 ;2ec5 00
-    nop                 ;2ec6 00
-    nop                 ;2ec7 00
-    nop                 ;2ec8 00
-    nop                 ;2ec9 00
-    nop                 ;2eca 00
-    nop                 ;2ecb 00
-    nop                 ;2ecc 00
-    nop                 ;2ecd 00
-    nop                 ;2ece 00
-    nop                 ;2ecf 00
-    nop                 ;2ed0 00
-    nop                 ;2ed1 00
-    nop                 ;2ed2 00
-    nop                 ;2ed3 00
-    nop                 ;2ed4 00
-    nop                 ;2ed5 00
-    nop                 ;2ed6 00
-    nop                 ;2ed7 00
-    nop                 ;2ed8 00
-    nop                 ;2ed9 00
-    nop                 ;2eda 00
-    nop                 ;2edb 00
-    nop                 ;2edc 00
-    nop                 ;2edd 00
-    nop                 ;2ede 00
-    nop                 ;2edf 00
-    nop                 ;2ee0 00
-    nop                 ;2ee1 00
-    nop                 ;2ee2 00
-    nop                 ;2ee3 00
-    nop                 ;2ee4 00
-    nop                 ;2ee5 00
-    nop                 ;2ee6 00
-    nop                 ;2ee7 00
-    nop                 ;2ee8 00
-    nop                 ;2ee9 00
-    nop                 ;2eea 00
-    nop                 ;2eeb 00
-    nop                 ;2eec 00
-    nop                 ;2eed 00
-    nop                 ;2eee 00
-    nop                 ;2eef 00
-    nop                 ;2ef0 00
-    nop                 ;2ef1 00
-    nop                 ;2ef2 00
-    nop                 ;2ef3 00
-    nop                 ;2ef4 00
-    nop                 ;2ef5 00
-    nop                 ;2ef6 00
-    nop                 ;2ef7 00
-    nop                 ;2ef8 00
-    nop                 ;2ef9 00
-    nop                 ;2efa 00
-    nop                 ;2efb 00
-    nop                 ;2efc 00
-    nop                 ;2efd 00
-    nop                 ;2efe 00
-    nop                 ;2eff 00
-    nop                 ;2f00 00
-    nop                 ;2f01 00
-    nop                 ;2f02 00
-    nop                 ;2f03 00
-    nop                 ;2f04 00
-    nop                 ;2f05 00
-    nop                 ;2f06 00
-    nop                 ;2f07 00
-    nop                 ;2f08 00
-    nop                 ;2f09 00
-    nop                 ;2f0a 00
-    nop                 ;2f0b 00
-    nop                 ;2f0c 00
-    nop                 ;2f0d 00
-    nop                 ;2f0e 00
-    nop                 ;2f0f 00
-    nop                 ;2f10 00
-    nop                 ;2f11 00
-    nop                 ;2f12 00
-    nop                 ;2f13 00
-    nop                 ;2f14 00
-    nop                 ;2f15 00
-    nop                 ;2f16 00
-    nop                 ;2f17 00
-    nop                 ;2f18 00
-    nop                 ;2f19 00
-    nop                 ;2f1a 00
-    nop                 ;2f1b 00
-    nop                 ;2f1c 00
-    nop                 ;2f1d 00
-    nop                 ;2f1e 00
-    nop                 ;2f1f 00
-    nop                 ;2f20 00
-    nop                 ;2f21 00
-    nop                 ;2f22 00
-    nop                 ;2f23 00
-    nop                 ;2f24 00
-    nop                 ;2f25 00
-    nop                 ;2f26 00
-    nop                 ;2f27 00
-    nop                 ;2f28 00
-    nop                 ;2f29 00
-    nop                 ;2f2a 00
-    nop                 ;2f2b 00
-    nop                 ;2f2c 00
-    nop                 ;2f2d 00
-    nop                 ;2f2e 00
-    nop                 ;2f2f 00
-    nop                 ;2f30 00
-    nop                 ;2f31 00
-    nop                 ;2f32 00
-    nop                 ;2f33 00
-    nop                 ;2f34 00
-    nop                 ;2f35 00
-    nop                 ;2f36 00
-    nop                 ;2f37 00
-    nop                 ;2f38 00
-    nop                 ;2f39 00
-    nop                 ;2f3a 00
-    nop                 ;2f3b 00
-    nop                 ;2f3c 00
-    nop                 ;2f3d 00
-    nop                 ;2f3e 00
-    nop                 ;2f3f 00
-    nop                 ;2f40 00
-    nop                 ;2f41 00
-    nop                 ;2f42 00
-    nop                 ;2f43 00
-    nop                 ;2f44 00
-    nop                 ;2f45 00
-    nop                 ;2f46 00
-    nop                 ;2f47 00
-    nop                 ;2f48 00
-    nop                 ;2f49 00
-    nop                 ;2f4a 00
-    nop                 ;2f4b 00
-    nop                 ;2f4c 00
-    nop                 ;2f4d 00
-    nop                 ;2f4e 00
-    nop                 ;2f4f 00
-    nop                 ;2f50 00
-    nop                 ;2f51 00
-    nop                 ;2f52 00
-    nop                 ;2f53 00
-    nop                 ;2f54 00
-    nop                 ;2f55 00
-    nop                 ;2f56 00
-    nop                 ;2f57 00
-    nop                 ;2f58 00
-    nop                 ;2f59 00
-    nop                 ;2f5a 00
-    nop                 ;2f5b 00
-    nop                 ;2f5c 00
-    nop                 ;2f5d 00
-    nop                 ;2f5e 00
-    nop                 ;2f5f 00
-    nop                 ;2f60 00
-    nop                 ;2f61 00
-    nop                 ;2f62 00
-    nop                 ;2f63 00
-    nop                 ;2f64 00
-    nop                 ;2f65 00
-    nop                 ;2f66 00
-    nop                 ;2f67 00
-    nop                 ;2f68 00
-    nop                 ;2f69 00
-    nop                 ;2f6a 00
-    nop                 ;2f6b 00
-    nop                 ;2f6c 00
-    nop                 ;2f6d 00
-    nop                 ;2f6e 00
-    nop                 ;2f6f 00
-    nop                 ;2f70 00
-    nop                 ;2f71 00
-    nop                 ;2f72 00
-    nop                 ;2f73 00
-    nop                 ;2f74 00
-    nop                 ;2f75 00
-    nop                 ;2f76 00
-    nop                 ;2f77 00
-    nop                 ;2f78 00
-    nop                 ;2f79 00
-    nop                 ;2f7a 00
-    nop                 ;2f7b 00
-    nop                 ;2f7c 00
-    nop                 ;2f7d 00
-    nop                 ;2f7e 00
-    nop                 ;2f7f 00
-    nop                 ;2f80 00
-    nop                 ;2f81 00
-    nop                 ;2f82 00
-    nop                 ;2f83 00
-    nop                 ;2f84 00
-    nop                 ;2f85 00
-    nop                 ;2f86 00
-    nop                 ;2f87 00
-    nop                 ;2f88 00
-    nop                 ;2f89 00
-    nop                 ;2f8a 00
-    nop                 ;2f8b 00
-    nop                 ;2f8c 00
-    nop                 ;2f8d 00
-    nop                 ;2f8e 00
-    nop                 ;2f8f 00
-    nop                 ;2f90 00
-    nop                 ;2f91 00
-    nop                 ;2f92 00
-    nop                 ;2f93 00
-    nop                 ;2f94 00
-    nop                 ;2f95 00
-    nop                 ;2f96 00
-    nop                 ;2f97 00
-    nop                 ;2f98 00
-    nop                 ;2f99 00
-    nop                 ;2f9a 00
-    nop                 ;2f9b 00
-    nop                 ;2f9c 00
-    nop                 ;2f9d 00
-    nop                 ;2f9e 00
-    nop                 ;2f9f 00
-    nop                 ;2fa0 00
-    nop                 ;2fa1 00
-    nop                 ;2fa2 00
-    nop                 ;2fa3 00
-    nop                 ;2fa4 00
-    nop                 ;2fa5 00
-    nop                 ;2fa6 00
-    nop                 ;2fa7 00
-    nop                 ;2fa8 00
-    nop                 ;2fa9 00
-    nop                 ;2faa 00
-    nop                 ;2fab 00
-    nop                 ;2fac 00
-    nop                 ;2fad 00
-    nop                 ;2fae 00
-    nop                 ;2faf 00
-    nop                 ;2fb0 00
-    nop                 ;2fb1 00
-    nop                 ;2fb2 00
-    nop                 ;2fb3 00
-    nop                 ;2fb4 00
-    nop                 ;2fb5 00
-    nop                 ;2fb6 00
-    nop                 ;2fb7 00
-    nop                 ;2fb8 00
-    nop                 ;2fb9 00
-    nop                 ;2fba 00
-    nop                 ;2fbb 00
-    nop                 ;2fbc 00
-    nop                 ;2fbd 00
-    nop                 ;2fbe 00
-    nop                 ;2fbf 00
-    nop                 ;2fc0 00
-    nop                 ;2fc1 00
-    nop                 ;2fc2 00
-    nop                 ;2fc3 00
-    nop                 ;2fc4 00
-    nop                 ;2fc5 00
-    nop                 ;2fc6 00
-    nop                 ;2fc7 00
-    nop                 ;2fc8 00
-    nop                 ;2fc9 00
-    nop                 ;2fca 00
-    nop                 ;2fcb 00
-    nop                 ;2fcc 00
-    nop                 ;2fcd 00
-    nop                 ;2fce 00
-    nop                 ;2fcf 00
-    nop                 ;2fd0 00
-    nop                 ;2fd1 00
-    nop                 ;2fd2 00
-    nop                 ;2fd3 00
-    nop                 ;2fd4 00
-    nop                 ;2fd5 00
-    nop                 ;2fd6 00
-    nop                 ;2fd7 00
-    nop                 ;2fd8 00
-    nop                 ;2fd9 00
-    nop                 ;2fda 00
-    nop                 ;2fdb 00
-    nop                 ;2fdc 00
-    nop                 ;2fdd 00
-    nop                 ;2fde 00
-    nop                 ;2fdf 00
-    nop                 ;2fe0 00
-    nop                 ;2fe1 00
-    nop                 ;2fe2 00
-    nop                 ;2fe3 00
-    nop                 ;2fe4 00
-    nop                 ;2fe5 00
-    nop                 ;2fe6 00
-    nop                 ;2fe7 00
-    nop                 ;2fe8 00
-    nop                 ;2fe9 00
-    nop                 ;2fea 00
-    nop                 ;2feb 00
-    nop                 ;2fec 00
-    nop                 ;2fed 00
-    nop                 ;2fee 00
-    nop                 ;2fef 00
-    nop                 ;2ff0 00
-    nop                 ;2ff1 00
-    nop                 ;2ff2 00
-    nop                 ;2ff3 00
-    nop                 ;2ff4 00
-    nop                 ;2ff5 00
-    nop                 ;2ff6 00
-    nop                 ;2ff7 00
-    nop                 ;2ff8 00
-    nop                 ;2ff9 00
-    nop                 ;2ffa 00
-    nop                 ;2ffb 00
-    nop                 ;2ffc 00
-    nop                 ;2ffd 00
-    nop                 ;2ffe 00
-    nop                 ;2fff 00
-    nop                 ;3000 00
-    nop                 ;3001 00
+
+    db 0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+    db 0,0
+
 l3002h:
-    nop                 ;3002 00
-    nop                 ;3003 00
+    dw 0
 l3004h:
-    nop                 ;3004 00
-    nop                 ;3005 00
+    dw 0
 l3006h:
-    nop                 ;3006 00
+    db 0
 l3007h:
-    nop                 ;3007 00
+    db 0
 l3008h:
-    nop                 ;3008 00
+    db 0
 l3009h:
-    nop                 ;3009 00
+    db 0
 l300ah:
-    nop                 ;300a 00
-    nop                 ;300b 00
+    dw 0
 l300ch:
-    nop                 ;300c 00
+    db 0
 l300dh:
-    nop                 ;300d 00
-    nop                 ;300e 00
+    dw 0
 l300fh:
-    nop                 ;300f 00
-    nop                 ;3010 00
+    dw 0
 l3011h:
-    nop                 ;3011 00
-    nop                 ;3012 00
+    dw 0
 l3013h:
-    nop                 ;3013 00
+    db 0
 l3014h:
-    nop                 ;3014 00
+    db 0
 l3015h:
-    nop                 ;3015 00
+    db 0
 dd:
     db 0                ;Loop index for drives (0-7)
 heads:
@@ -8043,101 +5687,18 @@ aindex:
 asize:
     db 0                ;Size of autoload command
 l3020h:
-    nop                 ;3020 00
-    nop                 ;3021 00
-    nop                 ;3022 00
-    nop                 ;3023 00
-    nop                 ;3024 00
-    nop                 ;3025 00
-    nop                 ;3026 00
-    nop                 ;3027 00
+    dw 0
+
+    db 0,0,0,0,0,0
+
 l3028h:
-    nop                 ;3028 00
+    db 0
 l3029h:
-    nop                 ;3029 00
-    nop                 ;302a 00
-    nop                 ;302b 00
-    nop                 ;302c 00
-    nop                 ;302d 00
-    nop                 ;302e 00
-    nop                 ;302f 00
-    nop                 ;3030 00
-    nop                 ;3031 00
-    nop                 ;3032 00
-    nop                 ;3033 00
-    nop                 ;3034 00
-    nop                 ;3035 00
-    nop                 ;3036 00
-    nop                 ;3037 00
-    nop                 ;3038 00
-    nop                 ;3039 00
-    nop                 ;303a 00
-    nop                 ;303b 00
-    nop                 ;303c 00
-    nop                 ;303d 00
-    nop                 ;303e 00
-    nop                 ;303f 00
-    nop                 ;3040 00
-    nop                 ;3041 00
-    nop                 ;3042 00
-    nop                 ;3043 00
-    nop                 ;3044 00
-    nop                 ;3045 00
-    nop                 ;3046 00
-    nop                 ;3047 00
-    nop                 ;3048 00
-    nop                 ;3049 00
-    nop                 ;304a 00
-    nop                 ;304b 00
-    nop                 ;304c 00
-    nop                 ;304d 00
-    nop                 ;304e 00
-    nop                 ;304f 00
-    nop                 ;3050 00
-    nop                 ;3051 00
-    nop                 ;3052 00
-    nop                 ;3053 00
-    nop                 ;3054 00
-    nop                 ;3055 00
-    nop                 ;3056 00
-    nop                 ;3057 00
-    nop                 ;3058 00
-    nop                 ;3059 00
-    nop                 ;305a 00
-    nop                 ;305b 00
-    nop                 ;305c 00
-    nop                 ;305d 00
-    nop                 ;305e 00
-    nop                 ;305f 00
-    nop                 ;3060 00
-    nop                 ;3061 00
-    nop                 ;3062 00
-    nop                 ;3063 00
-    nop                 ;3064 00
-    nop                 ;3065 00
-    nop                 ;3066 00
-    nop                 ;3067 00
-    nop                 ;3068 00
-    nop                 ;3069 00
-    nop                 ;306a 00
-    nop                 ;306b 00
-    nop                 ;306c 00
-    nop                 ;306d 00
-    nop                 ;306e 00
-    nop                 ;306f 00
-    nop                 ;3070 00
-    nop                 ;3071 00
-    nop                 ;3072 00
-    nop                 ;3073 00
-    nop                 ;3074 00
-    nop                 ;3075 00
-    nop                 ;3076 00
-    nop                 ;3077 00
-    nop                 ;3078 00
-    nop                 ;3079 00
-    nop                 ;307a 00
-    nop                 ;307b 00
-    nop                 ;307c 00
-    nop                 ;307d 00
-    nop                 ;307e 00
-    nop                 ;307f 00
+    db 0
+
+    db 0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
