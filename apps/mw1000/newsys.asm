@@ -40,8 +40,10 @@ cwritestr:     equ 09h    ;Output String
 creadstr:      equ 0ah    ;Buffered Console Input
 
 bell:          equ 07h    ;Bell
+tab:           equ 09h    ;Tab
 lf:            equ 0ah    ;Line Feed
 cr:            equ 0dh    ;Carriage Return
+cls:           equ 1ah    ;Clear Screen
 
     org 0100h
 
@@ -365,7 +367,7 @@ l02ffh:
 
 clear_screen:
     ;PRINT CHR$(26) ' Clear screen
-    ld c,1ah
+    ld c,cls
     call print_char
 
     ;RETURN
@@ -4355,11 +4357,11 @@ l1c15h:
 
 l1c2ch:
     db 17h
-    db " 1.  Character size :",09h,09h
+    db " 1.  Character size :",tab,tab
 
 l1c44h:
     db 1bh
-    db " 2.  Number of stop bits :",09h
+    db " 2.  Number of stop bits :",tab
 
 l1c60h:
     db 01h
@@ -4379,7 +4381,7 @@ l1c68h:
 
 l1c72h:
     db 10h
-    db " 3.  Parity :",09h,09h,09h
+    db " 3.  Parity :",tab,tab,tab
 
 l1c83h:
     db 04h
@@ -4399,7 +4401,7 @@ l1c92h:
 
 l1c97h:
     db 12h
-    db " 4.  Baud rate :",09h,09h
+    db " 4.  Baud rate :",tab,tab
 
 l1caah:
     db 05h
@@ -4487,23 +4489,23 @@ l1e24h:
 
 l1e3bh:
     db 1ch
-    db " 1.  PET Printer device # :",09h
+    db " 1.  PET Printer device # :",tab
 
 l1e58h:
     db 1bh
-    db " 2.  ASCII list device # :",09h
+    db " 2.  ASCII list device # :",tab
 
 l1e74h:
     db 18h
-    db " 3.  Reader device # :",09h,09h
+    db " 3.  Reader device # :",tab,tab
 
 l1e8dh:
     db 17h
-    db " 4.  Punch device # :",09h,09h
+    db " 4.  Punch device # :",tab,tab
 
 l1ea5h:
     db 1bh
-    db " 5.  Default LST: device :",09h
+    db " 5.  Default LST: device :",tab
 
 l1ec1h:
     db 04h
@@ -4523,7 +4525,7 @@ l1ed0h:
 
 l1ed5h:
     db 1bh
-    db " 6.  Default RDR: device :",09h
+    db " 6.  Default RDR: device :",tab
 
 l1ef1h:
     db 04h
@@ -4535,7 +4537,7 @@ l1ef6h:
 
 l1efbh:
     db 1bh
-    db " 7.  Default PUN: device :",09h
+    db " 7.  Default PUN: device :",tab
 
 l1f17h:
     db 04h
@@ -4547,7 +4549,7 @@ l1f1ch:
 
 l1f21h:
     db 1bh
-    db " 8.  PET Printer type :   ",09h
+    db " 8.  PET Printer type :   ",tab
 
 l1f3dh:
     db 09h
@@ -4638,11 +4640,11 @@ l20b8h:
 
 l20beh:
     db 1bh
-    db "HZ1500",09h,09h,09h,"(Lead-in = ESCAPE)"
+    db "HZ1500",tab,tab,tab,"(Lead-in = ESCAPE)"
 
 l20dah:
     db 1ah
-    db "HZ1500",09h,09h,09h,"(Lead-in = TILDE)"
+    db "HZ1500",tab,tab,tab,"(Lead-in = TILDE)"
 
 l20f5h:
     db 06h
