@@ -2789,7 +2789,7 @@ ask_baud_rate:
 
     ;REM User selected 110 baud
 
-    ;POKE &H5665h, &H22
+    ;POKE &H5665, &H22
     ld hl,5665h
     ld (hl),22h
 
@@ -2807,7 +2807,7 @@ l138ch:
 
     ;REM User selected 300 baud
 
-    ;POKE &H5665h, &H55
+    ;POKE &H5665, &H55
     ld hl,5665h
     ld (hl),55h
 
@@ -2823,7 +2823,7 @@ l13a0h:
     or l
     jp nz,l13b4h
 
-    ;POKE &H5665h, &H77
+    ;POKE &H5665, &H77
     ld hl,5665h
     ld (hl),77h
 
@@ -2839,7 +2839,7 @@ l13b4h:
     or l
     jp nz,l13c8h
 
-    ;POKE &H5665h, &HCC
+    ;POKE &H5665, &HCC
     ld hl,5665h
     ld (hl),0cch
 
@@ -2855,7 +2855,7 @@ l13c8h:
     or l
     jp nz,l13dch
 
-    ;POKE &H5665h, &HEE
+    ;POKE &H5665, &HEE
     ld hl,5665h
     ld (hl),0eeh
 
@@ -2871,7 +2871,7 @@ l13dch:
     or l
     jp nz,l13edh
 
-    ;POKE &H5665h, &HFF
+    ;POKE &H5665, &HFF
     ld hl,5665h
     ld (hl),0ffh
 
@@ -2954,10 +2954,12 @@ l144fh:
 
 l145dh:
     ld hl,l1c68h        ;145d 21 68 1c
+
 l1460h:
-    ld b,h              ;1460 44
-    ld c,l              ;1461 4d
-    call print_str_eol  ;1462 cd a9 01
+    ;PRINT <string at HL>
+    ld b,h
+    ld c,l
+    call print_str_eol
 
     ;PRINT
     call print_eol
@@ -2966,34 +2968,60 @@ l1460h:
     ld bc,l1c72h
     call print_str
 
-    ld a,(5664h)        ;146e 3a 64 56
-    and 10h             ;1471 e6 10
-    jp nz,l147ch        ;1473 c2 7c 14
-    ld hl,l1c83h        ;1476 21 83 1c
-    jp l149fh           ;1479 c3 9f 14
+    ;IF (PEEK(&H5664) AND &H10) THEN GOTO l147ch
+    ld a,(5664h)
+    and 10h
+    jp nz,l147ch
+
+    ;REM Parity is none.
+
+    ;<HL = pointer to "none">
+    ld hl,l1c83h
+
+    ;GOTO l149fh
+    jp l149fh
 
 l147ch:
-    ld a,(5664h)        ;147c 3a 64 56
-    and 30h             ;147f e6 30
-    cp 30h              ;1481 fe 30
-    jp nz,l148ch        ;1483 c2 8c 14
-    ld hl,l1c88h        ;1486 21 88 1c
-    jp l149fh           ;1489 c3 9f 14
+    ;IF (PEEK(&H5664) AND &H30) <> &H30 THEN GOTO l148ch
+    ld a,(5664h)
+    and 30h
+    cp 30h
+    jp nz,l148ch
+
+    ;REM Parity is even.
+
+    ;<HL = pointer to "even">
+    ld hl,l1c88h
+
+    ;GOTO l149fh
+    jp l149fh
 
 l148ch:
-    ld a,(5664h)        ;148c 3a 64 56
-    and 30h             ;148f e6 30
-    cp 10h              ;1491 fe 10
-    jp nz,l149ch        ;1493 c2 9c 14
-    ld hl,l1c8dh        ;1496 21 8d 1c
-    jp l149fh           ;1499 c3 9f 14
+    ;IF (PEEK(&H5664) AND &30H) <> &H10 THEN GOTO l149ch
+    ld a,(5664h)
+    and 30h
+    cp 10h
+    jp nz,l149ch
+
+    ;REM Parity is odd.
+
+    ;<HL = pointer to "odd ">
+    ld hl,l1c8dh
+
+    ;GOTO l149fh
+    jp l149fh
 
 l149ch:
-    ld hl,l1c92h        ;149c 21 92 1c
+    ;REM Parity is unknown.
+
+    ;<HL = pointer to "    ">
+    ld hl,l1c92h
+
 l149fh:
-    ld b,h              ;149f 44
-    ld c,l              ;14a0 4d
-    call print_str_eol  ;14a1 cd a9 01
+    ;PRINT <string at HL>
+    ld b,h
+    ld c,l
+    call print_str_eol
 
     ;PRINT
     call print_eol
@@ -3002,53 +3030,100 @@ l149fh:
     ld bc,l1c97h
     call print_str
 
-    ld a,(5665h)        ;14ad 3a 65 56
-    cp 22h              ;14b0 fe 22
-    jp nz,l14bbh        ;14b2 c2 bb 14
-    ld hl,l1caah        ;14b5 21 aa 1c
-    jp l1504h           ;14b8 c3 04 15
+    ;IF PEEK(&H5665) <> &H22 THEN GOTO l14bbh
+    ld a,(5665h)
+    cp 22h
+    jp nz,l14bbh
+
+    ;REM Baud is 110
+
+    ;<HL = pointer to "110  ">
+    ld hl,l1caah
+
+    ;GOTO l1504h
+    jp l1504h
 
 l14bbh:
-    ld a,(5665h)        ;14bb 3a 65 56
-    cp 55h              ;14be fe 55
-    jp nz,l14c9h        ;14c0 c2 c9 14
-    ld hl,l1cb0h        ;14c3 21 b0 1c
-    jp l1504h           ;14c6 c3 04 15
+    ;IF PEEK(&H5665) <> &H55 THEN GOTO l14c9h
+    ld a,(5665h)
+    cp 55h
+    jp nz,l14c9h
+
+    ;REM Baud is 300
+
+    ;<HL = pointer to "300  ">
+    ld hl,l1cb0h
+
+    ;GOTO l1504h
+    jp l1504h
 
 l14c9h:
-    ld a,(5665h)        ;14c9 3a 65 56
-    cp 77h              ;14cc fe 77
-    jp nz,l14d7h        ;14ce c2 d7 14
-    ld hl,l1cb6h        ;14d1 21 b6 1c
-    jp l1504h           ;14d4 c3 04 15
+    ;IF PEEK(&H5665) <> &H77 THEN GOTO l14d7h
+    ld a,(5665h)
+    cp 77h
+    jp nz,l14d7h
+
+    ;REM Baud is 1200
+
+    ;<HL = pointer to "1200 ">
+    ld hl,l1cb6h
+
+    ;GOTO l1504h
+    jp l1504h
 
 l14d7h:
-    ld a,(5665h)        ;14d7 3a 65 56
-    cp 0cch             ;14da fe cc
-    jp nz,l14e5h        ;14dc c2 e5 14
-    ld hl,l1cbch        ;14df 21 bc 1c
-    jp l1504h           ;14e2 c3 04 15
+    ;IF PEEK(&H5665) <> &HCC THEN GOTO l14e5h
+    ld a,(5665h)
+    cp 0cch
+    jp nz,l14e5h
+
+    ;REM Baud is 4800
+
+    ;<HL = pointer to "4800 ">
+    ld hl,l1cbch
+
+    ;GOTO l1504h
+    jp l1504h
 
 l14e5h:
-    ld a,(5665h)        ;14e5 3a 65 56
-    cp 0eeh             ;14e8 fe ee
-    jp nz,l14f3h        ;14ea c2 f3 14
-    ld hl,l1cc2h        ;14ed 21 c2 1c
-    jp l1504h           ;14f0 c3 04 15
+    ;IF PEEK(&H5665) <> &HEE THEN GOTO l14f3h
+    ld a,(5665h)
+    cp 0eeh
+    jp nz,l14f3h
+
+    ;REM Baud is 9600
+
+    ;<HL = pointer to "9600 ">
+    ld hl,l1cc2h
+
+    ;GOTO l1504h
+    jp l1504h
 
 l14f3h:
-    ld a,(5665h)        ;14f3 3a 65 56
-    cp 0ffh             ;14f6 fe ff
-    jp nz,l1501h        ;14f8 c2 01 15
-    ld hl,l1cc8h        ;14fb 21 c8 1c
-    jp l1504h           ;14fe c3 04 15
+    ;IF PEEK(&H5665) <> &HFF THEN GOTO l1501h
+    ld a,(5665h)
+    cp 0ffh
+    jp nz,l1501h
+
+    ;REM Baud is 19200
+
+    ;<HL = pointer to "19200">
+    ld hl,l1cc8h
+
+    ;GOTO l1504h
+    jp l1504h
 
 l1501h:
-    ld hl,l1cceh        ;1501 21 ce 1c
+    ;REM Baud is unknown
+
+    ;<HL = pointer to "     ">
+    ld hl,l1cceh
+
 l1504h:
-    ld b,h              ;1504 44
-    ld c,l              ;1505 4d
-    call print_str_eol  ;1506 cd a9 01
+    ;PRINT <string at HL>
+    ld b,h
+    ld c,l
+    call print_str_eol
 
     ;PRINT
     call print_eol
