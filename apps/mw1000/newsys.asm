@@ -324,7 +324,9 @@ clear_screen:
 sub_0306h:
     jp l05edh           ;0306 c3 ed 05
 
-sub_0309h:
+ask_drv_dev:
+    ;REM Ask the device number for a floppy or hard drive
+
     ;PRINT "Device number for drive ? ";
     ld bc,l0c95h
     call print_str
@@ -352,8 +354,12 @@ sub_0309h:
     ld h,a              ;032d 67
     add hl,bc           ;032e 09
     ld a,(hl)           ;032f 7e
-    cp 04h              ;0330 fe 04
-    jp nz,l0358h        ;0332 c2 58 03
+    cp 04h              ;Drive type = 4 (Corvus 5 MB)?
+    jp nz,drv_dev_done  ;  No: jump to drv_dev_done
+
+    ;REM Drive type is Corvus 5 MB
+    ;REM This hard drive is special because it is the only one
+    ;REM that can be configured as either 1 or 2 CP/M drives.
 
     ;PRINT "Configure as 1 or 2 CP/M drives ? ";
     ld bc,l0cb0h
@@ -365,15 +371,16 @@ sub_0309h:
     ;PRINT
     call print_eol
 
-    ;IF N <> 2 THEN GOTO l0358h
+    ;IF N <> 2 THEN GOTO drv_dev_done ' Leave as drive type 4
     ld hl,(nn)
     dec hl
     dec hl
     ld a,h
     or l
-    jp nz,l0358h
+    jp nz,drv_dev_done
 
     ;REM User selected 2 CP/M drives
+    ;REM Change drive type from 4 to 5
 
     ld a,(l3016h)       ;034b 3a 16 30
     ld l,a              ;034e 6f
@@ -382,9 +389,9 @@ sub_0309h:
     ld bc,5670h         ;0351 01 70 56
     ld h,a              ;0354 67
     add hl,bc           ;0355 09
-    ld (hl),05h         ;0356 36 05
+    ld (hl),05h         ;Drive type 5 = Corvus 5MB as 2 CP/M drives
 
-l0358h:
+drv_dev_done:
     ;RETURN
     ret
 
@@ -1140,12 +1147,12 @@ l071eh:
     ld h,a              ;0727 67
     add hl,bc           ;0728 09
     ld a,(hl)           ;0729 7e
-    cp 05h              ;Drive Type 5 = Corvus 5 MB *
+    cp 05h              ;Drive Type 5 = Corvus 5 MB (as 2 CP/M drives)
     jp nz,l0735h        ;072c c2 35 07
 
-    ;REM Drive type is Corvus 5 MB *
+    ;REM Drive type is Corvus 5 MB (as 2 CP/M drives)
 
-    ld hl,size_5mb_star
+    ld hl,size_5mb_as_2
 
     ;GOTO l0738h
     jp l0738h           ;0732 c3 38 07
@@ -1453,7 +1460,7 @@ ask_flop_type:
     ld h,a              ;08c3 67
     add hl,bc           ;08c4 09
     ld (hl),00h         ;08c5 36 00
-    call sub_0309h      ;08c7 cd 09 03
+    call ask_drv_dev      ;08c7 cd 09 03
     jp l0906h           ;08ca c3 06 09
 
 l08cdh:
@@ -1472,7 +1479,7 @@ l08cdh:
     ld h,a              ;08de 67
     add hl,bc           ;08df 09
     ld (hl),01h         ;08e0 36 01
-    call sub_0309h      ;08e2 cd 09 03
+    call ask_drv_dev      ;08e2 cd 09 03
     jp l0906h           ;08e5 c3 06 09
 
 l08e8h:
@@ -1491,7 +1498,7 @@ l08e8h:
     ld h,a              ;08f9 67
     add hl,bc           ;08fa 09
     ld (hl),06h         ;08fb 36 06
-    call sub_0309h      ;08fd cd 09 03
+    call ask_drv_dev      ;08fd cd 09 03
     jp l0906h           ;0900 c3 06 09
 l0903h:
     jp ask_flop_type           ;0903 c3 a6 08
@@ -1587,7 +1594,7 @@ l0971h:
     add hl,bc           ;0987 09
     ld (hl),03h         ;0988 36 03
 l098ah:
-    call sub_0309h      ;098a cd 09 03
+    call ask_drv_dev      ;098a cd 09 03
     jp l0993h           ;098d c3 93 09
 l0990h:
     call l0359h         ;0990 cd 59 03
@@ -2267,7 +2274,7 @@ size_5mb:
     db 05h
     db "5Mb  "
 
-size_5mb_star:
+size_5mb_as_2:
     db 05h
     db "5Mb* "
 
