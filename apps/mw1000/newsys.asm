@@ -1,6 +1,43 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=newsys.asm newsys.com
 
+;TODO: 0eac0h ????
+
+warm:          equ  0000h ;Warm start entry point
+bdos:          equ  0005h ;BDOS entry point
+seldsk:        equ 0f01bh ;Select disk drive
+settrk:        equ 0f01eh ;Set track number
+setsec:        equ 0f021h ;Set sector number
+read:          equ 0f027h ;Read selected sector
+write:         equ 0f02ah ;Write selected sector
+listen:        equ 0f033h ;Send LISTEN to an IEEE-488 device
+unlisten:      equ 0f036h ;Send UNLISTEN to all IEEE-488 devices
+talk:          equ 0f039h ;Send TALK to an IEEE-488 device
+untalk:        equ 0f03ch ;Send UNTALK to all IEEE-488 devices
+rdieee:        equ 0f03fh ;Read byte from an IEEE-488 device
+wrieee:        equ 0f042h ;Send byte to an IEEE-488 device
+wreoi:         equ 0f045h ;Send byte to IEEE-488 device with EOI asserted
+creoi:         equ 0f048h ;Send carriage return to IEEE-488 dev with EOI
+ieeemsg:       equ 0f04bh ;Send string to the current IEEE-488 device
+ieeenum:       equ 0f04eh ;Send number as decimal string to IEEE-488 dev
+tstdrv:        equ 0f051h ;Get drive type for a CP/M drive number
+dskdev:        equ 0f054h ;Get device address for a CP/M drive number
+diskcmd:       equ 0f057h ;Open the command channel on IEEE-488 device
+dsksta:        equ 0f05ah ;Read the error channel of an IEEE-488 device
+open:          equ 0f05dh ;Open a file on an IEEE-488 device
+close:         equ 0f060h ;Close an open file on an IEEE-488 device
+runcpm:        equ 0f075h ;Perform system init and then run CP/M
+idrive:        equ 0f078h ;Initialize an IEEE-488 disk drive
+
+cread:         equ 01h    ;Console Input
+cwrite:        equ 02h    ;Console Output
+cwritestr:     equ 09h    ;Output String
+creadstr:      equ 0ah    ;Buffered Console Input
+
+bell:          equ 07h    ;Bell
+lf:            equ 0ah    ;Line Feed
+cr:            equ 0dh    ;Carriage Return
+
     org 0100h
 
     jp start
@@ -9,9 +46,10 @@ sub_0103h:
     ld hl,l3006h        ;0103 21 06 30
     ld (hl),c           ;0106 71
     ld a,(l3006h)       ;0107 3a 06 30
-    call 0f051h         ;010a cd 51 f0
+    call tstdrv         ;Get drive type for a CP/M drive number
     ld a,c              ;010d 79
     ret                 ;010e c9
+
     ld a,00h            ;010f 3e 00
     ret                 ;0111 c9
     ret                 ;0112 c9
@@ -20,7 +58,7 @@ sub_0113h:
     ld hl,l3007h        ;0113 21 07 30
     ld (hl),c           ;0116 71
     ld a,(l3007h)       ;0117 3a 07 30
-    call 0f078h         ;011a cd 78 f0
+    call idrive         ;Initialize an IEEE-488 disk drive
     ret                 ;011d c9
 
 sub_011eh:
@@ -54,7 +92,7 @@ l0133h:
     ld h,a              ;014b 67
     add hl,bc           ;014c 09
     ld a,(hl)           ;014d 7e
-    cp 0dh              ;014e fe 0d
+    cp cr               ;014e fe 0d
     jp z,l015fh         ;0150 ca 5f 01
     ld hl,l3008h        ;0153 21 08 30
     inc (hl)            ;0156 34
@@ -72,24 +110,24 @@ l0162h:
 end:
 ;Jump to CP/M warm start
 ;Implements END command
-    jp 0000h
+    jp warm
     ret
 
 print_char:
 ;Print character in C
     ld hl,l3009h
     ld (hl),c
-    ld c,02h
+    ld c,cwrite
     ld a,(l3009h)
     ld e,a
-    call 0005h
+    call bdos
     ret
 
 print_eol:
 ;Print end of line (CR+LF)
-    ld c,0dh
+    ld c,cr
     call print_char
-    ld c,0ah
+    ld c,lf
     call print_char
     ret
 
@@ -144,14 +182,14 @@ sub_01bbh:
     ld hl,(l300fh)      ;01d0 2a 0f 30
     ld b,h              ;01d3 44
     ld c,l              ;01d4 4d
-    ld de,000ah         ;01d5 11 0a 00
-    call sub_2529h      ;01d8 cd 29 25
+    ld de,10            ;01d5 11 0a 00
+    call sub_2529h      ;01d8 cd 29 25 (Library DIV)
     call sub_01bbh      ;01db cd bb 01
     ld hl,(l300fh)      ;01de 2a 0f 30
     ld b,h              ;01e1 44
     ld c,l              ;01e2 4d
-    ld de,000ah         ;01e3 11 0a 00
-    call sub_2529h      ;01e6 cd 29 25
+    ld de,10            ;01e3 11 0a 00
+    call sub_2529h      ;01e6 cd 29 25 (Library DIV)
     ld a,l              ;01e9 7d
     add a,'0'           ;01ea c6 30
     ld c,a              ;01ec 4f
@@ -189,8 +227,8 @@ readline:
     ld hl,l2424h        ;0216 21 24 24
     ld (hl),50h         ;0219 36 50
     ld de,l2424h        ;021b 11 24 24
-    ld c,0ah            ;021e 0e 0a
-    call 0005h          ;0220 cd 05 00
+    ld c,creadstr       ;021e 0e 0a
+    call bdos           ;0220 cd 05 00
     ld hl,0000h         ;0223 21 00 00
     ld (nn),hl          ;0226 22 c8 24
     ld (l24cah),hl      ;0229 22 ca 24
@@ -198,7 +236,7 @@ readline:
     or a                ;022f b7
     jp nz,l023bh        ;0230 c2 3b 02
     ld hl,rr            ;0233 21 cc 24
-    ld (hl),0dh         ;0236 36 0d
+    ld (hl),cr          ;0236 36 0d
     jp l02ffh           ;0238 c3 ff 02
 
 l023bh:
@@ -259,7 +297,7 @@ l0278h:
     ld b,h              ;029a 44
     ld c,l              ;029b 4d
     ld de,000ah         ;029c 11 0a 00
-    call sub_24cdh      ;029f cd cd 24
+    call sub_24cdh      ;029f cd cd 24 (Library MUL)
     ld a,(l3014h)       ;02a2 3a 14 30
     ld l,a              ;02a5 6f
     rla                 ;02a6 17
@@ -723,7 +761,7 @@ bad_sbox_conf:
     jp ask_sbox_conf
 
 got_sbox_conf:
-    ;POKE &H5805, sub_24cdh(l301ch, heads/2)
+    ;POKE &H5805, l301ch*heads/2
     ld a,(heads)        ;04d4 3a 17 30
     ld l,a              ;04d7 6f
     rla                 ;04d8 17
@@ -742,7 +780,7 @@ got_sbox_conf:
     ld c,l              ;04e7 4d
     pop hl              ;04e8 e1
     ex de,hl            ;04e9 eb
-    call sub_24cdh      ;04ea cd cd 24
+    call sub_24cdh      ;04ea cd cd 24 (Library MUL)
     dec de              ;04ed 1b
     ex de,hl            ;04ee eb
     ld (5805h),hl       ;04ef 22 05 58
@@ -1333,7 +1371,7 @@ l0780h:
     ld e,(hl)           ;07e6 5e
     inc hl              ;07e7 23
     ld d,(hl)           ;07e8 56
-    call sub_24cdh      ;07e9 cd cd 24
+    call sub_24cdh      ;07e9 cd cd 24 (Library MUL)
     ld b,07h            ;07ec 06 07
     jp l07f8h           ;07ee c3 f8 07
 l07f1h:
@@ -1444,7 +1482,7 @@ l085eh:
 
     ;IF R <> &H0D THEN GOTO ask_flop_hard
     ld a,(rr)
-    cp 0dh
+    cp cr
     jp nz,ask_flop_hard
 
     ;REM User pressed return without entering a letter
@@ -1975,7 +2013,7 @@ l0b13h:
 
     ;IF R = &H0D THEN GOTO start
     ld a,(rr)
-    cp 0dh
+    cp cr
     jp z,start
 
     ;IF R = &H5F THEN GOTO l0babh
@@ -3493,7 +3531,7 @@ l17b7h:
 
     ;IF R <> &H0D THEN GOTO l17d7h
     ld a,(rr)
-    cp 0dh
+    cp cr
     jp nz,l17d7h
 
     ;RETURN
@@ -4106,7 +4144,7 @@ l1af9h:
 
     ;IF R <> &H0D THEN GOTO l1b2dh
     ld a,(rr)
-    cp 0dh
+    cp cr
     jp nz,l1b2dh
 
     ;RETURN
@@ -4842,13 +4880,13 @@ l23a4h:
 l23b7h:
 ;Display "Hit any key to abort" message, wait for a key, and then return.
     ld de,l23c4h
-    ld c,09h
-    call 0005h
-    ld c,01h
-    jp 0005h
+    ld c,cwritestr
+    call bdos
+    ld c,cread
+    jp bdos
 
 l23c4h:
-    db 0dh,0ah,"Hit any key to abort : $"
+    db cr,lf,"Hit any key to abort : $"
 
 l23deh:
     db "U2 2 "
@@ -5057,7 +5095,8 @@ l24cah:
     nop                 ;24cb 00
 rr:
     db 0                ;First char of user input from any prompt
-sub_24cdh:
+
+sub_24cdh:              ;Library MUL
     xor a               ;24cd af
     ld h,a              ;24ce 67
     add a,b             ;24cf 80
@@ -5135,7 +5174,8 @@ l251ah:
 l2525h:
     ld de,0000h         ;2525 11 00 00
     ret                 ;2528 c9
-sub_2529h:
+
+sub_2529h:              ;Library BD=DIV / HL=MOD
     xor a               ;2529 af
     ld h,b              ;252a 60
     ld l,c              ;252b 69
