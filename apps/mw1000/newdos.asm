@@ -270,13 +270,13 @@ sub_0257h:
     ld b,h              ;026f 44
     ld c,l              ;0270 4d
     ld de,000ah         ;0271 11 0a 00
-    call sub_12f6h      ;0274 cd f6 12
+    call sub_12f6h      ;0274 cd f6 12 (Library DIV)
     call sub_0257h      ;0277 cd 57 02
     ld hl,(l30a6h)      ;027a 2a a6 30
     ld b,h              ;027d 44
     ld c,l              ;027e 4d
     ld de,000ah         ;027f 11 0a 00
-    call sub_12f6h      ;0282 cd f6 12
+    call sub_12f6h      ;0282 cd f6 12 (Library DIV - HL=MOD)
     ld a,l              ;0285 7d
     add a,'0'           ;0286 c6 30
     ld c,a              ;0288 4f
@@ -295,10 +295,13 @@ print_int:
     ld a,l              ;029b 7d
     or h                ;029c b4
     jp nz,l02a9h        ;029d c2 a9 02
+
     ;PRINT "0"
     ld bc,l0b91h        ;02a0 01 91 0b
     call print_str      ;02a3 cd 32 02
+
     jp l02b1h           ;02a6 c3 b1 02
+
 l02a9h:
     ld hl,(l30a8h)      ;02a9 2a a8 30
     ld b,h              ;02ac 44
@@ -307,6 +310,7 @@ l02a9h:
 l02b1h:
     ret                 ;02b1 c9
 
+l02b2h:
     ld hl,l30aah+1      ;02b2 21 ab 30
     ld (hl),b           ;02b5 70
     dec hl              ;02b6 2b
@@ -351,6 +355,7 @@ l02ebh:
     ld c,0ch            ;02eb 0e 0c
     ld hl,(l30ach)      ;02ed 2a ac 30
     jp l02fah           ;02f0 c3 fa 02
+
 l02f3h:
     or a                ;02f3 b7
     ld a,h              ;02f4 7c
@@ -362,6 +367,7 @@ l02f3h:
 l02fah:
     dec c               ;02fa 0d
     jp p,l02f3h         ;02fb f2 f3 02
+
     ld a,l              ;02fe 7d
     and 0fh             ;02ff e6 0f
     ld (l30afh),a       ;0301 32 af 30
@@ -369,6 +375,7 @@ l02fah:
     jp m,l030eh         ;0306 fa 0e 03
     add a,'A'-10        ;0309 c6 37
     jp l0313h           ;030b c3 13 03
+
 l030eh:
     ld a,(l30afh)       ;030e 3a af 30
     add a,'0'           ;0311 c6 30
@@ -378,11 +385,13 @@ l0313h:
     ld c,04h            ;0317 0e 04
     ld hl,(l30ach)      ;0319 2a ac 30
     jp l0320h           ;031c c3 20 03
+
 l031fh:
     add hl,hl           ;031f 29
 l0320h:
     dec c               ;0320 0d
     jp p,l031fh         ;0321 f2 1f 03
+
     ld (l30ach),hl      ;0324 22 ac 30
     ld hl,l30aeh        ;0327 21 ae 30
     inc (hl)            ;032a 34
@@ -630,7 +639,7 @@ ask_hbox_conf:
     ld b,h              ;0467 44
     ld c,l              ;0468 4d
     ld de,0002h         ;0469 11 02 00
-    call sub_12f6h      ;046c cd f6 12
+    call sub_12f6h      ;046c cd f6 12 (Library DIV)
     inc bc              ;046f 03
     ld h,b              ;0470 60
     ld l,c              ;0471 69
@@ -930,12 +939,12 @@ l05dfh:
     ld l,e              ;0607 6b
     ld (l3008h),hl      ;0608 22 08 30
 
-    ;l400ah = sub_12f6h(l3008h, 5)
+    ;l400ah = l3008h / 5
     ld hl,(l3008h)      ;060b 2a 08 30
     ld b,h              ;060e 44
     ld c,l              ;060f 4d
     ld de,0005h         ;0610 11 05 00
-    call sub_12f6h      ;0613 cd f6 12
+    call sub_12f6h      ;0613 cd f6 12 (Library DIV)
     ld h,b              ;0616 60
     ld l,c              ;0617 69
     ld (l400ah),hl      ;0618 22 0a 40
@@ -2218,7 +2227,7 @@ l12f2h:
     ld de,0000h         ;12f2 11 00 00
     ret                 ;12f5 c9
 
-sub_12f6h:              ;Library DIV
+sub_12f6h:              ;Library BC=DIV / HL=MOD
     xor a               ;12f6 af
     ld h,b              ;12f7 60
     ld l,c              ;12f8 69
