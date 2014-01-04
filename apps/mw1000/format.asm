@@ -44,16 +44,18 @@ sub_0103h:
     ld hl,l30aah        ;0103 21 aa 30
     ld (hl),c           ;0106 71
     ld a,(l30aah)       ;0107 3a aa 30
-    call tstdrv         ;010a cd 51 f0
+    call tstdrv         ;Get drive type for a CP/M drive number
     ld a,c              ;010d 79
     ret                 ;010e c9
     ld a,00h            ;010f 3e 00
     ret                 ;0111 c9
     ret                 ;0112 c9
+
+sub_0113h:
     ld hl,l30abh        ;0113 21 ab 30
     ld (hl),c           ;0116 71
     ld a,(l30abh)       ;0117 3a ab 30
-    call idrive         ;011a cd 78 f0
+    call idrive         ;Initialize an IEEE-488 disk drive
     ret                 ;011d c9
 sub_011eh:
     ld a,(l3002h)       ;011e 3a 02 30
@@ -106,7 +108,7 @@ l0162h:
 end:
 ;Jump to CP/M warm start
 ;Implements END command
-    jp warm
+    jp warm             ;Warm start entry point
     ret
 
 print_char:
@@ -116,7 +118,7 @@ print_char:
     ld c,cwrite
     ld a,(l30adh)
     ld e,a
-    call bdos
+    call bdos           ;BDOS entry point
     ret
 
 print_eol:
@@ -178,23 +180,24 @@ sub_01bbh:
     ld hl,(l30b3h)      ;01d0 2a b3 30
     ld b,h              ;01d3 44
     ld c,l              ;01d4 4d
-    ld de,000ah         ;01d5 11 0a 00
-    call sub_09bah      ;01d8 cd ba 09
+    ld de,10            ;01d5 11 0a 00
+    call sub_09bah      ;01d8 cd ba 09 (Library DIV)
     call sub_01bbh      ;01db cd bb 01
     ld hl,(l30b3h)      ;01de 2a b3 30
     ld b,h              ;01e1 44
     ld c,l              ;01e2 4d
-    ld de,000ah         ;01e3 11 0a 00
-    call sub_09bah      ;01e6 cd ba 09
+    ld de,10            ;01e3 11 0a 00
+    call sub_09bah      ;01e6 cd ba 09 (Library DIV)
     ld a,l              ;01e9 7d
-    add a,30h           ;01ea c6 30
+    add a,'0'           ;01ea c6 30
     ld c,a              ;01ec 4f
     call print_char     ;01ed cd 6b 01
 l01f0h:
     call sub_0a89h      ;01f0 cd 89 0a
     db 02h
     dw l30b3h
-l01f6:
+
+print_int:
     ld hl,l30b5h+1      ;01f6 21 b6 30
     ld (hl),b           ;01f9 70
     dec hl              ;01fa 2b
@@ -222,7 +225,7 @@ readline:
     ld (hl),50h         ;0219 36 50
     ld de,l3008h        ;021b 11 08 30
     ld c,creadstr       ;021e 0e 0a
-    call bdos           ;0220 cd 05 00
+    call bdos           ;BDOS entry point
     ld hl,0000h         ;0223 21 00 00
     ld (l3004h),hl      ;0226 22 04 30
     ld (l3006h),hl      ;0229 22 06 30
@@ -230,7 +233,7 @@ readline:
     or a                ;022f b7
     jp nz,l023bh        ;0230 c2 3b 02
     ld hl,l3003h        ;0233 21 03 30
-    ld (hl),0dh         ;0236 36 0d
+    ld (hl),cr          ;0236 36 0d
     jp l02ffh           ;0238 c3 ff 02
 l023bh:
     ld hl,l30b7h        ;023b 21 b7 30
@@ -259,13 +262,13 @@ l0249h:
     add hl,bc           ;0262 09
     ld a,(l30b8h)       ;0263 3a b8 30
     ld (hl),a           ;0266 77
-    cp 61h              ;0267 fe 61
+    cp 'a'              ;0267 fe 61
     jp m,l0278h         ;0269 fa 78 02
-    cp 7bh              ;026c fe 7b
+    cp 'z'+1            ;026c fe 7b
     jp p,l0278h         ;026e f2 78 02
     ld hl,l30b8h        ;0271 21 b8 30
     ld a,(hl)           ;0274 7e
-    add a,0e0h          ;0275 c6 e0
+    add a,-'a'-'A'      ;0275 c6 e0
     ld (hl),a           ;0277 77
 l0278h:
     ld a,(l30b7h)       ;0278 3a b7 30
@@ -288,8 +291,8 @@ l0278h:
     ld hl,(l3004h)      ;0297 2a 04 30
     ld b,h              ;029a 44
     ld c,l              ;029b 4d
-    ld de,000ah         ;029c 11 0a 00
-    call sub_095eh      ;029f cd 5e 09
+    ld de,10            ;029c 11 0a 00
+    call sub_095eh      ;029f cd 5e 09 (Library MUL)
     ld a,(l30b8h)       ;02a2 3a b8 30
     ld l,a              ;02a5 6f
     rla                 ;02a6 17
@@ -297,8 +300,11 @@ l0278h:
     ld h,a              ;02a8 67
     add hl,de           ;02a9 19
     ld (l3004h),hl      ;02aa 22 04 30
+
+    ;l3006h = 4
     ld c,04h            ;02ad 0e 04
     ld hl,(l3006h)      ;02af 2a 06 30
+
     jp l02b6h           ;02b2 c3 b6 02
 l02b5h:
     add hl,hl           ;02b5 29
@@ -621,18 +627,18 @@ exsys:
     ld hl,4000h
     ld de,0d400h
     ldir
-    jp runcpm
+    jp runcpm           ;Perform system init and then run CP/M
 
 rdsys:
 ;Read the "CP/M" and "K" files from an IEEE-488 drive into memory.
     ld a,c
     ld (l08b3h),a
-    call dskdev
+    call dskdev         ;Get device address for a CP/M drive number
     ld e,00h
     push de
     call sub_06adh
     ld a,(l08b3h)
-    call dsksta
+    call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     ld hl,4000h
     ld bc,1c00h
@@ -640,24 +646,24 @@ rdsys:
     or a
     ret nz
     push de
-    call talk
+    call talk           ;Send TALK to an IEEE-488 device
 l05f9h:
-    call rdieee
+    call rdieee         ;Read byte from an IEEE-488 device
     ld (hl),a
     inc hl
     dec bc
     ld a,b
     or c
     jr nz,l05f9h
-    call untalk
+    call untalk         ;Send UNTALK to all IEEE-488 devices
     pop de
     push de
-    call close
+    call close          ;Close an open file on an IEEE-488 device
     pop de
     push de
     call sub_06bfh
     ld a,(l08b3h)
-    call dsksta
+    call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     ld hl,6000h
     ld bc,0800h
@@ -665,37 +671,37 @@ l05f9h:
     or a
     ret nz
     push de
-    call talk
+    call talk           ;Send TALK to an IEEE-488 device
 l0626h:
-    call rdieee
+    call rdieee         ;Read byte from an IEEE-488 device
     ld (hl),a
     inc hl
     dec bc
     ld a,b
     or c
     jr nz,l0626h
-    call untalk
+    call untalk         ;Send UNTALK to all IEEE-488 devices
     pop de
-    call close
+    call close          ;Close an open file on an IEEE-488 device
     ld a,(l08b3h)
-    call dsksta
+    call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     ret
 
 cread_:
-;Read CP/M image from a Corvus drive.
-    call seldsk
+;Read CP/M image from a hard drive.
+    call seldsk         ;Select disk drive
     ld de,4000h
     ld bc,0000h
 cread2:
-    call settrk
+    call settrk         ;Set track number
     push bc
     ld bc,0000h
 cread1:
-    call setsec
+    call setsec         ;Set sector number
     push bc
     push de
-    call read
+    call read           ;Read selected sector
     or a
     jr nz,cwrit3
     pop de
@@ -715,22 +721,22 @@ cread1:
     ret
 
 cwrite_:
-;Write CP/M image to a Corvus drive.
-    call seldsk
+;Write CP/M image to a hard drive.
+    call seldsk         ;Select disk drive
     ld hl,4000h
     ld bc,0000h
 cwrit2:
-    call settrk
+    call settrk         ;Set track number
     push bc
     ld bc,0000h
 cwrit1:
-    call setsec
+    call setsec         ;Set sector number
     push bc
     ld bc,0080h
     ld de,0080h
     ldir
     push hl
-    call write
+    call write          ;Write selected sector
     or a
     jr nz,cwrit3
     pop hl
@@ -753,41 +759,41 @@ cwrit3:
 
 sub_06adh:
 ;Open "CP/M" file on an IEEE-488 drive
-    ld c,06h
-    ld hl,l08a1h
+    ld c,l08a1h_len
+    ld hl,l08a1h        ;"0:CP/M"
     ld a,(l08b3h)
     rra
-    jp nc,open
-    ld hl,l08a7h
-    jp open
+    jp nc,open          ;Open a file on an IEEE-488 device
+    ld hl,l08a7h        ;"1:CP/M"
+    jp open             ;Open a file on an IEEE-488 device
 
 sub_06bfh:
 ;Open "K" file on an IEEE-488 drive
-    ld c,03h
-    ld hl,l08adh
+    ld c,l08adh_len
+    ld hl,l08adh        ;"0:K"
     ld a,(l08b3h)
     rra
-    jp nc,open
-    ld hl,l08b0h
-    jp open
+    jp nc,open          ;Open a file on an IEEE-488 device
+    ld hl,l08b0h        ;"1:K"
+    jp open             ;Open a file on an IEEE-488 device
 
 savesy:
 ;Read the CP/M system image from an IEEE-488 drive.
     ld a,c
     ld (l08b3h),a
-    call dskdev
+    call dskdev         ;Get device address for a CP/M drive number
     push de
     ld e,0fh
-    ld hl,l0899h
+    ld hl,l0899h        ;"S0:*"
     ld a,(l08b3h)
     rra
     jr nc,l06e7h
-    ld hl,089dh
+    ld hl,l089dh        ;"S1:*"
 l06e7h:
-    ld c,04h
-    call open
+    ld c,l0899h_len
+    call open           ;Open a file on an IEEE-488 device
     ld a,(l08b3h)
-    call dsksta
+    call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     pop de
     cp 01h
@@ -796,53 +802,53 @@ l06e7h:
     push de
     call sub_06bfh
     ld a,(l08b3h)
-    call dsksta
+    call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     pop de
     or a
     ret nz
     push de
-    call listen
+    call listen         ;Send LISTEN to an IEEE-488 device
     ld hl,6000h
     ld bc,0800h
 l0715h:
     ld a,(hl)
-    call wrieee
+    call wrieee         ;Send byte to an IEEE-488 device
     inc hl
     dec bc
     ld a,b
     or c
     jr nz,l0715h
-    call unlisten
+    call unlisten       ;Send UNLISTEN to all IEEE-488 devices
     pop de
     push de
-    call close
+    call close          ;Close an open file on an IEEE-488 device
     pop de
     push de
     call sub_06adh
     ld a,(l08b3h)
-    call dsksta
+    call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     pop de
     or a
     ret nz
     push de
-    call listen
+    call listen         ;Send LISTEN to an IEEE-488 device
     ld hl,4000h
     ld bc,1c00h
 l0742h:
     ld a,(hl)
-    call wrieee
+    call wrieee         ;Send byte to an IEEE-488 device
     inc hl
     dec bc
     ld a,b
     or c
     jr nz,l0742h
-    call unlisten
+    call unlisten       ;Send UNLISTEN to all IEEE-488 devices
     pop de
-    call close
+    call close          ;Close an open file on an IEEE-488 device
     ld a,(l08b3h)
-    call dsksta
+    call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     ret
 
@@ -850,22 +856,22 @@ format:
 ;Format an IEEE-488 drive for SoftBox use.
     ld a,c
     ld (l08b3h),a
-    call dskdev
+    call dskdev         ;Get device address for a CP/M drive number
     ld a,(l08b3h)
     and 01h
-    add a,30h
+    add a,'0'
     ld (l0874h+1),a
     ld e,0fh
-    ld c,14h
-    ld hl,0874h
-    call open
+    ld c,l0874h_len
+    ld hl,l0874h        ;"N0:CP/M V2.2 DISK,XX"
+    call open           ;Open a file on an IEEE-488 device
     ld a,(l08b3h)
-    call dsksta
+    call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     or a
     ret nz
     ld a,(l08b3h)
-    call idrive
+    call idrive         ;Initialize an IEEE-488 disk drive
     ld hl,4000h
     ld de,4001h
     ld bc,00ffh
@@ -879,7 +885,7 @@ l07a0h:
 ;Clear the CP/M directory by filling it with E5 ("unused").
     call sub_07b6h
     ld a,(l08b3h)
-    call dsksta
+    call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     or a
     ret nz
@@ -887,62 +893,63 @@ l07a0h:
     dec (hl)
     jp p,l07a0h
     ret
+
 sub_07b6h:
 ;Write a sector to an IEEE-488 drive.
-    ld hl,l088fh
-    ld c,06h
+    ld hl,l088fh        ;"M-W",00h,13h,01h
+    ld c,l088fh_len
     ld a,(l08b3h)
-    call diskcmd
-    call ieeemsg
+    call diskcmd        ;Open the command channel on IEEE-488 device
+    call ieeemsg        ;Send string to the current IEEE-488 device
     ld a,(4000h)
-    call wreoi
-    call unlisten
-    ld hl,l0888h
-    ld c,07h
+    call wreoi          ;Send byte to IEEE-488 device with EOI asserted
+    call unlisten       ;Send UNLISTEN to all IEEE-488 devices
+    ld hl,l0888h        ;"B-P 2 1"
+    ld c,l0888h_len
     ld a,(l08b3h)
-    call diskcmd
-    call ieeemsg
-    call creoi
-    call unlisten
+    call diskcmd        ;Open the command channel on IEEE-488 device
+    call ieeemsg        ;Send string to the current IEEE-488 device
+    call creoi          ;Send carriage return to IEEE-488 dev with EOI
+    call unlisten       ;Send UNLISTEN to all IEEE-488 devices
     ld a,(l08b3h)
-    call dskdev
+    call dskdev         ;Get device address for a CP/M drive number
     ld e,02h
-    call listen
+    call listen         ;Send LISTEN to an IEEE-488 device
     ld hl,4001h
     ld c,0ffh
-    call ieeemsg
-    call unlisten
+    call ieeemsg        ;Send string to the current IEEE-488 device
+    call unlisten       ;Send UNLISTEN to all IEEE-488 devices
     ld a,(l08b3h)
-    call diskcmd
-    ld hl,l086fh
-    ld c,05h
-    call ieeemsg
+    call diskcmd        ;Open the command channel on IEEE-488 device
+    ld hl,l086fh        ;"U2 2 "
+    ld c,l086fh_len
+    call ieeemsg        ;Send string to the current IEEE-488 device
     ld a,(l08b3h)
     and 01h
-    add a,30h
-    call wrieee
+    add a,'0'
+    call wrieee         ;Send byte to an IEEE-488 device
     ld a,(l0897h)
-    call ieeenum
+    call ieeenum        ;Send number as decimal string to IEEE-488 dev
     ld a,(l0898h)
-    call ieeenum
-    call creoi
-    jp unlisten
+    call ieeenum        ;Send number as decimal string to IEEE-488 dev
+    call creoi          ;Send carriage return to IEEE-488 dev with EOI
+    jp unlisten         ;Send UNLISTEN to all IEEE-488 devices
 
 cform:
-;Format a Corvus drive for Softbox use.
-    call seldsk
+;Format a hard drive for Softbox use.
+    call seldsk         ;Select disk drive
     ld hl,0080h
 l0827h:
     ld (hl),0e5h
     inc l
     jr nz,l0827h
     ld bc,0002h
-    call settrk
+    call settrk         ;Set track number
     ld bc,0000h
 l0835h:
     push bc
-    call setsec
-    call write
+    call setsec         ;Set sector number
+    call write          ;Write selected sector
     pop bc
     or a
     jp nz,l0848h
@@ -954,39 +961,60 @@ l0835h:
 
 l0848h:
 ;Display "Hit any key to abort" message, wait for a key, and then return.
-    ld de,l0855h
+    ld de,l0855h        ;cr,lf,"Hit any key to abort : $"
     ld c,cwritestr
-    call bdos
+    call bdos           ;BDOS entry point
     ld c,cread
-    jp bdos
+    jp bdos             ;BDOS entry point
 
 l0855h:
     db cr,lf,"Hit any key to abort : $"
 
 l086fh:
     db "U2 2 "
+l086fh_len: equ $-l086fh
+
 l0874h:
     db "N0:CP/M V2.2 DISK,XX"
+l0874h_len: equ $-l0874h
+
 l0888h:
     db "B-P 2 1"
+l0888h_len: equ $-l0888h
+
 l088fh:
     db "M-W",00h,13h,01h
+l088fh_len: equ $-l088fh
+
+l0895h:                 ;unused !!!
     db "#2"
+
 l0897h:
     db 0
 l0898h:
     db 0
+
 l0899h:
     db "S0:*"
+l0899h_len: equ $-l0899h
+
+l089dh:
     db "S1:*"
+
 l08a1h:
     db "0:CP/M"
+l08a1h_len: equ $-l08a1h
+
 l08a7h:
     db "1:CP/M"
+
 l08adh:
     db "0:K"
+l08adh_len: equ $-l08adh
+
 l08b0h:
     db "1:K"
+
 l08b3h:
     db 0
 l08b4h:
@@ -1163,7 +1191,8 @@ l08b4h:
     nop                 ;095b 00
     nop                 ;095c 00
     nop                 ;095d 00
-sub_095eh:
+
+sub_095eh:              ;Library MUL
     xor a               ;095e af
     ld h,a              ;095f 67
     add a,b             ;0960 80
@@ -1241,7 +1270,8 @@ l09abh:
 l09b6h:
     ld de,0000h         ;09b6 11 00 00
     ret                 ;09b9 c9
-sub_09bah:
+
+sub_09bah:              ;Library BC=DIV / HL=MOD
     xor a               ;09ba af
     ld h,b              ;09bb 60
     ld l,c              ;09bc 69
