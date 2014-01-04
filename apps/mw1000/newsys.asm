@@ -1332,7 +1332,7 @@ l0780h:
     ld bc,l0f97h
     call print_str
 
-    PRINT DEEK(&H5648+unit*2);
+    ;PRINT DEEK(&H5648+unit*2)
     ld a,(unit)         ;07b5 3a 18 30
     ld l,a              ;07b8 6f
     rla                 ;07b9 17
