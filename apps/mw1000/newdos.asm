@@ -343,7 +343,7 @@ l02d5h:
     call print_int      ;02da cd 92 02
     ret                 ;02dd c9
 
-    ld hl,l30adh        ;02de 21 ad 30
+    ld hl,l30ach+1      ;02de 21 ad 30
     ld (hl),b           ;02e1 70
     dec hl              ;02e2 2b
     ld (hl),c           ;02e3 71
@@ -1237,10 +1237,13 @@ l07cah:
     call print_str
     call print_eol
 
-    ;CALL mw_write(&H20,&H4000):CALL check_error
+    ;REM Write absolute sector 32 with data at &H4000
+    ;CALL mw_write(&H20,&H4000)
     ld de,0020h         ;07e1 11 20 00
     ld bc,4000h         ;07e4 01 00 40
     call mw_write       ;07e7 cd 00 12
+
+    ;GOSUB check_error
     call check_error
 
     ;PRINT "Formatting directory ..."
@@ -1425,11 +1428,14 @@ l08feh:
     add hl,hl           ;0905 29
     jp c,l07ffh         ;0906 da ff 07
 
-    ;CALL mw_write(&H7000,l301ah):CALL check_error
+    ;REM Write absolute sector l301ah with data at &H7000
+    ;CALL mw_write(&H7000,l301ah)
     ld hl,(l301ah)      ;0909 2a 1a 30
     ex de,hl            ;090c eb
     ld bc,7000h         ;090d 01 00 70
-    call mw_write      ;0910 cd 00 12
+    call mw_write       ;0910 cd 00 12
+
+    ;GOSUB check_error
     call check_error
 
     ;l3016h = 0
@@ -1478,7 +1484,8 @@ l0949h:
     jp l0981h           ;095c c3 81 09
 
 l095fh:
-    ;CALL mw_write(&H7000,l3016h+l301ah+4):CALL check_error
+    ;REM Write absolute sector l3016h+l301ah+4 with data at &H7000
+    ;CALL mw_write(&H7000,l3016h+l301ah+4)
     ld bc,0004h         ;095f 01 04 00
     ld hl,(l301ah)      ;0962 2a 1a 30
     add hl,bc           ;0965 09
@@ -1487,7 +1494,9 @@ l095fh:
     add hl,de           ;096a 19
     ex de,hl            ;096b eb
     ld bc,7000h         ;096c 01 00 70
-    call mw_write      ;096f cd 00 12
+    call mw_write       ;096f cd 00 12
+
+    ;GOSUB check_error
     call check_error
 
     ;PRINT ".";
@@ -1688,32 +1697,48 @@ l0a82h:
     jp p,l0a81h         ;0a83 f2 81 0a
     add hl,de           ;0a86 19
     ld (l300eh),hl      ;0a87 22 0e 30
+
+    ;l3016h = 0
     ld hl,0000h         ;0a8a 21 00 00
     ld (l3016h),hl      ;0a8d 22 16 30
+
+    ;GOTO l0aa3h
     jp l0aa3h           ;0a90 c3 a3 0a
+
 l0a93h:
+    ;POKE &H7000+l3016h, 0
     ld bc,7000h         ;0a93 01 00 70
     ld hl,(l3016h)      ;0a96 2a 16 30
     add hl,bc           ;0a99 09
     ld (hl),00h         ;0a9a 36 00
+
+    ;l3016h = l3016h + 1
     ld hl,(l3016h)      ;0a9c 2a 16 30
     inc hl              ;0a9f 23
     ld (l3016h),hl      ;0aa0 22 16 30
+
 l0aa3h:
-    ld bc,0ff00h        ;0aa3 01 00 ff
+    ld bc,-256          ;0aa3 01 00 ff
     ld hl,(l3016h)      ;0aa6 2a 16 30
     add hl,bc           ;0aa9 09
     add hl,hl           ;0aaa 29
     jp c,l0a93h         ;0aab da 93 0a
+
+    ;l3016h = 0
     ld hl,0000h         ;0aae 21 00 00
     ld (l3016h),hl      ;0ab1 22 16 30
+
+    ;l301ch = l300ch - 1
     ld hl,(l300ch)      ;0ab4 2a 0c 30
     dec hl              ;0ab7 2b
     ld (l301ch),hl      ;0ab8 22 1c 30
+
+    ;GOTO l0adch
     jp l0adch           ;0abb c3 dc 0a
 
 l0abeh:
-    ;CALL mw_write(&H7000,l300eh+l3016h):CALL check_error
+    ;REM Write absolute sector l300eh+l3016h with data at &H7000
+    ;CALL mw_write(&H7000,l300eh+l3016h)
     ld hl,(l3016h)      ;0abe 2a 16 30
     ex de,hl            ;0ac1 eb
     ld hl,(l300eh)      ;0ac2 2a 0e 30
@@ -1721,6 +1746,8 @@ l0abeh:
     ex de,hl            ;0ac6 eb
     ld bc,7000h         ;0ac7 01 00 70
     call mw_write       ;0aca cd 00 12
+
+    ;GOSUB check_error
     call check_error
 
     ;PRINT ".";
@@ -9836,7 +9863,6 @@ l30aah:
     nop                 ;30ab 00
 l30ach:
     nop                 ;30ac 00
-l30adh:
     nop                 ;30ad 00
 l30aeh:
     nop                 ;30ae 00
