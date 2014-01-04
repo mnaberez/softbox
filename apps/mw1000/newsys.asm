@@ -15,12 +15,14 @@ sub_0103h:
     ld a,00h            ;010f 3e 00
     ret                 ;0111 c9
     ret                 ;0112 c9
+
 sub_0113h:
     ld hl,l3007h        ;0113 21 07 30
     ld (hl),c           ;0116 71
     ld a,(l3007h)       ;0117 3a 07 30
     call 0f078h         ;011a cd 78 f0
     ret                 ;011d c9
+
 sub_011eh:
     ld a,(l2423h)       ;011e 3a 23 24
     or a                ;0121 b7
@@ -33,6 +35,7 @@ sub_011eh:
     ld hl,l3008h        ;012b 21 08 30
     ld (hl),00h         ;012e 36 00
     jp l0157h           ;0130 c3 57 01
+
 l0133h:
     ld a,(l3008h)       ;0133 3a 08 30
     ld l,a              ;0136 6f
@@ -150,7 +153,7 @@ sub_01bbh:
     ld de,000ah         ;01e3 11 0a 00
     call sub_2529h      ;01e6 cd 29 25
     ld a,l              ;01e9 7d
-    add a,30h           ;01ea c6 30
+    add a,'0'           ;01ea c6 30
     ld c,a              ;01ec 4f
     call print_char     ;01ed cd 6b 01
 l01f0h:
@@ -197,6 +200,7 @@ readline:
     ld hl,rr            ;0233 21 cc 24
     ld (hl),0dh         ;0236 36 0d
     jp l02ffh           ;0238 c3 ff 02
+
 l023bh:
     ld hl,l3013h        ;023b 21 13 30
     ld (hl),01h         ;023e 36 01
@@ -205,6 +209,7 @@ l023bh:
     inc hl              ;0244 23
     ld (hl),a           ;0245 77
     jp l02efh           ;0246 c3 ef 02
+
 l0249h:
     ld a,(l3013h)       ;0249 3a 13 30
     ld l,a              ;024c 6f
@@ -224,13 +229,13 @@ l0249h:
     add hl,bc           ;0262 09
     ld a,(l3014h)       ;0263 3a 14 30
     ld (hl),a           ;0266 77
-    cp 61h              ;0267 fe 61
+    cp 'a'              ;0267 fe 61
     jp m,l0278h         ;0269 fa 78 02
-    cp 7bh              ;026c fe 7b
+    cp 'z'-1            ;026c fe 7b
     jp p,l0278h         ;026e f2 78 02
     ld hl,l3014h        ;0271 21 14 30
     ld a,(hl)           ;0274 7e
-    add a,0e0h          ;0275 c6 e0
+    add a,-'a'-'A'      ;0275 c6 e0
     ld (hl),a           ;0277 77
 l0278h:
     ld a,(l3013h)       ;0278 3a 13 30
@@ -265,6 +270,7 @@ l0278h:
     ld c,04h            ;02ad 0e 04
     ld hl,(l24cah)      ;02af 2a ca 24
     jp l02b6h           ;02b2 c3 b6 02
+
 l02b5h:
     add hl,hl           ;02b5 29
 l02b6h:
@@ -289,6 +295,7 @@ l02c5h:
     ld c,04h            ;02d6 0e 04
     ld hl,(l24cah)      ;02d8 2a ca 24
     jp l02dfh           ;02db c3 df 02
+
 l02deh:
     add hl,hl           ;02de 29
 l02dfh:
@@ -775,14 +782,14 @@ ask_unit:
     ld a,(rr)
     cp '0'
     jp m,bad_unit
-    cp '2'
+    cp '1'+1
     jp p,bad_unit
 
     ;REM User entered either '0' or '1'
 
     ;UNIT = R - &H30
     ld a,(rr)
-    add a,0d0h          ;Convert ASCII to number
+    add a,-'0'          ;Convert ASCII to number
     ld (unit),a
 
     ;GOTO l0558h
@@ -918,13 +925,17 @@ l05edh:
     ;PRINT
     call print_eol
 
+    ;l3016h = 0
     ld hl,l3016h        ;0602 21 16 30
     ld (hl),00h         ;0605 36 00
+
     jp l085eh           ;0607 c3 5e 08
+
 l060ah:
+    ;PRINT CHR(l3016h*2+&H41);
     ld a,(l3016h)       ;060a 3a 16 30
     add a,a             ;060d 87
-    add a,41h           ;060e c6 41
+    add a,'A'           ;060e c6 41
     ld c,a              ;0610 4f
     call print_char     ;0611 cd 6b 01
 
@@ -932,9 +943,10 @@ l060ah:
     ld bc,l0efah
     call print_str
 
+    ;PRINT CHR(l3016h*2+&H42);
     ld a,(l3016h)       ;061a 3a 16 30
     add a,a             ;061d 87
-    add a,42h           ;061e c6 42
+    add a,'B'           ;061e c6 42
     ld c,a              ;0620 4f
     call print_char     ;0621 cd 6b 01
 
@@ -959,6 +971,7 @@ l060ah:
     ld bc,cbm3040
     call print_str
 
+    ;PRINT PEEK(&H5678+l3016h);
     ld a,(l3016h)       ;0640 3a 16 30
     ld l,a              ;0643 6f
     rla                 ;0644 17
@@ -995,6 +1008,7 @@ l0657h:
     ld bc,cbm8050
     call print_str
 
+    ;PRINT PEEK(&H5678+l3016h);
     ld a,(l3016h)       ;066e 3a 16 30
     ld l,a              ;0671 6f
     rla                 ;0672 17
@@ -1014,6 +1028,7 @@ l0657h:
     jp l0857h
 
 l0685h:
+    ;IF PEEK(&H5670+l3016h) <> 6 THEN GOTO l06b3h
     ld a,(l3016h)       ;0685 3a 16 30
     ld l,a              ;0688 6f
     rla                 ;0689 17
@@ -1031,6 +1046,7 @@ l0685h:
     ld bc,cbm_8250
     call print_str
 
+    ;PRINT PEEK(&H5678+l3016h);
     ld a,(l3016h)       ;069c 3a 16 30
     ld l,a              ;069f 6f
     rla                 ;06a0 17
@@ -1050,6 +1066,7 @@ l0685h:
     jp l0857h
 
 l06b3h:
+    ;IF PEEK(&H5670+l3016h) >= 0 THEN GOTO l06cch
     ld a,(l3016h)       ;06b3 3a 16 30
     ld l,a              ;06b6 6f
     rla                 ;06b7 17
@@ -1082,6 +1099,7 @@ l06cch:
     ld bc,corvus_space
     call print_str
 
+    ;IF PEEK(&H5670h+l3016h) <> 2 THEN GOTO l06f0h
     ld a,(l3016h)       ;06d9 3a 16 30
     ld l,a              ;06dc 6f
     rla                 ;06dd 17
@@ -1101,6 +1119,7 @@ l06cch:
     jp l0738h
 
 l06f0h:
+    ;IF PEEK(&H5670h+l3016h) <> 3 THEN GOTO l06f0h
     ld a,(l3016h)       ;06f0 3a 16 30
     ld l,a              ;06f3 6f
     rla                 ;06f4 17
@@ -1120,6 +1139,7 @@ l06f0h:
     jp l0738h
 
 l0707h:
+    ;IF PEEK(&H5670h+l3016h) <> 4 THEN GOTO l06f0h
     ld a,(l3016h)       ;0707 3a 16 30
     ld l,a              ;070a 6f
     rla                 ;070b 17
@@ -1139,6 +1159,7 @@ l0707h:
     jp l0738h
 
 l071eh:
+    ;IF PEEK(&H5670h+l3016h) <> 5 THEN GOTO l06f0h
     ld a,(l3016h)       ;071e 3a 16 30
     ld l,a              ;0721 6f
     rla                 ;0722 17
@@ -1169,6 +1190,7 @@ l0738h:
     ld bc,device_num
     call print_str
 
+    ;PRINT PEEK(&H5678+l3016h);
     ld a,(l3016h)       ;0743 3a 16 30
     ld l,a              ;0746 6f
     rla                 ;0747 17
@@ -1190,6 +1212,7 @@ l0738h:
 l075ah:
     ;REM Drive type is a Mini-Winchester hard drive (Konan David Jr)
 
+    ;unit = 1 AND PEEK(&H5678+l3016h)
     ld a,(l3016h)       ;075a 3a 16 30
     ld l,a              ;075d 6f
     rla                 ;075e 17
@@ -1200,6 +1223,7 @@ l075ah:
     ld a,(hl)           ;0765 7e
     and 01h             ;0766 e6 01
     ld (unit),a         ;0768 32 18 30
+
     ld a,(l3016h)       ;076b 3a 16 30
     ld l,a              ;076e 6f
     rla                 ;076f 17
@@ -1212,6 +1236,7 @@ l075ah:
     ld c,04h            ;0778 0e 04
     ld h,00h            ;077a 26 00
     jp l0780h           ;077c c3 80 07
+
 l077fh:
     add hl,hl           ;077f 29
 l0780h:
@@ -1253,6 +1278,7 @@ l0780h:
     ld bc,l0f97h
     call print_str
 
+    PRINT DEEK(&H5648+unit*2);
     ld a,(unit)         ;07b5 3a 18 30
     ld l,a              ;07b8 6f
     rla                 ;07b9 17
@@ -1332,6 +1358,7 @@ l07f8h:
     ld bc,l0fcbh
     call print_str
 
+    ;PRINT firstsec+heads-1;
     ld a,(firstsec)     ;0821 3a 19 30
     ld l,a              ;0824 6f
     rla                 ;0825 17
@@ -1352,6 +1379,7 @@ l07f8h:
     ld bc,l0fcdh
     call print_str
 
+    ;PRINT DEEK(&H564c+unit*2);
     ld a,(unit)         ;083c 3a 18 30
     ld l,a              ;083f 6f
     rla                 ;0840 17
@@ -1376,9 +1404,12 @@ l0857h:
     ;PRINT
     call print_eol
 
+    ;l3016h = l3016h + 1
     ld hl,l3016h        ;085a 21 16 30
     inc (hl)            ;085d 34
+
 l085eh:
+    ;IF l3016h < 8 THEN GOTO l060ah
     ld a,(l3016h)       ;085e 3a 16 30
     cp 08h              ;0861 fe 08
     jp m,l060ah         ;0863 fa 0a 06
@@ -1412,7 +1443,7 @@ ask_flop_hard:
     jp m,l0993h         ;0883 fa 93 09
     cp 'P'+1            ;0886 fe 51
     jp p,l0993h         ;0888 f2 93 09
-    add a,0bfh          ;088b c6 bf
+    add a,-'A'          ;088b c6 bf
     or a                ;088d b7
     rra                 ;088e 1f
     ld (l3016h),a       ;088f 32 16 30
@@ -1452,6 +1483,7 @@ ask_flop_type:
 
     ;REM User selected 'A' for 3040/4040
 
+    ;POKE &H5670+l3016h, 0
     ld a,(l3016h)       ;08ba 3a 16 30
     ld l,a              ;08bd 6f
     rla                 ;08be 17
@@ -1460,7 +1492,11 @@ ask_flop_type:
     ld h,a              ;08c3 67
     add hl,bc           ;08c4 09
     ld (hl),00h         ;08c5 36 00
-    call ask_drv_dev      ;08c7 cd 09 03
+
+    ;GOSUB ask_drv_dev
+    call ask_drv_dev    ;08c7 cd 09 03
+
+    ;GOTO l0906h
     jp l0906h           ;08ca c3 06 09
 
 l08cdh:
@@ -1471,6 +1507,7 @@ l08cdh:
 
     ;REM User selected 'B' for 8050
 
+    ;POKE &H5670+l3016h, 1
     ld a,(l3016h)       ;08d5 3a 16 30
     ld l,a              ;08d8 6f
     rla                 ;08d9 17
@@ -1479,7 +1516,11 @@ l08cdh:
     ld h,a              ;08de 67
     add hl,bc           ;08df 09
     ld (hl),01h         ;08e0 36 01
-    call ask_drv_dev      ;08e2 cd 09 03
+
+    ;GOSUB ask_drv_dev
+    call ask_drv_dev    ;08e2 cd 09 03
+
+    ;GOTO l0906h
     jp l0906h           ;08e5 c3 06 09
 
 l08e8h:
@@ -1490,6 +1531,7 @@ l08e8h:
 
     ;REM User selected 'C' for 8250
 
+    ;POKE &H5670h+l3016h, 6
     ld a,(l3016h)       ;08f0 3a 16 30
     ld l,a              ;08f3 6f
     rla                 ;08f4 17
@@ -1498,11 +1540,19 @@ l08e8h:
     ld h,a              ;08f9 67
     add hl,bc           ;08fa 09
     ld (hl),06h         ;08fb 36 06
-    call ask_drv_dev      ;08fd cd 09 03
+
+    ;GOSUB ask_drv_dev
+    call ask_drv_dev    ;08fd cd 09 03
+
+    ;GOTO l0906h
     jp l0906h           ;0900 c3 06 09
+
 l0903h:
-    jp ask_flop_type           ;0903 c3 a6 08
+    ;GOTO ask_flop_type
+    jp ask_flop_type    ;0903 c3 a6 08
+
 l0906h:
+    ;GOTO l091eh
     jp l091eh           ;0906 c3 1e 09
 
 l0909h:
@@ -1513,6 +1563,7 @@ l0909h:
 
     ;REM User selected 'U' for Unused
 
+    ;POKE &H5670+l3016h, 255
     ld a,(l3016h)       ;0911 3a 16 30
     ld l,a              ;0914 6f
     rla                 ;0915 17
@@ -1547,7 +1598,7 @@ l091eh:
     ;PRINT
     call print_eol
 
-    ld bc,0fffbh        ;0939 01 fb ff
+    ld bc,-5            ;0939 01 fb ff
     ld hl,(nn)          ;093c 2a c8 24
     add hl,bc           ;093f 09
     ld a,h              ;0940 7c
@@ -1563,12 +1614,15 @@ l091eh:
     ld (hl),04h         ;0950 36 04
     jp l098ah           ;0952 c3 8a 09
 l0955h:
-    ld bc,0fff6h        ;0955 01 f6 ff
+    ;IF nn - 10 <> 0 THEN GOTO l0971h
+    ld bc,-10           ;0955 01 f6 ff
     ld hl,(nn)          ;0958 2a c8 24
     add hl,bc           ;095b 09
     ld a,h              ;095c 7c
     or l                ;095d b5
     jp nz,l0971h        ;095e c2 71 09
+
+    ;POKE &H5670+l3016h, 2
     ld a,(l3016h)       ;0961 3a 16 30
     ld l,a              ;0964 6f
     rla                 ;0965 17
@@ -1577,14 +1631,20 @@ l0955h:
     ld h,a              ;096a 67
     add hl,bc           ;096b 09
     ld (hl),02h         ;096c 36 02
+
+    ;GOTO l098ah
     jp l098ah           ;096e c3 8a 09
+
 l0971h:
-    ld bc,0ffech        ;0971 01 ec ff
+    ;IF nn - 20 <> 0 THEN GOTO l098ah
+    ld bc,-20           ;0971 01 ec ff
     ld hl,(nn)          ;0974 2a c8 24
     add hl,bc           ;0977 09
     ld a,h              ;0978 7c
     or l                ;0979 b5
     jp nz,l098ah        ;097a c2 8a 09
+
+    ;POKE &H5670+l3016h, 3
     ld a,(l3016h)       ;097d 3a 16 30
     ld l,a              ;0980 6f
     rla                 ;0981 17
@@ -1593,9 +1653,14 @@ l0971h:
     ld h,a              ;0986 67
     add hl,bc           ;0987 09
     ld (hl),03h         ;0988 36 03
+
 l098ah:
-    call ask_drv_dev      ;098a cd 09 03
+    ;GOSUB ask_drv_dev
+    call ask_drv_dev    ;098a cd 09 03
+
+    ;GOTO l0993h
     jp l0993h           ;098d c3 93 09
+
 l0990h:
     call l0359h         ;0990 cd 59 03
 l0993h:
@@ -1632,7 +1697,9 @@ l09adh:
     inc hl              ;09bb 23
     ld (hl),a           ;09bc 77
     jp l09d3h           ;09bd c3 d3 09
+
 l09c0h:
+    ;PRINT CHR(PEEK(&H4007+l301eh));
     ld a,(l301eh)       ;09c0 3a 1e 30
     ld l,a              ;09c3 6f
     rla                 ;09c4 17
@@ -1642,9 +1709,13 @@ l09c0h:
     add hl,bc           ;09ca 09
     ld c,(hl)           ;09cb 4e
     call print_char     ;09cc cd 6b 01
+
+    ;l301eh = l301eh + 1
     ld hl,l301eh        ;09cf 21 1e 30
     inc (hl)            ;09d2 34
+
 l09d3h:
+    ;IF l301fh >= l301eh THEN GOTO l09c0h
     ld a,(l301fh)       ;09d3 3a 1f 30
     ld hl,l301eh        ;09d6 21 1e 30
     cp (hl)             ;09d9 be
@@ -1687,7 +1758,9 @@ ask_autoload:
     inc hl              ;0a0e 23
     ld (hl),a           ;0a0f 77
     jp l0a30h           ;0a10 c3 30 0a
+
 l0a13h:
+    ;POKE &H4007+l301eh, l2425h(l301e)
     ld a,(l301eh)       ;0a13 3a 1e 30
     ld l,a              ;0a16 6f
     rla                 ;0a17 17
@@ -1705,13 +1778,19 @@ l0a13h:
     ld l,c              ;0a29 69
     add hl,de           ;0a2a 19
     ld (hl),b           ;0a2b 70
+
+    ;l301eh = l301eh + 1
     ld hl,l301eh        ;0a2c 21 1e 30
     inc (hl)            ;0a2f 34
+
 l0a30h:
+    ;IF l301fh >= l301eh THEN GOTO l0a13h
     ld a,(l301fh)       ;0a30 3a 1f 30
     ld hl,l301eh        ;0a33 21 1e 30
     cp (hl)             ;0a36 be
     jp p,l0a13h         ;0a37 f2 13 0a
+
+    ;POKE &H4007+l2425+1, 0
     ld a,(l2425h)       ;0a3a 3a 25 24
     ld l,a              ;0a3d 6f
     rla                 ;0a3e 17
@@ -1728,6 +1807,7 @@ l0a48h:
 sub_0a49h:
     call 2137h          ;0a49 cd 37 21
     ret                 ;0a4c c9
+
 l0a4dh:
     ;PRINT "Save on which drive (A - P) ? ";
     ld bc,l10e0h
@@ -1749,14 +1829,14 @@ l0a66h:
     ld l,a              ;0a69 6f
     rla                 ;0a6a 17
     sbc a,a             ;0a6b 9f
-    ld bc,0ffbfh        ;0a6c 01 bf ff
+    ld bc,-'A'          ;0a6c 01 bf ff
     ld h,a              ;0a6f 67
     add hl,bc           ;0a70 09
     ld (l3002h),hl      ;0a71 22 02 30
     ld hl,(l3002h)      ;0a74 2a 02 30
     add hl,hl           ;0a77 29
     jp c,l0a86h         ;0a78 da 86 0a
-    ld bc,0fff0h        ;0a7b 01 f0 ff
+    ld bc,-16           ;0a7b 01 f0 ff
     ld hl,(l3002h)      ;0a7e 2a 02 30
     add hl,bc           ;0a81 09
     add hl,hl           ;0a82 29
@@ -1772,7 +1852,7 @@ l0a87h:
     sbc a,a             ;0a90 9f
     ld h,a              ;0a91 67
     ld (l3020h),hl      ;0a92 22 20 30
-    ld bc,0ff80h        ;0a95 01 80 ff
+    ld bc,-128          ;0a95 01 80 ff
     ld hl,(l3020h)      ;0a98 2a 20 30
     add hl,bc           ;0a9b 09
     add hl,hl           ;0a9c 29
@@ -1783,13 +1863,14 @@ l0a87h:
     call print_str_eol
 
     jp l0a4dh           ;0aa6 c3 4d 0a
+
 l0aa9h:
     ld hl,(l3020h)      ;0aa9 2a 20 30
     dec hl              ;0aac 2b
     dec hl              ;0aad 2b
     add hl,hl           ;0aae 29
     jp c,l0ac7h         ;0aaf da c7 0a
-    ld bc,0fffah        ;0ab2 01 fa ff
+    ld bc,-6            ;0ab2 01 fa ff
     ld hl,(l3020h)      ;0ab5 2a 20 30
     add hl,bc           ;0ab8 09
     add hl,hl           ;0ab9 29
@@ -1798,6 +1879,7 @@ l0aa9h:
     ld c,(hl)           ;0ac0 4e
     call cwrite_        ;0ac1 cd e3 21
     jp l0af0h           ;0ac4 c3 f0 0a
+
 l0ac7h:
     ld hl,l3002h        ;0ac7 21 02 30
     ld c,(hl)           ;0aca 4e
@@ -1895,7 +1977,7 @@ l0b42h:
     ld l,a              ;0b45 6f
     rla                 ;0b46 17
     sbc a,a             ;0b47 9f
-    ld bc,0ffbfh        ;0b48 01 bf ff
+    ld bc,-'A'          ;0b48 01 bf ff
     ld h,a              ;0b4b 67
     add hl,bc           ;0b4c 09
     ld (l3002h),hl      ;0b4d 22 02 30
@@ -1907,7 +1989,7 @@ l0b42h:
     sbc a,a             ;0b59 9f
     ld h,a              ;0b5a 67
     ld (l3004h),hl      ;0b5b 22 04 30
-    ld bc,0ff7fh        ;0b5e 01 7f ff
+    ld bc,-129          ;0b5e 01 7f ff
     ld hl,(l3004h)      ;0b61 2a 04 30
     add hl,bc           ;0b64 09
     add hl,hl           ;0b65 29
@@ -1917,7 +1999,7 @@ l0b42h:
     dec hl              ;0b6d 2b
     add hl,hl           ;0b6e 29
     jp c,l0b87h         ;0b6f da 87 0b
-    ld bc,0fffah        ;0b72 01 fa ff
+    ld bc,-6            ;0b72 01 fa ff
     ld hl,(l3004h)      ;0b75 2a 04 30
     add hl,bc           ;0b78 09
     add hl,hl           ;0b79 29
@@ -2430,7 +2512,7 @@ l12a6h:
     ;GOTO l13eeh
     jp l13eeh
 
-sub_12a9h:
+ask_char_size:
     ;PRINT "New charater length (5 to 8) ? ";
     ld bc,l1b70h
     call print_str
@@ -2441,22 +2523,26 @@ sub_12a9h:
     ;PRINT
     call print_eol
 
+    ;N = R - 53
     ld a,(rr)           ;12b5 3a cc 24
     ld l,a              ;12b8 6f
     rla                 ;12b9 17
     sbc a,a             ;12ba 9f
-    ld bc,0ffcbh        ;12bb 01 cb ff
+    ld bc,-53           ;12bb 01 cb ff
     ld h,a              ;12be 67
     add hl,bc           ;12bf 09
     ld (nn),hl          ;12c0 22 c8 24
+
     ld hl,(nn)          ;12c3 2a c8 24
     add hl,hl           ;12c6 29
     jp c,l12ech         ;12c7 da ec 12
-    ld bc,0fffch        ;12ca 01 fc ff
+
+    ld bc,-4            ;12ca 01 fc ff
     ld hl,(nn)          ;12cd 2a c8 24
     add hl,bc           ;12d0 09
     add hl,hl           ;12d1 29
     jp nc,l12ech        ;12d2 d2 ec 12
+
     ld a,(5664h)        ;12d5 3a 64 56
     and 0f3h            ;12d8 e6 f3
     ld b,02h            ;12da 06 02
@@ -2523,7 +2609,7 @@ l1323h:
     ;RETURN
     ret
 
-sub_1324h:
+ask_parity:
     ;PRINT "O(dd), E(ven), or N(o) parity ? ";
     ld bc,l1bb0h
     call print_str
@@ -2577,7 +2663,7 @@ l1368h:
     ;RETURN
     ret
 
-sub_1369h:
+ask_baud_rate:
     ;PRINT
     call print_eol
 
@@ -2713,6 +2799,7 @@ l13eeh:
     ld bc,l1c2ch
     call print_str
 
+    ;PRINT CHR(&H35+((PEEK(&H6554) AND &H0C) SHR 2));
     ld a,(5664h)        ;1409 3a 64 56
     and 0ch             ;140c e6 0c
     ld l,a              ;140e 6f
@@ -2725,7 +2812,7 @@ l1417h:
     dec c               ;1417 0d
     jp p,l1416h         ;1418 f2 16 14
     ld a,h              ;141b 7c
-    add a,35h           ;141c c6 35
+    add a,'5'           ;141c c6 35
     ld c,a              ;141e 4f
     call print_char     ;141f cd 6b 01
 
@@ -2748,18 +2835,21 @@ l1417h:
 
     ld hl,l1c60h        ;143b 21 60 1c
     jp l1460h           ;143e c3 60 14
+
 l1441h:
     ld a,(l3028h)       ;1441 3a 28 30
     cp 80h              ;1444 fe 80
     jp nz,l144fh        ;1446 c2 4f 14
     ld hl,l1c62h        ;1449 21 62 1c
     jp l1460h           ;144c c3 60 14
+
 l144fh:
     ld a,(l3028h)       ;144f 3a 28 30
     cp 0c0h             ;1452 fe c0
     jp nz,l145dh        ;1454 c2 5d 14
     ld hl,l1c66h        ;1457 21 66 1c
     jp l1460h           ;145a c3 60 14
+
 l145dh:
     ld hl,l1c68h        ;145d 21 68 1c
 l1460h:
@@ -2779,6 +2869,7 @@ l1460h:
     jp nz,l147ch        ;1473 c2 7c 14
     ld hl,l1c83h        ;1476 21 83 1c
     jp l149fh           ;1479 c3 9f 14
+
 l147ch:
     ld a,(5664h)        ;147c 3a 64 56
     and 30h             ;147f e6 30
@@ -2786,6 +2877,7 @@ l147ch:
     jp nz,l148ch        ;1483 c2 8c 14
     ld hl,l1c88h        ;1486 21 88 1c
     jp l149fh           ;1489 c3 9f 14
+
 l148ch:
     ld a,(5664h)        ;148c 3a 64 56
     and 30h             ;148f e6 30
@@ -2793,6 +2885,7 @@ l148ch:
     jp nz,l149ch        ;1493 c2 9c 14
     ld hl,l1c8dh        ;1496 21 8d 1c
     jp l149fh           ;1499 c3 9f 14
+
 l149ch:
     ld hl,l1c92h        ;149c 21 92 1c
 l149fh:
@@ -2819,30 +2912,35 @@ l14bbh:
     jp nz,l14c9h        ;14c0 c2 c9 14
     ld hl,l1cb0h        ;14c3 21 b0 1c
     jp l1504h           ;14c6 c3 04 15
+
 l14c9h:
     ld a,(5665h)        ;14c9 3a 65 56
     cp 77h              ;14cc fe 77
     jp nz,l14d7h        ;14ce c2 d7 14
     ld hl,l1cb6h        ;14d1 21 b6 1c
     jp l1504h           ;14d4 c3 04 15
+
 l14d7h:
     ld a,(5665h)        ;14d7 3a 65 56
     cp 0cch             ;14da fe cc
     jp nz,l14e5h        ;14dc c2 e5 14
     ld hl,l1cbch        ;14df 21 bc 1c
     jp l1504h           ;14e2 c3 04 15
+
 l14e5h:
     ld a,(5665h)        ;14e5 3a 65 56
     cp 0eeh             ;14e8 fe ee
     jp nz,l14f3h        ;14ea c2 f3 14
     ld hl,l1cc2h        ;14ed 21 c2 1c
     jp l1504h           ;14f0 c3 04 15
+
 l14f3h:
     ld a,(5665h)        ;14f3 3a 65 56
     cp 0ffh             ;14f6 fe ff
     jp nz,l1501h        ;14f8 c2 01 15
     ld hl,l1cc8h        ;14fb 21 c8 1c
     jp l1504h           ;14fe c3 04 15
+
 l1501h:
     ld hl,l1cceh        ;1501 21 ce 1c
 l1504h:
@@ -2863,29 +2961,39 @@ l1504h:
     ;PRINT
     call print_eol
 
+    ;IF N <> 0 THEN GOTO l1521h
     ld hl,(nn)          ;1518 2a c8 24
     ld a,l              ;151b 7d
     or h                ;151c b4
     jp nz,l1521h        ;151d c2 21 15
+
     ret                 ;1520 c9
+
 l1521h:
+    ;IF (N-1) <> 0 THEN GOTO l1530h
     ld hl,(nn)          ;1521 2a c8 24
     dec hl              ;1524 2b
     ld a,h              ;1525 7c
     or l                ;1526 b5
     jp nz,l1530h        ;1527 c2 30 15
-    call sub_12a9h      ;152a cd a9 12
+
+    call ask_char_size  ;152a cd a9 12
     jp l1560h           ;152d c3 60 15
+
 l1530h:
+    ;IF (N-2) <> 0 THEN GOTO l1540h
     ld hl,(nn)          ;1530 2a c8 24
     dec hl              ;1533 2b
     dec hl              ;1534 2b
     ld a,h              ;1535 7c
     or l                ;1536 b5
     jp nz,l1540h        ;1537 c2 40 15
+
     call ask_stop_bits  ;153a cd ed 12
     jp l1560h           ;153d c3 60 15
+
 l1540h:
+    ;IF (N-3) <> 0 THEN GOTO l1551h
     ld hl,(nn)          ;1540 2a c8 24
     dec hl              ;1543 2b
     dec hl              ;1544 2b
@@ -2893,21 +3001,30 @@ l1540h:
     ld a,h              ;1546 7c
     or l                ;1547 b5
     jp nz,l1551h        ;1548 c2 51 15
-    call sub_1324h      ;154b cd 24 13
+
+    call ask_parity     ;154b cd 24 13
     jp l1560h           ;154e c3 60 15
+
 l1551h:
-    ld bc,0fffch        ;1551 01 fc ff
+    ;IF (N-4) <> 0 THEN GOTO l1560h
+    ld bc,-4            ;1551 01 fc ff
     ld hl,(nn)          ;1554 2a c8 24
     add hl,bc           ;1557 09
     ld a,h              ;1558 7c
     or l                ;1559 b5
     jp nz,l1560h        ;155a c2 60 15
-    call sub_1369h      ;155d cd 69 13
+
+    call ask_baud_rate  ;155d cd 69 13
+
 l1560h:
+    ;GOTO l13eeh
     jp l13eeh           ;1560 c3 ee 13
+
     ret                 ;1563 c9
+
 sub_1564h:
     jp l1697h           ;1564 c3 97 16
+
 sub_1567h:
     ;PRINT
     call print_eol
@@ -3368,42 +3485,55 @@ l17b7h:
     ret
 
 l17d7h:
-    ld bc,0fffbh        ;17d7 01 fb ff
+    ;IF (N-5) <> 0 THEN GOTO l17e9h
+    ld bc,-5            ;17d7 01 fb ff
     ld hl,(nn)          ;17da 2a c8 24
     add hl,bc           ;17dd 09
     ld a,h              ;17de 7c
     or l                ;17df b5
     jp nz,l17e9h        ;17e0 c2 e9 17
+
     call sub_1567h      ;17e3 cd 67 15
     jp l1872h           ;17e6 c3 72 18
+
 l17e9h:
-    ld bc,0fffah        ;17e9 01 fa ff
+    ;IF (N-6) <> 0 THEN GOTO l15e1h
+    ld bc,-6            ;17e9 01 fa ff
     ld hl,(nn)          ;17ec 2a c8 24
     add hl,bc           ;17ef 09
     ld a,h              ;17f0 7c
     or l                ;17f1 b5
     jp nz,l17fbh        ;17f2 c2 fb 17
+
     call sub_15e1h      ;17f5 cd e1 15
     jp l1872h           ;17f8 c3 72 18
+
 l17fbh:
-    ld bc,0fff9h        ;17fb 01 f9 ff
+    ;IF (N-7) <> 0 THEN GOTO l180dh
+    ld bc,-7            ;17fb 01 f9 ff
     ld hl,(nn)          ;17fe 2a c8 24
     add hl,bc           ;1801 09
     ld a,h              ;1802 7c
     or l                ;1803 b5
     jp nz,l180dh        ;1804 c2 0d 18
+
     call sub_1613h      ;1807 cd 13 16
     jp l1872h           ;180a c3 72 18
+
 l180dh:
-    ld bc,0fff8h        ;180d 01 f8 ff
+    ;IF (N-8) <> 0 THEN GOTO l180dh
+    ld bc,-8            ;180d 01 f8 ff
     ld hl,(nn)          ;1810 2a c8 24
     add hl,bc           ;1813 09
     ld a,h              ;1814 7c
     or l                ;1815 b5
     jp nz,l181fh        ;1816 c2 1f 18
+
     call sub_1645h      ;1819 cd 45 16
     jp l1872h           ;181c c3 72 18
+
 l181fh:
+    ;l3029h = N
     ld a,(nn)           ;181f 3a c8 24
     ld (l3029h),a       ;1822 32 29 30
 
@@ -3502,6 +3632,7 @@ sub_1879h:
     or l
     jp nz,l1896h
 
+    ;POKE &H44b2, 0
     ld hl,44b2h         ;188e 21 b2 44
     ld (hl),00h         ;1891 36 00
 
@@ -3517,6 +3648,7 @@ l1896h:
     or l
     jp nz,l18a8h
 
+    ;POKE &H44b2, 1
     ld hl,44b2h         ;18a0 21 b2 44
     ld (hl),01h         ;18a3 36 01
 
@@ -3532,6 +3664,7 @@ l18a8h:
     or l
     jp nz,l18b9h
 
+    ;POKE &H44b2, 3
     ld hl,44b2h         ;18b4 21 b2 44
     ld (hl),03h         ;18b7 36 03
 
@@ -3561,9 +3694,12 @@ sub_18c3h:
     cp 'A'
     jp nz,l18e2h
 
+    ;POKE &H5667, PEEK(&H5667) AND &H80
     ld a,(5667h)        ;18d7 3a 67 56
     and 80h             ;18da e6 80
     ld (5667h),a        ;18dc 32 67 56
+
+    ;GOTO l18f4h
     jp l18f4h           ;18df c3 f4 18
 
 l18e2h:
@@ -3572,6 +3708,7 @@ l18e2h:
     cp 'T'
     jp nz,l18f4h
 
+    ;POKE &H5667, PEEK(&H5667) AND &H80 OR &H02
     ld a,(5667h)        ;18ea 3a 67 56
     and 80h             ;18ed e6 80
     or 02h              ;18ef f6 02
@@ -3599,8 +3736,11 @@ l18fch:
     cp 'E'
     jp nz,l1918h
 
+    ;POKE &H5668, &H1b
     ld hl,5668h         ;1910 21 68 56
     ld (hl),1bh         ;1913 36 1b
+
+    ;GOTO l192bh
     jp l192bh           ;1915 c3 2b 19
 
 l1918h:
@@ -3609,17 +3749,24 @@ l1918h:
     cp 'T'
     jp nz,l1928h
 
+    ;POKE &H5668, &H7e
     ld hl,5668h         ;1920 21 68 56
     ld (hl),7eh         ;1923 36 7e
+
+    ;GOTO l192bh
     jp l192bh           ;1925 c3 2b 19
+
 l1928h:
+    ;GOTO l18fch
     jp l18fch           ;1928 c3 fc 18
 
 l192bh:
+    ;POKE &H5667, PEEK(&H5667) AND &H80 OR &H01
     ld a,(5667h)        ;192b 3a 67 56
     and 80h             ;192e e6 80
     or 01h              ;1930 f6 01
     ld (5667h),a        ;1932 32 67 56
+
     ld hl,566ah         ;1935 21 6a 56
     ld (hl),00h         ;1938 36 00
     inc hl              ;193a 23
@@ -3682,6 +3829,7 @@ l192bh:
     inc hl              ;1991 23
     ld (hl),00h         ;1992 36 00
     jp l1a2ah           ;1994 c3 2a 1a
+
 l1997h:
     ld hl,5668h         ;1997 21 68 56
     ld (hl),1bh         ;199a 36 1b
@@ -3781,6 +3929,7 @@ l1997h:
     ld (hl),00h         ;1a28 36 00
 l1a2ah:
     ret                 ;1a2a c9
+
 sub_1a2bh:
     ;PRINT "New clock frequency ? ";
     ld bc,l2001h
@@ -3792,12 +3941,16 @@ sub_1a2bh:
     ;PRINT
     call print_eol
 
+    ;IF N <> 0 THEN GOTO l1a45h
     ld hl,(nn)          ;1a37 2a c8 24
     ld a,l              ;1a3a 7d
     or h                ;1a3b b4
     jp z,l1a45h         ;1a3c ca 45 1a
+
+    ;POKE &H6005, N
     ld a,(nn)           ;1a3f 3a c8 24
     ld (6005h),a        ;1a42 32 05 60
+
 l1a45h:
     ret                 ;1a45 c9
 
@@ -3945,23 +4098,32 @@ l1af9h:
     ret
 
 l1b2dh:
+    ;IF (N-1) <> 0 THEN GOTO l1b3ch
     ld hl,(nn)          ;1b2d 2a c8 24
     dec hl              ;1b30 2b
     ld a,h              ;1b31 7c
     or l                ;1b32 b5
     jp nz,l1b3ch        ;1b33 c2 3c 1b
+
     call sub_1879h      ;1b36 cd 79 18
+
     jp l1b6ch           ;1b39 c3 6c 1b
+
 l1b3ch:
+    ;IF (N-2) <> 0 THEN GOTO l1b4ch
     ld hl,(nn)          ;1b3c 2a c8 24
     dec hl              ;1b3f 2b
     dec hl              ;1b40 2b
     ld a,h              ;1b41 7c
     or l                ;1b42 b5
     jp nz,l1b4ch        ;1b43 c2 4c 1b
+
     call sub_18bah      ;1b46 cd ba 18
+
     jp l1b6ch           ;1b49 c3 6c 1b
+
 l1b4ch:
+    ;IF (N-3) <> 0 THEN GOTO l1b5dh
     ld hl,(nn)          ;1b4c 2a c8 24
     dec hl              ;1b4f 2b
     dec hl              ;1b50 2b
@@ -3969,18 +4131,25 @@ l1b4ch:
     ld a,h              ;1b52 7c
     or l                ;1b53 b5
     jp nz,l1b5dh        ;1b54 c2 5d 1b
+
     call sub_18c3h      ;1b57 cd c3 18
+
     jp l1b6ch           ;1b5a c3 6c 1b
+
 l1b5dh:
-    ld bc,0fffch        ;1b5d 01 fc ff
+    ;IF (N-4) <> 0 THEN GOTO l1b6ch
+    ld bc,-4            ;1b5d 01 fc ff
     ld hl,(nn)          ;1b60 2a c8 24
     add hl,bc           ;1b63 09
     ld a,h              ;1b64 7c
     or l                ;1b65 b5
     jp nz,l1b6ch        ;1b66 c2 6c 1b
+
     call sub_1a2bh      ;1b69 cd 2b 1a
+
 l1b6ch:
     jp l1a46h           ;1b6c c3 46 1a
+
     ret                 ;1b6f c9
 
 l1b70h:
