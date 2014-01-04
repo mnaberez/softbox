@@ -168,7 +168,7 @@ l01abh:
     jp p,l01c2h         ;01b8 f2 c2 01
     ld hl,l3002h        ;01bb 21 02 30
     ld a,(hl)           ;01be 7e
-    add a,-'a'-'A'      ;01bf c6 e0
+    add a,0e0h          ;01bf c6 e0
     ld (hl),a           ;01c1 77
 l01c2h:
     ld hl,l30a1h        ;01c2 21 a1 30
@@ -2105,7 +2105,7 @@ mw_write:
     xor a               ;High byte from sector address is zero
     ld (var_3),a
     ld (var_1),de       ;Store sector address
- 
+
     ld h,b              ;Put buffer address to HL
     ld l,c
 
