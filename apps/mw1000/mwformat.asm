@@ -14,6 +14,10 @@ bdos:          equ  0005h ;BDOS entry point
 cwrite:        equ 02h    ;Console Output
 creadstr:      equ 0ah    ;Buffered Console Input
 
+bell:          equ 07h    ;Bell
+lf:            equ 0ah    ;Line Feed
+cr:            equ 0dh    ;Carriage Return
+
     org 0100h
 
     jp start
@@ -23,7 +27,7 @@ end:
     jp warm             ;Jump to CP/M warm start
     ret
 
-curvus_out:
+corvus_out:
 ;Write the value C to port corvus
     ld hl,l0c4ah        ;0107 21 4a 0c
     ld (hl),c           ;010a 71
@@ -31,7 +35,7 @@ curvus_out:
     out (corvus),a      ;010e d3 18
     ret                 ;0110 c9
 
-curvus_in:
+corvus_in:
 ;Read value from port corvus to A
     in a,(corvus)       ;0111 db 18
     ret                 ;0113 c9
@@ -46,51 +50,50 @@ mw_comout:
     ld hl,l0c4bh
     ld (hl),c           ;Save command
     ld c,00h
-    call curvus_out     ;Clear David Junior II port
+    call corvus_out     ;Clear David Junior II port
 mw_rdy1:
-    call curvus_in
+    call corvus_in
     cp 0a0h
     jp nz,mw_rdy1       ;Wait for David Junior II to go ready
     ld hl,l0c4bh
     ld c,(hl)           ;Recall command
-    call curvus_out     ;Send command
+    call corvus_out     ;Send command
 mw_rdy2:
-    call curvus_in
+    call corvus_in
     cp 0a1h
     jp nz,mw_rdy2       ;Wait until the David Junior II has it
     ld c,0ffh
-    call curvus_out     ;Send execute code
-    ld hl,l0c4ch        ;013d 21 4c 0c
-    ld (hl),01h         ;0140 36 01
-    jp l0149h           ;0142 c3 49 01
-
-l0145h:
-    ld hl,l0c4ch        ;0145 21 4c 0c
-    inc (hl)            ;0148 34
+    call corvus_out     ;Send execute code
+    ld hl,l0c4ch
+    ld (hl),01h
+    jp l0149h
+mw_rdy3:
+    ld hl,l0c4ch
+    inc (hl)
 l0149h:
-    ld a,(l0c4ch)       ;0149 3a 4c 0c
-    cp 15h              ;014c fe 15
-    jp m,l0145h         ;014e fa 45 01
-    ret                 ;0151 c9
+    ld a,(l0c4ch)
+    cp 15h
+    jp m,mw_rdy3        ;Delay loop
+    ret
 
 mw_status:
 ;Get status from the Konan David Junior II, return it in A.
 ;
     ld c,0ffh
-    call curvus_out     ;Transfer done
+    call corvus_out     ;Transfer done
 l0157h:
-    call curvus_in
+    call corvus_in
     cp 0ffh
     jp nz,l0157h        ;Wait for David Junior II to get out
                         ;  of internal DMA mode
     ld c,0feh
-    call curvus_out     ;Signal that we are ready for status
+    call corvus_out     ;Signal that we are ready for status
 l0164h:
-    call curvus_in
+    call corvus_in
     and 80h
     jp nz,l0164h        ;Wait for status
 
-    call curvus_in      ;Read status byte
+    call corvus_in      ;Read status byte
     ld (l0c3ch),a       ;016f 32 3c 0c
     ret                 ;0172 c9
 
@@ -290,9 +293,9 @@ print_char:
 
 print_eol:
 ;Print end of line (CR+LF)
-    ld c,0dh
+    ld c,cr
     call print_char
-    ld c,0ah
+    ld c,lf
     call print_char
     ret
 
@@ -321,10 +324,8 @@ l02abh:
 
 sub_02c3h:
     call sub_0bd4h      ;02c3 cd d4 0b
-    nop                 ;02c6 00
-    ld (bc),a           ;02c7 02
-    push de             ;02c8 d5
-    inc c               ;02c9 0c
+    db 00h, 02h
+    dw l0cd5h
     ld hl,l0cd5h+1      ;02ca 21 d6 0c
     ld (hl),b           ;02cd 70
     dec hl              ;02ce 2b
@@ -336,24 +337,24 @@ sub_02c3h:
     ld hl,(l0cd5h)      ;02d8 2a d5 0c
     ld b,h              ;02db 44
     ld c,l              ;02dc 4d
-    ld de,000ah         ;02dd 11 0a 00
-    call sub_0b48h      ;02e0 cd 48 0b
+    ld de,10            ;02dd 11 0a 00
+    call sub_0b48h      ;02e0 cd 48 0b (Library DIV)
     call sub_02c3h      ;02e3 cd c3 02
     ld hl,(l0cd5h)      ;02e6 2a d5 0c
     ld b,h              ;02e9 44
     ld c,l              ;02ea 4d
-    ld de,000ah         ;02eb 11 0a 00
-    call sub_0b48h      ;02ee cd 48 0b
+    ld de,10            ;02eb 11 0a 00
+    call sub_0b48h      ;02ee cd 48 0b (Library DIV - HL=MOD)
     ld a,l              ;02f1 7d
-    add a,30h           ;02f2 c6 30
+    add a,'0'           ;02f2 c6 30
     ld c,a              ;02f4 4f
     call print_char     ;02f5 cd 85 02
 l02f8h:
     call sub_0c17h      ;02f8 cd 17 0c
-    ld (bc),a           ;02fb 02
-    push de             ;02fc d5
-    inc c               ;02fd 0c
-sub_02feh:
+    db 02h
+    dw l0cd5h
+
+print_int:
     ld hl,l0cd7h+1      ;02fe 21 d8 0c
     ld (hl),b           ;0301 70
     dec hl              ;0302 2b
@@ -368,6 +369,7 @@ sub_02feh:
     call print_str
 
     jp l031dh           ;0312 c3 1d 03
+
 l0315h:
     ld hl,(l0cd7h)      ;0315 2a d7 0c
     ld b,h              ;0318 44
@@ -375,6 +377,8 @@ l0315h:
     call sub_02c3h      ;031a cd c3 02
 l031dh:
     ret                 ;031d c9
+
+l031eh:
     ld hl,l0cd9h+1      ;031e 21 da 0c
     ld (hl),b           ;0321 70
     dec hl              ;0322 2b
@@ -387,6 +391,7 @@ l031dh:
     ld bc,dash
     call print_str
 
+    ;l0cd9h = -l0cd9h
     ld hl,(l0cd9h)      ;0331 2a d9 0c
     ld a,l              ;0334 7d
     cpl                 ;0335 2f
@@ -397,12 +402,16 @@ l031dh:
     adc a,00h           ;033b ce 00
     ld h,a              ;033d 67
     ld (l0cd9h),hl      ;033e 22 d9 0c
+
 l0341h:
+    ;PRINT l0cd9h
     ld hl,(l0cd9h)      ;0341 2a d9 0c
     ld b,h              ;0344 44
     ld c,l              ;0345 4d
-    call sub_02feh      ;0346 cd fe 02
+    call print_int      ;0346 cd fe 02
     ret                 ;0349 c9
+
+l034ah:
     ld hl,l0cdbh+1      ;034a 21 dc 0c
     ld (hl),b           ;034d 70
     dec hl              ;034e 2b
@@ -415,6 +424,7 @@ l0357h:
     ld c,0ch            ;0357 0e 0c
     ld hl,(l0cdbh)      ;0359 2a db 0c
     jp l0366h           ;035c c3 66 03
+
 l035fh:
     or a                ;035f b7
     ld a,h              ;0360 7c
@@ -426,27 +436,31 @@ l035fh:
 l0366h:
     dec c               ;0366 0d
     jp p,l035fh         ;0367 f2 5f 03
+
     ld a,l              ;036a 7d
     and 0fh             ;036b e6 0f
     ld (l0cdeh),a       ;036d 32 de 0c
-    cp 0ah              ;0370 fe 0a
+    cp 10               ;0370 fe 0a
     jp m,l037ah         ;0372 fa 7a 03
-    add a,37h           ;0375 c6 37
+    add a,'A'-10        ;0375 c6 37
     jp l037fh           ;0377 c3 7f 03
+
 l037ah:
     ld a,(l0cdeh)       ;037a 3a de 0c
-    add a,30h           ;037d c6 30
+    add a,'0'           ;037d c6 30
 l037fh:
     ld c,a              ;037f 4f
     call print_char     ;0380 cd 85 02
     ld c,04h            ;0383 0e 04
     ld hl,(l0cdbh)      ;0385 2a db 0c
     jp l038ch           ;0388 c3 8c 03
+
 l038bh:
     add hl,hl           ;038b 29
 l038ch:
     dec c               ;038c 0d
     jp p,l038bh         ;038d f2 8b 03
+
     ld (l0cdbh),hl      ;0390 22 db 0c
     ld hl,l0cddh        ;0393 21 dd 0c
     inc (hl)            ;0396 34
@@ -737,22 +751,24 @@ got_drv_type:
     ld bc,drive_has
     call print_str
 
+    ;PRINT heads;
     ld a,(heads)        ;050f 3a 3d 0c
     ld l,a              ;0512 6f
     rla                 ;0513 17
     sbc a,a             ;0514 9f
     ld b,a              ;0515 47
     ld c,l              ;0516 4d
-    call sub_02feh      ;0517 cd fe 02
+    call print_int      ;0517 cd fe 02
 
     ;PRINT " heads and ";
     ld bc,heads_and
     call print_str
 
+    ;PRINT cylinders;
     ld hl,(cylinders)   ;0520 2a 40 0c
     ld b,h              ;0523 44
     ld c,l              ;0524 4d
-    call sub_02feh      ;0525 cd fe 02
+    call print_int      ;0525 cd fe 02
 
     ;PRINT " cylinders."
     ld bc,cylinders_
@@ -766,6 +782,7 @@ got_drv_type:
     ld bc,capacity_is
     call print_str
 
+    ;PRINT cylinder*heads*8;
     ld a,(heads)        ;053a 3a 3d 0c
     ld l,a              ;053d 6f
     rla                 ;053e 17
@@ -774,24 +791,27 @@ got_drv_type:
     ld c,l              ;0541 4d
     ld hl,(cylinders)   ;0542 2a 40 0c
     ex de,hl            ;0545 eb
-    call l0aech         ;0546 cd ec 0a
+    call l0aech         ;0546 cd ec 0a (Library MUL)
     ex de,hl            ;0549 eb
     add hl,hl           ;054a 29
     add hl,hl           ;054b 29
     add hl,hl           ;054c 29
     ld b,h              ;054d 44
     ld c,l              ;054e 4d
-    call sub_02feh      ;054f cd fe 02
+    call print_int      ;054f cd fe 02
 
     ;PRINT " Kbytes.";
     ld bc,kbytes
     call print_str
 
 l0558h:
+    ;l0c3eh = (heads-1) OR &H80
     ld a,(heads)        ;0558 3a 3d 0c
     dec a               ;055b 3d
     or 80h              ;055c f6 80
     ld (l0c3eh),a       ;055e 32 3e 0c
+
+    ;l0c42h = (cylinders-1) OR &H8000
     ld hl,(cylinders)   ;0561 2a 40 0c
     dec hl              ;0564 2b
     ld a,h              ;0565 7c
@@ -825,6 +845,7 @@ l0583h:
     ld bc,which_surface
     call print_str
 
+    ;PRINT heads-1;
     ld a,(heads)        ;058c 3a 3d 0c
     ld l,a              ;058f 6f
     rla                 ;0590 17
@@ -833,7 +854,7 @@ l0583h:
     dec hl              ;0593 2b
     ld b,h              ;0594 44
     ld c,l              ;0595 4d
-    call sub_02feh      ;0596 cd fe 02
+    call print_int      ;0596 cd fe 02
 
     ;PRINT ") ? ";
     ld bc,p_q_1
@@ -845,6 +866,7 @@ l0583h:
     ld hl,(l0c48h)      ;05a2 2a 48 0c
     add hl,hl           ;05a5 29
     jp c,l05bbh         ;05a6 da bb 05
+
     ld a,(heads)        ;05a9 3a 3d 0c
     ld l,a              ;05ac 6f
     rla                 ;05ad 17
@@ -857,6 +879,7 @@ l0583h:
     ld a,h              ;05b6 7c
     sbc a,d             ;05b7 9a
     jp m,l05c7h         ;05b8 fa c7 05
+
 l05bbh:
     ;PRINT "??"
     ld bc,q_q_1
@@ -867,6 +890,7 @@ l05bbh:
     jp l0583h
 
 l05c7h:
+    ;l0c3eh = l0c48h
     ld a,(l0c48h)       ;05c7 3a 48 0c
     ld (l0c3eh),a       ;05ca 32 3e 0c
 
@@ -878,13 +902,14 @@ l05cdh:
     ld bc,all_tracks_on
     call print_str
 
+    ;PRINT l0c3eh;
     ld a,(l0c3eh)       ;05d6 3a 3e 0c
     ld l,a              ;05d9 6f
     rla                 ;05da 17
     sbc a,a             ;05db 9f
     ld b,a              ;05dc 47
     ld c,l              ;05dd 4d
-    call sub_02feh      ;05de cd fe 02
+    call print_int      ;05de cd fe 02
 
     ;PRINT " ? ";
     ld bc,q_1
@@ -906,11 +931,12 @@ l05f2h:
     ld bc,which_track
     call print_str
 
+    ;PRINT cylinders-1;
     ld hl,(cylinders)   ;05fb 2a 40 0c
     dec hl              ;05fe 2b
     ld b,h              ;05ff 44
     ld c,l              ;0600 4d
-    call sub_02feh      ;0601 cd fe 02
+    call print_int      ;0601 cd fe 02
 
     ;PRINT ") ? ";
     ld bc,p_q_2
@@ -922,6 +948,7 @@ l05f2h:
     ld hl,(l0c48h)      ;060d 2a 48 0c
     add hl,hl           ;0610 29
     jp c,l0622h         ;0611 da 22 06
+
     ld hl,(l0c48h)      ;0614 2a 48 0c
     ld a,l              ;0617 7d
     ex de,hl            ;0618 eb
@@ -930,6 +957,7 @@ l05f2h:
     ld a,d              ;061d 7a
     sbc a,h             ;061e 9c
     jp m,l062eh         ;061f fa 2e 06
+
 l0622h:
     ;PRINT "??"
     ld bc,q_q_2
@@ -940,6 +968,7 @@ l0622h:
     jp l05f2h
 
 l062eh:
+    ;l0c42h = l0c48h
     ld hl,(l0c48h)      ;062e 2a 48 0c
     ld (l0c42h),hl      ;0631 22 42 0c
 
@@ -989,40 +1018,64 @@ l065ch:
     ;GOSUB readline
     call readline
 
-    ld c,42h            ;066e 0e 42
-    call mw_comout      ;0670 cd 18 01
+    ;CALL mw_comout(&H42)
+    ld c,42h            ;A = 42h (Write Buffer)
+    call mw_comout      ;Send command
+
+                        ;Transfer xx bytes to David Junior II:
+    ;l0c44h = 0
     ld hl,0000h         ;0673 21 00 00
     ld (l0c44h),hl      ;0676 22 44 0c
+
+    ;GOTO l068ah
     jp l068ah           ;0679 c3 8a 06
+
 l067ch:
+    ;CALL corvus_out(l0c44h)
     ld hl,l0c44h        ;067c 21 44 0c
-    ld c,(hl)           ;067f 4e
-    call curvus_out     ;0680 cd 07 01
-    ld hl,(l0c44h)      ;0683 2a 44 0c
-    inc hl              ;0686 23
-    ld (l0c44h),hl      ;0687 22 44 0c
+    ld c,(hl)           ;  Read data byte our buffer
+    call corvus_out     ;  Write it to the David Junior II
+
+    ;l0c44h = l0c44h + 1
+    ld hl,(l0c44h)
+    inc hl              ;  Increment buffer pointer
+    ld (l0c44h),hl
+
 l068ah:
-    ld bc,0ffe0h        ;068a 01 e0 ff
+    ;IF (l0c44h-32)*2 ??? THEN GOTO l067ch
+    ld bc,-32           ;068a 01 e0 ff
     ld hl,(l0c44h)      ;068d 2a 44 0c
     add hl,bc           ;0690 09
     add hl,hl           ;0691 29
     jp c,l067ch         ;0692 da 7c 06
-    ld hl,0020h         ;0695 21 20 00
+
+    ;l0c44h = 32
+    ld hl,32            ;0695 21 20 00
     ld (l0c44h),hl      ;0698 22 44 0c
+
+    ;GOTO l06aah
     jp l06aah           ;069b c3 aa 06
+
 l069eh:
-    ld c,00h            ;069e 0e 00
-    call curvus_out     ;06a0 cd 07 01
-    ld hl,(l0c44h)      ;06a3 2a 44 0c
-    inc hl              ;06a6 23
-    ld (l0c44h),hl      ;06a7 22 44 0c
+    ;CALL corvus_out(0)
+    ld c,00h
+    call corvus_out
+
+    ;l0c44h = l0c44h + 1
+    ld hl,(l0c44h)
+    inc hl              ;  Increment buffer pointer
+    ld (l0c44h),hl
+
 l06aah:
-    ld bc,0fe00h        ;06aa 01 00 fe
+    ;IF (l0c44h-512)*2 ??? THEN GOTO l069eh
+    ld bc,-512          ;06aa 01 00 fe
     ld hl,(l0c44h)      ;06ad 2a 44 0c
     add hl,bc           ;06b0 09
     add hl,hl           ;06b1 29
     jp c,l069eh         ;06b2 da 9e 06
-    call mw_status      ;06b5 cd 52 01
+
+    ;GOSUB mw_status
+    call mw_status      ;Read status
 
     ;GOSUB check_error
     call check_error
@@ -1037,26 +1090,28 @@ l06aah:
     ld bc,formatting
     call print_str
 
+    ;CALL mw_comout(&H27)
     ld c,27h            ;06c7 0e 27
     call mw_comout      ;06c9 cd 18 01
 
+    ;CALL corvus_out(0)
     ld c,00h            ;06cc 0e 00
-    call curvus_out     ;06ce cd 07 01
+    call corvus_out     ;06ce cd 07 01
 
+    ;CALL corvus_out(l0c3eh)
     ld hl,l0c3eh        ;06d1 21 3e 0c
     ld c,(hl)           ;06d4 4e
-    call curvus_out     ;06d5 cd 07 01
+    call corvus_out     ;06d5 cd 07 01
 
+    ;CALL corvus_out(l0c42h)
     ld hl,l0c42h        ;06d8 21 42 0c
     ld c,(hl)           ;06db 4e
-    call curvus_out     ;06dc cd 07 01
+    call corvus_out     ;06dc cd 07 01
 
+    ;CALL corvus_out(l0c42h SHR 8)
     ld b,08h            ;06df 06 08
     ld hl,(l0c42h)      ;06e1 2a 42 0c
-
-    ;GOTO l06eeh
     jp l06eeh
-
 l06e7h:
     or a                ;06e7 b7
     ld a,h              ;06e8 7c
@@ -1065,25 +1120,29 @@ l06e7h:
     ld a,l              ;06eb 7d
     rra                 ;06ec 1f
     ld l,a              ;06ed 6f
-
 l06eeh:
     dec b               ;06ee 05
     jp p,l06e7h         ;06ef f2 e7 06
     ld c,l              ;06f2 4d
-    call curvus_out     ;06f3 cd 07 01
+    call corvus_out     ;06f3 cd 07 01
 
+    ;CALL corvus_out(31)
     ld c,1fh            ;06f6 0e 1f
-    call curvus_out     ;06f8 cd 07 01
+    call corvus_out     ;06f8 cd 07 01
 
+    ;CALL corvus_out(0)
     ld c,00h            ;06fb 0e 00
-    call curvus_out     ;06fd cd 07 01
+    call corvus_out     ;06fd cd 07 01
 
+    ;CALL corvus_out(0)
     ld c,00h            ;0700 0e 00
-    call curvus_out     ;0702 cd 07 01
+    call corvus_out     ;0702 cd 07 01
 
+    ;CALL corvus_out(0)
     ld c,00h            ;0705 0e 00
-    call curvus_out     ;0707 cd 07 01
+    call corvus_out     ;0707 cd 07 01
 
+    ;GOSUB mw_status
     call mw_status      ;070a cd 52 01
 
     ;GOSUB check_error
