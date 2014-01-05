@@ -57,7 +57,7 @@ check_error:
 
 got_error:
     ;PRINT "DRIVE ERROR #";
-    ld bc,l0aedh
+    ld bc,drive_err_n
     call print_str
 
     ;IF l3000h <> &H40 THEN GOTO is_err_42h
@@ -66,7 +66,7 @@ got_error:
     jp nz,is_err_42h
 
     ;PRINT "40 - header write error"
-    ld bc,l0afbh
+    ld bc,e40_head_writ
     call print_str
 
     ;GOTO got_error_done
@@ -79,7 +79,7 @@ is_err_42h:
     jp nz,is_err_44h
 
     ;PRINT "42 - header read error"
-    ld bc,l0b13h
+    ld bc,e42_head_read
     call print_str
 
     ;GOTO got_error_done
@@ -92,7 +92,7 @@ is_err_44h:
     jp nz,is_err_46h
 
     ;PRINT "44 - data read error"
-    ld bc,l0b2ah
+    ld bc,e44_data_read
     call print_str
 
     ;GOTO got_error_done
@@ -105,7 +105,7 @@ is_err_46h:
     jp nz,is_err_47h
 
     ;PRINT "46 - write fault"
-    ld bc,l0b3fh
+    ld bc,e46_writ_flt
     call print_str
 
     ;GOTO got_error_done
@@ -118,7 +118,7 @@ is_err_47h:
     jp nz,is_err_49h
 
     ;PRINT "47 - disk not ready"
-    ld bc,l0b50h
+    ld bc,e47_not_ready
     call print_str
 
     ;GOTO got_error_done
@@ -131,7 +131,7 @@ is_err_49h:
     jp nz,unknown_err
 
     ;PRINT "49 - illegal command"
-    ld bc,l0b64h
+    ld bc,e49_illegal
     call print_str
 
     ;GOTO got_error_done
@@ -139,7 +139,7 @@ is_err_49h:
 
 unknown_err:
     ;PRINT "xx - unknown error code"
-    ld bc,l0b79h
+    ld bc,exx_unknown
     call print_str
 
 got_error_done:
@@ -150,82 +150,112 @@ got_error_done:
     ret
 
 readline:
-    ld hl,l301eh        ;0186 21 1e 30
-    ld (hl),80h         ;0189 36 80
-    ld de,l301eh        ;018b 11 1e 30
+    ;buff_size = 128
+    ld hl,buff_size
+    ld (hl),80h
+
+    ld de,buffer        ;018b 11 1e 30
     ld c,creadstr       ;018e 0e 0a
-    call bdos           ;0190 cd 05 00
-    call print_eol      ;0193 cd 27 02
-    ld hl,0000h         ;0196 21 00 00
-    ld (l3004h),hl      ;0199 22 04 30
-    ld a,(l301fh)       ;019c 3a 1f 30
+    call bdos           ;BDOS entry point
+
+    ;PRINT
+    call print_eol
+
+    ;N = 0
+    ld hl,0000h
+    ld (nn),hl
+
+    ;IF buff_len <> 0 THEN GOTO l01abh
+    ld a,(buff_len)     ;019c 3a 1f 30
     or a                ;019f b7
     jp nz,l01abh        ;01a0 c2 ab 01
-    ld hl,l3002h        ;01a3 21 02 30
-    ld (hl),00h         ;01a6 36 00
-    jp l0218h           ;01a8 c3 18 02
+
+    ;R = 0
+    ld hl,rr
+    ld (hl),00h
+
+    ;GOTO l0218h
+    jp l0218h
+
 l01abh:
-    ld a,(l3020h)       ;01ab 3a 20 30
-    ld (l3002h),a       ;01ae 32 02 30
+    ;R = buff_data(0)
+    ;IF R >= &H61 AND R < &H7B THEN GOTO l01c2h
+    ld a,(buff_data)    ;01ab 3a 20 30
+    ld (rr),a           ;01ae 32 02 30
     cp 'a'              ;01b1 fe 61
     jp m,l01c2h         ;01b3 fa c2 01
     cp 'z'+1            ;01b6 fe 7b
     jp p,l01c2h         ;01b8 f2 c2 01
-    ld hl,l3002h        ;01bb 21 02 30
-    ld a,(hl)           ;01be 7e
-    add a,0e0h          ;01bf c6 e0
-    ld (hl),a           ;01c1 77
+
+    ;R = R - &H20
+    ld hl,rr
+    ld a,(hl)
+    add a,0e0h
+    ld (hl),a
+
 l01c2h:
+    ;l30a1h = 0
     ld hl,l30a1h        ;01c2 21 a1 30
     ld (hl),00h         ;01c5 36 00
+
 l01c7h:
+    ;IF buff_data(l30a1h) < &H30 THEN GOTO l0218h
     ld a,(l30a1h)       ;01c7 3a a1 30
     ld l,a              ;01ca 6f
     rla                 ;01cb 17
     sbc a,a             ;01cc 9f
-    ld bc,l3020h        ;01cd 01 20 30
+    ld bc,buff_data     ;01cd 01 20 30
     ld h,a              ;01d0 67
     add hl,bc           ;01d1 09
     ld a,(hl)           ;01d2 7e
     cp '0'              ;01d3 fe 30
     jp m,l0218h         ;01d5 fa 18 02
+
+    ;IF buff_data(l30a1h) >= &H3A THEN GOTO l0218h
     ld a,(l30a1h)       ;01d8 3a a1 30
     ld l,a              ;01db 6f
     rla                 ;01dc 17
     sbc a,a             ;01dd 9f
-    ld bc,l3020h        ;01de 01 20 30
+    ld bc,buff_data     ;01de 01 20 30
     ld h,a              ;01e1 67
     add hl,bc           ;01e2 09
     ld a,(hl)           ;01e3 7e
     cp '9'+1            ;01e4 fe 3a
     jp p,l0218h         ;01e6 f2 18 02
-    ld hl,(l3004h)      ;01e9 2a 04 30
+
+    ;N = buff_data(l30a1h) - &H30 + N * 10
+    ld hl,(nn)          ;01e9 2a 04 30
     ld b,h              ;01ec 44
     ld c,l              ;01ed 4d
-    ld de,000ah         ;01ee 11 0a 00
-    call sub_129ah      ;01f1 cd 9a 12
+    ld de,10            ;01ee 11 0a 00
+    call sub_129ah      ;01f1 cd 9a 12 (Library MUL)
     ld a,(l30a1h)       ;01f4 3a a1 30
     ld l,a              ;01f7 6f
     rla                 ;01f8 17
     sbc a,a             ;01f9 9f
-    ld bc,l3020h        ;01fa 01 20 30
+    ld bc,buff_data     ;01fa 01 20 30
     ld h,a              ;01fd 67
     add hl,bc           ;01fe 09
     ld a,(hl)           ;01ff 7e
     ld l,a              ;0200 6f
     rla                 ;0201 17
     sbc a,a             ;0202 9f
-    ld bc,0ffd0h        ;0203 01 d0 ff
+    ld bc,0-'0'         ;0203 01 d0 ff
     ld h,a              ;0206 67
     add hl,bc           ;0207 09
     add hl,de           ;0208 19
-    ld (l3004h),hl      ;0209 22 04 30
+    ld (nn),hl          ;0209 22 04 30
+
+    ;l30a1h = l30a1h + 1
     ld hl,l30a1h        ;020c 21 a1 30
     inc (hl)            ;020f 34
+
+    ;IF l30a1h < buff_len THEN GOTO l01c7h
     ld a,(hl)           ;0210 7e
-    ld hl,l301fh        ;0211 21 1f 30
+    ld hl,buff_len      ;0211 21 1f 30
     cp (hl)             ;0214 be
     jp m,l01c7h         ;0215 fa c7 01
+
 l0218h:
     ret                 ;0218 c9
 
@@ -236,7 +266,7 @@ print_char:
     ld c,cwrite
     ld a,(l30a2h)
     ld e,a
-    call bdos
+    call bdos           ;BDOS entry point
     ret
 
 print_eol:
@@ -312,9 +342,9 @@ print_int:
     or h                ;029c b4
     jp nz,l02a9h        ;029d c2 a9 02
 
-    ;PRINT "0"
-    ld bc,l0b91h        ;02a0 01 91 0b
-    call print_str      ;02a3 cd 32 02
+    ;PRINT "0";
+    ld bc,zero
+    call print_str
 
     jp l02b1h           ;02a6 c3 b1 02
 
@@ -335,9 +365,9 @@ l02b2h:
     add hl,hl           ;02bb 29
     jp nc,l02d5h        ;02bc d2 d5 02
 
-    ;PRINT "-"
-    ld bc,l0b93h        ;02bf 01 93 0b
-    call print_str      ;02c2 cd 32 02
+    ;PRINT "-";
+    ld bc,dash
+    call print_str
 
     ;l30aah = -l30aah
     ld hl,(l30aah)      ;02c5 2a aa 30
@@ -359,6 +389,7 @@ l02d5h:
     call print_int      ;02da cd 92 02
     ret                 ;02dd c9
 
+l02deh:
     ld hl,l30ach+1      ;02de 21 ad 30
     ld (hl),b           ;02e1 70
     dec hl              ;02e2 2b
@@ -427,7 +458,7 @@ ask_drv_type:
     call print_char
 
     ;PRINT "HardBox configuration program"
-    ld bc,l0b95h
+    ld bc,config_prog
     call print_str
     call print_eol
 
@@ -437,7 +468,7 @@ ask_drv_type:
     call print_eol
 
     ;PRINT "--- ---------------"
-    ld bc,l0bc7h
+    ld bc,dashes
     call print_str
     call print_eol
 
@@ -448,7 +479,7 @@ ask_drv_type:
     call print_eol
 
     ;PRINT "Revision 2.1"
-    ld bc,l0bdbh
+    ld bc,rev_21
     call print_str
     call print_eol
 
@@ -456,7 +487,7 @@ ask_drv_type:
     call print_eol
 
     ;PRINT "Drive sizes supported : "
-    ld bc,l0be8h
+    ld bc,drive_sizes
     call print_str
     call print_eol
 
@@ -464,32 +495,32 @@ ask_drv_type:
     call print_eol
 
     ;PRINT "A.   3  Mbyte      (191 cyl)"
-    ld bc,l0c01h
+    ld bc,drv_a_3mb
     call print_str
     call print_eol
 
     ;PRINT "B.   6  Mbyte      (191 cyl)"
-    ld bc,l0c1eh
+    ld bc,drv_b_6mb
     call print_str
     call print_eol
 
     ;PRINT "C.   12 Mbyte      (191 cyl)"
-    ld bc,l0c3bh
+    ld bc,drv_c_12mb
     call print_str
     call print_eol
 
     ;PRINT "D.   5  Mbyte      (320 cyl)"
-    ld bc,l0c58h
+    ld bc,drv_d_5mb
     call print_str
     call print_eol
 
     ;PRINT "E.   10 Mbyte      (320 cyl)"
-    ld bc,l0c75h
+    ld bc,drv_e_10mb
     call print_str
     call print_eol
 
     ;PRINT "F.   15 Mbyte      (320 cyl)"
-    ld bc,l0c92h
+    ld bc,drv_f_15mb
     call print_str
     call print_eol
 
@@ -500,14 +531,14 @@ ask_drv_type:
     call print_eol
 
     ;PRINT "Which drive type (A-F) ? ";
-    ld bc,l0cafh
+    ld bc,which_type
     call print_str
 
     ;GOSUB readline
     call readline
 
-    ;IF l3002h <> &H41 THEN GOTO is_drv_type_b
-    ld a,(l3002h)
+    ;IF R <> &H41 THEN GOTO is_drv_type_b
+    ld a,(rr)
     cp 'A'              ;Is it 'A': 3 Mbyte (191 cyl)?
     jp nz,is_drv_type_b ;  No: jump to check for 'B'
 
@@ -525,8 +556,8 @@ ask_drv_type:
     jp ask_hbox_conf
 
 is_drv_type_b:
-    ;IF l3002h <> &H42 THEN GOTO is_drv_type_c
-    ld a,(l3002h)
+    ;IF R <> &H42 THEN GOTO is_drv_type_c
+    ld a,(rr)
     cp 'B'              ;Is it 'B': 6 Mbyte (191 cyl)?
     jp nz,is_drv_type_c ;  No: jump to check for 'C'
 
@@ -544,8 +575,8 @@ is_drv_type_b:
     jp ask_hbox_conf
 
 is_drv_type_c:
-    ;IF l3002h <> &H43 THEN GOTO is_drv_type_d
-    ld a,(l3002h)
+    ;IF R <> &H43 THEN GOTO is_drv_type_d
+    ld a,(rr)
     cp 'C'              ;Is it 'C': 12 Mbyte (191 cyl)?
     jp nz,is_drv_type_d ;  No: jump to check for 'D'
 
@@ -563,8 +594,8 @@ is_drv_type_c:
     jp ask_hbox_conf
 
 is_drv_type_d:
-    ;IF l3002h <> &H44 THEN GOTO is_drv_type_e
-    ld a,(l3002h)
+    ;IF R <> &H44 THEN GOTO is_drv_type_e
+    ld a,(rr)
     cp 'D'              ;Is it 'D': 5 Mbyte (320 cyl)?
     jp nz,is_drv_type_e ;  No: jump to check for 'E'
 
@@ -582,8 +613,8 @@ is_drv_type_d:
     jp ask_hbox_conf
 
 is_drv_type_e:
-    ;IF l3002h <> &H45 THEN GOTO is_drv_type_f
-    ld a,(l3002h)
+    ;IF R <> &H45 THEN GOTO is_drv_type_f
+    ld a,(rr)
     cp 'E'              ;Is it 'E': 10 Mbyte (320 cyl)?
     jp nz,is_drv_type_f ;  No: jump to check for 'F'
 
@@ -601,8 +632,8 @@ is_drv_type_e:
     jp ask_hbox_conf
 
 is_drv_type_f:
-    ;IF l3002h <> &H46 THEN GOTO bad_drv_type
-    ld a,(l3002h)
+    ;IF R <> &H46 THEN GOTO bad_drv_type
+    ld a,(rr)
     cp 'F'              ;Is it 'F': 15 Mbyte (320 cyl)?
     jp nz,bad_drv_type  ;  No: bad drive type entered
 
@@ -639,8 +670,8 @@ ask_hbox_conf:
     ;GOSUB readline
     call readline
 
-    ;IF l3002h <> &H48 THEN GOTO not_half_hbox
-    ld a,(l3002h)
+    ;IF R <> &H48 THEN GOTO not_half_hbox
+    ld a,(rr)
     cp 'H'              ;Is it 'H': use last half only for HardBox?
     jp nz,not_half_hbox ;  No: jump to not_half_hbox
 
@@ -665,8 +696,8 @@ ask_hbox_conf:
     jp got_hbox_conf
 
 not_half_hbox:
-    ;IF l3002h <> &H45 THEN GOTO bad_hbox_conf
-    ld a,(l3002h)
+    ;IF R <> &H45 THEN GOTO bad_hbox_conf
+    ld a,(rr)
     cp 'E'              ;Is it 'E': use entire drive for HardBox?
     jp nz,bad_hbox_conf ;  No: jump to bad_hbox_conf
 
@@ -742,8 +773,8 @@ ask_direct:
     ld (l4010h),hl      ;sectors per track = 0
     ld (l400eh),hl      ;tracks per drive = 0
 
-    ;IF l3002h <> &H4E THEN GOTO l04f0h
-    ld a,(l3002h)
+    ;IF R <> &H4E THEN GOTO l04f0h
+    ld a,(rr)
     cp 'N'
     jp nz,l04f0h
 
@@ -757,8 +788,8 @@ ask_direct:
     jp l05dfh
 
 l04f0h:
-    ;IF l3002h <> &H59 THEN GOTO l05d6h
-    ld a,(l3002h)
+    ;IF R <> &H59 THEN GOTO l05d6h
+    ld a,(rr)
     cp 'Y'
     jp nz,l05d6h
 
@@ -815,8 +846,8 @@ l04f8h:
     ;GOSUB readline
     call readline
 
-    ;IF l3002h <> &H45 THEN GOTO l0568h
-    ld a,(l3002h)
+    ;IF R <> &H45 THEN GOTO l0568h
+    ld a,(rr)
     cp 'E'
     jp nz,l0568h
 
@@ -838,8 +869,8 @@ l04f8h:
 l0568h:
     ;REM User did not select 8050 emulation
 
-    ;l400ch = l3004h
-    ld hl,(l3004h)      ;0568 2a 04 30
+    ;l400ch = N
+    ld hl,(nn)          ;0568 2a 04 30
     ld (l400ch),hl      ;056b 22 0c 40
 
     ;IF &H400C = 0 THEN GOTO l04f8h
@@ -891,8 +922,8 @@ l0568h:
     ;GOSUB readline
     call readline
 
-    ;l4010h = l3004h
-    ld hl,(l3004h)      ;05bb 2a 04 30
+    ;l4010h = N
+    ld hl,(nn)          ;05bb 2a 04 30
     ld (l4010h),hl      ;05be 22 10 40
 
     ;PRINT
@@ -905,8 +936,8 @@ l0568h:
     ;GOSUB readline
     call readline
 
-    ;l400eh = l3004h
-    ld hl,(l3004h)      ;05cd 2a 04 30
+    ;l400eh = N
+    ld hl,(nn)          ;05cd 2a 04 30
     ld (l400eh),hl      ;05d0 22 0e 40
 
 l05d3h:
@@ -914,7 +945,7 @@ l05d3h:
 
 l05d6h:
     ;PRINT "Please answer Y or N : "
-    ld bc,l0f6ch
+    ld bc,pls_yn
     call print_str
 
     ;GOTO ask_direct
@@ -1228,8 +1259,8 @@ l07b3h:
     ;GOSUB readline
     call readline
 
-    ;IF l3002h <> &H4E THEN GOTO l07cah
-    ld a,(l3002h)
+    ;IF R <> &H4E THEN GOTO l07cah
+    ld a,(rr)
     cp 'N'
     jp nz,l07cah
 
@@ -1237,8 +1268,8 @@ l07b3h:
     call end
 
 l07cah:
-    ;IF l3002h <> &H59 THEN GOTO l07b3h
-    ld a,(l3002h)
+    ;IF R <> &H59 THEN GOTO l07b3h
+    ld a,(rr)
     cp 'Y'
     jp nz,l07b3h
 
@@ -1794,47 +1825,47 @@ l0aeah:
     ;END
     call end
 
-l0aedh:
+drive_err_n:
     db 0dh
     db "DRIVE ERROR #"
 
-l0afbh:
+e40_head_writ:
     db 17h
     db "40 - header write error"
 
-l0b13h:
+e42_head_read:
     db 16h
     db "42 - header read error"
 
-l0b2ah:
+e44_data_read:
     db 14h
     db "44 - data read error"
 
-l0b3fh:
+e46_writ_flt:
     db 10h
     db "46 - write fault"
 
-l0b50h:
+e47_not_ready:
     db 13h
     db "47 - disk not ready"
 
-l0b64h:
+e49_illegal:
     db 14h
     db "49 - illegal command"
 
-l0b79h:
+exx_unknown:
     db 17h
     db "xx - unknown error code"
 
-l0b91h:
+zero:
     db 01h
     db "0"
 
-l0b93h:
+dash:
     db 01h
     db "-"
 
-l0b95h:
+config_prog:
     db 1dh
     db "HardBox configuration program"
 
@@ -1842,43 +1873,43 @@ l0bb3h:
     db 13h
     db "For Mini-Winchester"
 
-l0bc7h:
+dashes:
     db 13h
     db "--- ---------------"
 
-l0bdbh:
+rev_21:
     db 0ch
     db "Revision 2.1"
 
-l0be8h:
+drive_sizes:
     db 18h
     db "Drive sizes supported : "
 
-l0c01h:
+drv_a_3mb:
     db 1ch
     db "A.   3  Mbyte      (191 cyl)"
 
-l0c1eh:
+drv_b_6mb:
     db 1ch
     db "B.   6  Mbyte      (191 cyl)"
 
-l0c3bh:
+drv_c_12mb:
     db 1ch
     db "C.   12 Mbyte      (191 cyl)"
 
-l0c58h:
+drv_d_5mb:
     db 1ch
     db "D.   5  Mbyte      (320 cyl)"
 
-l0c75h:
+drv_e_10mb:
     db 1ch
     db "E.   10 Mbyte      (320 cyl)"
 
-l0c92h:
+drv_f_15mb:
     db 1ch
     db "F.   15 Mbyte      (320 cyl)"
 
-l0cafh:
+which_type:
     db 19h
     db "Which drive type (A-F) ? "
 
@@ -1962,7 +1993,7 @@ l0f4eh:
     db 1dh
     db "Number of tracks per drive ? "
 
-l0f6ch:
+pls_yn:
     db 17h
     db "Please answer Y or N : "
 
@@ -3020,12 +3051,12 @@ l3000h:
     db 0
 heads:
     db 0
-l3002h:
-    db 0
+rr:
+    db 0                ;First char of user input from any prompt
 l3003h:
     db 0
-l3004h:
-    dw 0
+nn:
+    dw 0                ;Integer parsed from user input
 cylinders:
     dw 0
 l3008h:
@@ -3050,13 +3081,13 @@ l301ah:
     dw 0
 l301ch:
     dw 0
-l301eh:
-    db 0
-l301fh:
-    db 0
-l3020h:
-    db 0
 
+buffer:                 ;User input buffer struct
+buff_size:
+    db 0                ;  Buffer size (contain 128) as byte
+buff_len:
+    db 0                ;  Used buffer length as byte
+buff_data:              ;  128 bytes input buffer
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -3065,6 +3096,8 @@ l3020h:
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+    db 0
 
 l30a1h:
     db 0
