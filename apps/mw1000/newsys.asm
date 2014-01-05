@@ -217,7 +217,7 @@ print_int:
     jp nz,l020dh        ;0201 c2 0d 02
 
     ;PRINT "0";
-    ld bc,l0c93h
+    ld bc,zero
     call print_str
 
     jp l0215h           ;020a c3 15 02
@@ -231,40 +231,60 @@ l0215h:
     ret                 ;0215 c9
 
 readline:
-    ld hl,l2424h        ;0216 21 24 24
-    ld (hl),50h         ;0219 36 50
-    ld de,l2424h        ;021b 11 24 24
+    ;buff_size = 80
+    ld hl,buff_size
+    ld (hl),50h
+
+    ld de,buffer        ;021b 11 24 24
     ld c,creadstr       ;021e 0e 0a
     call bdos           ;BDOS entry point
-    ld hl,0000h         ;0223 21 00 00
-    ld (nn),hl          ;0226 22 c8 24
+
+    ;N = 0
+    ld hl,0000h
+    ld (nn),hl
+
+    ;l24cah = 0
     ld (l24cah),hl      ;0229 22 ca 24
-    ld a,(l2425h)       ;022c 3a 25 24
+
+    ;IF buff_len <> 0 THEN GOTO l023bh
+    ld a,(buff_len)     ;022c 3a 25 24
     or a                ;022f b7
     jp nz,l023bh        ;0230 c2 3b 02
-    ld hl,rr            ;0233 21 cc 24
-    ld (hl),cr          ;0236 36 0d
-    jp l02ffh           ;0238 c3 ff 02
+
+    ;R = 13
+    ld hl,rr
+    ld (hl),cr
+
+    ;GOTO l02ffh
+    jp l02ffh
 
 l023bh:
+    ;l3013h = 1
+    ;l3015h = buff_len
     ld hl,l3013h        ;023b 21 13 30
     ld (hl),01h         ;023e 36 01
-    ld a,(l2425h)       ;0240 3a 25 24
+    ld a,(buff_len)     ;0240 3a 25 24
     inc hl              ;0243 23
     inc hl              ;0244 23
     ld (hl),a           ;0245 77
-    jp l02efh           ;0246 c3 ef 02
+
+    ;GOTO l02efh
+    jp l02efh
 
 l0249h:
+    ;l3014h = buff_data(l3013h-1)
     ld a,(l3013h)       ;0249 3a 13 30
     ld l,a              ;024c 6f
     rla                 ;024d 17
     sbc a,a             ;024e 9f
-    ld bc,l2425h        ;024f 01 25 24
+    ld bc,buff_data-1   ;024f 01 25 24
     ld h,a              ;0252 67
     add hl,bc           ;0253 09
     ld a,(hl)           ;0254 7e
     ld (l3014h),a       ;0255 32 14 30
+
+    ;l2476h(l3013h) = l3014h
+    ;IF l3014h < &H61 OR l3014h >= &H7B THEN GOTO l0278h
     ld a,(l3013h)       ;0258 3a 13 30
     ld l,a              ;025b 6f
     rla                 ;025c 17
@@ -278,32 +298,41 @@ l0249h:
     jp m,l0278h         ;0269 fa 78 02
     cp 'z'+1            ;026c fe 7b
     jp p,l0278h         ;026e f2 78 02
-    ld hl,l3014h        ;0271 21 14 30
-    ld a,(hl)           ;0274 7e
-    add a,0e0h          ;0275 c6 e0
-    ld (hl),a           ;0277 77
+
+    ;l3014h = l3014h - &H20
+    ld hl,l3014h
+    ld a,(hl)
+    add a,0e0h
+    ld (hl),a
+
 l0278h:
+    ;buff_data(l3013h-1) = l3014h
     ld a,(l3013h)       ;0278 3a 13 30
     ld l,a              ;027b 6f
     rla                 ;027c 17
     sbc a,a             ;027d 9f
-    ld bc,l2425h        ;027e 01 25 24
+    ld bc,buff_data-1   ;027e 01 25 24
     ld h,a              ;0281 67
     add hl,bc           ;0282 09
     ld a,(l3014h)       ;0283 3a 14 30
     ld (hl),a           ;0286 77
+
+    ;l3014h = l3014h - &H30
+    ;IF l3014h < 0 OR l3014h >= 10 THEN GOTO l02c5h
     ld hl,l3014h        ;0287 21 14 30
     ld a,(hl)           ;028a 7e
     add a,0d0h          ;028b c6 d0
     ld (hl),a           ;028d 77
     or a                ;028e b7
     jp m,l02c5h         ;028f fa c5 02
-    cp 0ah              ;0292 fe 0a
+    cp 10               ;0292 fe 0a
     jp p,l02c5h         ;0294 f2 c5 02
+
+    ;N = l3014h + N * 10
     ld hl,(nn)          ;0297 2a c8 24
     ld b,h              ;029a 44
     ld c,l              ;029b 4d
-    ld de,000ah         ;029c 11 0a 00
+    ld de,10            ;029c 11 0a 00
     call sub_24cdh      ;029f cd cd 24 (Library MUL)
     ld a,(l3014h)       ;02a2 3a 14 30
     ld l,a              ;02a5 6f
@@ -312,10 +341,11 @@ l0278h:
     ld h,a              ;02a8 67
     add hl,de           ;02a9 19
     ld (nn),hl          ;02aa 22 c8 24
+
+    ;l24cah = l3014h + l24cah * 32
     ld c,04h            ;02ad 0e 04
     ld hl,(l24cah)      ;02af 2a ca 24
     jp l02b6h           ;02b2 c3 b6 02
-
 l02b5h:
     add hl,hl           ;02b5 29
 l02b6h:
@@ -328,19 +358,23 @@ l02b6h:
     ld b,a              ;02c0 47
     add hl,bc           ;02c1 09
     ld (l24cah),hl      ;02c2 22 ca 24
+
 l02c5h:
+    ;l3014h = l3014h - 7
+    ;IF l3014h < 10 OR l3014h >= 16 THEN GOTO l02ebh
     ld hl,l3014h        ;02c5 21 14 30
     ld a,(hl)           ;02c8 7e
-    add a,0f9h          ;02c9 c6 f9
+    add a,-7            ;02c9 c6 f9
     ld (hl),a           ;02cb 77
-    cp 0ah              ;02cc fe 0a
+    cp 10               ;02cc fe 0a
     jp m,l02ebh         ;02ce fa eb 02
-    cp 10h              ;02d1 fe 10
+    cp 16               ;02d1 fe 10
     jp p,l02ebh         ;02d3 f2 eb 02
+
+    ;l24cah = l3014h + l24cah * 16
     ld c,04h            ;02d6 0e 04
     ld hl,(l24cah)      ;02d8 2a ca 24
     jp l02dfh           ;02db c3 df 02
-
 l02deh:
     add hl,hl           ;02de 29
 l02dfh:
@@ -352,16 +386,23 @@ l02dfh:
     ld b,a              ;02e6 47
     add hl,bc           ;02e7 09
     ld (l24cah),hl      ;02e8 22 ca 24
+
 l02ebh:
+    ;l3013h = l3013h + 1
     ld hl,l3013h        ;02eb 21 13 30
     inc (hl)            ;02ee 34
+
 l02efh:
+    ;IF l3015h > l3013h THEN GOTO l0249h
     ld a,(l3015h)       ;02ef 3a 15 30
     ld hl,l3013h        ;02f2 21 13 30
     cp (hl)             ;02f5 be
     jp p,l0249h         ;02f6 f2 49 02
-    ld a,(l2426h)       ;02f9 3a 26 24
+
+    ;R = buff_data(0)
+    ld a,(buff_data)    ;02f9 3a 26 24
     ld (rr),a           ;02fc 32 cc 24
+
 l02ffh:
     ret                 ;02ff c9
 
@@ -463,49 +504,49 @@ ask_drv_type:
     call print_eol
 
     ;PRINT "A.   3  Mbyte      (191 cyl)"
-    ld bc,l0cf1h
+    ld bc,drv_a_3mb
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "B.   6  Mbyte      (191 cyl)"
-    ld bc,l0d0eh
+    ld bc,drv_b_6mb
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "C.   12 Mbyte      (191 cyl)"
-    ld bc,l0d2bh
+    ld bc,drv_c_12mb
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "D.   5  Mbyte      (320 cyl)"
-    ld bc,l0d48h
+    ld bc,drv_d_5mb
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "E.   10 Mbyte      (320 cyl)"
-    ld bc,l0d65h
+    ld bc,drv_e_10mb
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "F.   15 Mbyte      (320 cyl)"
-    ld bc,l0d82h
+    ld bc,drv_f_15mb
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "Z.   User supplied Head & Cyl count"
-    ld bc,l0d9fh
+    ld bc,drv_z_other
     call print_str_eol
 
     ;PRINT
@@ -515,7 +556,7 @@ ask_drv_type:
     call print_eol
 
     ;PRINT "Which drive type (A-F or Z) ? ";
-    ld bc,l0dc3h
+    ld bc,which_type
     call print_str
 
     ;GOSUB readline
@@ -645,7 +686,7 @@ is_drv_type_z:
 
 ask_drv_heads:
     ;PRINT "Enter the number of Heads : ";
-    ld bc,l0de2h
+    ld bc,num_heads
     call print_str
 
     ;REM User selected 'Z' for arbitrary heads/cylinders
@@ -685,7 +726,7 @@ ask_drv_heads:
 
 ask_drv_cyl:
     ;PRINT "Enter the number of Cylinders : ";
-    ld bc,l0e14h
+    ld bc,num_cylinders
     call print_str
 
     ;GOSUB readline
@@ -1859,22 +1900,22 @@ ask_autoload:
     ;PRINT
     call print_eol
 
-    ld a,(l2425h)       ;0a00 3a 25 24
+    ld a,(buff_len)       ;0a00 3a 25 24
     ld (4007h),a        ;0a03 32 07 40
     ld hl,aindex        ;0a06 21 1e 30
     ld (hl),01h         ;0a09 36 01
-    ld a,(l2425h)       ;0a0b 3a 25 24
+    ld a,(buff_len)       ;0a0b 3a 25 24
     inc hl              ;0a0e 23
     ld (hl),a           ;0a0f 77
     jp l0a30h           ;0a10 c3 30 0a
 
 l0a13h:
-    ;POKE &H4007+AINDEX, l2425h(l301e)
+    ;POKE &H4007+AINDEX, buff_len(l301e)
     ld a,(aindex)       ;0a13 3a 1e 30
     ld l,a              ;0a16 6f
     rla                 ;0a17 17
     sbc a,a             ;0a18 9f
-    ld bc,l2425h        ;0a19 01 25 24
+    ld bc,buff_len        ;0a19 01 25 24
     ld h,a              ;0a1c 67
     add hl,bc           ;0a1d 09
     ld a,(aindex)       ;0a1e 3a 1e 30
@@ -1900,7 +1941,7 @@ l0a30h:
     jp p,l0a13h
 
     ;POKE &H4007+l2425+1, 0
-    ld a,(l2425h)       ;0a3a 3a 25 24
+    ld a,(buff_len)       ;0a3a 3a 25 24
     ld l,a              ;0a3d 6f
     rla                 ;0a3e 17
     sbc a,a             ;0a3f 9f
@@ -2048,7 +2089,7 @@ start:
 
 l0b13h:
     ;PRINT "Revision C2.2  --   9 March 1984"
-    ld bc,l1164h
+    ld bc,rev_c22
     call print_str_eol
 
     ;PRINT
@@ -2337,7 +2378,7 @@ l0c84h:
     db 0eh
     db "Disk error :  "
 
-l0c93h:
+zero:
     db 01h
     db "0"
 
@@ -2353,39 +2394,39 @@ l0cd3h:
     db 1dh
     db "Winchester sizes supported : "
 
-l0cf1h:
+drv_a_3mb:
     db 1ch
     db "A.   3  Mbyte      (191 cyl)"
 
-l0d0eh:
+drv_b_6mb:
     db 1ch
     db "B.   6  Mbyte      (191 cyl)"
 
-l0d2bh:
+drv_c_12mb:
     db 1ch
     db "C.   12 Mbyte      (191 cyl)"
 
-l0d48h:
+drv_d_5mb:
     db 1ch
     db "D.   5  Mbyte      (320 cyl)"
 
-l0d65h:
+drv_e_10mb:
     db 1ch
     db "E.   10 Mbyte      (320 cyl)"
 
-l0d82h:
+drv_f_15mb:
     db 1ch
     db "F.   15 Mbyte      (320 cyl)"
 
-l0d9fh:
+drv_z_other:
     db 23h
     db "Z.   User supplied Head & Cyl count"
 
-l0dc3h:
+which_type:
     db 1eh
     db "Which drive type (A-F or Z) ? "
 
-l0de2h:
+num_heads:
     db 1ch
     db "Enter the number of Heads : "
 
@@ -2393,7 +2434,7 @@ l0dffh:
     db 14h
     db "Must be 2, 4, 6 or 8"
 
-l0e14h:
+num_cylinders:
     db 20h
     db "Enter the number of Cylinders : "
 
@@ -2565,7 +2606,7 @@ l114ch:
     db 17h
     db "Mini-Winchester version"
 
-l1164h:
+rev_c22:
     db 20h
     db "Revision C2.2  --   9 March 1984"
 
@@ -5072,174 +5113,26 @@ l2423h:
 
 ; End of LOADSAV2.REL =======================================================
 
-l2424h:
-    db 0
-l2425h:
-    nop                 ;2425 00
-l2426h:
-    nop                 ;2426 00
-    nop                 ;2427 00
-    nop                 ;2428 00
-    nop                 ;2429 00
-    nop                 ;242a 00
-    nop                 ;242b 00
-    nop                 ;242c 00
-    nop                 ;242d 00
-    nop                 ;242e 00
-    nop                 ;242f 00
-    nop                 ;2430 00
-    nop                 ;2431 00
-    nop                 ;2432 00
-    nop                 ;2433 00
-    nop                 ;2434 00
-    nop                 ;2435 00
-    nop                 ;2436 00
-    nop                 ;2437 00
-    nop                 ;2438 00
-    nop                 ;2439 00
-    nop                 ;243a 00
-    nop                 ;243b 00
-    nop                 ;243c 00
-    nop                 ;243d 00
-    nop                 ;243e 00
-    nop                 ;243f 00
-    nop                 ;2440 00
-    nop                 ;2441 00
-    nop                 ;2442 00
-    nop                 ;2443 00
-    nop                 ;2444 00
-    nop                 ;2445 00
-    nop                 ;2446 00
-    nop                 ;2447 00
-    nop                 ;2448 00
-    nop                 ;2449 00
-    nop                 ;244a 00
-    nop                 ;244b 00
-    nop                 ;244c 00
-    nop                 ;244d 00
-    nop                 ;244e 00
-    nop                 ;244f 00
-    nop                 ;2450 00
-    nop                 ;2451 00
-    nop                 ;2452 00
-    nop                 ;2453 00
-    nop                 ;2454 00
-    nop                 ;2455 00
-    nop                 ;2456 00
-    nop                 ;2457 00
-    nop                 ;2458 00
-    nop                 ;2459 00
-    nop                 ;245a 00
-    nop                 ;245b 00
-    nop                 ;245c 00
-    nop                 ;245d 00
-    nop                 ;245e 00
-    nop                 ;245f 00
-    nop                 ;2460 00
-    nop                 ;2461 00
-    nop                 ;2462 00
-    nop                 ;2463 00
-    nop                 ;2464 00
-    nop                 ;2465 00
-    nop                 ;2466 00
-    nop                 ;2467 00
-    nop                 ;2468 00
-    nop                 ;2469 00
-    nop                 ;246a 00
-    nop                 ;246b 00
-    nop                 ;246c 00
-    nop                 ;246d 00
-    nop                 ;246e 00
-    nop                 ;246f 00
-    nop                 ;2470 00
-    nop                 ;2471 00
-    nop                 ;2472 00
-    nop                 ;2473 00
-    nop                 ;2474 00
-    nop                 ;2475 00
+buffer:                 ;User input buffer struct
+buff_size:
+    db 0                ;  Buffer size (contain 128) as byte
+buff_len:
+    db 0                ;  Used buffer length as byte
+buff_data:              ;  80 bytes input buffer
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
 l2476h:
-    nop                 ;2476 00
-    nop                 ;2477 00
-    nop                 ;2478 00
-    nop                 ;2479 00
-    nop                 ;247a 00
-    nop                 ;247b 00
-    nop                 ;247c 00
-    nop                 ;247d 00
-    nop                 ;247e 00
-    nop                 ;247f 00
-    nop                 ;2480 00
-    nop                 ;2481 00
-    nop                 ;2482 00
-    nop                 ;2483 00
-    nop                 ;2484 00
-    nop                 ;2485 00
-    nop                 ;2486 00
-    nop                 ;2487 00
-    nop                 ;2488 00
-    nop                 ;2489 00
-    nop                 ;248a 00
-    nop                 ;248b 00
-    nop                 ;248c 00
-    nop                 ;248d 00
-    nop                 ;248e 00
-    nop                 ;248f 00
-    nop                 ;2490 00
-    nop                 ;2491 00
-    nop                 ;2492 00
-    nop                 ;2493 00
-    nop                 ;2494 00
-    nop                 ;2495 00
-    nop                 ;2496 00
-    nop                 ;2497 00
-    nop                 ;2498 00
-    nop                 ;2499 00
-    nop                 ;249a 00
-    nop                 ;249b 00
-    nop                 ;249c 00
-    nop                 ;249d 00
-    nop                 ;249e 00
-    nop                 ;249f 00
-    nop                 ;24a0 00
-    nop                 ;24a1 00
-    nop                 ;24a2 00
-    nop                 ;24a3 00
-    nop                 ;24a4 00
-    nop                 ;24a5 00
-    nop                 ;24a6 00
-    nop                 ;24a7 00
-    nop                 ;24a8 00
-    nop                 ;24a9 00
-    nop                 ;24aa 00
-    nop                 ;24ab 00
-    nop                 ;24ac 00
-    nop                 ;24ad 00
-    nop                 ;24ae 00
-    nop                 ;24af 00
-    nop                 ;24b0 00
-    nop                 ;24b1 00
-    nop                 ;24b2 00
-    nop                 ;24b3 00
-    nop                 ;24b4 00
-    nop                 ;24b5 00
-    nop                 ;24b6 00
-    nop                 ;24b7 00
-    nop                 ;24b8 00
-    nop                 ;24b9 00
-    nop                 ;24ba 00
-    nop                 ;24bb 00
-    nop                 ;24bc 00
-    nop                 ;24bd 00
-    nop                 ;24be 00
-    nop                 ;24bf 00
-    nop                 ;24c0 00
-    nop                 ;24c1 00
-    nop                 ;24c2 00
-    nop                 ;24c3 00
-    nop                 ;24c4 00
-    nop                 ;24c5 00
-    nop                 ;24c6 00
-    nop                 ;24c7 00
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0
+
 nn:
     dw 0                ;Integer parsed from user input
 l24cah:
