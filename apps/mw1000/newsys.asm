@@ -3922,13 +3922,15 @@ sub_18c3h:
     cp 'A'
     jp nz,l18e2h
 
-    ;POKE &H5667, PEEK(&H5667) AND &H80
-    ld a,(5667h)        ;18d7 3a 67 56
-    and 80h             ;18da e6 80
-    ld (5667h),a        ;18dc 32 67 56
+    ;REM User selected 'A' for A(DM3A)
+
+    ;POKE &H5667, PEEK(&H5667) AND &H80 ' Set TERMTYPE
+    ld a,(5667h)
+    and 80h
+    ld (5667h),a
 
     ;GOTO l18f4h
-    jp l18f4h           ;18df c3 f4 18
+    jp l18f4h
 
 l18e2h:
     ;IF R <> &H54 THEN GOTO l18f4h
@@ -3936,19 +3938,23 @@ l18e2h:
     cp 'T'
     jp nz,l18f4h
 
-    ;POKE &H5667, PEEK(&H5667) AND &H80 OR &H02
-    ld a,(5667h)        ;18ea 3a 67 56
-    and 80h             ;18ed e6 80
-    or 02h              ;18ef f6 02
-    ld (5667h),a        ;18f1 32 67 56
+    ;REM User selected 'T' for T(V912)
+
+    ;POKE &H5667, PEEK(&H5667) AND &H80 OR &H02 ' Set TERMTYPE
+    ld a,(5667h)
+    and 80h
+    or 02h
+    ld (5667h),a
 
 l18f4h:
-    ;IF H <> &H48 THEN GOTO l1997h
+    ;IF H <> &H48 THEN GOTO hz1500
     ld a,(rr)
     cp 'H'
-    jp nz,l1997h
+    jp nz,hz1500
 
-l18fch:
+    ;REM User selected 'H' for H(Z1500)
+
+ask_leadin:
     ;PRINT "Lead-in code E(scape) or T(ilde) ? ";
     ld bc,l1fddh
     call print_str
@@ -3964,199 +3970,363 @@ l18fch:
     cp 'E'
     jp nz,l1918h
 
-    ;POKE &H5668, &H1b
-    ld hl,5668h         ;1910 21 68 56
-    ld (hl),1bh         ;1913 36 1b
+    ;REM User selected 'E' for Escape lead-in
 
-    ;GOTO l192bh
-    jp l192bh           ;1915 c3 2b 19
+    ;POKE &H5668, &H1b : REM LEADIN = &H1B
+    ld hl,5668h
+    ld (hl),1bh
+
+    ;GOTO adm_or_tv
+    jp adm_or_tv
 
 l1918h:
-    ;IF R <> &H54 THEN GOTO l1928h
+    ;IF R <> &H54 THEN GOTO bad_leadin
     ld a,(rr)
     cp 'T'
-    jp nz,l1928h
+    jp nz,bad_leadin
 
-    ;POKE &H5668, &H7e
-    ld hl,5668h         ;1920 21 68 56
-    ld (hl),7eh         ;1923 36 7e
+    ;REM User selected 'T' for Tilde lead-in
 
-    ;GOTO l192bh
-    jp l192bh           ;1925 c3 2b 19
+    ;POKE &H5668, &H7e : REM LEADIN = &H7e
+    ld hl,5668h
+    ld (hl),7eh
 
-l1928h:
-    ;GOTO l18fch
-    jp l18fch           ;1928 c3 fc 18
+    ;GOTO adm_or_tv
+    jp adm_or_tv
 
-l192bh:
-    ;POKE &H5667, PEEK(&H5667) AND &H80 OR &H01
-    ld a,(5667h)        ;192b 3a 67 56
-    and 80h             ;192e e6 80
-    or 01h              ;1930 f6 01
-    ld (5667h),a        ;1932 32 67 56
+bad_leadin:
+    ;GOTO ask_leadin
+    jp ask_leadin
 
-    ld hl,566ah         ;1935 21 6a 56
-    ld (hl),00h         ;1938 36 00
-    inc hl              ;193a 23
-    ld (hl),00h         ;193b 36 00
-    dec hl              ;193d 2b
-    dec hl              ;193e 2b
-    ld (hl),01h         ;193f 36 01
-    ld hl,5680h         ;1941 21 80 56
-    ld (hl),8bh         ;1944 36 8b
-    inc hl              ;1946 23
-    ld (hl),0bh         ;1947 36 0b
-    inc hl              ;1949 23
-    ld (hl),8ch         ;194a 36 8c
-    inc hl              ;194c 23
-    ld (hl),0ch         ;194d 36 0c
-    inc hl              ;194f 23
-    ld (hl),8fh         ;1950 36 8f
-    inc hl              ;1952 23
-    ld (hl),13h         ;1953 36 13
-    inc hl              ;1955 23
-    ld (hl),91h         ;1956 36 91
-    inc hl              ;1958 23
-    ld (hl),1bh         ;1959 36 1b
-    inc hl              ;195b 23
-    ld (hl),92h         ;195c 36 92
-    inc hl              ;195e 23
-    ld (hl),1eh         ;195f 36 1e
-    inc hl              ;1961 23
-    ld (hl),93h         ;1962 36 93
-    inc hl              ;1964 23
-    ld (hl),12h         ;1965 36 12
-    inc hl              ;1967 23
-    ld (hl),97h         ;1968 36 97
-    inc hl              ;196a 23
-    ld (hl),14h         ;196b 36 14
-    inc hl              ;196d 23
-    ld (hl),98h         ;196e 36 98
-    inc hl              ;1970 23
-    ld (hl),14h         ;1971 36 14
-    inc hl              ;1973 23
-    ld (hl),9ah         ;1974 36 9a
-    inc hl              ;1976 23
-    ld (hl),11h         ;1977 36 11
-    inc hl              ;1979 23
-    ld (hl),9ch         ;197a 36 9c
-    inc hl              ;197c 23
-    ld (hl),1ah         ;197d 36 1a
-    inc hl              ;197f 23
-    ld (hl),9dh         ;1980 36 9d
-    inc hl              ;1982 23
-    ld (hl),1ah         ;1983 36 1a
-    inc hl              ;1985 23
-    ld (hl),99h         ;1986 36 99
-    inc hl              ;1988 23
-    ld (hl),00h         ;1989 36 00
-    inc hl              ;198b 23
-    ld (hl),9fh         ;198c 36 9f
-    inc hl              ;198e 23
-    ld (hl),00h         ;198f 36 00
-    inc hl              ;1991 23
-    ld (hl),00h         ;1992 36 00
-    jp l1a2ah           ;1994 c3 2a 1a
+adm_or_tv:
+    ;REM Terminal settings for LSI ADM-3A and TeleVideo TV-912
 
-l1997h:
-    ld hl,5668h         ;1997 21 68 56
-    ld (hl),1bh         ;199a 36 1b
-    inc hl              ;199c 23
-    inc hl              ;199d 23
-    ld (hl),20h         ;199e 36 20
-    inc hl              ;19a0 23
-    ld (hl),20h         ;19a1 36 20
-    dec hl              ;19a3 2b
-    dec hl              ;19a4 2b
-    ld (hl),00h         ;19a5 36 00
-    ld hl,5680h         ;19a7 21 80 56
-    ld (hl),0b1h        ;19aa 36 b1
-    inc hl              ;19ac 23
-    ld (hl),04h         ;19ad 36 04
-    inc hl              ;19af 23
-    ld (hl),0b2h        ;19b0 36 b2
-    inc hl              ;19b2 23
-    ld (hl),05h         ;19b3 36 05
-    inc hl              ;19b5 23
-    ld (hl),0b3h        ;19b6 36 b3
-    inc hl              ;19b8 23
-    ld (hl),06h         ;19b9 36 06
-    inc hl              ;19bb 23
-    ld (hl),0eah        ;19bc 36 ea
-    inc hl              ;19be 23
-    ld (hl),0eh         ;19bf 36 0e
-    inc hl              ;19c1 23
-    ld (hl),0ebh        ;19c2 36 eb
-    inc hl              ;19c4 23
-    ld (hl),0fh         ;19c5 36 0f
-    inc hl              ;19c7 23
-    ld (hl),0d1h        ;19c8 36 d1
-    inc hl              ;19ca 23
-    ld (hl),1ch         ;19cb 36 1c
-    inc hl              ;19cd 23
-    ld (hl),0d7h        ;19ce 36 d7
-    inc hl              ;19d0 23
-    ld (hl),1dh         ;19d1 36 1d
-    inc hl              ;19d3 23
-    ld (hl),0c5h        ;19d4 36 c5
-    inc hl              ;19d6 23
-    ld (hl),11h         ;19d7 36 11
-    inc hl              ;19d9 23
-    ld (hl),0d2h        ;19da 36 d2
-    inc hl              ;19dc 23
-    ld (hl),12h         ;19dd 36 12
-    inc hl              ;19df 23
-    ld (hl),0d4h        ;19e0 36 d4
-    inc hl              ;19e2 23
-    ld (hl),13h         ;19e3 36 13
-    inc hl              ;19e5 23
-    ld (hl),0f4h        ;19e6 36 f4
-    inc hl              ;19e8 23
-    ld (hl),13h         ;19e9 36 13
-    inc hl              ;19eb 23
-    ld (hl),0d9h        ;19ec 36 d9
-    inc hl              ;19ee 23
-    ld (hl),14h         ;19ef 36 14
-    inc hl              ;19f1 23
-    ld (hl),0f9h        ;19f2 36 f9
-    inc hl              ;19f4 23
-    ld (hl),14h         ;19f5 36 14
-    inc hl              ;19f7 23
-    ld (hl),0abh        ;19f8 36 ab
-    inc hl              ;19fa 23
-    ld (hl),1ah         ;19fb 36 1a
-    inc hl              ;19fd 23
-    ld (hl),0aah        ;19fe 36 aa
-    inc hl              ;1a00 23
-    ld (hl),1ah         ;1a01 36 1a
-    inc hl              ;1a03 23
-    ld (hl),0bah        ;1a04 36 ba
-    inc hl              ;1a06 23
-    ld (hl),1ah         ;1a07 36 1a
-    inc hl              ;1a09 23
-    ld (hl),0bbh        ;1a0a 36 bb
-    inc hl              ;1a0c 23
-    ld (hl),1ah         ;1a0d 36 1a
-    inc hl              ;1a0f 23
-    ld (hl),0dah        ;1a10 36 da
-    inc hl              ;1a12 23
-    ld (hl),1ah         ;1a13 36 1a
-    inc hl              ;1a15 23
-    ld (hl),0bdh        ;1a16 36 bd
-    inc hl              ;1a18 23
-    ld (hl),1bh         ;1a19 36 1b
-    inc hl              ;1a1b 23
-    ld (hl),0a8h        ;1a1c 36 a8
-    inc hl              ;1a1e 23
-    ld (hl),00h         ;1a1f 36 00
-    inc hl              ;1a21 23
-    ld (hl),0a9h        ;1a22 36 a9
-    inc hl              ;1a24 23
-    ld (hl),00h         ;1a25 36 00
-    inc hl              ;1a27 23
-    ld (hl),00h         ;1a28 36 00
+    ;POKE &H5667, PEEK(&H5667) AND &H80 OR &H01 ' Set TERMTYPE
+    ld a,(5667h)
+    and 80h
+    or 01h
+    ld (5667h),a
+
+    ;POKE &H566A, &H00 : REM ROWOFF = &H00
+    ld hl,566ah
+    ld (hl),00h
+
+    ;POKE &H566B, &H00 : REM COLOFF = &H00
+    inc hl
+    ld (hl),00h
+
+    ;POKE &H5669, &H01 : REM ORDER = &H01
+    dec hl
+    dec hl
+    ld (hl),01h
+
+    ;POKE &H5680, &H8B : REM SCRTAB(0) = &H8B
+    ld hl,5680h
+    ld (hl),8bh
+
+    ;POKE &H5681, &H0B : REM SCRTAB(1) = &H0B
+    inc hl
+    ld (hl),0bh
+
+    ;POKE &H5682, &H8C : REM SCRTAB(2) = &H8C
+    inc hl
+    ld (hl),8ch
+
+    ;POKE &H5683, &H0C : REM SCRTAB(3) = &H0C
+    inc hl
+    ld (hl),0ch
+
+    ;POKE &H5684, &H8F : REM SCRTAB(4) = &H8F
+    inc hl
+    ld (hl),8fh
+
+    ;POKE &H5685, &H13 : REM SCRTAB(5) = &H13
+    inc hl
+    ld (hl),13h
+
+    ;POKE &H5686, &H91 : REM SCRTAB(6) = &H91
+    inc hl
+    ld (hl),91h
+
+    ;POKE &H5687, &H1B : REM SCRTAB(7) = &H1B
+    inc hl
+    ld (hl),1bh
+
+    ;POKE &H5688, &H92 : REM SCRTAB(8) = &H92
+    inc hl
+    ld (hl),92h
+
+    ;POKE &H5689, &H1E : REM SCRTAB(9) = &H1E
+    inc hl
+    ld (hl),1eh
+
+    ;POKE &H568A, &H93 : REM SCRTAB(10) = &H93
+    inc hl
+    ld (hl),93h
+
+    ;POKE &H568B, &H12 : REM SCRTAB(11) = &H12
+    inc hl
+    ld (hl),12h
+
+    ;POKE &H568C, &H97 : REM SCRTAB(12) = &H97
+    inc hl
+    ld (hl),97h
+
+    ;POKE &H568D, &H14 : REM SCRTAB(13) = &H14
+    inc hl
+    ld (hl),14h
+
+    ;POKE &H568E, &H98 : REM SCRTAB(14) = &H98
+    inc hl
+    ld (hl),98h
+
+    ;POKE &H568F, &H14 : REM SCRTAB(15) = &H14
+    inc hl
+    ld (hl),14h
+
+    ;POKE &H5690, &H9A : REM SCRTAB(16) = &H9A
+    inc hl
+    ld (hl),9ah
+
+    ;POKE &H5691, &H11 : REM SCRTAB(17) = &H11
+    inc hl
+    ld (hl),11h
+
+    ;POKE &H5692, &H9C : REM SCRTAB(18) = &H9C
+    inc hl
+    ld (hl),9ch
+
+    ;POKE &H5693, &H1A : REM SCRTAB(19) = &H1A
+    inc hl
+    ld (hl),1ah
+
+    ;POKE &H5694, &H9D : REM SCRTAB(20) = &H9D
+    inc hl
+    ld (hl),9dh
+
+    ;POKE &H5695, &H1A : REM SCRTAB(21) = &H1A
+    inc hl
+    ld (hl),1ah
+
+    ;POKE &H5696, &H99 : REM SCRTAB(22) = &H99
+    inc hl
+    ld (hl),99h
+
+    ;POKE &H5697, &H00 : REM SCRTAB(23) = &H00
+    inc hl
+    ld (hl),00h
+
+    ;POKE &H5698, &H9F : REM SCRTAB(24) = &H9F
+    inc hl
+    ld (hl),9fh
+
+    ;POKE &H5699, &H00 : REM SCRTAB(25) = &H00
+    inc hl
+    ld (hl),00h
+
+    ;POKE &H569A, &H00 : REM SCRTAB(26) = &H00
+    inc hl
+    ld (hl),00h
+
+    ;GOTO l1a2ah
+    jp l1a2ah
+
+hz1500:
+    ;REM Terminal settings for Hazeltine HZ-1500
+
+    ;POKE &H5668, &H1B : REM LEADIN = &H1B
+    ld hl,5668h
+    ld (hl),1bh
+
+    ;POKE &H566A, &H20 : REM ROWOFF = &H20
+    inc hl
+    inc hl
+    ld (hl),20h
+
+    ;POKE &H566B, &H20 : REM COLOFF = &H20
+    inc hl
+    ld (hl),20h
+
+    ;POKE &H5669, &H00 : REM ORDER = &H00
+    dec hl
+    dec hl
+    ld (hl),00h
+
+    ;POKE &H5680, &H0B1 : REM SCRTAB(0) = &H0B1
+    ld hl,5680h
+    ld (hl),0b1h
+
+    ;POKE &H5681, &H04 : REM SCRTAB(1) = &H04
+    inc hl
+    ld (hl),04h
+
+    ;POKE &H5682, &H0B2 : REM SCRTAB(2) = &H0B2
+    inc hl
+    ld (hl),0b2h
+
+    ;POKE &H5683, &H05 : REM SCRTAB(3) = &H05
+    inc hl
+    ld (hl),05h
+
+    ;POKE &H5684, &H0B3 : REM SCRTAB(4) = &H0B3
+    inc hl
+    ld (hl),0b3h
+
+    ;POKE &H5685, &H06 : REM SCRTAB(5) = &H06
+    inc hl
+    ld (hl),06h
+
+    ;POKE &H5686, &H0EA : REM SCRTAB(6) = &H0EA
+    inc hl
+    ld (hl),0eah
+
+    ;POKE &H5687, &H0E : REM SCRTAB(7) = &H0E
+    inc hl
+    ld (hl),0eh
+
+    ;POKE &H5688, &H0EB : REM SCRTAB(8) = &H0EB
+    inc hl
+    ld (hl),0ebh
+
+    ;POKE &H5689, &H0F : REM SCRTAB(9) = &H0F
+    inc hl
+    ld (hl),0fh
+
+    ;POKE &H568A, &H0D1 : REM SCRTAB(10) = &H0D1
+    inc hl
+    ld (hl),0d1h
+
+    ;POKE &H568B, &H1C : REM SCRTAB(11) = &H1C
+    inc hl
+    ld (hl),1ch
+
+    ;POKE &H568C, &H0D7 : REM SCRTAB(12) = &H0D7
+    inc hl
+    ld (hl),0d7h
+
+    ;POKE &H568D, &H1D : REM SCRTAB(13) = &H1D
+    inc hl
+    ld (hl),1dh
+
+    ;POKE &H568E, &H0C5 : REM SCRTAB(14) = &H0C5
+    inc hl
+    ld (hl),0c5h
+
+    ;POKE &H568F, &H11 : REM SCRTAB(15) = &H11
+    inc hl
+    ld (hl),11h
+
+    ;POKE &H5690, &H0D2 : REM SCRTAB(16) = &H0D2
+    inc hl
+    ld (hl),0d2h
+
+    ;POKE &H5691, &H12 : REM SCRTAB(17) = &H12
+    inc hl
+    ld (hl),12h
+
+    ;POKE &H5692, &H0D4 : REM SCRTAB(18) = &H0D4
+    inc hl
+    ld (hl),0d4h
+
+    ;POKE &H5693, &H13 : REM SCRTAB(19) = &H13
+    inc hl
+    ld (hl),13h
+
+    ;POKE &H5694, &H0F4 : REM SCRTAB(20) = &H0F4
+    inc hl
+    ld (hl),0f4h
+
+    ;POKE &H5695, &H13 : REM SCRTAB(21) = &H13
+    inc hl
+    ld (hl),13h
+
+    ;POKE &H5696, &H0D9 : REM SCRTAB(22) = &H0D9
+    inc hl
+    ld (hl),0d9h
+
+    ;POKE &H5697, &H14 : REM SCRTAB(23) = &H14
+    inc hl
+    ld (hl),14h
+
+    ;POKE &H5698, &H0F9 : REM SCRTAB(24) = &H0F9
+    inc hl
+    ld (hl),0f9h
+
+    ;POKE &H5699, &H14 : REM SCRTAB(25) = &H14
+    inc hl
+    ld (hl),14h
+
+    ;POKE &H569A, &H0AB : REM SCRTAB(26) = &H0AB
+    inc hl
+    ld (hl),0abh
+
+    ;POKE &H569B, &H1A : REM SCRTAB(27) = &H1A
+    inc hl
+    ld (hl),1ah
+
+    ;POKE &H569C, &H0AA : REM SCRTAB(28) = &H0AA
+    inc hl
+    ld (hl),0aah
+
+    ;POKE &H569D, &H1A : REM SCRTAB(29) = &H1A
+    inc hl
+    ld (hl),1ah
+
+    ;POKE &H569E, &H0BA : REM SCRTAB(30) = &H0BA
+    inc hl
+    ld (hl),0bah
+
+    ;POKE &H569F, &H1A : REM SCRTAB(31) = &H1A
+    inc hl
+    ld (hl),1ah
+
+    ;POKE &H56A0, &H0BB : REM SCRTAB(32) = &H0BB
+    inc hl
+    ld (hl),0bbh
+
+    ;POKE &H56A1, &H1A : REM SCRTAB(33) = &H1A
+    inc hl
+    ld (hl),1ah
+
+    ;POKE &H56A2, &H0DA : REM SCRTAB(34) = &H0DA
+    inc hl
+    ld (hl),0dah
+
+    ;POKE &H56A3, &H1A : REM SCRTAB(35) = &H1A
+    inc hl
+    ld (hl),1ah
+
+    ;POKE &H56A4, &H0BD : REM SCRTAB(36) = &H0BD
+    inc hl
+    ld (hl),0bdh
+
+    ;POKE &H56A5, &H1B : REM SCRTAB(37) = &H1B
+    inc hl
+    ld (hl),1bh
+
+    ;POKE &H56A6, &H0A8 : REM SCRTAB(38) = &H0A8
+    inc hl
+    ld (hl),0a8h
+
+    ;POKE &H56A7, &H00 : REM SCRTAB(39) = &H00
+    inc hl
+    ld (hl),00h
+
+    ;POKE &H56A8, &H0A9 : REM SCRTAB(40) = &H0A9
+    inc hl
+    ld (hl),0a9h
+
+    ;POKE &H56A9, &H00 : REM SCRTAB(41) = &H00
+    inc hl
+    ld (hl),00h
+
+    ;POKE &H56AA, &H00 : REM SCRTAB(42) = &H00
+    inc hl
+    ld (hl),00h
+
 l1a2ah:
-    ret                 ;1a2a c9
+    ;RETURN
+    ret
 
 sub_1a2bh:
     ;PRINT "New clock frequency ? ";
