@@ -706,25 +706,24 @@ bad_drv_type:
     jp ask_drv_type
 
 l0483h:
-    ;TODO this disassembly may be wrong.  5670h is the drive type.
-    ;if heads=2, then (2/2)-1=0, but 0 is cbm 3040/4040.
-    ;TODO: wrong negation, check it again!
-    ;
-    ;POKE &H5670+D, (heads/2)+1
-    ;REM 2 heads => type 2, 4 heads => type 3, 6 heads => type 4 and 8 heads => type 5
-    ld a,(heads)        ;0483 3a 17 30
-    or a                ;0486 b7
-    rra                 ;0487 1f
-    inc a               ;0488 3c
-    ld c,a              ;0489 4f
-    ld a,(dd)           ;048a 3a 16 30
-    ld l,a              ;048d 6f
-    rla                 ;048e 17
-    sbc a,a             ;048f 9f
-    ld de,5670h         ;0490 11 70 56
-    ld h,a              ;0493 67
-    add hl,de           ;0494 19
-    ld (hl),c           ;0495 71
+    ;POKE &H5670+D, (heads/2)+1 ' Store drive type
+    ;REM 2 heads => drive type 2
+    ;REM 4 heads => drive type 3
+    ;REM 6 heads => drive type 4
+    ;REM 8 heads => drive type 5
+    ld a,(heads)
+    or a
+    rra
+    inc a
+    ld c,a
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld de,5670h
+    ld h,a
+    add hl,de
+    ld (hl),c
 
 ask_sbox_conf:
     ;PRINT "Use the ENTIRE drive for CP/M"
