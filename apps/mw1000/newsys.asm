@@ -74,7 +74,7 @@ sub_011eh:
     jp z,l0162h         ;0122 ca 62 01
 
     ;PRINT "Disk error :  ";
-    ld bc,l0c84h
+    ld bc,disk_error
     call print_str
 
     ld hl,l3008h        ;012b 21 08 30
@@ -107,8 +107,11 @@ l0157h:
     ld a,(l3008h)       ;0157 3a 08 30
     cp 40h              ;015a fe 40
     jp m,l0133h         ;015c fa 33 01
+
 l015fh:
-    call print_eol      ;015f cd 79 01
+    ;PRINT
+    call print_eol
+
 l0162h:
     ld a,(l2423h)       ;0162 3a 23 24
     ret                 ;0165 c9
@@ -2374,7 +2377,7 @@ l0c81h:
     ;GOTO l0babh
     jp l0babh
 
-l0c84h:
+disk_error:
     db 0eh
     db "Disk error :  "
 
