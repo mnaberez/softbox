@@ -13,6 +13,7 @@
 
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
+ccp_base:      equ 0d400h ;Start of CCP area
 errbuf:        equ 0eac0h ;Last error message returned from CBM DOS
 seldsk:        equ 0f01bh ;Select disk drive
 settrk:        equ 0f01eh ;Set track number
@@ -678,7 +679,7 @@ exsys:
 ;Copy the new system into place and then jump to the BIOS to start it.
     ld bc,1c00h
     ld hl,4000h
-    ld de,0d400h
+    ld de,ccp_base
     ldir
     jp runcpm           ;Perform system init and then run CP/M
 
