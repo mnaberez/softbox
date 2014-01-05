@@ -6,48 +6,64 @@
 ;disassembly of the compiled program.
 ;
 
+corvus:        equ  18h   ;Corvus data bus
+
+warm:          equ  0000h ;Warm start entry point
+bdos:          equ  0005h ;BDOS entry point
+
+cwrite:        equ 02h    ;Console Output
+creadstr:      equ 0ah    ;Buffered Console Input
+
     org 0100h
 
     jp start
 
 end:
 ;Exit back to CP/M.
-    jp 0000h            ;Jump to CP/M warm start
+    jp warm             ;Jump to CP/M warm start
     ret
 
-sub_0107h:
+curvus_out:
+;Write the value C to port corvus
     ld hl,l0c4ah        ;0107 21 4a 0c
     ld (hl),c           ;010a 71
     ld a,(l0c4ah)       ;010b 3a 4a 0c
-    out (18h),a         ;010e d3 18
+    out (corvus),a      ;010e d3 18
     ret                 ;0110 c9
-sub_0111h:
-    in a,(18h)          ;0111 db 18
+
+curvus_in:
+;Read value from port corvus to A
+    in a,(corvus)       ;0111 db 18
     ret                 ;0113 c9
+
     ld a,00h            ;0114 3e 00
     ret                 ;0116 c9
     ret                 ;0117 c9
-sub_0118h:
-    ld hl,l0c4bh        ;0118 21 4b 0c
-    ld (hl),c           ;011b 71
-    ld c,00h            ;011c 0e 00
-    call sub_0107h      ;011e cd 07 01
-l0121h:
-    call sub_0111h      ;0121 cd 11 01
-    cp 0a0h             ;0124 fe a0
-    jp nz,l0121h        ;0126 c2 21 01
-    ld hl,l0c4bh        ;0129 21 4b 0c
-    ld c,(hl)           ;012c 4e
-    call sub_0107h      ;012d cd 07 01
-l0130h:
-    call sub_0111h      ;0130 cd 11 01
-    cp 0a1h             ;0133 fe a1
-    jp nz,l0130h        ;0135 c2 30 01
-    ld c,0ffh           ;0138 0e ff
-    call sub_0107h      ;013a cd 07 01
+
+mw_comout:
+;Send the command in A to the Konan David Junior II controller.
+;
+    ld hl,l0c4bh
+    ld (hl),c           ;Save command
+    ld c,00h
+    call curvus_out     ;Clear David Junior II port
+mw_rdy1:
+    call curvus_in
+    cp 0a0h
+    jp nz,mw_rdy1       ;Wait for David Junior II to go ready
+    ld hl,l0c4bh
+    ld c,(hl)           ;Recall command
+    call curvus_out     ;Send command
+mw_rdy2:
+    call curvus_in
+    cp 0a1h
+    jp nz,mw_rdy2       ;Wait until the David Junior II has it
+    ld c,0ffh
+    call curvus_out     ;Send execute code
     ld hl,l0c4ch        ;013d 21 4c 0c
     ld (hl),01h         ;0140 36 01
     jp l0149h           ;0142 c3 49 01
+
 l0145h:
     ld hl,l0c4ch        ;0145 21 4c 0c
     inc (hl)            ;0148 34
@@ -56,20 +72,25 @@ l0149h:
     cp 15h              ;014c fe 15
     jp m,l0145h         ;014e fa 45 01
     ret                 ;0151 c9
-sub_0152h:
-    ld c,0ffh           ;0152 0e ff
-    call sub_0107h      ;0154 cd 07 01
+
+mw_status:
+;Get status from the Konan David Junior II, return it in A.
+;
+    ld c,0ffh
+    call curvus_out     ;Transfer done
 l0157h:
-    call sub_0111h      ;0157 cd 11 01
-    cp 0ffh             ;015a fe ff
-    jp nz,l0157h        ;015c c2 57 01
-    ld c,0feh           ;015f 0e fe
-    call sub_0107h      ;0161 cd 07 01
+    call curvus_in
+    cp 0ffh
+    jp nz,l0157h        ;Wait for David Junior II to get out
+                        ;  of internal DMA mode
+    ld c,0feh
+    call curvus_out     ;Signal that we are ready for status
 l0164h:
-    call sub_0111h      ;0164 cd 11 01
-    and 80h             ;0167 e6 80
-    jp nz,l0164h        ;0169 c2 64 01
-    call sub_0111h      ;016c cd 11 01
+    call curvus_in
+    and 80h
+    jp nz,l0164h        ;Wait for status
+
+    call curvus_in      ;Read status byte
     ld (l0c3ch),a       ;016f 32 3c 0c
     ret                 ;0172 c9
 
@@ -180,8 +201,8 @@ readline:
     ld hl,l0c4dh        ;01f2 21 4d 0c
     ld (hl),80h         ;01f5 36 80
     ld de,l0c4dh        ;01f7 11 4d 0c
-    ld c,0ah            ;01fa 0e 0a
-    call 0005h          ;01fc cd 05 00
+    ld c,creadstr       ;01fa 0e 0a
+    call bdos           ;BDOS entry point
     ;PRINT
     call print_eol      ;01ff cd 93 02
     ld hl,0000h         ;0202 21 00 00
@@ -261,10 +282,10 @@ print_char:
 ;Print character in C
     ld hl,l0cd1h
     ld (hl),c
-    ld c,02h
+    ld c,cwrite
     ld a,(l0cd1h)
     ld e,a
-    call 0005h
+    call bdos           ;BDOS entry point
     ret
 
 print_eol:
@@ -969,14 +990,14 @@ l065ch:
     call readline
 
     ld c,42h            ;066e 0e 42
-    call sub_0118h      ;0670 cd 18 01
+    call mw_comout      ;0670 cd 18 01
     ld hl,0000h         ;0673 21 00 00
     ld (l0c44h),hl      ;0676 22 44 0c
     jp l068ah           ;0679 c3 8a 06
 l067ch:
     ld hl,l0c44h        ;067c 21 44 0c
     ld c,(hl)           ;067f 4e
-    call sub_0107h      ;0680 cd 07 01
+    call curvus_out     ;0680 cd 07 01
     ld hl,(l0c44h)      ;0683 2a 44 0c
     inc hl              ;0686 23
     ld (l0c44h),hl      ;0687 22 44 0c
@@ -991,7 +1012,7 @@ l068ah:
     jp l06aah           ;069b c3 aa 06
 l069eh:
     ld c,00h            ;069e 0e 00
-    call sub_0107h      ;06a0 cd 07 01
+    call curvus_out     ;06a0 cd 07 01
     ld hl,(l0c44h)      ;06a3 2a 44 0c
     inc hl              ;06a6 23
     ld (l0c44h),hl      ;06a7 22 44 0c
@@ -1001,7 +1022,7 @@ l06aah:
     add hl,bc           ;06b0 09
     add hl,hl           ;06b1 29
     jp c,l069eh         ;06b2 da 9e 06
-    call sub_0152h      ;06b5 cd 52 01
+    call mw_status      ;06b5 cd 52 01
 
     ;GOSUB check_error
     call check_error
@@ -1017,18 +1038,18 @@ l06aah:
     call print_str
 
     ld c,27h            ;06c7 0e 27
-    call sub_0118h      ;06c9 cd 18 01
+    call mw_comout      ;06c9 cd 18 01
 
     ld c,00h            ;06cc 0e 00
-    call sub_0107h      ;06ce cd 07 01
+    call curvus_out     ;06ce cd 07 01
 
     ld hl,l0c3eh        ;06d1 21 3e 0c
     ld c,(hl)           ;06d4 4e
-    call sub_0107h      ;06d5 cd 07 01
+    call curvus_out     ;06d5 cd 07 01
 
     ld hl,l0c42h        ;06d8 21 42 0c
     ld c,(hl)           ;06db 4e
-    call sub_0107h      ;06dc cd 07 01
+    call curvus_out     ;06dc cd 07 01
 
     ld b,08h            ;06df 06 08
     ld hl,(l0c42h)      ;06e1 2a 42 0c
@@ -1049,21 +1070,21 @@ l06eeh:
     dec b               ;06ee 05
     jp p,l06e7h         ;06ef f2 e7 06
     ld c,l              ;06f2 4d
-    call sub_0107h      ;06f3 cd 07 01
+    call curvus_out     ;06f3 cd 07 01
 
     ld c,1fh            ;06f6 0e 1f
-    call sub_0107h      ;06f8 cd 07 01
+    call curvus_out     ;06f8 cd 07 01
 
     ld c,00h            ;06fb 0e 00
-    call sub_0107h      ;06fd cd 07 01
+    call curvus_out     ;06fd cd 07 01
 
     ld c,00h            ;0700 0e 00
-    call sub_0107h      ;0702 cd 07 01
+    call curvus_out     ;0702 cd 07 01
 
     ld c,00h            ;0705 0e 00
-    call sub_0107h      ;0707 cd 07 01
+    call curvus_out     ;0707 cd 07 01
 
-    call sub_0152h      ;070a cd 52 01
+    call mw_status      ;070a cd 52 01
 
     ;GOSUB check_error
     call check_error
