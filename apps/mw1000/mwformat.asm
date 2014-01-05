@@ -230,7 +230,7 @@ readline:
 
 l0217h:
     ;R = buff_data(0)
-    ;IF R >= &H61 AND R < &H7B THEN GOTO l022eh
+    ;IF R < &H61 OR R >= &H7B THEN GOTO l022eh
     ld a,(buff_data)    ;0217 3a 4f 0c
     ld (rr),a           ;021a 32 3f 0c
     cp 'a'              ;021d fe 61
