@@ -201,83 +201,112 @@ got_error_done:
     ret
 
 readline:
-    ld hl,l0c4dh        ;01f2 21 4d 0c
-    ld (hl),80h         ;01f5 36 80
-    ld de,l0c4dh        ;01f7 11 4d 0c
+    ;buff_size = 128
+    ld hl,buff_size
+    ld (hl),80h
+
+    ld de,buffer        ;01f7 11 4d 0c
     ld c,creadstr       ;01fa 0e 0a
     call bdos           ;BDOS entry point
+
     ;PRINT
-    call print_eol      ;01ff cd 93 02
-    ld hl,0000h         ;0202 21 00 00
-    ld (l0c48h),hl      ;0205 22 48 0c
-    ld a,(l0c4eh)       ;0208 3a 4e 0c
+    call print_eol
+
+    ;N = 0
+    ld hl,0000h
+    ld (nn),hl
+
+    ;IF buff_len <> 0 THEN GOTO l0217h
+    ld a,(buff_len)     ;0208 3a 4e 0c
     or a                ;020b b7
     jp nz,l0217h        ;020c c2 17 02
-    ld hl,l0c3fh        ;020f 21 3f 0c
-    ld (hl),00h         ;0212 36 00
+
+    ;R = 0
+    ld hl,rr
+    ld (hl),00h
+
+    ;GOTO l0284h
     jp l0284h           ;0214 c3 84 02
+
 l0217h:
-    ld a,(l0c4fh)       ;0217 3a 4f 0c
-    ld (l0c3fh),a       ;021a 32 3f 0c
+    ;R = buff_data(0)
+    ;IF R >= &H61 AND R < &H7B THEN GOTO l022eh
+    ld a,(buff_data)    ;0217 3a 4f 0c
+    ld (rr),a           ;021a 32 3f 0c
     cp 'a'              ;021d fe 61
     jp m,l022eh         ;021f fa 2e 02
     cp 'z'+1            ;0222 fe 7b
     jp p,l022eh         ;0224 f2 2e 02
-    ld hl,l0c3fh        ;0227 21 3f 0c
-    ld a,(hl)           ;022a 7e
-    add a,0e0h          ;022b c6 e0
-    ld (hl),a           ;022d 77
+
+    ;R = R - &H20
+    ld hl,rr
+    ld a,(hl)
+    add a,0e0h
+    ld (hl),a
+
 l022eh:
+    ;l0cd0h = 0
     ld hl,l0cd0h        ;022e 21 d0 0c
     ld (hl),00h         ;0231 36 00
+
 l0233h:
+    ;IF buff_data(l0cd0h) < &H30 THEN GOTO l0284h
     ld a,(l0cd0h)       ;0233 3a d0 0c
     ld l,a              ;0236 6f
     rla                 ;0237 17
     sbc a,a             ;0238 9f
-    ld bc,l0c4fh        ;0239 01 4f 0c
+    ld bc,buff_data     ;0239 01 4f 0c
     ld h,a              ;023c 67
     add hl,bc           ;023d 09
     ld a,(hl)           ;023e 7e
-    cp 30h              ;023f fe 30
+    cp '0'              ;023f fe 30
     jp m,l0284h         ;0241 fa 84 02
+
+    ;IF buff_data(l0cd0h) >= &H3A THEN GOTO l0284h
     ld a,(l0cd0h)       ;0244 3a d0 0c
     ld l,a              ;0247 6f
     rla                 ;0248 17
     sbc a,a             ;0249 9f
-    ld bc,l0c4fh        ;024a 01 4f 0c
+    ld bc,buff_data     ;024a 01 4f 0c
     ld h,a              ;024d 67
     add hl,bc           ;024e 09
     ld a,(hl)           ;024f 7e
-    cp 3ah              ;0250 fe 3a
+    cp '9'+1            ;0250 fe 3a
     jp p,l0284h         ;0252 f2 84 02
-    ld hl,(l0c48h)      ;0255 2a 48 0c
+
+    ;N = buff_data(l0cd0h) - &H30 + N * 10
+    ld hl,(nn)          ;0255 2a 48 0c
     ld b,h              ;0258 44
     ld c,l              ;0259 4d
-    ld de,000ah         ;025a 11 0a 00
-    call l0aech         ;025d cd ec 0a
+    ld de,10            ;025a 11 0a 00
+    call l0aech         ;025d cd ec 0a (Library MUL)
     ld a,(l0cd0h)       ;0260 3a d0 0c
     ld l,a              ;0263 6f
     rla                 ;0264 17
     sbc a,a             ;0265 9f
-    ld bc,l0c4fh        ;0266 01 4f 0c
+    ld bc,buff_data     ;0266 01 4f 0c
     ld h,a              ;0269 67
     add hl,bc           ;026a 09
     ld a,(hl)           ;026b 7e
     ld l,a              ;026c 6f
     rla                 ;026d 17
     sbc a,a             ;026e 9f
-    ld bc,0ffd0h        ;026f 01 d0 ff
+    ld bc,0-'0'         ;026f 01 d0 ff
     ld h,a              ;0272 67
     add hl,bc           ;0273 09
     add hl,de           ;0274 19
-    ld (l0c48h),hl      ;0275 22 48 0c
+    ld (nn),hl          ;0275 22 48 0c
+
+    ;l0cd0h = l0cd0h + 1
     ld hl,l0cd0h        ;0278 21 d0 0c
     inc (hl)            ;027b 34
+
+    ;IF l0cd0h < buff_len THEN GOTO l0233h
     ld a,(hl)           ;027c 7e
-    ld hl,l0c4eh        ;027d 21 4e 0c
+    ld hl,buff_len      ;027d 21 4e 0c
     cp (hl)             ;0280 be
     jp m,l0233h         ;0281 fa 33 02
+
 l0284h:
     ret                 ;0284 c9
 
@@ -577,8 +606,8 @@ ask_drv_type:
     ;GOSUB readline
     call readline
 
-    ;IF l0c3fh <> &H41 THEN GOTO is_drv_type_b
-    ld a,(l0c3fh)
+    ;IF R <> &H41 THEN GOTO is_drv_type_b
+    ld a,(rr)
     cp 'A'              ;Is it 'A': 3 Mbyte (191 cyl)?
     jp nz,is_drv_type_b ;  No: jump to check for 'B'
 
@@ -596,8 +625,8 @@ ask_drv_type:
     jp got_drv_type
 
 is_drv_type_b:
-    ;IF l0c3fh <> &H42 THEN GOTO is_drv_type_c
-    ld a,(l0c3fh)
+    ;IF R <> &H42 THEN GOTO is_drv_type_c
+    ld a,(rr)
     cp 'B'              ;Is it 'B': 6 Mbyte (191 cyl)?
     jp nz,is_drv_type_c ;  No: jump to check for 'C'
 
@@ -615,8 +644,8 @@ is_drv_type_b:
     jp got_drv_type
 
 is_drv_type_c:
-    ;IF l0c3fh <> &H43 THEN GOTO is_drv_type_d
-    ld a,(l0c3fh)
+    ;IF R <> &H43 THEN GOTO is_drv_type_d
+    ld a,(rr)
     cp 'C'              ;Is it 'C': 12 Mbyte (191 cyl)?
     jp nz,is_drv_type_d ;  No: jump to check for 'D'
 
@@ -634,8 +663,8 @@ is_drv_type_c:
     jp got_drv_type
 
 is_drv_type_d:
-    ;IF l0c3fh <> &H44 THEN GOTO is_drv_type_e
-    ld a,(l0c3fh)
+    ;IF R <> &H44 THEN GOTO is_drv_type_e
+    ld a,(rr)
     cp 'D'              ;Is it 'D': 5 Mbyte (320 cyl)?
     jp nz,is_drv_type_e ;  No: jump to check for 'E'
 
@@ -653,8 +682,8 @@ is_drv_type_d:
     jp got_drv_type
 
 is_drv_type_e:
-    ;IF l0c3fh <> &H45 THEN GOTO is_drv_type_f
-    ld a,(l0c3fh)
+    ;IF R <> &H45 THEN GOTO is_drv_type_f
+    ld a,(rr)
     cp 'E'              ;Is it 'E': 10 Mbyte (320 cyl)?
     jp nz,is_drv_type_f ;  No: jump to check for 'F'
 
@@ -672,8 +701,8 @@ is_drv_type_e:
     jp got_drv_type
 
 is_drv_type_f:
-    ;IF l0c3fh <> &H46 THEN GOTO is_drv_type_z
-    ld a,(l0c3fh)
+    ;IF R <> &H46 THEN GOTO is_drv_type_z
+    ld a,(rr)
     cp 'F'              ;Is it 'F': 15 Mbyte (320 cyl)?
     jp nz,is_drv_type_z ;  No: jump to check for 'Z'
 
@@ -691,8 +720,8 @@ is_drv_type_f:
     jp got_drv_type
 
 is_drv_type_z:
-    ;IF l0c3fh <> &H5A THEN GOTO bad_drv_type
-    ld a,(l0c3fh)
+    ;IF R <> &H5A THEN GOTO bad_drv_type
+    ld a,(rr)
     cp 'Z'              ;Is it 'Z': None of the above?
     jp nz,bad_drv_type  ;  No: bad drive type entered
 
@@ -711,8 +740,8 @@ is_drv_type_z:
     ;GOSUB readline
     call readline
 
-    ;heads = l0c48h
-    ld a,(l0c48h)
+    ;heads = nn
+    ld a,(nn)
     ld (heads),a
 
     ;PRINT
@@ -725,8 +754,8 @@ is_drv_type_z:
     ;GOSUB readline
     call readline
 
-    ;cylinders = l0c48h
-    ld hl,(l0c48h)
+    ;cylinders = nn
+    ld hl,(nn)
     ld (cylinders),hl
 
     ;GOTO got_drv_type
@@ -832,8 +861,8 @@ l0558h:
     ;GOSUB readline
     call readline
 
-    ;IF l0c3fh <> &H4E THEN GOTO l064bh
-    ld a,(l0c3fh)
+    ;IF R <> &H4E THEN GOTO l064bh
+    ld a,(rr)
     cp 'N'
     jp nz,l064bh
 
@@ -863,7 +892,7 @@ l0583h:
     ;GOSUB readline
     call readline
 
-    ld hl,(l0c48h)      ;05a2 2a 48 0c
+    ld hl,(nn)      ;05a2 2a 48 0c
     add hl,hl           ;05a5 29
     jp c,l05bbh         ;05a6 da bb 05
 
@@ -872,7 +901,7 @@ l0583h:
     rla                 ;05ad 17
     sbc a,a             ;05ae 9f
     ex de,hl            ;05af eb
-    ld hl,(l0c48h)      ;05b0 2a 48 0c
+    ld hl,(nn)      ;05b0 2a 48 0c
     ld d,a              ;05b3 57
     ld a,l              ;05b4 7d
     sub e               ;05b5 93
@@ -890,8 +919,8 @@ l05bbh:
     jp l0583h
 
 l05c7h:
-    ;l0c3eh = l0c48h
-    ld a,(l0c48h)       ;05c7 3a 48 0c
+    ;l0c3eh = nn
+    ld a,(nn)       ;05c7 3a 48 0c
     ld (l0c3eh),a       ;05ca 32 3e 0c
 
 l05cdh:
@@ -918,8 +947,8 @@ l05cdh:
     ;GOSUB readline
     call readline
 
-    ;IF l0c3fh <> &H4E THEN GOTO l0637h
-    ld a,(l0c3fh)
+    ;IF R <> &H4E THEN GOTO l0637h
+    ld a,(rr)
     cp 'N'
     jp nz,l0637h
 
@@ -945,11 +974,11 @@ l05f2h:
     ;GOSUB readline
     call readline
 
-    ld hl,(l0c48h)      ;060d 2a 48 0c
+    ld hl,(nn)      ;060d 2a 48 0c
     add hl,hl           ;0610 29
     jp c,l0622h         ;0611 da 22 06
 
-    ld hl,(l0c48h)      ;0614 2a 48 0c
+    ld hl,(nn)      ;0614 2a 48 0c
     ld a,l              ;0617 7d
     ex de,hl            ;0618 eb
     ld hl,(cylinders)   ;0619 2a 40 0c
@@ -968,16 +997,16 @@ l0622h:
     jp l05f2h
 
 l062eh:
-    ;l0c42h = l0c48h
-    ld hl,(l0c48h)      ;062e 2a 48 0c
+    ;l0c42h = nn
+    ld hl,(nn)      ;062e 2a 48 0c
     ld (l0c42h),hl      ;0631 22 42 0c
 
     ;GOTO l0648h
     jp l0648h
 
 l0637h:
-    ;IF l0c3fh = 'Y' THEN GOTO l0648h
-    ld a,(l0c3fh)
+    ;IF R = 'Y' THEN GOTO l0648h
+    ld a,(rr)
     cp 'Y'
     jp z,l0648h
 
@@ -993,8 +1022,8 @@ l0648h:
     jp l065ch
 
 l064bh:
-    ;IF l0c3fh = &H59 THEN GOTO l065ch
-    ld a,(l0c3fh)
+    ;IF R = &H59 THEN GOTO l065ch
+    ld a,(rr)
     cp 'Y'
     jp z,l065ch
 
@@ -1304,7 +1333,7 @@ complete:
     db 10h
     db "Format complete."
 
-l0aech:
+l0aech:                 ;Library MUL
     xor a               ;0aec af
     ld h,a              ;0aed 67
     add a,b             ;0aee 80
@@ -1605,8 +1634,8 @@ heads:
     db 0
 l0c3eh:
     db 0
-l0c3fh:
-    db 0
+rr:
+    db 0                ;First char of user input from any prompt
 cylinders:
     dw 0
 l0c42h:
@@ -1617,20 +1646,21 @@ l0c44h:
     nop                 ;0c46 00
     nop                 ;0c47 00
 
-l0c48h:
-    dw 0
+nn:
+    dw 0                ;Integer parsed from user input
 l0c4ah:
     db 0
 l0c4bh:
     db 0
 l0c4ch:
     db 0
-l0c4dh:
-    db 0
-l0c4eh:
-    db 0
 
-l0c4fh:
+buffer:                 ;User input buffer struct
+buff_size:
+    db 0                ;  Buffer size (contain 128) as byte
+buff_len:
+    db 0                ;  Used buffer length as byte
+buff_data:              ;  128 bytes input buffer
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
