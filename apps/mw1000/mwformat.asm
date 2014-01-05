@@ -195,9 +195,9 @@ readline:
 l0217h:
     ld a,(l0c4fh)       ;0217 3a 4f 0c
     ld (l0c3fh),a       ;021a 32 3f 0c
-    cp 61h              ;021d fe 61
+    cp 'a'              ;021d fe 61
     jp m,l022eh         ;021f fa 2e 02
-    cp 7bh              ;0222 fe 7b
+    cp 'z'+1            ;0222 fe 7b
     jp p,l022eh         ;0224 f2 2e 02
     ld hl,l0c3fh        ;0227 21 3f 0c
     ld a,(hl)           ;022a 7e
@@ -277,7 +277,7 @@ print_eol:
 
 print_str:
 ;Print string at BC
-    ld hl,l0cd3h        ;029e 21 d3 0c
+    ld hl,l0cd2h+1      ;029e 21 d3 0c
     ld (hl),b           ;02a1 70
     dec hl              ;02a2 2b
     ld (hl),c           ;02a3 71
@@ -304,7 +304,7 @@ sub_02c3h:
     ld (bc),a           ;02c7 02
     push de             ;02c8 d5
     inc c               ;02c9 0c
-    ld hl,l0cd6h        ;02ca 21 d6 0c
+    ld hl,l0cd5h+1      ;02ca 21 d6 0c
     ld (hl),b           ;02cd 70
     dec hl              ;02ce 2b
     ld (hl),c           ;02cf 71
@@ -333,7 +333,7 @@ l02f8h:
     push de             ;02fc d5
     inc c               ;02fd 0c
 sub_02feh:
-    ld hl,l0cd8h        ;02fe 21 d8 0c
+    ld hl,l0cd7h+1      ;02fe 21 d8 0c
     ld (hl),b           ;0301 70
     dec hl              ;0302 2b
     ld (hl),c           ;0303 71
@@ -354,7 +354,7 @@ l0315h:
     call sub_02c3h      ;031a cd c3 02
 l031dh:
     ret                 ;031d c9
-    ld hl,l0cdah        ;031e 21 da 0c
+    ld hl,l0cd9h+1      ;031e 21 da 0c
     ld (hl),b           ;0321 70
     dec hl              ;0322 2b
     ld (hl),c           ;0323 71
@@ -382,7 +382,7 @@ l0341h:
     ld c,l              ;0345 4d
     call sub_02feh      ;0346 cd fe 02
     ret                 ;0349 c9
-    ld hl,l0cdch        ;034a 21 dc 0c
+    ld hl,l0cdbh+1      ;034a 21 dc 0c
     ld (hl),b           ;034d 70
     dec hl              ;034e 2b
     ld (hl),c           ;034f 71
@@ -1518,231 +1518,69 @@ l0c34h:
     push bc             ;0c39 c5
     ex de,hl            ;0c3a eb
     ret                 ;0c3b c9
-l0c3ch:
-    nop                 ;0c3c 00
 
+l0c3ch:
+    db 0
 heads:
     db 0
-
 l0c3eh:
-    nop                 ;0c3e 00
+    db 0
 l0c3fh:
-    nop                 ;0c3f 00
-
+    db 0
 cylinders:
     dw 0
-
 l0c42h:
-    nop                 ;0c42 00
-    nop                 ;0c43 00
+    dw0
 l0c44h:
-    nop                 ;0c44 00
-    nop                 ;0c45 00
+    dw 0
+
     nop                 ;0c46 00
     nop                 ;0c47 00
+
 l0c48h:
-    nop                 ;0c48 00
-    nop                 ;0c49 00
+    dw 0
 l0c4ah:
-    nop                 ;0c4a 00
+    db 0
 l0c4bh:
-    nop                 ;0c4b 00
+    db 0
 l0c4ch:
-    nop                 ;0c4c 00
+    db 0
 l0c4dh:
-    nop                 ;0c4d 00
+    db 0
 l0c4eh:
-    nop                 ;0c4e 00
+    db 0
+
 l0c4fh:
-    nop                 ;0c4f 00
-    nop                 ;0c50 00
-    nop                 ;0c51 00
-    nop                 ;0c52 00
-    nop                 ;0c53 00
-    nop                 ;0c54 00
-    nop                 ;0c55 00
-    nop                 ;0c56 00
-    nop                 ;0c57 00
-    nop                 ;0c58 00
-    nop                 ;0c59 00
-    nop                 ;0c5a 00
-    nop                 ;0c5b 00
-    nop                 ;0c5c 00
-    nop                 ;0c5d 00
-    nop                 ;0c5e 00
-    nop                 ;0c5f 00
-    nop                 ;0c60 00
-    nop                 ;0c61 00
-    nop                 ;0c62 00
-    nop                 ;0c63 00
-    nop                 ;0c64 00
-    nop                 ;0c65 00
-    nop                 ;0c66 00
-    nop                 ;0c67 00
-    nop                 ;0c68 00
-    nop                 ;0c69 00
-    nop                 ;0c6a 00
-    nop                 ;0c6b 00
-    nop                 ;0c6c 00
-    nop                 ;0c6d 00
-    nop                 ;0c6e 00
-    nop                 ;0c6f 00
-    nop                 ;0c70 00
-    nop                 ;0c71 00
-    nop                 ;0c72 00
-    nop                 ;0c73 00
-    nop                 ;0c74 00
-    nop                 ;0c75 00
-    nop                 ;0c76 00
-    nop                 ;0c77 00
-    nop                 ;0c78 00
-    nop                 ;0c79 00
-    nop                 ;0c7a 00
-    nop                 ;0c7b 00
-    nop                 ;0c7c 00
-    nop                 ;0c7d 00
-    nop                 ;0c7e 00
-    nop                 ;0c7f 00
-    nop                 ;0c80 00
-    nop                 ;0c81 00
-    nop                 ;0c82 00
-    nop                 ;0c83 00
-    nop                 ;0c84 00
-    nop                 ;0c85 00
-    nop                 ;0c86 00
-    nop                 ;0c87 00
-    nop                 ;0c88 00
-    nop                 ;0c89 00
-    nop                 ;0c8a 00
-    nop                 ;0c8b 00
-    nop                 ;0c8c 00
-    nop                 ;0c8d 00
-    nop                 ;0c8e 00
-    nop                 ;0c8f 00
-    nop                 ;0c90 00
-    nop                 ;0c91 00
-    nop                 ;0c92 00
-    nop                 ;0c93 00
-    nop                 ;0c94 00
-    nop                 ;0c95 00
-    nop                 ;0c96 00
-    nop                 ;0c97 00
-    nop                 ;0c98 00
-    nop                 ;0c99 00
-    nop                 ;0c9a 00
-    nop                 ;0c9b 00
-    nop                 ;0c9c 00
-    nop                 ;0c9d 00
-    nop                 ;0c9e 00
-    nop                 ;0c9f 00
-    nop                 ;0ca0 00
-    nop                 ;0ca1 00
-    nop                 ;0ca2 00
-    nop                 ;0ca3 00
-    nop                 ;0ca4 00
-    nop                 ;0ca5 00
-    nop                 ;0ca6 00
-    nop                 ;0ca7 00
-    nop                 ;0ca8 00
-    nop                 ;0ca9 00
-    nop                 ;0caa 00
-    nop                 ;0cab 00
-    nop                 ;0cac 00
-    nop                 ;0cad 00
-    nop                 ;0cae 00
-    nop                 ;0caf 00
-    nop                 ;0cb0 00
-    nop                 ;0cb1 00
-    nop                 ;0cb2 00
-    nop                 ;0cb3 00
-    nop                 ;0cb4 00
-    nop                 ;0cb5 00
-    nop                 ;0cb6 00
-    nop                 ;0cb7 00
-    nop                 ;0cb8 00
-    nop                 ;0cb9 00
-    nop                 ;0cba 00
-    nop                 ;0cbb 00
-    nop                 ;0cbc 00
-    nop                 ;0cbd 00
-    nop                 ;0cbe 00
-    nop                 ;0cbf 00
-    nop                 ;0cc0 00
-    nop                 ;0cc1 00
-    nop                 ;0cc2 00
-    nop                 ;0cc3 00
-    nop                 ;0cc4 00
-    nop                 ;0cc5 00
-    nop                 ;0cc6 00
-    nop                 ;0cc7 00
-    nop                 ;0cc8 00
-    nop                 ;0cc9 00
-    nop                 ;0cca 00
-    nop                 ;0ccb 00
-    nop                 ;0ccc 00
-    nop                 ;0ccd 00
-    nop                 ;0cce 00
-    nop                 ;0ccf 00
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
 l0cd0h:
-    nop                 ;0cd0 00
+    db 0
 l0cd1h:
-    nop                 ;0cd1 00
+    db 0
 l0cd2h:
-    nop                 ;0cd2 00
-l0cd3h:
-    nop                 ;0cd3 00
+    dw 0
 l0cd4h:
-    nop                 ;0cd4 00
+    db 0
 l0cd5h:
-    nop                 ;0cd5 00
-l0cd6h:
-    nop                 ;0cd6 00
+    dw 0
 l0cd7h:
-    nop                 ;0cd7 00
-l0cd8h:
-    nop                 ;0cd8 00
+    dw 0
 l0cd9h:
-    nop                 ;0cd9 00
-l0cdah:
-    nop                 ;0cda 00
+    dw 0
 l0cdbh:
-    nop                 ;0cdb 00
-l0cdch:
-    nop                 ;0cdc 00
+    dw 0
 l0cddh:
-    nop                 ;0cdd 00
+    db 0
 l0cdeh:
-    nop                 ;0cde 00
-    ld a,(de)           ;0cdf 1a
-    ld a,(de)           ;0ce0 1a
-    ld a,(de)           ;0ce1 1a
-    ld a,(de)           ;0ce2 1a
-    ld a,(de)           ;0ce3 1a
-    ld a,(de)           ;0ce4 1a
-    ld a,(de)           ;0ce5 1a
-    ld a,(de)           ;0ce6 1a
-    ld a,(de)           ;0ce7 1a
-    ld a,(de)           ;0ce8 1a
-    ld a,(de)           ;0ce9 1a
-    ld a,(de)           ;0cea 1a
-    ld a,(de)           ;0ceb 1a
-    ld a,(de)           ;0cec 1a
-    ld a,(de)           ;0ced 1a
-    ld a,(de)           ;0cee 1a
-    ld a,(de)           ;0cef 1a
-    ld a,(de)           ;0cf0 1a
-    ld a,(de)           ;0cf1 1a
-    ld a,(de)           ;0cf2 1a
-    ld a,(de)           ;0cf3 1a
-    ld a,(de)           ;0cf4 1a
-    ld a,(de)           ;0cf5 1a
-    ld a,(de)           ;0cf6 1a
-    ld a,(de)           ;0cf7 1a
-    ld a,(de)           ;0cf8 1a
-    ld a,(de)           ;0cf9 1a
-    ld a,(de)           ;0cfa 1a
-    ld a,(de)           ;0cfb 1a
-    ld a,(de)           ;0cfc 1a
-    ld a,(de)           ;0cfd 1a
-    ld a,(de)           ;0cfe 1a
-    ld a,(de)           ;0cff 1a
+    db 0
+
+    db 1ah
+    db 1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah
+    db 1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah
