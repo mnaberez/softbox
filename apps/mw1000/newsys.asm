@@ -687,12 +687,12 @@ is_drv_type_z:
     cp 'Z'              ;Is it 'Z': User supplied Head & Cyl count?
     jp nz,bad_drv_type  ;  No: bad drive type entered
 
+    ;REM User selected 'Z' for arbitrary heads/cylinders
+
 ask_drv_heads:
     ;PRINT "Enter the number of Heads : ";
     ld bc,num_heads
     call print_str
-
-    ;REM User selected 'Z' for arbitrary heads/cylinders
 
     ;GOSUB readline
     call readline
