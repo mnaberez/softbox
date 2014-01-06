@@ -3244,7 +3244,7 @@ l1521h:
     jp l1560h
 
 l1530h:
-    ;IF N) <> 2 THEN GOTO l1540h
+    ;IF N <> 2 THEN GOTO l1540h
     ld hl,(nn)
     dec hl
     dec hl
