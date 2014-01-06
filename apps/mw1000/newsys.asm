@@ -2979,12 +2979,12 @@ l1417h:
     ld bc,rs232_2_stop
     call print_str
 
-    ;l3028h = PEEK(&H5664) AND &H40
+    ;stoptmp = PEEK(&H5664) AND &H40
     ld a,(5664h)
     and 0c0h
-    ld (l3028h),a
+    ld (stoptmp),a
 
-    ;IF l3028h <> &H40 THEN GOTO l1441h
+    ;IF stoptmp <> &H40 THEN GOTO l1441h
     cp 40h
     jp nz,l1441h
 
@@ -2997,8 +2997,8 @@ l1417h:
     jp l1460h
 
 l1441h:
-    ;IF l3028h <> &H80 THEN GOTO l144fh
-    ld a,(l3028h)
+    ;IF stoptmp <> &H80 THEN GOTO l144fh
+    ld a,(stoptmp)
     cp 80h
     jp nz,l144fh
 
@@ -3011,8 +3011,8 @@ l1441h:
     jp l1460h
 
 l144fh:
-    ;IF l3028h <> &HC0 THEN GOTO l145dh
-    ld a,(l3028h)
+    ;IF stoptmp <> &HC0 THEN GOTO l145dh
+    ld a,(stoptmp)
     cp 0c0h
     jp nz,l145dh
 
@@ -3827,9 +3827,9 @@ l180dh:
 l181fh:
     ;REM User selected 1-4 (device numbers)
 
-    ;l3029h = N
+    ;iochoice = N
     ld a,(nn)
-    ld (l3029h),a
+    ld (iochoice),a
 
     ;PRINT "New device # ? ";
     ld bc,new_dev_num
@@ -3841,8 +3841,8 @@ l181fh:
     ;PRINT
     call print_eol
 
-    ;IF l3029h <> 1 THEN GOTO l1842h
-    ld a,(l3029h)
+    ;IF iochoice <> 1 THEN GOTO l1842h
+    ld a,(iochoice)
     cp 01h
     jp nz,l1842h
 
@@ -3856,8 +3856,8 @@ l181fh:
     jp l1872h
 
 l1842h:
-    ;IF l3029h <> 2 THEN GOTO l1853h
-    ld a,(l3029h)
+    ;IF iochoice <> 2 THEN GOTO l1853h
+    ld a,(iochoice)
     cp 02h
     jp nz,l1853h
 
@@ -3871,8 +3871,8 @@ l1842h:
     jp l1872h
 
 l1853h:
-    ;IF l3029h <> 3 THEN GOTO l1853h
-    ld a,(l3029h)
+    ;IF iochoice <> 3 THEN GOTO l1853h
+    ld a,(iochoice)
     cp 03h
     jp nz,l1864h
 
@@ -3886,8 +3886,8 @@ l1853h:
     jp l1872h
 
 l1864h:
-    ;IF l3029h <> 4 THEN GOTO l1872h
-    ld a,(l3029h)
+    ;IF iochoice <> 4 THEN GOTO l1872h
+    ld a,(iochoice)
     cp 04h
     jp nz,l1872h
 
@@ -5923,10 +5923,10 @@ l3020h:
 
     db 0,0,0,0,0,0
 
-l3028h:
-    db 0
-l3029h:
-    db 0
+stoptmp:
+    db 0                ;Temporarily holds USART mode for showing stop bits
+iochoice:
+    db 0                ;Temporarily holds menu selection for I/O assignments
 
     db 0,0,0,0,0,0
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
