@@ -771,11 +771,11 @@ l0483h:
 
 ask_sbox_conf:
     ;PRINT "Use the ENTIRE drive for CP/M"
-    ld bc,l0e35h
+    ld bc,use_entire
     call print_str_eol
 
     ;PRINT "or just the first HALF (E/H) ? ";
-    ld bc,l0e53h
+    ld bc,or_first_half
     call print_str
 
     ;GOSUB readline
@@ -886,7 +886,7 @@ l050ah:
 
 ask_unit:
     ;PRINT "Physical unit # (0 or 1) ? ";
-    ld bc,l0e73h
+    ld bc,physical_unit
     call print_str
 
     ;GOSUB readline
@@ -918,7 +918,7 @@ bad_unit:
 
 l0558h:
     ;PRINT "Start surface #'s from 0  (Y/N) ? ";
-    ld bc,l0e8fh
+    ld bc,start_surfaces
     call print_str
 
     ;GOSUB readline
@@ -950,7 +950,7 @@ l0574h:
     ;REM User selected 'N' for do not start surface #'s at 0
 
     ;PRINT "Offset for surface #'s ? ";
-    ld bc,l0eb2h
+    ld bc,offset_for_sur
     call print_str
 
     ;GOSUB readline
@@ -1029,11 +1029,11 @@ l05edh:
     call clear_screen
 
     ;PRINT "Disk Drive Assignment."
-    ld bc,l0ecch
+    ld bc,drv_assgnmt
     call print_str_eol
 
     ;PRINT "---- ----- -----------"
-    ld bc,l0ee3h
+    ld bc,drv_dashes
     call print_str_eol
 
     ;PRINT
@@ -1059,7 +1059,7 @@ l060ah:
     call print_char
 
     ;PRINT ", ";                ' Comma between letters in pair
-    ld bc,l0efah
+    ld bc,drv_comma
     call print_str
 
     ;PRINT CHR$(D*2+&H42);      ' Second letter in drive pair
@@ -1070,7 +1070,7 @@ l060ah:
     call print_char
 
     ;PRINT ":      ";
-    ld bc,l0efdh
+    ld bc,drv_colon
     call print_str
 
     ;IF PEEK(&H5670+D) <> 0 THEN GOTO l0657h
@@ -1404,7 +1404,7 @@ l0780h:
     call print_eol
 
     ;PRINT "           (";
-    ld bc,l0f97h
+    ld bc,spaces_paren
     call print_str
 
     ;PRINT DEEK(&H5648+unit*2)  ' Total cylinders
@@ -1472,7 +1472,7 @@ l07f8h:
     call print_eol
 
     ;PRINT "           Head ";
-    ld bc,l0fbah
+    ld bc,spaces_head
     call print_str
 
     ;PRINT firsthead;           ' First head that MW-1000 will use
@@ -1485,7 +1485,7 @@ l07f8h:
     call print_int
 
     ;PRINT "-";
-    ld bc,l0fcbh
+    ld bc,head_dash
     call print_str
 
     ;PRINT firsthead+heads-1;   ' Last head that MW-1000 will use
@@ -1506,7 +1506,7 @@ l07f8h:
     call print_int      ;0833 cd f6 01
 
     ;PRINT "  Cyls 1-";         ' First cylinder MW-1000 will use (always 1)
-    ld bc,l0fcdh
+    ld bc,cyls_1_dash
     call print_str
 
     ;PRINT DEEK(&H564c+unit*2); ' Last cylinder MW-1000 will use
@@ -1524,7 +1524,7 @@ l07f8h:
     call print_int      ;084b cd f6 01
 
     ;PRINT " used)"
-    ld bc,l0fd7h
+    ld bc,used_paren
     call print_str
 
     ;PRINT
@@ -1548,7 +1548,7 @@ l085eh:
     call print_eol
 
     ;PRINT "Alter which drive pair (A to O) ? ";
-    ld bc,l0fdeh
+    ld bc,alter_which_pair
     call print_str
 
     ;GOSUB readline
@@ -1582,7 +1582,7 @@ ask_flop_hard:
     ld (dd),a
 
     ;PRINT "F(loppy),  H(ard) or  U(nused)  ? ";
-    ld bc,l1001h
+    ld bc,flop_hard_unused
     call print_str
 
     ;GOSUB readline
@@ -1600,7 +1600,7 @@ ask_flop_hard:
 
 ask_flop_type:
     ;PRINT "Type (A=3040/4040, B=8050, C=8250) ? ";
-    ld bc,l1024h
+    ld bc,what_drive_type
     call print_str
 
     ;GOSUB readline
@@ -1723,7 +1723,7 @@ l091eh:
     ;REM The system is not a Mini-Winchester, it's for Corvus.
 
     ;PRINT "5, 10, or 20 Mbyte drive ? ";
-    ld bc,l104ah
+    ld bc,what_hard_drive
     call print_str
 
     ;GOSUB readline
@@ -1825,7 +1825,7 @@ sub_0997h:
     jp nz,l09adh
 
     ;PRINT "No current autoload command"
-    ld bc,l1066h
+    ld bc,no_aload_cmd
     call print_str_eol
 
     ;PRINT
@@ -1836,7 +1836,7 @@ sub_0997h:
 
 l09adh:
     ;PRINT "Current autoload command is : "
-    ld bc,l1082h
+    ld bc,cur_aload_cmd
     call print_str_eol
 
     ;AINDEX = 1
@@ -1879,7 +1879,7 @@ ask_autoload:
     call print_eol
 
     ;PRINT "New autoload command  (Y/N) ? ";
-    ld bc,l10a1h
+    ld bc,new_aload_yn
     call print_str
 
     ;GOSUB readline
@@ -1894,7 +1894,7 @@ ask_autoload:
     jp nz,l0a48h
 
     ;PRINT "Please enter the new command : "
-    ld bc,l10c0h
+    ld bc,pls_enter_aload
     call print_str_eol
 
     ;GOSUB readline
@@ -1963,7 +1963,7 @@ sub_0a49h:
 
 l0a4dh:
     ;PRINT "Save on which drive (A - P) ? ";
-    ld bc,l10e0h
+    ld bc,save_on_which
     call print_str
 
     ;GOSUB readline
@@ -2012,7 +2012,7 @@ l0a87h:
     jp c,l0aa9h         ;0a9d da a9 0a
 
     ;PRINT "Drive not in system"
-    ld bc,l10ffh
+    ld bc,drv_not_in_sys
     call print_str_eol
 
     jp l0a4dh           ;0aa6 c3 4d 0a
@@ -2045,7 +2045,7 @@ l0ac7h:
     jp z,l0af0h         ;0ad9 ca f0 0a
 
     ;PRINT "Retry (Y/N) ? ";
-    ld bc,l1113h
+    ld bc,retry_yn
     call print_str
 
     ;GOSUB readline
@@ -2071,11 +2071,11 @@ start:
     call print_eol
 
     ;PRINT "CP/M Reconfiguration"
-    ld bc,l1122h
+    ld bc,cpm_reconfig
     call print_str_eol
 
     ;PRINT "---- ---------------"
-    ld bc,l1137h
+    ld bc,cpm_dashes
     call print_str_eol
 
     ;PRINT
@@ -2087,7 +2087,7 @@ start:
     jp nz,l0b13h
 
     ;PRINT "Mini-Winchester version"
-    ld bc,l114ch
+    ld bc,mw_version
     call print_str_eol
 
 l0b13h:
@@ -2102,7 +2102,7 @@ l0b13h:
     call print_eol
 
     ;PRINT "Source drive (A - P) ? ";
-    ld bc,l1185h
+    ld bc,source_drive
     call print_str
 
     ;GOSUB readline
@@ -2175,11 +2175,11 @@ l0b87h:
 l0b9fh:
     jp l0ba5h           ;0b9f c3 a5 0b
 l0ba2h:
-    jp start           ;0ba2 c3 f1 0a
+    jp start            ;0ba2 c3 f1 0a
 l0ba5h:
     jp l0babh           ;0ba5 c3 ab 0b
 l0ba8h:
-    jp start           ;0ba8 c3 f1 0a
+    jp start            ;0ba8 c3 f1 0a
 
 l0babh:
     ;GOSUB clear_screen
@@ -2189,74 +2189,74 @@ l0babh:
     call print_eol
 
     ;PRINT "CP/M Reconfiguration"
-    ld bc,l119dh
+    ld bc,cpm_reconfig_2
     call print_str_eol
 
     ;PRINT "---- ---------------"
-    ld bc,l11b2h
+    ld bc,cpm_dashes_2
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "A = Autoload command"
-    ld bc,l11c7h
+    ld bc,a_autoload
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "D = Disk Drive Assignment"
-    ld bc,l11dch
+    ld bc,d_disk_drv
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "I = I/O Assignment"
-    ld bc,l11f6h
+    ld bc,i_io_asgn
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "P = Pet Terminal Parameters"
-    ld bc,l1209h
+    ld bc,p_pet_term
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "R = RS232 Characteristics"
-    ld bc,l1225h
+    ld bc,r_rs232_chrs
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "S = Save New System"
-    ld bc,l123fh
+    ld bc,s_save_sys
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "E = Execute New System"
-    ld bc,l1253h
+    ld bc,e_exec_sys
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "Q = Quit This Program"
-    ld bc,l126ah
+    ld bc,q_quit
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "Please enter the appropriate letter: ";
-    ld bc,l1280h
+    ld bc,please_enter
     call print_str
 
     ;GOSUB readline
@@ -2441,39 +2441,39 @@ num_cylinders:
     db 20h
     db "Enter the number of Cylinders : "
 
-l0e35h:
+use_entire:
     db 1dh
     db "Use the ENTIRE drive for CP/M"
 
-l0e53h:
+or_first_half:
     db 1fh
     db "or just the first HALF (E/H) ? "
 
-l0e73h:
+physical_unit:
     db 1bh
     db "Physical unit # (0 or 1) ? "
 
-l0e8fh:
+start_surfaces:
     db 22h
     db "Start surface #'s from 0  (Y/N) ? "
 
-l0eb2h:
+offset_for_sur:
     db 19h
     db "Offset for surface #'s ? "
 
-l0ecch:
+drv_assgnmt:
     db 16h
     db "Disk Drive Assignment."
 
-l0ee3h:
+drv_dashes:
     db 16h
     db "---- ----- -----------"
 
-l0efah:
+drv_comma:
     db 02h
     db ", "
 
-l0efdh:
+drv_colon:
     db 07h
     db ":      "
 
@@ -2525,7 +2525,7 @@ win_unit_num:
     db 12h
     db "Winchester Unit # "
 
-l0f97h:
+spaces_paren:
     db 0ch
     db "           ("
 
@@ -2537,75 +2537,75 @@ mbyte_drive:
     db 0dh
     db " Mbyte drive,"
 
-l0fbah:
+spaces_head:
     db 10h
     db "           Head "
 
-l0fcbh:
+head_dash:
     db 01h
     db "-"
 
-l0fcdh:
+cyls_1_dash:
     db 09h
     db "  Cyls 1-"
 
-l0fd7h:
+used_paren:
     db 06h
     db " used)"
 
-l0fdeh:
+alter_which_pair:
     db 22h
     db "Alter which drive pair (A to O) ? "
 
-l1001h:
+flop_hard_unused:
     db 22h
     db "F(loppy),  H(ard) or  U(nused)  ? "
 
-l1024h:
+what_drive_type:
     db 25h
     db "Type (A=3040/4040, B=8050, C=8250) ? "
 
-l104ah:
+what_hard_drive:
     db 1bh
     db "5, 10, or 20 Mbyte drive ? "
 
-l1066h:
+no_aload_cmd:
     db 1bh
     db "No current autoload command"
 
-l1082h:
+cur_aload_cmd:
     db 1eh
     db "Current autoload command is : "
 
-l10a1h:
+new_aload_yn:
     db 1eh
     db "New autoload command  (Y/N) ? "
 
-l10c0h:
+pls_enter_aload:
     db 1fh
     db "Please enter the new command : "
 
-l10e0h:
+save_on_which:
     db 1eh
     db "Save on which drive (A - P) ? "
 
-l10ffh:
+drv_not_in_sys:
     db 13h
     db "Drive not in system"
 
-l1113h:
+retry_yn:
     db 0eh
     db "Retry (Y/N) ? "
 
-l1122h:
+cpm_reconfig:
     db 14h
     db "CP/M Reconfiguration"
 
-l1137h:
+cpm_dashes:
     db 14h
     db "---- ---------------"
 
-l114ch:
+mw_version:
     db 17h
     db "Mini-Winchester version"
 
@@ -2613,51 +2613,51 @@ rev_c22:
     db 20h
     db "Revision C2.2  --   9 March 1984"
 
-l1185h:
+source_drive:
     db 17h
     db "Source drive (A - P) ? "
 
-l119dh:
+cpm_reconfig_2:
     db 14h
     db "CP/M Reconfiguration"
 
-l11b2h:
+cpm_dashes_2:
     db 14h
     db "---- ---------------"
 
-l11c7h:
+a_autoload:
     db 14h
     db "A = Autoload command"
 
-l11dch:
+d_disk_drv:
     db 19h
     db "D = Disk Drive Assignment"
 
-l11f6h:
+i_io_asgn:
     db 12h
     db "I = I/O Assignment"
 
-l1209h:
+p_pet_term:
     db 1bh
     db "P = Pet Terminal Parameters"
 
-l1225h:
+r_rs232_chrs:
     db 19h
     db "R = RS232 Characteristics"
 
-l123fh:
+s_save_sys:
     db 13h
     db "S = Save New System"
 
-l1253h:
+e_exec_sys:
     db 16h
     db "E = Execute New System"
 
-l126ah:
+q_quit:
     db 15h
     db "Q = Quit This Program"
 
-l1280h:
+please_enter:
     db 25h
     db "Please enter the appropriate letter: "
 
@@ -2667,7 +2667,7 @@ l12a6h:
 
 ask_char_size:
     ;PRINT "New charater length (5 to 8) ? ";
-    ld bc,l1b70h
+    ld bc,new_char_len
     call print_str
 
     ;GOSUB readline
@@ -2714,7 +2714,7 @@ l12ech:
 
 ask_stop_bits:
     ;PRINT "Number of stop bits (1 or 2) ? ";
-    ld bc,l1b90h
+    ld bc,num_stop_bits
     call print_str
 
     ;GOSUB readline
@@ -2764,7 +2764,7 @@ l1323h:
 
 ask_parity:
     ;PRINT "O(dd), E(ven), or N(o) parity ? ";
-    ld bc,l1bb0h
+    ld bc,odd_even_none
     call print_str
 
     ;GOSUB readline
@@ -2821,7 +2821,7 @@ ask_baud_rate:
     call print_eol
 
     ;PRINT "110, 300, 1200, 4800, 9600, or 19200 baud ? ";
-    ld bc,l1bd1h
+    ld bc,ask_bauds
     call print_str
 
     ;GOSUB readline
@@ -2938,18 +2938,18 @@ l13eeh:
     call print_eol
 
     ;PRINT "RS232 Characteristics."
-    ld bc,l1bfeh
+    ld bc,rs232_chrs
     call print_str_eol
 
     ;PRINT "----- ----------------"
-    ld bc,l1c15h
+    ld bc,rs232_dashes
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT " 1.  Character size :<tab><tab>";
-    ld bc,l1c2ch
+    ld bc,rs232_1_chr
     call print_str
 
     ;PRINT CHR$(&H35+((PEEK(&H6554) AND &H0C) SHR 2));
@@ -2976,7 +2976,7 @@ l1417h:
     call print_eol
 
     ;PRINT " 2.  Number of stop bits :<tab>";
-    ld bc,l1c44h
+    ld bc,rs232_2_stop
     call print_str
 
     ;IF (PEEK(&H5664) AND &H40) <> &H40 THEN GOTO l1441h
@@ -2986,25 +2986,25 @@ l1417h:
     cp 40h
     jp nz,l1441h
 
-    ld hl,l1c60h        ;143b 21 60 1c
+    ld hl,stops_1       ;143b 21 60 1c
     jp l1460h           ;143e c3 60 14
 
 l1441h:
     ld a,(l3028h)       ;1441 3a 28 30
     cp 80h              ;1444 fe 80
     jp nz,l144fh        ;1446 c2 4f 14
-    ld hl,l1c62h        ;1449 21 62 1c
+    ld hl,stops_1_5     ;1449 21 62 1c
     jp l1460h           ;144c c3 60 14
 
 l144fh:
     ld a,(l3028h)       ;144f 3a 28 30
     cp 0c0h             ;1452 fe c0
     jp nz,l145dh        ;1454 c2 5d 14
-    ld hl,l1c66h        ;1457 21 66 1c
+    ld hl,stops_2       ;1457 21 66 1c
     jp l1460h           ;145a c3 60 14
 
 l145dh:
-    ld hl,l1c68h        ;145d 21 68 1c
+    ld hl,stops_undef   ;145d 21 68 1c
 
 l1460h:
     ;PRINT <string at HL>
@@ -3016,7 +3016,7 @@ l1460h:
     call print_eol
 
     ;PRINT " 3.  Parity :<tab><tab><tab>";
-    ld bc,l1c72h
+    ld bc,rs232_3_par
     call print_str
 
     ;IF (PEEK(&H5664) AND &H10) THEN GOTO l147ch
@@ -3027,7 +3027,7 @@ l1460h:
     ;REM Parity is none.
 
     ;<HL = pointer to "none">
-    ld hl,l1c83h
+    ld hl,parity_none
 
     ;GOTO l149fh
     jp l149fh
@@ -3042,7 +3042,7 @@ l147ch:
     ;REM Parity is even.
 
     ;<HL = pointer to "even">
-    ld hl,l1c88h
+    ld hl,parity_even
 
     ;GOTO l149fh
     jp l149fh
@@ -3057,7 +3057,7 @@ l148ch:
     ;REM Parity is odd.
 
     ;<HL = pointer to "odd ">
-    ld hl,l1c8dh
+    ld hl,parity_odd
 
     ;GOTO l149fh
     jp l149fh
@@ -3066,7 +3066,7 @@ l149ch:
     ;REM Parity is unknown.
 
     ;<HL = pointer to "    ">
-    ld hl,l1c92h
+    ld hl,parity_blank
 
 l149fh:
     ;PRINT <string at HL>
@@ -3078,7 +3078,7 @@ l149fh:
     call print_eol
 
     ;PRINT " 4.  Baud rate :<tab><tab>";
-    ld bc,l1c97h
+    ld bc,rs232_4_baud
     call print_str
 
     ;IF PEEK(&H5665) <> &H22 THEN GOTO l14bbh
@@ -3089,7 +3089,7 @@ l149fh:
     ;REM Baud is 110
 
     ;<HL = pointer to "110  ">
-    ld hl,l1caah
+    ld hl,baud_110
 
     ;GOTO l1504h
     jp l1504h
@@ -3103,7 +3103,7 @@ l14bbh:
     ;REM Baud is 300
 
     ;<HL = pointer to "300  ">
-    ld hl,l1cb0h
+    ld hl,baud_300
 
     ;GOTO l1504h
     jp l1504h
@@ -3117,7 +3117,7 @@ l14c9h:
     ;REM Baud is 1200
 
     ;<HL = pointer to "1200 ">
-    ld hl,l1cb6h
+    ld hl,baud_1200
 
     ;GOTO l1504h
     jp l1504h
@@ -3131,7 +3131,7 @@ l14d7h:
     ;REM Baud is 4800
 
     ;<HL = pointer to "4800 ">
-    ld hl,l1cbch
+    ld hl,baud_4800
 
     ;GOTO l1504h
     jp l1504h
@@ -3145,7 +3145,7 @@ l14e5h:
     ;REM Baud is 9600
 
     ;<HL = pointer to "9600 ">
-    ld hl,l1cc2h
+    ld hl,baud_9600
 
     ;GOTO l1504h
     jp l1504h
@@ -3159,7 +3159,7 @@ l14f3h:
     ;REM Baud is 19200
 
     ;<HL = pointer to "19200">
-    ld hl,l1cc8h
+    ld hl,baud_19200
 
     ;GOTO l1504h
     jp l1504h
@@ -3168,7 +3168,7 @@ l1501h:
     ;REM Baud is unknown
 
     ;<HL = pointer to "     ">
-    ld hl,l1cceh
+    ld hl,baud_blank
 
 l1504h:
     ;PRINT <string at HL>
@@ -3180,7 +3180,7 @@ l1504h:
     call print_eol
 
     ;PRINT "Alter which characteristic ? ";
-    ld bc,l1cd4h
+    ld bc,alter_which
     call print_str
 
     ;GOSUB readline
@@ -3258,26 +3258,26 @@ sub_1567h:
     call print_eol
 
     ;PRINT "T(TY: -- RS232 printer";
-    ld bc,l1cf2h
+    ld bc,tty_rs232
     call print_str_eol
 
     ;PRINT "C(RT: -- PET screen";
-    ld bc,l1d09h
+    ld bc,crt_pet_scrn
     call print_str_eol
 
     ;PRINT "L(PT: -- PET IEEE printer";
-    ld bc,l1d1dh
+    ld bc,lpt_pet
     call print_str_eol
 
     ;PRINT "U(L1: -- ASCII IEEE printer"
-    ld bc,l1d37h
+    ld bc,ul1_ascii
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "Which list device (T, C, L or U) ? ";
-    ld bc,l1d53h
+    ld bc,which_list_dev
     call print_str
 
     ;GOSUB readline
@@ -3355,7 +3355,7 @@ l15e0h:
 
 sub_15e1h:
     ;PRINT "T(TY:) or P(TR:) ? ";
-    ld bc,l1d77h
+    ld bc,tty_or_ptr
     call print_str
 
     ;GOSUB readline
@@ -3399,7 +3399,7 @@ l1612h:
 
 sub_1613h:
     ;PRINT "T(TY:) or P(TP:) ? ";
-    ld bc,l1d8bh
+    ld bc,tty_or_ptp
     call print_str
 
     ;GOSUB readline
@@ -3442,20 +3442,20 @@ sub_1645h:
     call print_eol
 
     ;PRINT "3 = 3022 or 3023 or 4022 or 4023";
-    ld bc,l1d9fh
+    ld bc,for_cbm3032
     call print_str_eol
 
     ;PRINT "8 = 8024";
-    ld bc,l1dc0h
+    ld bc,for_cbm8024
     call print_str_eol
 
     ;PRINT "D = 8026 or 8027 (Daisywheel)"
-    ld bc,l1dc9h
+    ld bc,for_dwheel
     call print_str_eol
     call print_eol
 
     ;PRINT "Which type of printer (3, 8, or D) ? ";
-    ld bc,l1de7h
+    ld bc,which_printer
     call print_str
 
     ;GOSUB readline
@@ -3511,18 +3511,18 @@ l1697h:
     call print_eol
 
     ;PRINT "I/O Device Assignment."
-    ld bc,l1e0dh
+    ld bc,io_dev_asgn
     call print_str_eol
 
     ;PRINT "--- ------ -----------"
-    ld bc,l1e24h
+    ld bc,io_dashes
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT " 1.  PET Printer device # :<tab>";
-    ld bc,l1e3bh
+    ld bc,io_lpt_device
     call print_str
 
     ;PRINT PEEK(&H5661)
@@ -3539,7 +3539,7 @@ l1697h:
     call print_eol
 
     ;PRINT " 2.  ASCII list device # :<tab>";
-    ld bc,l1e58h
+    ld bc,io_ul1_device
     call print_str
 
     ;PRINT PEEK(&H5666)
@@ -3556,7 +3556,7 @@ l1697h:
     call print_eol
 
     ;PRINT " 3.  Reader device # :<tab><tab>";
-    ld bc,l1e74h
+    ld bc,io_rdr_device
     call print_str
 
     ;PRINT PEEK(&H5662)
@@ -3573,7 +3573,7 @@ l1697h:
     call print_eol
 
     ;PRINT " 4.  Punch device # :<tab><tab>";
-    ld bc,l1e8dh
+    ld bc,io_pun_device
     call print_str
 
     ;PRINT PEEK(&H5663)
@@ -3590,30 +3590,30 @@ l1697h:
     call print_eol
 
     ;PRINT " 5.  Default LST: device :<tab>";
-    ld bc,l1ea5h
+    ld bc,io_lst_device
     call print_str
 
     ld a,(5660h)        ;170e 3a 60 56
     and 0c0h            ;1711 e6 c0
     jp nz,l171ch        ;1713 c2 1c 17
-    ld hl,l1ec1h        ;1716 21 c1 1e
+    ld hl,tty_colon     ;1716 21 c1 1e
     jp l173fh           ;1719 c3 3f 17
 l171ch:
     ld a,(5660h)        ;171c 3a 60 56
     and 0c0h            ;171f e6 c0
     cp 40h              ;1721 fe 40
     jp nz,l172ch        ;1723 c2 2c 17
-    ld hl,l1ec6h        ;1726 21 c6 1e
+    ld hl,crt_colon     ;1726 21 c6 1e
     jp l173fh           ;1729 c3 3f 17
 l172ch:
     ld a,(5660h)        ;172c 3a 60 56
     and 0c0h            ;172f e6 c0
     cp 80h              ;1731 fe 80
     jp nz,l173ch        ;1733 c2 3c 17
-    ld hl,l1ecbh        ;1736 21 cb 1e
+    ld hl,lpt_colon     ;1736 21 cb 1e
     jp l173fh           ;1739 c3 3f 17
 l173ch:
-    ld hl,l1ed0h        ;173c 21 d0 1e
+    ld hl,blank_colon   ;173c 21 d0 1e
 l173fh:
     ld b,h              ;173f 44
     ld c,l              ;1740 4d
@@ -3623,16 +3623,16 @@ l173fh:
     call print_eol
 
     ;PRINT " 6.  Default RDR: device :<tab>";
-    ld bc,l1ed5h
+    ld bc,io_default_rdr
     call print_str
 
     ld a,(5660h)        ;174d 3a 60 56
     and 0ch             ;1750 e6 0c
     jp nz,l175bh        ;1752 c2 5b 17
-    ld hl,l1ef1h        ;1755 21 f1 1e
+    ld hl,rdr_tty       ;1755 21 f1 1e
     jp l175eh           ;1758 c3 5e 17
 l175bh:
-    ld hl,l1ef6h        ;175b 21 f6 1e
+    ld hl,rdr_ptr       ;175b 21 f6 1e
 l175eh:
     ld b,h              ;175e 44
     ld c,l              ;175f 4d
@@ -3642,16 +3642,16 @@ l175eh:
     call print_eol
 
     ;PRINT " 7.  Default PUN: device :<tab>";
-    ld bc,l1efbh
+    ld bc,io_default_pun
     call print_str
 
     ld a,(5660h)        ;176c 3a 60 56
     and 30h             ;176f e6 30
     jp nz,l177ah        ;1771 c2 7a 17
-    ld hl,l1f17h        ;1774 21 17 1f
+    ld hl,pun_tty       ;1774 21 17 1f
     jp l177dh           ;1777 c3 7d 17
 l177ah:
-    ld hl,l1f1ch        ;177a 21 1c 1f
+    ld hl,pun_ptp       ;177a 21 1c 1f
 l177dh:
     ld b,h              ;177d 44
     ld c,l              ;177e 4d
@@ -3661,25 +3661,25 @@ l177dh:
     call print_eol
 
     ;PRINT " 8.  PET Printer type :   <tab>";
-    ld bc,l1f21h
+    ld bc,io_pet_prntr
     call print_str
 
     ld a,(566dh)        ;178b 3a 6d 56
     or a                ;178e b7
     jp nz,l1798h        ;178f c2 98 17
-    ld hl,l1f3dh        ;1792 21 3d 1f
+    ld hl,prntr_for_cbm3032 ;1792 21 3d 1f
     jp l17b7h           ;1795 c3 b7 17
 l1798h:
     ld a,(566dh)        ;1798 3a 6d 56
     cp 01h              ;179b fe 01
     jp nz,l17a6h        ;179d c2 a6 17
-    ld hl,l1f47h        ;17a0 21 47 1f
+    ld hl,prntr_dwheel  ;17a0 21 47 1f
     jp l17b7h           ;17a3 c3 b7 17
 l17a6h:
     ld a,(566dh)        ;17a6 3a 6d 56
     cp 02h              ;17a9 fe 02
     jp nz,l17b4h        ;17ab c2 b4 17
-    ld hl,l1f51h        ;17ae 21 51 1f
+    ld hl,prntr_cbm8032 ;17ae 21 51 1f
     jp l17b7h           ;17b1 c3 b7 17
 l17b4h:
     ld hl,l1f56h        ;17b4 21 56 1f
@@ -3695,7 +3695,7 @@ l17b7h:
     call print_eol
 
     ;PRINT "Alter which characteristic (1-8) ? ";
-    ld bc,l1f5bh
+    ld bc,alter_which_1_8
     call print_str
 
     ;GOSUB readline
@@ -3766,7 +3766,7 @@ l181fh:
     ld (l3029h),a       ;1822 32 29 30
 
     ;PRINT "New device # ? ";
-    ld bc,l1f7fh
+    ld bc,new_dev_num
     call print_str
 
     ;GOSUB readline
@@ -3844,7 +3844,7 @@ sub_1876h:
 
 sub_1879h:
     ;PRINT "Number of columns (1, 2 or 4) ? ";
-    ld bc,l1f8fh
+    ld bc,num_of_cols
     call print_str
 
     ;GOSUB readline
@@ -3908,7 +3908,7 @@ sub_18bah:
 
 sub_18c3h:
     ;PRINT "Screen type A(DM3A), H(Z1500), or T(V912) ? ";
-    ld bc,l1fb0h
+    ld bc,screen_type
     call print_str
 
     ;GOSUB readline
@@ -3956,7 +3956,7 @@ l18f4h:
 
 ask_leadin:
     ;PRINT "Lead-in code E(scape) or T(ilde) ? ";
-    ld bc,l1fddh
+    ld bc,esc_or_tilde
     call print_str
 
     ;GOSUB readline
@@ -4330,7 +4330,7 @@ l1a2ah:
 
 sub_1a2bh:
     ;PRINT "New clock frequency ? ";
-    ld bc,l2001h
+    ld bc,new_clock
     call print_str
 
     ;GOSUB readline
@@ -4360,33 +4360,33 @@ l1a46h:
     call print_eol
 
     ;PRINT "Pet terminal parameters";
-    ld bc,l2018h
+    ld bc,pet_params
     call print_str_eol
 
     ;PRINT "--- -------- ----------"
-    ld bc,l2030h
+    ld bc,pet_dashes
     call print_str_eol
 
     ;PRINT
     call print_eol
 
     ;PRINT "1.  Columns in DIR listing :  ";
-    ld bc,l2048h
+    ld bc,cols_in_dir
     call print_str
 
     ld a,(44b2h)        ;1a61 3a b2 44
     or a                ;1a64 b7
     jp nz,l1a6eh        ;1a65 c2 6e 1a
-    ld hl,l2067h        ;1a68 21 67 20
+    ld hl,cols_1        ;1a68 21 67 20
     jp l1a7fh           ;1a6b c3 7f 1a
 l1a6eh:
     ld a,(44b2h)        ;1a6e 3a b2 44
     cp 01h              ;1a71 fe 01
     jp nz,l1a7ch        ;1a73 c2 7c 1a
-    ld hl,l2067h+2      ;1a76 21 69 20
+    ld hl,cols_2        ;1a76 21 69 20
     jp l1a7fh           ;1a79 c3 7f 1a
 l1a7ch:
-    ld hl,206bh         ;1a7c 21 6b 20
+    ld hl,cols_4        ;1a7c 21 6b 20
 l1a7fh:
     ld b,h              ;1a7f 44
     ld c,l              ;1a80 4d
@@ -4396,16 +4396,16 @@ l1a7fh:
     call print_eol
 
     ;PRINT "2.  CRT in upper case mode :  ";
-    ld bc,l206dh
+    ld bc,crt_in_upper
     call print_str
 
     ld a,(5667h)        ;1a8d 3a 67 56
     and 80h             ;1a90 e6 80
     jp z,l1a9bh         ;1a92 ca 9b 1a
-    ld hl,l208ch        ;1a95 21 8c 20
+    ld hl,upper_yes     ;1a95 21 8c 20
     jp l1a9eh           ;1a98 c3 9e 1a
 l1a9bh:
-    ld hl,l2090h        ;1a9b 21 90 20
+    ld hl,upper_no      ;1a9b 21 90 20
 l1a9eh:
     ld b,h              ;1a9e 44
     ld c,l              ;1a9f 4d
@@ -4415,20 +4415,20 @@ l1a9eh:
     call print_eol
 
     ;PRINT "3.  CRT terminal emulation :  ";
-    ld bc,l2093h
+    ld bc,crt_term_emu
     call print_str
 
     ld a,(5667h)        ;1aac 3a 67 56
     and 7fh             ;1aaf e6 7f
     jp nz,l1abah        ;1ab1 c2 ba 1a
-    ld hl,l20b2h        ;1ab4 21 b2 20
+    ld hl,emu_adm3a     ;1ab4 21 b2 20
     jp l1af9h           ;1ab7 c3 f9 1a
 l1abah:
     ld a,(5667h)        ;1aba 3a 67 56
     and 7fh             ;1abd e6 7f
     cp 02h              ;1abf fe 02
     jp nz,l1acah        ;1ac1 c2 ca 1a
-    ld hl,l20b8h        ;1ac4 21 b8 20
+    ld hl,emu_tv912     ;1ac4 21 b8 20
     jp l1af9h           ;1ac7 c3 f9 1a
 l1acah:
     ld a,(5667h)        ;1aca 3a 67 56
@@ -4438,13 +4438,13 @@ l1acah:
     ld a,(5668h)        ;1ad4 3a 68 56
     cp 1bh              ;1ad7 fe 1b
     jp nz,l1ae2h        ;1ad9 c2 e2 1a
-    ld hl,l20beh        ;1adc 21 be 20
+    ld hl,emu_hz_esc    ;1adc 21 be 20
     jp l1af3h           ;1adf c3 f3 1a
 l1ae2h:
     ld a,(5668h)        ;1ae2 3a 68 56
     cp 7eh              ;1ae5 fe 7e
     jp nz,l1af0h        ;1ae7 c2 f0 1a
-    ld hl,l20dah        ;1aea 21 da 20
+    ld hl,emu_hz_tilde  ;1aea 21 da 20
     jp l1af3h           ;1aed c3 f3 1a
 l1af0h:
     ld hl,l20f5h        ;1af0 21 f5 20
@@ -4461,7 +4461,7 @@ l1af9h:
     call print_eol
 
     ;PRINT "4.  Clock frequency (Hz) :    ";
-    ld bc,l2103h
+    ld bc,clock_freq
     call print_str
 
     ;PRINT PEEK(&H6005)
@@ -4478,7 +4478,7 @@ l1af9h:
     call print_eol
 
     ;PRINT "Alter which (1-4) ? ";
-    ld bc,l2122h
+    ld bc,alter_which_1_4
     call print_str
 
     ;GOSUB readline
@@ -4550,235 +4550,235 @@ l1b6ch:
 
     ret                 ;1b6f c9
 
-l1b70h:
+new_char_len:
     db 1fh
     db "New charater length (5 to 8) ? "
 
-l1b90h:
+num_stop_bits:
     db 1fh
     db "Number of stop bits (1 or 2) ? "
 
-l1bb0h:
+odd_even_none:
     db 20h
     db "O(dd), E(ven), or N(o) parity ? "
 
-l1bd1h:
+ask_bauds:
     db 2ch
     db "110, 300, 1200, 4800, 9600, or 19200 baud ? "
 
-l1bfeh:
+rs232_chrs:
     db 16h
     db "RS232 Characteristics."
 
-l1c15h:
+rs232_dashes:
     db 16h
     db "----- ----------------"
 
-l1c2ch:
+rs232_1_chr:
     db 17h
     db " 1.  Character size :",tab,tab
 
-l1c44h:
+rs232_2_stop:
     db 1bh
     db " 2.  Number of stop bits :",tab
 
-l1c60h:
+stops_1:
     db 01h
     db "1"
 
-l1c62h:
+stops_1_5:
     db 03h
     db "1.5"
 
-l1c66h:
+stops_2:
     db 01h
     db "2"
 
-l1c68h:
+stops_undef:
     db 09h
     db "undefined"
 
-l1c72h:
+rs232_3_par:
     db 10h
     db " 3.  Parity :",tab,tab,tab
 
-l1c83h:
+parity_none:
     db 04h
     db "none"
 
-l1c88h:
+parity_even:
     db 04h
     db "even"
 
-l1c8dh:
+parity_odd:
     db 04h
     db "odd "
 
-l1c92h:
+parity_blank:
     db 04h
     db "    "
 
-l1c97h:
+rs232_4_baud:
     db 12h
     db " 4.  Baud rate :",tab,tab
 
-l1caah:
+baud_110:
     db 05h
     db "110  "
 
-l1cb0h:
+baud_300:
     db 05h
     db "300  "
 
-l1cb6h:
+baud_1200:
     db 05h
     db "1200 "
 
-l1cbch:
+baud_4800:
     db 05h
     db "4800 "
 
-l1cc2h:
+baud_9600:
     db 05h
     db "9600 "
 
-l1cc8h:
+baud_19200:
     db 05h
     db "19200"
 
-l1cceh:
+baud_blank:
     db 05h
     db "     "
 
-l1cd4h:
+alter_which:
     db 1dh
     db "Alter which characteristic ? "
 
-l1cf2h:
+tty_rs232:
     db 16h
     db "T(TY: -- RS232 printer"
 
-l1d09h:
+crt_pet_scrn:
     db 13h
     db "C(RT: -- PET screen"
 
-l1d1dh:
+lpt_pet:
     db 19h
     db "L(PT: -- PET IEEE printer"
 
-l1d37h:
+ul1_ascii:
     db 1bh
     db "U(L1: -- ASCII IEEE printer"
 
-l1d53h:
+which_list_dev:
     db 23h
     db "Which list device (T, C, L or U) ? "
 
-l1d77h:
+tty_or_ptr:
     db 13h
     db "T(TY:) or P(TR:) ? "
 
-l1d8bh:
+tty_or_ptp:
     db 13h
     db "T(TY:) or P(TP:) ? "
 
-l1d9fh:
+for_cbm3032:
     db 20h
     db "3 = 3022 or 3023 or 4022 or 4023"
 
-l1dc0h:
+for_cbm8024:
     db 08h
     db "8 = 8024"
 
-l1dc9h:
+for_dwheel:
     db 1dh
     db "D = 8026 or 8027 (Daisywheel)"
 
-l1de7h:
+which_printer:
     db 25h
     db "Which type of printer (3, 8, or D) ? "
 
-l1e0dh:
+io_dev_asgn:
     db 16h
     db "I/O Device Assignment."
 
-l1e24h:
+io_dashes:
     db 16h
     db "--- ------ -----------"
 
-l1e3bh:
+io_lpt_device:
     db 1ch
     db " 1.  PET Printer device # :",tab
 
-l1e58h:
+io_ul1_device:
     db 1bh
     db " 2.  ASCII list device # :",tab
 
-l1e74h:
+io_rdr_device:
     db 18h
     db " 3.  Reader device # :",tab,tab
 
-l1e8dh:
+io_pun_device:
     db 17h
     db " 4.  Punch device # :",tab,tab
 
-l1ea5h:
+io_lst_device:
     db 1bh
     db " 5.  Default LST: device :",tab
 
-l1ec1h:
+tty_colon:
     db 04h
     db "TTY:"
 
-l1ec6h:
+crt_colon:
     db 04h
     db "CRT:"
 
-l1ecbh:
+lpt_colon:
     db 04h
     db "LPT:"
 
-l1ed0h:
+blank_colon:
     db 04h
     db "   :"
 
-l1ed5h:
+io_default_rdr:
     db 1bh
     db " 6.  Default RDR: device :",tab
 
-l1ef1h:
+rdr_tty:
     db 04h
     db "TTY:"
 
-l1ef6h:
+rdr_ptr:
     db 04h
     db "PTR:"
 
-l1efbh:
+io_default_pun:
     db 1bh
     db " 7.  Default PUN: device :",tab
 
-l1f17h:
+pun_tty:
     db 04h
     db "TTY:"
 
-l1f1ch:
+pun_ptp:
     db 04h
     db "PTP:"
 
-l1f21h:
+io_pet_prntr:
     db 1bh
     db " 8.  PET Printer type :   ",tab
 
-l1f3dh:
+prntr_for_cbm3032:
     db 09h
     db "3022/4022"
 
-l1f47h:
+prntr_dwheel:
     db 09h
     db "8026/8027"
 
-l1f51h:
+prntr_cbm8032:
     db 04h
     db "8024"
 
@@ -4786,82 +4786,83 @@ l1f56h:
     db 04h
     db "    "
 
-l1f5bh:
+alter_which_1_8:
     db 23h
     db "Alter which characteristic (1-8) ? "
 
-l1f7fh:
+new_dev_num:
     db 0fh
     db "New device # ? "
 
-l1f8fh:
+num_of_cols:
     db 20h
     db "Number of columns (1, 2 or 4) ? "
 
-l1fb0h:
+screen_type:
     db 2ch
     db "Screen type A(DM3A), H(Z1500), or T(V912) ? "
 
-l1fddh:
+esc_or_tilde:
     db 23h
     db "Lead-in code E(scape) or T(ilde) ? "
 
-l2001h:
+new_clock:
     db 16h
     db "New clock frequency ? "
 
-l2018h:
+pet_params:
     db 17h
     db "Pet terminal parameters"
 
-l2030h:
+pet_dashes:
     db 17h
     db "--- -------- ----------"
 
-l2048h:
+cols_in_dir:
     db 1eh
     db "1.  Columns in DIR listing :  "
 
-
-l2067h:
+cols_1:
     db 01h
     db "1"
 
+cols_2:
     db 01h
     db "2"
 
+cols_4:
     db 01
     db "4"
 
-l206dh:
+crt_in_upper:
     db 1eh
     db "2.  CRT in upper case mode :  "
 
-l208ch:
+upper_yes:
     db 03h
     db "Yes"
 
-l2090h:
+upper_no:
     db 02h
     db "No"
 
-l2093h:
+crt_term_emu:
     db 1eh
     db "3.  CRT terminal emulation :  "
 
-l20b2h:
+emu_adm3a:
     db 05h
     db "ADM3A"
 
-l20b8h:
+emu_tv912:
     db 05h
     db "TV912"
 
-l20beh:
+emu_hz_esc:
     db 1bh
     db "HZ1500",tab,tab,tab,"(Lead-in = ESCAPE)"
 
-l20dah:
+emu_hz_tilde:
     db 1ah
     db "HZ1500",tab,tab,tab,"(Lead-in = TILDE)"
 
@@ -4873,11 +4874,11 @@ l20fch:
     db 06h
     db "      "
 
-l2103h:
+clock_freq:
     db 1eh
     db "4.  Clock frequency (Hz) :    "
 
-l2122h:
+alter_which_1_4:
     db 14h
     db "Alter which (1-4) ? "
 
