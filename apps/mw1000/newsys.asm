@@ -4008,22 +4008,24 @@ sub_1879h:
     ;PRINT
     call print_eol
 
-    ;IF (N-1) <> 0 THEN GOTO l1896h
+    ;IF N <> 1 THEN GOTO l1896h
     ld hl,(nn)
     dec hl
     ld a,h
     or l
     jp nz,l1896h
 
+    ;REM User selected 1 column directory
+
     ;POKE &H44b2, 0
-    ld hl,44b2h         ;188e 21 b2 44
-    ld (hl),00h         ;1891 36 00
+    ld hl,44b2h
+    ld (hl),0
 
     ;GOTO l18b9h
     jp l18b9h
 
 l1896h:
-    ;IF (N-2) <> 0 THEN GOTO l18a8h
+    ;IF N <> 2 THEN GOTO l18a8h
     ld hl,(nn)
     dec hl
     dec hl
@@ -4031,15 +4033,17 @@ l1896h:
     or l
     jp nz,l18a8h
 
+    ;REM User selected 2 column directory
+
     ;POKE &H44b2, 1
-    ld hl,44b2h         ;18a0 21 b2 44
-    ld (hl),01h         ;18a3 36 01
+    ld hl,44b2h
+    ld (hl),1
 
     ;GOTO l18b9h
     jp l18b9h
 
 l18a8h:
-    ;IF (N-4) <> 0 THEN GOTO l18b9h
+    ;IF N <> 4 THEN GOTO l18b9h
     ld bc,-4
     ld hl,(nn)
     add hl,bc
@@ -4047,9 +4051,11 @@ l18a8h:
     or l
     jp nz,l18b9h
 
+    ;REM User selected 4 column directory
+
     ;POKE &H44b2, 3
-    ld hl,44b2h         ;18b4 21 b2 44
-    ld (hl),03h         ;18b7 36 03
+    ld hl,44b2h
+    ld (hl),3
 
 l18b9h:
     ;RETURN
