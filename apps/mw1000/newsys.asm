@@ -1223,7 +1223,7 @@ l06cch:
     ld bc,corvus_space
     call print_str
 
-    ;IF PEEK(&H5670h+D) <> 2 THEN GOTO l06f0h
+    ;IF PEEK(&H5670+D) <> 2 THEN GOTO l06f0h
     ld a,(dd)
     ld l,a
     rla
@@ -1243,7 +1243,7 @@ l06cch:
     jp l0738h
 
 l06f0h:
-    ;IF PEEK(&H5670h+D) <> 3 THEN GOTO l06f0h
+    ;IF PEEK(&H5670+D) <> 3 THEN GOTO l06f0h
     ld a,(dd)
     ld l,a
     rla
@@ -1263,7 +1263,7 @@ l06f0h:
     jp l0738h
 
 l0707h:
-    ;IF PEEK(&H5670h+D) <> 4 THEN GOTO l06f0h
+    ;IF PEEK(&H5670+D) <> 4 THEN GOTO l06f0h
     ld a,(dd)
     ld l,a
     rla
@@ -1283,7 +1283,7 @@ l0707h:
     jp l0738h
 
 l071eh:
-    ;IF PEEK(&H5670h+D) <> 5 THEN GOTO l06f0h
+    ;IF PEEK(&H5670+D) <> 5 THEN GOTO l06f0h
     ld a,(dd)
     ld l,a
     rla
@@ -1664,7 +1664,7 @@ l08e8h:
 
     ;REM User selected 'C' for 8250
 
-    ;POKE &H5670h+D, 6 ' Store drive type 6 (CBM 8250)
+    ;POKE &H5670+D, 6 ' Store drive type 6 (CBM 8250)
     ld a,(dd)
     ld l,a
     rla
