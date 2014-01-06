@@ -410,7 +410,7 @@ l02ffh:
     ret                 ;02ff c9
 
 clear_screen:
-    ;PRINT CHR$(26) ' Clear screen
+    ;PRINT CHR$(26); ' Clear screen
     ld c,cls
     call print_char
 
@@ -1407,7 +1407,7 @@ l0780h:
     ld bc,spaces_paren
     call print_str
 
-    ;PRINT DEEK(&H5648+unit*2)  ' Total cylinders
+    ;PRINT DEEK(&H5648+unit*2);  ' Total cylinders
     ld a,(unit)         ;07b5 3a 18 30
     ld l,a              ;07b8 6f
     rla                 ;07b9 17
@@ -1523,7 +1523,7 @@ l07f8h:
     ld b,(hl)           ;084a 46
     call print_int      ;084b cd f6 01
 
-    ;PRINT " used)"
+    ;PRINT " used)";
     ld bc,used_paren
     call print_str
 
@@ -2979,7 +2979,7 @@ l1417h:
     ld bc,rs232_2_stop
     call print_str
 
-    ;stoptmp = PEEK(&H5664) AND &H40
+    ;stoptmp = PEEK(&H5664) AND &HC0
     ld a,(5664h)
     and 0c0h
     ld (stoptmp),a
@@ -3301,15 +3301,15 @@ sub_1567h:
     ;PRINT
     call print_eol
 
-    ;PRINT "T(TY: -- RS232 printer";
+    ;PRINT "T(TY: -- RS232 printer"
     ld bc,tty_rs232
     call print_str_eol
 
-    ;PRINT "C(RT: -- PET screen";
+    ;PRINT "C(RT: -- PET screen"
     ld bc,crt_pet_scrn
     call print_str_eol
 
-    ;PRINT "L(PT: -- PET IEEE printer";
+    ;PRINT "L(PT: -- PET IEEE printer"
     ld bc,lpt_pet
     call print_str_eol
 
@@ -3485,11 +3485,11 @@ sub_1645h:
     ;PRINT
     call print_eol
 
-    ;PRINT "3 = 3022 or 3023 or 4022 or 4023";
+    ;PRINT "3 = 3022 or 3023 or 4022 or 4023"
     ld bc,for_cbm3032
     call print_str_eol
 
-    ;PRINT "8 = 8024";
+    ;PRINT "8 = 8024"
     ld bc,for_cbm8024
     call print_str_eol
 
@@ -3950,7 +3950,7 @@ l1896h:
     jp l18b9h
 
 l18a8h:
-    ;IF (N-3) <> 0 THEN GOTO l18b9h
+    ;IF (N-4) <> 0 THEN GOTO l18b9h
     ld bc,-4
     ld hl,(nn)
     add hl,bc
@@ -4425,7 +4425,7 @@ l1a46h:
     ;PRINT
     call print_eol
 
-    ;PRINT "Pet terminal parameters";
+    ;PRINT "Pet terminal parameters"
     ld bc,pet_params
     call print_str_eol
 
