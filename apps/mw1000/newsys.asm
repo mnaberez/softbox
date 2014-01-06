@@ -2681,7 +2681,7 @@ ask_char_size:
     ld l,a              ;12b8 6f
     rla                 ;12b9 17
     sbc a,a             ;12ba 9f
-    ld bc,'5'           ;12bb 01 cb ff
+    ld bc,-'5'          ;12bb 01 cb ff
     ld h,a              ;12be 67
     add hl,bc           ;12bf 09
     ld (nn),hl          ;12c0 22 c8 24
