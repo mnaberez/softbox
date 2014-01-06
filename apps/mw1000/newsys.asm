@@ -2879,6 +2879,8 @@ l13a0h:
     or l
     jp nz,l13b4h
 
+    ;REM User selected 1200 baud
+
     ;POKE &H5665, &H77
     ld hl,5665h
     ld (hl),77h
@@ -2894,6 +2896,8 @@ l13b4h:
     ld a,h
     or l
     jp nz,l13c8h
+
+    ;REM User selected 4800 baud
 
     ;POKE &H5665, &HCC
     ld hl,5665h
@@ -2911,6 +2915,8 @@ l13c8h:
     or l
     jp nz,l13dch
 
+    ;REM User selected 9600 baud
+
     ;POKE &H5665, &HEE
     ld hl,5665h
     ld (hl),0eeh
@@ -2926,6 +2932,8 @@ l13dch:
     ld a,h
     or l
     jp nz,l13edh
+
+    ;REM User selected 19200 baud
 
     ;POKE &H5665, &HFF
     ld hl,5665h
