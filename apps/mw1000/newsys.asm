@@ -6068,23 +6068,23 @@ l3002h:
 l3004h:
     dw 0
 l3006h:
-    db 0
+    db 0                ;TODO Used by sub_0103h
 l3007h:
     db 0
 l3008h:
-    db 0
+    db 0                ;TODO Used by sub_011eh
 l3009h:
-    db 0
+    db 0                ;TODO Used by print_char
 l300ah:
-    dw 0
+    dw 0                ;TODO Used by print_str
 l300ch:
-    db 0
+    db 0                ;TODO Used by print_str
 l300dh:
-    dw 0
+    dw 0                ;TODO Used by print_str_eol
 l300fh:
-    dw 0
+    dw 0                ;TODO Used by sub_01bbh
 l3011h:
-    dw 0
+    dw 0                ;TODO Used by print_int
 l3013h:
     db 0
 l3014h:
