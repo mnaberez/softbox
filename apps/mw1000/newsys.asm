@@ -2979,32 +2979,54 @@ l1417h:
     ld bc,rs232_2_stop
     call print_str
 
-    ;IF (PEEK(&H5664) AND &H40) <> &H40 THEN GOTO l1441h
+    ;l3028h = PEEK(&H5664) AND &H40
     ld a,(5664h)
     and 0c0h
     ld (l3028h),a
+
+    ;IF l3028h <> &H40 THEN GOTO l1441h
     cp 40h
     jp nz,l1441h
 
-    ld hl,stops_1       ;143b 21 60 1c
-    jp l1460h           ;143e c3 60 14
+    ;REM 1 stop bit
+
+    ;<HL = pointer to "1">
+    ld hl,stops_1
+
+    ;GOTO l1460h
+    jp l1460h
 
 l1441h:
-    ld a,(l3028h)       ;1441 3a 28 30
-    cp 80h              ;1444 fe 80
-    jp nz,l144fh        ;1446 c2 4f 14
-    ld hl,stops_1_5     ;1449 21 62 1c
-    jp l1460h           ;144c c3 60 14
+    ;IF l3028h <> &H80 THEN GOTO l144fh
+    ld a,(l3028h)
+    cp 80h
+    jp nz,l144fh
+
+    ;REM 1.5 stop bits
+
+    ;<HL = pointer to "1.5">
+    ld hl,stops_1_5
+
+    ;GOTO l1460h
+    jp l1460h
 
 l144fh:
-    ld a,(l3028h)       ;144f 3a 28 30
-    cp 0c0h             ;1452 fe c0
-    jp nz,l145dh        ;1454 c2 5d 14
-    ld hl,stops_2       ;1457 21 66 1c
-    jp l1460h           ;145a c3 60 14
+    ;IF l3028h <> &HC0 THEN GOTO l145dh
+    ld a,(l3028h)
+    cp 0c0h
+    jp nz,l145dh
+
+    ;REM 2 stop bits
+
+    ;<HL = pointer to "2">
+    ld hl,stops_2
+
+    ;GOTO l1460h
+    jp l1460h
 
 l145dh:
-    ld hl,stops_undef   ;145d 21 68 1c
+    ;<HL = pointer to "undefined">
+    ld hl,stops_undef
 
 l1460h:
     ;PRINT <string at HL>
@@ -3190,65 +3212,87 @@ l1504h:
     call print_eol
 
     ;IF N <> 0 THEN GOTO l1521h
-    ld hl,(nn)          ;1518 2a c8 24
-    ld a,l              ;151b 7d
-    or h                ;151c b4
-    jp nz,l1521h        ;151d c2 21 15
+    ld hl,(nn)
+    ld a,l
+    or h
+    jp nz,l1521h
 
-    ret                 ;1520 c9
+    ;REM User did not enter a number
+
+    ;RETURN
+    ret
 
 l1521h:
-    ;IF (N-1) <> 0 THEN GOTO l1530h
-    ld hl,(nn)          ;1521 2a c8 24
-    dec hl              ;1524 2b
-    ld a,h              ;1525 7c
-    or l                ;1526 b5
-    jp nz,l1530h        ;1527 c2 30 15
+    ;IF N <> 1 THEN GOTO l1530h
+    ld hl,(nn)
+    dec hl
+    ld a,h
+    or l
+    jp nz,l1530h
 
-    call ask_char_size  ;152a cd a9 12
-    jp l1560h           ;152d c3 60 15
+    ;REM User selected 1 for Character size
+
+    ;GOSUB ask_char_size
+    call ask_char_size
+
+    ;GOTO l1560h
+    jp l1560h
 
 l1530h:
-    ;IF (N-2) <> 0 THEN GOTO l1540h
-    ld hl,(nn)          ;1530 2a c8 24
-    dec hl              ;1533 2b
-    dec hl              ;1534 2b
-    ld a,h              ;1535 7c
-    or l                ;1536 b5
-    jp nz,l1540h        ;1537 c2 40 15
+    ;IF N) <> 2 THEN GOTO l1540h
+    ld hl,(nn)
+    dec hl
+    dec hl
+    ld a,h
+    or l
+    jp nz,l1540h
 
-    call ask_stop_bits  ;153a cd ed 12
-    jp l1560h           ;153d c3 60 15
+    ;REM User selected 2 for Stop bits
+
+    ;GOSUB ask_stop_bits
+    call ask_stop_bits
+
+    ;GOTO l1560h
+    jp l1560h
 
 l1540h:
-    ;IF (N-3) <> 0 THEN GOTO l1551h
-    ld hl,(nn)          ;1540 2a c8 24
-    dec hl              ;1543 2b
-    dec hl              ;1544 2b
-    dec hl              ;1545 2b
-    ld a,h              ;1546 7c
-    or l                ;1547 b5
-    jp nz,l1551h        ;1548 c2 51 15
+    ;IF N <> 3 THEN GOTO l1551h
+    ld hl,(nn)
+    dec hl
+    dec hl
+    dec hl
+    ld a,h
+    or l
+    jp nz,l1551h
 
-    call ask_parity     ;154b cd 24 13
-    jp l1560h           ;154e c3 60 15
+    ;REM User selected 3 for Parity
+
+    ;GOSUB ask_parity
+    call ask_parity
+
+    ;GOTO l1560h
+    jp l1560h
 
 l1551h:
-    ;IF (N-4) <> 0 THEN GOTO l1560h
-    ld bc,-4            ;1551 01 fc ff
-    ld hl,(nn)          ;1554 2a c8 24
-    add hl,bc           ;1557 09
-    ld a,h              ;1558 7c
-    or l                ;1559 b5
-    jp nz,l1560h        ;155a c2 60 15
+    ;IF N <> 4 THEN GOTO l1560h
+    ld bc,-4
+    ld hl,(nn)
+    add hl,bc
+    ld a,h
+    or l
+    jp nz,l1560h
 
-    call ask_baud_rate  ;155d cd 69 13
+    ;REM User selected 4 for Baud rate
+
+    ;GOSUB ask_baud_rate
+    call ask_baud_rate
 
 l1560h:
     ;GOTO l13eeh
-    jp l13eeh           ;1560 c3 ee 13
+    jp l13eeh
 
-    ret                 ;1563 c9
+    ;RETURN
+    ret
 
 sub_1564h:
     jp l1697h           ;1564 c3 97 16
