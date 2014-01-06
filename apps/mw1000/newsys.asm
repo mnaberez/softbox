@@ -69,7 +69,7 @@ sub_0113h:
     ret                 ;011d c9
 
 sub_011eh:
-    ld a,(l2423h)       ;011e 3a 23 24
+    ld a,(cbmdos_sector);011e 3a 23 24
     or a                ;0121 b7
     jp z,l0162h         ;0122 ca 62 01
 
@@ -113,7 +113,7 @@ l015fh:
     call print_eol
 
 l0162h:
-    ld a,(l2423h)       ;0162 3a 23 24
+    ld a,(cbmdos_sector);0162 3a 23 24
     ret                 ;0165 c9
     ret                 ;0166 c9
 
@@ -4980,14 +4980,14 @@ exsys:
 rdsys:
 ;Read the "CP/M" and "K" files from an IEEE-488 drive into memory.
     ld a,c
-    ld (l2422h),a
+    ld (cbmdos_track),a
     call dskdev         ;Get device address for a CP/M drive number
     ld e,00h
     push de
-    call sub_221ch
-    ld a,(l2422h)
+    call open_cpm
+    ld a,(cbmdos_track)
     call dsksta         ;Read the error channel of an IEEE-488 device
-    ld (l2423h),a
+    ld (cbmdos_sector),a
     ld hl,4000h
     ld bc,1c00h
     pop de
@@ -5009,10 +5009,10 @@ l2168h:
     call close          ;Close an open file on an IEEE-488 device
     pop de
     push de
-    call sub_222eh
-    ld a,(l2422h)
+    call open_k
+    ld a,(cbmdos_track)
     call dsksta         ;Read the error channel of an IEEE-488 device
-    ld (l2423h),a
+    ld (cbmdos_sector),a
     ld hl,6000h
     ld bc,0800h
     pop de
@@ -5031,9 +5031,9 @@ l2195h:
     call untalk         ;Send UNTALK to all IEEE-488 devices
     pop de
     call close          ;Close an open file on an IEEE-488 device
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     call dsksta         ;Read the error channel of an IEEE-488 device
-    ld (l2423h),a
+    ld (cbmdos_sector),a
     ret
 
 cread_:
@@ -5105,21 +5105,21 @@ cwrit3:
     pop hl
     jp l23b7h
 
-sub_221ch:
+open_cpm:
 ;Open "CP/M" file on an IEEE-488 drive
     ld c,l2410h_len
     ld hl,l2410h        ;"0:CP/M"
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     rra
     jp nc,open          ;Open a file on an IEEE-488 device
     ld hl,l2416h        ;"1:CP/M"
     jp open             ;Open a file on an IEEE-488 device
 
-sub_222eh:
+open_k:
 ;Open "K" file on an IEEE-488 drive
     ld c,l241ch_len
     ld hl,l241ch        ;"0:K"
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     rra
     jp nc,open          ;Open a file on an IEEE-488 device
     ld hl,l241fh        ;"1:K"
@@ -5128,30 +5128,30 @@ sub_222eh:
 savesy:
 ;Read the CP/M system image from an IEEE-488 drive.
     ld a,c
-    ld (l2422h),a
+    ld (cbmdos_track),a
     call dskdev         ;Get device address for a CP/M drive number
     push de
     ld e,0fh
     ld hl,l2408h        ;"S0:*"
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     rra
     jr nc,l2256h
     ld hl,l240ch        ;"S1:*"
 l2256h:
     ld c,l2408h_len
     call open           ;Open a file on an IEEE-488 device
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     call dsksta         ;Read the error channel of an IEEE-488 device
-    ld (l2423h),a
+    ld (cbmdos_sector),a
     pop de
     cp 01h
     ret nz
     ld e,01h
     push de
-    call sub_222eh
-    ld a,(l2422h)
+    call open_k
+    ld a,(cbmdos_track)
     call dsksta         ;Read the error channel of an IEEE-488 device
-    ld (l2423h),a
+    ld (cbmdos_sector),a
     pop de
     or a
     ret nz
@@ -5173,10 +5173,10 @@ l2284h:
     call close          ;Close an open file on an IEEE-488 device
     pop de
     push de
-    call sub_221ch
-    ld a,(l2422h)
+    call open_cpm
+    ld a,(cbmdos_track)
     call dsksta         ;Read the error channel of an IEEE-488 device
-    ld (l2423h),a
+    ld (cbmdos_sector),a
     pop de
     or a
     ret nz
@@ -5195,17 +5195,17 @@ l22b1h:
     call unlisten       ;Send UNLISTEN to all IEEE-488 devices
     pop de
     call close          ;Close an open file on an IEEE-488 device
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     call dsksta         ;Read the error channel of an IEEE-488 device
-    ld (l2423h),a
+    ld (cbmdos_sector),a
     ret
 
 format:
 ;Format an IEEE-488 drive for SoftBox use.
     ld a,c
-    ld (l2422h),a
+    ld (cbmdos_track),a
     call dskdev         ;Get device address for a CP/M drive number
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     and 01h
     add a,'0'
     ld (l23e3h+1),a
@@ -5213,12 +5213,12 @@ format:
     ld c,l23e3h_len
     ld hl,l23e3h        ;"N0:CP/M V2.2 DISK,XX"
     call open           ;Open a file on an IEEE-488 device
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     call dsksta         ;Read the error channel of an IEEE-488 device
-    ld (l2423h),a
+    ld (cbmdos_sector),a
     or a
     ret nz
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     call idrive         ;Initialize an IEEE-488 disk drive
     ld hl,4000h
     ld de,4001h
@@ -5232,9 +5232,9 @@ format:
 l230fh:
 ;Clear the CP/M directory by filling it with E5 ("unused").
     call sub_2325h
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     call dsksta         ;Read the error channel of an IEEE-488 device
-    ld (l2423h),a
+    ld (cbmdos_sector),a
     or a
     ret nz
     ld hl,l2407h
@@ -5246,7 +5246,7 @@ sub_2325h:
 ;Write a sector to an IEEE-488 drive.
     ld hl,l23feh        ;"M-W",00h,13h,01h
     ld c,l23feh_len
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     call diskcmd        ;Open the command channel on IEEE-488 device
     call ieeemsg        ;Send string to the current IEEE-488 device
     ld a,(4000h)
@@ -5254,12 +5254,12 @@ sub_2325h:
     call unlisten       ;Send UNLISTEN to all IEEE-488 devices
     ld hl,l23f7h        ;"B-P 2 1"
     ld c,l23f7h_len
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     call diskcmd        ;Open the command channel on IEEE-488 device
     call ieeemsg        ;Send string to the current IEEE-488 device
     call creoi          ;Send carriage return to IEEE-488 dev with EOI
     call unlisten       ;Send UNLISTEN to all IEEE-488 devices
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     call dskdev         ;Get device address for a CP/M drive number
     ld e,02h
     call listen         ;Send LISTEN to an IEEE-488 device
@@ -5267,12 +5267,12 @@ sub_2325h:
     ld c,0ffh
     call ieeemsg        ;Send string to the current IEEE-488 device
     call unlisten       ;Send UNLISTEN to all IEEE-488 devices
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     call diskcmd        ;Open the command channel on IEEE-488 device
     ld hl,l23deh        ;"U2 2 "
     ld c,l23deh_len
     call ieeemsg        ;Send string to the current IEEE-488 device
-    ld a,(l2422h)
+    ld a,(cbmdos_track)
     and 01h
     add a,'0'
     call wrieee         ;Send byte to an IEEE-488 device
@@ -5363,10 +5363,10 @@ l241ch_len: equ $-l241ch
 l241fh:
     db "1:K"
 
-l2422h:
-    db 0
-l2423h:
-    db 0
+cbmdos_track:
+    db 0                ;CBM DOS track number
+cbmdos_sector:
+    db 0                ;CBM DOS sector number
 
 ; End of LOADSAV2.REL =======================================================
 
