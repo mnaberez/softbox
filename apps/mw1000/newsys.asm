@@ -3757,57 +3757,79 @@ l17b7h:
     ret
 
 l17d7h:
-    ;IF (N-5) <> 0 THEN GOTO l17e9h
-    ld bc,-5            ;17d7 01 fb ff
-    ld hl,(nn)          ;17da 2a c8 24
-    add hl,bc           ;17dd 09
-    ld a,h              ;17de 7c
-    or l                ;17df b5
-    jp nz,l17e9h        ;17e0 c2 e9 17
+    ;IF N <> 5 THEN GOTO l17e9h
+    ld bc,-5
+    ld hl,(nn)
+    add hl,bc
+    ld a,h
+    or l
+    jp nz,l17e9h
 
-    call sub_1567h      ;17e3 cd 67 15
-    jp l1872h           ;17e6 c3 72 18
+    ;REM User selected 5. Default LST: device
+
+    ;GOSUB sub_1567h
+    call sub_1567h
+
+    ;GOTO l1872h
+    jp l1872h
 
 l17e9h:
-    ;IF (N-6) <> 0 THEN GOTO l15e1h
-    ld bc,-6            ;17e9 01 fa ff
-    ld hl,(nn)          ;17ec 2a c8 24
-    add hl,bc           ;17ef 09
-    ld a,h              ;17f0 7c
-    or l                ;17f1 b5
-    jp nz,l17fbh        ;17f2 c2 fb 17
+    ;IF N <> 6 THEN GOTO l15e1h
+    ld bc,-6
+    ld hl,(nn)
+    add hl,bc
+    ld a,h
+    or l
+    jp nz,l17fbh
 
-    call sub_15e1h      ;17f5 cd e1 15
-    jp l1872h           ;17f8 c3 72 18
+    ;REM User selected 6. Default RDR: device
+
+    ;GOSUB sub_15e1h
+    call sub_15e1h
+
+    ;GOTO l1872h
+    jp l1872h
 
 l17fbh:
-    ;IF (N-7) <> 0 THEN GOTO l180dh
-    ld bc,-7            ;17fb 01 f9 ff
-    ld hl,(nn)          ;17fe 2a c8 24
-    add hl,bc           ;1801 09
-    ld a,h              ;1802 7c
-    or l                ;1803 b5
-    jp nz,l180dh        ;1804 c2 0d 18
+    ;IF N <> 7 THEN GOTO l180dh
+    ld bc,-7
+    ld hl,(nn)
+    add hl,bc
+    ld a,h
+    or l
+    jp nz,l180dh
 
-    call sub_1613h      ;1807 cd 13 16
-    jp l1872h           ;180a c3 72 18
+    ;REM User selected 7. Default PUN: device
+
+    ;GOSUB sub_1613h
+    call sub_1613h
+
+    ;GOTO l1872h
+    jp l1872h
 
 l180dh:
-    ;IF (N-8) <> 0 THEN GOTO l180dh
-    ld bc,-8            ;180d 01 f8 ff
-    ld hl,(nn)          ;1810 2a c8 24
-    add hl,bc           ;1813 09
-    ld a,h              ;1814 7c
-    or l                ;1815 b5
-    jp nz,l181fh        ;1816 c2 1f 18
+    ;IF N <> 8 THEN GOTO l180dh
+    ld bc,-8
+    ld hl,(nn)
+    add hl,bc
+    ld a,h
+    or l
+    jp nz,l181fh
 
-    call sub_1645h      ;1819 cd 45 16
-    jp l1872h           ;181c c3 72 18
+    ;REM User selected 8. PET Printer type
+
+    ;GOSUB sub_1645h
+    call sub_1645h
+
+    ;GOTO l1872h
+    jp l1872h
 
 l181fh:
+    ;REM User selected 1-4 (device numbers)
+
     ;l3029h = N
-    ld a,(nn)           ;181f 3a c8 24
-    ld (l3029h),a       ;1822 32 29 30
+    ld a,(nn)
+    ld (l3029h),a
 
     ;PRINT "New device # ? ";
     ld bc,new_dev_num
