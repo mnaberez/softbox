@@ -4062,10 +4062,15 @@ l18b9h:
     ret
 
 sub_18bah:
-    ld a,(5667h)        ;18ba 3a 67 56
-    xor 80h             ;18bd ee 80
-    ld (5667h),a        ;18bf 32 67 56
-    ret                 ;18c2 c9
+    ;REM Flip uppercase mode
+
+    ;POKE &H5667, PEEK(&H5667) XOR &H80
+    ld a,(5667h)
+    xor 80h
+    ld (5667h),a
+
+    ;RETURN
+    ret
 
 sub_18c3h:
     ;PRINT "Screen type A(DM3A), H(Z1500), or T(V912) ? ";
