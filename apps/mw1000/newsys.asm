@@ -4562,59 +4562,76 @@ l1af9h:
     ret
 
 l1b2dh:
-    ;IF (N-1) <> 0 THEN GOTO l1b3ch
-    ld hl,(nn)          ;1b2d 2a c8 24
-    dec hl              ;1b30 2b
-    ld a,h              ;1b31 7c
-    or l                ;1b32 b5
-    jp nz,l1b3ch        ;1b33 c2 3c 1b
+    ;IF N <> 1 THEN GOTO l1b3ch
+    ld hl,(nn)
+    dec hl
+    ld a,h
+    or l
+    jp nz,l1b3ch
 
-    call sub_1879h      ;1b36 cd 79 18
+    ;REM User selected 1. Columns in DIR listing
 
-    jp l1b6ch           ;1b39 c3 6c 1b
+    ;GOSUB sub_1879h
+    call sub_1879h
+
+    ;GOTO l1b6ch
+    jp l1b6ch
 
 l1b3ch:
-    ;IF (N-2) <> 0 THEN GOTO l1b4ch
-    ld hl,(nn)          ;1b3c 2a c8 24
-    dec hl              ;1b3f 2b
-    dec hl              ;1b40 2b
-    ld a,h              ;1b41 7c
-    or l                ;1b42 b5
-    jp nz,l1b4ch        ;1b43 c2 4c 1b
+    ;IF N <> 2 THEN GOTO l1b4ch
+    ld hl,(nn)
+    dec hl
+    dec hl
+    ld a,h
+    or l
+    jp nz,l1b4ch
 
-    call sub_18bah      ;1b46 cd ba 18
+    ;REM User selected 2. CRT in uppercase mode
 
-    jp l1b6ch           ;1b49 c3 6c 1b
+    ;GOSUB sub_18bah
+    call sub_18bah
+
+    ;GOTO l1b6ch
+    jp l1b6ch
 
 l1b4ch:
-    ;IF (N-3) <> 0 THEN GOTO l1b5dh
-    ld hl,(nn)          ;1b4c 2a c8 24
-    dec hl              ;1b4f 2b
-    dec hl              ;1b50 2b
-    dec hl              ;1b51 2b
-    ld a,h              ;1b52 7c
-    or l                ;1b53 b5
-    jp nz,l1b5dh        ;1b54 c2 5d 1b
+    ;IF N <> 3 THEN GOTO l1b5dh
+    ld hl,(nn)
+    dec hl
+    dec hl
+    dec hl
+    ld a,h
+    or l
+    jp nz,l1b5dh
 
-    call sub_18c3h      ;1b57 cd c3 18
+    ;REM User selected 3. CRT terminal emulation
 
-    jp l1b6ch           ;1b5a c3 6c 1b
+    ;GOSUB sub_18c3h
+    call sub_18c3h
+
+    ;GOTO l1b6ch
+    jp l1b6ch
 
 l1b5dh:
-    ;IF (N-4) <> 0 THEN GOTO l1b6ch
-    ld bc,-4            ;1b5d 01 fc ff
-    ld hl,(nn)          ;1b60 2a c8 24
-    add hl,bc           ;1b63 09
-    ld a,h              ;1b64 7c
-    or l                ;1b65 b5
-    jp nz,l1b6ch        ;1b66 c2 6c 1b
+    ;IF N <> 4 THEN GOTO l1b6ch
+    ld bc,-4
+    ld hl,(nn)
+    add hl,bc
+    ld a,h
+    or l
+    jp nz,l1b6ch
 
-    call sub_1a2bh      ;1b69 cd 2b 1a
+    ;REM User selected 4. Clock frequency
+
+    ;GOSUB sub_1a2bh
+    call sub_1a2bh
 
 l1b6ch:
-    jp l1a46h           ;1b6c c3 46 1a
+    ;GOTO l1a46h
+    jp l1a46h
 
-    ret                 ;1b6f c9
+    ;RETURN
+    ret
 
 new_char_len:
     db 1fh
