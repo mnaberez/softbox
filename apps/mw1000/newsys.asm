@@ -4529,23 +4529,44 @@ l1a46h:
     ld bc,cols_in_dir
     call print_str
 
-    ld a,(44b2h)        ;1a61 3a b2 44
-    or a                ;1a64 b7
-    jp nz,l1a6eh        ;1a65 c2 6e 1a
-    ld hl,cols_1        ;1a68 21 67 20
-    jp l1a7fh           ;1a6b c3 7f 1a
+    ;IF PEEK(&H44B2) <> 0 THEN GOTO l1a6eh
+    ld a,(44b2h)
+    or a
+    jp nz,l1a6eh
+
+    ;REM Columns in DIR listing set to 1
+
+    ;<HL = pointer to "1">
+    ld hl,cols_1
+
+    ;GOTO l1a7fh
+    jp l1a7fh
+
 l1a6eh:
-    ld a,(44b2h)        ;1a6e 3a b2 44
-    cp 01h              ;1a71 fe 01
-    jp nz,l1a7ch        ;1a73 c2 7c 1a
-    ld hl,cols_2        ;1a76 21 69 20
-    jp l1a7fh           ;1a79 c3 7f 1a
+    ;IF PEEK(&H44b2) <> 1 THEN GOTO l1a7ch
+    ld a,(44b2h)
+    cp 01h
+    jp nz,l1a7ch
+
+    ;REM Columns in DIR listing set to 1
+
+    ;<HL = pointer to "2">
+    ld hl,cols_2
+
+    ;GOTO l1a7fh
+    jp l1a7fh
+
 l1a7ch:
-    ld hl,cols_4        ;1a7c 21 6b 20
+    ;REM Columns in DIR listing set to 4
+
+    ;<HL = pointer to "4">
+    ld hl,cols_4
+
 l1a7fh:
-    ld b,h              ;1a7f 44
-    ld c,l              ;1a80 4d
-    call print_str_eol  ;1a81 cd a9 01
+    ;PRINT <string at HL>
+    ld b,h
+    ld c,l
+    call print_str_eol
 
     ;PRINT
     call print_eol
@@ -4554,17 +4575,30 @@ l1a7fh:
     ld bc,crt_in_upper
     call print_str
 
-    ld a,(5667h)        ;1a8d 3a 67 56
-    and 80h             ;1a90 e6 80
-    jp z,l1a9bh         ;1a92 ca 9b 1a
-    ld hl,upper_yes     ;1a95 21 8c 20
-    jp l1a9eh           ;1a98 c3 9e 1a
+    ;IF (PEEK(&H5667) AND &H80) = 0 THEN GOTO l1a9bh
+    ld a,(5667h)
+    and 80h
+    jp z,l1a9bh
+
+    ;REM CRT is in uppercase mode
+
+    ;<HL = pointer to "yes">
+    ld hl,upper_yes
+
+    ;GOTO l1a9eh
+    jp l1a9eh
+
 l1a9bh:
-    ld hl,upper_no      ;1a9b 21 90 20
+    ;REM CRT is not in uppercase mode
+
+    ;<HL = pointer to "no">
+    ld hl,upper_no
+
 l1a9eh:
-    ld b,h              ;1a9e 44
-    ld c,l              ;1a9f 4d
-    call print_str_eol  ;1aa0 cd a9 01
+    ;PRINT <string at HL>
+    ld b,h
+    ld c,l
+    call print_str_eol
 
     ;PRINT
     call print_eol
@@ -4573,44 +4607,91 @@ l1a9eh:
     ld bc,crt_term_emu
     call print_str
 
-    ld a,(5667h)        ;1aac 3a 67 56
-    and 7fh             ;1aaf e6 7f
-    jp nz,l1abah        ;1ab1 c2 ba 1a
-    ld hl,emu_adm3a     ;1ab4 21 b2 20
-    jp l1af9h           ;1ab7 c3 f9 1a
+    ;IF (PEEK(&H5667) AND &H7F) <> 0 THEN GOTO l1abah
+    ld a,(5667h)
+    and 7fh
+    jp nz,l1abah
+
+    ;REM CRT terminal emulation is ADM-3A
+
+    ;<HL = pointer to "ADM3A">
+    ld hl,emu_adm3a
+
+    ;GOTO l1af9h
+    jp l1af9h
+
 l1abah:
-    ld a,(5667h)        ;1aba 3a 67 56
-    and 7fh             ;1abd e6 7f
-    cp 02h              ;1abf fe 02
-    jp nz,l1acah        ;1ac1 c2 ca 1a
-    ld hl,emu_tv912     ;1ac4 21 b8 20
-    jp l1af9h           ;1ac7 c3 f9 1a
+    ;IF (PEEK(&H5667) AND &H7F) <> 2 THEN GOTO l1acah
+    ld a,(5667h)
+    and 7fh
+    cp 02h
+    jp nz,l1acah
+
+    ;REM CRT terminal emulation is TV-912
+
+    ;<HL = pointer to "TV912">
+    ld hl,emu_tv912
+
+    ;GOTO l1af9h
+    jp l1af9h
+
 l1acah:
-    ld a,(5667h)        ;1aca 3a 67 56
-    and 7fh             ;1acd e6 7f
-    cp 01h              ;1acf fe 01
-    jp nz,l1af6h        ;1ad1 c2 f6 1a
-    ld a,(5668h)        ;1ad4 3a 68 56
-    cp 1bh              ;1ad7 fe 1b
-    jp nz,l1ae2h        ;1ad9 c2 e2 1a
-    ld hl,emu_hz_esc    ;1adc 21 be 20
-    jp l1af3h           ;1adf c3 f3 1a
+    ;IF (PEEK(&H5667) AND &H7F) <> 1 THEN GOTO l1af6h
+    ld a,(5667h)
+    and 7fh
+    cp 01h
+    jp nz,l1af6h
+
+    ;REM CRT terminal emulation is HZ1500 (may be ESC or tilde lead-in)
+
+    ;IF PEEK(5668h) <> &H1B THEN GOTO l1ae2h
+    ld a,(5668h)
+    cp 1bh
+    jp nz,l1ae2h
+
+    ;REM CRT terminal emulation is HZ1500 (ESC lead-in)
+
+    ;<HL = pointer to "HZ1500<tab><tab><tab>(Lead-in = ESCAPE)"
+    ld hl,emu_hz_esc
+
+    ;GOTO l1af3h
+    jp l1af3h
+
 l1ae2h:
-    ld a,(5668h)        ;1ae2 3a 68 56
-    cp 7eh              ;1ae5 fe 7e
-    jp nz,l1af0h        ;1ae7 c2 f0 1a
-    ld hl,emu_hz_tilde  ;1aea 21 da 20
-    jp l1af3h           ;1aed c3 f3 1a
+    ;IF PEEK(&H5668) <> &H7E THEN GOTO l1af0h
+    ld a,(5668h)
+    cp 7eh
+    jp nz,l1af0h
+
+    ;REM CRT terminal emulation is HZ1500 (tilde lead-in)
+
+    ;<HL = pointer to "HZ1500<tab><tab><tab>(Lead-in = TILDE)"
+    ld hl,emu_hz_tilde
+
+    ;GOTO l1af3h
+    jp l1af3h
+
 l1af0h:
-    ld hl,l20f5h        ;1af0 21 f5 20
+    ;REM CRT terminal emulation is HZ1500 but unknown lead-in
+
+    ;<HL = pointer to "      ">
+    ld hl,emu_hz_blank
+
 l1af3h:
-    jp l1af9h           ;1af3 c3 f9 1a
+    ;GOTO l1af9h
+    jp l1af9h
+
 l1af6h:
-    ld hl,l20fch        ;1af6 21 fc 20
+    ;REM CRT terminal emulation is unknown
+
+    ;<HL = pointer to "      ">
+    ld hl,emu_blank
+
 l1af9h:
-    ld b,h              ;1af9 44
-    ld c,l              ;1afa 4d
-    call print_str_eol  ;1afb cd a9 01
+    ;PRINT <string at HL>
+    ld b,h
+    ld c,l
+    call print_str_eol
 
     ;PRINT
     call print_eol
@@ -5038,11 +5119,11 @@ emu_hz_tilde:
     db 1ah
     db "HZ1500",tab,tab,tab,"(Lead-in = TILDE)"
 
-l20f5h:
+emu_hz_blank:
     db 06h
     db "      "
 
-l20fch:
+emu_blank:
     db 06h
     db "      "
 
