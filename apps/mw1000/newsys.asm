@@ -697,8 +697,8 @@ ask_drv_heads:
     ;GOSUB readline
     call readline
 
-    ;TODO: This is a bug.  There should be a "call print_eol" here.
-    ;The next prompt will be written over the current line.
+    ;REM TODO: This is a bug.  There should be a "call print_eol" here.
+    ;REM The next prompt will be written over the current line.
 
     ;heads = N
     ld a,(nn)
@@ -735,8 +735,8 @@ ask_drv_cyl:
     ;GOSUB readline
     call readline
 
-    ;TODO: This is a bug.  There should be a "call print_eol" here.
-    ;The next prompt will be written over the current line.
+    ;REM TODO: This is a bug.  There should be a "call print_eol" here.
+    ;REM The next prompt will be written over the current line.
 
     ;cylinders = N
     ld hl,(nn)
