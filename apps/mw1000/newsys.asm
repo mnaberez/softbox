@@ -3642,31 +3642,60 @@ l1697h:
     ld bc,io_lst_device
     call print_str
 
-    ld a,(5660h)        ;170e 3a 60 56
-    and 0c0h            ;1711 e6 c0
-    jp nz,l171ch        ;1713 c2 1c 17
-    ld hl,tty_colon     ;1716 21 c1 1e
-    jp l173fh           ;1719 c3 3f 17
+    ;IF (PEEK(&H5660) AND &HC0) <> 0 THEN GOTO l171ch
+    ld a,(5660h)
+    and 0c0h
+    jp nz,l171ch
+
+    ;REM Default LST: device is TTY:
+
+    ;<HL = pointer to "TTY:">
+    ld hl,lst_tty
+
+    ;GOTO l173fh
+    jp l173fh
+
 l171ch:
-    ld a,(5660h)        ;171c 3a 60 56
-    and 0c0h            ;171f e6 c0
-    cp 40h              ;1721 fe 40
-    jp nz,l172ch        ;1723 c2 2c 17
-    ld hl,crt_colon     ;1726 21 c6 1e
-    jp l173fh           ;1729 c3 3f 17
+    ;IF (PEEK(&H5660) AND &HC0) <> &H40 THEN GOTO l172ch
+    ld a,(5660h)
+    and 0c0h
+    cp 40h
+    jp nz,l172ch
+
+    ;REM Default LST: device is CRT:
+
+    ;<HL = pointer to "CRT:">
+    ld hl,lst_crt
+
+    ;GOTO l173fh
+    jp l173fh
+
 l172ch:
-    ld a,(5660h)        ;172c 3a 60 56
-    and 0c0h            ;172f e6 c0
-    cp 80h              ;1731 fe 80
-    jp nz,l173ch        ;1733 c2 3c 17
-    ld hl,lpt_colon     ;1736 21 cb 1e
-    jp l173fh           ;1739 c3 3f 17
+    ;IF (PEEK(&H5660) AND &HC0) <> &H80 THEN GOTO l173ch
+    ld a,(5660h)
+    and 0c0h
+    cp 80h
+    jp nz,l173ch
+
+    ;REM Default LST: device is LPT:
+
+    ;<HL = pointer to "LPT:">
+    ld hl,lst_lpt
+
+    ;GOTO l173fh
+    jp l173fh
+
 l173ch:
-    ld hl,blank_colon   ;173c 21 d0 1e
+    ;REM Default LST: device is unknown
+
+    ;<HL = pointer to "   :">
+    ld hl,lst_blank
+
 l173fh:
-    ld b,h              ;173f 44
-    ld c,l              ;1740 4d
-    call print_str_eol  ;1741 cd a9 01
+    ;PRINT <string at HL>
+    ld b,h
+    ld c,l
+    call print_str_eol
 
     ;PRINT
     call print_eol
@@ -3675,17 +3704,30 @@ l173fh:
     ld bc,io_default_rdr
     call print_str
 
-    ld a,(5660h)        ;174d 3a 60 56
-    and 0ch             ;1750 e6 0c
-    jp nz,l175bh        ;1752 c2 5b 17
-    ld hl,rdr_tty       ;1755 21 f1 1e
-    jp l175eh           ;1758 c3 5e 17
+    ;IF (PEEK(&H5660) AND &H0C) <> 0 THEN GOTO l175bh
+    ld a,(5660h)
+    and 0ch
+    jp nz,l175bh
+
+    ;REM Default RDR: device is TTY:
+
+    ;<HL = pointer to "TTY:">
+    ld hl,rdr_tty
+
+    ;GOTO l175eh
+    jp l175eh
+
 l175bh:
-    ld hl,rdr_ptr       ;175b 21 f6 1e
+    ;REM Default RDR: device is PTR:
+
+    ;<HL = pointer to "PTR:">
+    ld hl,rdr_ptr
+
 l175eh:
-    ld b,h              ;175e 44
-    ld c,l              ;175f 4d
-    call print_str_eol  ;1760 cd a9 01
+    ;PRINT <string at HL>
+    ld b,h
+    ld c,l
+    call print_str_eol
 
     ;PRINT
     call print_eol
@@ -3694,17 +3736,30 @@ l175eh:
     ld bc,io_default_pun
     call print_str
 
-    ld a,(5660h)        ;176c 3a 60 56
-    and 30h             ;176f e6 30
-    jp nz,l177ah        ;1771 c2 7a 17
-    ld hl,pun_tty       ;1774 21 17 1f
-    jp l177dh           ;1777 c3 7d 17
+    ;IF (PEEK(&H5660) AND &H30) <> 0 THEN GOTO l177ah
+    ld a,(5660h)
+    and 30h
+    jp nz,l177ah
+
+    ;REM Default PUN: device is TTY:
+
+    ;<HL = pointer to "TTY:">
+    ld hl,pun_tty
+
+    ;GOTO l177dh
+    jp l177dh
+
 l177ah:
-    ld hl,pun_ptp       ;177a 21 1c 1f
+    ;REM Default PUN: device is PTP:
+
+    ;<HL = pointer to "PTP:">
+    ld hl,pun_ptp
+
 l177dh:
-    ld b,h              ;177d 44
-    ld c,l              ;177e 4d
-    call print_str_eol  ;177f cd a9 01
+    ;PRINT <string at HL>
+    ld b,h
+    ld c,l
+    call print_str_eol
 
     ;PRINT
     call print_eol
@@ -3713,29 +3768,58 @@ l177dh:
     ld bc,io_pet_prntr
     call print_str
 
-    ld a,(566dh)        ;178b 3a 6d 56
-    or a                ;178e b7
-    jp nz,l1798h        ;178f c2 98 17
-    ld hl,prntr_for_cbm3032 ;1792 21 3d 1f
-    jp l17b7h           ;1795 c3 b7 17
+    ;IF PEEK(&H566D) <> 0 THEN GOTO l1798h
+    ld a,(566dh)
+    or a
+    jp nz,l1798h
+
+    ;REM PET Printer type is 3022/4022
+
+    ;<HL = pointer to "3022/4022">
+    ld hl,prntr_for_cbm3032
+
+    ;GOTO l17b7h
+    jp l17b7h
+
 l1798h:
-    ld a,(566dh)        ;1798 3a 6d 56
-    cp 01h              ;179b fe 01
-    jp nz,l17a6h        ;179d c2 a6 17
-    ld hl,prntr_dwheel  ;17a0 21 47 1f
-    jp l17b7h           ;17a3 c3 b7 17
+    ;IF PEEK(&H566D) <> 1 THEN GOTO l17a6h
+    ld a,(566dh)
+    cp 01h
+    jp nz,l17a6h
+
+    ;REM PET Printer type is 8026/8027 (Daisywheel)
+
+    ;<HL = pointer to "8026/8027">
+    ld hl,prntr_dwheel
+
+    ;GOTO l17b7h
+    jp l17b7h
+
 l17a6h:
-    ld a,(566dh)        ;17a6 3a 6d 56
-    cp 02h              ;17a9 fe 02
-    jp nz,l17b4h        ;17ab c2 b4 17
-    ld hl,prntr_cbm8032 ;17ae 21 51 1f
-    jp l17b7h           ;17b1 c3 b7 17
+    ;IF (PEEK&H566D) <> 2 THEN GOTO l17b4h
+    ld a,(566dh)
+    cp 02h
+    jp nz,l17b4h
+
+    ;REM PET Printer type is 8024
+
+    ;<HL = pointer to "8024">
+    ld hl,prntr_cbm8024
+
+    ;GOTO l17b7h
+    jp l17b7h
+
 l17b4h:
-    ld hl,l1f56h        ;17b4 21 56 1f
+    ;REM PET Printer type is unknown
+
+    ;<HL = pointer to "    ">
+    ld hl,prntr_blank
+
 l17b7h:
-    ld b,h              ;17b7 44
-    ld c,l              ;17b8 4d
-    call print_str_eol  ;17b9 cd a9 01
+    ;PRINT <string at HL>
+    ld b,h
+    ld c,l
+    call print_str_eol
 
     ;PRINT
     call print_eol
@@ -4814,19 +4898,19 @@ io_lst_device:
     db 1bh
     db " 5.  Default LST: device :",tab
 
-tty_colon:
+lst_tty:
     db 04h
     db "TTY:"
 
-crt_colon:
+lst_crt:
     db 04h
     db "CRT:"
 
-lpt_colon:
+lst_lpt:
     db 04h
     db "LPT:"
 
-blank_colon:
+lst_blank:
     db 04h
     db "   :"
 
@@ -4866,11 +4950,11 @@ prntr_dwheel:
     db 09h
     db "8026/8027"
 
-prntr_cbm8032:
+prntr_cbm8024:
     db 04h
     db "8024"
 
-l1f56h:
+prntr_blank:
     db 04h
     db "    "
 
