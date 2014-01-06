@@ -345,7 +345,7 @@ l0278h:
     add hl,de           ;02a9 19
     ld (nn),hl          ;02aa 22 c8 24
 
-    ;l24cah = l3014h + l24cah * 32
+    ;l24cah = l3014h + l24cah * 16
     ld c,04h            ;02ad 0e 04
     ld hl,(l24cah)      ;02af 2a ca 24
     jp l02b6h           ;02b2 c3 b6 02
@@ -2676,26 +2676,29 @@ ask_char_size:
     ;PRINT
     call print_eol
 
-    ;N = R - 53
+    ;N = R - (&H30 + 5)
     ld a,(rr)           ;12b5 3a cc 24
     ld l,a              ;12b8 6f
     rla                 ;12b9 17
     sbc a,a             ;12ba 9f
-    ld bc,-53           ;12bb 01 cb ff
+    ld bc,'5'           ;12bb 01 cb ff
     ld h,a              ;12be 67
     add hl,bc           ;12bf 09
     ld (nn),hl          ;12c0 22 c8 24
 
+    ;IF N < 0 THEN GOTO l12ech
     ld hl,(nn)          ;12c3 2a c8 24
     add hl,hl           ;12c6 29
     jp c,l12ech         ;12c7 da ec 12
 
+    ;IF (N-4) >= 0 THEN GOTO l12ech
     ld bc,-4            ;12ca 01 fc ff
     ld hl,(nn)          ;12cd 2a c8 24
     add hl,bc           ;12d0 09
     add hl,hl           ;12d1 29
     jp nc,l12ech        ;12d2 d2 ec 12
 
+    ;POKE &H5664, PEEK(&H5664) AND &HF3 OR (N SHL 2)
     ld a,(5664h)        ;12d5 3a 64 56
     and 0f3h            ;12d8 e6 f3
     ld b,02h            ;12da 06 02
@@ -2709,7 +2712,9 @@ l12e4h:
     jp p,l12e3h         ;12e5 f2 e3 12
     or c                ;12e8 b1
     ld (5664h),a        ;12e9 32 64 56
+
 l12ech:
+    ;RETURN
     ret                 ;12ec c9
 
 ask_stop_bits:
