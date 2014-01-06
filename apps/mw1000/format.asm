@@ -344,7 +344,7 @@ l0278h:
     add hl,de           ;02a9 19
     ld (nn),hl      ;02aa 22 04 30
 
-    ;l3006h = l30b8h + l3006h * 32
+    ;l3006h = l30b8h + l3006h * 16
     ld c,04h            ;02ad 0e 04
     ld hl,(l3006h)      ;02af 2a 06 30
     jp l02b6h           ;02b2 c3 b6 02
