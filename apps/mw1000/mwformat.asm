@@ -1192,146 +1192,239 @@ l06eeh:
     call end
 
 drive_err_n:
-    db 0dh
+    db drive_err_n_len
     db "DRIVE ERROR #"
+drive_err_n_len: equ $-drive_err_n-1
+
 e40_head_writ:
-    db 17h
+    db e40_head_writ_len
     db "40 - header write error"
+e40_head_writ_len: equ $-e40_head_writ-1
+
 e42_head_read:
-    db 16h
+    db e42_head_read_len
     db "42 - header read error"
+e42_head_read_len: equ $-e42_head_read-1
+
 e44_data_read:
-    db 14h
+    db e44_data_read_len
     db "44 - data read error"
+e44_data_read_len: equ $-e44_data_read-1
+
 e46_writ_flt:
-    db 10h
+    db e46_writ_flt_len
     db "46 - write fault"
+e46_writ_flt_len: equ $-e46_writ_flt-1
+
 e47_not_ready:
-    db 13h
+    db e47_not_ready_len
     db "47 - disk not ready"
+e47_not_ready_len: equ $-e47_not_ready-1
+
 e49_illegal:
-    db 14h
+    db e49_illegal_len
     db "49 - illegal command"
+e49_illegal_len: equ $-e49_illegal-1
+
 exx_unknown:
-    db 17h
+    db exx_unknown_len
     db "xx - unknown error code"
+exx_unknown_len: equ $-exx_unknown-1
+
 zero:
-    db 01h
+    db zero_len
     db "0"
+zero_len: equ $-zero-1
+
 dash:
-    db 01h
+    db dash_len
     db "-"
+dash_len: equ $-dash-1
+
 format_prog:
-    db 26h
+    db format_prog_len
     db "SoftBox Mini-Winchester Format Program"
+format_prog_len: equ $-format_prog-1
+
 dashes:
-    db 26h
+    db dashes_len
     db "------- ---- ---------- ------ -------"
+dashes_len: equ $-dashes-1
+
 rev_21:
-    db 0ch
+    db rev_21_len
     db "Revision 2.1"
+rev_21_len: equ $-rev_21-1
+
 warning:
-    db 22h
+    db warning_len
     db "WARNING - use of this program will"
+warning_len: equ $-warning-1
+
 destroy:
-    db 20h
+    db destroy_len
     db "destroy any existing data on the"
+destroy_len: equ $-destroy-1
+
 hard_disk:
-    db 0ah
+    db hard_disk_len
     db "hard disk."
+hard_disk_len: equ $-hard_disk-1
+
 drive_sizes:
-    db 18h
+    db drive_sizes_len
     db "Drive sizes supported : "
+drive_sizes_len: equ $-drive_sizes-1
+
 drv_a_3mb:
-    db 1ch
+    db drv_a_3mb_len
     db "A.   3  Mbyte      (191 cyl)"
+drv_a_3mb_len: equ $-drv_a_3mb-1
+
 drv_b_6mb:
-    db 1ch
+    db drv_b_6mb_len
     db "B.   6  Mbyte      (191 cyl)"
+drv_b_6mb_len: equ $-drv_b_6mb-1
+
 drv_c_12mb:
-    db 1ch
+    db drv_c_12mb_len
     db "C.   12 Mbyte      (191 cyl)"
+drv_c_12mb_len: equ $-drv_c_12mb-1
+
 drv_d_5mb:
-    db 1ch
+    db drv_d_5mb_len
     db "D.   5  Mbyte      (320 cyl)"
+drv_d_5mb_len: equ $-drv_d_5mb-1
+
 drv_e_10mb:
-    db 1ch
+    db drv_e_10mb_len
     db "E.   10 Mbyte      (320 cyl)"
+drv_e_10mb_len: equ $-drv_e_10mb-1
+
 drv_f_15mb:
-    db 1ch
+    db drv_f_15mb_len
     db "F.   15 Mbyte      (320 cyl)"
+drv_f_15mb_len: equ $-drv_f_15mb-1
+
 drv_z_other:
-    db 16h
+    db drv_z_other_len
     db "Z.   None of the above"
+drv_z_other_len: equ $-drv_z_other-1
+
 which_type:
-    db 19h
+    db which_type_len
     db "Which drive type (A-Z) ? "
+which_type_len: equ $-which_type-1
+
 num_heads:
-    db 11h
+    db num_heads_len
     db "How many heads ? "
+num_heads_len: equ $-num_heads-1
+
 num_cylinders:
-    db 15h
+    db num_cylinders_len
     db "How many cylinders ? "
+num_cylinders_len: equ $-num_cylinders-1
+
 drive_has:
-    db 0ah
+    db drive_has_len
     db "Drive has "
+drive_has_len: equ $-drive_has-1
+
 heads_and:
-    db 0bh
+    db heads_and_len
     db " heads and "
+heads_and_len: equ $-heads_and-1
+
 cylinders_:
-    db 0bh
+    db cylinders__len
     db " cylinders."
+cylinders__len: equ $-cylinders_-1
+
 capacity_is:
-    db 1ah
+    db capacity_is_len
     db "The formatted capacity is "
+capacity_is_len: equ $-capacity_is-1
+
 kbytes:
-    db 08h
+    db kbytes_len
     db " Kbytes."
+kbytes_len: equ $-kbytes-1
+
 all_surfaces:
-    db 1ch
+    db all_surfaces_len
     db "Format all surfaces (Y/N) ? "
+all_surfaces_len: equ $-all_surfaces-1
+
 which_surface:
-    db 1bh
+    db which_surface_len
     db "Format which surface (0 to "
+which_surface_len: equ $-which_surface-1
+
 p_q_1:
-    db 04h
+    db p_q_1_len
     db ") ? "
+p_q_1_len: equ $-p_q_1-1
+
 q_q_1:
-    db 02h
+    db q_q_1_len
     db "??"
+q_q_1_len: equ $-q_q_1-1
+
 all_tracks_on:
-    db 1eh
+    db all_tracks_on_len
     db "Format all tracks on surface #"
+all_tracks_on_len: equ $-all_tracks_on-1
+
 q_1:
-    db 03h
+    db q_1_len
     db " ? "
+q_1_len: equ $-q_1-1
+
 which_track:
-    db 19h
+    db which_track_len
     db "Format which track (0 to "
+which_track_len: equ $-which_track-1
+
 p_q_2:
-    db 04h
+    db p_q_2_len
     db ") ? "
+p_q_2_len: equ $-p_q_2-1
+
 q_q_2:
-    db 02h
+    db q_q_2_len
     db "??"
+q_q_2_len: equ $-q_q_2-1
+
 pls_yn_1:
-    db 17h
+    db pls_yn_1_len
     db "Please answer Y or N : "
+pls_yn_1_len: equ $-pls_yn_1-1
+
 pls_yn_2:
-    db 17h
+    db pls_yn_2_len
     db "Please answer Y or N : "
+pls_yn_2_len: equ $-pls_yn_2-1
+
 press_return:
-    db 1ch
+    db press_return_len
     db "Press return to format disk,"
+press_return_len: equ $-press_return-1
+
 press_ctrl_c:
-    db 1dh
+    db press_ctrl_c_len
     db "press control-C to abort ... "
+press_ctrl_c_len: equ $-press_ctrl_c-1
+
 formatting:
-    db 0eh
+    db formatting_len
     db "Formatting ..."
+formatting_len: equ $-formatting-1
+
 complete:
-    db 10h
+    db complete_len
     db "Format complete."
+complete_len: equ $-complete-1
 
 l0aech:                 ;Library MUL
     xor a               ;0aec af
@@ -1639,7 +1732,7 @@ rr:
 cylinders:
     dw 0
 l0c42h:
-    dw0
+    dw 0
 l0c44h:
     dw 0
 
@@ -1669,6 +1762,8 @@ buff_data:              ;  128 bytes input buffer
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+    db 0
 
 l0cd0h:
     db 0
