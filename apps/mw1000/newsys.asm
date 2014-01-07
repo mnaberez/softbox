@@ -825,7 +825,7 @@ bad_sbox_conf:
     jp ask_sbox_conf
 
 got_sbox_conf:
-    ;POKE &H5805, lastcyl*heads/2
+    ;DOKE &H5805, lastcyl*heads/2
     ld a,(heads)        ;04d4 3a 17 30
     ld l,a              ;04d7 6f
     rla                 ;04d8 17
@@ -849,6 +849,7 @@ got_sbox_conf:
     ex de,hl            ;04ee eb
     ld (5805h),hl       ;04ef 22 05 58
 
+    ;IF (DEEK(&H5805)-256) < 0 THEN GOTO l0505h
     ld bc,-256          ;04f2 01 00 ff
     ld hl,(5805h)       ;04f5 2a 05 58
     add hl,bc           ;04f8 09
@@ -863,23 +864,40 @@ got_sbox_conf:
     jp l050ah           ;0502 c3 0a 05
 
 l0505h:
+    ;POKE &H5804, 7
     ld hl,5804h         ;0505 21 04 58
     ld (hl),07h         ;0508 36 07
+
 l050ah:
+    ;DOKE &H5800, &H40
     ld hl,0040h         ;050a 21 40 00
     ld (5800h),hl       ;050d 22 00 58
+
+    ;POKE &H5802, &H06
     ld hl,5802h         ;0510 21 02 58
     ld (hl),06h         ;0513 36 06
+
+    ;POKE &H5803, &H3F
     inc hl              ;0515 23
     ld (hl),3fh         ;0516 36 3f
+
+    ;DOKE &H5807, &H00FF
     ld hl,00ffh         ;0518 21 ff 00
     ld (5807h),hl       ;051b 22 07 58
+
+    ;POKE &H5809, &H80
     ld hl,5809h         ;051e 21 09 58
     ld (hl),80h         ;0521 36 80
+
+    ;POKE &H580A, &H00
     inc hl              ;0523 23
     ld (hl),00h         ;0524 36 00
+
+    ;DOKE &H580B, 0
     ld hl,0000h         ;0526 21 00 00
     ld (580bh),hl       ;0529 22 0b 58
+
+    ;DOKE &H580D, 0
     inc hl              ;052c 23
     inc hl              ;052d 23
     ld (580dh),hl       ;052e 22 0d 58
