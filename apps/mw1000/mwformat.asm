@@ -17,6 +17,7 @@ creadstr:      equ 0ah    ;Buffered Console Input
 bell:          equ 07h    ;Bell
 lf:            equ 0ah    ;Line Feed
 cr:            equ 0dh    ;Carriage Return
+cls:           equ 1ah    ;Clear Screen
 
     org 0100h
 
@@ -226,7 +227,7 @@ readline:
     ld (hl),00h
 
     ;GOTO l0284h
-    jp l0284h           ;0214 c3 84 02
+    jp l0284h
 
 l0217h:
     ;R = buff_data(0)
@@ -504,8 +505,8 @@ start:
     ld sp,hl            ;03a3 f9
 
 ask_drv_type:
-    ;PRINT CHR$(26) ' Clear screen
-    ld c,1ah
+    ;PRINT CHR$(26); ' Clear screen
+    ld c,cls
     call print_char
 
     ;PRINT "SoftBox Mini-Winchester Format Program"
@@ -740,7 +741,7 @@ is_drv_type_z:
     ;GOSUB readline
     call readline
 
-    ;heads = nn
+    ;heads = N
     ld a,(nn)
     ld (heads),a
 
@@ -754,7 +755,7 @@ is_drv_type_z:
     ;GOSUB readline
     call readline
 
-    ;cylinders = nn
+    ;cylinders = N
     ld hl,(nn)
     ld (cylinders),hl
 
@@ -767,7 +768,7 @@ bad_drv_type:
 
 got_drv_type:
     ;PRINT CHR$(26); ' Clear screen
-    ld c,1ah
+    ld c,cls
     call print_char
 
     ;PRINT
@@ -892,16 +893,18 @@ l0583h:
     ;GOSUB readline
     call readline
 
-    ld hl,(nn)      ;05a2 2a 48 0c
+    ;IF N < 0 THEN GOTO l05bbh
+    ld hl,(nn)          ;05a2 2a 48 0c
     add hl,hl           ;05a5 29
     jp c,l05bbh         ;05a6 da bb 05
 
+    ;IF N < heads THEN GOTO l05c7h
     ld a,(heads)        ;05a9 3a 3d 0c
     ld l,a              ;05ac 6f
     rla                 ;05ad 17
     sbc a,a             ;05ae 9f
     ex de,hl            ;05af eb
-    ld hl,(nn)      ;05b0 2a 48 0c
+    ld hl,(nn)          ;05b0 2a 48 0c
     ld d,a              ;05b3 57
     ld a,l              ;05b4 7d
     sub e               ;05b5 93
@@ -919,8 +922,8 @@ l05bbh:
     jp l0583h
 
 l05c7h:
-    ;l0c3eh = nn
-    ld a,(nn)       ;05c7 3a 48 0c
+    ;l0c3eh = N
+    ld a,(nn)           ;05c7 3a 48 0c
     ld (l0c3eh),a       ;05ca 32 3e 0c
 
 l05cdh:
@@ -974,11 +977,13 @@ l05f2h:
     ;GOSUB readline
     call readline
 
-    ld hl,(nn)      ;060d 2a 48 0c
+    ;IF N < 0 THEN GOTO l0622h
+    ld hl,(nn)          ;060d 2a 48 0c
     add hl,hl           ;0610 29
     jp c,l0622h         ;0611 da 22 06
 
-    ld hl,(nn)      ;0614 2a 48 0c
+    ;IF N < cylinders THEN GOTO l062eh
+    ld hl,(nn)          ;0614 2a 48 0c
     ld a,l              ;0617 7d
     ex de,hl            ;0618 eb
     ld hl,(cylinders)   ;0619 2a 40 0c
@@ -997,8 +1002,8 @@ l0622h:
     jp l05f2h
 
 l062eh:
-    ;l0c42h = nn
-    ld hl,(nn)      ;062e 2a 48 0c
+    ;l0c42h = N
+    ld hl,(nn)          ;062e 2a 48 0c
     ld (l0c42h),hl      ;0631 22 42 0c
 
     ;GOTO l0648h
@@ -1071,7 +1076,7 @@ l067ch:
     ld (l0c44h),hl
 
 l068ah:
-    ;IF (l0c44h-32)*2 ??? THEN GOTO l067ch
+    ;IF l0c44h < 32 THEN GOTO l067ch
     ld bc,-32           ;068a 01 e0 ff
     ld hl,(l0c44h)      ;068d 2a 44 0c
     add hl,bc           ;0690 09
@@ -1096,7 +1101,7 @@ l069eh:
     ld (l0c44h),hl
 
 l06aah:
-    ;IF (l0c44h-512)*2 ??? THEN GOTO l069eh
+    ;IF l0c44h < 512 THEN GOTO l069eh
     ld bc,-512          ;06aa 01 00 fe
     ld hl,(l0c44h)      ;06ad 2a 44 0c
     add hl,bc           ;06b0 09
@@ -1132,12 +1137,12 @@ l06aah:
     ld c,(hl)           ;06d4 4e
     call corvus_out     ;06d5 cd 07 01
 
-    ;CALL corvus_out(l0c42h)
+    ;CALL corvus_out(l0c42h AND &HFF) 'Low Byte
     ld hl,l0c42h        ;06d8 21 42 0c
     ld c,(hl)           ;06db 4e
     call corvus_out     ;06dc cd 07 01
 
-    ;CALL corvus_out(l0c42h SHR 8)
+    ;CALL corvus_out(l0c42h SHR 8) 'High Byte
     ld b,08h            ;06df 06 08
     ld hl,(l0c42h)      ;06e1 2a 42 0c
     jp l06eeh
@@ -1768,15 +1773,15 @@ buff_data:              ;  128 bytes input buffer
 l0cd0h:
     db 0
 l0cd1h:
-    db 0
+    db 0                ;TODO Used by print_char
 l0cd2h:
-    dw 0
+    dw 0                ;TODO Used by print_str
 l0cd4h:
-    db 0
+    db 0                ;TODO Used by print_str
 l0cd5h:
-    dw 0
+    dw 0                ;TODO Used by sub_02c3h
 l0cd7h:
-    dw 0
+    dw 0                ;TODO Used by print_int
 l0cd9h:
     dw 0
 l0cdbh:

@@ -180,7 +180,7 @@ readline:
 
 l01abh:
     ;R = buff_data(0)
-    ;IF R < &H61 AND R >= &H7B THEN GOTO l01c2h
+    ;IF R < &H61 OR R >= &H7B THEN GOTO l01c2h
     ld a,(buff_data)    ;01ab 3a 20 30
     ld (rr),a           ;01ae 32 02 30
     cp 'a'              ;01b1 fe 61
