@@ -17,6 +17,7 @@ creadstr:      equ 0ah    ;Buffered Console Input
 bell:          equ 07h    ;Bell
 lf:            equ 0ah    ;Line Feed
 cr:            equ 0dh    ;Carriage Return
+cls:           equ 1ah    ;Clear Screen
 
 l4000h:        equ  4000h ;opcode "jp" (1 Byte)
 l4001h:        equ  4001h ;jump address (2 Bytes)
@@ -65,7 +66,7 @@ got_error:
     cp 40h
     jp nz,is_err_42h
 
-    ;PRINT "40 - header write error"
+    ;PRINT "40 - header write error";
     ld bc,e40_head_writ
     call print_str
 
@@ -78,7 +79,7 @@ is_err_42h:
     cp 42h
     jp nz,is_err_44h
 
-    ;PRINT "42 - header read error"
+    ;PRINT "42 - header read error";
     ld bc,e42_head_read
     call print_str
 
@@ -91,7 +92,7 @@ is_err_44h:
     cp 44h
     jp nz,is_err_46h
 
-    ;PRINT "44 - data read error"
+    ;PRINT "44 - data read error";
     ld bc,e44_data_read
     call print_str
 
@@ -104,7 +105,7 @@ is_err_46h:
     cp 46h
     jp nz,is_err_47h
 
-    ;PRINT "46 - write fault"
+    ;PRINT "46 - write fault";
     ld bc,e46_writ_flt
     call print_str
 
@@ -117,7 +118,7 @@ is_err_47h:
     cp 47h
     jp nz,is_err_49h
 
-    ;PRINT "47 - disk not ready"
+    ;PRINT "47 - disk not ready";
     ld bc,e47_not_ready
     call print_str
 
@@ -130,7 +131,7 @@ is_err_49h:
     cp 49h
     jp nz,unknown_err
 
-    ;PRINT "49 - illegal command"
+    ;PRINT "49 - illegal command";
     ld bc,e49_illegal
     call print_str
 
@@ -138,7 +139,7 @@ is_err_49h:
     jp got_error_done
 
 unknown_err:
-    ;PRINT "xx - unknown error code"
+    ;PRINT "xx - unknown error code";
     ld bc,exx_unknown
     call print_str
 
@@ -382,7 +383,7 @@ l02b2h:
     ld (l30aah),hl      ;02d2 22 aa 30
 
 l02d5h:
-    ;PRINT l30aah
+    ;PRINT l30aah;
     ld hl,(l30aah)      ;02d5 2a aa 30
     ld b,h              ;02d8 44
     ld c,l              ;02d9 4d
@@ -454,7 +455,7 @@ start:
 
 ask_drv_type:
     ;PRINT CHR$(26); ' Clear screen
-    ld c,1ah
+    ld c,cls
     call print_char
 
     ;PRINT "HardBox configuration program"
@@ -663,7 +664,7 @@ ask_hbox_conf:
     call print_str
     call print_eol
 
-    ;PRINT "or just the last half (E/H) ? "
+    ;PRINT "or just the last half (E/H) ? ";
     ld bc,l0cebh
     call print_str
 
@@ -715,7 +716,7 @@ not_half_hbox:
     jp got_hbox_conf    ;048b c3 97 04
 
 bad_hbox_conf:
-    ;PRINT "Please answer E or H : "
+    ;PRINT "Please answer E or H : ";
     ld bc,l0d0ah
     call print_str
 
@@ -760,7 +761,7 @@ ask_direct:
     call print_str
     call print_eol
 
-    ;PRINT "commands B-W, B-R, U1, U2 etc. (Y/N) ? "
+    ;PRINT "commands B-W, B-R, U1, U2 etc. (Y/N) ? ";
     ld bc,l0d47h
     call print_str
 
@@ -796,8 +797,8 @@ l04f0h:
     ;REM User selected 'Y' for use direct access
 
 l04f8h:
-    ;PRINT CHR$(26)
-    ld c,1ah
+    ;PRINT CHR$(26);
+    ld c,cls
     call print_char
 
     ;PRINT "Any number of kilobytes from zero to"
@@ -805,13 +806,15 @@ l04f8h:
     call print_str
     call print_eol
 
-    ;PRINT l4007h-10;"may be reserved for direct access"
+    ;PRINT l4007h-10;
     ld bc,0fff6h        ;0506 01 f6 ff
     ld hl,(l4007h)      ;0509 2a 07 40
     add hl,bc           ;050c 09
     ld b,h              ;050d 44
     ld c,l              ;050e 4d
     call print_int      ;050f cd 92 02
+
+    ;PRINT "may be reserved for direct access"
     ld bc,l0d94h
     call print_str
     call print_eol
@@ -944,7 +947,7 @@ l05d3h:
     jp l05dfh           ;05d3 c3 df 05
 
 l05d6h:
-    ;PRINT "Please answer Y or N : "
+    ;PRINT "Please answer Y or N : ";
     ld bc,pls_yn
     call print_str
 
@@ -1069,7 +1072,7 @@ l05dfh:
     ld (hl),08h
 
     ;PRINT CHR$(26);
-    ld c,1ah
+    ld c,cls
     call print_char
 
     ;PRINT "Logical specifications :"
@@ -1077,49 +1080,63 @@ l05dfh:
     call print_str
     call print_eol
 
-    ;PRINT "User area size :           ";l4007h;" Kbytes"
+    ;PRINT "User area size :           ";
     ld bc,l0f9dh
     call print_str
+
+    ;PRINT l4007h;
     ld hl,(l4007h)      ;0692 2a 07 40
     ld b,h              ;0695 44
     ld c,l              ;0696 4d
     call print_int      ;0697 cd 92 02
+
+    ;PRINT " Kbytes"
     ld bc,l0fb9h
     call print_str
     call print_eol
 
-    ;PRINT "Direct access size :       ";l400ch;" Kbytes"
+    ;PRINT "Direct access size :       ";
     ld bc,l0fc1h
     call print_str
+
+    ;PRINT l400ch;
     ld hl,(l400ch)      ;06a9 2a 0c 40
     ld b,h              ;06ac 44
     ld c,l              ;06ad 4d
     call print_int      ;06ae cd 92 02
+
+    ;PRINT " Kbytes"
     ld bc,l0fddh
     call print_str
     call print_eol
 
-    ;PRINT "Direct sectors per track : ";l4010h;
+    ;PRINT "Direct sectors per track : ";
     ld bc,l0fe5h
     call print_str
+
+    ;PRINT l4010h
     ld hl,(l4010h)       ;06c0 2a 10 40
     ld b,h              ;06c3 44
     ld c,l              ;06c4 4d
     call print_int      ;06c5 cd 92 02
     call print_eol      ;06c8 cd 27 02
 
-    ;PRINT "Direct tracks per drive :  ";l400eh
+    ;PRINT "Direct tracks per drive :  ";
     ld bc,l1001h        ;06cb 01 01 10
     call print_str      ;06ce cd 32 02
+
+    ;PRINT l400eh
     ld hl,(l400eh)      ;06d1 2a 0e 40
     ld b,h              ;06d4 44
     ld c,l              ;06d5 4d
     call print_int      ;06d6 cd 92 02
     call print_eol
 
-    ;PRINT "Max number of files :      ";l400ah
+    ;PRINT "Max number of files :      ";
     ld bc,l101dh        ;06dc 01 1d 10
     call print_str      ;06df cd 32 02
+
+    ;PRINT l400ah
     ld hl,(l400ah)      ;06e2 2a 0a 40
     ld b,h              ;06e5 44
     ld c,l              ;06e6 4d
@@ -1142,9 +1159,11 @@ l05dfh:
     call print_str
     call print_eol
 
-    ;PRINT "Tracks per cylinder :      ";heads
+    ;PRINT "Tracks per cylinder :      ";
     ld bc,l1071h
     call print_str
+
+    ;PRINT heads
     ld a,(heads)        ;070b 3a 01 30
     ld l,a              ;070e 6f
     rla                 ;070f 17
@@ -1154,18 +1173,22 @@ l05dfh:
     call print_int      ;0713 cd 92 02
     call print_eol
 
-    ;PRINT "Total cylinders on drive : ";cylinders
+    ;PRINT "Total cylinders on drive : ";
     ld bc,l108dh
     call print_str
+
+    ;PRINT cylinders
     ld hl,(cylinders)   ;071f 2a 06 30
     ld b,h              ;0722 44
     ld c,l              ;0723 4d
     call print_int      ;0724 cd 92 02
     call print_eol
 
-    ;PRINT "Total kbyte capacity :     ";heads*cylinders*8
+    ;PRINT "Total kbyte capacity :     ";
     ld bc,l10a9h
     call print_str
+
+    ;PRINT heads*cylinders*8
     ld a,(heads)        ;0730 3a 01 30
     ld l,a              ;0733 6f
     rla                 ;0734 17
@@ -1187,18 +1210,22 @@ l05dfh:
     call print_int      ;0748 cd 92 02
     call print_eol
 
-    ;PRINT "First user cylinder :      ";l4034h
+    ;PRINT "First user cylinder :      ";
     ld bc,l10c5h
     call print_str
+
+    ;PRINT l4034h
     ld hl,(l4034h)      ;0754 2a 34 40
     ld b,h              ;0757 44
     ld c,l              ;0758 4d
     call print_int      ;0759 cd 92 02
     call print_eol
 
-    ;PRINT "Number of user cylinders : ";cylinders-l4034h
+    ;PRINT "Number of user cylinders : ";
     ld bc,l10e1h
     call print_str
+
+    ;PRINT cylinders-l4034h
     ld hl,(cylinders)   ;0765 2a 06 30
     ld a,l              ;0768 7d
     ex de,hl            ;0769 eb
@@ -1212,9 +1239,11 @@ l05dfh:
     call print_int      ;0773 cd 92 02
     call print_eol      ;0776 cd 27 02
 
-    ;PRINT "User area starts at :      ";l301ah
+    ;PRINT "User area starts at :      ";
     ld bc,l10fdh
     call print_str
+
+    ;PRINT l301ah
     ld hl,(l301ah)      ;077f 2a 1a 30
     ld b,h              ;0782 44
     ld c,l              ;0783 4d
@@ -1238,7 +1267,7 @@ l05dfh:
     cp 01h
     jp nz,l07aah
 
-    ;PRINT " second half of the"
+    ;PRINT " second half of the";
     ld bc,l114eh
     call print_str
 
@@ -1315,7 +1344,7 @@ l0808h:
 
     ld (l3018h),hl      ;080c 22 18 30
 
-    ;POKE l3018h+&H7000,&H48 (???)
+    ;POKE l3018h+0+&H7000,&H48 (???)
     ld bc,7000h         ;080f 01 00 70
     ld hl,(l3018h)      ;0812 2a 18 30
     add hl,bc           ;0815 09
@@ -1353,7 +1382,7 @@ l0808h:
     add hl,bc           ;0843 09
     ld (hl),'B'         ;0844 36 42
 
-    ;POKE l3018h+5+&H7000,&H4f (???)
+    ;POKE l3018h+5+&H7000,&H4F (???)
     ld bc,0005h         ;0846 01 05 00
     ld hl,(l3018h)      ;0849 2a 18 30
     add hl,bc           ;084c 09
@@ -1450,7 +1479,7 @@ l0808h:
     add hl,de           ;08e0 19
     ld (l3018h),hl      ;08e1 22 18 30
 
-    ;POKE l1318h+&H7000,&H4b
+    ;POKE l1318h+0+&H7000,&H4B
     ld bc,7000h         ;08e4 01 00 70
     ld hl,(l3018h)      ;08e7 2a 18 30
     add hl,bc           ;08ea 09
