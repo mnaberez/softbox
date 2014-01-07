@@ -61,7 +61,8 @@ sub_0103h:
     ret                 ;0111 c9
     ret                 ;0112 c9
 
-sub_0113h:
+idisk:
+;Initialize an IEEE-488 disk drive.
     ld hl,l3007h        ;0113 21 07 30
     ld (hl),c           ;0116 71
     ld a,(l3007h)       ;0117 3a 07 30
@@ -69,6 +70,7 @@ sub_0113h:
     ret                 ;011d c9
 
 sub_011eh:
+    ;IF cbmdos_sector = 0 THEN GOTO l0162h
     ld a,(cbmdos_sector);011e 3a 23 24
     or a                ;0121 b7
     jp z,l0162h         ;0122 ca 62 01
@@ -77,11 +79,15 @@ sub_011eh:
     ld bc,disk_error
     call print_str
 
+    ;l3008h = 0
     ld hl,l3008h        ;012b 21 08 30
     ld (hl),00h         ;012e 36 00
+
+    ;GOTO l0157h
     jp l0157h           ;0130 c3 57 01
 
 l0133h:
+    ;PRINT errbuf(l3008h);
     ld a,(l3008h)       ;0133 3a 08 30
     ld l,a              ;0136 6f
     rla                 ;0137 17
@@ -91,6 +97,8 @@ l0133h:
     add hl,bc           ;013d 09
     ld c,(hl)           ;013e 4e
     call print_char     ;013f cd 6b 01
+
+    ;IF errbuf(l3008h) = &H0D THEN GOTO l015fh
     ld a,(l3008h)       ;0142 3a 08 30
     ld l,a              ;0145 6f
     rla                 ;0146 17
@@ -101,9 +109,13 @@ l0133h:
     ld a,(hl)           ;014d 7e
     cp cr               ;014e fe 0d
     jp z,l015fh         ;0150 ca 5f 01
+
+    ;l3008h = l3008h + 1
     ld hl,l3008h        ;0153 21 08 30
     inc (hl)            ;0156 34
+
 l0157h:
+    ;IF l3008h < &H40 THEN GOTO l0133h
     ld a,(l3008h)       ;0157 3a 08 30
     cp 40h              ;015a fe 40
     jp m,l0133h         ;015c fa 33 01
@@ -113,6 +125,7 @@ l015fh:
     call print_eol
 
 l0162h:
+    ;RETURN cbmdos_sector
     ld a,(cbmdos_sector);0162 3a 23 24
     ret                 ;0165 c9
     ret                 ;0166 c9
@@ -1921,13 +1934,20 @@ ask_autoload:
     ;PRINT
     call print_eol
 
-    ld a,(buff_len)       ;0a00 3a 25 24
+    ;POKE &H4007, buff_len
+    ld a,(buff_len)     ;0a00 3a 25 24
     ld (4007h),a        ;0a03 32 07 40
+
+    ;AINDEX = 1
     ld hl,aindex        ;0a06 21 1e 30
-    ld (hl),01h         ;0a09 36 01
-    ld a,(buff_len)       ;0a0b 3a 25 24
+    ld (hl),1           ;0a09 36 01
+
+    ;ASIZE = buff_len
+    ld a,(buff_len)     ;0a0b 3a 25 24
     inc hl              ;0a0e 23
     ld (hl),a           ;0a0f 77
+
+    ;GOTO l0a30h
     jp l0a30h           ;0a10 c3 30 0a
 
 l0a13h:
@@ -1961,8 +1981,8 @@ l0a30h:
     cp (hl)
     jp p,l0a13h
 
-    ;POKE &H4007+l2425+1, 0
-    ld a,(buff_len)       ;0a3a 3a 25 24
+    ;POKE &H4007+buff_len+1, 0
+    ld a,(buff_len)     ;0a3a 3a 25 24
     ld l,a              ;0a3d 6f
     rla                 ;0a3e 17
     sbc a,a             ;0a3f 9f
@@ -1970,9 +1990,10 @@ l0a30h:
     inc hl              ;0a41 23
     ld bc,4007h         ;0a42 01 07 40
     add hl,bc           ;0a45 09
-    ld (hl),00h         ;0a46 36 00
+    ld (hl),0           ;0a46 36 00
 
 l0a48h:
+    ;RETURN
     ret                 ;0a48 c9
 
 sub_0a49h:
@@ -1990,12 +2011,16 @@ l0a4dh:
     ;PRINT
     call print_eol
 
+    ;TODO: It's seems this is wrong.
+    ;IF R < &H41 AND R >= &H51 THEN GOTO l0af0h
     ld a,(rr)           ;0a59 3a cc 24
     cp 'A'              ;0a5c fe 41
     jp p,l0a66h         ;0a5e f2 66 0a
     cp 'P'+1            ;0a61 fe 51
     jp p,l0af0h         ;0a63 f2 f0 0a
+
 l0a66h:
+    ;l3002h = R - &H41
     ld a,(rr)           ;0a66 3a cc 24
     ld l,a              ;0a69 6f
     rla                 ;0a6a 17
@@ -2004,17 +2029,25 @@ l0a66h:
     ld h,a              ;0a6f 67
     add hl,bc           ;0a70 09
     ld (l3002h),hl      ;0a71 22 02 30
+
+    ;IF l3002h < 0 THEN GOTO l0a86h 'RETURN
     ld hl,(l3002h)      ;0a74 2a 02 30
     add hl,hl           ;0a77 29
     jp c,l0a86h         ;0a78 da 86 0a
+
+    ;IF l3002h < 16 THEN l0a87h
     ld bc,-16           ;0a7b 01 f0 ff
     ld hl,(l3002h)      ;0a7e 2a 02 30
     add hl,bc           ;0a81 09
     add hl,hl           ;0a82 29
     jp c,l0a87h         ;0a83 da 87 0a
+
 l0a86h:
+    ;RETURN
     ret                 ;0a86 c9
+
 l0a87h:
+    ;l3020h = sub_0103h(l3002h)
     ld hl,l3002h        ;0a87 21 02 30
     ld c,(hl)           ;0a8a 4e
     call sub_0103h      ;0a8b cd 03 01
@@ -2023,6 +2056,8 @@ l0a87h:
     sbc a,a             ;0a90 9f
     ld h,a              ;0a91 67
     ld (l3020h),hl      ;0a92 22 20 30
+
+    ;IF l3020h < 128 THEN GOTO l0aa9h
     ld bc,-128          ;0a95 01 80 ff
     ld hl,(l3020h)      ;0a98 2a 20 30
     add hl,bc           ;0a9b 09
@@ -2033,31 +2068,44 @@ l0a87h:
     ld bc,drv_not_in_sys
     call print_str_eol
 
+    ;GOTO l0a4dh
     jp l0a4dh           ;0aa6 c3 4d 0a
 
 l0aa9h:
+    ;IF l3020h < 2 THEN GOTO l0ac7h
     ld hl,(l3020h)      ;0aa9 2a 20 30
     dec hl              ;0aac 2b
     dec hl              ;0aad 2b
     add hl,hl           ;0aae 29
     jp c,l0ac7h         ;0aaf da c7 0a
+
+    ;IF l3020h < 6 THEN GOTO l0ac7h
     ld bc,-6            ;0ab2 01 fa ff
     ld hl,(l3020h)      ;0ab5 2a 20 30
     add hl,bc           ;0ab8 09
     add hl,hl           ;0ab9 29
     jp nc,l0ac7h        ;0aba d2 c7 0a
+
+    ;CALL cwrite_(l3002h)
     ld hl,l3002h        ;0abd 21 02 30
     ld c,(hl)           ;0ac0 4e
     call cwrite_        ;0ac1 cd e3 21
+
+    ;GOTO l0af0h
     jp l0af0h           ;0ac4 c3 f0 0a
 
 l0ac7h:
+    ;CALL idisk(l3002h)
     ld hl,l3002h        ;0ac7 21 02 30
     ld c,(hl)           ;0aca 4e
-    call sub_0113h      ;0acb cd 13 01
+    call idisk          ;Initialize an IEEE-488 disk drive.
+
+    ;CALL savesy(l3002h)
     ld hl,l3002h        ;0ace 21 02 30
     ld c,(hl)           ;0ad1 4e
     call savesy         ;0ad2 cd 40 22
+
+    ;IF CALL sub_011eh() = 0 THEN GOTO l0af0h 'RETURN
     call sub_011eh      ;0ad5 cd 1e 01
     or a                ;0ad8 b7
     jp z,l0af0h         ;0ad9 ca f0 0a
@@ -2144,6 +2192,7 @@ l0b13h:
     jp p,l0ba8h         ;0b3f f2 a8 0b
 
 l0b42h:
+    ;l3002h = R - &H41
     ld a,(rr)           ;0b42 3a cc 24
     ld l,a              ;0b45 6f
     rla                 ;0b46 17
@@ -2152,6 +2201,8 @@ l0b42h:
     ld h,a              ;0b4b 67
     add hl,bc           ;0b4c 09
     ld (l3002h),hl      ;0b4d 22 02 30
+
+    ;l3004h = sub_0103h(l3002h)
     ld hl,l3002h        ;0b50 21 02 30
     ld c,(hl)           ;0b53 4e
     call sub_0103h      ;0b54 cd 03 01
@@ -2160,43 +2211,68 @@ l0b42h:
     sbc a,a             ;0b59 9f
     ld h,a              ;0b5a 67
     ld (l3004h),hl      ;0b5b 22 04 30
+
+    ;IF l3004h >= 129 THEN GOTO l0ba2h 'GOTO start
     ld bc,-129          ;0b5e 01 7f ff
     ld hl,(l3004h)      ;0b61 2a 04 30
     add hl,bc           ;0b64 09
     add hl,hl           ;0b65 29
     jp nc,l0ba2h        ;0b66 d2 a2 0b
+
+    ;IF l3004h < 2 THEN GOTO l0b87h
     ld hl,(l3004h)      ;0b69 2a 04 30
     dec hl              ;0b6c 2b
     dec hl              ;0b6d 2b
     add hl,hl           ;0b6e 29
     jp c,l0b87h         ;0b6f da 87 0b
+
+    ;IF l3004h >= 6 THEN GOTO l0b87h
     ld bc,-6            ;0b72 01 fa ff
     ld hl,(l3004h)      ;0b75 2a 04 30
     add hl,bc           ;0b78 09
     add hl,hl           ;0b79 29
     jp nc,l0b87h        ;0b7a d2 87 0b
+
+    ;CALL cread_(l3002h)
     ld hl,l3002h        ;0b7d 21 02 30
     ld c,(hl)           ;0b80 4e
     call cread_         ;0b81 cd b0 21
+
+    ;GOTO l0b9fh
     jp l0b9fh           ;0b84 c3 9f 0b
+
 l0b87h:
+    ;CALL idisk(l3002h)
     ld hl,l3002h        ;0b87 21 02 30
     ld c,(hl)           ;0b8a 4e
-    call sub_0113h      ;0b8b cd 13 01
+    call idisk          ;Initialize an IEEE-488 disk drive.
+
+    ;CALL rdsys(l3002h)
     ld hl,l3002h        ;0b8e 21 02 30
     ld c,(hl)           ;0b91 4e
     call rdsys          ;0b92 cd 45 21
+
+    ;IF CALL sub_011eh() = 0 THEN GOTO l0b9fh 'GOTO l0ba5h 'GOTO l0babh
     call sub_011eh      ;0b95 cd 1e 01
     or a                ;0b98 b7
     jp z,l0b9fh         ;0b99 ca 9f 0b
+
     call end            ;0b9c cd 67 01
+
 l0b9fh:
+    ;GOTO l0ba5h
     jp l0ba5h           ;0b9f c3 a5 0b
+
 l0ba2h:
+    ;GOTO start
     jp start            ;0ba2 c3 f1 0a
+
 l0ba5h:
+    ;GOTO l0babh
     jp l0babh           ;0ba5 c3 ab 0b
+
 l0ba8h:
+    ;GOTO start
     jp start            ;0ba8 c3 f1 0a
 
 l0babh:
@@ -6082,13 +6158,13 @@ l2615h:
     db 0,0
 
 l3002h:
-    dw 0
+    dw 0                ;Temporarily holds destination drive
 l3004h:
-    dw 0
+    dw 0                ;Temporarily holds destination drive type
 l3006h:
     db 0                ;TODO Used by sub_0103h
 l3007h:
-    db 0
+    db 0                ;TODO Used by idisk
 l3008h:
     db 0                ;TODO Used by sub_011eh
 l3009h:
