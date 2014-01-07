@@ -22,9 +22,18 @@ For I = 0 TO 255
   S_h  = (I And  64) <> 0 '0=4k, 1=8k
   A11  = (I And 128) <> 0
 
-  Ras         =      Not(Boot) Or (A12 Or S_h)                           And A15 And A14 And A13          And Rfsh
-  Cs_Rom_Low  = Not( Not(Boot) Or (A12 And Not(S_h) Or Not(A12) And S_h) And A15 And A14 And A13          And Rfsh )
-  Cs_Rom_High = Not( Not(Boot) And Not(S_h) Or A12                       And A15 And A14 And A13 And Boot And Rfsh)
+  REM Possible normal ROM access at address E000-FFFF when no RAM Refresh
+  Cs_Rom      = A15 And A14 And A13 And Rfsh
+
+  REM Low ROM is accessable when Booting or in 4k mode at F000-FFFF or in 8k mode at E000-EFFF
+  Cs_Rom_Low  = Not( Not(Boot)              Or (Not(S_h) And A12 Or S_h And Not(A12)) And Cs_Rom )
+
+  REM High ROM is accessable when Booting in 4k mode or at F000-FFFF when not Booting
+  Cs_Rom_High = Not( Not(Boot) And Not(S_h) Or                           Boot And A12 And Cs_Rom )
+
+  REM Ram is accessable when no ROM is selected
+  Ras         = Not( Cs_Rom_Low And Cs_Rom_High )
+
   Unused      = -1
 
   D = 8
@@ -32,16 +41,20 @@ For I = 0 TO 255
   If Cs_Rom_Low  Then D = D Or 2 'Is inverted
   If Ras         Then D = D Or 1 'Is inverted
 
-  If D <> Values(I) Then MsgBox "Fehler: Calculate " & D & " but readed from dump " & Values(I)
-
-  If Out <> "" Then
+  If Out <> "" Then  
     If I mod 16 = 0 Then
       Out = Out & VBCrLf
     Else
       Out = Out & " "
     End If
   End If
-  Out = Out & Hex(D)
+
+  If D <> Values(I) Then
+    MsgBox "Error: Calculate " & D & " but readed from dump " & Values(I)
+    Out = Out & Hex(D) & "(" & Hex(Values(I)) & ")"
+  Else
+    Out = Out & Hex(D)
+  End If
 Next
 
 MsgBox Out
