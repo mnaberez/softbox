@@ -1126,7 +1126,7 @@ l060ah:
     ;REM Drive type is CBM 3040/4040
 
     ;PRINT "3040/4040  Device # ";
-    ld bc,cbm3040
+    ld bc,drv_cbm3040
     call print_str
 
     ;PRINT PEEK(&H5678+D);      ' Print device number
@@ -1164,7 +1164,7 @@ l0657h:
     ;REM Drive type is CBM 8050
 
     ;PRINT "8050       Device # ";
-    ld bc,cbm8050
+    ld bc,drv_cbm8050
     call print_str
 
     ;PRINT PEEK(&H5678+D);      ' Print device number
@@ -1202,7 +1202,7 @@ l0685h:
     ;REM Drive type is CBM 8250
 
     ;PRINT "8250       Device # ";
-    ld bc,cbm_8250
+    ld bc,drv_cbm8250
     call print_str
 
     ;PRINT PEEK(&H5678+D);      ' Print device number
@@ -1225,25 +1225,22 @@ l0685h:
     jp l0857h
 
 l06b3h:
-    ;TODO this disassembly may be wrong.  the drive type is "not used"
-    ;when bit 7 is set.
-    ;
     ;IF PEEK(&H5670+D) >= 0 THEN GOTO l06cch
-    ld a,(dd)           ;06b3 3a 16 30
-    ld l,a              ;06b6 6f
-    rla                 ;06b7 17
-    sbc a,a             ;06b8 9f
-    ld bc,5670h         ;06b9 01 70 56
-    ld h,a              ;06bc 67
-    add hl,bc           ;06bd 09
-    ld a,(hl)           ;06be 7e
-    or a                ;06bf b7
-    jp p,l06cch         ;06c0 f2 cc 06
+    ld a,(dd)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,5670h
+    ld h,a
+    add hl,bc
+    ld a,(hl)
+    or a
+    jp p,l06cch
 
     ;REM Drive type is Not Used
 
     ;PRINT "Not used  ";
-    ld bc,not_used
+    ld bc,drv_not_used
     call print_str
 
     ;GOTO l0857h
@@ -1258,7 +1255,7 @@ l06cch:
     ;REM Drive type is a Corvus hard drive
 
     ;PRINT "Corvus     ";
-    ld bc,corvus_space
+    ld bc,drv_corvus
     call print_str
 
     ;IF PEEK(&H5670+D) <> 2 THEN GOTO l06f0h
@@ -1275,7 +1272,8 @@ l06cch:
 
     ;REM Drive type is Corvus 10 MB
 
-    ld hl,size_10mb
+    ;<HL = pointer to "10Mb ">
+    ld hl,drv_cor10mb
 
     ;GOTO l0738h
     jp l0738h
@@ -1295,7 +1293,8 @@ l06f0h:
 
     ;REM Drive type is Corvus 20 MB
 
-    ld hl,size_20mb
+    ;<HL = pointer to "20Mb ">
+    ld hl,drv_cor20mb
 
     ;GOTO l0738h
     jp l0738h
@@ -1315,7 +1314,8 @@ l0707h:
 
     ;REM Drive type is Corvus 5 MB
 
-    ld hl,size_5mb
+    ;<HL = pointer to "5Mb  ">
+    ld hl,drv_cor5mb
 
     ;GOTO l0738h
     jp l0738h
@@ -1335,18 +1335,21 @@ l071eh:
 
     ;REM Drive type is Corvus 5 MB (as 2 CP/M drives)
 
-    ld hl,size_5mb_as_2
+    ;<HL = pointer to "5Mb* ">
+    ld hl,drv_cor5mb_as_2
 
     ;GOTO l0738h
     jp l0738h
 
 l0735h:
-    ld hl,l0f73h        ;0735 21 73 0f
+    ;<HL = pointer to "      ">
+    ld hl,drv_blank
 
 l0738h:
-    ld b,h              ;0738 44
-    ld c,l              ;0739 4d
-    call print_str      ;073a cd 84 01
+    ;PRINT <string at HL>;
+    ld b,h
+    ld c,l
+    call print_str
 
     ;PRINT "Device # ";
     ld bc,device_num
@@ -2137,6 +2140,8 @@ l0af0h:
     ret
 
 start:
+    ;MINI = 1 ' Constant for system type (0=Corvus, 1=Mini-Winchester)
+
     ;GOSUB clear_screen
     call clear_screen
 
@@ -2578,43 +2583,43 @@ drv_colon:
     db 07h
     db ":      "
 
-cbm3040:
+drv_cbm3040:
     db 14h
     db "3040/4040  Device # "
 
-cbm8050:
+drv_cbm8050:
     db 14h
     db "8050       Device # "
 
-cbm_8250:
+drv_cbm8250:
     db 14h
     db "8250       Device # "
 
-not_used:
+drv_not_used:
     db 0ah
     db "Not used  "
 
-corvus_space:
+drv_corvus:
     db 0bh
     db "Corvus     "
 
-size_10mb:
+drv_cor10mb:
     db 05h
     db "10Mb "
 
-size_20mb:
+drv_cor20mb:
     db 05h
     db "20Mb "
 
-size_5mb:
+drv_cor5mb:
     db 05h
     db "5Mb  "
 
-size_5mb_as_2:
+drv_cor5mb_as_2:
     db 05h
     db "5Mb* "
 
-l0f73h:
+drv_blank:
     db 06h
     db "      "
 
