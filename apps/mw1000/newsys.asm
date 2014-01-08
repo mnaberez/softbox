@@ -838,6 +838,13 @@ bad_sbox_conf:
     jp ask_sbox_conf
 
 got_sbox_conf:
+
+    ;TODO: This code stores data in the buffer starting at 5800h,
+    ;which is 0ec00h in the running system.  In the SoftBox BIOS, the
+    ;routine RUNCPM uses the data at 0ec00h to build the DPH (Disk
+    ;Parameter Header).  The MW-1000 BIOS would have a different RUNCPM
+    ;routine but this data is probably related to the MW-1000's DPH.
+
     ;DOKE &H5805, lastcyl*heads/2
     ld a,(heads)        ;04d4 3a 17 30
     ld l,a              ;04d7 6f
