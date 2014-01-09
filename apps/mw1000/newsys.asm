@@ -69,7 +69,10 @@ idisk:
     call idrive         ;Initialize an IEEE-488 disk drive
     ret                 ;011d c9
 
-sub_011eh:
+chkerr:
+;Check the last CBM DOS error code.  If an error occurred,
+;print it from the buffer before returning.
+;
     ;IF dos_err = 0 THEN GOTO l0162h
     ld a,(dos_err)      ;011e 3a 23 24
     or a                ;0121 b7
@@ -2109,20 +2112,23 @@ l0aa9h:
     jp l0af0h           ;0ac4 c3 f0 0a
 
 l0ac7h:
-    ;CALL idisk(l3002h)
-    ld hl,l3002h        ;0ac7 21 02 30
-    ld c,(hl)           ;0aca 4e
-    call idisk          ;Initialize an IEEE-488 disk drive.
+    ;CALL idisk(l3002h) ' Initialize the drive
+    ld hl,l3002h
+    ld c,(hl)
+    call idisk
 
-    ;CALL savesy(l3002h)
-    ld hl,l3002h        ;0ace 21 02 30
-    ld c,(hl)           ;0ad1 4e
-    call savesy         ;0ad2 cd 40 22
+    ;CALL savesy(l3002h) ' Save the CP/M system image
+    ld hl,l3002h
+    ld c,(hl)
+    call savesy
 
-    ;IF CALL sub_011eh() = 0 THEN GOTO l0af0h 'RETURN
-    call sub_011eh      ;0ad5 cd 1e 01
-    or a                ;0ad8 b7
-    jp z,l0af0h         ;0ad9 ca f0 0a
+    ;IF CALL chkerr() = 0 THEN GOTO l0af0h
+    call chkerr
+    or a
+    jp z,l0af0h
+
+    ;REM An error occurred from CBM DOS.  The error has already
+    ;REM been printed to the screen by chkerr.
 
     ;PRINT "Retry (Y/N) ? ";
     ld bc,retry_yn
@@ -2138,6 +2144,8 @@ l0ac7h:
     ld a,(rr)
     cp 'Y'
     jp z,l0ac7h
+
+    ;REM User selected do not retry.
 
 l0af0h:
     ;RETURN
@@ -2258,22 +2266,26 @@ l0b42h:
     jp l0b9fh           ;0b84 c3 9f 0b
 
 l0b87h:
-    ;CALL idisk(l3002h)
-    ld hl,l3002h        ;0b87 21 02 30
-    ld c,(hl)           ;0b8a 4e
-    call idisk          ;Initialize an IEEE-488 disk drive.
+    ;CALL idisk(l3002h) ' Initialize the drive
+    ld hl,l3002h
+    ld c,(hl)
+    call idisk
 
-    ;CALL rdsys(l3002h)
-    ld hl,l3002h        ;0b8e 21 02 30
-    ld c,(hl)           ;0b91 4e
-    call rdsys          ;0b92 cd 45 21
+    ;CALL rdsys(l3002h) ' Read CP/M image from the drive
+    ld hl,l3002h
+    ld c,(hl)
+    call rdsys
 
-    ;IF CALL sub_011eh() = 0 THEN GOTO l0b9fh 'GOTO l0ba5h 'GOTO main_menu
-    call sub_011eh      ;0b95 cd 1e 01
-    or a                ;0b98 b7
-    jp z,l0b9fh         ;0b99 ca 9f 0b
+    ;IF CALL chkerr() = 0 THEN GOTO l0b9fh
+    call chkerr
+    or a
+    jp z,l0b9fh
 
-    call end            ;0b9c cd 67 01
+    ;REM An error occurred from CBM DOS.  The error has already
+    ;REM been printed to the screen by chkerr.
+
+    ;END
+    call end
 
 l0b9fh:
     ;GOTO l0ba5h
@@ -6199,7 +6211,7 @@ l3006h:
 l3007h:
     db 0                ;TODO Used by idisk
 l3008h:
-    db 0                ;TODO Used by sub_011eh
+    db 0                ;TODO Used by chkerr
 l3009h:
     db 0                ;TODO Used by print_char
 l300ah:
