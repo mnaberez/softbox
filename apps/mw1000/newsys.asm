@@ -69,14 +69,14 @@ idisk:
     call idrive         ;Initialize an IEEE-488 disk drive
     ret                 ;011d c9
 
-chkerr:
+dskerr:
 ;Check the last CBM DOS error code.  If an error occurred,
 ;print it from the buffer before returning.
 ;
-    ;IF dos_err = 0 THEN GOTO chkerr_ret
+    ;IF dos_err = 0 THEN GOTO dskerr_ret
     ld a,(dos_err)
     or a
-    jp z,chkerr_ret
+    jp z,dskerr_ret
 
     ;PRINT "Disk error :  ";
     ld bc,disk_error
@@ -86,10 +86,10 @@ chkerr:
     ld hl,eindex
     ld (hl),00h
 
-    ;GOTO chkerr_next
-    jp chkerr_next
+    ;GOTO dskerr_next
+    jp dskerr_next
 
-chkerr_char:
+dskerr_char:
     ;PRINT errbuf(eindex);
     ld a,(eindex)
     ld l,a
@@ -101,7 +101,7 @@ chkerr_char:
     ld c,(hl)
     call print_char
 
-    ;IF errbuf(eindex) = &H0D THEN GOTO chkerr_eol  ' End of error message
+    ;IF errbuf(eindex) = &H0D THEN GOTO dskerr_eol  ' End of error message
     ld a,(eindex)
     ld l,a
     rla
@@ -111,23 +111,23 @@ chkerr_char:
     add hl,bc
     ld a,(hl)
     cp cr
-    jp z,chkerr_eol
+    jp z,dskerr_eol
 
     ;eindex = eindex + 1
     ld hl,eindex
     inc (hl)
 
-chkerr_next:
-    ;IF eindex < 64 THEN GOTO chkerr_char  ' Loop until end of message buffer
+dskerr_next:
+    ;IF eindex < 64 THEN GOTO dskerr_char  ' Loop until end of message buffer
     ld a,(eindex)
     cp 64
-    jp m,chkerr_char
+    jp m,dskerr_char
 
-chkerr_eol:
+dskerr_eol:
     ;PRINT
     call print_eol
 
-chkerr_ret:
+dskerr_ret:
     ;RETURN dos_err
     ld a,(dos_err)
     ret
@@ -2123,13 +2123,13 @@ l0ac7h:
     ld c,(hl)
     call savesy
 
-    ;IF CALL chkerr() = 0 THEN GOTO l0af0h
-    call chkerr
+    ;IF CALL dskerr() = 0 THEN GOTO l0af0h
+    call dskerr
     or a
     jp z,l0af0h
 
     ;REM An error occurred from CBM DOS.  The error has already
-    ;REM been printed to the screen by chkerr.
+    ;REM been printed to the screen by dskerr.
 
     ;PRINT "Retry (Y/N) ? ";
     ld bc,retry_yn
@@ -2277,13 +2277,13 @@ l0b87h:
     ld c,(hl)
     call rdsys
 
-    ;IF CALL chkerr() = 0 THEN GOTO l0b9fh
-    call chkerr
+    ;IF CALL dskerr() = 0 THEN GOTO l0b9fh
+    call dskerr
     or a
     jp z,l0b9fh
 
     ;REM An error occurred from CBM DOS.  The error has already
-    ;REM been printed to the screen by chkerr.
+    ;REM been printed to the screen by dskerr.
 
     ;END
     call end
@@ -6212,7 +6212,7 @@ l3006h:
 l3007h:
     db 0                ;TODO Used by idisk
 eindex:
-    db 0                ;Loop index for CBM DOS error message used in chkerr
+    db 0                ;Loop index for CBM DOS error message used in dskerr
 l3009h:
     db 0                ;TODO Used by print_char
 l300ah:
