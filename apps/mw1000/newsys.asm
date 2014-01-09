@@ -3414,7 +3414,8 @@ l1560h:
     ret
 
 sub_1564h:
-    jp l1697h           ;1564 c3 97 16
+    ;GOTO l1697h
+    jp l1697h
 
 sub_1567h:
     ;PRINT
@@ -3576,6 +3577,8 @@ sub_1613h:
     cp 'T'
     jp nz,l1632h
 
+    ;REM User selected 'T' for T(TY:)
+
     ;POKE &H5660, PEEK(&H5660) AND &HCF
     ld a,(5660h)
     and 0cfh
@@ -3589,6 +3592,8 @@ l1632h:
     ld a,(rr)
     cp 'P'
     jp nz,l1644h
+
+    ;REM User selected 'P' for P(TP:)
 
     ;POKE &H5660, (PEEK(&H5660) AND &HCF) OR &H10
     ld a,(5660h)
@@ -3632,6 +3637,8 @@ sub_1645h:
     cp '3'
     jp nz,l1679h
 
+    ;REM User selected 3 for 3022/3023/4022/4023
+
     ;POKE &H566D, 0
     ld hl,566dh
     ld (hl),00h
@@ -3645,6 +3652,8 @@ l1679h:
     cp '8'
     jp nz,l1689h
 
+    ;REM User selected 8 for 8024
+
     ;POKE &H566D, 2
     ld hl,566dh
     ld (hl),02h
@@ -3657,6 +3666,8 @@ l1689h:
     ld a,(rr)
     cp 'D'
     jp nz,l1696h
+
+    ;REM User selected 'D' for 8026/8027 (Daisywheel)
 
     ;POKE &H566D, 1
     ld hl,566dh
