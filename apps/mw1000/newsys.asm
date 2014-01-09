@@ -2011,8 +2011,8 @@ l0a48h:
     ret                 ;0a48 c9
 
 exec_new_system:
-    call 2137h          ;0a49 cd 37 21
-    ret                 ;0a4c c9
+    call exsys
+    ret
 
 save_new_system:
     ;PRINT "Save on which drive (A - P) ? ";
