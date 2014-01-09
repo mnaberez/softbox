@@ -2038,7 +2038,7 @@ save_new_system:
     jp p,l0af0h         ;0a63 f2 f0 0a
 
 l0a66h:
-    ;l3002h = R - &H41
+    ;drvnum = R - &H41
     ld a,(rr)           ;0a66 3a cc 24
     ld l,a              ;0a69 6f
     rla                 ;0a6a 17
@@ -2046,16 +2046,16 @@ l0a66h:
     ld bc,-'A'          ;0a6c 01 bf ff
     ld h,a              ;0a6f 67
     add hl,bc           ;0a70 09
-    ld (l3002h),hl      ;0a71 22 02 30
+    ld (drvnum),hl      ;0a71 22 02 30
 
-    ;IF l3002h < 0 THEN GOTO l0a86h 'RETURN
-    ld hl,(l3002h)      ;0a74 2a 02 30
+    ;IF drvnum < 0 THEN GOTO l0a86h
+    ld hl,(drvnum)      ;0a74 2a 02 30
     add hl,hl           ;0a77 29
     jp c,l0a86h         ;0a78 da 86 0a
 
-    ;IF l3002h < 16 THEN l0a87h
+    ;IF drvnum < 16 THEN l0a87h
     ld bc,-16           ;0a7b 01 f0 ff
-    ld hl,(l3002h)      ;0a7e 2a 02 30
+    ld hl,(drvnum)      ;0a7e 2a 02 30
     add hl,bc           ;0a81 09
     add hl,hl           ;0a82 29
     jp c,l0a87h         ;0a83 da 87 0a
@@ -2065,8 +2065,8 @@ l0a86h:
     ret                 ;0a86 c9
 
 l0a87h:
-    ;l3020h = sub_0103h(l3002h)
-    ld hl,l3002h        ;0a87 21 02 30
+    ;l3020h = sub_0103h(drvnum)
+    ld hl,drvnum        ;0a87 21 02 30
     ld c,(hl)           ;0a8a 4e
     call sub_0103h      ;0a8b cd 03 01
     ld l,a              ;0a8e 6f
@@ -2104,8 +2104,8 @@ l0aa9h:
     add hl,hl           ;0ab9 29
     jp nc,l0ac7h        ;0aba d2 c7 0a
 
-    ;CALL cwrite_(l3002h)
-    ld hl,l3002h        ;0abd 21 02 30
+    ;CALL cwrite_(drvnum)
+    ld hl,drvnum        ;0abd 21 02 30
     ld c,(hl)           ;0ac0 4e
     call cwrite_        ;0ac1 cd e3 21
 
@@ -2113,13 +2113,13 @@ l0aa9h:
     jp l0af0h           ;0ac4 c3 f0 0a
 
 l0ac7h:
-    ;CALL idisk(l3002h) ' Initialize the drive
-    ld hl,l3002h
+    ;CALL idisk(drvnum) ' Initialize the drive
+    ld hl,drvnum
     ld c,(hl)
     call idisk
 
-    ;CALL savesy(l3002h) ' Save the CP/M system image
-    ld hl,l3002h
+    ;CALL savesy(drvnum) ' Save the CP/M system image
+    ld hl,drvnum
     ld c,(hl)
     call savesy
 
@@ -2217,7 +2217,7 @@ l0b13h:
     jp p,l0ba8h         ;0b3f f2 a8 0b
 
 l0b42h:
-    ;l3002h = R - &H41
+    ;drvnum = R - &H41
     ld a,(rr)           ;0b42 3a cc 24
     ld l,a              ;0b45 6f
     rla                 ;0b46 17
@@ -2225,41 +2225,41 @@ l0b42h:
     ld bc,-'A'          ;0b48 01 bf ff
     ld h,a              ;0b4b 67
     add hl,bc           ;0b4c 09
-    ld (l3002h),hl      ;0b4d 22 02 30
+    ld (drvnum),hl      ;0b4d 22 02 30
 
-    ;l3004h = sub_0103h(l3002h)
-    ld hl,l3002h        ;0b50 21 02 30
+    ;drvtyp = sub_0103h(drvnum)
+    ld hl,drvnum        ;0b50 21 02 30
     ld c,(hl)           ;0b53 4e
     call sub_0103h      ;0b54 cd 03 01
     ld l,a              ;0b57 6f
     rla                 ;0b58 17
     sbc a,a             ;0b59 9f
     ld h,a              ;0b5a 67
-    ld (l3004h),hl      ;0b5b 22 04 30
+    ld (drvtyp),hl      ;0b5b 22 04 30
 
-    ;IF l3004h >= 129 THEN GOTO l0ba2h 'GOTO start
+    ;IF drvtyp >= 129 THEN GOTO l0ba2h 'GOTO start
     ld bc,-129          ;0b5e 01 7f ff
-    ld hl,(l3004h)      ;0b61 2a 04 30
+    ld hl,(drvtyp)      ;0b61 2a 04 30
     add hl,bc           ;0b64 09
     add hl,hl           ;0b65 29
     jp nc,l0ba2h        ;0b66 d2 a2 0b
 
-    ;IF l3004h < 2 THEN GOTO l0b87h
-    ld hl,(l3004h)      ;0b69 2a 04 30
+    ;IF drvtyp < 2 THEN GOTO l0b87h
+    ld hl,(drvtyp)      ;0b69 2a 04 30
     dec hl              ;0b6c 2b
     dec hl              ;0b6d 2b
     add hl,hl           ;0b6e 29
     jp c,l0b87h         ;0b6f da 87 0b
 
-    ;IF l3004h >= 6 THEN GOTO l0b87h
+    ;IF drvtyp >= 6 THEN GOTO l0b87h
     ld bc,-6            ;0b72 01 fa ff
-    ld hl,(l3004h)      ;0b75 2a 04 30
+    ld hl,(drvtyp)      ;0b75 2a 04 30
     add hl,bc           ;0b78 09
     add hl,hl           ;0b79 29
     jp nc,l0b87h        ;0b7a d2 87 0b
 
-    ;CALL cread_(l3002h)
-    ld hl,l3002h        ;0b7d 21 02 30
+    ;CALL cread_(drvnum)
+    ld hl,drvnum        ;0b7d 21 02 30
     ld c,(hl)           ;0b80 4e
     call cread_         ;0b81 cd b0 21
 
@@ -2267,13 +2267,13 @@ l0b42h:
     jp l0b9fh           ;0b84 c3 9f 0b
 
 l0b87h:
-    ;CALL idisk(l3002h) ' Initialize the drive
-    ld hl,l3002h
+    ;CALL idisk(drvnum) ' Initialize the drive
+    ld hl,drvnum
     ld c,(hl)
     call idisk
 
-    ;CALL rdsys(l3002h) ' Read CP/M image from the drive
-    ld hl,l3002h
+    ;CALL rdsys(drvnum) ' Read CP/M image from the drive
+    ld hl,drvnum
     ld c,(hl)
     call rdsys
 
@@ -6203,10 +6203,10 @@ l2615h:
 
     db 0,0
 
-l3002h:
-    dw 0                ;Temporarily holds destination drive
-l3004h:
-    dw 0                ;Temporarily holds destination drive type
+drvnum:
+    dw 0                ;CP/M drive number where CP/M system will be written
+drvtyp:
+    dw 0                ;Drive type of drive where CP/M will be written
 l3006h:
     db 0                ;TODO Used by sub_0103h
 l3007h:
