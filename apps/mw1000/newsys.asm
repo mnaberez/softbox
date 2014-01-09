@@ -73,64 +73,65 @@ chkerr:
 ;Check the last CBM DOS error code.  If an error occurred,
 ;print it from the buffer before returning.
 ;
-    ;IF dos_err = 0 THEN GOTO l0162h
-    ld a,(dos_err)      ;011e 3a 23 24
-    or a                ;0121 b7
-    jp z,l0162h         ;0122 ca 62 01
+    ;IF dos_err = 0 THEN GOTO chkerr_ret
+    ld a,(dos_err)
+    or a
+    jp z,chkerr_ret
 
     ;PRINT "Disk error :  ";
     ld bc,disk_error
     call print_str
 
-    ;l3008h = 0
-    ld hl,l3008h        ;012b 21 08 30
-    ld (hl),00h         ;012e 36 00
+    ;eindex = 0
+    ld hl,eindex
+    ld (hl),00h
 
-    ;GOTO l0157h
-    jp l0157h           ;0130 c3 57 01
+    ;GOTO chkerr_next
+    jp chkerr_next
 
-l0133h:
-    ;PRINT errbuf(l3008h);
-    ld a,(l3008h)       ;0133 3a 08 30
-    ld l,a              ;0136 6f
-    rla                 ;0137 17
-    sbc a,a             ;0138 9f
-    ld bc,errbuf        ;0139 01 c0 ea
-    ld h,a              ;013c 67
-    add hl,bc           ;013d 09
-    ld c,(hl)           ;013e 4e
-    call print_char     ;013f cd 6b 01
+chkerr_char:
+    ;PRINT errbuf(eindex);
+    ld a,(eindex)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,errbuf
+    ld h,a
+    add hl,bc
+    ld c,(hl)
+    call print_char
 
-    ;IF errbuf(l3008h) = &H0D THEN GOTO l015fh
-    ld a,(l3008h)       ;0142 3a 08 30
-    ld l,a              ;0145 6f
-    rla                 ;0146 17
-    sbc a,a             ;0147 9f
-    ld bc,errbuf        ;0148 01 c0 ea
-    ld h,a              ;014b 67
-    add hl,bc           ;014c 09
-    ld a,(hl)           ;014d 7e
-    cp cr               ;014e fe 0d
-    jp z,l015fh         ;0150 ca 5f 01
+    ;IF errbuf(eindex) = &H0D THEN GOTO chkerr_eol  ' End of error message
+    ld a,(eindex)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,errbuf
+    ld h,a
+    add hl,bc
+    ld a,(hl)
+    cp cr
+    jp z,chkerr_eol
 
-    ;l3008h = l3008h + 1
-    ld hl,l3008h        ;0153 21 08 30
-    inc (hl)            ;0156 34
+    ;eindex = eindex + 1
+    ld hl,eindex
+    inc (hl)
 
-l0157h:
-    ;IF l3008h < &H40 THEN GOTO l0133h
-    ld a,(l3008h)       ;0157 3a 08 30
-    cp 40h              ;015a fe 40
-    jp m,l0133h         ;015c fa 33 01
+chkerr_next:
+    ;IF eindex < 64 THEN GOTO chkerr_char  ' Loop until end of message buffer
+    ld a,(eindex)
+    cp 64
+    jp m,chkerr_char
 
-l015fh:
+chkerr_eol:
     ;PRINT
     call print_eol
 
-l0162h:
+chkerr_ret:
     ;RETURN dos_err
-    ld a,(dos_err)      ;0162 3a 23 24
-    ret                 ;0165 c9
+    ld a,(dos_err)
+    ret
+
     ret                 ;0166 c9
 
 end:
@@ -6210,8 +6211,8 @@ l3006h:
     db 0                ;TODO Used by sub_0103h
 l3007h:
     db 0                ;TODO Used by idisk
-l3008h:
-    db 0                ;TODO Used by chkerr
+eindex:
+    db 0                ;Loop index for CBM DOS error message used in chkerr
 l3009h:
     db 0                ;TODO Used by print_char
 l300ah:
