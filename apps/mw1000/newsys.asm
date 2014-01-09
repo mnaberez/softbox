@@ -49,13 +49,14 @@ cls:           equ 1ah    ;Clear Screen
 
     jp start
 
-sub_0103h:
+dtype:
+;Get the drive type for a CP/M drive number.
     ld hl,l3006h        ;0103 21 06 30
     ld (hl),c           ;0106 71
     ld a,(l3006h)       ;0107 3a 06 30
     call tstdrv         ;Get drive type for a CP/M drive number
-    ld a,c              ;010d 79
-    ret                 ;010e c9
+    ld a,c              ;A = drive type
+    ret
 
     ld a,00h            ;010f 3e 00
     ret                 ;0111 c9
@@ -2065,10 +2066,10 @@ l0a86h:
     ret                 ;0a86 c9
 
 l0a87h:
-    ;l3020h = sub_0103h(drvnum)
+    ;l3020h = dtype(drvnum)
     ld hl,drvnum        ;0a87 21 02 30
     ld c,(hl)           ;0a8a 4e
-    call sub_0103h      ;0a8b cd 03 01
+    call dtype          ;0a8b cd 03 01
     ld l,a              ;0a8e 6f
     rla                 ;0a8f 17
     sbc a,a             ;0a90 9f
@@ -2227,10 +2228,10 @@ l0b42h:
     add hl,bc           ;0b4c 09
     ld (drvnum),hl      ;0b4d 22 02 30
 
-    ;drvtyp = sub_0103h(drvnum)
+    ;drvtyp = dtype(drvnum)
     ld hl,drvnum        ;0b50 21 02 30
     ld c,(hl)           ;0b53 4e
-    call sub_0103h      ;0b54 cd 03 01
+    call dtype          ;0b54 cd 03 01
     ld l,a              ;0b57 6f
     rla                 ;0b58 17
     sbc a,a             ;0b59 9f
@@ -6208,7 +6209,7 @@ drvnum:
 drvtyp:
     dw 0                ;Drive type of drive where CP/M will be written
 l3006h:
-    db 0                ;TODO Used by sub_0103h
+    db 0                ;TODO Used by dtype
 l3007h:
     db 0                ;TODO Used by idisk
 eindex:
