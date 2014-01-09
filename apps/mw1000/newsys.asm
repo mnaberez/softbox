@@ -430,8 +430,9 @@ clear_screen:
     ;RETURN
     ret
 
-sub_0306h:
-    jp l05edh           ;0306 c3 ed 05
+jump_drive_menu:
+    ;GOTO drive_menu
+    jp drive_menu
 
 ask_drv_dev:
     ;REM Ask the device number for a floppy or hard drive
@@ -1062,7 +1063,7 @@ l05afh:
     ld (hl),d           ;05eb 72
     ret                 ;05ec c9
 
-l05edh:
+drive_menu:
     ;GOSUB clear_screen
     call clear_screen
 
@@ -1603,7 +1604,7 @@ l085eh:
     cp cr
     jp nz,ask_flop_hard
 
-    ;REM User pressed return without entering a letter
+    ;REM User pressed RETURN to exit this menu
 
     ;RETURN
     ret
@@ -1853,10 +1854,13 @@ l0990h:
     call ask_drv_type
 
 l0993h:
-    jp l05edh           ;0993 c3 ed 05
-    ret                 ;0996 c9
+    ;GOTO drive_menu
+    jp drive_menu
 
-sub_0997h:
+    ;RETURN
+    ret
+
+autoload_menu:
     ;GOSUB clear_screen
     call clear_screen
 
@@ -2006,11 +2010,11 @@ l0a48h:
     ;RETURN
     ret                 ;0a48 c9
 
-sub_0a49h:
+exec_new_system:
     call 2137h          ;0a49 cd 37 21
     ret                 ;0a4c c9
 
-l0a4dh:
+save_new_system:
     ;PRINT "Save on which drive (A - P) ? ";
     ld bc,save_on_which
     call print_str
@@ -2078,8 +2082,8 @@ l0a87h:
     ld bc,drv_not_in_sys
     call print_str_eol
 
-    ;GOTO l0a4dh
-    jp l0a4dh           ;0aa6 c3 4d 0a
+    ;GOTO save_new_system
+    jp save_new_system           ;0aa6 c3 4d 0a
 
 l0aa9h:
     ;IF l3020h < 2 THEN GOTO l0ac7h
@@ -2194,9 +2198,9 @@ l0b13h:
     cp cr
     jp z,start
 
-    ;IF R = &H5F THEN GOTO l0babh
+    ;IF R = &H5F THEN GOTO main_menu
     cp '_'
-    jp z,l0babh
+    jp z,main_menu
 
     cp 'A'              ;0b38 fe 41
     jp p,l0b42h         ;0b3a f2 42 0b
@@ -2264,7 +2268,7 @@ l0b87h:
     ld c,(hl)           ;0b91 4e
     call rdsys          ;0b92 cd 45 21
 
-    ;IF CALL sub_011eh() = 0 THEN GOTO l0b9fh 'GOTO l0ba5h 'GOTO l0babh
+    ;IF CALL sub_011eh() = 0 THEN GOTO l0b9fh 'GOTO l0ba5h 'GOTO main_menu
     call sub_011eh      ;0b95 cd 1e 01
     or a                ;0b98 b7
     jp z,l0b9fh         ;0b99 ca 9f 0b
@@ -2277,17 +2281,17 @@ l0b9fh:
 
 l0ba2h:
     ;GOTO start
-    jp start            ;0ba2 c3 f1 0a
+    jp start
 
 l0ba5h:
-    ;GOTO l0babh
-    jp l0babh           ;0ba5 c3 ab 0b
+    ;GOTO main_menu
+    jp main_menu
 
 l0ba8h:
     ;GOTO start
-    jp start            ;0ba8 c3 f1 0a
+    jp start
 
-l0babh:
+main_menu:
     ;GOSUB clear_screen
     call clear_screen
 
@@ -2378,11 +2382,11 @@ l0babh:
 
     ;REM User selected 'A' for Autoload command
 
-    ;GOSUB sub_0997h
-    call sub_0997h
+    ;GOSUB autoload_menu
+    call autoload_menu
 
-    ;GOTO l0c81h
-    jp l0c81h
+    ;GOTO jump_main_menu
+    jp jump_main_menu
 
 l0c22h:
     ;IF R <> &H44 THEN GOTO l0c30h
@@ -2392,11 +2396,11 @@ l0c22h:
 
     ;REM User selected 'D' for Disk Drive Assignment
 
-    ;GOSUB sub_0306h
-    call sub_0306h
+    ;GOSUB jump_drive_menu
+    call jump_drive_menu
 
-    ;GOTO l0c81h
-    jp l0c81h
+    ;GOTO jump_main_menu
+    jp jump_main_menu
 
 l0c30h:
     ;IF R <> &H49 THEN GOTO l0c3eh
@@ -2406,11 +2410,11 @@ l0c30h:
 
     ;REM User selected 'I' for I/O Assignment
 
-    ;GOSUB sub_1564h
-    call sub_1564h
+    ;GOSUB jump_io_menu
+    call jump_io_menu
 
-    ;GOTO l0c81h
-    jp l0c81h
+    ;GOTO jump_main_menu
+    jp jump_main_menu
 
 l0c3eh:
     ;IF R <> &H50 THEN GOTO l0c4ch
@@ -2420,11 +2424,11 @@ l0c3eh:
 
     ;REM User selected 'P' for Pet Terminal Parameters
 
-    ;GOSUB sub_1876h
-    call sub_1876h
+    ;GOSUB jump_pet_menu
+    call jump_pet_menu
 
-    ;GOTO l0c81h
-    jp l0c81h
+    ;GOTO jump_main_menu
+    jp jump_main_menu
 
 l0c4ch:
     ;IF R <> &H52 THEN GOTO l0c5ah
@@ -2434,11 +2438,11 @@ l0c4ch:
 
     ;REM User selected 'R' for RS232 Characteristics
 
-    ;GOSUB l12a6h
-    call l12a6h
+    ;GOSUB jump_rs232_menu
+    call jump_rs232_menu
 
-    ;GOTO l0c81h
-    jp l0c81h
+    ;GOTO jump_main_menu
+    jp jump_main_menu
 
 l0c5ah:
     ;IF R <> &H53 THEN GOTO l0c68h
@@ -2448,11 +2452,11 @@ l0c5ah:
 
     ;REM User selected 'S' for Save New System
 
-    ;GOSUB l0a4dh
-    call l0a4dh
+    ;GOSUB save_new_system
+    call save_new_system
 
-    ;GOSUB l0c81h
-    jp l0c81h
+    ;GOSUB jump_main_menu
+    jp jump_main_menu
 
 l0c68h:
     ;IF R <> &H45 THEN GOTO l0c76h
@@ -2462,26 +2466,26 @@ l0c68h:
 
     ;REM User selected 'E' for Execute New System
 
-    ;GOSUB sub_0a49h
-    call sub_0a49h
+    ;GOSUB exec_new_system
+    call exec_new_system
 
-    ;GOTO l0c81h
-    jp l0c81h
+    ;GOTO jump_main_menu
+    jp jump_main_menu
 
 l0c76h:
-    ;IF R <> &H51 THEN GOTO l0c81h
+    ;IF R <> &H51 THEN GOTO jump_main_menu
     ld a,(rr)
     cp 'Q'
-    jp nz,l0c81h
+    jp nz,jump_main_menu
 
     ;REM User selected 'Q' for Quit This Program
 
     ;END
     call end
 
-l0c81h:
-    ;GOTO l0babh
-    jp l0babh
+jump_main_menu:
+    ;GOTO main_menu
+    jp main_menu
 
 disk_error:
     db 0eh
@@ -2767,9 +2771,9 @@ please_enter:
     db 25h
     db "Please enter the appropriate letter: "
 
-l12a6h:
-    ;GOTO l13eeh
-    jp l13eeh
+jump_rs232_menu:
+    ;GOTO rs232_menu
+    jp rs232_menu
 
 ask_char_size:
     ;PRINT "New charater length (5 to 8) ? ";
@@ -3049,7 +3053,7 @@ l13edh:
     ;RETURN
     ret
 
-l13eeh:
+rs232_menu:
     ;GOSUB clear_screen
     call clear_screen
 
@@ -3407,15 +3411,15 @@ l1551h:
     call ask_baud_rate
 
 l1560h:
-    ;GOTO l13eeh
-    jp l13eeh
+    ;GOTO rs232_menu
+    jp rs232_menu
 
     ;RETURN
     ret
 
-sub_1564h:
-    ;GOTO l1697h
-    jp l1697h
+jump_io_menu:
+    ;GOTO io_menu
+    jp io_menu
 
 sub_1567h:
     ;PRINT
@@ -3677,7 +3681,7 @@ l1696h:
     ;RETURN
     ret
 
-l1697h:
+io_menu:
     ;GOSUB clear_screen
     call clear_screen
 
@@ -3967,6 +3971,8 @@ l17b7h:
     cp cr
     jp nz,l17d7h
 
+    ;REM User pressed return to exit this menu
+
     ;RETURN
     ret
 
@@ -4112,15 +4118,15 @@ l1864h:
     ld (5663h),a
 
 l1872h:
-    ;GOTO l1697h
-    jp l1697h
+    ;GOTO io_menu
+    jp io_menu
 
     ;RETURN
     ret
 
-sub_1876h:
-    ;GOTO l1a46h
-    jp l1a46h
+jump_pet_menu:
+    ;GOTO pet_menu
+    jp pet_menu
 
 sub_1879h:
     ;PRINT "Number of columns (1, 2 or 4) ? ";
@@ -4643,7 +4649,7 @@ sub_1a2bh:
 l1a45h:
     ret                 ;1a45 c9
 
-l1a46h:
+pet_menu:
     ;GOSUB clear_screen
     call clear_screen
 
@@ -4864,6 +4870,8 @@ l1af9h:
     cp cr
     jp nz,l1b2dh
 
+    ;REM User pressed RETURN to exit this menu
+
     ;RETURN
     ret
 
@@ -4933,8 +4941,8 @@ l1b5dh:
     call sub_1a2bh
 
 l1b6ch:
-    ;GOTO l1a46h
-    jp l1a46h
+    ;GOTO pet_menu
+    jp pet_menu
 
     ;RETURN
     ret
