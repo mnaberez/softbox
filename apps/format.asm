@@ -75,7 +75,7 @@ drv_typ:
 cbm_err:
     dw 0                ;Last error code from CBM DOS
 buf_addr:
-    dw 0                ;Address of buffer used in get_char
+    dw 0                ;Address of buffer used in readline
 
 ; End of BASIC variables ====================================================
 
@@ -157,8 +157,8 @@ next_disk:
     ld hl,a_to_p
     call pv1d
 
-    ;GOSUB get_char
-    call get_char
+    ;GOSUB readline
+    call readline
 
     ;PRINT
     call pr0a
@@ -319,8 +319,8 @@ l0215h:
     ld hl,proceed_yn
     call pv1d
 
-    ;GOSUB get_char
-    call get_char
+    ;GOSUB readline
+    call readline
 
     ;IF R=&H59 THEN GOTO format_hard
     ld hl,(first_char)  ;HL = char typed by user ("Y" = 59h)
@@ -375,8 +375,8 @@ prompt_floppy:
     ld hl,press_return
     call pv1d
 
-    ;GOSUB get_char
-    call get_char
+    ;GOSUB readline
+    call readline
 
     ;IF R=0 THEN GOTO format_floppy
     ld hl,(first_char)
@@ -445,7 +445,7 @@ format_failed:
     ;END
     call end            ;Never returns
 
-get_char:
+readline:
 ;Get a line of input from the user and save the first character
 ;in first_char.  If the char is alphabetic, it will be normalized
 ;to uppercase.  If nothing was entered, first_char will be zero.
