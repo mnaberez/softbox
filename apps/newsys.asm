@@ -4273,9 +4273,11 @@ l19dfh:
     ld hl,009fh
     ld (scrtab+48),hl
 
-    ;SCRTAB(25) = &H00 : SCRTAB(26) = &H00
+    ;SCRTAB(25) = &H00
     ld hl,0000h
     ld (scrtab+50),hl
+
+    ;SCRTAB(26) = &H00
     ld (scrtab+52),hl
 
     ;GOTO pet_menu
@@ -4459,9 +4461,11 @@ l1aa6h:
     ld hl,00a9h
     ld (scrtab+80),hl
 
-    ;SCRTAB(41) = &H00 : SCRTAB(42) = &H00
+    ;SCRTAB(41) = &H00
     ld hl,0000h
     ld (scrtab+82),hl
+
+    ;SCRTAB(42) = &H00
     ld (scrtab+84),hl
 
     ;GOTO pet_menu
