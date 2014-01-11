@@ -606,7 +606,7 @@ l0599h:
     ld h,00h
     ld (lptype),hl
 
-l05b5h:
+main_menu:
     ;GOSUB clear_screen
     call clear_screen
 
@@ -718,13 +718,13 @@ l05b5h:
     ;GOSUB readline
     call readline
 
-    ;IF R=&H52 THEN GOTO l06deh
+    ;IF R=&H52 THEN GOTO rs232_menu
     ld hl,(rr)
     ld de,0-'R'
     add hl,de
     ld a,h
     or l
-    jp z,l06deh
+    jp z,rs232_menu
 
     ;IF R<>&H51 THEN GOTO l0693h
     ld hl,(rr)
@@ -738,39 +738,39 @@ l05b5h:
     call end
 
 l0693h:
-    ;IF R=&H49 THEN GOTO l0a7bh
+    ;IF R=&H49 THEN GOTO io_menu
     ld hl,(rr)
     ld de,0-'I'
     add hl,de
     ld a,h
     or l
-    jp z,l0a7bh
+    jp z,io_menu
 
-    ;IF R=&H44 THEN GOTO l0eadh
+    ;IF R=&H44 THEN GOTO drive_menu
     ld hl,(rr)
     ld de,0-'D'
     add hl,de
     ld a,h
     or l
-    jp z,l0eadh
+    jp z,drive_menu
 
-    ;IF R=&H41 THEN GOTO l1362h
+    ;IF R=&H41 THEN GOTO autoload_menu
     ld hl,(rr)
     ld de,0-'A'
     add hl,de
     ld a,h
     or l
-    jp z,l1362h
+    jp z,autoload_menu
 
-    ;IF R=&H45 THEN GOTO l1494h
+    ;IF R=&H45 THEN GOTO exec_or_save
     ld hl,(rr)
     ld de,0-'E'
     add hl,de
     ld a,h
     or l
-    jp z,l1494h
+    jp z,exec_or_save
 
-    ;IF R=&H53 THEN GOTO l1494h
+    ;IF R=&H53 THEN GOTO exec_or_save
     ld hl,(rr)
     ld de,0-'S'
     add hl,de
@@ -779,17 +779,17 @@ l0693h:
     jp z,l1668h
     ld hl,(rr)
 
-    ;IF R=&H50 THEN GOTO l1743h
+    ;IF R=&H50 THEN GOTO pet_menu
     ld de,0-'P'
     add hl,de
     ld a,h
     or l
-    jp z,l1743h
+    jp z,pet_menu
 
-    ;GOTO l05b5h
-    jp l05b5h
+    ;GOTO main_menu
+    jp main_menu
 
-l06deh:
+rs232_menu:
     ;GOSUB clear_screen
     call clear_screen
 
@@ -1088,11 +1088,11 @@ l0887h:
     or l
     jp z,l08d7h
 
-    ;IF R=0 THEN GOTO l05b5h
+    ;IF R=0 THEN GOTO main_menu
     ld hl,(rr)
     ld a,h
     or l
-    jp z,l05b5h
+    jp z,main_menu
 
     ;IF R=&H32 THEN GOTO l0930h
     ld hl,(rr)
@@ -1118,8 +1118,8 @@ l0887h:
     or l
     jp z,l09e8h
 
-    ;GOTO l06deh
-    jp l06deh
+    ;GOTO rs232_menu
+    jp rs232_menu
 
 l08d7h:
     ;PRINT "New character length (5 to 8) ? "
@@ -1184,7 +1184,7 @@ l0903h:
     ld l,a              ;0929 6f
     ld (uu),hl          ;092a 22 c0 02
 l092dh:
-    jp l06deh           ;092d c3 de 06
+    jp rs232_menu           ;092d c3 de 06
 
 l0930h:
     ;PRINT "Number of stop bits (1 or 2)  ? ";
@@ -1245,8 +1245,8 @@ l095eh:
     ld (uu),hl
 
 l0980h:
-    ;GOTO l06deh
-    jp l06deh
+    ;GOTO rs232_menu
+    jp rs232_menu
 
 l0983h:
     ;PRINT "O(dd), E(ven) or N(o parity) ? ";
@@ -1320,8 +1320,8 @@ l09cbh:
     ld (uu),hl
 
 l09e5h:
-    ;GOTO l06deh
-    jp l06deh
+    ;GOTO rs232_menu
+    jp rs232_menu
 
 l09e8h:
     ;PRINT
@@ -1426,10 +1426,10 @@ l0a66h:
     ld (baud),hl
 
 l0a78h:
-    ;GOTO l06deh
-    jp l06deh
+    ;GOTO rs232_menu
+    jp rs232_menu
 
-l0a7bh:
+io_menu:
     ;GOSUB clear_screen
     call clear_screen
 
@@ -1721,11 +1721,11 @@ l0c2dh:
     ;GOSUB readline
     call readline
 
-    ;IF R=0 THEN GOTO l05b5h
+    ;IF R=0 THEN GOTO main_menu
     ld hl,(rr)
     ld a,h
     or l
-    jp z,l05b5h
+    jp z,main_menu
 
     ;IF R=&H36 THEN GOTO l0da5h
     ld hl,(rr)
@@ -1823,8 +1823,8 @@ l0ccbh:
     ld (pun),hl
 
 l0cddh:
-    ;GOTO l0a7bh
-    jp l0a7bh
+    ;GOTO io_menu
+    jp io_menu
 
 l0ce0h:
     ;PRINT
@@ -1959,8 +1959,8 @@ l0d80h:
     ld (iobyte),hl
 
 l0da2h:
-    ;GOTO l0a7bh
-    jp l0a7bh
+    ;GOTO io_menu
+    jp io_menu
 
 l0da5h:
     ;PRINT "T(TY:) or P(TR:) ? "
@@ -2015,7 +2015,7 @@ l0dcbh:
     ld (iobyte),hl
 
 l0dedh:
-    jp l0a7bh           ;0ded c3 7b 0a
+    jp io_menu           ;0ded c3 7b 0a
 
 l0df0h:
     ;PRINT "T(TY:) or P(TP:) ? ";
@@ -2070,8 +2070,8 @@ l0e16h:
     ld (iobyte),hl
 
 l0e38h:
-    ;GOTO l0a7bh
-    jp l0a7bh
+    ;GOTO io_menu
+    jp io_menu
 
 l0e3bh:
     ;PRINT
@@ -2144,10 +2144,10 @@ l0e98h:
     ld (lptype),hl
 
 l0eaah:
-    ;GOTO l0a7bh
-    jp l0a7bh
+    ;GOTO io_menu
+    jp io_menu
 
-l0eadh:
+drive_menu:
     ;GOSUB clear_screen
     call clear_screen
 
@@ -2275,11 +2275,11 @@ l0eadh:
     ;GOSUB readline
     call readline
 
-    ;IF R=0 THEN GOTO l05b5h
+    ;IF R=0 THEN GOTO main_menu
     ld hl,(rr)
     ld a,h
     or l
-    jp z,l05b5h
+    jp z,main_menu
 
     ld hl,(rr)          ;0f78 2a b2 02
     ld de,0ffbfh        ;0f7b 11 bf ff
@@ -2314,7 +2314,7 @@ l0f96h:
     ld l,a              ;0fa0 6f
     ld a,h              ;0fa1 7c
     or l                ;0fa2 b5
-    jp nz,l0eadh        ;0fa3 c2 ad 0e
+    jp nz,drive_menu        ;0fa3 c2 ad 0e
     ld de,0ffbfh        ;0fa6 11 bf ff
     ld hl,(rr)          ;0fa9 2a b2 02
     add hl,de           ;0fac 19
@@ -2398,17 +2398,17 @@ l1004h:
     inc hl
     ld (hl),d
 
-    ;GOTO l0eadh
-    jp l0eadh
+    ;GOTO drive_menu
+    jp drive_menu
 
 l1021h:
-    ;IF R <> &H47 THEN GOTO l0eadh  ' h(ard)
+    ;IF R <> &H47 THEN GOTO drive_menu  ' h(ard)
     ld hl,(rr)
     ld de,0-'H'         ;(h)ard
     add hl,de
     ld a,h
     or l
-    jp nz,l0eadh
+    jp nz,drive_menu
 
     ;IF MINI = 1 THEN GOTO l10fbh
     ld hl,(mini)
@@ -2492,8 +2492,8 @@ l107fh:
     jp l109fh
 
 l109ch:
-    ;GOTO l0eadh
-    jp l0eadh
+    ;GOTO drive_menu
+    jp drive_menu
 
 l109fh:
     ;PRINT "Device number for drive ? ";
@@ -2526,12 +2526,12 @@ l109fh:
     push de
     pop hl
 
-    ;IF DRV(D) <> 4 THEN GOTO l0eadh
+    ;IF DRV(D) <> 4 THEN GOTO drive_menu
     ld de,0-4
     add hl,de
     ld a,h
     or l
-    jp nz,l0eadh
+    jp nz,drive_menu
 
     ;PRINT "Configure as 1 or 2 CP/M drives ? ";
     call pr0a
@@ -2560,8 +2560,8 @@ l109fh:
     ld (hl),d
 
 l10f8h:
-    ;GOTO l0eadh
-    jp l0eadh
+    ;GOTO drive_menu
+    jp drive_menu
 
 l10fbh:
     ;PRINT "3, 6 or 12 Mbyte drive ? ";
@@ -2638,8 +2638,8 @@ l1141h:
     jp l1161h
 
 l115eh:
-    ;GOTO l0eadh
-    jp l0eadh
+    ;GOTO drive_menu
+    jp drive_menu
 
 l1161h:
     ;PRINT "Use the ENTIRE drive for CP/M,  or just"
@@ -2683,8 +2683,8 @@ l1161h:
     ld (hl),d
 
 l1197h:
-    ;GOTO l0eadh
-    jp l0eadh
+    ;GOTO drive_menu
+    jp drive_menu
 
 sub_119ah:
     ;IF DRV(D) <> 0 THEN GOTO l11b7h
@@ -3016,7 +3016,7 @@ l1361h:
     ;RETURN
     ret
 
-l1362h:
+autoload_menu:
     ;GOSUB clear_screen
     call clear_screen
 
@@ -3089,13 +3089,13 @@ l13bfh:
     ;GOSUB readline
     call readline
 
-    ;IF R<>&H59 THEN GOTO l05b5h
+    ;IF R<>&H59 THEN GOTO main_menu
     ld hl,(rr)
     ld de,0-'Y'
     add hl,de
     ld a,h
     or l
-    jp nz,l05b5h
+    jp nz,main_menu
 
     ;PRINT "Please enter the new command : "
     call pr0a
@@ -3198,7 +3198,7 @@ l146ah:
     ld (hl),e           ;1478 73
     inc hl              ;1479 23
     ld (hl),d           ;147a 72
-    jp l05b5h           ;147b c3 b5 05
+    jp main_menu           ;147b c3 b5 05
 sub_147eh:
     ld hl,(jj)          ;147e 2a d0 02
     add hl,hl           ;1481 29
@@ -3216,7 +3216,7 @@ sub_147eh:
     inc hl              ;1491 23
     ld (hl),d           ;1492 72
     ret                 ;1493 c9
-l1494h:
+exec_or_save:
     call sub_149ah      ;1494 cd 9a 14
     call exsys          ;1497 cd a9 28
 sub_149ah:
@@ -3557,7 +3557,7 @@ l1692h:
     ld l,a              ;169c 6f
     ld a,h              ;169d 7c
     or l                ;169e b5
-    jp nz,l05b5h        ;169f c2 b5 05
+    jp nz,main_menu        ;169f c2 b5 05
 
     ;D = R - &H41
     ld de,0-41h
@@ -3634,8 +3634,8 @@ l16f6h:
     ld hl,dd
     call cwrite_
 
-    ;GOTO l05b5h
-    jp l05b5h
+    ;GOTO main_menu
+    jp main_menu
 
 l170eh:
     ;CALL IDISK (D)
@@ -3650,11 +3650,11 @@ l170eh:
     ld hl,ee
     call dskerr
 
-    ;IF E = 0 THEN GOTO l05b5h
+    ;IF E = 0 THEN GOTO main_menu
     ld hl,(ee)
     ld a,h
     or l
-    jp z,l05b5h
+    jp z,main_menu
 
     ;PRINT "Re-try (Y/N) ? ";
     call pr0a
@@ -3672,10 +3672,10 @@ l170eh:
     or l
     jp z,l170eh
 
-    ;GOTO l05b5h
-    jp l05b5h
+    ;GOTO main_menu
+    jp main_menu
 
-l1743h:
+pet_menu:
     ;GOSUB clear_screen
     call clear_screen
 
@@ -3908,11 +3908,11 @@ l1871h:
     ;GOSUB readline
     call readline
 
-    ;IF R = 0 THEN GOTO l05b5h
+    ;IF R = 0 THEN GOTO main_menu
     ld hl,(rr)
     ld a,h
     or l
-    jp z,l05b5h
+    jp z,main_menu
 
     ;IF R = &H31 THEN GOTO l18eah
     ld hl,(rr)
@@ -3940,8 +3940,8 @@ l1871h:
     ld h,a
     ld (termtype),hl
 
-    ;GOTO l1743h
-    jp l1743h
+    ;GOTO pet_menu
+    jp pet_menu
 
 l18cfh:
     ;IF R = &H33 THEN GOTO l192fh
@@ -3960,8 +3960,8 @@ l18cfh:
     or l
     jp z,l192fh
 
-    ;GOTO l1743h
-    jp l1743h
+    ;GOTO pet_menu
+    jp pet_menu
 
 l18eah:
     ;PRINT "Number of columns (1, 2 or 4) ? ";
@@ -4011,8 +4011,8 @@ l191ah:
     ld (dirsize),hl
 
 l192ch:
-    ;GOTO l1743h
-    jp l1743h
+    ;GOTO pet_menu
+    jp pet_menu
 
 l192fh:
     ;PRINT "New clock frequency ? "
@@ -4034,8 +4034,8 @@ l192fh:
     ld (clock),hl
 
 l1949h:
-    ;GOTO l1743h
-    jp l1743h
+    ;GOTO pet_menu
+    jp pet_menu
 
 l194ch:
     ;PRINT "Screen type (ADM3A, HZ1500, TV912) ? ";
@@ -4096,13 +4096,13 @@ l1975h:
     jp l1aa6h
 
 l199ah:
-    ;IF R <> &H48 THEN GOTO l1743h
+    ;IF R <> &H48 THEN GOTO pet_menu
     ld hl,(rr)
     ld de,0ffb8h
     add hl,de
     ld a,h
     or l
-    jp nz,l1743h
+    jp nz,pet_menu
 
     ;PRINT "Lead-in code E(scape) or T(ilde) ? ";
     call pr0a
@@ -4144,8 +4144,8 @@ l19c7h:
     jp l19dfh
 
 l19dch:
-    ;GOTO l1743h
-    jp l1743h
+    ;GOTO pet_menu
+    jp pet_menu
 
 l19dfh:
     ;TERMTYPE = (TERMTYPE AND &H80) OR 1
@@ -4278,8 +4278,8 @@ l19dfh:
     ld (scrtab+50),hl
     ld (scrtab+52),hl
 
-    ;GOTO l1743h
-    jp l1743h
+    ;GOTO pet_menu
+    jp pet_menu
 
 l1aa6h:
     ;LEADIN = &H1B
@@ -4464,8 +4464,8 @@ l1aa6h:
     ld (scrtab+82),hl
     ld (scrtab+84),hl
 
-    ;GOTO l1743h
-    jp l1743h
+    ;GOTO pet_menu
+    jp pet_menu
 
 clear_screen:
     ;PRINT CHR$(26)
