@@ -4283,7 +4283,7 @@ ask_leadin:
 
     ;REM User selected 'E' for Escape lead-in
 
-    ;POKE &H5668, &H1B : REM LEADIN = &H1B
+    ;POKE &H5668, &H1B ' Set LEADIN
     ld hl,5668h
     ld (hl),1bh
 
@@ -4298,7 +4298,7 @@ l1918h:
 
     ;REM User selected 'T' for Tilde lead-in
 
-    ;POKE &H5668, &H7E : REM LEADIN = &H7E
+    ;POKE &H5668, &H7E ' LEADIN
     ld hl,5668h
     ld (hl),7eh
 
@@ -4318,124 +4318,126 @@ adm_or_tv:
     or 01h
     ld (5667h),a
 
-    ;POKE &H566A, &H00 : REM ROWOFF = &H00
+    ;POKE &H566A, &H00 ' Set ROWOFF
     ld hl,566ah
     ld (hl),00h
 
-    ;POKE &H566B, &H00 : REM COLOFF = &H00
+    ;POKE &H566B, &H00 ' Set COLOFF
     inc hl
     ld (hl),00h
 
-    ;POKE &H5669, &H01 : REM ORDER = &H01
+    ;POKE &H5669, &H01 ' Set ORDER
     dec hl
     dec hl
     ld (hl),01h
 
-    ;POKE &H5680+0, &H8B : REM SCRTAB(0) = &H8B
+    ;REM Populate SCRTAB
+
+    ;POKE &H5680+0, &H8B
     ld hl,5680h
     ld (hl),8bh
 
-    ;POKE &H5680+1, &H0B : REM SCRTAB(1) = &H0B
+    ;POKE &H5680+1, &H0B
     inc hl
     ld (hl),0bh
 
-    ;POKE &H5680+2, &H8C : REM SCRTAB(2) = &H8C
+    ;POKE &H5680+2, &H8C
     inc hl
     ld (hl),8ch
 
-    ;POKE &H5680+3, &H0C : REM SCRTAB(3) = &H0C
+    ;POKE &H5680+3, &H0C
     inc hl
     ld (hl),0ch
 
-    ;POKE &H5680+4, &H8F : REM SCRTAB(4) = &H8F
+    ;POKE &H5680+4, &H8F
     inc hl
     ld (hl),8fh
 
-    ;POKE &H5680+5, &H13 : REM SCRTAB(5) = &H13
+    ;POKE &H5680+5, &H13
     inc hl
     ld (hl),13h
 
-    ;POKE &H5680+6, &H91 : REM SCRTAB(6) = &H91
+    ;POKE &H5680+6, &H91
     inc hl
     ld (hl),91h
 
-    ;POKE &H5680+7, &H1B : REM SCRTAB(7) = &H1B
+    ;POKE &H5680+7, &H1B
     inc hl
     ld (hl),1bh
 
-    ;POKE &H5680+8, &H92 : REM SCRTAB(8) = &H92
+    ;POKE &H5680+8, &H92
     inc hl
     ld (hl),92h
 
-    ;POKE &H5680+9, &H1E : REM SCRTAB(9) = &H1E
+    ;POKE &H5680+9, &H1E
     inc hl
     ld (hl),1eh
 
-    ;POKE &H5680+10, &H93 : REM SCRTAB(10) = &H93
+    ;POKE &H5680+10, &H93
     inc hl
     ld (hl),93h
 
-    ;POKE &H5680+11, &H12 : REM SCRTAB(11) = &H12
+    ;POKE &H5680+11, &H12
     inc hl
     ld (hl),12h
 
-    ;POKE &H5680+12, &H97 : REM SCRTAB(12) = &H97
+    ;POKE &H5680+12, &H97
     inc hl
     ld (hl),97h
 
-    ;POKE &H5680+13, &H14 : REM SCRTAB(13) = &H14
+    ;POKE &H5680+13, &H14
     inc hl
     ld (hl),14h
 
-    ;POKE &H5680+14, &H98 : REM SCRTAB(14) = &H98
+    ;POKE &H5680+14, &H98
     inc hl
     ld (hl),98h
 
-    ;POKE &H5680+15, &H14 : REM SCRTAB(15) = &H14
+    ;POKE &H5680+15, &H14
     inc hl
     ld (hl),14h
 
-    ;POKE &H5680+16, &H9A : REM SCRTAB(16) = &H9A
+    ;POKE &H5680+16, &H9A
     inc hl
     ld (hl),9ah
 
-    ;POKE &H5680+17, &H11 : REM SCRTAB(17) = &H11
+    ;POKE &H5680+17, &H11
     inc hl
     ld (hl),11h
 
-    ;POKE &H5680+18, &H9C : REM SCRTAB(18) = &H9C
+    ;POKE &H5680+18, &H9C
     inc hl
     ld (hl),9ch
 
-    ;POKE &H5680+19, &H1A : REM SCRTAB(19) = &H1A
+    ;POKE &H5680+19, &H1A
     inc hl
     ld (hl),1ah
 
-    ;POKE &H5680+20, &H9D : REM SCRTAB(20) = &H9D
+    ;POKE &H5680+20, &H9D
     inc hl
     ld (hl),9dh
 
-    ;POKE &H5680+21, &H1A : REM SCRTAB(21) = &H1A
+    ;POKE &H5680+21, &H1A
     inc hl
     ld (hl),1ah
 
-    ;POKE &H5680+22, &H99 : REM SCRTAB(22) = &H99
+    ;POKE &H5680+22, &H99
     inc hl
     ld (hl),99h
 
-    ;POKE &H5680+23, &H00 : REM SCRTAB(23) = &H00
+    ;POKE &H5680+23, &H00
     inc hl
     ld (hl),00h
 
-    ;POKE &H5680+24, &H9F : REM SCRTAB(24) = &H9F
+    ;POKE &H5680+24, &H9F
     inc hl
     ld (hl),9fh
 
-    ;POKE &H5680+25, &H00 : REM SCRTAB(25) = &H00
+    ;POKE &H5680+25, &H00
     inc hl
     ld (hl),00h
 
-    ;POKE &H5680+26, &H00 : REM SCRTAB(26) = &H00
+    ;POKE &H5680+26, &H00
     inc hl
     ld (hl),00h
 
@@ -4445,193 +4447,195 @@ adm_or_tv:
 hz1500:
     ;REM Terminal settings for Hazeltine HZ-1500
 
-    ;POKE &H5668, &H1B : REM LEADIN = &H1B
+    ;POKE &H5668, &H1B ' Set LEADIN
     ld hl,5668h
     ld (hl),1bh
 
-    ;POKE &H566A, &H20 : REM ROWOFF = &H20
+    ;POKE &H566A, &H20 ' Set ROWOFF
     inc hl
     inc hl
     ld (hl),20h
 
-    ;POKE &H566B, &H20 : REM COLOFF = &H20
+    ;POKE &H566B, &H20 ' Set COLOFF
     inc hl
     ld (hl),20h
 
-    ;POKE &H5669, &H00 : REM ORDER = &H00
+    ;POKE &H5669, &H00 ' Set ORDER
     dec hl
     dec hl
     ld (hl),00h
 
-    ;POKE &H5680+0, &H0B1 : REM SCRTAB(0) = &H0B1
+    ;REM Populate SCRTAB
+
+    ;POKE &H5680+0, &H0B1
     ld hl,5680h
     ld (hl),0b1h
 
-    ;POKE &H5680+1, &H04 : REM SCRTAB(1) = &H04
+    ;POKE &H5680+1, &H04
     inc hl
     ld (hl),04h
 
-    ;POKE &H5680+2, &H0B2 : REM SCRTAB(2) = &H0B2
+    ;POKE &H5680+2, &H0B2
     inc hl
     ld (hl),0b2h
 
-    ;POKE &H5680+3, &H05 : REM SCRTAB(3) = &H05
+    ;POKE &H5680+3, &H05
     inc hl
     ld (hl),05h
 
-    ;POKE &H5680+4, &H0B3 : REM SCRTAB(4) = &H0B3
+    ;POKE &H5680+4, &H0B3
     inc hl
     ld (hl),0b3h
 
-    ;POKE &H5680+5, &H06 : REM SCRTAB(5) = &H06
+    ;POKE &H5680+5, &H06
     inc hl
     ld (hl),06h
 
-    ;POKE &H5680+6, &H0EA : REM SCRTAB(6) = &H0EA
+    ;POKE &H5680+6, &H0EA
     inc hl
     ld (hl),0eah
 
-    ;POKE &H5680+7, &H0E : REM SCRTAB(7) = &H0E
+    ;POKE &H5680+7, &H0E
     inc hl
     ld (hl),0eh
 
-    ;POKE &H5680+8, &H0EB : REM SCRTAB(8) = &H0EB
+    ;POKE &H5680+8, &H0EB
     inc hl
     ld (hl),0ebh
 
-    ;POKE &H5680+9, &H0F : REM SCRTAB(9) = &H0F
+    ;POKE &H5680+9, &H0F
     inc hl
     ld (hl),0fh
 
-    ;POKE &H5680+10, &H0D1 : REM SCRTAB(10) = &H0D1
+    ;POKE &H5680+10, &H0D1
     inc hl
     ld (hl),0d1h
 
-    ;POKE &H5680+11, &H1C : REM SCRTAB(11) = &H1C
+    ;POKE &H5680+11, &H1C
     inc hl
     ld (hl),1ch
 
-    ;POKE &H5680+12, &H0D7 : REM SCRTAB(12) = &H0D7
+    ;POKE &H5680+12, &H0D7
     inc hl
     ld (hl),0d7h
 
-    ;POKE &H5680+13, &H1D : REM SCRTAB(13) = &H1D
+    ;POKE &H5680+13, &H1D
     inc hl
     ld (hl),1dh
 
-    ;POKE &H5680+14, &H0C5 : REM SCRTAB(14) = &H0C5
+    ;POKE &H5680+14, &H0C5
     inc hl
     ld (hl),0c5h
 
-    ;POKE &H5680+15, &H11 : REM SCRTAB(15) = &H11
+    ;POKE &H5680+15, &H11
     inc hl
     ld (hl),11h
 
-    ;POKE &H5680+16, &H0D2 : REM SCRTAB(16) = &H0D2
+    ;POKE &H5680+16, &H0D2
     inc hl
     ld (hl),0d2h
 
-    ;POKE &H5680+17, &H12 : REM SCRTAB(17) = &H12
+    ;POKE &H5680+17, &H12
     inc hl
     ld (hl),12h
 
-    ;POKE &H5680+18, &H0D4 : REM SCRTAB(18) = &H0D4
+    ;POKE &H5680+18, &H0D4
     inc hl
     ld (hl),0d4h
 
-    ;POKE &H5680+19, &H13 : REM SCRTAB(19) = &H13
+    ;POKE &H5680+19, &H13
     inc hl
     ld (hl),13h
 
-    ;POKE &H5680+20, &H0F4 : REM SCRTAB(20) = &H0F4
+    ;POKE &H5680+20, &H0F4
     inc hl
     ld (hl),0f4h
 
-    ;POKE &H5680+21, &H13 : REM SCRTAB(21) = &H13
+    ;POKE &H5680+21, &H13
     inc hl
     ld (hl),13h
 
-    ;POKE &H5680+22, &H0D9 : REM SCRTAB(22) = &H0D9
+    ;POKE &H5680+22, &H0D9
     inc hl
     ld (hl),0d9h
 
-    ;POKE &H5680+23, &H14 : REM SCRTAB(23) = &H14
+    ;POKE &H5680+23, &H14
     inc hl
     ld (hl),14h
 
-    ;POKE &H5680+24, &H0F9 : REM SCRTAB(24) = &H0F9
+    ;POKE &H5680+24, &H0F9
     inc hl
     ld (hl),0f9h
 
-    ;POKE &H5680+25, &H14 : REM SCRTAB(25) = &H14
+    ;POKE &H5680+25, &H14
     inc hl
     ld (hl),14h
 
-    ;POKE &H5680+26, &H0AB : REM SCRTAB(26) = &H0AB
+    ;POKE &H5680+26, &H0AB
     inc hl
     ld (hl),0abh
 
-    ;POKE &H5680+27, &H1A : REM SCRTAB(27) = &H1A
+    ;POKE &H5680+27, &H1A
     inc hl
     ld (hl),1ah
 
-    ;POKE &H5680+28, &H0AA : REM SCRTAB(28) = &H0AA
+    ;POKE &H5680+28, &H0AA
     inc hl
     ld (hl),0aah
 
-    ;POKE &H5680+29, &H1A : REM SCRTAB(29) = &H1A
+    ;POKE &H5680+29, &H1A
     inc hl
     ld (hl),1ah
 
-    ;POKE &H5680+30, &H0BA : REM SCRTAB(30) = &H0BA
+    ;POKE &H5680+30, &H0BA
     inc hl
     ld (hl),0bah
 
-    ;POKE &H5680+31, &H1A : REM SCRTAB(31) = &H1A
+    ;POKE &H5680+31, &H1A
     inc hl
     ld (hl),1ah
 
-    ;POKE &H5680+32, &H0BB : REM SCRTAB(32) = &H0BB
+    ;POKE &H5680+32, &H0BB
     inc hl
     ld (hl),0bbh
 
-    ;POKE &H5680+33, &H1A : REM SCRTAB(33) = &H1A
+    ;POKE &H5680+33, &H1A
     inc hl
     ld (hl),1ah
 
-    ;POKE &H5680+34, &H0DA : REM SCRTAB(34) = &H0DA
+    ;POKE &H5680+34, &H0DA
     inc hl
     ld (hl),0dah
 
-    ;POKE &H5680+35, &H1A : REM SCRTAB(35) = &H1A
+    ;POKE &H5680+35, &H1A
     inc hl
     ld (hl),1ah
 
-    ;POKE &H5680+36, &H0BD : REM SCRTAB(36) = &H0BD
+    ;POKE &H5680+36, &H0BD
     inc hl
     ld (hl),0bdh
 
-    ;POKE &H5680+37, &H1B : REM SCRTAB(37) = &H1B
+    ;POKE &H5680+37, &H1B
     inc hl
     ld (hl),1bh
 
-    ;POKE &H5680+38, &H0A8 : REM SCRTAB(38) = &H0A8
+    ;POKE &H5680+38, &H0A8
     inc hl
     ld (hl),0a8h
 
-    ;POKE &H5680+39, &H00 : REM SCRTAB(39) = &H00
+    ;POKE &H5680+39, &H00
     inc hl
     ld (hl),00h
 
-    ;POKE &H5680+40, &H0A9 : REM SCRTAB(40) = &H0A9
+    ;POKE &H5680+40, &H0A9
     inc hl
     ld (hl),0a9h
 
-    ;POKE &H5680+41, &H00 : REM SCRTAB(41) = &H00
+    ;POKE &H5680+41, &H00
     inc hl
     ld (hl),00h
 
-    ;POKE &H5680+42, &H00 : REM SCRTAB(42) = &H00
+    ;POKE &H5680+42, &H00
     inc hl
     ld (hl),00h
 
