@@ -5534,7 +5534,7 @@ l22b1h:
     ld (dos_err),a
     ret
 
-format:
+format:                 ;(TODO: Unused?)
 ;Format an IEEE-488 drive for SoftBox use.
     ld a,c
     ld (cpm_drive),a
@@ -5542,8 +5542,8 @@ format:
     ld a,(cpm_drive)
     and 01h
     add a,'0'
-    ld (l23e3h+1),a
-    ld e,0fh
+    ld (l23e3h+1),a     ;Store cbm drive number into command string
+    ld e,0fh            ;Secondary address is 15 (command channel)
     ld c,l23e3h_len
     ld hl,l23e3h        ;"N0:CP/M V2.2 DISK,XX"
     call open           ;Open a file on an IEEE-488 device
@@ -5551,29 +5551,29 @@ format:
     call dsksta         ;Read the error channel of an IEEE-488 device
     ld (dos_err),a
     or a
-    ret nz
+    ret nz              ;If error occured, return
     ld a,(cpm_drive)
     call idrive         ;Initialize an IEEE-488 disk drive
     ld hl,4000h
-    ld de,4001h
+    ld de,4000h+1
     ld bc,00ffh
     ld (hl),0e5h
-    ldir
-    ld a,0fh
-    ld (l2407h),a
-    ld a,01h
-    ld (l2406h),a
+    ldir                ;Fill all 256 bytes (4000h to 40ffh) with 0e5h
+    ld a,15             ;Start with sector 15 (cbmdos format)
+    ld (cbmdos_sector),a
+    ld a,1              ;Write only in track 1 (cbmdos format)
+    ld (cbmdos_track),a
 l230fh:
 ;Clear the CP/M directory by filling it with E5 ("unused").
-    call sub_2325h
+    call sub_2325h      ;Write a sector to an IEEE-488 drive.
     ld a,(cpm_drive)
     call dsksta         ;Read the error channel of an IEEE-488 device
     ld (dos_err),a
     or a
-    ret nz
-    ld hl,l2407h
-    dec (hl)
-    jp p,l230fh
+    ret nz              ;If error occured, return
+    ld hl,cbmdos_sector
+    dec (hl)            ;Decrement the current sector (cbmdos format)
+    jp p,l230fh         ;Loop until all sectors (15 .. 0) done
     ret
 
 sub_2325h:
@@ -5597,7 +5597,7 @@ sub_2325h:
     call dskdev         ;Get device address for a CP/M drive number
     ld e,02h
     call listen         ;Send LISTEN to an IEEE-488 device
-    ld hl,4001h
+    ld hl,4000h+1
     ld c,0ffh
     call ieeemsg        ;Send string to the current IEEE-488 device
     call unlisten       ;Send UNLISTEN to all IEEE-488 devices
@@ -5608,37 +5608,38 @@ sub_2325h:
     call ieeemsg        ;Send string to the current IEEE-488 device
     ld a,(cpm_drive)
     and 01h
-    add a,'0'
+    add a,'0'           ;Get cbm drive number
     call wrieee         ;Send byte to an IEEE-488 device
-    ld a,(l2406h)
+    ld a,(cbmdos_track) ;Get track number (cbmdos format)
     call ieeenum        ;Send number as decimal string to IEEE-488 dev
-    ld a,(l2407h)
+    ld a,(cbmdos_sector);Get sector number (cbmdos format)
     call ieeenum        ;Send number as decimal string to IEEE-488 dev
     call creoi          ;Send carriage return to IEEE-488 dev with EOI
     jp unlisten         ;Send UNLISTEN to all IEEE-488 devices
 
-cform:
+cform:                  ;(TODO: Unused?)
 ;Format a hard drive for Softbox use.
     call seldsk         ;Select disk drive
     ld hl,0080h
 l2396h:
     ld (hl),0e5h
     inc l
-    jr nz,l2396h
-    ld bc,0002h
+    jr nz,l2396h        ;Fill all 128 bytes (0080h to 00ffh) with 0e5h
+    ld bc,2             ;Write into cpm track number 2
     call settrk         ;Set track number
-    ld bc,0000h
+    ld bc,0             ;Start with cpm sector number 0
 l23a4h:
     push bc
     call setsec         ;Set sector number
     call write          ;Write selected sector
     pop bc
     or a
-    jp nz,l23b7h
-    inc bc
+    jp nz,l23b7h        ;If error occured, skip
+    inc bc              ;Increment sector number (cpm)
     ld a,c
     cp 40h
-    jr nz,l23a4h
+    jr nz,l23a4h        ;Loop until all sectors (0 .. 63) done
+                        ;This includes track number 3 with 32 sectors, too
     ret
 
 l23b7h:
@@ -5671,10 +5672,10 @@ l23feh_len: equ $-l23feh
 l2404h:                 ;unused !!!
     db "#2"
 
-l2406h:
-    db 0
-l2407h:
-    db 0
+cbmdos_track:
+    db 0                ;Track number for cbmdos format
+cbmdos_sector:
+    db 0                ;Sector number for cbmdos format
 
 l2408h:
     db "S0:*"
