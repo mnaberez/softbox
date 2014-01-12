@@ -2564,6 +2564,8 @@ l10f8h:
     jp drive_menu
 
 l10fbh:
+    ;REM The system is a Mini-Winchester (Konan David Jr) not Corvus
+
     ;PRINT "3, 6 or 12 Mbyte drive ? ";
     call pr0a
     ld hl,drv_3_6_12
@@ -2580,7 +2582,9 @@ l10fbh:
     or l
     jp nz,l1124h
 
-    ;DRV(D) = 2  ' MW-1000 3 Mbyte
+    ;REM User selected 3 for MW-1000 3 Mbyte
+
+    ;DRV(D) = 2 ' MW-1000 3 Mbyte
     ld hl,(dd)
     add hl,hl
     ld de,drv
@@ -2602,7 +2606,9 @@ l1124h:
     or l
     jp nz,l1141h
 
-    ;DRV(D) = 3  ' MW-1000 6 Mbyte
+    ;REM User selected 6 for MW-1000 6 Mbyte
+
+    ;DRV(D) = 3 ' MW-1000 6 Mbyte
     ld hl,(dd)
     add hl,hl
     ld de,drv
@@ -2624,7 +2630,9 @@ l1141h:
     or l
     jp nz,l115eh
 
-    ;DRV(D) = 4  ' MW-1000 12 Mbyte
+    ;REM User selected 12 for MW-1000 12 Mbyte
+
+    ;DRV(D) = 4 ' MW-1000 12 Mbyte
     ld hl,(dd)
     add hl,hl
     ld de,drv
@@ -2662,6 +2670,13 @@ l1161h:
     ld a,h
     or l
     jp nz,l1197h
+
+    ;REM User selected 'H' for use first half for CP/M
+
+    ;REM Add 3 to convert drive types from full to half:
+    ;REM   type 2 (3 Mbyte full CP/M)  => type 5 (3 Mbyte half CP/M)
+    ;REM   type 3 (6 Mbyte full CP/M)  => type 6 (6 Mbyte half CP/M)
+    ;REM   type 4 (12 Mbyte full CP/M) => type 7 (12 Mbyte half CP/M)
 
     ;DRV(D) = DRV(D) + 3
     ld hl,(dd)
