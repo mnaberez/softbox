@@ -51,10 +51,16 @@ cls:           equ 1ah    ;Clear Screen
 
 dtype:
 ;Get the drive type for a CP/M drive number.
-    ld hl,l3006h        ;0103 21 06 30
-    ld (hl),c           ;0106 71
-    ld a,(l3006h)       ;0107 3a 06 30
-    call tstdrv         ;Get drive type for a CP/M drive number
+;
+;C = CP/M drive number
+;
+;Returns the drive type in A.
+;
+    ld hl,dtype_tmp     ;HL = address of temporary variable
+    ld (hl),c           ;Save the CP/M drive number in the temp var
+    ld a,(dtype_tmp)    ;A = CP/M drive number
+
+    call tstdrv         ;Get drive type for a CP/M drive number (BIOS)
     ld a,c              ;A = drive type
     ret
 
@@ -64,15 +70,21 @@ dtype:
 
 idisk:
 ;Initialize an IEEE-488 disk drive.
-    ld hl,l3007h        ;0113 21 07 30
-    ld (hl),c           ;0116 71
-    ld a,(l3007h)       ;0117 3a 07 30
-    call idrive         ;Initialize an IEEE-488 disk drive
-    ret                 ;011d c9
+;
+;C = CP/M drive number
+;
+    ld hl,idisk_tmp     ;HL = address of temporary variable
+    ld (hl),c           ;Save the CP/M drive number in the temp var
+    ld a,(idisk_tmp)    ;A = CP/M drive number
+
+    call idrive         ;Initialize an IEEE-488 disk drive (BIOS)
+    ret
 
 dskerr:
 ;Check the last CBM DOS error code.  If an error occurred,
 ;print it from the buffer before returning.
+;
+;Returns the CBM DOS error code in A.
 ;
     ;IF dos_err = 0 THEN GOTO dskerr_ret
     ld a,(dos_err)
@@ -6213,10 +6225,10 @@ drvnum:
     dw 0                ;CP/M drive number where CP/M system will be written
 drvtyp:
     dw 0                ;Drive type of drive where CP/M will be written
-l3006h:
-    db 0                ;TODO Used by dtype
-l3007h:
-    db 0                ;TODO Used by idisk
+dtype_tmp:
+    db 0                ;Temporarily holds CP/M drive number in dtype routine
+idisk_tmp:
+    db 0                ;Temporairly holds CP/M drive number in idisk routine
 eindex:
     db 0                ;Loop index for CBM DOS error message used in dskerr
 l3009h:
