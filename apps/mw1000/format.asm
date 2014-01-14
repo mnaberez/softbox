@@ -648,65 +648,104 @@ l0419h:
     jp l0321h
 
 disk_error:
-    db 0eh
+    db disk_error_len
     db "Disk error :  "
+disk_error_len: equ $-disk_error-1
+
 zero:
-    db 01h
+    db zero_len
     db "0"
+zero_len: equ $-zero-1
+
 format_prog:
-    db 17h
+    db format_prog_len
     db "Disk formatting program"
+format_prog_len: equ $-format_prog-1
+
 for_softbox:
-    db 10h
+    db for_softbox_len
     db "For Softbox CP/M"
+for_softbox_len: equ $-for_softbox-1
+
 dashes:
-    db 10h
+    db dashes_len
     db "=== ======= ===="
+dashes_len: equ $-dashes-1
+
 revision:
-    db 18h
+    db revision_len
     db "Revision 2.2  9-Mar-1984"
+revision_len: equ $-revision-1
+
 on_which_drv:
-    db 1ah
+    db on_which_drv_len
     db "Format disk on which drive"
+on_which_drv_len: equ $-on_which_drv-1
+
 a_to_p:
-    db 20h
+    db a_to_p_len
     db "(A to P, or RETURN to reboot) ? "
+a_to_p_len: equ $-a_to_p-1
+
 doesnt_exist:
-    db 15h
+    db doesnt_exist_len
     db "Drive doesn't exist !"
+doesnt_exist_len: equ $-doesnt_exist-1
+
 not_in_sys:
-    db 13h
+    db not_in_sys_len
     db "Drive not in system"
+not_in_sys_len: equ $-not_in_sys-1
+
 data_on_hd:
-    db 12h
+    db data_on_hd_len
     db "Data on hard disk "
+data_on_hd_len: equ $-data_on_hd-1
+
 will_be_eras:
-    db 10h
+    db will_be_eras_len
     db ": will be erased"
+will_be_eras_len: $-will_be_eras-1
+
 proceed_yn:
-    db 10h
+    db proceed_yn_len
     db "Proceed (Y/N) ? "
+proceed_yn_len: equ $-proceed_yn-1
+
 formatting_hd:
-    db 1eh
+    db formatting_hd_len
     db "Formatting hard disk directory"
+formatting_hd_len: equ $-formatting_hd-1
+
 disk_on_drv:
-    db 0eh
+    db disk_on_drv_len
     db "Disk on drive "
+disk_on_drv_len: equ $-disk_on_drv-1
+
 be_formatted:
-    db 14h
+    db be_formatted_len
     db ": is to be formatted"
+be_formatted_len: equ $-be_formatted-1
+
 press_return:
-    db 28h
+    db press_return_len
     db "Press RETURN to continue, ^C to abort : "
+press_return_len: equ $-press_return-1
+
 formatting:
-    db 0dh
+    db formatting_len
     db "Formatting..."
+formatting_len: equ $-formatting-1
+
 complete:
-    db 0fh
+    db complete_len
     db "Format complete"
+complete_len: equ $-complete-1
+
 bad_disk:
-    db 22h
+    db bad_disk_len
     db "Do not use diskette - try again..."
+bad_disk_len: equ $-bad_disk-1
 
 ; Start of LOADSAV2.REL =====================================================
 
