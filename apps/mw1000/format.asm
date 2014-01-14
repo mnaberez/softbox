@@ -52,69 +52,102 @@ cr:            equ 0dh    ;Carriage Return
 
     jp start
 
-sub_0103h:
-    ld hl,l30aah        ;0103 21 aa 30
-    ld (hl),c           ;0106 71
-    ld a,(l30aah)       ;0107 3a aa 30
-    call tstdrv         ;Get drive type for a CP/M drive number
-    ld a,c              ;010d 79
-    ret                 ;010e c9
+dtype:
+;Get the drive type for a CP/M drive number.
+;
+;C = CP/M drive number
+;
+;Returns the drive type in A.
+;
+    ld hl,dtype_tmp     ;HL = address of temporary variable
+    ld (hl),c           ;Save the CP/M drive number in the temp var
+    ld a,(dtype_tmp)    ;A = CP/M drive number
+
+    call tstdrv         ;Get drive type for a CP/M drive number (BIOS)
+    ld a,c              ;A = drive type
+    ret
+
     ld a,00h            ;010f 3e 00
     ret                 ;0111 c9
     ret                 ;0112 c9
 
-sub_0113h:
-    ld hl,l30abh        ;0113 21 ab 30
-    ld (hl),c           ;0116 71
-    ld a,(l30abh)       ;0117 3a ab 30
-    call idrive         ;Initialize an IEEE-488 disk drive
-    ret                 ;011d c9
-sub_011eh:
-    ld a,(l3002h)       ;011e 3a 02 30
-    or a                ;0121 b7
-    jp z,l0162h         ;0122 ca 62 01
+idisk:
+;Initialize an IEEE-488 disk drive.
+;
+;C = CP/M drive number
+;
+    ld hl,idisk_tmp     ;HL = address of temporary variable
+    ld (hl),c           ;Save the CP/M drive number in the temp var
+    ld a,(idisk_tmp)    ;A = CP/M drive number
+
+    call idrive         ;Initialize an IEEE-488 disk drive (BIOS)
+    ret
+
+dskerr:
+;Check the last CBM DOS error code.  If an error occurred,
+;print it from the buffer before returning.
+;
+;Returns the CBM DOS error code in A.
+;
+    ;IF dos_err = 0 THEN GOTO dskerr_ret
+    ld a,(dos_err)
+    or a
+    jp z,dskerr_ret
 
     ;PRINT "Disk error :  ";
     ld bc,disk_error
     call print_str
 
-    ld hl,l30ach        ;012b 21 ac 30
-    ld (hl),00h         ;012e 36 00
-    jp l0157h           ;0130 c3 57 01
-l0133h:
-    ld a,(l30ach)       ;0133 3a ac 30
-    ld l,a              ;0136 6f
-    rla                 ;0137 17
-    sbc a,a             ;0138 9f
-    ld bc,errbuf        ;0139 01 c0 ea
-    ld h,a              ;013c 67
-    add hl,bc           ;013d 09
-    ld c,(hl)           ;013e 4e
-    call print_char     ;013f cd 6b 01
-    ld a,(l30ach)       ;0142 3a ac 30
-    ld l,a              ;0145 6f
-    rla                 ;0146 17
-    sbc a,a             ;0147 9f
-    ld bc,errbuf        ;0148 01 c0 ea
-    ld h,a              ;014b 67
-    add hl,bc           ;014c 09
-    ld a,(hl)           ;014d 7e
-    cp cr               ;014e fe 0d
-    jp z,l015fh         ;0150 ca 5f 01
-    ld hl,l30ach        ;0153 21 ac 30
-    inc (hl)            ;0156 34
-l0157h:
-    ld a,(l30ach)       ;0157 3a ac 30
-    cp 40h              ;015a fe 40
-    jp m,l0133h         ;015c fa 33 01
+    ;eindex = 0
+    ld hl,eindex
+    ld (hl),00h
 
-l015fh:
+    ;GOTO dskerr_next
+    jp dskerr_next
+
+dskerr_char:
+    ;PRINT errbuf(eindex);
+    ld a,(eindex)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,errbuf
+    ld h,a
+    add hl,bc
+    ld c,(hl)
+    call print_char
+
+    ;IF errbuf(eindex) = &H0D THEN GOTO dskerr_eol  ' End of error message
+    ld a,(eindex)
+    ld l,a
+    rla
+    sbc a,a
+    ld bc,errbuf
+    ld h,a
+    add hl,bc
+    ld a,(hl)
+    cp cr
+    jp z,dskerr_eol
+
+    ;eindex = eindex + 1
+    ld hl,eindex
+    inc (hl)
+
+dskerr_next:
+    ;IF eindex < 64 THEN GOTO dskerr_char  ' Loop until end of message buffer
+    ld a,(eindex)
+    cp 64
+    jp m,dskerr_char
+
+dskerr_eol:
     ;PRINT
     call print_eol
 
-l0162h:
-    ld a,(l3002h)       ;0162 3a 02 30
-    ret                 ;0165 c9
+dskerr_ret:
+    ;RETURN dos_err
+    ld a,(dos_err)
+    ret
+
     ret                 ;0166 c9
 
 end:
@@ -480,7 +513,7 @@ l0355h:
 l035eh:
     ld hl,l3000h        ;035e 21 00 30
     ld c,(hl)           ;0361 4e
-    call sub_0103h      ;0362 cd 03 01
+    call dtype          ;0362 cd 03 01
     ld (l3001h),a       ;0365 32 01 30
     and 80h             ;0368 e6 80
     jp z,l0376h         ;036a ca 76 03
@@ -590,7 +623,7 @@ l03f0h:
     ;PRINT
     call print_eol      ;0400 cd 79 01
 
-    call sub_011eh      ;0403 cd 1e 01
+    call dskerr         ;0403 cd 1e 01
     or a                ;0406 b7
     jp nz,l0413h        ;0407 c2 13 04
 
@@ -2025,7 +2058,7 @@ l3000h:
     db 0
 l3001h:
     db 0
-l3002h:
+dos_err:
     db 0
 rr:
     db 0                ;First char of user input from any prompt
@@ -2055,12 +2088,12 @@ l3059h:
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0
 
-l30aah:
-    db 0
-l30abh:
-    db 0
-l30ach:
-    db 0
+dtype_tmp:
+    db 0                ;Temporarily holds CP/M drive number in dtype routine
+idisk_tmp:
+    db 0                ;Temporairly holds CP/M drive number in idisk routine
+eindex:
+    db 0                ;Loop index for CBM DOS error message used in dskerr
 l30adh:
     db 0
 l30aeh:
