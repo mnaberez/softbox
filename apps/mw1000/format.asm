@@ -623,6 +623,7 @@ l03f0h:
     ;PRINT
     call print_eol      ;0400 cd 79 01
 
+    ;IF CALL dskerr() <> 0 THEN GOTO l0413h
     call dskerr         ;0403 cd 1e 01
     or a                ;0406 b7
     jp nz,l0413h        ;0407 c2 13 04
@@ -635,6 +636,9 @@ l03f0h:
     jp l0419h
 
 l0413h:
+    ;REM An error occurred from CBM DOS.  The error has already
+    ;REM been printed to the screen by dskerr.
+
     ;PRINT "Do not use diskette - try again..."
     ld bc,bad_disk
     call print_str_eol
@@ -2059,7 +2063,7 @@ l3000h:
 l3001h:
     db 0
 dos_err:
-    db 0
+    db 0                ;Last CBM DOS error code
 rr:
     db 0                ;First char of user input from any prompt
 nn:
