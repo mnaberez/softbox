@@ -488,7 +488,7 @@ l0321h:
     ;PRINT
     call print_eol
 
-    ;IF rr <> &H0D THEN GOTO l0344h
+    ;IF R <> &H0D THEN GOTO l0344h
     ld a,(rr)
     cp cr
     jp nz,l0344h
@@ -497,20 +497,28 @@ l0321h:
     call end            ;Never returns
 
 l0344h:
-    ld a,(rr)       ;0344 3a 03 30
-    add a,0bfh          ;0347 c6 bf
+    ;l3000h = R-&H41
+    ;IF l3000h < 0 THEN GOTO l0355h
+    ;IF l0355h < 16 THEN GOTO l035eh
+    ld a,(rr)           ;0344 3a 03 30
+    add a,0-'A'         ;0347 c6 bf
     ld (l3000h),a       ;0349 32 00 30
     or a                ;034c b7
     jp m,l0355h         ;034d fa 55 03
-    cp 10h              ;0350 fe 10
+    cp 16               ;0350 fe 10
     jp m,l035eh         ;0352 fa 5e 03
+
 l0355h:
     ;PRINT "Drive doesn't exist !"
     ld bc,doesnt_exist
     call print_str_eol
 
-    jp l0321h           ;035b c3 21 03
+    ;GOTO l0321h
+    jp l0321h
+
 l035eh:
+    ;l3001h = dtype(l3000h)
+    ;IF l3001h < 128 THEN GOTO l0376h
     ld hl,l3000h        ;035e 21 00 30
     ld c,(hl)           ;0361 4e
     call dtype          ;0362 cd 03 01
@@ -522,13 +530,16 @@ l035eh:
     ld bc,not_in_sys
     call print_str_eol
 
-    jp l0321h           ;0373 c3 21 03
+    ;GOTO l0321h
+    jp l0321h
+
 l0376h:
-    ld a,(l3001h)       ;0376 3a 01 30
-    cp 02h              ;0379 fe 02
-    jp m,l03c7h         ;037b fa c7 03
-    cp 06h              ;037e fe 06
-    jp p,l03c7h         ;0380 f2 c7 03
+    ;IF l3001h < 2 OR l3001h >= 6 THEN GOTO l03c7h
+    ld a,(l3001h)
+    cp 02h
+    jp m,l03c7h
+    cp 06h
+    jp p,l03c7h
 
     ;PRINT CHR$(7) ' Bell
     ld c,bell
@@ -555,7 +566,7 @@ l0376h:
     ;GOSUB readline
     call readline
 
-    ;IF rr = &H59 THEN GOTO l03b1h
+    ;IF R = &H59 THEN GOTO l03b1h
     ld a,(rr)
     cp 'Y'
     jp z,l03b1h
@@ -574,10 +585,14 @@ l03b1h:
     ld bc,formatting_hd
     call print_str_eol
 
+    ;CALL cform(l3000h)
     ld hl,l3000h        ;03bd 21 00 30
     ld c,(hl)           ;03c0 4e
     call cform          ;03c1 cd 21 08
-    jp l0419h           ;03c4 c3 19 04
+
+    ;GOTO l0419h
+    jp l0419h
+
 l03c7h:
     ;PRINT "Disk on drive ";
     ld bc,disk_on_drv
@@ -600,7 +615,7 @@ l03c7h:
     ;GOSUB readline
     call readline
 
-    ;IF A = &H0D THEN GOTO l03f0h
+    ;IF R = &H0D THEN GOTO l03f0h
     ld a,(rr)
     cp cr
     jp z,l03f0h
@@ -616,6 +631,7 @@ l03f0h:
     ld bc,formatting
     call print_str
 
+    ;CALL format(l3000h)
     ld hl,l3000h        ;03f9 21 00 30
     ld c,(hl)           ;03fc 4e
     call format         ;03fd cd 5d 07
