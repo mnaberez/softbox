@@ -351,23 +351,34 @@ l02abh:
     ret                 ;02c2 c9
 
 sub_02c3h:
+;Print decimal value (base 10) at BC
+;
+    ;TODO
     call sub_0bd4h      ;02c3 cd d4 0b
     db 00h, 02h
     dw l0cd5h
+
+    ;l0cd5h = <para>
     ld hl,l0cd5h+1      ;02ca 21 d6 0c
     ld (hl),b           ;02cd 70
     dec hl              ;02ce 2b
     ld (hl),c           ;02cf 71
+
+    ;IF l0cd5h = 0 THEN GOTO l02f8h
     ld hl,(l0cd5h)      ;02d0 2a d5 0c
     ld a,l              ;02d3 7d
     or h                ;02d4 b4
     jp z,l02f8h         ;02d5 ca f8 02
+
+    ;CALL sub_02c3h(l0cd5h / 10)
     ld hl,(l0cd5h)      ;02d8 2a d5 0c
     ld b,h              ;02db 44
     ld c,l              ;02dc 4d
     ld de,10            ;02dd 11 0a 00
     call sub_0b48h      ;02e0 cd 48 0b (Library DIV)
     call sub_02c3h      ;02e3 cd c3 02
+
+    ;PRINT CHR$(&H30 + l0cd5h MOD 10)
     ld hl,(l0cd5h)      ;02e6 2a d5 0c
     ld b,h              ;02e9 44
     ld c,l              ;02ea 4d
@@ -377,12 +388,16 @@ sub_02c3h:
     add a,'0'           ;02f2 c6 30
     ld c,a              ;02f4 4f
     call print_char     ;02f5 cd 85 02
+
 l02f8h:
+    ;TODO
     call sub_0c17h      ;02f8 cd 17 0c
     db 02h
     dw l0cd5h
 
 print_int:
+;Print unsigned integer (16 bit) at BC
+;
     ;l0cd7h = <para>
     ld hl,l0cd7h+1      ;02fe 21 d8 0c
     ld (hl),b           ;0301 70
@@ -414,6 +429,8 @@ l031dh:
     ret                 ;031d c9
 
 sub_031eh:
+;Print signed integer (16 bit) at BC
+;
     ;l0cd9h = <para>
     ld hl,l0cd9h+1      ;031e 21 da 0c
     ld (hl),b           ;0321 70
@@ -502,12 +519,18 @@ l038ch:
     jp p,l038bh         ;038d f2 8b 03
 
     ld (l0cdbh),hl      ;0390 22 db 0c
+
+    ;l0cddh = l0cddh + 1
     ld hl,l0cddh        ;0393 21 dd 0c
     inc (hl)            ;0396 34
+
 l0397h:
+    ;IF l0cddh < 5 THEN GOTO l0357h
     ld a,(l0cddh)       ;0397 3a dd 0c
     cp 05h              ;039a fe 05
     jp m,l0357h         ;039c fa 57 03
+
+    ;RETURN
     ret                 ;039f c9
 
 start:
