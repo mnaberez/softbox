@@ -239,7 +239,7 @@ is_err_42h:
     call end
 
 is_err_44h:
-    ;IF l0114h <> &H46 THEN GOTO is_err_46h
+    ;IF l0114h <> &H44 THEN GOTO is_err_46h
     ld hl,(l0114h)
     ld de,0-44h
     add hl,de
@@ -256,7 +256,7 @@ is_err_44h:
     call end
 
 is_err_46h:
-    ;IF l0114h <> &H46 THEN GOTO is_err_46h
+    ;IF l0114h <> &H46 THEN GOTO is_err_47h
     ld hl,(l0114h)
     ld de,0-46h
     add hl,de
