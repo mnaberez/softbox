@@ -211,42 +211,60 @@ print_str_eol:
     ret
 
 sub_01bbh:
+;Print decimal value (base 10) at BC
+;
+    ;TODO
     call sub_0a46h      ;01bb cd 46 0a
     db 00h, 02h
     dw l30b3h
-    ld hl,30b3h+1       ;01c2 21 b4 30
+
+    ;l30b3h = <para>
+    ld hl,l30b3h+1       ;01c2 21 b4 30
     ld (hl),b           ;01c5 70
     dec hl              ;01c6 2b
     ld (hl),c           ;01c7 71
+
+    ;IF l30b3h = 0 THEN GOTO l01f0h
     ld hl,(l30b3h)      ;01c8 2a b3 30
     ld a,l              ;01cb 7d
     or h                ;01cc b4
     jp z,l01f0h         ;01cd ca f0 01
+
+    ;CALL sub_01bbh(l30b3h / 10)
     ld hl,(l30b3h)      ;01d0 2a b3 30
     ld b,h              ;01d3 44
     ld c,l              ;01d4 4d
     ld de,10            ;01d5 11 0a 00
     call sub_09bah      ;01d8 cd ba 09 (Library DIV)
     call sub_01bbh      ;01db cd bb 01
+
+    ;PRINT CHR$(&H30 + l30b3h MOD 10);
     ld hl,(l30b3h)      ;01de 2a b3 30
     ld b,h              ;01e1 44
     ld c,l              ;01e2 4d
     ld de,10            ;01e3 11 0a 00
-    call sub_09bah      ;01e6 cd ba 09 (Library DIV)
+    call sub_09bah      ;01e6 cd ba 09 (Library DIV - HL=MOD)
     ld a,l              ;01e9 7d
     add a,'0'           ;01ea c6 30
     ld c,a              ;01ec 4f
     call print_char     ;01ed cd 6b 01
+
 l01f0h:
+    ;TODO
     call sub_0a89h      ;01f0 cd 89 0a
     db 02h
     dw l30b3h
 
 print_int:
+;Print unsigned integer (16 bit) at BC
+;
+    ;l30b5h = <para>
     ld hl,l30b5h+1      ;01f6 21 b6 30
     ld (hl),b           ;01f9 70
     dec hl              ;01fa 2b
     ld (hl),c           ;01fb 71
+
+    ;IF l30b5h <> 0 THEN GOTO l020dh
     ld hl,(l30b5h)      ;01fc 2a b5 30
     ld a,l              ;01ff 7d
     or h                ;0200 b4
@@ -256,13 +274,18 @@ print_int:
     ld bc,zero
     call print_str
 
+    ;GOTO l0215h
     jp l0215h           ;020a c3 15 02
+
 l020dh:
+    ;CALL sub_01bbh(l30b5h)
     ld hl,(l30b5h)      ;020d 2a b5 30
     ld b,h              ;0210 44
     ld c,l              ;0211 4d
     call sub_01bbh      ;0212 cd bb 01
+
 l0215h:
+    ;RETURN
     ret                 ;0215 c9
 
 readline:

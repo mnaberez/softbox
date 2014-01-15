@@ -327,7 +327,7 @@ sub_0257h:
     call sub_12f6h      ;0274 cd f6 12 (Library DIV)
     call sub_0257h      ;0277 cd 57 02
 
-    ;PRINT CHR$(&H30 + l30a6h MOD 10)
+    ;PRINT CHR$(&H30 + l30a6h MOD 10);
     ld hl,(l30a6h)      ;027a 2a a6 30
     ld b,h              ;027d 44
     ld c,l              ;027e 4d

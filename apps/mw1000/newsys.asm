@@ -208,42 +208,60 @@ print_str_eol:
     ret
 
 sub_01bbh:
+;Print decimal value (base 10) at BC
+;
+    ;TODO
     call sub_25b5h      ;01bb cd b5 25
     db 00h, 02h
     dw l300fh
+
+    ;l300fh = <para>
     ld hl,l300fh+1      ;01c2 21 10 30
     ld (hl),b           ;01c5 70
     dec hl              ;01c6 2b
     ld (hl),c           ;01c7 71
+
+    ;IF l300fh = 0 THEN GOTO l01f0h
     ld hl,(l300fh)      ;01c8 2a 0f 30
     ld a,l              ;01cb 7d
     or h                ;01cc b4
     jp z,l01f0h         ;01cd ca f0 01
+
+    ;CALL sub_01bbh(l300fh / 10)
     ld hl,(l300fh)      ;01d0 2a 0f 30
     ld b,h              ;01d3 44
     ld c,l              ;01d4 4d
     ld de,10            ;01d5 11 0a 00
     call sub_2529h      ;01d8 cd 29 25 (Library DIV)
     call sub_01bbh      ;01db cd bb 01
+
+    ;PRINT CHR$(&H30 + l300fh MOD 10);
     ld hl,(l300fh)      ;01de 2a 0f 30
     ld b,h              ;01e1 44
     ld c,l              ;01e2 4d
     ld de,10            ;01e3 11 0a 00
-    call sub_2529h      ;01e6 cd 29 25 (Library DIV)
+    call sub_2529h      ;01e6 cd 29 25 (Library DIV - HL=MOD)
     ld a,l              ;01e9 7d
     add a,'0'           ;01ea c6 30
     ld c,a              ;01ec 4f
     call print_char     ;01ed cd 6b 01
+
 l01f0h:
+    ;TODO
     call sub_25f8h      ;01f0 cd f8 25
     db 02h
     dw l300fh
 
 print_int:
+;Print unsigned integer (16 bit) at BC
+;
+    ;l3011h = <para>
     ld hl,l3011h+1      ;01f6 21 12 30
     ld (hl),b           ;01f9 70
     dec hl              ;01fa 2b
     ld (hl),c           ;01fb 71
+
+    ;IF l3011h <> 0 THEN GOTO l020dh
     ld hl,(l3011h)      ;01fc 2a 11 30
     ld a,l              ;01ff 7d
     or h                ;0200 b4
@@ -253,14 +271,18 @@ print_int:
     ld bc,zero
     call print_str
 
+    ;GOTO l0215h
     jp l0215h           ;020a c3 15 02
 
 l020dh:
+    ;CALL sub_01bbh(l3011h)
     ld hl,(l3011h)      ;020d 2a 11 30
     ld b,h              ;0210 44
     ld c,l              ;0211 4d
     call sub_01bbh      ;0212 cd bb 01
+
 l0215h:
+    ;RETURN
     ret                 ;0215 c9
 
 readline:

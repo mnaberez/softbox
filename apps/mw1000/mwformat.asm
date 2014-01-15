@@ -378,7 +378,7 @@ sub_02c3h:
     call sub_0b48h      ;02e0 cd 48 0b (Library DIV)
     call sub_02c3h      ;02e3 cd c3 02
 
-    ;PRINT CHR$(&H30 + l0cd5h MOD 10)
+    ;PRINT CHR$(&H30 + l0cd5h MOD 10);
     ld hl,(l0cd5h)      ;02e6 2a d5 0c
     ld b,h              ;02e9 44
     ld c,l              ;02ea 4d
