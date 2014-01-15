@@ -11,6 +11,11 @@
 ;the compiled program.
 ;
 
+corvus:        equ  18h   ;Corvus data bus
+
+warm:          equ  0000h ;Warm start entry point
+bdos:          equ  0005h ;BDOS entry point
+
     org 0100h
 
 l0100h:
@@ -27,8 +32,8 @@ unused_1:
 
 ; Start of BASIC variables ==================================================
 
-l010ah:
-    dw 0
+rr:
+    dw 0                ;First char of user input from any prompt
 l010ch:
     dw 0
 l010eh:
@@ -39,12 +44,12 @@ l0112h:
     dw 0
 l0114h:
     dw 0
-l0116h:
-    dw 0
-l0118h:
-    dw 0
-l011ah:
-    dw 0
+buf:
+    dw 0                ;Address of buffer used in readline
+nn:
+    dw 0                ;Integer parsed from user input
+jj:
+    dw 0                ;Loop index
     dw 0
     dw 0
     dw 0
@@ -59,7 +64,7 @@ l0124h:
 
 start:
     ld hl,main
-    jp ini
+    jp ini              ;Perform JP (main)
 
 unused_2:
     rst 18h             ;012e df
@@ -117,7 +122,7 @@ main:
     call readline
 
     ;IF R = &H59 THEN GOTO l0193h
-    ld hl,(l010ah)
+    ld hl,(rr)
     ld de,0-'Y'
     add hl,de
     ld a,h
@@ -168,12 +173,15 @@ l01abh:
     ;GOSUB check_error
     call check_error
 
+    ;l010ch = l010ch + 1
     ld hl,(l010ch)      ;01d6 2a 0c 01
     inc hl              ;01d9 23
 l01dah:
     ld (l010ch),hl      ;01da 22 0c 01
+
+    ;IF l010ch < &H20 THEN GOTO l01abh
     ld hl,(l010ch)      ;01dd 2a 0c 01
-    ld de,0ffe0h        ;01e0 11 e0 ff
+    ld de,-0020h        ;01e0 11 e0 ff
     ld a,h              ;01e3 7c
     rla                 ;01e4 17
     jp c,l01eah         ;01e5 da ea 01
@@ -197,10 +205,12 @@ check_error:
     ld a,h
     or l
     jp nz,got_error
+
+    ;RETURN
     ret
 
 got_error:
-    ;PRINT "DRIVE ERROR #"
+    ;PRINT "DRIVE ERROR #";
     call pr0a
     ld hl,drive_err_num
     call pv1d
@@ -316,36 +326,50 @@ unknown_error:
     call end
 
 readline:
-    ld hl,0080h         ;02a6 21 80 00
-    ld (l0116h),hl      ;02a9 22 16 01
-    ld hl,(l0116h)      ;02ac 2a 16 01
-    ld (hl),50h         ;02af 36 50
-    call buffin         ;02b1 cd e2 04
+    ;BUF = &H80
+    ld hl,0080h
+    ld (buf),hl
+
+    ;POKE BUF, 80
+    ld hl,(buf)
+    ld (hl),50h
+
+    ;CALL BUFFIN
+    call buffin
 
     ;PRINT
     call pr0a
     ld hl,empty_string
     call pv2d
 
-    ld hl,(l0116h)      ;02bd 2a 16 01
-    inc hl              ;02c0 23
-    ld l,(hl)           ;02c1 6e
-    ld h,00h            ;02c2 26 00
-    ld a,h              ;02c4 7c
-    or l                ;02c5 b5
-    jp nz,l02d0h        ;02c6 c2 d0 02
-    ld hl,0000h         ;02c9 21 00 00
-    ld (l010ah),hl      ;02cc 22 0a 01
-    ret                 ;02cf c9
+    ;IF PEEK(BUF+1) <> 0 THEN GOTO l02d0h
+    ld hl,(buf)
+    inc hl
+    ld l,(hl)
+    ld h,00h
+    ld a,h
+    or l
+    jp nz,l02d0h
+
+    ;R = 0
+    ld hl,0000h
+    ld (rr),hl
+
+    ;RETURN
+    ret
+
 l02d0h:
-    ld hl,(l0116h)      ;02d0 2a 16 01
-    inc hl              ;02d3 23
-    inc hl              ;02d4 23
-    ld l,(hl)           ;02d5 6e
-    ld h,00h            ;02d6 26 00
-    ld (l010ah),hl      ;02d8 22 0a 01
-    ld hl,(l010ah)      ;02db 2a 0a 01
-    ld de,0ff9fh        ;02de 11 9f ff
+    ;R = PEEK(BUF+2)
+    ld hl,(buf)
+    inc hl
+    inc hl
+    ld l,(hl)
+    ld h,00h
+    ld (rr),hl
+
+    ;IF NOT(R >= &H61 AND R <= &H7A) THEN GOTO l0313h
+    ld hl,(rr)          ;02db 2a 0a 01
+    ld de,0-'a'         ;02de 11 9f ff
     ld a,h              ;02e1 7c
     rla                 ;02e2 17
     jp c,l02e8h         ;02e3 da e8 02
@@ -357,8 +381,8 @@ l02e8h:
     ld h,a              ;02ea 67
     ld l,a              ;02eb 6f
     push hl             ;02ec e5
-    ld hl,(l010ah)      ;02ed 2a 0a 01
-    ld de,0ff85h        ;02f0 11 85 ff
+    ld hl,(rr)          ;02ed 2a 0a 01
+    ld de,0-('z'+1)     ;02f0 11 85 ff
 sub_02f3h:
     ld a,h              ;02f3 7c
     rla                 ;02f4 17
@@ -379,24 +403,32 @@ l02fah:
     ld a,h              ;0304 7c
     or l                ;0305 b5
     jp z,l0313h         ;0306 ca 13 03
-    ld de,0ffe0h        ;0309 11 e0 ff
-    ld hl,(l010ah)      ;030c 2a 0a 01
-    add hl,de           ;030f 19
-    ld (l010ah),hl      ;0310 22 0a 01
+
+    ;R = R - &H20
+    ld de,0-('a'-'A')
+    ld hl,(rr)
+    add hl,de
+    ld (rr),hl
+
 l0313h:
-    ld hl,0000h         ;0313 21 00 00
-    ld (l0118h),hl      ;0316 22 18 01
-    ld hl,0002h         ;0319 21 02 00
-    ld (l011ah),hl      ;031c 22 1a 01
+    ;N = 0
+    ld hl,0
+    ld (nn),hl
+
+    ;J = 2
+    ld hl,2
+    ld (jj),hl
+
 l031fh:
-    ld hl,(l0116h)      ;031f 2a 16 01
+    ;WHILE(PEEK(BUF+J) >= &H30) AND (PEEK(BUF+J) < &H39) AND (J-2 < PEEK(BUF+1))
+    ld hl,(buf)         ;031f 2a 16 01
     ex de,hl            ;0322 eb
-    ld hl,(l011ah)      ;0323 2a 1a 01
+    ld hl,(jj)          ;0323 2a 1a 01
     add hl,de           ;0326 19
     ld l,(hl)           ;0327 6e
     ld h,00h            ;0328 26 00
     push hl             ;032a e5
-    ld de,0ffd0h        ;032b 11 d0 ff
+    ld de,0-'0'         ;032b 11 d0 ff
     ld a,h              ;032e 7c
     rla                 ;032f 17
     jp c,l0335h         ;0330 da 35 03
@@ -410,7 +442,7 @@ sub_0338h:
     ld l,a              ;0338 6f
     ld (l0124h),hl      ;0339 22 24 01
     pop hl              ;033c e1
-    ld de,0ffc6h        ;033d 11 c6 ff
+    ld de,0-('9'+1)     ;033d 11 c6 ff
     ld a,h              ;0340 7c
     rla                 ;0341 17
     jp c,l0347h         ;0342 da 47 03
@@ -431,12 +463,12 @@ l0347h:
     and e               ;0354 a3
     ld l,a              ;0355 6f
     push hl             ;0356 e5
-    ld hl,(l0116h)      ;0357 2a 16 01
+    ld hl,(buf)         ;0357 2a 16 01
     inc hl              ;035a 23
     ld l,(hl)           ;035b 6e
     ld h,00h            ;035c 26 00
     push hl             ;035e e5
-    ld hl,(l011ah)      ;035f 2a 1a 01
+    ld hl,(jj)          ;035f 2a 1a 01
     dec hl              ;0362 2b
     dec hl              ;0363 2b
     pop de              ;0364 d1
@@ -465,29 +497,39 @@ l0376h:
     ld a,h              ;037a 7c
     or l                ;037b b5
     jp z,l03a6h         ;037c ca a6 03
-    ld hl,(l0118h)      ;037f 2a 18 01
+
+    ;N=N*10+(PEEK(BUF+J)-&H30)
+    ld hl,(nn)          ;037f 2a 18 01
     call imug           ;0382 cd 4d 06
     ld a,(bc)           ;0385 0a
     nop                 ;0386 00
     push hl             ;0387 e5
-    ld hl,(l0116h)      ;0388 2a 16 01
+    ld hl,(buf)         ;0388 2a 16 01
     ex de,hl            ;038b eb
-    ld hl,(l011ah)      ;038c 2a 1a 01
+    ld hl,(jj)          ;038c 2a 1a 01
     add hl,de           ;038f 19
     ld l,(hl)           ;0390 6e
     ld h,00h            ;0391 26 00
     pop de              ;0393 d1
     add hl,de           ;0394 19
-    ld de,0ffd0h        ;0395 11 d0 ff
+    ld de,0-'0'         ;0395 11 d0 ff
     add hl,de           ;0398 19
-    ld (l0118h),hl      ;0399 22 18 01
-    ld hl,(l011ah)      ;039c 2a 1a 01
+    ld (nn),hl          ;0399 22 18 01
+
+    ;J = J + 1
+    ld hl,(jj)          ;039c 2a 1a 01
     inc hl              ;039f 23
-    ld (l011ah),hl      ;03a0 22 1a 01
+    ld (jj),hl          ;03a0 22 1a 01
+
+    ;WEND
     jp l031fh           ;03a3 c3 1f 03
+
 l03a6h:
-    ret                 ;03a6 c9
-    call end            ;03a7 cd 72 06
+    ;RETURN
+    ret
+
+    ;END
+    call end
 
 unknown_err:
     db 17h
@@ -565,16 +607,21 @@ buffin:
 ;Buffered Console Input.  Caller must store buffer size at 80h.  On
 ;return, 81h will contain the number of data bytes and the data
 ;will start at 82h.
-    ld c,0ah            ;04e2 0e 0a
-    ld de,0080h         ;04e4 11 80 00
-    jp 0005h            ;04e7 c3 05 00
+    ld c,0ah
+    ld de,0080h
+    jp bdos             ;BDOS entry point
 
 mw_read:
-    ld (var_4),hl       ;04ea 22 d6 05
-    xor a               ;04ed af
-    ld (hl),a           ;04ee 77
-    inc hl              ;04ef 23
-    ld (hl),a           ;04f0 77
+;Read a sector from the Konan David Junior II controller.
+;
+    ld (err_ptr),hl     ;Save pointer to error word
+
+                        ;Initialize error word to 0:
+    xor a               ;  A=0
+    ld (hl),a           ;  Error word low byte = 0
+    inc hl              ;  Increment to high byte
+    ld (hl),a           ;  Error word high byte = 0
+
     ld (var_3),a        ;04f1 32 d5 05
     ld a,(de)           ;04f4 1a
     ld (var_1),a        ;04f5 32 d3 05
@@ -587,34 +634,45 @@ mw_read:
     ld a,(bc)           ;0500 0a
     ld h,a              ;0501 67
     push hl             ;0502 e5
-    ld a,21h            ;0503 3e 21
-    call mw_sub_0564h   ;0505 cd 64 05
+
+    ld a,21h            ;A = 21h (Read Disk)
+    call mw_comout      ;Send command
 sub_0508h:
-    call mw_sub_059dh   ;0508 cd 9d 05
-    call mw_sub_0581h   ;050b cd 81 05
-    pop hl              ;050e e1
-    jr nz,l055fh        ;050f 20 4e
-    ld a,41h            ;0511 3e 41
-    call mw_sub_0564h   ;0513 cd 64 05
-    ld b,00h            ;0516 06 00
+    call mw_send_addr   ;Send disk/track/sector sequence
+
+    call mw_status      ;Read status
+    pop hl
+    jr nz,mw_error      ;Status not OK?  Jump to handle error.
+
+    ld a,41h            ;A = 41h (Read Buffer)
+    call mw_comout      ;Send command
+
+                        ;Transfer 256 bytes from David Junior II:
+    ld b,00h            ;  Seed loop index to count 256 bytes
 l0518h:
-    in a,(18h)          ;0518 db 18
-    ld (hl),a           ;051a 77
-    inc hl              ;051b 23
-    ex (sp),hl          ;051c e3
-    ex (sp),hl          ;051d e3
-    djnz l0518h         ;051e 10 f8
-    call mw_sub_0581h   ;0520 cd 81 05
-    ret z               ;0523 c8
-    jp l055fh           ;0524 c3 5f 05
+    in a,(corvus)       ;  Read data byte from David Junior II
+    ld (hl),a           ;  Store it in our buffer
+    inc hl              ;  Increment buffer pointer
+    ex (sp),hl          ;  Delay
+    ex (sp),hl          ;  Delay
+    djnz l0518h         ;  Decrement B, loop until B=0
+
+    call mw_status      ;Read status
+    ret z               ;  Yes: return.
+    jp mw_error         ;  No: jump to handle error.
 
 mw_write:
-    ld (var_4),hl       ;0527 22 d6 05
-    xor a               ;052a af
+;Write a sector to the Konan David Junior II controller.
+;
+    ld (err_ptr),hl     ;Save pointer to error word
+
+                        ;Initialize error word to 0:
+    xor a               ;  A=0
 l052bh:
-    ld (hl),a           ;052b 77
-    inc hl              ;052c 23
-    ld (hl),a           ;052d 77
+    ld (hl),a           ;  Error word low byte = 0
+    inc hl              ;  Increment to high byte
+    ld (hl),a           ;  Error word high byte = 0
+
     ld (var_3),a        ;052e 32 d5 05
     ld a,(de)           ;0531 1a
     ld (var_1),a        ;0532 32 d3 05
@@ -626,108 +684,128 @@ l052bh:
     inc bc              ;053c 03
     ld a,(bc)           ;053d 0a
     ld h,a              ;053e 67
-    ld a,42h            ;053f 3e 42
-    call mw_sub_0564h   ;0541 cd 64 05
-    ld b,00h            ;0544 06 00
+
+    ld a,42h            ;A = 42h (Write Buffer)
+    call mw_comout      ;Send Command
+
+                        ;Transfer 256 bytes to David Junior II:
+    ld b,00h            ;  Seed loop index to count 256 bytes
 l0546h:
-    ld a,(hl)           ;0546 7e
-    out (18h),a         ;0547 d3 18
-    inc hl              ;0549 23
-    ex (sp),hl          ;054a e3
-    ex (sp),hl          ;054b e3
-    djnz l0546h         ;054c 10 f8
-    call mw_sub_0581h   ;054e cd 81 05
-    jr nz,l055fh        ;0551 20 0c
-    ld a,22h            ;0553 3e 22
-    call mw_sub_0564h   ;0555 cd 64 05
-    call mw_sub_059dh   ;0558 cd 9d 05
-    call mw_sub_0581h   ;055b cd 81 05
-    ret z               ;055e c8
-l055fh:
-    ld hl,(var_4)       ;055f 2a d6 05
+    ld a,(hl)           ;  Read data byte our buffer
+    out (corvus),a      ;  Write it to the David Junior II
+    inc hl              ;  Increment buffer pointer
+    ex (sp),hl          ;  Delay
+    ex (sp),hl          ;  Delay
+    djnz l0546h         ;  Decrement B, loop until B=0
+
+    call mw_status      ;Read David Junior II status.  Is it OK?
+    jr nz,mw_error      ;  No: jump to handle error.
+
+    ld a,22h            ;A = 22h (Write Disk)
+    call mw_comout      ;Send command
+    call mw_send_addr   ;Send disk/track/sector sequence
+
+    call mw_status      ;Read David Junior II status.  Is it OK?
+    ret z               ;  Yes: return.
+                        ;  No: fall through to mw_error to handle error.
+
+mw_error:
+;An error occurred from the Konan David Junior II controller.
+;
+    ld hl,(err_ptr)     ;HL = pointer to error word
 l0562h:
-    ld (hl),a           ;0562 77
-    ret                 ;0563 c9
+    ld (hl),a           ;Save A as error word low byte (high byte always 0)
+    ret
 
-mw_sub_0564h:
-    ld b,a              ;0564 47
-    xor a               ;0565 af
-    out (18h),a         ;0566 d3 18
-l0568h:
-    in a,(18h)          ;0568 db 18
+mw_comout:
+;Send the command in A to the Konan David Junior II controller.
+;
+    ld b,a              ;Save command
+    xor a
+    out (corvus),a      ;Clear David Junior II port
+mw_rdy1:
+    in a,(corvus)
 l056ah:
-    cp 0a0h             ;056a fe a0
-    jr nz,l0568h        ;056c 20 fa
-    ld a,b              ;056e 78
-    out (18h),a         ;056f d3 18
-l0571h:
-    in a,(18h)          ;0571 db 18
-    cp 0a1h             ;0573 fe a1
-    jr nz,l0571h        ;0575 20 fa
-    ld a,0ffh           ;0577 3e ff
-    out (18h),a         ;0579 d3 18
-    ld b,14h            ;057b 06 14
-l057dh:
-    nop                 ;057d 00
-    djnz l057dh         ;057e 10 fd
-    ret                 ;0580 c9
+    cp 0a0h
+    jr nz,mw_rdy1       ;Wait for David Junior II to go ready
+    ld a,b              ;Recall command
+    out (corvus),a      ;Send command
+mw_rdy2:
+    in a,(corvus)
+    cp 0a1h
+    jr nz,mw_rdy2       ;Wait until the David Junior II has it
+    ld a,0ffh
+    out (corvus),a      ;Send execute code
+    ld b,14h
+mw_rdy3:
+    nop
+    djnz mw_rdy3        ;Delay loop
+    ret
 
-mw_sub_0581h:
-    ld a,0ffh           ;0581 3e ff
-    out (18h),a         ;0583 d3 18
+mw_status:
+;Get status from the Konan David Junior II, return it in A.
+;
+    ld a,0ffh
+    out (corvus),a      ;Transfer done
 l0585h:
-    in a,(18h)          ;0585 db 18
-    inc a               ;0587 3c
-    jr nz,l0585h        ;0588 20 fb
-    ld a,0feh           ;058a 3e fe
-    out (18h),a         ;058c d3 18
+    in a,(corvus)
+    inc a
+    jr nz,l0585h        ;Wait for David Junior II to get out
+                        ;  of internal DMA mode
+    ld a,0feh
+    out (corvus),a      ;Signal that we are ready for status
 l058eh:
-    in a,(18h)          ;058e db 18
-    rla                 ;0590 17
-    jr c,l058eh         ;0591 38 fb
-    in a,(18h)          ;0593 db 18
-    bit 6,a             ;0595 cb 77
-    push af             ;0597 f5
-sub_0598h:
-    xor a               ;0598 af
-l0599h:
-    out (18h),a         ;0599 d3 18
-    pop af              ;059b f1
-    ret                 ;059c c9
+    in a,(corvus)
+    rla
+    jr c,l058eh         ;Wait for status
 
-mw_sub_059dh:
-    xor a               ;059d af
-    out (18h),a         ;059e d3 18
-    ld hl,(var_1)       ;05a0 2a d3 05
-    ld a,(var_3)        ;05a3 3a d5 05
-    ld b,05h            ;05a6 06 05
+    in a,(corvus)       ;Read status byte
+    bit 6,a             ;Bit 6 of David Junior status is set if error
+                        ;  Z = opposite of bit 6 (Z=1 if OK, Z=0 if error)
+    push af             ;Save status byte
+sub_0598h:
+    xor a
+l0599h:
+    out (corvus),a      ;Clear the port to acknowledge receiving the status
+    pop af              ;Recall status byte
+    ret
+
+mw_send_addr:
+;Send an 8-byte address to the David Junior II controller.
+;
+    xor a
+    out (corvus),a      ;Send byte 0: unit number (always 0)
+    ld hl,(var_1)
+    ld a,(var_3)
+    ld b,05h
 l05a8h:
-    rra                 ;05a8 1f
-    rr h                ;05a9 cb 1c
+    rra
+    rr h
 l05abh:
-    rr l                ;05ab cb 1d
-    djnz l05a8h         ;05ad 10 f9
-    ld a,(4033h)        ;05af 3a 33 40
-    ld b,a              ;05b2 47
-    and l               ;05b3 a5
-    out (18h),a         ;05b4 d3 18
+    rr l
+    djnz l05a8h         ;Decrement B, loop until B=0
+
+    ld a,(4033h)
+    ld b,a
+    and l
+    out (corvus),a      ;Send byte 1: Head number (0..7)
 l05b6h:
-    srl h               ;05b6 cb 3c
-    rr l                ;05b8 cb 1d
-    srl b               ;05ba cb 38
-    jr nz,l05b6h        ;05bc 20 f8
-    ld a,l              ;05be 7d
-    out (18h),a         ;05bf d3 18
-    ld a,h              ;05c1 7c
-    out (18h),a         ;05c2 d3 18
-    ld a,(var_1)        ;05c4 3a d3 05
-    and 1fh             ;05c7 e6 1f
-    out (18h),a         ;05c9 d3 18
-    xor a               ;05cb af
-    out (18h),a         ;05cc d3 18
-    out (18h),a         ;05ce d3 18
-    out (18h),a         ;05d0 d3 18
-    ret                 ;05d2 c9
+    srl h
+    rr l
+    srl b
+    jr nz,l05b6h
+    ld a,l
+    out (corvus),a      ;Send byte 2: Track low (0..FF)
+    ld a,h
+    out (corvus),a      ;Send byte 3: Track high (0 or 1)
+    ld a,(var_1)
+    and 1fh
+    out (corvus),a      ;Send byte 4: Sector
+    xor a
+    out (corvus),a      ;Send byte 5: Reserved
+    out (corvus),a      ;Send byte 6: Reserved
+    out (corvus),a      ;Send byte 7: Reserved
+    ret
 
 var_1:
     db 14h
@@ -735,10 +813,8 @@ var_2:
     db 00h
 var_3:
     db 10h
-var_4:
-    db 0fdh
-
-    db 0c9h
+err_ptr:
+    dw 0c9fdh           ;Pointer: error code
 
 ; Start of KLIB.REL =========================================================
 
@@ -767,7 +843,6 @@ hex:
 ;representation of the byte in HL and return a pointer to it in HL.
 ;Implements BASIC function: HEX$(x)
 ;
-
     ld a,02h            ;A = 2 bytes in string
     ld (tmp),a          ;Store length in temp string header
     ld a,l              ;A = L
@@ -838,8 +913,6 @@ pv0d:
     call print_str
     jp print_spc
 
-
-
 print_str:
 ;Print string of length A at pointer HL.
 ;
@@ -859,42 +932,42 @@ l0643h:
 
 imug:
 ;MUL1: IMUG
-    ld b,h              ;064d 44
-    ld c,l              ;064e 4d
-    pop hl              ;064f e1
-    ld e,(hl)           ;0650 5e
-    inc hl              ;0651 23
-    ld d,(hl)           ;0652 56
-    inc hl              ;0653 23
-    push hl             ;0654 e5
-    ld l,c              ;0655 69
-    ld h,b              ;0656 60
+    ld b,h
+    ld c,l
+    pop hl
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    inc hl
+    push hl
+    ld l,c
+    ld h,b
 
 imuh:
 ;MUL1: IMUH
-    ld a,h              ;0657 7c
-    or l                ;0658 b5
-    ret z               ;0659 c8
-    ex de,hl            ;065a eb
-    ld a,h              ;065b 7c
-    or l                ;065c b5
-    ret z               ;065d c8
-    ld b,h              ;065e 44
-    ld c,l              ;065f 4d
+    ld a,h
+    or l
+    ret z
+    ex de,hl
+    ld a,h
+    or l
+    ret z
+    ld b,h
+    ld c,l
 sub_0660h:
-    ld hl,0000h         ;0660 21 00 00
-    ld a,10h            ;0663 3e 10
+    ld hl,0000h
+    ld a,10h
 l0665h:
-    add hl,hl           ;0665 29
-    ex de,hl            ;0666 eb
-    add hl,hl           ;0667 29
-    ex de,hl            ;0668 eb
-    jp nc,l066dh        ;0669 d2 6d 06
-    add hl,bc           ;066c 09
+    add hl,hl
+    ex de,hl
+    add hl,hl
+    ex de,hl
+    jp nc,l066dh
+    add hl,bc
 l066dh:
-    dec a               ;066d 3d
-    jp nz,l0665h        ;066e c2 65 06
-    ret                 ;0671 c9
+    dec a
+    jp nz,l0665h
+    ret
 
 ; XXXLIB --------------------------------------------------------------------
 
@@ -902,7 +975,7 @@ end:
 ;XXXLIB: $END
 ;Jump to CP/M warm start
 ;Implements BASIC command: END
-    jp 0000h
+    jp warm             ;Warm start entry point
 
 ini:
 ;XXXLIB: INI
@@ -918,8 +991,8 @@ n5_0:
 
 charin:
 ;CPMIO: CHARIN
-    ld hl,0fffeh        ;0677 21 fe ff
-    jp conin           ;067a c3 8c 06
+    ld hl,0fffeh
+    jp conin
 
 conout:
 ;CPMIO: CONOUT
@@ -930,7 +1003,7 @@ conout:
     push af
     ld c,02h
     ld e,a
-    call 0005h
+    call bdos           ;BDOS entry point
     pop af
     pop bc
     pop de
@@ -939,7 +1012,7 @@ conout:
 pr0a:
 ;CPMIO: $PR0A
 ;Do nothing and return
-    ret                 ;068b c9
+    ret
 
 conin:
 ;CPMIO: CONIN
@@ -947,7 +1020,7 @@ conin:
     push bc
     push hl
     ld c,01h
-    call 0005h
+    call bdos           ;BDOS entry point
     pop hl
     ld (hl),a
     inc hl
