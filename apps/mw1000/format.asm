@@ -219,7 +219,7 @@ sub_01bbh:
     dw l30b3h
 
     ;l30b3h = <para>
-    ld hl,l30b3h+1       ;01c2 21 b4 30
+    ld hl,l30b3h+1      ;01c2 21 b4 30
     ld (hl),b           ;01c5 70
     dec hl              ;01c6 2b
     ld (hl),c           ;01c7 71
@@ -800,12 +800,12 @@ exsys:
 rdsys:
 ;Read the "CP/M" and "K" files from an IEEE-488 drive into memory.
     ld a,c
-    ld (l08b3h),a
+    ld (cpm_drive),a
     call dskdev         ;Get device address for a CP/M drive number
     ld e,00h
     push de
-    call sub_06adh
-    ld a,(l08b3h)
+    call open_cpm
+    ld a,(cpm_drive)
     call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     ld hl,4000h
@@ -829,8 +829,8 @@ l05f9h:
     call close          ;Close an open file on an IEEE-488 device
     pop de
     push de
-    call sub_06bfh
-    ld a,(l08b3h)
+    call open_k
+    ld a,(cpm_drive)
     call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     ld hl,6000h
@@ -851,7 +851,7 @@ l0626h:
     call untalk         ;Send UNTALK to all IEEE-488 devices
     pop de
     call close          ;Close an open file on an IEEE-488 device
-    ld a,(l08b3h)
+    ld a,(cpm_drive)
     call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     ret
@@ -925,21 +925,21 @@ cwrit3:
     pop hl
     jp l0848h
 
-sub_06adh:
+open_cpm:
 ;Open "CP/M" file on an IEEE-488 drive
     ld c,l08a1h_len
     ld hl,l08a1h        ;"0:CP/M"
-    ld a,(l08b3h)
+    ld a,(cpm_drive)
     rra
     jp nc,open          ;Open a file on an IEEE-488 device
     ld hl,l08a7h        ;"1:CP/M"
     jp open             ;Open a file on an IEEE-488 device
 
-sub_06bfh:
+open_k:
 ;Open "K" file on an IEEE-488 drive
     ld c,l08adh_len
     ld hl,l08adh        ;"0:K"
-    ld a,(l08b3h)
+    ld a,(cpm_drive)
     rra
     jp nc,open          ;Open a file on an IEEE-488 device
     ld hl,l08b0h        ;"1:K"
@@ -948,19 +948,19 @@ sub_06bfh:
 savesy:
 ;Read the CP/M system image from an IEEE-488 drive.
     ld a,c
-    ld (l08b3h),a
+    ld (cpm_drive),a
     call dskdev         ;Get device address for a CP/M drive number
     push de
     ld e,0fh
     ld hl,l0899h        ;"S0:*"
-    ld a,(l08b3h)
+    ld a,(cpm_drive)
     rra
     jr nc,l06e7h
     ld hl,l089dh        ;"S1:*"
 l06e7h:
     ld c,l0899h_len
     call open           ;Open a file on an IEEE-488 device
-    ld a,(l08b3h)
+    ld a,(cpm_drive)
     call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     pop de
@@ -968,8 +968,8 @@ l06e7h:
     ret nz
     ld e,01h
     push de
-    call sub_06bfh
-    ld a,(l08b3h)
+    call open_k
+    ld a,(cpm_drive)
     call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     pop de
@@ -993,8 +993,8 @@ l0715h:
     call close          ;Close an open file on an IEEE-488 device
     pop de
     push de
-    call sub_06adh
-    ld a,(l08b3h)
+    call open_cpm
+    ld a,(cpm_drive)
     call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     pop de
@@ -1015,7 +1015,7 @@ l0742h:
     call unlisten       ;Send UNLISTEN to all IEEE-488 devices
     pop de
     call close          ;Close an open file on an IEEE-488 device
-    ld a,(l08b3h)
+    ld a,(cpm_drive)
     call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     ret
@@ -1023,50 +1023,50 @@ l0742h:
 format:
 ;Format an IEEE-488 drive for SoftBox use.
     ld a,c
-    ld (l08b3h),a
+    ld (cpm_drive),a
     call dskdev         ;Get device address for a CP/M drive number
-    ld a,(l08b3h)
+    ld a,(cpm_drive)
     and 01h
     add a,'0'
-    ld (l0874h+1),a
-    ld e,0fh
+    ld (l0874h+1),a     ;Store cbm drive number into command string
+    ld e,0fh            ;Secondary address is 15 (command channel)
     ld c,l0874h_len
     ld hl,l0874h        ;"N0:CP/M V2.2 DISK,XX"
     call open           ;Open a file on an IEEE-488 device
-    ld a,(l08b3h)
+    ld a,(cpm_drive)
     call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     or a
-    ret nz
-    ld a,(l08b3h)
+    ret nz              ;If error occured, return
+    ld a,(cpm_drive)
     call idrive         ;Initialize an IEEE-488 disk drive
     ld hl,4000h
-    ld de,4001h
+    ld de,4000h+1
     ld bc,00ffh
     ld (hl),0e5h
-    ldir
-    ld a,0fh
-    ld (l0898h),a
-    ld a,01h
-    ld (l0897h),a
+    ldir                ;Fill all 256 bytes (4000h to 40ffh) with 0e5h
+    ld a,15             ;Start with sector 15 (cbmdos format)
+    ld (cbmdos_sector),a
+    ld a,1              ;Write only in track 1 (cbmdos format)
+    ld (cbmdos_track),a
 l07a0h:
 ;Clear the CP/M directory by filling it with E5 ("unused").
-    call sub_07b6h
-    ld a,(l08b3h)
+    call sub_07b6h      ;Write a sector to an IEEE-488 drive.
+    ld a,(cpm_drive)
     call dsksta         ;Read the error channel of an IEEE-488 device
     ld (l08b4h),a
     or a
-    ret nz
-    ld hl,l0898h
-    dec (hl)
-    jp p,l07a0h
+    ret nz              ;If error occured, return
+    ld hl,cbmdos_sector
+    dec (hl)            ;Decrement the current sector (cbmdos format)
+    jp p,l07a0h         ;Loop until all sectors (15 .. 0) done
     ret
 
 sub_07b6h:
 ;Write a sector to an IEEE-488 drive.
     ld hl,l088fh        ;"M-W",00h,13h,01h
     ld c,l088fh_len
-    ld a,(l08b3h)
+    ld a,(cpm_drive)
     call diskcmd        ;Open the command channel on IEEE-488 device
     call ieeemsg        ;Send string to the current IEEE-488 device
     ld a,(4000h)
@@ -1074,12 +1074,12 @@ sub_07b6h:
     call unlisten       ;Send UNLISTEN to all IEEE-488 devices
     ld hl,l0888h        ;"B-P 2 1"
     ld c,l0888h_len
-    ld a,(l08b3h)
+    ld a,(cpm_drive)
     call diskcmd        ;Open the command channel on IEEE-488 device
     call ieeemsg        ;Send string to the current IEEE-488 device
     call creoi          ;Send carriage return to IEEE-488 dev with EOI
     call unlisten       ;Send UNLISTEN to all IEEE-488 devices
-    ld a,(l08b3h)
+    ld a,(cpm_drive)
     call dskdev         ;Get device address for a CP/M drive number
     ld e,02h
     call listen         ;Send LISTEN to an IEEE-488 device
@@ -1087,18 +1087,18 @@ sub_07b6h:
     ld c,0ffh
     call ieeemsg        ;Send string to the current IEEE-488 device
     call unlisten       ;Send UNLISTEN to all IEEE-488 devices
-    ld a,(l08b3h)
+    ld a,(cpm_drive)
     call diskcmd        ;Open the command channel on IEEE-488 device
     ld hl,l086fh        ;"U2 2 "
     ld c,l086fh_len
     call ieeemsg        ;Send string to the current IEEE-488 device
-    ld a,(l08b3h)
+    ld a,(cpm_drive)
     and 01h
     add a,'0'
     call wrieee         ;Send byte to an IEEE-488 device
-    ld a,(l0897h)
+    ld a,(cbmdos_track) ;Get track number (cbmdos format)
     call ieeenum        ;Send number as decimal string to IEEE-488 dev
-    ld a,(l0898h)
+    ld a,(cbmdos_sector);Get sector number (cbmdos format)
     call ieeenum        ;Send number as decimal string to IEEE-488 dev
     call creoi          ;Send carriage return to IEEE-488 dev with EOI
     jp unlisten         ;Send UNLISTEN to all IEEE-488 devices
@@ -1110,21 +1110,22 @@ cform:
 l0827h:
     ld (hl),0e5h
     inc l
-    jr nz,l0827h
-    ld bc,0002h
+    jr nz,l0827h        ;Fill all 128 bytes (0080h to 00ffh) with 0e5h
+    ld bc,2             ;Write into cpm track number 2
     call settrk         ;Set track number
-    ld bc,0000h
+    ld bc,0             ;Start with cpm sector number 0
 l0835h:
     push bc
     call setsec         ;Set sector number
     call write          ;Write selected sector
     pop bc
     or a
-    jp nz,l0848h
-    inc bc
+    jp nz,l0848h        ;If error occured, skip
+    inc bc              ;Increment sector number (cpm)
     ld a,c
     cp 40h
-    jr nz,l0835h
+    jr nz,l0835h        ;Loop until all sectors (0 .. 63) done
+                        ;This includes track number 3 with 32 sectors, too
     ret
 
 l0848h:
@@ -1157,10 +1158,10 @@ l088fh_len: equ $-l088fh
 l0895h:                 ;unused !!!
     db "#2"
 
-l0897h:
-    db 0
-l0898h:
-    db 0
+cbmdos_track:
+    db 0                ;Track number for cbmdos format
+cbmdos_sector:
+    db 0                ;Sector number for cbmdos format
 
 l0899h:
     db "S0:*"
@@ -1183,7 +1184,7 @@ l08adh_len: equ $-l08adh
 l08b0h:
     db "1:K"
 
-l08b3h:
+cpm_drive:
     db 0
 l08b4h:
     db 0
