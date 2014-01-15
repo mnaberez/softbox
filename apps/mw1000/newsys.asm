@@ -486,7 +486,7 @@ ask_drv_dev:
     ;PRINT
     call print_eol
 
-    ;POKE &H5678+D, N ' Store device number
+    ;POKE BIAS+&H4A78+D, N ' Store device number DISKDEV(D)
     ld a,(dd)
     ld l,a
     rla
@@ -533,7 +533,7 @@ ask_drv_dev:
 
     ;REM User selected 2 CP/M drives
 
-    ;POKE &H5670+D, 5 ' Change drive type from 4 to 5
+    ;POKE BIAS+&H4A70+D, 5 ' Change drive type DRV(D) from 4 to 5
     ld a,(dd)
     ld l,a
     rla
@@ -803,7 +803,7 @@ bad_drv_type:
     jp ask_drv_type
 
 l0483h:
-    ;POKE &H5670+D, (heads/2)+1 ' Store drive type
+    ;POKE BIAS+&H4A70+D, (heads/2)+1 ' Store drive type DRV(D)
     ;REM 2 heads => drive type 2
     ;REM 4 heads => drive type 3
     ;REM 6 heads => drive type 4
@@ -1697,7 +1697,7 @@ ask_flop_type:
 
     ;REM User selected 'A' for 3040/4040
 
-    ;POKE &H5670+D, 0 ' Store drive type 0 (CBM 3040/4040)
+    ;POKE BIAS+&H4A70+D, 0 ' Store drive type DRV(D) 0 (CBM 3040/4040)
     ld a,(dd)
     ld l,a
     rla
@@ -1721,7 +1721,7 @@ l08cdh:
 
     ;REM User selected 'B' for 8050
 
-    ;POKE &H5670+D, 1 ' Store drive type 1 (CBM 8050)
+    ;POKE BIAS+&H4A70+D, 1 ' Store drive type DRV(D) 1 (CBM 8050)
     ld a,(dd)
     ld l,a
     rla
@@ -1745,7 +1745,7 @@ l08e8h:
 
     ;REM User selected 'C' for 8250
 
-    ;POKE &H5670+D, 6 ' Store drive type 6 (CBM 8250)
+    ;POKE BIAS+&H4A70+D, 6 ' Store drive type DRV(D) 6 (CBM 8250)
     ld a,(dd)
     ld l,a
     rla
@@ -1777,7 +1777,7 @@ l0909h:
 
     ;REM User selected 'U' for Unused
 
-    ;POKE &H5670+D, 255 ' Store drive type 255 (Not Used)
+    ;POKE BIAS+&H4A70+D, 255 ' Store drive type DRV(D) 255 (Not Used)
     ld a,(dd)
     ld l,a
     rla
@@ -1823,7 +1823,7 @@ l091eh:
 
     ;REM User entered 5 MB
 
-    ;POKE &H5670+D, 4 ' Store drive type 4 (Corvus 5 MB)
+    ;POKE BIAS+&H4A70+D, 4 ' Store drive type DRV(D) 4 (Corvus 5 MB)
     ld a,(dd)
     ld l,a
     rla
@@ -1847,7 +1847,7 @@ l0955h:
 
     ;REM User entered 10 MB
 
-    ;POKE &H5670+D, 2 ' Store drive type 2 (Corvus 10 MB)
+    ;POKE BIAS+&H4A70+D, 2 ' Store drive type DRV(D) 2 (Corvus 10 MB)
     ld a,(dd)
     ld l,a
     rla
@@ -1871,7 +1871,7 @@ l0971h:
 
     ;REM User entered 10 MB
 
-    ;POKE &H5670+D, 3 ' Store drive type 3 (Corvus 20 MB)
+    ;POKE BIAS+&H4A70+D, 3 ' Store drive type DRV(D) 3 (Corvus 20 MB)
     ld a,(dd)
     ld l,a
     rla
@@ -2189,6 +2189,7 @@ l0af0h:
 
 start:
     ;MINI = 1 ' Constant for system type (0=Corvus, 1=Mini-Winchester)
+    ;BIAS = &H0C00 'System buffer at 4000 hex
 
     ;GOSUB clear_screen
     call clear_screen
@@ -2856,7 +2857,7 @@ ask_char_size:
     add hl,hl           ;12d1 29
     jp nc,l12ech        ;12d2 d2 ec 12
 
-    ;POKE &H5664, PEEK(&H5664) AND &HF3 OR (N SHL 2)
+    ;POKE BIAS+&H4A64, PEEK(&H5664) AND &HF3 OR (N SHL 2) ' Set U
     ld a,(5664h)        ;12d5 3a 64 56
     and 0f3h            ;12d8 e6 f3
     ld b,02h            ;12da 06 02
@@ -2895,7 +2896,7 @@ ask_stop_bits:
 
     ;REM User selected 1 stop bit
 
-    ;POKE &H5664, (PEEK(&H5664) AND &H3F) OR &H40
+    ;POKE BIAS+&H4A64, (PEEK(BIAS+&H4A64) AND &H3F) OR &H40 ' Set U
     ld a,(5664h)
     and 3fh
     or 40h
@@ -2915,7 +2916,7 @@ l130fh:
 
     ;REM User selected 2 stop bits
 
-    ;POKE &H5664, (PEEK(&H5664) AND &H3F) OR &HC0
+    ;POKE BIAS+&H4A64, (PEEK(BIAS+&H4A64) AND &H3F) OR &HC0 ' Set U
     ld a,(5664h)
     and 3fh
     or 0c0h
@@ -2941,7 +2942,7 @@ ask_parity:
     cp 'O'
     jp nz,l1345h
 
-    ;POKE &H5664, (PEEK(&H5664) AND &HCF) OR &H10
+    ;POKE BIAS+&H4A64, (PEEK(BIAS+&H4A64) AND &HCF) OR &H10 ' Set U
     ld a,(5664h)
     and 0cfh
     or 10h
@@ -2956,7 +2957,7 @@ l1345h:
     cp 'E'
     jp nz,l1358h
 
-    ;POKE &H5664, PEEK(&H5664) OR &H30
+    ;POKE BIAS+&H4A64, PEEK(&H4A64) OR &H30 ' Set U
     ld a,(5664h)
     or 30h
     ld (5664h),a
@@ -2970,7 +2971,7 @@ l1358h:
     cp 'N'
     jp nz,l1368h
 
-    ;POKE &H5664, PEEK(5664h) AND &HEF
+    ;POKE BIAS+&H4A64, PEEK(BIAS+&H4A64) AND &HEF ' Set U
     ld a,(5664h)
     and 0efh
     ld (5664h),a
@@ -3003,7 +3004,7 @@ ask_baud_rate:
 
     ;REM User selected 110 baud
 
-    ;POKE &H5665, &H22
+    ;POKE BIAS+&H4A65, &H22 ' Set BAUD
     ld hl,5665h
     ld (hl),22h
 
@@ -3021,7 +3022,7 @@ l138ch:
 
     ;REM User selected 300 baud
 
-    ;POKE &H5665, &H55
+    ;POKE BIAS+&H4A65, &H55 ' Set BAUD
     ld hl,5665h
     ld (hl),55h
 
@@ -3039,7 +3040,7 @@ l13a0h:
 
     ;REM User selected 1200 baud
 
-    ;POKE &H5665, &H77
+    ;POKE BIAS+&H4A65, &H77 ' Set BAUD
     ld hl,5665h
     ld (hl),77h
 
@@ -3057,7 +3058,7 @@ l13b4h:
 
     ;REM User selected 4800 baud
 
-    ;POKE &H5665, &HCC
+    ;POKE BIAS+&H4A65, &HCC ' Set BAUD
     ld hl,5665h
     ld (hl),0cch
 
@@ -3075,7 +3076,7 @@ l13c8h:
 
     ;REM User selected 9600 baud
 
-    ;POKE &H5665, &HEE
+    ;POKE BIAS+&H4A65, &HEE ' Set BAUD
     ld hl,5665h
     ld (hl),0eeh
 
@@ -3093,7 +3094,7 @@ l13dch:
 
     ;REM User selected 19200 baud
 
-    ;POKE &H5665, &HFF
+    ;POKE BIAS+&H4A65, &HFF ' Set BAUD
     ld hl,5665h
     ld (hl),0ffh
 
@@ -3509,7 +3510,7 @@ sub_1567h:
 
     ;REM User selected 'T' for T(TY: -- RS232 printer
 
-    ;POKE &H5660, PEEK(&H5660) AND &H3F
+    ;POKE BIAS+&H4A60, PEEK(BIAS+&H4A60) AND &H3F ' Set IOBYTE
     ld a,(5660h)
     and 3fh
     ld (5660h),a
@@ -3525,7 +3526,7 @@ l15a4h:
 
     ;REM User selected 'C' for C(RT: -- PET screen
 
-    ;POKE &H5660, (PEEK(&H5660) AND &H3F) OR &H40
+    ;POKE BIAS+&H4A60, (PEEK(BIAS+&H4A60) AND &H3F) OR &H40 ' Set IOBYTE
     ld a,(5660h)
     and 3fh
     or 40h
@@ -3542,7 +3543,7 @@ l15b9h:
 
     ;REM User selected 'L' for L(PT: -- PET IEEE printer
 
-    ;POKE &H5660, (PEEK(&H5660) AND &H3F) OR &H80
+    ;POKE BIAS+&H4A60, (PEEK(BIAS+&H4A60) AND &H3F) OR &H80 ' Set IOBYTE
     ld a,(5660h)
     and 3fh
     or 80h
@@ -3559,7 +3560,7 @@ l15ceh:
 
     ;REM User selected 'U' for U(L1: -- ASCII IEEE printer
 
-    ;POKE &H5660, (PEEK(&H5660) AND &H3F) OR &HC0
+    ;POKE BIAS+&H4A60, (PEEK(BIAS+&H4A60) AND &H3F) OR &HC0 ' Set IOBYTE
     ld a,(5660h)
     and 3fh
     or 0c0h
@@ -3587,7 +3588,7 @@ sub_15e1h:
 
     ;REM User selected 'T' for T(TY:)
 
-    ;POKE &H5660, PEEK(&H5660) AND &HF3
+    ;POKE BIAS+&H4A60, PEEK(BIAS+&H4A60) AND &HF3 ' Set IOBYTE
     ld a,(5660h)
     and 0f3h
     ld (5660h),a
@@ -3603,7 +3604,7 @@ l1600h:
 
     ;REM User selected 'P' for P(TR:)
 
-    ;POKE &H5660, (PEEK(&H5660) AND &HF3) OR &H04
+    ;POKE BIAS+&H4A60, (PEEK(BIAS+&H4A60) AND &HF3) OR &H04 ' Set IOBYTE
     ld a,(5660h)
     and 0f3h
     or 04h
@@ -3631,7 +3632,7 @@ sub_1613h:
 
     ;REM User selected 'T' for T(TY:)
 
-    ;POKE &H5660, PEEK(&H5660) AND &HCF
+    ;POKE BIAS+&H4A60, PEEK(BIAS+&H4A60) AND &HCF ' Set IOBYTE
     ld a,(5660h)
     and 0cfh
     ld (5660h),a
@@ -3647,7 +3648,7 @@ l1632h:
 
     ;REM User selected 'P' for P(TP:)
 
-    ;POKE &H5660, (PEEK(&H5660) AND &HCF) OR &H10
+    ;POKE BIAS+&H4A60, (PEEK(BIAS+&H4A60) AND &HCF) OR &H10 ' Set IOBYTE
     ld a,(5660h)
     and 0cfh
     or 10h
@@ -3691,9 +3692,9 @@ sub_1645h:
 
     ;REM User selected 3 for 3022/3023/4022/4023
 
-    ;POKE &H566D, 0
+    ;POKE BIAS+&H4A6D, 0 ' Set LPTYPE
     ld hl,566dh
-    ld (hl),00h
+    ld (hl),0
 
     ;GOTO l1696h
     jp l1696h
@@ -3706,9 +3707,9 @@ l1679h:
 
     ;REM User selected 8 for 8024
 
-    ;POKE &H566D, 2
+    ;POKE BIAS+&H4A6D, 2 ' Set LPTYPE
     ld hl,566dh
-    ld (hl),02h
+    ld (hl),2
 
     ;GOTO l1696h
     jp l1696h
@@ -3721,9 +3722,9 @@ l1689h:
 
     ;REM User selected 'D' for 8026/8027 (Daisywheel)
 
-    ;POKE &H566D, 1
+    ;POKE BIAS+&H566D, 1 ' Set LPTYPE
     ld hl,566dh
-    ld (hl),01h
+    ld (hl),1
 
 l1696h:
     ;RETURN
@@ -4116,7 +4117,7 @@ l181fh:
 
     ;REM User selected 1. PET printer device #
 
-    ;POKE &H5661, N
+    ;POKE BIAS+&H4A61, N ' Set LPT
     ld a,(nn)
     ld (5661h),a
 
@@ -4131,7 +4132,7 @@ l1842h:
 
     ;REM User selected 2. ASCII list device #
 
-    ;POKE &H5666, N
+    ;POKE BIAS+&H4A66, N ' Set UL1
     ld a,(nn)
     ld (5666h),a
 
@@ -4146,7 +4147,7 @@ l1853h:
 
     ;REM User selected 3. Reader device #
 
-    ;POKE &H5662, N
+    ;POKE BIAS+&H4A62, N ' Set RDR
     ld a,(nn)
     ld (5662h),a
 
@@ -4161,7 +4162,7 @@ l1864h:
 
     ;REM User selected 4.  Punch device #
 
-    ;POKE &H5663, N
+    ;POKE BIAS+&H4A63, N ' Set PUN
     ld a,(nn)
     ld (5663h),a
 
@@ -4196,9 +4197,9 @@ sub_1879h:
 
     ;REM User selected 1 column directory
 
-    ;POKE &H44b2, 0
+    ;POKE BIAS+&H38B2, 0 ' Set DIRSIZE
     ld hl,44b2h
-    ld (hl),0
+    ld (hl),1-1
 
     ;GOTO l18b9h
     jp l18b9h
@@ -4214,9 +4215,9 @@ l1896h:
 
     ;REM User selected 2 column directory
 
-    ;POKE &H44b2, 1
+    ;POKE BIAS+&H38B2, 1 ' Set DIRSIZE
     ld hl,44b2h
-    ld (hl),1
+    ld (hl),2-1
 
     ;GOTO l18b9h
     jp l18b9h
@@ -4232,9 +4233,9 @@ l18a8h:
 
     ;REM User selected 4 column directory
 
-    ;POKE &H44b2, 3
+    ;POKE BIAS+&H38B2, 3 ' Set DIRSIZE
     ld hl,44b2h
-    ld (hl),3
+    ld (hl),4-1
 
 l18b9h:
     ;RETURN
@@ -4243,7 +4244,7 @@ l18b9h:
 sub_18bah:
     ;REM Flip uppercase mode
 
-    ;POKE &H5667, PEEK(&H5667) XOR &H80
+    ;POKE BIAS+&H4A67, PEEK(BIAS+&H4A67) XOR &H80 ' Set TERMTYPE
     ld a,(5667h)
     xor 80h
     ld (5667h),a
@@ -4269,7 +4270,7 @@ sub_18c3h:
 
     ;REM User selected 'A' for A(DM3A)
 
-    ;POKE &H5667, PEEK(&H5667) AND &H80 ' Set TERMTYPE
+    ;POKE BIAS+&H4A67, PEEK(BIAS+&H4A67) AND &H80 ' Set TERMTYPE
     ld a,(5667h)
     and 80h
     ld (5667h),a
@@ -4285,7 +4286,7 @@ l18e2h:
 
     ;REM User selected 'T' for T(V912)
 
-    ;POKE &H5667, PEEK(&H5667) AND &H80 OR &H02 ' Set TERMTYPE
+    ;POKE BIAS+&H4A67, PEEK(BIAS+&H4A67) AND &H80 OR &H02 ' Set TERMTYPE
     ld a,(5667h)
     and 80h
     or 02h
@@ -4317,7 +4318,7 @@ ask_leadin:
 
     ;REM User selected 'E' for Escape lead-in
 
-    ;POKE &H5668, &H1B ' Set LEADIN
+    ;POKE BIAS+&H4A68, &H1B ' Set LEADIN
     ld hl,5668h
     ld (hl),1bh
 
@@ -4332,7 +4333,7 @@ l1918h:
 
     ;REM User selected 'T' for Tilde lead-in
 
-    ;POKE &H5668, &H7E ' LEADIN
+    ;POKE BIAS+&H4A68, &H7E ' Set LEADIN
     ld hl,5668h
     ld (hl),7eh
 
@@ -4346,132 +4347,132 @@ bad_leadin:
 adm_or_tv:
     ;REM Terminal settings for LSI ADM-3A and TeleVideo TV-912
 
-    ;POKE &H5667, PEEK(&H5667) AND &H80 OR &H01 ' Set TERMTYPE
+    ;POKE BIAS+&H4A67, PEEK(BIAS+&H4A67) AND &H80 OR &H01 ' Set TERMTYPE
     ld a,(5667h)
     and 80h
     or 01h
     ld (5667h),a
 
-    ;POKE &H566A, &H00 ' Set ROWOFF
+    ;POKE BIAS+&H4A6A, 0 ' Set ROWOFF
     ld hl,566ah
-    ld (hl),00h
+    ld (hl),0
 
-    ;POKE &H566B, &H00 ' Set COLOFF
+    ;POKE BIAS+&H4A6B, 0 ' Set COLOFF
     inc hl
-    ld (hl),00h
+    ld (hl),0
 
-    ;POKE &H5669, &H01 ' Set ORDER
+    ;POKE BIAS+&H4A69, 1 ' Set ORDER
     dec hl
     dec hl
-    ld (hl),01h
+    ld (hl),1
 
     ;REM Populate SCRTAB
 
-    ;POKE &H5680+0, &H8B
+    ;POKE BIAS+&H4A80+0, &H8B
     ld hl,5680h
     ld (hl),8bh
 
-    ;POKE &H5680+1, &H0B
+    ;POKE BIAS+&H4A80+1, &H0B
     inc hl
     ld (hl),0bh
 
-    ;POKE &H5680+2, &H8C
+    ;POKE BIAS+&H4A80+2, &H8C
     inc hl
     ld (hl),8ch
 
-    ;POKE &H5680+3, &H0C
+    ;POKE BIAS+&H4A80+3, &H0C
     inc hl
     ld (hl),0ch
 
-    ;POKE &H5680+4, &H8F
+    ;POKE BIAS+&H4A80+4, &H8F
     inc hl
     ld (hl),8fh
 
-    ;POKE &H5680+5, &H13
+    ;POKE BIAS+&H4A80+5, &H13
     inc hl
     ld (hl),13h
 
-    ;POKE &H5680+6, &H91
+    ;POKE BIAS+&H4A80+6, &H91
     inc hl
     ld (hl),91h
 
-    ;POKE &H5680+7, &H1B
+    ;POKE BIAS+&H4A80+7, &H1B
     inc hl
     ld (hl),1bh
 
-    ;POKE &H5680+8, &H92
+    ;POKE BIAS+&H4A80+8, &H92
     inc hl
     ld (hl),92h
 
-    ;POKE &H5680+9, &H1E
+    ;POKE BIAS+&H4A80+9, &H1E
     inc hl
     ld (hl),1eh
 
-    ;POKE &H5680+10, &H93
+    ;POKE BIAS+&H4A80+10, &H93
     inc hl
     ld (hl),93h
 
-    ;POKE &H5680+11, &H12
+    ;POKE BIAS+&H4A80+11, &H12
     inc hl
     ld (hl),12h
 
-    ;POKE &H5680+12, &H97
+    ;POKE BIAS+&H4A80+12, &H97
     inc hl
     ld (hl),97h
 
-    ;POKE &H5680+13, &H14
+    ;POKE BIAS+&H4A80+13, &H14
     inc hl
     ld (hl),14h
 
-    ;POKE &H5680+14, &H98
+    ;POKE BIAS+&H4A80+14, &H98
     inc hl
     ld (hl),98h
 
-    ;POKE &H5680+15, &H14
+    ;POKE BIAS+&H4A80+15, &H14
     inc hl
     ld (hl),14h
 
-    ;POKE &H5680+16, &H9A
+    ;POKE BIAS+&H4A80+16, &H9A
     inc hl
     ld (hl),9ah
 
-    ;POKE &H5680+17, &H11
+    ;POKE BIAS+&H4A80+17, &H11
     inc hl
     ld (hl),11h
 
-    ;POKE &H5680+18, &H9C
+    ;POKE BIAS+&H4A80+18, &H9C
     inc hl
     ld (hl),9ch
 
-    ;POKE &H5680+19, &H1A
+    ;POKE BIAS+&H4A80+19, &H1A
     inc hl
     ld (hl),1ah
 
-    ;POKE &H5680+20, &H9D
+    ;POKE BIAS+&H4A80+20, &H9D
     inc hl
     ld (hl),9dh
 
-    ;POKE &H5680+21, &H1A
+    ;POKE BIAS+&H4A80+21, &H1A
     inc hl
     ld (hl),1ah
 
-    ;POKE &H5680+22, &H99
+    ;POKE BIAS+&H4A80+22, &H99
     inc hl
     ld (hl),99h
 
-    ;POKE &H5680+23, &H00
+    ;POKE BIAS+&H4A80+23, &H00
     inc hl
     ld (hl),00h
 
-    ;POKE &H5680+24, &H9F
+    ;POKE BIAS+&H4A80+24, &H9F
     inc hl
     ld (hl),9fh
 
-    ;POKE &H5680+25, &H00
+    ;POKE BIAS+&H4A80+25, &H00
     inc hl
     ld (hl),00h
 
-    ;POKE &H5680+26, &H00
+    ;POKE BIAS+&H4A80+26, &H00
     inc hl
     ld (hl),00h
 
@@ -4481,195 +4482,195 @@ adm_or_tv:
 hz1500:
     ;REM Terminal settings for Hazeltine HZ-1500
 
-    ;POKE &H5668, &H1B ' Set LEADIN
+    ;POKE BIAS+&H4A68, &H1B ' Set LEADIN
     ld hl,5668h
     ld (hl),1bh
 
-    ;POKE &H566A, &H20 ' Set ROWOFF
+    ;POKE BIAS+&H4A6A, &H20 ' Set ROWOFF
     inc hl
     inc hl
     ld (hl),20h
 
-    ;POKE &H566B, &H20 ' Set COLOFF
+    ;POKE BIAS+&H4A6B, &H20 ' Set COLOFF
     inc hl
     ld (hl),20h
 
-    ;POKE &H5669, &H00 ' Set ORDER
+    ;POKE BIAS+&H4A69, 0 ' Set ORDER
     dec hl
     dec hl
-    ld (hl),00h
+    ld (hl),0
 
     ;REM Populate SCRTAB
 
-    ;POKE &H5680+0, &H0B1
+    ;POKE BIAS+&H4A80+0, &H0B1
     ld hl,5680h
     ld (hl),0b1h
 
-    ;POKE &H5680+1, &H04
+    ;POKE BIAS+&H4A80+1, &H04
     inc hl
     ld (hl),04h
 
-    ;POKE &H5680+2, &H0B2
+    ;POKE BIAS+&H4A80+2, &H0B2
     inc hl
     ld (hl),0b2h
 
-    ;POKE &H5680+3, &H05
+    ;POKE BIAS+&H4A80+3, &H05
     inc hl
     ld (hl),05h
 
-    ;POKE &H5680+4, &H0B3
+    ;POKE BIAS+&H4A80+4, &H0B3
     inc hl
     ld (hl),0b3h
 
-    ;POKE &H5680+5, &H06
+    ;POKE BIAS+&H4A80+5, &H06
     inc hl
     ld (hl),06h
 
-    ;POKE &H5680+6, &H0EA
+    ;POKE BIAS+&H4A80+6, &H0EA
     inc hl
     ld (hl),0eah
 
-    ;POKE &H5680+7, &H0E
+    ;POKE BIAS+&H4A80+7, &H0E
     inc hl
     ld (hl),0eh
 
-    ;POKE &H5680+8, &H0EB
+    ;POKE BIAS+&H4A80+8, &H0EB
     inc hl
     ld (hl),0ebh
 
-    ;POKE &H5680+9, &H0F
+    ;POKE BIAS+&H4A80+9, &H0F
     inc hl
     ld (hl),0fh
 
-    ;POKE &H5680+10, &H0D1
+    ;POKE BIAS+&H4A80+10, &H0D1
     inc hl
     ld (hl),0d1h
 
-    ;POKE &H5680+11, &H1C
+    ;POKE BIAS+&H4A80+11, &H1C
     inc hl
     ld (hl),1ch
 
-    ;POKE &H5680+12, &H0D7
+    ;POKE BIAS+&H4A80+12, &H0D7
     inc hl
     ld (hl),0d7h
 
-    ;POKE &H5680+13, &H1D
+    ;POKE BIAS+&H4A80+13, &H1D
     inc hl
     ld (hl),1dh
 
-    ;POKE &H5680+14, &H0C5
+    ;POKE BIAS+&H4A80+14, &H0C5
     inc hl
     ld (hl),0c5h
 
-    ;POKE &H5680+15, &H11
+    ;POKE BIAS+&H4A80+15, &H11
     inc hl
     ld (hl),11h
 
-    ;POKE &H5680+16, &H0D2
+    ;POKE BIAS+&H4A80+16, &H0D2
     inc hl
     ld (hl),0d2h
 
-    ;POKE &H5680+17, &H12
+    ;POKE BIAS+&H4A80+17, &H12
     inc hl
     ld (hl),12h
 
-    ;POKE &H5680+18, &H0D4
+    ;POKE BIAS+&H4A80+18, &H0D4
     inc hl
     ld (hl),0d4h
 
-    ;POKE &H5680+19, &H13
+    ;POKE BIAS+&H4A80+19, &H13
     inc hl
     ld (hl),13h
 
-    ;POKE &H5680+20, &H0F4
+    ;POKE BIAS+&H4A80+20, &H0F4
     inc hl
     ld (hl),0f4h
 
-    ;POKE &H5680+21, &H13
+    ;POKE BIAS+&H4A80+21, &H13
     inc hl
     ld (hl),13h
 
-    ;POKE &H5680+22, &H0D9
+    ;POKE BIAS+&H4A80+22, &H0D9
     inc hl
     ld (hl),0d9h
 
-    ;POKE &H5680+23, &H14
+    ;POKE BIAS+&H4A80+23, &H14
     inc hl
     ld (hl),14h
 
-    ;POKE &H5680+24, &H0F9
+    ;POKE BIAS+&H4A80+24, &H0F9
     inc hl
     ld (hl),0f9h
 
-    ;POKE &H5680+25, &H14
+    ;POKE BIAS+&H4A80+25, &H14
     inc hl
     ld (hl),14h
 
-    ;POKE &H5680+26, &H0AB
+    ;POKE BIAS+&H4A80+26, &H0AB
     inc hl
     ld (hl),0abh
 
-    ;POKE &H5680+27, &H1A
+    ;POKE BIAS+&H4A80+27, &H1A
     inc hl
     ld (hl),1ah
 
-    ;POKE &H5680+28, &H0AA
+    ;POKE BIAS+&H4A80+28, &H0AA
     inc hl
     ld (hl),0aah
 
-    ;POKE &H5680+29, &H1A
+    ;POKE BIAS+&H4A80+29, &H1A
     inc hl
     ld (hl),1ah
 
-    ;POKE &H5680+30, &H0BA
+    ;POKE BIAS+&H4A80+30, &H0BA
     inc hl
     ld (hl),0bah
 
-    ;POKE &H5680+31, &H1A
+    ;POKE BIAS+&H4A80+31, &H1A
     inc hl
     ld (hl),1ah
 
-    ;POKE &H5680+32, &H0BB
+    ;POKE BIAS+&H4A80+32, &H0BB
     inc hl
     ld (hl),0bbh
 
-    ;POKE &H5680+33, &H1A
+    ;POKE BIAS+&H4A80+33, &H1A
     inc hl
     ld (hl),1ah
 
-    ;POKE &H5680+34, &H0DA
+    ;POKE BIAS+&H4A80+34, &H0DA
     inc hl
     ld (hl),0dah
 
-    ;POKE &H5680+35, &H1A
+    ;POKE BIAS+&H4A80+35, &H1A
     inc hl
     ld (hl),1ah
 
-    ;POKE &H5680+36, &H0BD
+    ;POKE BIAS+&H4A80+36, &H0BD
     inc hl
     ld (hl),0bdh
 
-    ;POKE &H5680+37, &H1B
+    ;POKE BIAS+&H4A80+37, &H1B
     inc hl
     ld (hl),1bh
 
-    ;POKE &H5680+38, &H0A8
+    ;POKE BIAS+&H4A80+38, &H0A8
     inc hl
     ld (hl),0a8h
 
-    ;POKE &H5680+39, &H00
+    ;POKE BIAS+&H4A80+39, &H00
     inc hl
     ld (hl),00h
 
-    ;POKE &H5680+40, &H0A9
+    ;POKE BIAS+&H4A80+40, &H0A9
     inc hl
     ld (hl),0a9h
 
-    ;POKE &H5680+41, &H00
+    ;POKE BIAS+&H4A80+41, &H00
     inc hl
     ld (hl),00h
 
-    ;POKE &H5680+42, &H00
+    ;POKE BIAS+&H4A80+42, &H00
     inc hl
     ld (hl),00h
 
@@ -4838,7 +4839,7 @@ l1acah:
 
     ;REM CRT terminal emulation is HZ1500 (may be ESC or tilde lead-in)
 
-    ;IF PEEK(5668h) <> &H1B THEN GOTO l1ae2h
+    ;IF PEEK(BIAS+&H4A68) <> &H1B THEN GOTO l1ae2h 'LEADIN
     ld a,(5668h)
     cp 1bh
     jp nz,l1ae2h
