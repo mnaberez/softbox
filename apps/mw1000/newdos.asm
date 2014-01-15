@@ -180,7 +180,7 @@ readline:
 
 l01abh:
     ;R = buff_data(0)
-    ;IF R < &H61 OR R >= &H7B THEN GOTO l01c2h
+    ;IF R < &H61 OR R > &H7A THEN GOTO l01c2h
     ld a,(buff_data)    ;01ab 3a 20 30
     ld (rr),a           ;01ae 32 02 30
     cp 'a'              ;01b1 fe 61
@@ -191,7 +191,7 @@ l01abh:
     ;R = R - &H20
     ld hl,rr
     ld a,(hl)
-    add a,0e0h
+    add a,0-('a'-'A')
     ld (hl),a
 
 l01c2h:
@@ -200,7 +200,7 @@ l01c2h:
     ld (hl),00h         ;01c5 36 00
 
 l01c7h:
-    ;IF buff_data(l30a1h) < &H30 THEN GOTO l0218h
+    ;IF buff_data(l30a1h) < &H30 OR buff_data(l30a1h) > &H39 THEN GOTO l0218h
     ld a,(l30a1h)       ;01c7 3a a1 30
     ld l,a              ;01ca 6f
     rla                 ;01cb 17
@@ -211,8 +211,6 @@ l01c7h:
     ld a,(hl)           ;01d2 7e
     cp '0'              ;01d3 fe 30
     jp m,l0218h         ;01d5 fa 18 02
-
-    ;IF buff_data(l30a1h) >= &H3A THEN GOTO l0218h
     ld a,(l30a1h)       ;01d8 3a a1 30
     ld l,a              ;01db 6f
     rla                 ;01dc 17
@@ -221,7 +219,7 @@ l01c7h:
     ld h,a              ;01e1 67
     add hl,bc           ;01e2 09
     ld a,(hl)           ;01e3 7e
-    cp '9'+1            ;01e4 fe 3a
+    cp 1+'9'            ;01e4 fe 3a
     jp p,l0218h         ;01e6 f2 18 02
 
     ;N = buff_data(l30a1h) - &H30 + N * 10
@@ -334,10 +332,13 @@ l028ch:
     dw l30a6h
 
 print_int:
+    ;l30a8h = <para>
     ld hl,l30a8h+1      ;0292 21 a9 30
     ld (hl),b           ;0295 70
     dec hl              ;0296 2b
     ld (hl),c           ;0297 71
+
+    ;IF l30a8h <> 0 THEN GOTO l02a9h
     ld hl,(l30a8h)      ;0298 2a a8 30
     ld a,l              ;029b 7d
     or h                ;029c b4
@@ -347,21 +348,28 @@ print_int:
     ld bc,zero
     call print_str
 
+    ;GOTO l02b1h
     jp l02b1h           ;02a6 c3 b1 02
 
 l02a9h:
+    ;CALL sub_0257h(l30a8h)
     ld hl,(l30a8h)      ;02a9 2a a8 30
     ld b,h              ;02ac 44
     ld c,l              ;02ad 4d
     call sub_0257h      ;02ae cd 57 02
+
 l02b1h:
+    ;RETURN
     ret                 ;02b1 c9
 
-l02b2h:
+sub_02b2h:
+    ;l30aah = <para>
     ld hl,l30aah+1      ;02b2 21 ab 30
     ld (hl),b           ;02b5 70
     dec hl              ;02b6 2b
     ld (hl),c           ;02b7 71
+
+    ;IF l30aah >= 0 THEN GOTO l02d5h
     ld hl,(l30aah)      ;02b8 2a aa 30
     add hl,hl           ;02bb 29
     jp nc,l02d5h        ;02bc d2 d5 02
@@ -388,9 +396,11 @@ l02d5h:
     ld b,h              ;02d8 44
     ld c,l              ;02d9 4d
     call print_int      ;02da cd 92 02
+
+    ;RETURN
     ret                 ;02dd c9
 
-l02deh:
+sub_02deh:
     ld hl,l30ach+1      ;02de 21 ad 30
     ld (hl),b           ;02e1 70
     dec hl              ;02e2 2b
@@ -399,11 +409,11 @@ l02deh:
     inc hl              ;02e5 23
     ld (hl),01h         ;02e6 36 01
     jp l032bh           ;02e8 c3 2b 03
+
 l02ebh:
     ld c,0ch            ;02eb 0e 0c
     ld hl,(l30ach)      ;02ed 2a ac 30
     jp l02fah           ;02f0 c3 fa 02
-
 l02f3h:
     or a                ;02f3 b7
     ld a,h              ;02f4 7c
@@ -421,7 +431,7 @@ l02fah:
     ld (l30afh),a       ;0301 32 af 30
     cp 10               ;0304 fe 0a
     jp m,l030eh         ;0306 fa 0e 03
-    add a,'A'-10        ;0309 c6 37
+    add a,0+'A'-10      ;0309 c6 37
     jp l0313h           ;030b c3 13 03
 
 l030eh:
@@ -3129,17 +3139,17 @@ buff_data:              ;  128 bytes input buffer
     db 0
 
 l30a1h:
-    db 0
+    db 0                ;TODO Used by readline
 l30a2h:
-    db 0
+    db 0                ;TODO Used by print_char
 l30a3h:
-    dw 0
+    dw 0                ;TODO Used by print_str
 l30a5h:
-    db 0
+    db 0                ;TODO Used by print_str
 l30a6h:
-    dw 0
+    dw 0                ;TODO Used by sub_0257h
 l30a8h:
-    dw 0
+    dw 0                ;TODO Used by print_int
 l30aah:
     dw 0
 l30ach:
