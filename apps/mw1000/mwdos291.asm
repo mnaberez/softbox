@@ -540,73 +540,88 @@ l03a6h:
     call end
 
 unknown_err:
-    db 17h
+    db unknown_err_len
     dw unknown_err+3
     db "xx - unknown error code"
+unknown_err_len: equ $-unknown_err-3
 
 illegal_cmd:
-    db 14h
+    db illegal_cmd_len
     dw illegal_cmd+3
     db "49 - illegal command"
+illegal_cmd_len: equ $-illegal_cmd-3
 
 not_ready:
-    db 13h
+    db not_ready_len
     dw not_ready+3
     db "47 - disk not ready"
+not_ready_len: equ $-not_ready-3
 
 write_fault:
-    db 10h
+    db write_fault_len
     dw write_fault+3
     db "46 - write fault"
+write_fault_len: equ $-write_fault-3
 
 data_read_err:
-    db 14h
+    db data_read_err_len
     dw data_read_err+3
     db "44 - data read error"
+data_read_err_len: equ $-data_read_err-3
 
 head_read_err:
-    db 16h
+    db head_read_err_len
     dw head_read_err+3
     db "42 - header read error"
+head_read_err_len: equ $-head_read_err-3
 
 head_writ_err:
-    db 17h
+    db head_writ_err_len
     dw head_writ_err+3
     db "40 - header write error"
+head_writ_err_len: equ $-head_writ_err-3
 
 drive_err_num:
-    db 0dh
+    db drive_err_num_len
     dw drive_err_num+3
     db "DRIVE ERROR #"
+drive_err_num_len: equ $-drive_err_num-3
 
 writing_code:
-    db 1bh
+    db writing_code_len
     dw writing_code+3
     db "writing controller code ..."
+writing_code_len: equ $-writing_code-3
 
 continue_yn:
-    db 11h
+    db continue_yn_len
     dw continue_yn+3
     db "Continue (Y/N) ? "
+continue_yn_len: equ $-continue_yn-3
 
 dashes:
-    db 13h
+    db dashes_len
     dw dashes+3
     db "--- ---------------"
+dashes_len: equ $-dashes-3
 
 for_mw:
-    db 13h
+    db for_mw_len
     dw for_mw+3
     db "for Mini-Winchester"
+for_mw_len: equ $-for_mw-3
 
 dos_firm_upd:
-    db 1dh
+    db dos_firm_upd_len
     dw dos_firm_upd+3
     db "DOS firmware updating program"
+dos_firm_upd_len: equ $-dos_firm_upd-3
 
 empty_string:
-    db 0
+    db empty_string_len
     dw empty_string+3
+empty_string_len: equ $-empty_string-3
+
     db 0, 0, 0
 
 ; Start of Unknown Library ==================================================
@@ -665,7 +680,7 @@ l0518h:
     ex (sp),hl          ;  Delay
     djnz l0518h         ;  Decrement B, loop until B=0
 
-    call mw_status      ;Read status
+    call mw_status      ;Read David Junior II status.  Is it OK?
     ret z               ;  Yes: return.
     jp mw_error         ;  No: jump to handle error.
 

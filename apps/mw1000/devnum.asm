@@ -546,78 +546,94 @@ l03c4h:
     call end
 
 unknown_err:
-    db 17h
+    db unknown_err_len
     dw unknown_err+3
     db "xx - unknown error code"
+unknown_err_len: equ $-unknown_err-3
 
 illegal_cmd:
-    db 14h
+    db illegal_cmd_len
     dw illegal_cmd+3
     db "49 - illegal command"
+illegal_cmd_len: equ $-illegal_cmd-3
 
 not_ready:
-    db 13h
+    db not_ready_len
     dw not_ready+3
     db "47 - disk not ready"
+not_ready_len: equ $-not_ready-3
 
 write_fault:
-    db 10h
+    db write_fault_len
     dw write_fault+3
     db "46 - write fault"
+write_fault_len: equ $-write_fault-3
 
 data_read_err:
-    db 14h
+    db data_read_err_len
     dw data_read_err+3
     db "44 - data read error"
+data_read_err_len: equ $-data_read_err-3
 
 head_read_err:
-    db 16h
+    db head_read_err_len
     dw head_read_err+3
     db "42 - header read error"
+head_read_err_len: equ $-head_read_err-3
 
 head_writ_err:
-    db 17h
+    db head_writ_err_len
     dw head_writ_err+3
     db "40 - header write error"
+head_writ_err_len: equ $-head_writ_err-3
 
 drive_err_num:
-    db 0dh
+    db drive_err_num_len
     dw drive_err_num+3
     db "DRIVE ERROR #"
+drive_err_num_len: equ $-drive_err_num-3
 
 ellipsis:
-    db 04h
+    db ellipsis_len
     dw ellipsis+3
     db " ..."
+ellipsis_len: equ $-ellipsis-3
 
 chg_dev_num:
-    db 1ah
+    db chg_dev_num_len
     dw chg_dev_num+3
     db "changing device number to "
+chg_dev_num_len: equ $-chg_dev_num-3
 
 new_dev_num:
-    db 14h
+    db new_dev_num_len
     dw new_dev_num+3
     db "new device number ? "
+new_dev_num_len: equ $-new_dev_num-3
 
 cur_dev_num:
-    db 1ch
+    db cur_dev_num_len
     dw cur_dev_num+3
     db "current device number is :  "
+cur_dev_num_len: equ $-cur_dev_num-3
 
 dashes:
-    db 2eh
+    db dashes_len
     dw dashes+3
     db "----- --- --- ------ ------ -- ---------------"
+dashes_len: equ $-dashes-3
 
 alter_pet_dos:
-    db 2eh
+    db alter_pet_dos_len
     dw alter_pet_dos+3
     db "Alter PET DOS device number of Mini-Winchester"
+alter_pet_dos_len: equ $-alter_pet_dos-3
 
 empty_string:
-    db 0
+    db empty_string_len
     dw empty_string+3
+empty_string_len: equ $-empty_string-3
+
     db 0, 0, 0
 
 ; Start of Unknown Library ==================================================
