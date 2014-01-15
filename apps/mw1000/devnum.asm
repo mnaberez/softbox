@@ -116,13 +116,13 @@ main:
     ld hl,4000h
     ld (l010ah),hl      ;TODO: buffer address?
 
-    ;l010ch = &H20
+    ;l010ch = 32
     ld hl,0020h
-    ld (l010ch),hl      ;TODO: transfer 32 sectors (= 1 full track)?
+    ld (l010ch),hl      ;TODO: absolute sector address?
 
     ;CALL mw_read (l010ah, l010ch, l010eh)
     ld bc,l010ah        ;bc = pointer to buffer address?
-    ld de,l010ch        ;de = pointer to number of sectors?
+    ld de,l010ch        ;de = pointer to absolute sector address?
     ld hl,l010eh        ;hl = pointer to error?
     call mw_read
 
@@ -191,7 +191,7 @@ l01c8h:
     ld a,l
     ld (4036h),a
 
-    ;l010ch = &H20
+    ;l010ch = 32
     ld hl,0020h
     ld (l010ch),hl
 
@@ -373,7 +373,7 @@ readline:
     ret
 
 l02eeh:
-    ;R = PEEK (BUF+2)
+    ;R = PEEK(BUF+2)
     ld hl,(buf)
     inc hl
     inc hl
@@ -381,8 +381,9 @@ l02eeh:
     ld h,00h
     ld (rr),hl
 
+    ;IF NOT(R >= &H61 AND R <= &H7A) THEN GOTO l0331h
     ld hl,(rr)          ;02f9 2a 10 01
-    ld de,0-61h         ;02fc 11 9f ff
+    ld de,0-'a'         ;02fc 11 9f ff
     ld a,h              ;02ff 7c
     rla                 ;0300 17
     jp c,l0306h         ;0301 da 06 03
@@ -395,7 +396,7 @@ l0306h:
     ld l,a              ;0309 6f
     push hl             ;030a e5
     ld hl,(rr)          ;030b 2a 10 01
-    ld de,0-7bh         ;030e 11 85 ff
+    ld de,0-('z'+1)     ;030e 11 85 ff
     ld a,h              ;0311 7c
     rla                 ;0312 17
     jp c,l0318h         ;0313 da 18 03
@@ -417,21 +418,22 @@ l0318h:
     jp z,l0331h         ;0324 ca 31 03
 
     ;R = R - &H20
-    ld de,0-20h
+    ld de,0-('a'-'A')
     ld hl,(rr)
     add hl,de
     ld (rr),hl
 
 l0331h:
-	;N = 0
-    ld hl,0000h
+    ;N = 0
+    ld hl,0
     ld (nn),hl
 
     ;J = 2
-    ld hl,0002h
+    ld hl,2
     ld (jj),hl
 
 l033dh:
+    ;WHILE(PEEK(BUF+J) >= &H30) AND (PEEK(BUF+J) < &H39) AND (J-2 < PEEK(BUF+1))
     ld hl,(buf)         ;033d 2a 16 01
     ex de,hl            ;0340 eb
     ld hl,(jj)          ;0341 2a 18 01
@@ -439,7 +441,7 @@ l033dh:
     ld l,(hl)           ;0345 6e
     ld h,00h            ;0346 26 00
     push hl             ;0348 e5
-    ld de,0ffd0h        ;0349 11 d0 ff
+    ld de,0-'0'         ;0349 11 d0 ff
     ld a,h              ;034c 7c
     rla                 ;034d 17
     jp c,l0353h         ;034e da 53 03
@@ -452,7 +454,7 @@ l0353h:
     ld l,a              ;0356 6f
     ld (l0122h),hl      ;0357 22 22 01
     pop hl              ;035a e1
-    ld de,0ffc6h        ;035b 11 c6 ff
+    ld de,0-('9'+1)     ;035b 11 c6 ff
     ld a,h              ;035e 7c
     rla                 ;035f 17
     jp c,l0365h         ;0360 da 65 03
@@ -505,6 +507,8 @@ l038dh:
     ld a,h              ;0398 7c
     or l                ;0399 b5
     jp z,l03c4h         ;039a ca c4 03
+
+    ;N=N*10+(PEEK(BUF+J)-&H30)
     ld hl,(nn)          ;039d 2a 12 01
     call imug           ;03a0 cd a9 06
     ld a,(bc)           ;03a3 0a
@@ -518,13 +522,18 @@ l038dh:
     ld h,00h            ;03af 26 00
     pop de              ;03b1 d1
     add hl,de           ;03b2 19
-    ld de,0ffd0h        ;03b3 11 d0 ff
+    ld de,0-'0'         ;03b3 11 d0 ff
     add hl,de           ;03b6 19
     ld (nn),hl          ;03b7 22 12 01
+
+    ;J = J + 1
     ld hl,(jj)          ;03ba 2a 18 01
     inc hl              ;03bd 23
     ld (jj),hl          ;03be 22 18 01
+
+    ;WEND
     jp l033dh           ;03c1 c3 3d 03
+
 l03c4h:
     ;RETURN
     ret
