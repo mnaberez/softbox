@@ -497,7 +497,7 @@ ask_drv_type:
     call print_eol
 
     ;PRINT "For Mini-Winchester"
-    ld bc,l0bb3h
+    ld bc,for_winchester
     call print_str
     call print_eol
 
@@ -693,12 +693,12 @@ ask_hbox_conf:
     call print_eol
 
     ;PRINT "Configure entire drive as HardBox"
-    ld bc,l0cc9h
+    ld bc,config_entire
     call print_str
     call print_eol
 
     ;PRINT "or just the last half (E/H) ? ";
-    ld bc,l0cebh
+    ld bc,or_last_half
     call print_str
 
     ;GOSUB readline
@@ -750,7 +750,7 @@ not_half_hbox:
 
 bad_hbox_conf:
     ;PRINT "Please answer E or H : ";
-    ld bc,l0d0ah
+    ld bc,pls_eh
     call print_str
 
     ;GOTO ask_hbox_conf
@@ -790,12 +790,12 @@ ask_direct:
     call print_eol      ;04bb cd 27 02
 
     ;PRINT "Do you wish to use the direct access"
-    ld bc,l0d22h
+    ld bc,use_direct_access
     call print_str
     call print_eol
 
     ;PRINT "commands B-W, B-R, U1, U2 etc. (Y/N) ? ";
-    ld bc,l0d47h
+    ld bc,commands_yn
     call print_str
 
     ;GOSUB readline
@@ -835,7 +835,7 @@ l04f8h:
     call print_char
 
     ;PRINT "Any number of kilobytes from zero to"
-    ld bc,l0d6fh
+    ld bc,num_kb_from_zero
     call print_str
     call print_eol
 
@@ -848,22 +848,22 @@ l04f8h:
     call print_int      ;050f cd 92 02
 
     ;PRINT "may be reserved for direct access"
-    ld bc,l0d94h
+    ld bc,res_direct_access
     call print_str
     call print_eol
 
     ;PRINT "rather than sequential files."
-    ld bc,l0db6h
+    ld bc,rather_seq_files
     call print_str
     call print_eol
 
     ;PRINT "Alternatively for emulation of twin 8050"
-    ld bc,l0dd4h
+    ld bc,emu_twin_8050
     call print_str
     call print_eol
 
     ;PRINT "floppies you may enter an 'E'."
-    ld bc,l0dfdh
+    ld bc,floppies_enter_e
     call print_str
     call print_eol
 
@@ -871,12 +871,12 @@ l04f8h:
     call print_eol
 
     ;PRINT "Amount of space to reserve for direct"
-    ld bc,l0e1ch
+    ld bc,space_to_res
     call print_str
     call print_eol
 
     ;PRINT "access commands (in kilobytes) ? ";
-    ld bc,l0e42h
+    ld bc,access_cmd_kb
     call print_str
 
     ;GOSUB readline
@@ -916,17 +916,17 @@ l0568h:
     jp z,l04f8h
 
     ;PRINT "You now need to specify the number of"
-    ld bc,l0e64h
+    ld bc,specify_num_of
     call print_str
     call print_eol
 
     ;PRINT "apparent sectors per track and tracks"
-    ld bc,l0e8ah
+    ld bc,sec_p_trk_a_trk
     call print_str
     call print_eol
 
     ;PRINT "per drive when using direct access : "
-    ld bc,l0eb0h
+    ld bc,p_drv_direct_access
     call print_str
     call print_eol
 
@@ -934,17 +934,17 @@ l0568h:
     call print_eol
 
     ;PRINT "For example to emulate an 8050 unit :"
-    ld bc,l0ed6h
+    ld bc,example_emu_8050
     call print_str
     call print_eol
 
     ;PRINT "   sectors per track = 29"
-    ld bc,l0efch
+    ld bc,sec_p_trk_29
     call print_str
     call print_eol
 
     ;PRINT "   tracks per drive = 77"
-    ld bc,l0f16h
+    ld bc,trk_p_drv_77
     call print_str
     call print_eol
 
@@ -952,7 +952,7 @@ l0568h:
     call print_eol
 
     ;PRINT "Number of sectors per track ? ";
-    ld bc,l0f2fh
+    ld bc,num_sec_p_trk
     call print_str
 
     ;GOSUB readline
@@ -966,7 +966,7 @@ l0568h:
     call print_eol
 
     ;PRINT "Number of tracks per drive ? ";
-    ld bc,l0f4eh
+    ld bc,num_trk_p_drv
     call print_str
 
     ;GOSUB readline
@@ -1109,12 +1109,12 @@ l05dfh:
     call print_char
 
     ;PRINT "Logical specifications :"
-    ld bc,l0f84h
+    ld bc,logical_spec
     call print_str
     call print_eol
 
     ;PRINT "User area size :           ";
-    ld bc,l0f9dh
+    ld bc,user_area_size
     call print_str
 
     ;PRINT l4007h;
@@ -1124,12 +1124,12 @@ l05dfh:
     call print_int      ;0697 cd 92 02
 
     ;PRINT " Kbytes"
-    ld bc,l0fb9h
+    ld bc,kbytes_1
     call print_str
     call print_eol
 
     ;PRINT "Direct access size :       ";
-    ld bc,l0fc1h
+    ld bc,direct_access_size
     call print_str
 
     ;PRINT l400ch;
@@ -1139,12 +1139,12 @@ l05dfh:
     call print_int      ;06ae cd 92 02
 
     ;PRINT " Kbytes"
-    ld bc,l0fddh
+    ld bc,kbytes_2
     call print_str
     call print_eol
 
     ;PRINT "Direct sectors per track : ";
-    ld bc,l0fe5h
+    ld bc,direct_sec_p_trk
     call print_str
 
     ;PRINT l4010h
@@ -1155,7 +1155,7 @@ l05dfh:
     call print_eol      ;06c8 cd 27 02
 
     ;PRINT "Direct tracks per drive :  ";
-    ld bc,l1001h        ;06cb 01 01 10
+    ld bc,direct_trk_p_drv        ;06cb 01 01 10
     call print_str      ;06ce cd 32 02
 
     ;PRINT l400eh
@@ -1166,7 +1166,7 @@ l05dfh:
     call print_eol
 
     ;PRINT "Max number of files :      ";
-    ld bc,l101dh        ;06dc 01 1d 10
+    ld bc,max_num_files        ;06dc 01 1d 10
     call print_str      ;06df cd 32 02
 
     ;PRINT l400ah
@@ -1183,17 +1183,17 @@ l05dfh:
     call print_eol
 
     ;PRINT "Physical specifications :"
-    ld bc,l1039h
+    ld bc,physical_spec
     call print_str
     call print_eol
 
     ;PRINT "Sectors per track :        32"
-    ld bc,l1053h
+    ld bc,sec_p_trk_32
     call print_str
     call print_eol
 
     ;PRINT "Tracks per cylinder :      ";
-    ld bc,l1071h
+    ld bc,trk_p_drv_n
     call print_str
 
     ;PRINT heads
@@ -1207,7 +1207,7 @@ l05dfh:
     call print_eol
 
     ;PRINT "Total cylinders on drive : ";
-    ld bc,l108dh
+    ld bc,cyl_o_drv_n
     call print_str
 
     ;PRINT cylinders
@@ -1218,7 +1218,7 @@ l05dfh:
     call print_eol
 
     ;PRINT "Total kbyte capacity :     ";
-    ld bc,l10a9h
+    ld bc,capacity_n_kb
     call print_str
 
     ;PRINT heads*cylinders*8
@@ -1244,7 +1244,7 @@ l05dfh:
     call print_eol
 
     ;PRINT "First user cylinder :      ";
-    ld bc,l10c5h
+    ld bc,first_usr_cyl_n
     call print_str
 
     ;PRINT l4034h
@@ -1255,7 +1255,7 @@ l05dfh:
     call print_eol
 
     ;PRINT "Number of user cylinders : ";
-    ld bc,l10e1h
+    ld bc,num_usr_cyl_n
     call print_str
 
     ;PRINT cylinders-l4034h
@@ -1273,7 +1273,7 @@ l05dfh:
     call print_eol      ;0776 cd 27 02
 
     ;PRINT "User area starts at :      ";
-    ld bc,l10fdh
+    ld bc,usr_area_starts_n
     call print_str
 
     ;PRINT l301ah
@@ -1287,12 +1287,12 @@ l05dfh:
     call print_eol
 
     ;PRINT "WARNING :  This command will destroy all"
-    ld bc,l1119h
+    ld bc,warning_destroy
     call print_str
     call print_eol
 
     ;PRINT "data on the";
-    ld bc,l1142h
+    ld bc,data_on_the
     call print_str
 
     ;IF l3003h <> 1 THEN GOTO l07aah
@@ -1301,12 +1301,12 @@ l05dfh:
     jp nz,l07aah
 
     ;PRINT " second half of the";
-    ld bc,l114eh
+    ld bc,second_half_of_the
     call print_str
 
 l07aah:
     ;PRINT " drive"
-    ld bc,l1162h
+    ld bc,drive
     call print_str
     call print_eol
 
@@ -1315,7 +1315,7 @@ l07b3h:
     call print_eol
 
     ;PRINT "Continue (Y/N) ? ";
-    ld bc,l1169h
+    ld bc,continue_yn
     call print_str
 
     ;GOSUB readline
@@ -1342,7 +1342,7 @@ l07cah:
     call print_eol
 
     ;PRINT "Writing new configuration data ..."
-    ld bc,l117bh
+    ld bc,write_conf_data
     call print_str
     call print_eol
 
@@ -1356,7 +1356,7 @@ l07cah:
     call check_error
 
     ;PRINT "Formatting directory ..."
-    ld bc,l119eh
+    ld bc,formatting_dir
     call print_str
     call print_eol
 
@@ -1638,7 +1638,7 @@ l0981h:
     jp z,l0aeah         ;0994 ca ea 0a
 
     ;PRINT "clearing direct access BAM ..."
-    ld bc,l11b7h
+    ld bc,clearing_bam
     call print_str
     call print_eol
 
@@ -1888,272 +1888,339 @@ l0aeah:
     call end
 
 drive_err_n:
-    db 0dh
+    db drive_err_n_len
     db "DRIVE ERROR #"
+drive_err_n_len: equ $-drive_err_n-1
 
 e40_head_writ:
-    db 17h
+    db e40_head_writ_len
     db "40 - header write error"
+e40_head_writ_len: equ $-e40_head_writ-1
 
 e42_head_read:
-    db 16h
+    db e42_head_read_len
     db "42 - header read error"
+e42_head_read_len: equ $-e42_head_read-1
 
 e44_data_read:
-    db 14h
+    db e44_data_read_len
     db "44 - data read error"
+e44_data_read_len: equ $-e44_data_read-1
 
 e46_writ_flt:
-    db 10h
+    db e46_writ_flt_len
     db "46 - write fault"
+e46_writ_flt_len: equ $-e46_writ_flt-1
 
 e47_not_ready:
-    db 13h
+    db e47_not_ready_len
     db "47 - disk not ready"
+e47_not_ready_len: equ $-e47_not_ready-1
 
 e49_illegal:
-    db 14h
+    db e49_illegal_len
     db "49 - illegal command"
+e49_illegal_len: equ $-e49_illegal-1
 
 exx_unknown:
-    db 17h
+    db exx_unknown_len
     db "xx - unknown error code"
+exx_unknown_len: equ $-exx_unknown-1
 
 zero:
-    db 01h
+    db zero_len
     db "0"
+zero_len: equ $-zero-1
 
 dash:
-    db 01h
+    db dash_len
     db "-"
+dash_len: equ $-dash-1
 
 config_prog:
-    db 1dh
+    db config_prog_len
     db "HardBox configuration program"
+config_prog_len: equ $-config_prog-1
 
-l0bb3h:
-    db 13h
+for_winchester:
+    db for_winchester_len
     db "For Mini-Winchester"
+for_winchester_len: equ $-for_winchester-1
 
 dashes:
-    db 13h
+    db dashes_len
     db "--- ---------------"
+dashes_len: equ $-dashes-1
 
 rev_21:
-    db 0ch
+    db rev_21_len
     db "Revision 2.1"
+rev_21_len: equ $-rev_21-1
 
 drive_sizes:
-    db 18h
+    db drive_sizes_len
     db "Drive sizes supported : "
+drive_sizes_len: equ $-drive_sizes-1
 
 drv_a_3mb:
-    db 1ch
+    db drv_a_3mb_len
     db "A.   3  Mbyte      (191 cyl)"
+drv_a_3mb_len: equ $-drv_a_3mb-1
 
 drv_b_6mb:
-    db 1ch
+    db drv_b_6mb_len
     db "B.   6  Mbyte      (191 cyl)"
+drv_b_6mb_len: equ $-drv_b_6mb-1
 
 drv_c_12mb:
-    db 1ch
+    db drv_c_12mb_len
     db "C.   12 Mbyte      (191 cyl)"
+drv_c_12mb_len: equ $-drv_c_12mb-1
 
 drv_d_5mb:
-    db 1ch
+    db drv_d_5mb_len
     db "D.   5  Mbyte      (320 cyl)"
+drv_d_5mb_len: equ $-drv_d_5mb-1
 
 drv_e_10mb:
-    db 1ch
+    db drv_e_10mb_len
     db "E.   10 Mbyte      (320 cyl)"
+drv_e_10mb_len: equ $-drv_e_10mb-1
 
 drv_f_15mb:
-    db 1ch
+    db drv_f_15mb_len
     db "F.   15 Mbyte      (320 cyl)"
+drv_f_15mb_len: equ $-drv_f_15mb-1
 
 which_type:
-    db 19h
+    db which_type_len
     db "Which drive type (A-F) ? "
+which_type_len: equ $-which_type-1
 
-l0cc9h:
-    db 21h
+config_entire:
+    db config_entire_len
     db "Configure entire drive as HardBox"
+config_entire_len: equ $-config_entire-1
 
-l0cebh:
-    db 1eh
+or_last_half:
+    db or_last_half_len
     db "or just the last half (E/H) ? "
+or_last_half_len: equ $-or_last_half-1
 
-l0d0ah:
-    db 17h
+pls_eh:
+    db pls_eh_len
     db "Please answer E or H : "
+pls_eh_len: equ $-pls_eh-1
 
-l0d22h:
-    db 24h
+use_direct_access:
+    db use_direct_access_len
     db "Do you wish to use the direct access"
+use_direct_access_len: equ $-use_direct_access-1
 
-l0d47h:
-    db 27h
+commands_yn:
+    db commands_yn_len
     db "commands B-W, B-R, U1, U2 etc. (Y/N) ? "
+commands_yn_len: equ $-commands_yn-1
 
-l0d6fh:
-    db 24h
+num_kb_from_zero:
+    db num_kb_from_zero_len
     db "Any number of kilobytes from zero to"
+num_kb_from_zero_len: equ $-num_kb_from_zero-1
 
-l0d94h:
-    db 21h
+res_direct_access:
+    db res_direct_access_len
     db "may be reserved for direct access"
+res_direct_access_len: equ $-res_direct_access-1
 
-l0db6h:
-    db 1dh
+rather_seq_files:
+    db rather_seq_files_len
     db "rather than sequential files."
+rather_seq_files_len: equ $-rather_seq_files-1
 
-l0dd4h:
-    db 28h
+emu_twin_8050:
+    db emu_twin_8050_len
     db "Alternatively for emulation of twin 8050"
+emu_twin_8050_len: equ $-emu_twin_8050-1
 
-l0dfdh:
-    db 1eh
+floppies_enter_e:
+    db floppies_enter_e_len
     db "floppies you may enter an 'E'."
+floppies_enter_e_len: equ $-floppies_enter_e-1
 
-l0e1ch:
-    db 25h
+space_to_res:
+    db space_to_res_len
     db "Amount of space to reserve for direct"
+space_to_res_len: equ $-space_to_res-1
 
-l0e42h:
-    db 21h
+access_cmd_kb:
+    db access_cmd_kb_len
     db "access commands (in kilobytes) ? "
+access_cmd_kb_len: equ $-access_cmd_kb-1
 
-l0e64h:
-    db 25h
+specify_num_of:
+    db specify_num_of_len
     db "You now need to specify the number of"
+specify_num_of_len: equ $-specify_num_of-1
 
-l0e8ah:
-    db 25h
+sec_p_trk_a_trk:
+    db sec_p_trk_a_trk_len
     db "apparent sectors per track and tracks"
+sec_p_trk_a_trk_len: equ $-sec_p_trk_a_trk-1
 
-l0eb0h:
-    db 25h
+p_drv_direct_access:
+    db p_drv_direct_access_len
     db "per drive when using direct access : "
+p_drv_direct_access_len: equ $-p_drv_direct_access-1
 
-l0ed6h:
-    db 25h
+example_emu_8050:
+    db example_emu_8050_len
     db "For example to emulate an 8050 unit :"
+example_emu_8050_len: equ $-example_emu_8050-1
 
-l0efch:
-    db 19h
+sec_p_trk_29:
+    db sec_p_trk_29_len
     db "   sectors per track = 29"
+sec_p_trk_29_len: equ $-sec_p_trk_29-1
 
-l0f16h:
-    db 18h
+trk_p_drv_77:
+    db trk_p_drv_77_len
     db "   tracks per drive = 77"
+trk_p_drv_77_len: equ $-trk_p_drv_77-1
 
-l0f2fh:
-    db 1eh
+num_sec_p_trk:
+    db num_sec_p_trk_len
     db "Number of sectors per track ? "
+num_sec_p_trk_len: equ $-num_sec_p_trk-1
 
-l0f4eh:
-    db 1dh
+num_trk_p_drv:
+    db num_trk_p_drv_len
     db "Number of tracks per drive ? "
+num_trk_p_drv_len: equ $-num_trk_p_drv-1
 
 pls_yn:
-    db 17h
+    db pls_yn_len
     db "Please answer Y or N : "
+pls_yn_len: equ $-pls_yn-1
 
-l0f84h:
-    db 18h
+logical_spec:
+    db logical_spec_len
     db "Logical specifications :"
+logical_spec_len: equ $-logical_spec-1
 
-l0f9dh:
-    db 1bh
+user_area_size:
+    db user_area_size_len
     db "User area size :           "
+user_area_size_len: equ $-user_area_size-1
 
-l0fb9h:
-    db 07h
+kbytes_1:
+    db kbytes_1_len
     db " Kbytes"
+kbytes_1_len: equ $-kbytes_1-1
 
-l0fc1h:
-    db 1bh
+direct_access_size:
+    db direct_access_size_len
     db "Direct access size :       "
+direct_access_size_len: equ $-direct_access_size-1
 
-l0fddh:
-    db 07h
+kbytes_2:
+    db kbytes_2_len
     db " Kbytes"
+kbytes_2_len: equ $-kbytes_2-1
 
-l0fe5h:
-    db 1bh
+direct_sec_p_trk:
+    db direct_sec_p_trk_len
     db "Direct sectors per track : "
+direct_sec_p_trk_len: equ $-direct_sec_p_trk-1
 
-l1001h:
-    db 1bh
+direct_trk_p_drv:
+    db direct_trk_p_drv_len
     db "Direct tracks per drive :  "
+direct_trk_p_drv_len: equ $-direct_trk_p_drv-1
 
-l101dh:
-    db 1bh
+max_num_files:
+    db max_num_files_len
     db "Max number of files :      "
+max_num_files_len: equ $-max_num_files-1
 
-l1039h:
-    db 19h
+physical_spec:
+    db physical_spec_len
     db "Physical specifications :"
+physical_spec_len: equ $-physical_spec-1
 
-l1053h:
-    db 1dh
+sec_p_trk_32:
+    db sec_p_trk_32_len
     db "Sectors per track :        32"
+sec_p_trk_32_len: equ $-sec_p_trk_32-1
 
-l1071h:
-    db 1bh
+trk_p_drv_n:
+    db trk_p_drv_n_len
     db "Tracks per cylinder :      "
+trk_p_drv_n_len: equ $-trk_p_drv_n-1
 
-l108dh:
-    db 1bh
+cyl_o_drv_n:
+    db cyl_o_drv_n_len
     db "Total cylinders on drive : "
+cyl_o_drv_n_len: equ $-cyl_o_drv_n-1
 
-l10a9h:
-    db 1bh
+capacity_n_kb:
+    db capacity_n_kb_len
     db "Total kbyte capacity :     "
+capacity_n_kb_len: equ $-capacity_n_kb-1
 
-l10c5h:
-    db 1bh
+first_usr_cyl_n:
+    db first_usr_cyl_n_len
     db "First user cylinder :      "
+first_usr_cyl_n_len: equ $-first_usr_cyl_n-1
 
-l10e1h:
-    db 1bh
+num_usr_cyl_n:
+    db num_usr_cyl_n_len
     db "Number of user cylinders : "
+num_usr_cyl_n_len: equ $-num_usr_cyl_n-1
 
-l10fdh:
-    db 1bh
+usr_area_starts_n:
+    db usr_area_starts_n_len
     db "User area starts at :      "
+usr_area_starts_n_len: equ $-usr_area_starts_n-1
 
-l1119h:
-    db 28h
+warning_destroy:
+    db warning_destroy_len
     db "WARNING :  This command will destroy all"
+warning_destroy_len: equ $-warning_destroy-1
 
-l1142h:
-    db 0bh
+data_on_the:
+    db data_on_the_len
     db "data on the"
+data_on_the_len: equ $-data_on_the-1
 
-l114eh:
-    db 13h
+second_half_of_the:
+    db second_half_of_the_len
     db " second half of the"
+second_half_of_the_len: equ $-second_half_of_the-1
 
-l1162h:
-    db 06h
+drive:
+    db drive_len
     db " drive"
+drive_len: equ $-drive-1
 
-l1169h:
-    db 11h
+continue_yn:
+    db continue_yn_len
     db "Continue (Y/N) ? "
+continue_yn_len: equ $-continue_yn-1
 
-l117bh:
-    db 22h
+write_conf_data:
+    db write_conf_data_len
     db "Writing new configuration data ..."
+write_conf_data_len: equ $-write_conf_data-1
 
-l119eh:
-    db 18h
+formatting_dir:
+    db formatting_dir_len
     db "Formatting directory ..."
+formatting_dir_len: equ $-formatting_dir-1
 
-l11b7h:
-    db 1eh
+clearing_bam:
+    db clearing_bam_len
     db "clearing direct access BAM ..."
+clearing_bam_len: equ $-clearing_bam-1
 
 ; Start of Unknown Library ==================================================
 
