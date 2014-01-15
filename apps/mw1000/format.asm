@@ -275,18 +275,17 @@ readline:
     call bdos           ;BDOS entry point
 
     ;N = 0
+    ;H = 0
     ld hl,0000h
     ld (nn),hl
-
-    ;l3006h = 0
-    ld (l3006h),hl      ;0229 22 06 30
+    ld (hh),hl
 
     ;IF buff_len <> 0 THEN GOTO l023bh
     ld a,(buff_len)     ;022c 3a 09 30
     or a                ;022f b7
     jp nz,l023bh        ;0230 c2 3b 02
 
-    ;R = 13
+    ;R = &H0D
     ld hl,rr
     ld (hl),cr
 
@@ -319,7 +318,7 @@ l0249h:
     ld (l30b8h),a       ;0255 32 b8 30
 
     ;l3059h(l30b7h) = l30b8h
-    ;IF l30b8h < &H61 OR l30b8h >= &H7B THEN GOTO l0278h
+    ;IF l30b8h < &H61 OR l30b8h > &H7A THEN GOTO l0278h
     ld a,(l30b7h)       ;0258 3a b7 30
     ld l,a              ;025b 6f
     rla                 ;025c 17
@@ -337,7 +336,7 @@ l0249h:
     ;l30b8h = l30b8h - &H20
     ld hl,l30b8h        ;0271 21 b8 30
     ld a,(hl)           ;0274 7e
-    add a,0e0h          ;0275 c6 e0
+    add a,0-('a'-'A')   ;0275 c6 e0
     ld (hl),a           ;0277 77
 
 l0278h:
@@ -353,14 +352,14 @@ l0278h:
     ld (hl),a           ;0286 77
 
     ;l30b8h = l30b8h - &H30
-    ;IF l30b8h < 0 OR l30b8h >= 10 THEN GOTO l02c5h
+    ;IF l30b8h < 0 OR l30b8h > 9 THEN GOTO l02c5h
     ld hl,l30b8h        ;0287 21 b8 30
     ld a,(hl)           ;028a 7e
-    add a,0d0h          ;028b c6 d0
+    add a,0-'0'         ;028b c6 d0
     ld (hl),a           ;028d 77
     or a                ;028e b7
     jp m,l02c5h         ;028f fa c5 02
-    cp 10               ;0292 fe 0a
+    cp 9+1              ;0292 fe 0a
     jp p,l02c5h         ;0294 f2 c5 02
 
     ;N = l30b8h + N * 10
@@ -375,11 +374,11 @@ l0278h:
     sbc a,a             ;02a7 9f
     ld h,a              ;02a8 67
     add hl,de           ;02a9 19
-    ld (nn),hl      ;02aa 22 04 30
+    ld (nn),hl          ;02aa 22 04 30
 
-    ;l3006h = l30b8h + l3006h * 16
+    ;H = l30b8h + H * 16
     ld c,04h            ;02ad 0e 04
-    ld hl,(l3006h)      ;02af 2a 06 30
+    ld hl,(hh)          ;02af 2a 06 30
     jp l02b6h           ;02b2 c3 b6 02
 l02b5h:
     add hl,hl           ;02b5 29
@@ -392,23 +391,24 @@ l02b6h:
     sbc a,a             ;02bf 9f
     ld b,a              ;02c0 47
     add hl,bc           ;02c1 09
-    ld (l3006h),hl      ;02c2 22 06 30
+    ld (hh),hl          ;02c2 22 06 30
 
 l02c5h:
+    ;REM Check for hexadecimal digits A - F
     ;l30b8h = l30b8h - 7
-    ;IF l30b8h < 10 OR l30b8h >= 16 THEN GOTO l02ebh
+    ;IF l30b8h < 10 OR l30b8h > 15 THEN GOTO l02ebh
     ld hl,l30b8h        ;02c5 21 b8 30
     ld a,(hl)           ;02c8 7e
-    add a,-7            ;02c9 c6 f9
+    add a,0-('A'-'9'-1) ;02c9 c6 f9
     ld (hl),a           ;02cb 77
     cp 10               ;02cc fe 0a
     jp m,l02ebh         ;02ce fa eb 02
-    cp 16               ;02d1 fe 10
+    cp 15+1             ;02d1 fe 10
     jp p,l02ebh         ;02d3 f2 eb 02
 
-    ;l3006h = l30b8h + l3006h * 16
+    ;H = l30b8h + H * 16
     ld c,04h            ;02d6 0e 04
-    ld hl,(l3006h)      ;02d8 2a 06 30
+    ld hl,(hh)          ;02d8 2a 06 30
     jp l02dfh           ;02db c3 df 02
 l02deh:
     add hl,hl           ;02de 29
@@ -420,7 +420,7 @@ l02dfh:
     sbc a,a             ;02e5 9f
     ld b,a              ;02e6 47
     add hl,bc           ;02e7 09
-    ld (l3006h),hl      ;02e8 22 06 30
+    ld (hh),hl          ;02e8 22 06 30
 
 l02ebh:
     ;l30b7h = l30b7h + 1
@@ -497,15 +497,14 @@ l0321h:
     call end            ;Never returns
 
 l0344h:
-    ;l3000h = R-&H41
-    ;IF l3000h < 0 THEN GOTO l0355h
-    ;IF l0355h < 16 THEN GOTO l035eh
+    ;D = R - &H41
+    ;IF D >= 0 AND D <= 15 THEN GOTO l035eh
     ld a,(rr)           ;0344 3a 03 30
     add a,0-'A'         ;0347 c6 bf
-    ld (l3000h),a       ;0349 32 00 30
+    ld (dd),a           ;0349 32 00 30
     or a                ;034c b7
     jp m,l0355h         ;034d fa 55 03
-    cp 16               ;0350 fe 10
+    cp 15+1             ;0350 fe 10
     jp m,l035eh         ;0352 fa 5e 03
 
 l0355h:
@@ -517,12 +516,12 @@ l0355h:
     jp l0321h
 
 l035eh:
-    ;l3001h = dtype(l3000h)
-    ;IF l3001h < 128 THEN GOTO l0376h
-    ld hl,l3000h        ;035e 21 00 30
+    ;drv_typ = DTYPE(D)
+    ;IF drv_typ < 128 THEN GOTO l0376h
+    ld hl,dd            ;035e 21 00 30
     ld c,(hl)           ;0361 4e
     call dtype          ;0362 cd 03 01
-    ld (l3001h),a       ;0365 32 01 30
+    ld (drv_typ),a      ;0365 32 01 30
     and 80h             ;0368 e6 80
     jp z,l0376h         ;036a ca 76 03
 
@@ -534,11 +533,11 @@ l035eh:
     jp l0321h
 
 l0376h:
-    ;IF l3001h < 2 OR l3001h >= 6 THEN GOTO l03c7h
-    ld a,(l3001h)
-    cp 02h
+    ;IF drv_typ < 2 OR drv_typ > 5 THEN GOTO l03c7h
+    ld a,(drv_typ)
+    cp 2
     jp m,l03c7h
-    cp 06h
+    cp 5+1
     jp p,l03c7h
 
     ;PRINT CHR$(7) ' Bell
@@ -549,8 +548,8 @@ l0376h:
     ld bc,data_on_hd
     call print_str
 
-    ;PRINT CHR$(l3000h + &H41);
-    ld a,(l3000h)
+    ;PRINT CHR$(D + &H41);
+    ld a,(dd)
     add a,'A'           ;Convert to CP/M drive letter
     ld c,a
     call print_char
@@ -585,8 +584,8 @@ l03b1h:
     ld bc,formatting_hd
     call print_str_eol
 
-    ;CALL cform(l3000h)
-    ld hl,l3000h        ;03bd 21 00 30
+    ;CALL cform(D)
+    ld hl,dd            ;03bd 21 00 30
     ld c,(hl)           ;03c0 4e
     call cform          ;03c1 cd 21 08
 
@@ -598,8 +597,8 @@ l03c7h:
     ld bc,disk_on_drv
     call print_str
 
-    ;PRINT CHR$(l3000h + &H41);
-    ld a,(l3000h)
+    ;PRINT CHR$(D + &H41);
+    ld a,(dd)
     add a,'A'           ;Convert to CP/M drive letter
     ld c,a
     call print_char
@@ -631,8 +630,8 @@ l03f0h:
     ld bc,formatting
     call print_str
 
-    ;CALL format(l3000h)
-    ld hl,l3000h        ;03f9 21 00 30
+    ;CALL format(D)
+    ld hl,dd            ;03f9 21 00 30
     ld c,(hl)           ;03fc 4e
     call format         ;03fd cd 5d 07
 
@@ -2113,18 +2112,18 @@ l0aa6h:
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
-l3000h:
-    db 0
-l3001h:
-    db 0
+dd:
+    db 0                ;CP/M source drive number (0=A:, 1=B:, ...)
+drv_typ:
+    db 0                ;Drive type (from dtypes table)
 dos_err:
     db 0                ;Last CBM DOS error code
 rr:
     db 0                ;First char of user input from any prompt
 nn:
     dw 0                ;Integer parsed from user input
-l3006h:
-    dw 0
+hh:
+    dw 0                ;Hexadecimal value parsed from user input
 
 buffer:                 ;User input buffer struct
 buff_size:
