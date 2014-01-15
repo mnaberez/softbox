@@ -15,18 +15,20 @@ corvus:        equ  18h   ;Corvus data bus
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
 
+cread:         equ 01h    ;Console Input
+cwrite:        equ 02h    ;Console Output
+creadstr:      equ 0ah    ;Buffered Console Input
+
+lf:            equ 0ah    ;Line Feed
+cr:            equ 0dh    ;Carriage Return
+cls:           equ 1ah    ;Clear Screen
+
     org 0100h
 
     jp start
 
 unused_1:
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
+    db 0,0,0,0,0,0,0
 
 ; Start of BASIC variables ==================================================
 
@@ -46,13 +48,15 @@ buf:
     dw 0                ;Address of buffer used in readline
 jj:
     dw 0                ;Loop index
-l011ah:
+
     dw 0
     dw 0
     dw 0
     dw 0
+
 l0122h:
     dw 0
+
     dw 0
 
 ; End of BASIC variables ====================================================
@@ -69,7 +73,7 @@ unused_2:
     dec a               ;0130 3d
     dec b               ;0131 05
     inc bc              ;0132 03
-    ld bc,l011ah        ;0133 01 1a 01
+    ld bc,011ah         ;0133 01 1a 01
     nop                 ;0136 00
     nop                 ;0137 00
     ld h,01h            ;0138 26 01
@@ -79,7 +83,7 @@ main:
 
     ;PRINT CHR$(26) ' Clear screen
     call pr0a
-    ld hl,001ah
+    ld hl,cls
     call chr
     call pv2d
 
@@ -356,7 +360,7 @@ readline:
     ld hl,empty_string
     call pv2d
 
-    ;IF PEEK (BUF+1) <> 0 GOTO l02eeh
+    ;IF PEEK (BUF+1) <> 0 THEN GOTO l02eeh
     ld hl,(buf)
     inc hl
     ld l,(hl)
@@ -622,9 +626,9 @@ buffin:
 ;Buffered Console Input.  Caller must store buffer size at 80h.  On
 ;return, 81h will contain the number of data bytes and the data
 ;will start at 82h.
-    ld c,0ah
+    ld c,creadstr       ;Buffered Console Input
     ld de,0080h
-    jp bdos
+    jp bdos             ;BDOS entry point
 
 mw_read:
 ;Read a sector from the Konan David Junior II controller.
@@ -839,9 +843,9 @@ print_spc:
     ret
 
 print_eol:
-    ld a,0ah
+    ld a,lf
     call conout
-    ld a,0dh
+    ld a,cr
     call conout
     ret
 
@@ -1054,7 +1058,7 @@ end:
 ;XXXLIB: $END
 ;Jump to CP/M warm start
 ;Implements BASIC command: END
-    jp warm
+    jp warm             ;Warm start entry point
 
 ini:
 ;XXXLIB: INI
@@ -1080,9 +1084,9 @@ conout:
     push de
     push bc
     push af
-    ld c,02h
+    ld c,cwrite         ;Console Output
     ld e,a
-    call bdos
+    call bdos           ;BDOS entry point
     pop af
     pop bc
     pop de
@@ -1098,8 +1102,8 @@ conin:
     push de
     push bc
     push hl
-    ld c,01h
-    call bdos
+    ld c,cread          ;Console Input
+    call bdos           ;BDOS entry point
     pop hl
     ld (hl),a
     inc hl

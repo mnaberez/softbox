@@ -16,19 +16,21 @@ corvus:        equ  18h   ;Corvus data bus
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
 
+cread:         equ 01h    ;Console Input
+cwrite:        equ 02h    ;Console Output
+creadstr:      equ 0ah    ;Buffered Console Input
+
+lf:            equ 0ah    ;Line Feed
+cr:            equ 0dh    ;Carriage Return
+cls:           equ 1ah    ;Clear Screen
+
     org 0100h
 
 l0100h:
     jp start
 
 unused_1:
-    nop                 ;0103 00
-    nop                 ;0104 00
-    nop                 ;0105 00
-    nop                 ;0106 00
-    nop                 ;0107 00
-    nop                 ;0108 00
-    nop                 ;0109 00
+    db 0,0,0,0,0,0,0
 
 ; Start of BASIC variables ==================================================
 
@@ -50,14 +52,15 @@ nn:
     dw 0                ;Integer parsed from user input
 jj:
     dw 0                ;Loop index
+
     dw 0
     dw 0
     dw 0
-    db 0
-l0123h:
-    db 0
+    dw 0
+
 l0124h:
     dw 0
+
     dw 0
 
 ; End of BASIC variables ====================================================
@@ -84,7 +87,7 @@ main:
 
     ;PRINT CHR$(26) ' Clear screen
     call pr0a
-    ld hl,001ah
+    ld hl,cls
     call chr
     call pv2d
 
@@ -143,10 +146,13 @@ l0193h:
     ld hl,writing_code
     call pv2d
 
+    ;TODO: FOR-NEXT?
+    ;l010ch = 1
     ld hl,0001h         ;01a5 21 01 00
     jp l01dah           ;01a8 c3 da 01
 
 l01abh:
+    ;l010eh = &H4000 + l010ch * 256
     ld hl,(l010ch)      ;01ab 2a 0c 01
     add hl,hl           ;01ae 29
     add hl,hl           ;01af 29
@@ -159,6 +165,8 @@ l01abh:
     ld de,l4000h        ;01b6 11 00 40
     add hl,de           ;01b9 19
     ld (l010eh),hl      ;01ba 22 0e 01
+
+    ;l0110h = 32 + l010ch
     ld de,0020h         ;01bd 11 20 00
     ld hl,(l010ch)      ;01c0 2a 0c 01
     add hl,de           ;01c3 19
@@ -607,7 +615,7 @@ buffin:
 ;Buffered Console Input.  Caller must store buffer size at 80h.  On
 ;return, 81h will contain the number of data bytes and the data
 ;will start at 82h.
-    ld c,0ah
+    ld c,creadstr       ;Buffered Console Input
     ld de,0080h
     jp bdos             ;BDOS entry point
 
@@ -831,9 +839,9 @@ print_spc:
     ret
 
 print_eol:
-    ld a,0ah
+    ld a,lf
     call conout
-    ld a,0dh
+    ld a,cr
     call conout
     ret
 
@@ -1001,7 +1009,7 @@ conout:
     push de
     push bc
     push af
-    ld c,02h
+    ld c,cwrite         ;Console Output
     ld e,a
     call bdos           ;BDOS entry point
     pop af
@@ -1019,7 +1027,7 @@ conin:
     push de
     push bc
     push hl
-    ld c,01h
+    ld c,cread          ;Console Input
     call bdos           ;BDOS entry point
     pop hl
     ld (hl),a
@@ -5146,7 +5154,7 @@ l4110h:
     ld de,2004h         ;412f 11 04 20
     ld bc,0020h         ;4132 01 20 00
     ldir                ;4135 ed b0
-    ld hl,l0123h        ;4137 21 23 01
+    ld hl,0123h         ;4137 21 23 01
     ld de,203eh         ;413a 11 3e 20
     ld bc,0010h         ;413d 01 10 00
     ldir                ;4140 ed b0
