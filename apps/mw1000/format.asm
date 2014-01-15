@@ -743,7 +743,7 @@ data_on_hd_len: equ $-data_on_hd-1
 will_be_eras:
     db will_be_eras_len
     db ": will be erased"
-will_be_eras_len: $-will_be_eras-1
+will_be_eras_len: equ $-will_be_eras-1
 
 proceed_yn:
     db proceed_yn_len
