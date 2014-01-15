@@ -273,18 +273,17 @@ readline:
     call bdos           ;BDOS entry point
 
     ;N = 0
+    ;H = 0
     ld hl,0000h
     ld (nn),hl
-
-    ;l24cah = 0
-    ld (l24cah),hl      ;0229 22 ca 24
+    ld (hh),hl
 
     ;IF buff_len <> 0 THEN GOTO l023bh
     ld a,(buff_len)     ;022c 3a 25 24
     or a                ;022f b7
     jp nz,l023bh        ;0230 c2 3b 02
 
-    ;R = 13
+    ;R = &H0D
     ld hl,rr
     ld (hl),cr
 
@@ -317,7 +316,7 @@ l0249h:
     ld (l3014h),a       ;0255 32 14 30
 
     ;l2476h(l3013h) = l3014h
-    ;IF l3014h < &H61 OR l3014h >= &H7B THEN GOTO l0278h
+    ;IF l3014h < &H61 OR l3014h > &H7A THEN GOTO l0278h
     ld a,(l3013h)       ;0258 3a 13 30
     ld l,a              ;025b 6f
     rla                 ;025c 17
@@ -335,7 +334,7 @@ l0249h:
     ;l3014h = l3014h - &H20
     ld hl,l3014h
     ld a,(hl)
-    add a,0e0h
+    add a,0-('a'-'A')
     ld (hl),a
 
 l0278h:
@@ -351,14 +350,14 @@ l0278h:
     ld (hl),a           ;0286 77
 
     ;l3014h = l3014h - &H30
-    ;IF l3014h < 0 OR l3014h >= 10 THEN GOTO l02c5h
+    ;IF l3014h < 0 OR l3014h > 9 THEN GOTO l02c5h
     ld hl,l3014h        ;0287 21 14 30
     ld a,(hl)           ;028a 7e
-    add a,0d0h          ;028b c6 d0
+    add a,0-'0'         ;028b c6 d0
     ld (hl),a           ;028d 77
     or a                ;028e b7
     jp m,l02c5h         ;028f fa c5 02
-    cp 10               ;0292 fe 0a
+    cp 9+1              ;0292 fe 0a
     jp p,l02c5h         ;0294 f2 c5 02
 
     ;N = l3014h + N * 10
@@ -375,9 +374,9 @@ l0278h:
     add hl,de           ;02a9 19
     ld (nn),hl          ;02aa 22 c8 24
 
-    ;l24cah = l3014h + l24cah * 16
+    ;H = l3014h + H * 16
     ld c,04h            ;02ad 0e 04
-    ld hl,(l24cah)      ;02af 2a ca 24
+    ld hl,(hh)          ;02af 2a ca 24
     jp l02b6h           ;02b2 c3 b6 02
 l02b5h:
     add hl,hl           ;02b5 29
@@ -390,23 +389,24 @@ l02b6h:
     sbc a,a             ;02bf 9f
     ld b,a              ;02c0 47
     add hl,bc           ;02c1 09
-    ld (l24cah),hl      ;02c2 22 ca 24
+    ld (hh),hl          ;02c2 22 ca 24
 
 l02c5h:
+    ;REM Check for hexadecimal digits A - F
     ;l3014h = l3014h - 7
-    ;IF l3014h < 10 OR l3014h >= 16 THEN GOTO l02ebh
+    ;IF l3014h < 10 OR l3014h > 15 THEN GOTO l02ebh
     ld hl,l3014h        ;02c5 21 14 30
     ld a,(hl)           ;02c8 7e
-    add a,-7            ;02c9 c6 f9
+    add a,0-('A'-'9'-1) ;02c9 c6 f9
     ld (hl),a           ;02cb 77
     cp 10               ;02cc fe 0a
     jp m,l02ebh         ;02ce fa eb 02
-    cp 16               ;02d1 fe 10
+    cp 15+1             ;02d1 fe 10
     jp p,l02ebh         ;02d3 f2 eb 02
 
-    ;l24cah = l3014h + l24cah * 16
+    ;H = l3014h + H * 16
     ld c,04h            ;02d6 0e 04
-    ld hl,(l24cah)      ;02d8 2a ca 24
+    ld hl,(hh)          ;02d8 2a ca 24
     jp l02dfh           ;02db c3 df 02
 l02deh:
     add hl,hl           ;02de 29
@@ -418,7 +418,7 @@ l02dfh:
     sbc a,a             ;02e5 9f
     ld b,a              ;02e6 47
     add hl,bc           ;02e7 09
-    ld (l24cah),hl      ;02e8 22 ca 24
+    ld (hh),hl          ;02e8 22 ca 24
 
 l02ebh:
     ;l3013h = l3013h + 1
@@ -5739,8 +5739,8 @@ l2476h:
 
 nn:
     dw 0                ;Integer parsed from user input
-l24cah:
-    dw 0
+hh:
+    dw 0                ;Hexadecimal value parsed from user input
 rr:
     db 0                ;First char of user input from any prompt
 
