@@ -1118,10 +1118,10 @@ l060ah:
     ld bc,drv_comma
     call print_str
 
-    ;PRINT CHR$(D*2+&H42);      ' Second letter in drive pair
+    ;PRINT CHR$(D*2+&H41+1);    ' Second letter in drive pair
     ld a,(dd)
     add a,a
-    add a,'B'
+    add a,1+'A'
     ld c,a
     call print_char
 
@@ -1593,12 +1593,12 @@ l0857h:
     ;PRINT
     call print_eol
 
-    ;dd = dd + 1 ' Increment index to next drive
+    ;D = D + 1 ' Increment index to next drive
     ld hl,dd
     inc (hl)
 
 l085eh:
-    ;IF dd < 8 THEN GOTO l060ah ' Loop until all 8 drives are printed
+    ;IF D < 8 THEN GOTO l060ah ' Loop until all 8 drives are printed
     ld a,(dd)
     cp 08h
     jp m,l060ah
@@ -1634,7 +1634,7 @@ ask_flop_hard:
     cp 'P'+1
     jp p,l0993h
 
-    ;D = R - &H41 ' Convert ASCII to drive index
+    ;D = (R - &H41) / 2 ' Convert ASCII to drive index
     add a,-'A'
     or a
     rra
