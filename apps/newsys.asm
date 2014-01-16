@@ -179,11 +179,11 @@ main:
     call n5_0           ;0302 cd 28 2d
 
     ;MINI = 0
-    ld hl,0000h
+    ld hl,0
     ld (mini),hl
 
     ;IOBYTE = 0
-    ld hl,0000h
+    ld hl,0
     ld (iobyte),hl
 
     ;BIAS = &H0C00
@@ -220,7 +220,7 @@ l031dh:
 
     ;IF MINI <> 1 THEN GOTO l0359h
     ld hl,(mini)
-    ld de,0ffffh
+    ld de,-1
     add hl,de
     ld a,h
     or l
@@ -263,7 +263,7 @@ l0359h:
 
     ;IF (R<&H41) or (R>&H50) THEN GOTO l031dh
     ld hl,(rr)
-    ld de,0ffbfh
+    ld de,0-'A'
     ld a,h
     rla
     jp c,l0395h
@@ -275,7 +275,7 @@ l0395h:
     ld l,a
     push hl
     ld hl,(rr)
-    ld de,0ffafh
+    ld de,0-('P'+1)
     ld a,h
     rla
     jp c,l03a6h
@@ -298,7 +298,7 @@ l03a6h:
     jp nz,l031dh
 
     ;R = R - &H41
-    ld de,0ffbfh
+    ld de,0-'A'
     ld hl,(rr)
     add hl,de
     ld (rr),hl
@@ -314,7 +314,7 @@ l03a6h:
     ;IF DT > 128 THEN GOTO l031dh 'Unassigned drive
 
     ld hl,(dt)
-    ld de,0ff7fh
+    ld de,-(128+1)
     ld a,h
     rla
     jp c,l03d9h
@@ -394,7 +394,7 @@ l0430h:
     ld hl,(bias)
     add hl,de
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (dirsize),hl
 
     ;IOBYTE = PEEK (BIAS+&H4A60)
@@ -402,7 +402,7 @@ l0430h:
     ld hl,(bias)
     add hl,de
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (iobyte),hl
 
     ;LPT = PEEK (BIAS+&H4A61)
@@ -410,7 +410,7 @@ l0430h:
     ld hl,(bias)
     add hl,de
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (lpt),hl
 
     ;RDR = PEEK (BIAS+&H4A62)
@@ -418,7 +418,7 @@ l0430h:
     ld hl,(bias)
     add hl,de
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (rdr),hl
 
     ;PUN = PEEK (BIAS+&H4A63)
@@ -426,7 +426,7 @@ l0430h:
     ld hl,(bias)
     add hl,de
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (pun),hl
 
     ;U = PEEK (BIAS+&H4A64)
@@ -434,7 +434,7 @@ l0430h:
     ld hl,(bias)
     add hl,de
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (uu),hl
 
     ;BAUD = PEEK (BIAS+&H4A65)
@@ -442,7 +442,7 @@ l0430h:
     ld hl,(bias)
     add hl,de
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (baud),hl
 
     ;UL1 = PEEK (BIAS+&H4A66)
@@ -450,7 +450,7 @@ l0430h:
     ld hl,(bias)
     add hl,de
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (ul1),hl
 
     ;TERMTYPE = PEEK (BIAS+&H4A67)
@@ -458,7 +458,7 @@ l0430h:
     ld hl,(bias)
     add hl,de
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (termtype),hl
 
     ;LEADIN = PEEK (BIAS+&H4A68)
@@ -466,7 +466,7 @@ l0430h:
     ld hl,(bias)
     add hl,de
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (leadin),hl
 
     ;ORDER = PEEK (BIAS+&H4A69)
@@ -474,7 +474,7 @@ l0430h:
     ld hl,(bias)
     add hl,de
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (order),hl
 
     ;ROWOFF = PEEK (BIAS+&H4A6A)
@@ -482,7 +482,7 @@ l0430h:
     ld hl,(bias)
     add hl,de
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (rowoff),hl
 
     ;COLOFF = PEEK (BIAS+&H4A6B)
@@ -490,7 +490,7 @@ l0430h:
     ld hl,(bias)
     add hl,de
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (coloff),hl
 
     ;FOR J = 0 TO 7
@@ -633,7 +633,7 @@ l0599h:
     inc hl
     inc hl
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (clock),hl
 
     ;LPTYPE = PEEK (BIAS+&H4A6D)
@@ -641,7 +641,7 @@ l0599h:
     ld hl,(bias)
     add hl,de
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (lptype),hl
 
 main_menu:
@@ -851,20 +851,19 @@ rs232_menu:
     ld hl,rs232_1_chr
     call pv1d
 
-    ;PRINT CHR$((U AND 12) \4 + &H35)
+    ;PRINT CHR$((U AND 12)\4 + &H35)
     call pr0a
-    ld hl,(uu)
+    ld hl,(uu)          ;HL=(uu)
     ld a,l
     and 0ch
     ld l,a
     ld a,h
     and 00h
-    ld h,a
-    call idva
-    inc b
-    nop
-    ld de,0035h
-    add hl,de
+    ld h,a              ;HL=HL and 000ch
+    call idva           ;HL=HL/4
+    dw 4
+    ld de,'5'
+    add hl,de           ;HL=HL+35h
     call chr
     call pv2d
 
@@ -1174,55 +1173,60 @@ l08d7h:
     add hl,de
     ld (rr),hl
 
-    ld hl,(rr)          ;08ed 2a b2 02
-    add hl,hl           ;08f0 29
-    ccf                 ;08f1 3f
-    sbc a,a             ;08f2 9f
-    ld h,a              ;08f3 67
-    ld l,a              ;08f4 6f
-    push hl             ;08f5 e5
-    ld hl,(rr)          ;08f6 2a b2 02
-    ld de,0fffch        ;08f9 11 fc ff
-    ld a,h              ;08fc 7c
-    rla                 ;08fd 17
-    jp c,l0903h         ;08fe da 03 09
-    add hl,de           ;0901 19
-    add hl,hl           ;0902 29
+    ;IF NOT((R>=0) AND (R<4)) THEN GOTO l092dh
+    ld hl,(rr)
+    add hl,hl           ;HL=(rr)*2
+    ccf
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL>=0
+    push hl             ;Save value
+    ld hl,(rr)          ;HL=(rr)
+    ld de,-4            ;DE=-4
+    ld a,h
+    rla
+    jp c,l0903h
+    add hl,de
+    add hl,hl
 l0903h:
-    sbc a,a             ;0903 9f
-    ld h,a              ;0904 67
-    ld l,a              ;0905 6f
-    pop de              ;0906 d1
-    ld a,h              ;0907 7c
-    and d               ;0908 a2
-    ld h,a              ;0909 67
-    ld a,l              ;090a 7d
-    and e               ;090b a3
-    ld l,a              ;090c 6f
-    ld a,h              ;090d 7c
-    or l                ;090e b5
-    jp z,l092dh         ;090f ca 2d 09
-    ld hl,(uu)          ;0912 2a c0 02
-    ld a,l              ;0915 7d
-    and 0f3h            ;0916 e6 f3
-    ld l,a              ;0918 6f
-    ld a,h              ;0919 7c
-    and 00h             ;091a e6 00
-    ld h,a              ;091c 67
-    push hl             ;091d e5
-    ld hl,(rr)          ;091e 2a b2 02
-    add hl,hl           ;0921 29
-    add hl,hl           ;0922 29
-    pop de              ;0923 d1
-    ld a,h              ;0924 7c
-    or d                ;0925 b2
-    ld h,a              ;0926 67
-    ld a,l              ;0927 7d
-    or e                ;0928 b3
-    ld l,a              ;0929 6f
-    ld (uu),hl          ;092a 22 c0 02
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL<DE
+    pop de              ;Restore value
+    ld a,h
+    and d
+    ld h,a
+    ld a,l
+    and e
+    ld l,a              ;HL=HL and DE
+    ld a,h
+    or l
+    jp z,l092dh         ;IF HL = 0 THEN GOTO l092dh
+
+    ;U=(U AND &HF3) OR (R*4)
+    ld hl,(uu)          ;HL=(uu)
+    ld a,l
+    and 0f3h
+    ld l,a
+    ld a,h
+    and 00h
+    ld h,a              ;HL=HL and 00f3h
+    push hl             ;Save value
+    ld hl,(rr)
+    add hl,hl
+    add hl,hl           ;HL=(rr)*4
+    pop de              ;Restore value
+    ld a,h
+    or d
+    ld h,a
+    ld a,l
+    or e
+    ld l,a              ;HL=HL or DE
+    ld (uu),hl          ;(uu)=HL
+
 l092dh:
-    jp rs232_menu           ;092d c3 de 06
+    ;GOTO rs232_menu
+    jp rs232_menu
 
 l0930h:
     ;PRINT "Number of stop bits (1 or 2)  ? ";
@@ -2319,47 +2323,49 @@ drive_menu:
     or l
     jp z,main_menu
 
-    ld hl,(rr)          ;0f78 2a b2 02
-    ld de,0ffbfh        ;0f7b 11 bf ff
-    ld a,h              ;0f7e 7c
-    rla                 ;0f7f 17
-    jp c,l0f85h         ;0f80 da 85 0f
-    add hl,de           ;0f83 19
-    add hl,hl           ;0f84 29
+    ;IF (R<&H41) OR (R> &H50) THEN GOTO 
+    ld hl,(rr)          ;HL=(rr)
+    ld de,0-'A'         ;DE=-41h
+    ld a,h
+    rla
+    jp c,l0f85h
+    add hl,de
+    add hl,hl
 l0f85h:
-    sbc a,a             ;0f85 9f
-    ld h,a              ;0f86 67
-    ld l,a              ;0f87 6f
-    push hl             ;0f88 e5
-    ld hl,(rr)          ;0f89 2a b2 02
-    ld de,0ffafh        ;0f8c 11 af ff
-    ld a,h              ;0f8f 7c
-    rla                 ;0f90 17
-    jp c,l0f96h         ;0f91 da 96 0f
-    add hl,de           ;0f94 19
-    add hl,hl           ;0f95 29
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL<DE
+    push hl             ;Save value
+    ld hl,(rr)          ;HL=(rr)
+    ld de,0-('P'+1)     ;-51h
+    ld a,h
+    rla
+    jp c,l0f96h
+    add hl,de
+    add hl,hl
 l0f96h:
-    ccf                 ;0f96 3f
-    sbc a,a             ;0f97 9f
-    ld h,a              ;0f98 67
-    ld l,a              ;0f99 6f
-    pop de              ;0f9a d1
-    ld a,h              ;0f9b 7c
-    or d                ;0f9c b2
-    ld h,a              ;0f9d 67
-    ld a,l              ;0f9e 7d
-    or e                ;0f9f b3
-    ld l,a              ;0fa0 6f
-    ld a,h              ;0fa1 7c
-    or l                ;0fa2 b5
-    jp nz,drive_menu        ;0fa3 c2 ad 0e
-    ld de,0ffbfh        ;0fa6 11 bf ff
-    ld hl,(rr)          ;0fa9 2a b2 02
-    add hl,de           ;0fac 19
-    call idva           ;0fad cd 64 2c
-    ld (bc),a           ;0fb0 02
-    nop                 ;0fb1 00
-    ld (dd),hl          ;0fb2 22 dc 02
+    ccf
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL>=DE
+    pop de              ;Restore value
+    ld a,h
+    or d
+    ld h,a
+    ld a,l
+    or e
+    ld l,a              ;HL=HL or DE
+    ld a,h
+    or l
+    jp nz,drive_menu    ;IF HL <>0 THEN GOTO drive_menu
+
+    ;D=(R-&H41)\2
+    ld de,0-'A'
+    ld hl,(rr)
+    add hl,de           ;HL=(rr)-41h
+    call idva           ;HL=HL/2
+    dw 2
+    ld (dd),hl          ;(dd)=HL
 
     ;PRINT
     call pr0a
@@ -2387,7 +2393,7 @@ l0f96h:
     add hl,hl
     ld de,drv
     add hl,de
-    ld de,0000h
+    ld de,0
     ld (hl),e
     inc hl
     ld (hl),d
@@ -2409,7 +2415,7 @@ l0fe7h:
     add hl,hl
     ld de,drv
     add hl,de
-    ld de,0001h
+    ld de,1
     ld (hl),e
     inc hl
     ld (hl),d
@@ -2431,7 +2437,7 @@ l1004h:
     add hl,hl
     ld de,drv
     add hl,de
-    ld de,00ffh
+    ld de,255
     ld (hl),e
     inc hl
     ld (hl),d
@@ -2477,7 +2483,7 @@ l1021h:
     add hl,hl
     ld de,drv
     add hl,de
-    ld de,0004h
+    ld de,4
     ld (hl),e
     inc hl
     ld (hl),d
@@ -2499,7 +2505,7 @@ l1062h:
     add hl,hl
     ld de,drv
     add hl,de
-    ld de,0002h
+    ld de,2
     ld (hl),e
     inc hl
     ld (hl),d
@@ -2521,7 +2527,7 @@ l107fh:
     add hl,hl
     ld de,drv
     add hl,de
-    ld de,0003h
+    ld de,3
     ld (hl),e
     inc hl
     ld (hl),d
@@ -2627,7 +2633,7 @@ l10fbh:
     add hl,hl
     ld de,drv
     add hl,de
-    ld de,0002h
+    ld de,2
     ld (hl),e
     inc hl
     ld (hl),d
@@ -2651,7 +2657,7 @@ l1124h:
     add hl,hl
     ld de,drv
     add hl,de
-    ld de,0003h
+    ld de,3
     ld (hl),e
     inc hl
     ld (hl),d
@@ -2675,7 +2681,7 @@ l1141h:
     add hl,hl
     ld de,drv
     add hl,de
-    ld de,0004h
+    ld de,4
     ld (hl),e
     inc hl
     ld (hl),d
@@ -2797,7 +2803,7 @@ l11d9h:
     ld d,(hl)
     push de
     pop hl
-    ld de,0-81h
+    ld de,0-129
     ld a,h
     rla
     jp c,l11f0h
@@ -2817,7 +2823,7 @@ l11f0h:
 l11fdh:
     ;IF MINI = 1 THEN GOTO l129eh
     ld hl,(mini)
-    ld de,0ffffh
+    ld de,0-1
     add hl,de
     ld a,h
     or l
@@ -2833,7 +2839,7 @@ l11fdh:
     ld d,(hl)
     push de
     pop hl
-    ld de,0fffeh
+    ld de,0-2
     add hl,de
     ld a,h
     or l
@@ -3644,7 +3650,7 @@ l1692h:
     jp nz,main_menu     ;IF HL <> 0 THEN GOTO main_menu
 
     ;D = R - &H41
-    ld de,0-41h
+    ld de,0-'A'
     ld hl,(rr)
     add hl,de
     ld (dd),hl
@@ -4068,7 +4074,7 @@ l18eah:
     jp nz,l1908h
 
     ;DIRSIZE = 0
-    ld hl,0000h
+    ld hl,1-1
     ld (dirsize),hl
 
 l1908h:
@@ -4081,7 +4087,7 @@ l1908h:
     jp nz,l191ah
 
     ;DIRSIZE = 1
-    ld hl,0001h
+    ld hl,2-1
     ld (dirsize),hl
 
 l191ah:
@@ -4094,7 +4100,7 @@ l191ah:
     jp nz,l192ch
 
     ;DIRSIZE = 3
-    ld hl,0003h
+    ld hl,4-1
     ld (dirsize),hl
 
 l192ch:
@@ -4185,7 +4191,7 @@ l1975h:
 l199ah:
     ;IF R <> &H48 THEN GOTO pet_menu
     ld hl,(rr)
-    ld de,0ffb8h
+    ld de,0-'H'
     add hl,de
     ld a,h
     or l
@@ -4201,14 +4207,14 @@ l199ah:
 
     ;IF R <> &H45 THEN GOTO l19c7h
     ld hl,(rr)
-    ld de,0ffbbh
+    ld de,0-'E'
     add hl,de
     ld a,h
     or l
     jp nz,l19c7h
 
     ;LEADIN = &H1B
-    ld hl,001bh
+    ld hl,1bh
     ld (leadin),hl
 
     ;GOTO l19dfh
@@ -4224,7 +4230,7 @@ l19c7h:
     jp nz,l19dch
 
     ;LEADIN = &H7E
-    ld hl,007eh
+    ld hl,7eh
     ld (leadin),hl
 
     ;GOTO l19dfh
@@ -4252,116 +4258,116 @@ l19dfh:
     ld (termtype),hl
 
     ;ROWOFF = 0 : COLOFF = 0
-    ld hl,0000h
+    ld hl,0
     ld (rowoff),hl
     ld (coloff),hl
 
     ;ORDER = 1
-    ld hl,0001h
+    ld hl,1
     ld (order),hl
 
     ;SCRTAB(0) = &H8B
-    ld hl,008bh
+    ld hl,8bh
     ld (scrtab+0),hl
 
     ;SCRTAB(1) = &H0B
-    ld hl,000bh
+    ld hl,0bh
     ld (scrtab+2),hl
 
     ;SCRTAB(2) = &H8C
-    ld hl,008ch
+    ld hl,8ch
     ld (scrtab+4),hl
 
     ;SCRTAB(3) = &H0C
-    ld hl,000ch
+    ld hl,0ch
     ld (scrtab+6),hl
 
     ;SCRTAB(4) = &H8F
-    ld hl,008fh
+    ld hl,8fh
     ld (scrtab+8),hl
 
     ;SCRTAB(5) = &H13
-    ld hl,0013h
+    ld hl,13h
     ld (scrtab+10),hl
 
     ;SCRTAB(6) = &H91
-    ld hl,0091h
+    ld hl,91h
     ld (scrtab+12),hl
 
     ;SCRTAB(7) = &H1B
-    ld hl,001bh
+    ld hl,1bh
     ld (scrtab+14),hl
 
     ;SCRTAB(8) = &H92
-    ld hl,0092h
+    ld hl,92h
     ld (scrtab+16),hl
 
     ;SCRTAB(9) = &H1E
-    ld hl,001eh
+    ld hl,1eh
     ld (scrtab+18),hl
 
     ;SCRTAB(10) = &H93
-    ld hl,0093h
+    ld hl,93h
     ld (scrtab+20),hl
 
     ;SCRTAB(11) = &H12
-    ld hl,0012h
+    ld hl,12h
     ld (scrtab+22),hl
 
     ;SCRTAB(12) = &H97
-    ld hl,0097h
+    ld hl,97h
     ld (scrtab+24),hl
 
     ;SCRTAB(13) = &H14
-    ld hl,0014h
+    ld hl,14h
     ld (scrtab+26),hl
 
     ;SCRTAB(14) = &H98
-    ld hl,0098h
+    ld hl,98h
     ld (scrtab+28),hl
 
     ;SCRTAB(15) = &H14
-    ld hl,0014h
+    ld hl,14h
     ld (scrtab+30),hl
 
     ;SCRTAB(16) = &H9A
-    ld hl,009ah
+    ld hl,9ah
     ld (scrtab+32),hl
 
     ;SCRTAB(17) = &H11
-    ld hl,0011h
+    ld hl,11h
     ld (scrtab+34),hl
 
     ;SCRTAB(18) = &H9C
-    ld hl,009ch
+    ld hl,9ch
     ld (scrtab+36),hl
 
     ;SCRTAB(19) = &H1A
-    ld hl,001ah
+    ld hl,1ah
     ld (scrtab+38),hl
 
     ;SCRTAB(20) = &H9D
-    ld hl,009dh
+    ld hl,9dh
     ld (scrtab+40),hl
 
     ;SCRTAB(21) = &H1A
-    ld hl,001ah
+    ld hl,1ah
     ld (scrtab+42),hl
 
     ;SCRTAB(22) = &H99
-    ld hl,0099h
+    ld hl,99h
     ld (scrtab+44),hl
 
     ;SCRTAB(23) = &H00
-    ld hl,0000h
+    ld hl,00h
     ld (scrtab+46),hl
 
     ;SCRTAB(24) = &H9F
-    ld hl,009fh
+    ld hl,9fh
     ld (scrtab+48),hl
 
     ;SCRTAB(25) = &H00
-    ld hl,0000h
+    ld hl,00h
     ld (scrtab+50),hl
 
     ;SCRTAB(26) = &H00
@@ -4372,184 +4378,184 @@ l19dfh:
 
 l1aa6h:
     ;LEADIN = &H1B
-    ld hl,001bh
+    ld hl,1bh
     ld (leadin),hl
 
     ;ROWOFF = &H20 : COLOFF = &H20
-    ld hl,0020h
+    ld hl,20h
     ld (rowoff),hl
     ld (coloff),hl
 
     ;ORDER = 0
-    ld hl,0000h
+    ld hl,00h
     ld (order),hl
 
     ;SCRTAB(0) = &HB1
-    ld hl,00b1h
+    ld hl,0b1h
     ld (scrtab+0),hl
 
     ;SCRTAB(1) = &H04
-    ld hl,0004h
+    ld hl,04h
     ld (scrtab+2),hl
 
     ;SCRTAB(2) = &HB2
-    ld hl,00b2h
+    ld hl,0b2h
     ld (scrtab+4),hl
 
     ;SCRTAB(3) = &H05
-    ld hl,0005h
+    ld hl,05h
     ld (scrtab+6),hl
 
     ;SCRTAB(4) = &HB3
-    ld hl,00b3h
+    ld hl,0b3h
     ld (scrtab+8),hl
 
     ;SCRTAB(5) = &H06
-    ld hl,0006h
+    ld hl,06h
     ld (scrtab+10),hl
 
     ;SCRTAB(6) = &HEA
-    ld hl,00eah
+    ld hl,0eah
     ld (scrtab+12),hl
 
     ;SCRTAB(7) = &H0E
-    ld hl,000eh
+    ld hl,0eh
     ld (scrtab+14),hl
 
     ;SCRTAB(8) = &HEB
-    ld hl,00ebh
+    ld hl,0ebh
     ld (scrtab+16),hl
 
     ;SCRTAB(9) = &H0F
-    ld hl,000fh
+    ld hl,0fh
     ld (scrtab+18),hl
 
     ;SCRTAB(10) = &HD1
-    ld hl,00d1h
+    ld hl,0d1h
     ld (scrtab+20),hl
 
     ;SCRTAB(11) = &H1C
-    ld hl,001ch
+    ld hl,1ch
     ld (scrtab+22),hl
 
     ;SCRTAB(12) = &HD7
-    ld hl,00d7h
+    ld hl,0d7h
     ld (scrtab+24),hl
 
     ;SCRTAB(13) = &H1D
-    ld hl,001dh
+    ld hl,1dh
     ld (scrtab+26),hl
 
     ;SCRTAB(14) = &HC5
-    ld hl,00c5h
+    ld hl,0c5h
     ld (scrtab+28),hl
 
     ;SCRTAB(15) = &H11
-    ld hl,0011h
+    ld hl,11h
     ld (scrtab+30),hl
 
     ;SCRTAB(16) = &HD2
-    ld hl,00d2h
+    ld hl,0d2h
     ld (scrtab+32),hl
 
     ;SCRTAB(17) = &H12
-    ld hl,0012h
+    ld hl,12h
     ld (scrtab+34),hl
 
     ;SCRTAB(18) = &HD4
-    ld hl,00d4h
+    ld hl,0d4h
     ld (scrtab+36),hl
 
     ;SCRTAB(19) = &H13
-    ld hl,0013h
+    ld hl,13h
     ld (scrtab+38),hl
 
     ;SCRTAB(20) = &HF4
-    ld hl,00f4h
+    ld hl,0f4h
     ld (scrtab+40),hl
 
     ;SCRTAB(21) = &H13
-    ld hl,0013h
+    ld hl,13h
     ld (scrtab+42),hl
 
     ;SCRTAB(22) = &HD9
-    ld hl,00d9h
+    ld hl,0d9h
     ld (scrtab+44),hl
 
     ;SCRTAB(23) = &H14
-    ld hl,0014h
+    ld hl,14h
     ld (scrtab+46),hl
 
     ;SCRTAB(24) = &HF9
-    ld hl,00f9h
+    ld hl,0f9h
     ld (scrtab+48),hl
 
     ;SCRTAB(25) = &H14
-    ld hl,0014h
+    ld hl,14h
     ld (scrtab+50),hl
 
     ;SCRTAB(26) = &HAB
-    ld hl,00abh
+    ld hl,0abh
     ld (scrtab+52),hl
 
     ;SCRTAB(27) = &H1A
-    ld hl,001ah
+    ld hl,1ah
     ld (scrtab+54),hl
 
     ;SCRTAB(28) = &HAA
-    ld hl,00aah
+    ld hl,0aah
     ld (scrtab+56),hl
 
     ;SCRTAB(29) = &H1A
-    ld hl,001ah
+    ld hl,1ah
     ld (scrtab+58),hl
 
     ;SCRTAB(30) = &HBA
-    ld hl,00bah
+    ld hl,0bah
     ld (scrtab+60),hl
 
     ;SCRTAB(31) = &H1A
-    ld hl,001ah
+    ld hl,1ah
     ld (scrtab+62),hl
 
     ;SCRTAB(32) = &HBB
-    ld hl,00bbh
+    ld hl,0bbh
     ld (scrtab+64),hl
 
     ;SCRTAB(33) = &H1A
-    ld hl,001ah
+    ld hl,1ah
     ld (scrtab+66),hl
 
     ;SCRTAB(34) = &HDA
-    ld hl,00dah
+    ld hl,0dah
     ld (scrtab+68),hl
 
     ;SCRTAB(35) = &H1A
-    ld hl,001ah
+    ld hl,1ah
     ld (scrtab+70),hl
 
     ;SCRTAB(36) = &HBD
-    ld hl,00bdh
+    ld hl,0bdh
     ld (scrtab+72),hl
 
     ;SCRTAB(37) = &H1B
-    ld hl,001bh
+    ld hl,1bh
     ld (scrtab+74),hl
 
     ;SCRTAB(38) = &HA8
-    ld hl,00a8h
+    ld hl,0a8h
     ld (scrtab+76),hl
 
     ;SCRTAB(39) = &H00
-    ld hl,0000h
+    ld hl,00h
     ld (scrtab+78),hl
 
     ;SCRTAB(40) = &HA9
-    ld hl,00a9h
+    ld hl,0a9h
     ld (scrtab+80),hl
 
     ;SCRTAB(41) = &H00
-    ld hl,0000h
+    ld hl,00h
     ld (scrtab+82),hl
 
     ;SCRTAB(42) = &H00
@@ -4570,12 +4576,12 @@ clear_screen:
 
 readline:
     ;BUF = &H80
-    ld hl,0080h
+    ld hl,80h
     ld (buf),hl
 
     ;POKE BUF, 80
     ld hl,(buf)
-    ld (hl),50h
+    ld (hl),80
 
     ;CALL BUFFIN
     call buffin
@@ -4589,13 +4595,13 @@ readline:
     ld hl,(buf)
     inc hl
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld a,h
     or l
     jp nz,l1bf4h
 
     ;R = 0
-    ld hl,0000h
+    ld hl,0
     ld (rr),hl
 
     ;RETURN
@@ -4607,7 +4613,7 @@ l1bf4h:
     inc hl
     inc hl
     ld l,(hl)
-    ld h,00h
+    ld h,0
     ld (rr),hl
 
     ;IF NOT((R >= &H61) AND (R<= &H7A)) THEN GOTO l1c37h
@@ -4654,11 +4660,11 @@ l1c1eh:
 
 l1c37h:
     ;N = 0
-    ld hl,0000h
+    ld hl,0
     ld (nn),hl
 
     ;J = 2
-    ld hl,0002h
+    ld hl,2
     ld (jj),hl
 
 l1c43h:
@@ -4740,15 +4746,14 @@ l1c93h:
     ;N=N*10+(PEEK(BUF+J)-&H30)
     ld hl,(nn)          ;HL=(rr)
     call imug           ;HL=HL*10
-    ld a,(bc)
-    nop
+    dw 10
     push hl             ;Save value
     ld hl,(buf)
     ex de,hl
     ld hl,(jj)
     add hl,de           ;HL=buf+jj
     ld l,(hl)
-    ld h,00h            ;HL=(HL)
+    ld h,0              ;HL=(HL)
     pop de              ;Restore value
     add hl,de
     ld de,0-'0'         ;DE=-30h
