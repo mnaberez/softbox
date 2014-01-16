@@ -2,17 +2,47 @@
 ; command line: z80dasm --origin=256 --labels --address newsys.com
 
 warm:          equ  0000h ;Warm start entry point
+bdos:          equ  0005h ;BDOS entry point
+ccp_base:      equ 0d400h ;Start of CCP area
+errbuf:        equ 0eac0h ;Last error message returned from CBM DOS
+seldsk:        equ 0f01bh ;Select disk drive
+settrk:        equ 0f01eh ;Set track number
+setsec:        equ 0f021h ;Set sector number
+read:          equ 0f027h ;Read selected sector
+write:         equ 0f02ah ;Write selected sector
+listen:        equ 0f033h ;Send LISTEN to an IEEE-488 device
+unlisten:      equ 0f036h ;Send UNLISTEN to all IEEE-488 devices
+talk:          equ 0f039h ;Send TALK to an IEEE-488 device
+untalk:        equ 0f03ch ;Send UNTALK to all IEEE-488 devices
+rdieee:        equ 0f03fh ;Read byte from an IEEE-488 device
+wrieee:        equ 0f042h ;Send byte to an IEEE-488 device
+wreoi:         equ 0f045h ;Send byte to IEEE-488 device with EOI asserted
+creoi:         equ 0f048h ;Send carriage return to IEEE-488 dev with EOI
+ieeemsg:       equ 0f04bh ;Send string to the current IEEE-488 device
+ieeenum:       equ 0f04eh ;Send number as decimal string to IEEE-488 dev
+tstdrv:        equ 0f051h ;Get drive type for a CP/M drive number
+dskdev:        equ 0f054h ;Get device address for a CP/M drive number
+diskcmd:       equ 0f057h ;Open the command channel on IEEE-488 device
+dsksta:        equ 0f05ah ;Read the error channel of an IEEE-488 device
+open:          equ 0f05dh ;Open a file on an IEEE-488 device
+close:         equ 0f060h ;Close an open file on an IEEE-488 device
+runcpm:        equ 0f075h ;Perform system init and then run CP/M
+idrive:        equ 0f078h ;Initialize an IEEE-488 disk drive
+
+cread:         equ 01h    ;Console Input
+cwrite:        equ 02h    ;Console Output
+cwritestr:     equ 09h    ;Output String
+creadstr:      equ 0ah    ;Buffered Console Input
+
+lf:            equ 0ah    ;Line Feed
+cr:            equ 0dh    ;Carriage Return
+cls:           equ 1ah    ;Clear Screen
 
     org 0100h
 
-    jp start            ;0100 c3 ee 02
-    nop                 ;0103 00
-    nop                 ;0104 00
-    nop                 ;0105 00
-    nop                 ;0106 00
-    nop                 ;0107 00
-    nop                 ;0108 00
-    nop                 ;0109 00
+    jp start
+
+    db 0,0,0,0,0,0,0
 
 ; Start of BASIC variables ==================================================
 
@@ -22,19 +52,17 @@ iobyte:
     dw 0                ;Value to be stored in the CP/M IOBYTE
 
 drv:
-;Array of 10 integers
+;Array of 11 integers (from 0 to 10)
     dw  0000h,  0000h,  0000h,  0000h,  0000h,  0000h,  7700h,  782bh
     dw 0caa7h,  2910h,  2bd1h
 
 diskdev:
-;Array of 10 integers
+;Array of 11 integers (from 0 to 10)
     dw  2b72h,  3d73h,  07c2h, 0c129h, 0fb11h,  19ffh,  77f1h,  003eh
-    dw  7723h, 0a72bh
-
-    db 0c0h, 0c3h
+    dw  7723h, 0a72bh, 0c3c0h
 
 autoload:
-;Array of 120 integers
+;Array of 121 integers (from 0 to 120)
     dw  2761h, 0fe7eh,  3701h, 0d5c0h,  11e5h,  0005h,  5e19h,  5623h
     dw 0fe1ah, 0c2ebh,  2945h,  1a13h,  07feh,  45cah,  2129h,  0004h
     dw  7e19h, 0d1e1h, 0c9a7h, 0d1e1h, 0c937h,  71cdh, 0d62eh, 0a7e7h
@@ -50,11 +78,10 @@ autoload:
     dw 0cdf5h,  4ce2h, 0c43ah, 0fe12h, 0ca02h,  2a2ch,  21f5h,  12bbh
     dw  6bcdh, 0cd4dh,  1f5eh, 0fbd2h, 0cd29h,  4e86h,  0721h, 0e52ah
     dw  57cdh, 0e14eh, 0c3c1h,  2a48h,  2ac1h,  12b5h,  78e5h,  04feh
-
-    db 0cah, 1bh
+    dw  1bcah
 
 scrtab:
-;Array of 64 integers
+;Array of 65 integers (from 0 to 64)
     dw 0cd2ah,  4ea8h, 0eacdh, 0c34dh,  2a27h,  7ccdh,  214eh,  12bbh
     dw  2ecdh, 0cd4dh,  4d7dh, 0a7e1h,  48c2h, 0f12ah,  40f6h,  5df5h
     dw  1b54h, 0a37dh,  7c5fh, 0b3a2h,  48c2h,  062ah,  0510h, 0d229h
@@ -63,8 +90,7 @@ scrtab:
     dw  1222h, 0d579h, 0c23dh,  2a64h,  50cdh,  1420h,  6fcdh, 0c92fh
     dw  7e23h, 0fe2bh, 0c207h,  2a8ch,  8778h,  83f2h,  782ah,  08f6h
     dw 0c947h,  50cdh,  0420h,  053eh, 0cecdh,  782bh,  08e6h,  9bcah
-
-    db 2ah, 0cdh
+    dw 0cd2ah
 
 bias:
     dw 2050h            ;Offset used to calculate start of buffer that
@@ -132,30 +158,22 @@ buf:
 
 ; End of BASIC variables ====================================================
 
-l02e2h:
-    push de             ;02e2 d5
-    ld d,a              ;02e3 57
-    add a,a             ;02e4 87
-    add a,d             ;02e5 82
-    ld hl,2adbh         ;02e6 21 db 2a
-    call 48beh          ;02e9 cd be 48
-    ld e,(hl)           ;02ec 5e
-    inc hl              ;02ed 23
+    dw  57d5h
+    dw  8287h
+    dw 0db21h
+    dw 0cd2ah
+
+l02eah:
+    dw  48beh           ;Temporary used for complex expression
+
+    dw  235eh
 
 start:
     ld hl,main          ;02ee 21 02 03
     jp ini              ;02f1 c3 27 2d
 
-    sbc a,a             ;02f4 9f
-    jr z,$-14           ;02f5 28 f0
-    inc d               ;02f7 14
-    and c               ;02f8 a1
-    jr z,l02feh         ;02f9 28 03
-    ld bc,l02e2h        ;02fb 01 e2 02
-l02feh:
-    nop                 ;02fe 00
-    nop                 ;02ff 00
-    xor 02h             ;0300 ee 02
+    db  9fh, 28h,0f0h, 14h,0a1h, 28h, 03h, 01h
+    db 0e2h, 02h, 00h, 00h,0eeh, 02h
 
 main:
     call n5_0           ;0302 cd 28 2d
@@ -293,7 +311,8 @@ l03a6h:
     ld hl,dt
     call dtype
 
-    ;IF DT > 128 THEN GOTO l031dh
+    ;IF DT > 128 THEN GOTO l031dh 'Unassigned drive
+
     ld hl,(dt)
     ld de,0ff7fh
     ld a,h
@@ -304,41 +323,41 @@ l03a6h:
 l03d9h:
     jp nc,l031dh
 
-    ld hl,(dt)          ;03dc 2a b4 02
-    ld de,0fffeh        ;03df 11 fe ff
-    ld a,h              ;03e2 7c
-    rla                 ;03e3 17
-    jp c,l03e9h         ;03e4 da e9 03
-    add hl,de           ;03e7 19
-l03e8h:
-    add hl,hl           ;03e8 29
+    ;IF (DT>=2) AND (DT <=9) THEN CALL CREAD(R): GOTO 300 ' Corvus drive
+    ld hl,(dt)          ;HL=(dt)
+    ld de,-2            ;DE=-2
+    ld a,h
+    rla
+    jp c,l03e9h
+    add hl,de
+    add hl,hl
 l03e9h:
-    ccf                 ;03e9 3f
-    sbc a,a             ;03ea 9f
-    ld h,a              ;03eb 67
-    ld l,a              ;03ec 6f
-    push hl             ;03ed e5
-    ld hl,(dt)          ;03ee 2a b4 02
-    ld de,0fff6h        ;03f1 11 f6 ff
-    ld a,h              ;03f4 7c
-    rla                 ;03f5 17
-    jp c,l03fbh         ;03f6 da fb 03
-    add hl,de           ;03f9 19
-    add hl,hl           ;03fa 29
+    ccf
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL>=DE
+    push hl             ;Save value
+    ld hl,(dt)          ;HL=(dt)
+    ld de,-(9+1)        ;DE=-10
+    ld a,h
+    rla
+    jp c,l03fbh
+    add hl,de
+    add hl,hl
 l03fbh:
-    sbc a,a             ;03fb 9f
-    ld h,a              ;03fc 67
-    ld l,a              ;03fd 6f
-    pop de              ;03fe d1
-    ld a,h              ;03ff 7c
-    and d               ;0400 a2
-    ld h,a              ;0401 67
-    ld a,l              ;0402 7d
-    and e               ;0403 a3
-    ld l,a              ;0404 6f
-    ld a,h              ;0405 7c
-    or l                ;0406 b5
-    jp z,l0413h         ;0407 ca 13 04
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL<DE
+    pop de              ;Restore value
+    ld a,h
+    and d
+    ld h,a
+    ld a,l
+    and e
+    ld l,a              ;HL=HL and DE
+    ld a,h
+    or l
+    jp z,l0413h         ;IF HL = 0 THEN GOTO l0413h
 
     ;CALL CREAD(R)
     ld hl,rr
@@ -474,122 +493,141 @@ l0430h:
     ld h,00h
     ld (coloff),hl
 
-    ld hl,0000h         ;04d9 21 00 00
-    jp l0517h           ;04dc c3 17 05
+    ;FOR J = 0 TO 7
+    ld hl,0
+    jp l0517h
+
 l04dfh:
-    ld hl,(bias)        ;04df 2a ae 02
-    ex de,hl            ;04e2 eb
-    ld hl,(jj)          ;04e3 2a d0 02
-    add hl,de           ;04e6 19
-    ld de,4a70h         ;04e7 11 70 4a
-    push hl             ;04ea e5
-    add hl,de           ;04eb 19
-    ld l,(hl)           ;04ec 6e
-    ld h,00h            ;04ed 26 00
-    push hl             ;04ef e5
-    ld hl,(jj)          ;04f0 2a d0 02
-    add hl,hl           ;04f3 29
-    ld (02eah),hl       ;04f4 22 ea 02
-    ld de,drv           ;04f7 11 0e 01
-    add hl,de           ;04fa 19
-    pop de              ;04fb d1
-    ld (hl),e           ;04fc 73
-    inc hl              ;04fd 23
-    ld (hl),d           ;04fe 72
-    ld de,4a78h         ;04ff 11 78 4a
-    pop hl              ;0502 e1
-    add hl,de           ;0503 19
-    ld l,(hl)           ;0504 6e
-    ld h,00h            ;0505 26 00
-    push hl             ;0507 e5
-    ld hl,(02eah)       ;0508 2a ea 02
-    ld de,diskdev       ;050b 11 24 01
-    add hl,de           ;050e 19
-    pop de              ;050f d1
-    ld (hl),e           ;0510 73
-    inc hl              ;0511 23
-    ld (hl),d           ;0512 72
+    ;DRV(J)=PEEK (BIAS+&H4A70+J)
+    ld hl,(bias)
+    ex de,hl
+    ld hl,(jj)
+    add hl,de           ;HL=bias+jj
+    ld de,4a70h         ;DE=4a70h
+    push hl             ;Save value
+    add hl,de           ;HL=HL+DE
+    ld l,(hl)
+    ld h,0              ;HL=(HL)
+    push hl             ;Save value
+    ld hl,(jj)
+    add hl,hl           ;HL=jj*2
+    ld (l02eah),hl      ;(l02eah)=HL
+    ld de,drv
+    add hl,de           ;HL=HL+drv
+    pop de              ;Restore value
+    ld (hl),e
+    inc hl
+    ld (hl),d           ;(HL)=DE
+
+    ;DISKDEV(J)=PEEK(BIAS+&H4A78+J)
+    ld de,4a78h         ;DE=4a78h
+    pop hl              ;Restore value
+    add hl,de           ;HL=HL+DE
+    ld l,(hl)
+    ld h,0              ;HL=(HL)
+    push hl             ;Save value
+    ld hl,(l02eah)      ;HL=(l02eah)
+    ld de,diskdev
+    add hl,de           ;HL=HL+diskdev
+    pop de              ;Resrore value
+    ld (hl),e
+    inc hl
+    ld (hl),d           ;(HL)=DE
+
+    ;NEXT
     ld hl,(jj)          ;0513 2a d0 02
     inc hl              ;0516 23
 l0517h:
-    ld (jj),hl          ;0517 22 d0 02
-    ld hl,(jj)          ;051a 2a d0 02
-    ld de,0fff8h        ;051d 11 f8 ff
-    ld a,h              ;0520 7c
-    rla                 ;0521 17
-    jp c,l0527h         ;0522 da 27 05
-    add hl,de           ;0525 19
-    add hl,hl           ;0526 29
+    ld (jj),hl
+    ld hl,(jj)
+    ld de,-(7+1)
+    ld a,h
+    rla
+    jp c,l0527h
+    add hl,de
+    add hl,hl
 l0527h:
-    jp c,l04dfh         ;0527 da df 04
-    ld hl,0000h         ;052a 21 00 00
-    jp l0550h           ;052d c3 50 05
-l0530h:
-    ld hl,(bias)        ;0530 2a ae 02
-    ex de,hl            ;0533 eb
-    ld hl,(jj)          ;0534 2a d0 02
-    add hl,de           ;0537 19
-    ld de,3407h         ;0538 11 07 34
-    add hl,de           ;053b 19
-    ld l,(hl)           ;053c 6e
-    ld h,00h            ;053d 26 00
-    push hl             ;053f e5
-    ld hl,(jj)          ;0540 2a d0 02
-    add hl,hl           ;0543 29
-    ld de,autoload      ;0544 11 3a 01
-    add hl,de           ;0547 19
-    pop de              ;0548 d1
-    ld (hl),e           ;0549 73
-    inc hl              ;054a 23
-    ld (hl),d           ;054b 72
-    ld hl,(jj)          ;054c 2a d0 02
-    inc hl              ;054f 23
-l0550h:
-    ld (jj),hl          ;0550 22 d0 02
-    ld hl,(jj)          ;0553 2a d0 02
-    ld de,0ffafh        ;0556 11 af ff
-    ld a,h              ;0559 7c
-    rla                 ;055a 17
-    jp c,l0560h         ;055b da 60 05
-    add hl,de           ;055e 19
-    add hl,hl           ;055f 29
-l0560h:
-    jp c,l0530h         ;0560 da 30 05
-    ld hl,0000h         ;0563 21 00 00
-    jp l0589h           ;0566 c3 89 05
-l0569h:
-    ld hl,(bias)        ;0569 2a ae 02
-    ex de,hl            ;056c eb
-    ld hl,(jj)          ;056d 2a d0 02
-    add hl,de           ;0570 19
-    ld de,4a80h         ;0571 11 80 4a
-    add hl,de           ;0574 19
-    ld l,(hl)           ;0575 6e
-    ld h,00h            ;0576 26 00
-    push hl             ;0578 e5
-    ld hl,(jj)          ;0579 2a d0 02
-    add hl,hl           ;057c 29
-    ld de,scrtab        ;057d 11 2c 02
-    add hl,de           ;0580 19
-    pop de              ;0581 d1
-    ld (hl),e           ;0582 73
-    inc hl              ;0583 23
-    ld (hl),d           ;0584 72
-    ld hl,(jj)          ;0585 2a d0 02
-    inc hl              ;0588 23
-l0589h:
-    ld (jj),hl          ;0589 22 d0 02
-    ld hl,(jj)          ;058c 2a d0 02
-    ld de,0ffc0h        ;058f 11 c0 ff
-    ld a,h              ;0592 7c
-    rla                 ;0593 17
-    jp c,l0599h         ;0594 da 99 05
-    add hl,de           ;0597 19
-    add hl,hl           ;0598 29
-l0599h:
-    jp c,l0569h         ;0599 da 69 05
+    jp c,l04dfh
 
-    ;POKE LOADER+3, CLOCK
+    ;FOR J=0 TO 80
+    ld hl,0
+    jp l0550h
+
+l0530h:
+    ;AUTOLOAD (J)=PEEK (BIAS+&H3407+J)
+    ld hl,(bias)
+    ex de,hl
+    ld hl,(jj)
+    add hl,de
+    ld de,3407h
+    add hl,de           ;HL=bias+jj+3407h
+    ld l,(hl)
+    ld h,0              ;HL=(HL)
+    push hl             ;Save value
+    ld hl,(jj)
+    add hl,hl
+    ld de,autoload
+    add hl,de           ;HL=jj*2+autoload
+    pop de              ;Restore value
+    ld (hl),e
+    inc hl
+    ld (hl),d           ;(HL)=DE
+
+    ;NEXT
+    ld hl,(jj)
+    inc hl
+l0550h:
+    ld (jj),hl
+    ld hl,(jj)
+    ld de,-(80+1)
+    ld a,h
+    rla
+    jp c,l0560h
+    add hl,de
+    add hl,hl
+l0560h:
+    jp c,l0530h
+
+    ;FOR J=0 TO 63
+    ld hl,0
+    jp l0589h
+
+l0569h:
+    ;SCRTAB (J) = PEEK (BIAS+&H4A80+J)
+    ld hl,(bias)
+    ex de,hl
+    ld hl,(jj)
+    add hl,de
+    ld de,4a80h
+    add hl,de           ;HL=bias+jj+4a80h
+    ld l,(hl)
+    ld h,0              ;HL=(HL)
+    push hl             ;Save value
+    ld hl,(jj)
+    add hl,hl
+    ld de,scrtab
+    add hl,de           ;HL=jj*2+scrtab
+    pop de              ;Restore value
+    ld (hl),e
+    inc hl
+    ld (hl),d           ;(HL)=DE
+
+    ;NEXT
+    ld hl,(jj)
+    inc hl
+l0589h:
+    ld (jj),hl
+    ld hl,(jj)
+    ld de,-(63+1)
+    ld a,h
+    rla
+    jp c,l0599h
+    add hl,de
+    add hl,hl
+l0599h:
+    jp c,l0569h
+
+    ;CLOCK=PEEK (LOADER+3)
     ld hl,(loader)
     inc hl
     inc hl
@@ -598,7 +636,7 @@ l0599h:
     ld h,00h
     ld (clock),hl
 
-    ;POKE BIAS+&H4A6D, LPTYPE
+    ;LPTYPE = PEEK (BIAS+&H4A6D)
     ld de,4a6dh
     ld hl,(bias)
     add hl,de
@@ -864,7 +902,7 @@ rs232_menu:
 l0753h:
     ;IF U1 <> &H40 THEN GOTO l0768h
     ld hl,(u1)
-    ld de,0-&H40
+    ld de,0-40h
     add hl,de
     ld a,h
     or l
@@ -878,7 +916,7 @@ l0753h:
 l0768h:
     ;IF U1 <> &H80 THEN GOTO l077dh
     ld hl,(u1)
-    ld de,0-0x80
+    ld de,0-80h
     add hl,de
     ld a,h
     or l
@@ -892,7 +930,7 @@ l0768h:
 l077dh:
     ;IF U1 <> &HC0 THEN GOTO l0792h
     ld hl,(u1)
-    ld de,0-&HC0
+    ld de,0-0c0h
     add hl,de
     ld a,h
     or l
@@ -1527,7 +1565,7 @@ l0b1bh:
     ld a,h
     and 00h
     ld h,a
-    ld de,0-&H40
+    ld de,0-40h
     add hl,de
     ld a,h
     or l
@@ -1547,7 +1585,7 @@ l0b38h:
     ld a,h
     and 00h
     ld h,a
-    ld de,0-&H80
+    ld de,0-80h
     add hl,de
     ld a,h
     or l
@@ -1559,7 +1597,7 @@ l0b38h:
     call pv2d
 
 l0b55h:
-    ;IF (IOBYTE AND &HC) <> &HC0 THEN GOTO l0b72h
+    ;IF (IOBYTE AND &HC0) <> &HC0 THEN GOTO l0b72h
     ld hl,(iobyte)
     ld a,l
     and 0c0h
@@ -1567,7 +1605,7 @@ l0b55h:
     ld a,h
     and 00h
     ld h,a
-    ld de,0-&HC0
+    ld de,0-0c0h
     add hl,de
     ld a,h
     or l
@@ -2232,7 +2270,7 @@ drive_menu:
     call pv1d
 
     ;D = 5
-    ld hl,0005h
+    ld hl,5
     ld (dd),hl
 
     ;GOSUB sub_119ah
@@ -2554,7 +2592,7 @@ l109fh:
     add hl,hl
     ld de,drv
     add hl,de
-    ld de,0005h
+    ld de,5
     ld (hl),e
     inc hl
     ld (hl),d
@@ -3055,40 +3093,45 @@ l1379h:
     ld hl,cur_aload_is
     call pv2d
 
-    ld hl,(autoload)    ;1382 2a 3a 01
-    ld (l02deh),hl      ;1385 22 de 02
-    ld hl,0001h         ;1388 21 01 00
-    jp l13a7h           ;138b c3 a7 13
+    ;FOR J=1 TO AUTOLOAD(0)
+    ld hl,(autoload)
+    ld (l02deh),hl
+    ld hl,1
+    jp l13a7h
+
 l138eh:
-    call pr0a           ;138e cd 3d 2d
-    ld hl,(jj)          ;1391 2a d0 02
-    add hl,hl           ;1394 29
-    ld de,autoload      ;1395 11 3a 01
-    add hl,de           ;1398 19
-    ld e,(hl)           ;1399 5e
-    inc hl              ;139a 23
-    ld d,(hl)           ;139b 56
-    ex de,hl            ;139c eb
-    call chr            ;139d cd 24 2c
-    call pv1d           ;13a0 cd 3c 2c
-    ld hl,(jj)          ;13a3 2a d0 02
-    inc hl              ;13a6 23
+    ;PRINT CHR$(AUTOLOAD(J));
+    call pr0a
+    ld hl,(jj)
+    add hl,hl
+    ld de,autoload
+    add hl,de
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    ex de,hl
+    call chr
+    call pv1d
+
+    ;NEXT
+    ld hl,(jj)
+    inc hl
 l13a7h:
-    ld (jj),hl          ;13a7 22 d0 02
-    ld hl,(jj)          ;13aa 2a d0 02
-    ex de,hl            ;13ad eb
-    ld hl,(l02deh)      ;13ae 2a de 02
-    ld a,d              ;13b1 7a
-    xor h               ;13b2 ac
-    ld a,h              ;13b3 7c
-    jp m,l13bbh         ;13b4 fa bb 13
-    ld a,l              ;13b7 7d
-    sub e               ;13b8 93
-    ld a,h              ;13b9 7c
-    sbc a,d             ;13ba 9a
+    ld (jj),hl
+    ld hl,(jj)
+    ex de,hl
+    ld hl,(l02deh)
+    ld a,d
+    xor h
+    ld a,h
+    jp m,l13bbh
+    ld a,l
+    sub e
+    ld a,h
+    sbc a,d
 l13bbh:
-    rla                 ;13bb 17
-    jp nc,l138eh        ;13bc d2 8e 13
+    rla
+    jp nc,l138eh
 
 l13bfh:
     ;PRINT
@@ -3120,404 +3163,429 @@ l13bfh:
     ;GOSUB readline
     call readline
 
-    ld hl,(buf)         ;13ec 2a e0 02
-    inc hl              ;13ef 23
-    ld l,(hl)           ;13f0 6e
-    ld h,00h            ;13f1 26 00
-    ld (autoload),hl    ;13f3 22 3a 01
-    ld hl,0001h         ;13f6 21 01 00
-    jp l145ah           ;13f9 c3 5a 14
-l13fch:
-    ld hl,(buf)         ;13fc 2a e0 02
-    ex de,hl            ;13ff eb
-    ld hl,(jj)          ;1400 2a d0 02
-    add hl,de           ;1403 19
-    inc hl              ;1404 23
-    ld l,(hl)           ;1405 6e
-    ld h,00h            ;1406 26 00
-    push hl             ;1408 e5
-    ld hl,(jj)          ;1409 2a d0 02
-    add hl,hl           ;140c 29
-    ld de,autoload      ;140d 11 3a 01
-    add hl,de           ;1410 19
-    pop de              ;1411 d1
-    ld (hl),e           ;1412 73
-    inc hl              ;1413 23
-    ld (hl),d           ;1414 72
-    ld hl,(jj)          ;1415 2a d0 02
-    add hl,hl           ;1418 29
-    ld de,autoload      ;1419 11 3a 01
-    add hl,de           ;141c 19
-    ld e,(hl)           ;141d 5e
-    inc hl              ;141e 23
-    ld d,(hl)           ;141f 56
-    push de             ;1420 d5
-    pop hl              ;1421 e1
-    push hl             ;1422 e5
-    ld de,0ff9fh        ;1423 11 9f ff
-    ld a,h              ;1426 7c
-    rla                 ;1427 17
-    jp c,l142dh         ;1428 da 2d 14
-    add hl,de           ;142b 19
-    add hl,hl           ;142c 29
-l142dh:
-    ccf                 ;142d 3f
-    sbc a,a             ;142e 9f
-    ld h,a              ;142f 67
-    ld l,a              ;1430 6f
-    ld (02eah),hl       ;1431 22 ea 02
-    pop hl              ;1434 e1
-    ld de,0ff85h        ;1435 11 85 ff
-    ld a,h              ;1438 7c
-    rla                 ;1439 17
-    jp c,l143fh         ;143a da 3f 14
-    add hl,de           ;143d 19
-    add hl,hl           ;143e 29
-l143fh:
-    sbc a,a             ;143f 9f
-    ld h,a              ;1440 67
-    ld l,a              ;1441 6f
-    push hl             ;1442 e5
-    ld hl,(02eah)       ;1443 2a ea 02
-    ex de,hl            ;1446 eb
-    pop hl              ;1447 e1
-    ld a,h              ;1448 7c
-    and d               ;1449 a2
-    ld h,a              ;144a 67
-    ld a,l              ;144b 7d
-    and e               ;144c a3
-    ld l,a              ;144d 6f
-    ld a,h              ;144e 7c
-    or l                ;144f b5
-    jp z,l1456h         ;1450 ca 56 14
-    call sub_147eh      ;1453 cd 7e 14
-l1456h:
-    ld hl,(jj)          ;1456 2a d0 02
-    inc hl              ;1459 23
-l145ah:
-    ld (jj),hl          ;145a 22 d0 02
-    ld hl,(jj)          ;145d 2a d0 02
-    ld de,0ffafh        ;1460 11 af ff
-    ld a,h              ;1463 7c
-    rla                 ;1464 17
-    jp c,l146ah         ;1465 da 6a 14
-    add hl,de           ;1468 19
-    add hl,hl           ;1469 29
-l146ah:
-    jp c,l13fch         ;146a da fc 13
-    ld hl,(autoload)    ;146d 2a 3a 01
-    add hl,hl           ;1470 29
-    ld de,autoload+2    ;1471 11 3c 01
-    add hl,de           ;1474 19
-    ld de,0000h         ;1475 11 00 00
-    ld (hl),e           ;1478 73
-    inc hl              ;1479 23
-    ld (hl),d           ;147a 72
-    jp main_menu           ;147b c3 b5 05
-sub_147eh:
-    ld hl,(jj)          ;147e 2a d0 02
-    add hl,hl           ;1481 29
-    ld de,autoload      ;1482 11 3a 01
-    add hl,de           ;1485 19
-    push hl             ;1486 e5
-    ld e,(hl)           ;1487 5e
-    inc hl              ;1488 23
-    ld d,(hl)           ;1489 56
-    ld hl,0ffe0h        ;148a 21 e0 ff
-    add hl,de           ;148d 19
-    ex de,hl            ;148e eb
-    pop hl              ;148f e1
-    ld (hl),e           ;1490 73
-    inc hl              ;1491 23
-    ld (hl),d           ;1492 72
-    ret                 ;1493 c9
-exec_or_save:
-    call sub_149ah      ;1494 cd 9a 14
-    call exsys          ;1497 cd a9 28
-sub_149ah:
-    ld hl,0000h         ;149a 21 00 00
-    jp l14dah           ;149d c3 da 14
-l14a0h:
-    ld hl,(jj)          ;14a0 2a d0 02
-    add hl,hl           ;14a3 29
-    ld de,drv           ;14a4 11 0e 01
-    add hl,de           ;14a7 19
-    ld e,(hl)           ;14a8 5e
-    inc hl              ;14a9 23
-    ld d,(hl)           ;14aa 56
-    ex de,hl            ;14ab eb
-    push hl             ;14ac e5
-    ld hl,(bias)        ;14ad 2a ae 02
-    ex de,hl            ;14b0 eb
-    ld hl,(jj)          ;14b1 2a d0 02
-    add hl,de           ;14b4 19
-    ld de,4a70h         ;14b5 11 70 4a
-    add hl,de           ;14b8 19
-    pop de              ;14b9 d1
-    ld (hl),e           ;14ba 73
-    ld hl,(jj)          ;14bb 2a d0 02
-    add hl,hl           ;14be 29
-    ld de,diskdev       ;14bf 11 24 01
-    add hl,de           ;14c2 19
-    ld e,(hl)           ;14c3 5e
-    inc hl              ;14c4 23
-    ld d,(hl)           ;14c5 56
-    ex de,hl            ;14c6 eb
-    push hl             ;14c7 e5
-    ld hl,(bias)        ;14c8 2a ae 02
-    ex de,hl            ;14cb eb
-    ld hl,(jj)          ;14cc 2a d0 02
-    add hl,de           ;14cf 19
-    ld de,4a78h         ;14d0 11 78 4a
-    add hl,de           ;14d3 19
-    pop de              ;14d4 d1
-    ld (hl),e           ;14d5 73
-    ld hl,(jj)          ;14d6 2a d0 02
-    inc hl              ;14d9 23
-l14dah:
-    ld (jj),hl          ;14da 22 d0 02
-    ld hl,(jj)          ;14dd 2a d0 02
-    ld de,0fff8h        ;14e0 11 f8 ff
-    ld a,h              ;14e3 7c
-    rla                 ;14e4 17
-    jp c,l14eah         ;14e5 da ea 14
-    add hl,de           ;14e8 19
-    add hl,hl           ;14e9 29
-l14eah:
-    jp c,l14a0h         ;14ea da a0 14
-    jp l1525h           ;14ed c3 25 15
-    sbc a,(hl)          ;14f0 9e
-    jr z,l1513h         ;14f1 28 20
-    ld l,h              ;14f3 6c
-    ld l,c              ;14f4 69
-    ld l,(hl)           ;14f5 6e
-    ld h,l              ;14f6 65
-    jr nz,l152fh        ;14f7 20 36
-    dec (hl)            ;14f9 35
-    inc (hl)            ;14fa 34
-    jr nc,l151dh        ;14fb 30 20
-    dec hl              ;14fd 2b
-    dec hl              ;14fe 2b
-    dec hl              ;14ff 2b
-    dec hl              ;1500 2b
-    dec hl              ;1501 2b
-    dec hl              ;1502 2b
-    dec hl              ;1503 2b
-    dec hl              ;1504 2b
-    dec hl              ;1505 2b
-    dec hl              ;1506 2b
-    dec hl              ;1507 2b
-    dec hl              ;1508 2b
-    dec hl              ;1509 2b
-    dec hl              ;150a 2b
-    dec hl              ;150b 2b
-    dec hl              ;150c 2b
-    dec hl              ;150d 2b
-    dec hl              ;150e 2b
-    dec hl              ;150f 2b
-    dec hl              ;1510 2b
-    dec hl              ;1511 2b
-    dec hl              ;1512 2b
-l1513h:
-    dec hl              ;1513 2b
-    dec hl              ;1514 2b
-    dec hl              ;1515 2b
-    dec hl              ;1516 2b
-    dec hl              ;1517 2b
-    dec hl              ;1518 2b
-    dec hl              ;1519 2b
-    dec hl              ;151a 2b
-    dec hl              ;151b 2b
-    dec hl              ;151c 2b
-l151dh:
-    dec hl              ;151d 2b
-    dec hl              ;151e 2b
-    dec hl              ;151f 2b
-    dec hl              ;1520 2b
-    dec hl              ;1521 2b
-    dec hl              ;1522 2b
-    dec hl              ;1523 2b
-    nop                 ;1524 00
-l1525h:
-    ld hl,(iobyte)      ;1525 2a 0c 01
-    ld de,4a60h         ;1528 11 60 4a
-    push hl             ;152b e5
-    ld hl,(bias)        ;152c 2a ae 02
-l152fh:
-    add hl,de           ;152f 19
-    pop de              ;1530 d1
-    ld (hl),e           ;1531 73
-    ld hl,(lpt)         ;1532 2a ba 02
-    ld de,4a61h         ;1535 11 61 4a
-    push hl             ;1538 e5
-    ld hl,(bias)        ;1539 2a ae 02
-    add hl,de           ;153c 19
-    pop de              ;153d d1
-    ld (hl),e           ;153e 73
-    ld hl,(rdr)         ;153f 2a bc 02
-    ld de,4a62h         ;1542 11 62 4a
-    push hl             ;1545 e5
-    ld hl,(bias)        ;1546 2a ae 02
-    add hl,de           ;1549 19
-    pop de              ;154a d1
-    ld (hl),e           ;154b 73
-    ld hl,(pun)         ;154c 2a be 02
-    ld de,4a63h         ;154f 11 63 4a
-    push hl             ;1552 e5
-    ld hl,(bias)        ;1553 2a ae 02
-    add hl,de           ;1556 19
-    pop de              ;1557 d1
-    ld (hl),e           ;1558 73
-    ld hl,(uu)          ;1559 2a c0 02
-    ld a,l              ;155c 7d
-    and 0fch            ;155d e6 fc
-    ld l,a              ;155f 6f
-    ld a,h              ;1560 7c
-    and 00h             ;1561 e6 00
-    ld h,a              ;1563 67
-    ld a,l              ;1564 7d
-    or 02h              ;1565 f6 02
-    ld l,a              ;1567 6f
-    ld a,h              ;1568 7c
-    or 00h              ;1569 f6 00
-    ld h,a              ;156b 67
-    ld de,4a64h         ;156c 11 64 4a
-    push hl             ;156f e5
-    ld hl,(bias)        ;1570 2a ae 02
-    add hl,de           ;1573 19
-    pop de              ;1574 d1
-    ld (hl),e           ;1575 73
-    ld hl,(baud)        ;1576 2a c2 02
-    ld de,4a65h         ;1579 11 65 4a
-    push hl             ;157c e5
-    ld hl,(bias)        ;157d 2a ae 02
-    add hl,de           ;1580 19
-    pop de              ;1581 d1
-    ld (hl),e           ;1582 73
-    ld hl,(ul1)         ;1583 2a c4 02
-    ld de,4a66h         ;1586 11 66 4a
-    push hl             ;1589 e5
-    ld hl,(bias)        ;158a 2a ae 02
-    add hl,de           ;158d 19
-    pop de              ;158e d1
-    ld (hl),e           ;158f 73
-    ld hl,(termtype)    ;1590 2a c6 02
-    ld de,4a67h         ;1593 11 67 4a
-    push hl             ;1596 e5
-    ld hl,(bias)        ;1597 2a ae 02
-    add hl,de           ;159a 19
-    pop de              ;159b d1
-    ld (hl),e           ;159c 73
-    ld hl,(lptype)      ;159d 2a d4 02
-    ld de,4a6dh         ;15a0 11 6d 4a
-    push hl             ;15a3 e5
-    ld hl,(bias)        ;15a4 2a ae 02
-    add hl,de           ;15a7 19
-    pop de              ;15a8 d1
-    ld (hl),e           ;15a9 73
-    ld hl,(dirsize)     ;15aa 2a b8 02
-    ld de,38b2h         ;15ad 11 b2 38
-    push hl             ;15b0 e5
-    ld hl,(bias)        ;15b1 2a ae 02
-    add hl,de           ;15b4 19
-    pop de              ;15b5 d1
-    ld (hl),e           ;15b6 73
-    ld hl,0000h         ;15b7 21 00 00
-    jp l15dch           ;15ba c3 dc 15
-l15bdh:
-    ld hl,(jj)          ;15bd 2a d0 02
-    add hl,hl           ;15c0 29
-    ld de,autoload      ;15c1 11 3a 01
-    add hl,de           ;15c4 19
-    ld e,(hl)           ;15c5 5e
-    inc hl              ;15c6 23
-    ld d,(hl)           ;15c7 56
-    ex de,hl            ;15c8 eb
-    push hl             ;15c9 e5
-    ld hl,(bias)        ;15ca 2a ae 02
-    ex de,hl            ;15cd eb
-    ld hl,(jj)          ;15ce 2a d0 02
-    add hl,de           ;15d1 19
-    ld de,3407h         ;15d2 11 07 34
-    add hl,de           ;15d5 19
-    pop de              ;15d6 d1
-    ld (hl),e           ;15d7 73
-    ld hl,(jj)          ;15d8 2a d0 02
-    inc hl              ;15db 23
-l15dch:
-    ld (jj),hl          ;15dc 22 d0 02
-    ld hl,(jj)          ;15df 2a d0 02
-    ld de,0ffafh        ;15e2 11 af ff
-    ld a,h              ;15e5 7c
-    rla                 ;15e6 17
-    jp c,l15ech         ;15e7 da ec 15
-    add hl,de           ;15ea 19
-    add hl,hl           ;15eb 29
-l15ech:
-    jp c,l15bdh         ;15ec da bd 15
-    ld hl,(leadin)      ;15ef 2a c8 02
-    ld de,4a68h         ;15f2 11 68 4a
-    push hl             ;15f5 e5
-    ld hl,(bias)        ;15f6 2a ae 02
-    add hl,de           ;15f9 19
-    pop de              ;15fa d1
-    ld (hl),e           ;15fb 73
-    ld hl,(order)       ;15fc 2a ca 02
-    ld de,4a69h         ;15ff 11 69 4a
-    push hl             ;1602 e5
-    ld hl,(bias)        ;1603 2a ae 02
-    add hl,de           ;1606 19
-    pop de              ;1607 d1
-    ld (hl),e           ;1608 73
-    ld hl,(rowoff)      ;1609 2a cc 02
-    ld de,4a6ah         ;160c 11 6a 4a
-    push hl             ;160f e5
-    ld hl,(bias)        ;1610 2a ae 02
-    add hl,de           ;1613 19
-    pop de              ;1614 d1
-    ld (hl),e           ;1615 73
-    ld hl,(coloff)      ;1616 2a ce 02
-    ld de,4a6bh         ;1619 11 6b 4a
-    push hl             ;161c e5
-    ld hl,(bias)        ;161d 2a ae 02
-    add hl,de           ;1620 19
-    pop de              ;1621 d1
-    ld (hl),e           ;1622 73
-    ld hl,0000h         ;1623 21 00 00
-    jp l1648h           ;1626 c3 48 16
-l1629h:
-    ld hl,(jj)          ;1629 2a d0 02
-    add hl,hl           ;162c 29
-    ld de,scrtab        ;162d 11 2c 02
-    add hl,de           ;1630 19
-    ld e,(hl)           ;1631 5e
-    inc hl              ;1632 23
-    ld d,(hl)           ;1633 56
-    ex de,hl            ;1634 eb
-    push hl             ;1635 e5
-    ld hl,(bias)        ;1636 2a ae 02
-    ex de,hl            ;1639 eb
-    ld hl,(jj)          ;163a 2a d0 02
-    add hl,de           ;163d 19
-    ld de,4a80h         ;163e 11 80 4a
-    add hl,de           ;1641 19
-    pop de              ;1642 d1
-    ld (hl),e           ;1643 73
-    ld hl,(jj)          ;1644 2a d0 02
-    inc hl              ;1647 23
-l1648h:
-    ld (jj),hl          ;1648 22 d0 02
-    ld hl,(jj)          ;164b 2a d0 02
-    ld de,0ffc0h        ;164e 11 c0 ff
-    ld a,h              ;1651 7c
-    rla                 ;1652 17
-    jp c,l1658h         ;1653 da 58 16
-    add hl,de           ;1656 19
-    add hl,hl           ;1657 29
-l1658h:
-    jp c,l1629h         ;1658 da 29 16
+    ;AUTOLOAD(0) = PEEK(BUF+1)
+    ld hl,(buf)
+    inc hl
+    ld l,(hl)
+    ld h,0
+    ld (autoload),hl
 
-    ;CLOCK = PEEK (LOADER+3)
+    ;FOR J = 1 TO 80
+    ld hl,1
+    jp l145ah
+
+l13fch:
+    ;AUTOLOAD(J) = PEEK(BUF+1+J)
+    ld hl,(buf)
+    ex de,hl
+    ld hl,(jj)
+    add hl,de
+    inc hl              ;HL=buf+jj+1
+    ld l,(hl)
+    ld h,0              ;HL=PEEK(HL)
+    push hl             ;Save value
+    ld hl,(jj)
+    add hl,hl
+    ld de,autoload
+    add hl,de           ;HL=jj*2+autoload
+    pop de              ;Restore value
+    ld (hl),e
+    inc hl
+    ld (hl),d           ;(HL)=DE
+
+    ;IF NOT((AUTOLOAD(J) >= &H61) AND (AUTOLOAD(J) <= &H7A)) THEN GOTO l1456h
+    ld hl,(jj)
+    add hl,hl
+    ld de,autoload
+    add hl,de           ;HL=jj*2+autoload
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    push de
+    pop hl              ;HL=(HL)
+    push hl             ;Save HL for second expression part
+    ld de,0-'a'         ;DE=-61h
+    ld a,h
+    rla
+    jp c,l142dh
+    add hl,de
+    add hl,hl
+l142dh:
+    ccf
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL>=DE
+    ld (l02eah),hl      ;(l02eah)=HL
+    pop hl              ;Restore HL from first expression part
+    ld de,0-('z'+1)     ;DE=-7bh
+    ld a,h
+    rla
+    jp c,l143fh
+    add hl,de
+    add hl,hl
+l143fh:
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL<DE
+    push hl             ;Save HL
+    ld hl,(l02eah)
+    ex de,hl            ;DE=(l02eah)
+    pop hl              ;Restore HL
+    ld a,h
+    and d
+    ld h,a
+    ld a,l
+    and e
+    ld l,a               ;HL=HL and DE
+    ld a,h
+    or l
+    jp z,l1456h          ;If HL=0 GOTO l1456h
+
+    ;GOSUB sub_147eh ' Map to upper case
+    call sub_147eh
+
+l1456h:
+    ;NEXT
+    ld hl,(jj)
+    inc hl
+l145ah:
+    ld (jj),hl
+    ld hl,(jj)
+    ld de,-(80+1)
+    ld a,h
+    rla
+    jp c,l146ah
+    add hl,de
+    add hl,hl
+l146ah:
+    jp c,l13fch
+
+    ;AUTOLOAD(AUTOLOAD(0)+1)=0
+    ld hl,(autoload)
+    add hl,hl
+    ld de,autoload+2
+    add hl,de
+    ld de,0
+    ld (hl),e
+    inc hl
+    ld (hl),d
+
+    ;GOTO main_menu
+    jp main_menu
+
+sub_147eh:
+    ;AUTOLOAD(J) = AUTOLOAD(J) - &H20
+    ld hl,(jj)
+    add hl,hl
+    ld de,autoload
+    add hl,de           ;HL=jj*2+autoload
+    push hl             ;Save Address for saving data
+    ld e,(hl)
+    inc hl
+    ld d,(hl)           ;DE=(HL)
+    ld hl,0-('a'-'A')   ;HL=-20h
+    add hl,de
+    ex de,hl            ;DE=DE-HL
+    pop hl              ;Restore Address
+    ld (hl),e
+    inc hl
+    ld (hl),d           ;(HL)=DE
+
+    ;RETURN
+    ret
+
+exec_or_save:
+    ;GOSUB sub_149ah ' Poke back the configuration data
+    call sub_149ah
+
+    ;CALL EXSYS '(NEVER RETURNS)
+    call exsys
+
+sub_149ah:
+    ;FOR J = 0 TO 7
+    ld hl,0
+    jp l14dah
+
+l14a0h:
+    ;POKE &H4A70+BIAS+J, DRV(J)
+    ld hl,(jj)
+    add hl,hl
+    ld de,drv
+    add hl,de           ;HL=jj*2+drv
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    ex de,hl            ;HL=(HL)
+    push hl             ;Save Value
+    ld hl,(bias)
+    ex de,hl
+    ld hl,(jj)
+    add hl,de
+    ld de,4a70h
+    add hl,de           ;HL=bias+jj+4a70h
+    pop de              ;Restore Value
+    ld (hl),e           ;(HL)=E
+
+    ;POKE &H4A78+BIAS+J, DISKDEV(J)
+    ld hl,(jj)
+    add hl,hl
+    ld de,diskdev
+    add hl,de           ;HL=jj*2+diskdev
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    ex de,hl            ;HL=(HL)
+    push hl             ;Save Value
+    ld hl,(bias)
+    ex de,hl
+    ld hl,(jj)
+    add hl,de
+    ld de,4a78h
+    add hl,de           ;HL=bias+jj+4a78h
+    pop de              ;Restore Value
+    ld (hl),e           ;(HL)=E
+
+    ;NEXT
+    ld hl,(jj)
+    inc hl
+l14dah:
+    ld (jj),hl
+    ld hl,(jj)
+    ld de,-(7+1)
+    ld a,h
+    rla
+    jp c,l14eah
+    add hl,de
+    add hl,hl
+l14eah:
+    jp c,l14a0h
+
+    ;GOTO l1525h
+    jp l1525h
+
+    db 9eh,28h
+
+data_line:
+    db " line 6540 +++++++++++++++++++++++++++++++++++++++",0
+
+l1525h:
+    ;POKE BIAS+&H4A60, IOBYTE
+    ld hl,(iobyte)
+    ld de,4a60h
+    push hl
+    ld hl,(bias)
+    add hl,de
+    pop de
+    ld (hl),e
+
+    ;POKE BIAS+&H4A61, LPT
+    ld hl,(lpt)
+    ld de,4a61h
+    push hl
+    ld hl,(bias)
+    add hl,de
+    pop de
+    ld (hl),e
+
+    ;POKE BIAS+&H4A62, RDR
+    ld hl,(rdr)
+    ld de,4a62h
+    push hl
+    ld hl,(bias)
+    add hl,de
+    pop de
+    ld (hl),e
+
+    ;POKE BIAS+&H4A63, PUN
+    ld hl,(pun)
+    ld de,4a63h
+    push hl
+    ld hl,(bias)
+    add hl,de
+    pop de
+    ld (hl),e
+
+    ;POKE BIAS+&H4A64, (U AND &HFC) OR 2  ' USART - set async. mode
+    ld hl,(uu)          ;HL=(uu)
+    ld a,l
+    and 0fch
+    ld l,a
+    ld a,h
+    and 0
+    ld h,a              ;HL=HL and 00fch
+    ld a,l
+    or 2
+    ld l,a
+    ld a,h
+    or 0
+    ld h,a              ;HL=HL or 2
+    ld de,4a64h
+    push hl             ;Save value
+    ld hl,(bias)
+    add hl,de           ;HL=4a64h+bias
+    pop de              ;Restore value
+    ld (hl),e           ;(HL)=E
+
+    ;POKE BIAS+&H4A65, BAUD
+    ld hl,(baud)
+    ld de,4a65h
+    push hl
+    ld hl,(bias)
+    add hl,de
+    pop de
+    ld (hl),e
+
+    ;POKE BIAS+&H4A66, UL1
+    ld hl,(ul1)
+    ld de,4a66h
+    push hl
+    ld hl,(bias)
+    add hl,de
+    pop de
+    ld (hl),e
+
+    ;POKE BIAS+&H4A67, TERMTYPE
+    ld hl,(termtype)
+    ld de,4a67h
+    push hl
+    ld hl,(bias)
+    add hl,de
+    pop de
+    ld (hl),e
+
+    ;POKE BIAS+&H4A6D, LPTYPE
+    ld hl,(lptype)
+    ld de,4a6dh
+    push hl
+    ld hl,(bias)
+    add hl,de
+    pop de
+    ld (hl),e
+
+    ;POKE BIAS+&H38B2, DIRSIZE
+    ld hl,(dirsize)
+    ld de,38b2h
+    push hl
+    ld hl,(bias)
+    add hl,de
+    pop de
+    ld (hl),e
+
+    ;FOR J = 0 TO 80
+    ld hl,0
+    jp l15dch
+
+l15bdh:
+    ;POKE BIAS+&H3407+J,AUTOLOAD(J)
+    ld hl,(jj)
+    add hl,hl
+    ld de,autoload
+    add hl,de           ;HL=jj*2+autoload
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    ex de,hl            ;HL=(HL)
+    push hl             ;Save value
+    ld hl,(bias)
+    ex de,hl
+    ld hl,(jj)
+    add hl,de
+    ld de,3407h
+    add hl,de           ;HL=bias+jj+3407h
+    pop de              ;Restore value
+    ld (hl),e           ;(HL)=E
+
+    ;NEXT
+    ld hl,(jj)
+    inc hl
+l15dch:
+    ld (jj),hl
+    ld hl,(jj)
+    ld de,-(80+1)
+    ld a,h
+    rla
+    jp c,l15ech
+    add hl,de
+    add hl,hl
+l15ech:
+    jp c,l15bdh
+
+    ;POKE BIAS+&H4A68, LEADIN
+    ld hl,(leadin)
+    ld de,4a68h
+    push hl
+    ld hl,(bias)
+    add hl,de
+    pop de
+    ld (hl),e
+
+    ;POKE BIAS+&H4A69, ORDER
+    ld hl,(order)
+    ld de,4a69h
+    push hl
+    ld hl,(bias)
+    add hl,de
+    pop de
+    ld (hl),e
+
+    ;POKE BIAS+&H4A6A, ROWOFF
+    ld hl,(rowoff)
+    ld de,4a6ah
+    push hl
+    ld hl,(bias)
+    add hl,de
+    pop de
+    ld (hl),e
+
+    ;POKE BIAS+&H4A6B, COLOFF
+    ld hl,(coloff)
+    ld de,4a6bh
+    push hl
+    ld hl,(bias)
+    add hl,de
+    pop de
+    ld (hl),e
+
+    ;FOR J = 0 TO 63
+    ld hl,0
+    jp l1648h
+
+l1629h:
+    ;POKE BIAS+&H4A80+J, SCRTAB(J)
+    ld hl,(jj)
+    add hl,hl
+    ld de,scrtab
+    add hl,de           ;HL=jj*2+scrtab
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    ex de,hl            ;HL=(HL)
+    push hl             ;Save value
+    ld hl,(bias)
+    ex de,hl
+    ld hl,(jj)
+    add hl,de
+    ld de,4a80h
+    add hl,de           ;HL=bias+jj+4a80h
+    pop de              ;Restore value
+    ld (hl),e           ;(HL)=E
+
+    ;NEXT
+    ld hl,(jj)
+    inc hl
+l1648h:
+    ld (jj),hl
+    ld hl,(jj)
+    ld de,-(63+1)
+    ld a,h
+    rla
+    jp c,l1658h
+    add hl,de
+    add hl,hl
+l1658h:
+    jp c,l1629h
+
+    ;POKE LOADER+3, CLOCK
     ld hl,(clock)
     push hl
     ld hl,(loader)
@@ -3539,40 +3607,41 @@ l1668h:
     ;GOSUB readline
     call readline
 
-    ld hl,(rr)          ;1674 2a b2 02
-    ld de,0ffbfh        ;1677 11 bf ff
-    ld a,h              ;167a 7c
-    rla                 ;167b 17
-    jp c,l1681h         ;167c da 81 16
-    add hl,de           ;167f 19
-    add hl,hl           ;1680 29
+    ;IF (R < &H41) OR (R > &H50) THEN main_menu
+    ld hl,(rr)          ;HL=(rr)
+    ld de,0-'A'         ;DE=-41h
+    ld a,h
+    rla
+    jp c,l1681h
+    add hl,de
+    add hl,hl
 l1681h:
-    sbc a,a             ;1681 9f
-    ld h,a              ;1682 67
-    ld l,a              ;1683 6f
-    push hl             ;1684 e5
-    ld hl,(rr)          ;1685 2a b2 02
-    ld de,0ffafh        ;1688 11 af ff
-    ld a,h              ;168b 7c
-    rla                 ;168c 17
-    jp c,l1692h         ;168d da 92 16
-    add hl,de           ;1690 19
-    add hl,hl           ;1691 29
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL<DE
+    push hl             ;Save HL for second expression part
+    ld hl,(rr)          ;HL=(rr)
+    ld de,0-('P'+1)     ;DE=-51h
+    ld a,h
+    rla
+    jp c,l1692h
+    add hl,de
+    add hl,hl
 l1692h:
-    ccf                 ;1692 3f
-    sbc a,a             ;1693 9f
-    ld h,a              ;1694 67
-    ld l,a              ;1695 6f
-    pop de              ;1696 d1
-    ld a,h              ;1697 7c
-    or d                ;1698 b2
-    ld h,a              ;1699 67
-    ld a,l              ;169a 7d
-    or e                ;169b b3
-    ld l,a              ;169c 6f
-    ld a,h              ;169d 7c
-    or l                ;169e b5
-    jp nz,main_menu        ;169f c2 b5 05
+    ccf
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL>=DE
+    pop de              ;Restore HL from first expression part
+    ld a,h
+    or d
+    ld h,a
+    ld a,l
+    or e
+    ld l,a              ;HL=HL or DE
+    ld a,h
+    or l
+    jp nz,main_menu     ;IF HL <> 0 THEN GOTO main_menu
 
     ;D = R - &H41
     ld de,0-41h
@@ -3588,9 +3657,9 @@ l1692h:
     ld hl,dt
     call dtype
 
-    ;IF DT < 128 THEN GOTO l16d4h
+    ;IF NOT(DT > 127) THEN GOTO l16d4h
     ld hl,(dt)
-    ld de,0-80h
+    ld de,0-(127+1)
     ld a,h
     rla
     jp c,l16c5h
@@ -3609,41 +3678,44 @@ l16c5h:
     jp l1668h
 
 l16d4h:
-    call sub_149ah      ;16d4 cd 9a 14
-    ld hl,(dt)          ;16d7 2a b4 02
-    ld de,0fffeh        ;16da 11 fe ff
-    ld a,h              ;16dd 7c
-    rla                 ;16de 17
-    jp c,l16e4h         ;16df da e4 16
-    add hl,de           ;16e2 19
-    add hl,hl           ;16e3 29
+    ;GOSUB sub_149ah
+    call sub_149ah
+
+    ;IF NOT((DT >= 2) AND (DT <= 9)) THEN GOTO l170eh
+    ld hl,(dt)          ;HL=(dt)
+    ld de,-2            ;DE=-2
+    ld a,h
+    rla
+    jp c,l16e4h
+    add hl,de
+    add hl,hl
 l16e4h:
-    ccf                 ;16e4 3f
-    sbc a,a             ;16e5 9f
-    ld h,a              ;16e6 67
-    ld l,a              ;16e7 6f
-    push hl             ;16e8 e5
-    ld hl,(dt)          ;16e9 2a b4 02
-    ld de,0fff6h        ;16ec 11 f6 ff
-    ld a,h              ;16ef 7c
-    rla                 ;16f0 17
-    jp c,l16f6h         ;16f1 da f6 16
-    add hl,de           ;16f4 19
-    add hl,hl           ;16f5 29
+    ccf
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL>=DE
+    push hl             ;Save HL for second expression part
+    ld hl,(dt)          ;HL=(dt)
+    ld de,-(9+1)        ;DE=-10
+    ld a,h
+    rla
+    jp c,l16f6h
+    add hl,de
+    add hl,hl
 l16f6h:
-    sbc a,a             ;16f6 9f
-    ld h,a              ;16f7 67
-    ld l,a              ;16f8 6f
-    pop de              ;16f9 d1
-    ld a,h              ;16fa 7c
-    and d               ;16fb a2
-    ld h,a              ;16fc 67
-    ld a,l              ;16fd 7d
-    and e               ;16fe a3
-    ld l,a              ;16ff 6f
-    ld a,h              ;1700 7c
-    or l                ;1701 b5
-    jp z,l170eh         ;1702 ca 0e 17
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL<DE
+    pop de              ;Restore HL from first expression part
+    ld a,h
+    and d
+    ld h,a
+    ld a,l
+    and e
+    ld l,a              ;HL=HL and DE
+    ld a,h
+    or l
+    jp z,l170eh         ;IF HL = 0 THEN GOTO l170eh
 
     ;CALL CWRITE (D)
     ld hl,dd
@@ -4489,7 +4561,7 @@ l1aa6h:
 clear_screen:
     ;PRINT CHR$(26)
     call pr0a
-    ld hl,001ah
+    ld hl,cls
     call chr
     call pv2d
 
@@ -4513,7 +4585,7 @@ readline:
     ld hl,empty_string
     call pv2d
 
-    ;IF PEEK (BUF+1) <> 0 GOTO l1bf4h
+    ;IF PEEK (BUF+1) <> 0 GOTO l1bf4h 'blank line
     ld hl,(buf)
     inc hl
     ld l,(hl)
@@ -4530,7 +4602,7 @@ readline:
     ret
 
 l1bf4h:
-    ;R = PEEK (BUF+2)
+    ;R = PEEK (BUF+2) ' single character reply
     ld hl,(buf)
     inc hl
     inc hl
@@ -4538,43 +4610,44 @@ l1bf4h:
     ld h,00h
     ld (rr),hl
 
-    ld hl,(rr)          ;1bff 2a b2 02
-    ld de,0-61h         ;1c02 11 9f ff
-    ld a,h              ;1c05 7c
-    rla                 ;1c06 17
-    jp c,l1c0ch         ;1c07 da 0c 1c
-    add hl,de           ;1c0a 19
-    add hl,hl           ;1c0b 29
+    ;IF NOT((R >= &H61) AND (R<= &H7A)) THEN GOTO l1c37h
+    ld hl,(rr)          ;HL=(rr)
+    ld de,0-'a'         ;DE=-61h
+    ld a,h
+    rla
+    jp c,l1c0ch
+    add hl,de
+    add hl,hl
 l1c0ch:
-    ccf                 ;1c0c 3f
-    sbc a,a             ;1c0d 9f
-    ld h,a              ;1c0e 67
-    ld l,a              ;1c0f 6f
-    push hl             ;1c10 e5
-    ld hl,(rr)          ;1c11 2a b2 02
-    ld de,0-7bh         ;1c14 11 85 ff
-    ld a,h              ;1c17 7c
-    rla                 ;1c18 17
-    jp c,l1c1eh         ;1c19 da 1e 1c
-    add hl,de           ;1c1c 19
-    add hl,hl           ;1c1d 29
+    ccf
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL>=DE
+    push hl             ;Save value
+    ld hl,(rr)          ;HL=(rr)
+    ld de,0-('z'+1)     ;DE=-7bh
+    ld a,h
+    rla
+    jp c,l1c1eh
+    add hl,de
+    add hl,hl
 l1c1eh:
-    sbc a,a             ;1c1e 9f
-    ld h,a              ;1c1f 67
-    ld l,a              ;1c20 6f
-    pop de              ;1c21 d1
-    ld a,h              ;1c22 7c
-    and d               ;1c23 a2
-    ld h,a              ;1c24 67
-    ld a,l              ;1c25 7d
-    and e               ;1c26 a3
-    ld l,a              ;1c27 6f
-    ld a,h              ;1c28 7c
-    or l                ;1c29 b5
-    jp z,l1c37h         ;1c2a ca 37 1c
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL<DE
+    pop de              ;Restore value
+    ld a,h
+    and d
+    ld h,a
+    ld a,l
+    and e
+    ld l,a              ;HL=HL and DE
+    ld a,h
+    or l
+    jp z,l1c37h         ;IF HL = 0 THEN GOTO l1c37h
 
     ;R = R - &H20
-    ld de,0-20h
+    ld de,0-('a'-'A')
     ld hl,(rr)
     add hl,de
     ld (rr),hl
@@ -4589,99 +4662,107 @@ l1c37h:
     ld (jj),hl
 
 l1c43h:
-    ld hl,(buf)         ;1c43 2a e0 02
-    ex de,hl            ;1c46 eb
-    ld hl,(jj)          ;1c47 2a d0 02
-    add hl,de           ;1c4a 19
-    ld l,(hl)           ;1c4b 6e
-    ld h,00h            ;1c4c 26 00
-    push hl             ;1c4e e5
-    ld de,0-30h         ;1c4f 11 d0 ff
-    ld a,h              ;1c52 7c
-    rla                 ;1c53 17
-    jp c,l1c59h         ;1c54 da 59 1c
-    add hl,de           ;1c57 19
-    add hl,hl           ;1c58 29
+    ;WHILE (PEEK(BUF+J) >= &H30) AND (PEEK (BUF+J) <= &H39) AND (J-2<PEEK (BUF+1))
+    ld hl,(buf)
+    ex de,hl
+    ld hl,(jj)
+    add hl,de           ;HL=buf+jj
+    ld l,(hl)
+    ld h,0              ;HL=(HL)
+    push hl             ;Save value
+    ld de,0-'0'         ;DE=-30h
+    ld a,h
+    rla
+    jp c,l1c59h
+    add hl,de
+    add hl,hl
 l1c59h:
-    ccf                 ;1c59 3f
-    sbc a,a             ;1c5a 9f
-    ld h,a              ;1c5b 67
-    ld l,a              ;1c5c 6f
-    ld (02eah),hl       ;1c5d 22 ea 02
-    pop hl              ;1c60 e1
-    ld de,0ffc6h        ;1c61 11 c6 ff
-    ld a,h              ;1c64 7c
-    rla                 ;1c65 17
-    jp c,l1c6bh         ;1c66 da 6b 1c
-    add hl,de           ;1c69 19
-    add hl,hl           ;1c6a 29
+    ccf
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL>=DE
+    ld (l02eah),hl      ;(l02eah)=HL 
+    pop hl              ;Restore value
+    ld de,0-('9'+1)     ;DE=-3ah
+    ld a,h
+    rla
+    jp c,l1c6bh
+    add hl,de
+    add hl,hl
 l1c6bh:
-    sbc a,a             ;1c6b 9f
-    ld h,a              ;1c6c 67
-    ld l,a              ;1c6d 6f
-    push hl             ;1c6e e5
-    ld hl,(02eah)       ;1c6f 2a ea 02
-    ex de,hl            ;1c72 eb
-    pop hl              ;1c73 e1
-    ld a,h              ;1c74 7c
-    and d               ;1c75 a2
-    ld h,a              ;1c76 67
-    ld a,l              ;1c77 7d
-    and e               ;1c78 a3
-    ld l,a              ;1c79 6f
-    push hl             ;1c7a e5
-    ld hl,(buf)         ;1c7b 2a e0 02
-    inc hl              ;1c7e 23
-    ld l,(hl)           ;1c7f 6e
-    ld h,00h            ;1c80 26 00
-    push hl             ;1c82 e5
-    ld hl,(jj)          ;1c83 2a d0 02
-    dec hl              ;1c86 2b
-    dec hl              ;1c87 2b
-    pop de              ;1c88 d1
-    ld a,d              ;1c89 7a
-    xor h               ;1c8a ac
-    ld a,h              ;1c8b 7c
-    jp m,l1c93h         ;1c8c fa 93 1c
-    ld a,l              ;1c8f 7d
-    sub e               ;1c90 93
-    ld a,h              ;1c91 7c
-    sbc a,d             ;1c92 9a
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL<DE
+    push hl             ;Save value
+    ld hl,(l02eah)
+    ex de,hl            ;DE=(l02eah)
+    pop hl              ;Restore value
+    ld a,h
+    and d
+    ld h,a
+    ld a,l
+    and e
+    ld l,a              ;HL=HL and DE
+    push hl             ;Save value
+    ld hl,(buf)
+    inc hl              ;HL=buf+1
+    ld l,(hl)
+    ld h,0              ;HL=(HL)
+    push hl             ;Save value
+    ld hl,(jj)
+    dec hl
+    dec hl              ;HL=jj-2
+    pop de              ;Restore value
+    ld a,d
+    xor h
+    ld a,h
+    jp m,l1c93h
+    ld a,l
+    sub e
+    ld a,h
+    sbc a,d
 l1c93h:
-    rla                 ;1c93 17
-    sbc a,a             ;1c94 9f
-    ld h,a              ;1c95 67
-    ld l,a              ;1c96 6f
-    pop de              ;1c97 d1
-    ld a,h              ;1c98 7c
-    and d               ;1c99 a2
-    ld h,a              ;1c9a 67
-    ld a,l              ;1c9b 7d
-    and e               ;1c9c a3
-    ld l,a              ;1c9d 6f
-    ld a,h              ;1c9e 7c
-    or l                ;1c9f b5
-    jp z,l1ccah         ;1ca0 ca ca 1c
-    ld hl,(nn)          ;1ca3 2a d8 02
-    call imug           ;1ca6 cd 9a 2c
-    ld a,(bc)           ;1ca9 0a
-    nop                 ;1caa 00
-    push hl             ;1cab e5
-    ld hl,(buf)         ;1cac 2a e0 02
-    ex de,hl            ;1caf eb
-    ld hl,(jj)          ;1cb0 2a d0 02
-    add hl,de           ;1cb3 19
-    ld l,(hl)           ;1cb4 6e
-    ld h,00h            ;1cb5 26 00
-    pop de              ;1cb7 d1
-    add hl,de           ;1cb8 19
-    ld de,0ffd0h        ;1cb9 11 d0 ff
-    add hl,de           ;1cbc 19
-    ld (nn),hl          ;1cbd 22 d8 02
-    ld hl,(jj)          ;1cc0 2a d0 02
-    inc hl              ;1cc3 23
-    ld (jj),hl          ;1cc4 22 d0 02
+    rla
+    sbc a,a
+    ld h,a
+    ld l,a              ;HL=HL<DE
+    pop de              ;Restore value
+    ld a,h
+    and d
+    ld h,a
+    ld a,l
+    and e
+    ld l,a              ;HL=HL and DE
+    ld a,h
+    or l
+    jp z,l1ccah         ;IF HL = 0 THEN GOTO l1ccah
+
+    ;N=N*10+(PEEK(BUF+J)-&H30)
+    ld hl,(nn)          ;HL=(rr)
+    call imug           ;HL=HL*10
+    ld a,(bc)
+    nop
+    push hl             ;Save value
+    ld hl,(buf)
+    ex de,hl
+    ld hl,(jj)
+    add hl,de           ;HL=buf+jj
+    ld l,(hl)
+    ld h,00h            ;HL=(HL)
+    pop de              ;Restore value
+    add hl,de
+    ld de,0-'0'         ;DE=-30h
+    add hl,de           ;HL=HL+DE-30h
+    ld (nn),hl          ;(nn)=HL
+
+    ;J = J + 1
+    ld hl,(jj)
+    inc hl
+    ld (jj),hl
+
+    ;WEND
     jp l1c43h           ;1cc7 c3 43 1c
+
 l1ccah:
     ;RETURN
     ret
@@ -5352,7 +5433,8 @@ cpm_reconfig:
 empty_string:
     db 00h
     dw empty_string+3
-    db 0cdh,"$-",01h,00h,00h
+
+    db 0cdh,24h,2dh,01h,00h,00h
 
 ; Start of LOADSAVE.REL =====================================================
 
@@ -5360,9 +5442,9 @@ buffin:
 ;Buffered Console Input.  Caller must store buffer size at 80h.  On
 ;return, 81h will contain the number of data bytes and the data
 ;will start at 82h.
-    ld c,0ah
+    ld c,creadstr       ;Buffered Console Input
     ld de,0080h
-    jp 0005h
+    jp bdos             ;BDOS entry point
 
 exsys:
 ;Execute a new CP/M system.  The buffer at 4000h contains a new
@@ -5370,90 +5452,91 @@ exsys:
 ;Copy the new system into place and then jump to the BIOS to start it.
     ld bc,1c00h
     ld hl,4000h
-    ld de,0d400h
+    ld de,ccp_base
     ldir
-    jp 0f075h
+    jp runcpm           ;Perform system init and then run CP/M
 
 rdsys:
 ;Read the "CP/M" and "K" files from an IEEE-488 drive into memory.
     ld a,(hl)
-    ld (l2be5h),a
-    call 0f054h
+    ld (cpm_drive),a
+
+    call dskdev         ;Get device address for a CP/M drive number
     ld e,00h
     push de
+
     call sub_29deh
-    ld a,(l2be5h)
-    call 0f05ah
-    ld (l2be6h),a
+    ld a,(cpm_drive)
+    call dsksta         ;Read the error channel of an IEEE-488 device
+    ld (dos_err),a
     ld hl,4000h
     ld bc,1c00h
     pop de
     or a
     ret nz
     push de
-    call 0f039h
+    call talk           ;Send TALK to an IEEE-488 device
 l28dah:
-    call 0f03fh
+    call rdieee         ;Read byte from an IEEE-488 device
     ld (hl),a
     inc hl
     dec bc
     ld a,b
     or c
     jr nz,l28dah
-    call 0f03ch
+    call untalk         ;Send UNTALK to all IEEE-488 devices
     pop de
     push de
-    call 0f060h
+    call close          ;Close an open file on an IEEE-488 device
     pop de
     push de
     call sub_29f0h
-    ld a,(l2be5h)
-    call 0f05ah
-    ld (l2be6h),a
+    ld a,(cpm_drive)
+    call dsksta         ;Read the error channel of an IEEE-488 device
+    ld (dos_err),a
     ld hl,6000h
     ld bc,l0800h
     pop de
     or a
     ret nz
     push de
-    call 0f039h
+    call talk           ;Send TALK to an IEEE-488 device
 l2907h:
-    call 0f03fh
+    call rdieee         ;Read byte from an IEEE-488 device
     ld (hl),a
     inc hl
     dec bc
     ld a,b
     or c
     jr nz,l2907h
-    call 0f03ch
+    call untalk         ;Send UNTALK to all IEEE-488 devices
     pop de
-    call 0f060h
-    ld a,(l2be5h)
-    call 0f05ah
-    ld (l2be6h),a
+    call close          ;Close an open file on an IEEE-488 device
+    ld a,(cpm_drive)
+    call dsksta         ;Read the error channel of an IEEE-488 device
+    ld (dos_err),a
     ret
 
 cread_:
 ;Read CP/M image from a Corvus drive.
     ld c,(hl)
-    call 0f01bh
+    call seldsk         ;Select disk drive
     ld de,4000h
     ld bc,0000h
 cread2:
-    call 0f01eh
+    call settrk         ;Set track number
     push bc
     ld bc,0000h
 cread1:
-    call 0f021h
+    call setsec         ;Set sector number
     push bc
     push de
-    call 0f027h
+    call read           ;Read selected sector
     or a
     jr nz,cwrit3
     pop de
     ld bc,0080h
     ld hl,0080h
-l2945h:
     ldir
     pop bc
     inc c
@@ -5470,21 +5553,21 @@ l2945h:
 cwrite_:
 ;Write CP/M image to a Corvus drive.
     ld c,(hl)
-    call 0f01bh
+    call seldsk         ;Select disk drive
     ld hl,4000h
     ld bc,0000h
 cwrit2:
-    call 0f01eh
+    call settrk         ;Set track number
     push bc
     ld bc,0000h
 cwrit1:
-    call 0f021h
+    call setsec         ;Set sector number
     push bc
     ld bc,0080h
     ld de,0080h
     ldir
     push hl
-    call 0f02ah
+    call write          ;Write selected sector
     or a
     jr nz,cwrit3
     pop hl
@@ -5495,7 +5578,6 @@ cwrit1:
     jr nz,cwrit1
     pop bc
     inc c
-l2984h:
     ld a,c
     cp 02h
     jr nz,cwrit2
@@ -5509,7 +5591,7 @@ cwrit3:
 dtype:
 ;Get the drive type for a CP/M drive number.
     ld a,(hl)
-    call 0f051h
+    call tstdrv         ;Get drive type for a CP/M drive number
     ld (hl),c
     inc hl
     ld (hl),00h
@@ -5518,283 +5600,307 @@ dtype:
 idisk:
 ;Initialize an IEEE-488 disk drive.
     ld a,(hl)
-    jp 0f078h
+    jp idrive           ;Initialize an IEEE-488 disk drive
 
 dskerr:
-    ld a,(l2be6h)
+    ld a,(dos_err)
     ld (hl),a
     inc hl
     xor a
     ld (hl),a
-    ld a,(l2be6h)
+    ld a,(dos_err)
     or a
     ret z
-    ld de,l29cbh
-    ld c,09h
-    call 0005h
-    ld hl,0eac0h
+    ld de,disk_error    ;cr,lf,"Disk error : "
+    ld c,cwritestr      ;Output String
+    call bdos           ;BDOS entry point
+    ld hl,errbuf
 l29b4h:
     ld e,(hl)
     push hl
-    ld c,02h
-    call 0005h
+    ld c,cwrite         ;Console Output
+    call bdos           ;BDOS entry pointt
     pop hl
     inc hl
     ld a,(hl)
-    cp 0dh
+    cp cr
     jr nz,l29b4h
-    ld de,l29dbh
-    ld c,09h
-    call 0005h
+    ld de,cr_lf         ;cr,lf
+    ld c,cwritestr      ;Output String
+    call bdos           ;BDOS entry point
     ret
-l29cbh:
-    dec c
-    ld a,(bc)
-    db "Disk error : $"
-l29dbh:
-    db 0dh,0ah,"$"
+
+disk_error:
+    db cr,lf,"Disk error : $"
+
+cr_lf:
+    db cr,lf,"$"
 
 sub_29deh:
 ;Open "CP/M" file on an IEEE-488 drive
-    ld c,06h
-    ld hl,l2bd3h
-l29e3h:
-    ld a,(l2be5h)
+    ld c,l2bd3h_len
+    ld hl,l2bd3h        ;"0:CP/M"
+    ld a,(cpm_drive)
     rra
-    jp nc,0f05dh
-    ld hl,l2bd9h
-    jp 0f05dh
+    jp nc,open          ;Open a file on an IEEE-488 device
+    ld hl,l2bd9h        ;"1:CP/M"
+    jp open             ;Open a file on an IEEE-488 device
 
 sub_29f0h:
 ;Open "K" file on an IEEE-488 drive
-    ld c,03h
-    ld hl,l2bdfh
-    ld a,(l2be5h)
+    ld c,l2bdfh_len
+    ld hl,l2bdfh        ;"0:K"
+    ld a,(cpm_drive)
     rra
-    jp nc,0f05dh
-    ld hl,l2be2h
-l29ffh:
-    jp 0f05dh
+    jp nc,open          ;Open a file on an IEEE-488 device
+    ld hl,l2be2h        ;"1:K"
+    jp open             ;Open a file on an IEEE-488 device
 
 savesy:
 ;Read the CP/M system image from an IEEE-488 drive.
     ld a,(hl)
-    ld (l2be5h),a
-    call 0f054h
+    ld (cpm_drive),a
+    call dskdev         ;Get device address for a CP/M drive number
     push de
     ld e,0fh
-    ld hl,l2bcbh
-    ld a,(l2be5h)
+    ld hl,l2bcbh        ;"S0:*"
+    ld a,(cpm_drive)
     rra
-l2a13h:
     jr nc,l2a18h
-    ld hl,2bcfh
+    ld hl,l2bcfh        ;"S1:*"
 l2a18h:
-    ld c,04h
-    call 0f05dh
-    ld a,(l2be5h)
-    call 0f05ah
-    ld (l2be6h),a
+    ld c,l2bcbh_len
+    call open           ;Open a file on an IEEE-488 device
+    ld a,(cpm_drive)
+    call dsksta         ;Read the error channel of an IEEE-488 device
+    ld (dos_err),a
     pop de
 l2a27h:
     cp 01h
     ret nz
     ld e,01h
-l2a2ch:
     push de
     call sub_29f0h
-    ld a,(l2be5h)
-    call 0f05ah
-    ld (l2be6h),a
+    ld a,(cpm_drive)
+    call dsksta         ;Read the error channel of an IEEE-488 device
+    ld (dos_err),a
     pop de
     or a
     ret nz
     push de
-    call 0f033h
+    call listen         ;Send LISTEN to an IEEE-488 device
     ld hl,6000h
     ld bc,l0800h
 l2a46h:
     ld a,(hl)
-    call 0f042h
-l2a4ah:
+    call wrieee         ;Send byte to an IEEE-488 device
     inc hl
     dec bc
     ld a,b
     or c
     jr nz,l2a46h
-    call 0f036h
+    call unlisten       ;Send UNLISTEN to all IEEE-488 devices
     pop de
     push de
-    call 0f060h
+    call close          ;Close an open file on an IEEE-488 device
     pop de
     push de
     call sub_29deh
-    ld a,(l2be5h)
-    call 0f05ah
-    ld (l2be6h),a
+    ld a,(cpm_drive)
+    call dsksta         ;Read the error channel of an IEEE-488 device
+    ld (dos_err),a
     pop de
     or a
     ret nz
     push de
-    call 0f033h
+    call listen         ;Send LISTEN to an IEEE-488 device
     ld hl,4000h
     ld bc,1c00h
 l2a73h:
     ld a,(hl)
-    call 0f042h
+    call wrieee         ;Send byte to an IEEE-488 device
     inc hl
     dec bc
     ld a,b
     or c
     jr nz,l2a73h
-    call 0f036h
+    call unlisten       ;Send UNLISTEN to all IEEE-488 devices
     pop de
-    call 0f060h
-    ld a,(l2be5h)
-    call 0f05ah
-    ld (l2be6h),a
+    call close          ;Close an open file on an IEEE-488 device
+    ld a,(cpm_drive)
+    call dsksta         ;Read the error channel of an IEEE-488 device
+    ld (dos_err),a
     ret
+
+format:                 ;(TODO: Unused?)
+;Format an IEEE-488 drive for SoftBox use.
     ld a,(hl)
-    ld (l2be5h),a
-    call 0f054h
-    ld a,(l2be5h)
+    ld (cpm_drive),a
+    call dskdev         ;Get device address for a CP/M drive number
+    ld a,(cpm_drive)
     and 01h
-    add a,30h
-    ld (l2ba6h+1),a
-    ld e,0fh
-    ld c,14h
-    ld hl,2ba6h
-    call 0f05dh
-l2aa9h:
-    ld a,(l2be5h)
-    call 0f05ah
-    ld (l2be6h),a
+    add a,'0'
+    ld (l2ba6h+1),a     ;Store cbm drive number into command string
+    ld e,0fh            ;Secondary address is 15 (command channel)
+    ld c,l2ba6h_len
+    ld hl,l2ba6h        ;"N0:CP/M V2.2 DISK,XX"
+    call open           ;Open a file on an IEEE-488 device
+    ld a,(cpm_drive)
+    call dsksta         ;Read the error channel of an IEEE-488 device
+    ld (dos_err),a
     or a
-    ret nz
-    ld a,(l2be5h)
-    call 0f078h
-sub_2abah:
+    ret nz              ;If error occured, return
+    ld a,(cpm_drive)
+    call idrive         ;Initialize an IEEE-488 disk drive
     ld hl,4000h
-    ld de,4001h
+    ld de,4000h+1
     ld bc,00ffh
     ld (hl),0e5h
-    ldir
-    ld a,07h
-    ld (l2bcah),a
-    ld a,01h
-    ld (l2bc9h),a
+    ldir                ;Fill all 256 bytes (4000h to 40ffh) with 0e5h
+    ld a,7              ;Start with sector 7 (cbmdos format)
+    ld (cbmdos_sector),a
+    ld a,1              ;Write only in track 1 (cbmdos format)
+    ld (cbmdos_track),a
 l2ad1h:
+;Clear the CP/M directory by filling it with E5 ("unused").
     call sub_2ae7h
-    ld a,(l2be5h)
-    call 0f05ah
-    ld (l2be6h),a
+    ld a,(cpm_drive)
+    call dsksta         ;Read the error channel of an IEEE-488 device
+    ld (dos_err),a
     or a
-    ret nz
-    ld hl,l2bcah
-    dec (hl)
-    jp p,l2ad1h
+    ret nz              ;If error occured, return
+    ld hl,cbmdos_sector
+    dec (hl)            ;Decrement the current sector (cbmdos format)
+    jp p,l2ad1h         ;Loop until all sectors (15 .. 0) done
     ret
+
 sub_2ae7h:
-    ld hl,l2bc1h
-    ld c,06h
-    ld a,(l2be5h)
-    call 0f057h
-    call 0f04bh
+;Write a sector to an IEEE-488 drive.
+    ld hl,l2bc1h        ;"M-W",00h,13h,01h
+    ld c,l2bc1h_len
+    ld a,(cpm_drive)
+    call diskcmd        ;Open the command channel on IEEE-488 device
+    call ieeemsg        ;Send string to the current IEEE-488 device
     ld a,(4000h)
-    call 0f045h
-    call 0f036h
-    ld hl,l2bbah
-    ld c,07h
-    ld a,(l2be5h)
-    call 0f057h
-    call 0f04bh
-    call 0f048h
-    call 0f036h
-    ld a,(l2be5h)
-    call 0f054h
+    call wreoi          ;Send byte to IEEE-488 device with EOI asserted
+    call unlisten       ;Send UNLISTEN to all IEEE-488 devices
+    ld hl,l2bbah        ;"B-P 2 1"
+    ld c,l2bbah_len
+    ld a,(cpm_drive)
+    call diskcmd        ;Open the command channel on IEEE-488 device
+    call ieeemsg        ;Send string to the current IEEE-488 device
+    call creoi          ;Send carriage return to IEEE-488 dev with EOI
+    call unlisten       ;Send UNLISTEN to all IEEE-488 devices
+    ld a,(cpm_drive)
+    call dskdev         ;Get device address for a CP/M drive number
     ld e,02h
-    call 0f033h
-    ld hl,4001h
+    call listen         ;Send LISTEN to an IEEE-488 device
+    ld hl,4000h+1
     ld c,0ffh
-    call 0f04bh
-    call 0f036h
-    ld a,(l2be5h)
-    call 0f057h
-    ld hl,l2ba1h
-    ld c,05h
-    call 0f04bh
-    ld a,(l2be5h)
+    call ieeemsg        ;Send string to the current IEEE-488 device
+    call unlisten       ;Send UNLISTEN to all IEEE-488 devices
+    ld a,(cpm_drive)
+    call diskcmd        ;Open the command channel on IEEE-488 device
+    ld hl,l2ba1h        ;"U2 2 "
+    ld c,l2ba1h_len
+    call ieeemsg        ;Send string to the current IEEE-488 device
+    ld a,(cpm_drive)
     and 01h
-    add a,30h
-    call 0f042h
-    ld a,(l2bc9h)
-    call 0f04eh
-    ld a,(l2bcah)
-    call 0f04eh
-    call 0f048h
-    jp 0f036h
+    add a,'0'           ;Get cbm drive number
+    call wrieee         ;Send byte to an IEEE-488 device
+    ld a,(cbmdos_track) ;Get track number (cbmdos format)
+    call ieeenum        ;Send number as decimal string to IEEE-488 dev
+    ld a,(cbmdos_sector);Get sector number (cbmdos format)
+    call ieeenum        ;Send number as decimal string to IEEE-488 dev
+    call creoi          ;Send carriage return to IEEE-488 dev with EOI
+    jp unlisten         ;Send UNLISTEN to all IEEE-488 devices
+
+cform:                  ;(TODO: Unused?)
+;Format a hard drive for Softbox use.
     ld c,(hl)
-    call 0f01bh
+    call seldsk         ;Select disk drive
     ld hl,0080h
 l2b59h:
     ld (hl),0e5h
     inc l
-    jr nz,l2b59h
-    ld bc,0002h
-    call 0f01eh
-    ld bc,0000h
+    jr nz,l2b59h        ;Fill all 128 bytes (0080h to 00ffh) with 0e5h
+    ld bc,2             ;Write into cpm track number 2
+    call settrk         ;Set track number
+    ld bc,0             ;Start with cpm sector number 0
 l2b67h:
     push bc
-    call 0f021h
-    call 0f02ah
+    call setsec         ;Set sector number
+    call write          ;Write selected sector
     pop bc
     or a
-    jp nz,l2b7ah
-    inc bc
+    jp nz,l2b7ah        ;If error occured, skip
+    inc bc              ;Increment sector number (cpm)
     ld a,c
     cp 40h
-    jr nz,l2b67h
+    jr nz,l2b67h        ;Loop until all sectors (0 .. 63) done
+                        ;This includes track number 3 with 32 sectors, too
     ret
+
 l2b7ah:
-    ld de,l2b87h
-    ld c,09h
-    call 0005h
-    ld c,01h
-    jp 0005h
+;Display "Hit any key to abort" message, wait for a key, and then return.
+    ld de,l2b87h        ;cr,lf,"Hit any key to abort : $"
+    ld c,cwritestr      ;Output String
+    call bdos           ;BDOS entry point
+    ld c,cread          ;Console Input
+    jp bdos             ;BDOS entry point
 
 l2b87h:
-    db 0dh,0ah,"Hit any key to abort : $"
+    db cr,lf,"Hit any key to abort : $"
+
 l2ba1h:
     db "U2 2 "
+l2ba1h_len: equ $-l2ba1h
+
 l2ba6h:
     db "N0:CP/M V2.2 DISK,XX"
+l2ba6h_len: equ $-l2ba6h
+
 l2bbah:
     db "B-P 2 1"
+l2bbah_len: equ $-l2bbah
+
 l2bc1h:
     db "M-W",00h,13h,01h
+l2bc1h_len: equ $-l2bc1h
+
+l2bc7h:                 ;unused !!!
     db "#2"
 
-l2bc9h:
-    db 53h
-l2bcah:
-    db 3ah
+cbmdos_track:
+    db 53h              ;Track number for cbmdos format
+cbmdos_sector:
+    db 3ah              ;Sector number for cbmdos format
 
 l2bcbh:
     db "S0:*"
+l2bcbh_len: equ $-l2bcbh
+
+l2bcfh:
     db "S1:*"
+
 l2bd3h:
     db "0:CP/M"
+l2bd3h_len: equ $-l2bd3h
+
 l2bd9h:
     db "1:CP/M"
+
 l2bdfh:
     db "0:K"
+l2bdfh_len: equ $-l2bdfh
+
 l2be2h:
     db "1:K"
 
-l2be5h:
-    db 2dh
-l2be6h:
-    db 54h
+cpm_drive:
+    db 2dh              ;Current CP/M drive number
+dos_err:
+    db 54h              ;Last CBM DOS error code
 
 ; End of LOADSAVE.REL =======================================================
 
@@ -5815,9 +5921,9 @@ print_spc:
     ret
 
 print_eol:
-    ld a,0ah
+    ld a,lf
     call conout
-    ld a,0dh
+    ld a,cr
     call conout
     ret
 
@@ -5827,7 +5933,7 @@ hex:
 ;representation of the byte in HL and return a pointer to it in HL.
 ;Implements BASIC function: HEX$(x)
 ;
-    ld a,02h            ;A = 2 bytes in string
+    ld a,2              ;A = 2 bytes in string
     ld (tmp),a          ;Store length in temp string header
     ld a,l              ;A = L
     call xstrin_3       ;Convert high nibble in A to ASCII
@@ -5858,7 +5964,7 @@ chr:
 ;return a pointer to it in HL.
 ;Implements BASIC function: CHR$(x)
 ;
-    ld a,01h            ;A = 1 byte in string
+    ld a,1              ;A = 1 byte in string
     ld (tmp),a          ;Store length in temp string header
     ld a,l              ;A = L
     ld (tmp+3),a        ;Store A as the temp string data
@@ -6027,16 +6133,16 @@ pv0c:
 pv1c:
 ;N16: PV0C and PV1C
     call sub_2cd6h
-    ld a,20h
+    ld a,' '
     call conout
     ret
 
 pv2c:
 ;N16: PV2C
     call sub_2cd6h
-    ld a,0ah
+    ld a,lf
     call conout
-    ld a,0dh
+    ld a,cr
     call conout
     ret
 
@@ -6052,19 +6158,19 @@ sub_2cd6h:
     cpl
     ld h,a
     inc hl
-    ld a,2dh
+    ld a,'-'
     call conout
 l2ce9h:
-    ld c,30h
-    ld de,2710h
+    ld c,'0'
+    ld de,10000
     call sub_2d0bh
-    ld de,l03e8h
+    ld de,1000
     call sub_2d0bh
-    ld de,0064h
+    ld de,100
     call sub_2d0bh
-    ld de,000ah
+    ld de,10
     call sub_2d0bh
-    ld de,0001h
+    ld de,1
     call sub_2d0bh
     pop hl
     ret
@@ -6097,7 +6203,7 @@ end:
 ;XXXLIB: $END
 ;Jump to CP/M warm start
 ;Implements BASIC command: END
-    jp warm
+    jp warm             ;Warm start entry point
 
 ini:
 ;XXXLIB: INI
@@ -6123,9 +6229,9 @@ conout:
     push de
     push bc
     push af
-    ld c,02h
+    ld c,cwrite         ;Console Output
     ld e,a
-    call 0005h
+    call bdos           ;BDOS entry point
     pop af
     pop bc
     pop de
@@ -6141,8 +6247,8 @@ conin:
     push de
     push bc
     push hl
-    ld c,01h
-    call 0005h
+    ld c,cread          ;Console Input
+    call bdos           ;BDOS entry point
     pop hl
     ld (hl),a
     inc hl
@@ -6171,15 +6277,15 @@ char:
     cpl                 ;2d61 2f
     ld h,a              ;2d62 67
     inc hl              ;2d63 23
-    ld a,2dh            ;2d64 3e 2d
+    ld a,'-'            ;2d64 3e 2d
     call conout         ;2d66 cd 2f 2d
-    ld c,30h            ;2d69 0e 30
-    ld de,2710h         ;2d6b 11 10 27
+    ld c,'0'            ;2d69 0e 30
+    ld de,10000         ;2d6b 11 10 27
     call sub_2d0bh      ;2d6e cd 0b 2d
-    ld de,l03e8h        ;2d71 11 e8 03
+    ld de,1000          ;2d71 11 e8 03
     call sub_2d0bh      ;2d74 cd 0b 2d
-    ld de,0064h         ;2d77 11 64 00
+    ld de,100           ;2d77 11 64 00
     call sub_2d0bh      ;2d7a cd 0b 2d
-    ld de,000ah         ;2d7d 11 0a 00
+    ld de,10            ;2d7d 11 0a 00
 
 ; End of KLIB.REL ===========================================================
