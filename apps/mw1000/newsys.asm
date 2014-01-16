@@ -497,7 +497,7 @@ ask_drv_dev:
     ld a,(nn)
     ld (hl),a
 
-    ;IF PEEK(&H5670+D) <> 4 THEN GOTO drv_dev_done
+    ;IF PEEK(BIAS+&H4A70+D) <> 4 THEN GOTO drv_dev_done ' Check DRV(D)
     ld a,(dd)
     ld l,a
     rla
@@ -1151,7 +1151,7 @@ l060ah:
     ld bc,drv_colon
     call print_str
 
-    ;IF PEEK(&H5670+D) <> 0 THEN GOTO l0657h
+    ;IF PEEK(BIAS+&H4A70+D) <> 0 THEN GOTO l0657h ' Check DRV(D)
     ld a,(dd)
     ld l,a
     rla
@@ -1169,7 +1169,7 @@ l060ah:
     ld bc,drv_cbm3040
     call print_str
 
-    ;PRINT PEEK(&H5678+D);      ' Print device number
+    ;PRINT PEEK(BIAS+&H4A78+D);      ' Print device number DISKDEV(D)
     ld a,(dd)
     ld l,a
     rla
@@ -1189,7 +1189,7 @@ l060ah:
     jp l0857h
 
 l0657h:
-    ;IF PEEK(&H5670+D) <> 1 THEN GOTO l0685h
+    ;IF PEEK(BIAS+&H4A70+D) <> 1 THEN GOTO l0685h ' Check DRV(D)
     ld a,(dd)
     ld l,a
     rla
@@ -1207,7 +1207,7 @@ l0657h:
     ld bc,drv_cbm8050
     call print_str
 
-    ;PRINT PEEK(&H5678+D);      ' Print device number
+    ;PRINT PEEK(BIAS+&H4A78+D);      ' Print device number DISKDEV(D)
     ld a,(dd)
     ld l,a
     rla
@@ -1227,7 +1227,7 @@ l0657h:
     jp l0857h
 
 l0685h:
-    ;IF PEEK(&H5670+D) <> 6 THEN GOTO l06b3h
+    ;IF PEEK(BIAS+&H4A70+D) <> 6 THEN GOTO l06b3h ' Check DRV(D)
     ld a,(dd)
     ld l,a
     rla
@@ -1245,7 +1245,7 @@ l0685h:
     ld bc,drv_cbm8250
     call print_str
 
-    ;PRINT PEEK(&H5678+D);      ' Print device number
+    ;PRINT PEEK(BIAS+&H4A78+D);      ' Print device number DISKDEV(D)
     ld a,(dd)
     ld l,a
     rla
@@ -1265,7 +1265,7 @@ l0685h:
     jp l0857h
 
 l06b3h:
-    ;IF PEEK(&H5670+D) >= 0 THEN GOTO l06cch
+    ;IF PEEK(BIAS+&H4A70+D) >= 0 THEN GOTO l06cch ' Check DRV(D)
     ld a,(dd)
     ld l,a
     rla
@@ -1298,7 +1298,7 @@ l06cch:
     ld bc,drv_corvus
     call print_str
 
-    ;IF PEEK(&H5670+D) <> 2 THEN GOTO l06f0h
+    ;IF PEEK(BIAS+&H4A70+D) <> 2 THEN GOTO l06f0h ' Check DRV(D)
     ld a,(dd)
     ld l,a
     rla
@@ -1319,7 +1319,7 @@ l06cch:
     jp l0738h
 
 l06f0h:
-    ;IF PEEK(&H5670+D) <> 3 THEN GOTO l06f0h
+    ;IF PEEK(BIAS+&H4A70+D) <> 3 THEN GOTO l06f0h ' Check DRV(D)
     ld a,(dd)
     ld l,a
     rla
@@ -1340,7 +1340,7 @@ l06f0h:
     jp l0738h
 
 l0707h:
-    ;IF PEEK(&H5670+D) <> 4 THEN GOTO l06f0h
+    ;IF PEEK(BIAS+&H4A70+D) <> 4 THEN GOTO l06f0h ' Check DRV(D)
     ld a,(dd)
     ld l,a
     rla
@@ -1361,7 +1361,7 @@ l0707h:
     jp l0738h
 
 l071eh:
-    ;IF PEEK(&H5670+D) <> 5 THEN GOTO l06f0h
+    ;IF PEEK(BIAS+&H4A70+D) <> 5 THEN GOTO l06f0h ' Check DRV(D)
     ld a,(dd)
     ld l,a
     rla
@@ -1395,7 +1395,7 @@ l0738h:
     ld bc,device_num
     call print_str
 
-    ;PRINT PEEK(&H5678+D);      ' Print device number
+    ;PRINT PEEK(BIAS+&H4A78+D);      ' Print device number DISKDEV(D)
     ld a,(dd)
     ld l,a
     rla
@@ -1417,7 +1417,7 @@ l0738h:
 l075ah:
     ;REM The system is a Mini-Winchester (Konan David Jr) not Corvus
 
-    ;unit = 1 AND PEEK(&H5678+D)
+    ;unit = 1 AND PEEK(BIAS+&H4A78+D) ' Get DISKDEV(D)
     ld a,(dd)           ;075a 3a 16 30
     ld l,a              ;075d 6f
     rla                 ;075e 17
@@ -1488,7 +1488,7 @@ l0780h:
     ld bc,spaces_paren
     call print_str
 
-    ;PRINT DEEK(&H5648+unit*2);  ' Total cylinders
+    ;PRINT DEEK(BIAS+&H4A48+unit*2);  ' Total cylinders
     ld a,(unit)         ;07b5 3a 18 30
     ld l,a              ;07b8 6f
     rla                 ;07b9 17
@@ -1590,7 +1590,7 @@ l07f8h:
     ld bc,cyls_1_dash
     call print_str
 
-    ;PRINT DEEK(&H564C+unit*2); ' Last cylinder MW-1000 will use
+    ;PRINT DEEK(BIAS+&H4A4C+unit*2); ' Last cylinder MW-1000 will use
     ld a,(unit)         ;083c 3a 18 30
     ld l,a              ;083f 6f
     rla                 ;0840 17
@@ -2857,7 +2857,7 @@ ask_char_size:
     add hl,hl           ;12d1 29
     jp nc,l12ech        ;12d2 d2 ec 12
 
-    ;POKE BIAS+&H4A64, PEEK(&H5664) AND &HF3 OR (N SHL 2) ' Set U
+    ;POKE BIAS+&H4A64, PEEK(BIAS+&H4A64) AND &HF3 OR (N SHL 2) ' Set U
     ld a,(5664h)        ;12d5 3a 64 56
     and 0f3h            ;12d8 e6 f3
     ld b,02h            ;12da 06 02
@@ -3004,7 +3004,7 @@ ask_baud_rate:
 
     ;REM User selected 110 baud
 
-    ;POKE BIAS+&H4A65, &H22 ' Set BAUD
+    ;POKE BIAS+&H4A65, &H22 ' Set BAUD for 110
     ld hl,5665h
     ld (hl),22h
 
@@ -3022,7 +3022,7 @@ l138ch:
 
     ;REM User selected 300 baud
 
-    ;POKE BIAS+&H4A65, &H55 ' Set BAUD
+    ;POKE BIAS+&H4A65, &H55 ' Set BAUD for 300
     ld hl,5665h
     ld (hl),55h
 
@@ -3040,7 +3040,7 @@ l13a0h:
 
     ;REM User selected 1200 baud
 
-    ;POKE BIAS+&H4A65, &H77 ' Set BAUD
+    ;POKE BIAS+&H4A65, &H77 ' Set BAUD for 1200
     ld hl,5665h
     ld (hl),77h
 
@@ -3058,7 +3058,7 @@ l13b4h:
 
     ;REM User selected 4800 baud
 
-    ;POKE BIAS+&H4A65, &HCC ' Set BAUD
+    ;POKE BIAS+&H4A65, &HCC ' Set BAUD for 4800
     ld hl,5665h
     ld (hl),0cch
 
@@ -3076,7 +3076,7 @@ l13c8h:
 
     ;REM User selected 9600 baud
 
-    ;POKE BIAS+&H4A65, &HEE ' Set BAUD
+    ;POKE BIAS+&H4A65, &HEE ' Set BAUD for 9600
     ld hl,5665h
     ld (hl),0eeh
 
@@ -3094,7 +3094,7 @@ l13dch:
 
     ;REM User selected 19200 baud
 
-    ;POKE BIAS+&H4A65, &HFF ' Set BAUD
+    ;POKE BIAS+&H4A65, &HFF ' Set BAUD for 19200
     ld hl,5665h
     ld (hl),0ffh
 
@@ -3151,7 +3151,7 @@ l1417h:
     ld bc,rs232_2_stop
     call print_str
 
-    ;stoptmp = PEEK(&H5664) AND &HC0
+    ;stoptmp = PEEK(BIAS+&H4A64) AND &HC0 ' Get U
     ld a,(5664h)
     and 0c0h
     ld (stoptmp),a
@@ -3213,7 +3213,7 @@ l1460h:
     ld bc,rs232_3_par
     call print_str
 
-    ;IF (PEEK(&H5664) AND &H10) THEN GOTO l147ch
+    ;IF (PEEK(BIAS+&H4A64) AND &H10) THEN GOTO l147ch ' Check U
     ld a,(5664h)
     and 10h
     jp nz,l147ch
@@ -3227,7 +3227,7 @@ l1460h:
     jp l149fh
 
 l147ch:
-    ;IF (PEEK(&H5664) AND &H30) <> &H30 THEN GOTO l148ch
+    ;IF (PEEK(BIAS+&H4A64) AND &H30) <> &H30 THEN GOTO l148ch ' Check U
     ld a,(5664h)
     and 30h
     cp 30h
@@ -3242,7 +3242,7 @@ l147ch:
     jp l149fh
 
 l148ch:
-    ;IF (PEEK(&H5664) AND &30H) <> &H10 THEN GOTO l149ch
+    ;IF (PEEK(BIAS+&H4A64) AND &30H) <> &H10 THEN GOTO l149ch ' Check U
     ld a,(5664h)
     and 30h
     cp 10h
@@ -3275,7 +3275,7 @@ l149fh:
     ld bc,rs232_4_baud
     call print_str
 
-    ;IF PEEK(&H5665) <> &H22 THEN GOTO l14bbh
+    ;IF PEEK(BIAS+&H4A65) <> &H22 THEN GOTO l14bbh ' Check BAUD for 110
     ld a,(5665h)
     cp 22h
     jp nz,l14bbh
@@ -3289,7 +3289,7 @@ l149fh:
     jp l1504h
 
 l14bbh:
-    ;IF PEEK(&H5665) <> &H55 THEN GOTO l14c9h
+    ;IF PEEK(BIAS+&H4A65) <> &H55 THEN GOTO l14c9h ' Check BAUD for 300
     ld a,(5665h)
     cp 55h
     jp nz,l14c9h
@@ -3303,7 +3303,7 @@ l14bbh:
     jp l1504h
 
 l14c9h:
-    ;IF PEEK(&H5665) <> &H77 THEN GOTO l14d7h
+    ;IF PEEK(BIAS+&H4A65) <> &H77 THEN GOTO l14d7h ' Check BAUD for 1200
     ld a,(5665h)
     cp 77h
     jp nz,l14d7h
@@ -3317,7 +3317,7 @@ l14c9h:
     jp l1504h
 
 l14d7h:
-    ;IF PEEK(&H5665) <> &HCC THEN GOTO l14e5h
+    ;IF PEEK(BIAS+&H4A65) <> &HCC THEN GOTO l14e5h ' Check BAUD for 4800
     ld a,(5665h)
     cp 0cch
     jp nz,l14e5h
@@ -3331,7 +3331,7 @@ l14d7h:
     jp l1504h
 
 l14e5h:
-    ;IF PEEK(&H5665) <> &HEE THEN GOTO l14f3h
+    ;IF PEEK(BIAS+&H4A65) <> &HEE THEN GOTO l14f3h ' Check BAUD for 9600
     ld a,(5665h)
     cp 0eeh
     jp nz,l14f3h
@@ -3345,7 +3345,7 @@ l14e5h:
     jp l1504h
 
 l14f3h:
-    ;IF PEEK(&H5665) <> &HFF THEN GOTO l1501h
+    ;IF PEEK(BIAS+&H4A65) <> &HFF THEN GOTO l1501h ' Check BAUD for 19200
     ld a,(5665h)
     cp 0ffh
     jp nz,l1501h
@@ -3722,7 +3722,7 @@ l1689h:
 
     ;REM User selected 'D' for 8026/8027 (Daisywheel)
 
-    ;POKE BIAS+&H566D, 1 ' Set LPTYPE
+    ;POKE BIAS+&H4A6D, 1 ' Set LPTYPE
     ld hl,566dh
     ld (hl),1
 
@@ -3752,7 +3752,7 @@ io_menu:
     ld bc,io_lpt_device
     call print_str
 
-    ;PRINT PEEK(&H5661)
+    ;PRINT PEEK(BIAS+&H4A61) ' Get LPT
     ld a,(5661h)
     ld l,a
     rla
@@ -3769,7 +3769,7 @@ io_menu:
     ld bc,io_ul1_device
     call print_str
 
-    ;PRINT PEEK(&H5666)
+    ;PRINT PEEK(BIAS+&H4A66) ' Get UL1
     ld a,(5666h)
     ld l,a
     rla
@@ -3786,7 +3786,7 @@ io_menu:
     ld bc,io_rdr_device
     call print_str
 
-    ;PRINT PEEK(&H5662)
+    ;PRINT PEEK(BIAS+&H4A62) ' Get RDR
     ld a,(5662h)
     ld l,a
     rla
@@ -3803,7 +3803,7 @@ io_menu:
     ld bc,io_pun_device
     call print_str
 
-    ;PRINT PEEK(&H5663)
+    ;PRINT PEEK(BIAS+&H4A63) ' Get PUN
     ld a,(5663h)
     ld l,a
     rla
@@ -3820,7 +3820,7 @@ io_menu:
     ld bc,io_lst_device
     call print_str
 
-    ;IF (PEEK(&H5660) AND &HC0) <> 0 THEN GOTO l171ch
+    ;IF (PEEK(BIAS+&H4A60) AND &HC0) <> 0 THEN GOTO l171ch ' Check IOBYTE
     ld a,(5660h)
     and 0c0h
     jp nz,l171ch
@@ -3834,7 +3834,7 @@ io_menu:
     jp l173fh
 
 l171ch:
-    ;IF (PEEK(&H5660) AND &HC0) <> &H40 THEN GOTO l172ch
+    ;IF (PEEK(BIAS+&H4A60) AND &HC0) <> &H40 THEN GOTO l172ch ' Check IOBYTE
     ld a,(5660h)
     and 0c0h
     cp 40h
@@ -3849,7 +3849,7 @@ l171ch:
     jp l173fh
 
 l172ch:
-    ;IF (PEEK(&H5660) AND &HC0) <> &H80 THEN GOTO l173ch
+    ;IF (PEEK(BIAS+&H4A60) AND &HC0) <> &H80 THEN GOTO l173ch ' Check IOBYTE
     ld a,(5660h)
     and 0c0h
     cp 80h
@@ -3882,7 +3882,7 @@ l173fh:
     ld bc,io_default_rdr
     call print_str
 
-    ;IF (PEEK(&H5660) AND &H0C) <> 0 THEN GOTO l175bh
+    ;IF (PEEK(BIAS+&H4A60) AND &H0C) <> 0 THEN GOTO l175bh ' Check IOBYTE
     ld a,(5660h)
     and 0ch
     jp nz,l175bh
@@ -3914,7 +3914,7 @@ l175eh:
     ld bc,io_default_pun
     call print_str
 
-    ;IF (PEEK(&H5660) AND &H30) <> 0 THEN GOTO l177ah
+    ;IF (PEEK(BIAS+&H4A60) AND &H30) <> 0 THEN GOTO l177ah ' Check IOBYTE
     ld a,(5660h)
     and 30h
     jp nz,l177ah
@@ -3946,7 +3946,7 @@ l177dh:
     ld bc,io_pet_prntr
     call print_str
 
-    ;IF PEEK(&H566D) <> 0 THEN GOTO l1798h
+    ;IF PEEK(BIAS+&H4A6D) <> 0 THEN GOTO l1798h ' Check LPTYPE
     ld a,(566dh)
     or a
     jp nz,l1798h
@@ -3960,7 +3960,7 @@ l177dh:
     jp l17b7h
 
 l1798h:
-    ;IF PEEK(&H566D) <> 1 THEN GOTO l17a6h
+    ;IF PEEK(BIAS+&H4A6D) <> 1 THEN GOTO l17a6h ' Check LPTYPE
     ld a,(566dh)
     cp 01h
     jp nz,l17a6h
@@ -3974,7 +3974,7 @@ l1798h:
     jp l17b7h
 
 l17a6h:
-    ;IF (PEEK&H566D) <> 2 THEN GOTO l17b4h
+    ;IF PEEK(BIAS+&H4A6D) <> 2 THEN GOTO l17b4h ' Check LPTYPE
     ld a,(566dh)
     cp 02h
     jp nz,l17b4h
@@ -4770,7 +4770,7 @@ l1a7fh:
     ld bc,crt_in_upper
     call print_str
 
-    ;IF (PEEK(&H5667) AND &H80) = 0 THEN GOTO l1a9bh
+    ;IF (PEEK(BIAS+&H4A67) AND &H80) = 0 THEN GOTO l1a9bh ' Check TERMTYPE
     ld a,(5667h)
     and 80h
     jp z,l1a9bh
@@ -4802,7 +4802,7 @@ l1a9eh:
     ld bc,crt_term_emu
     call print_str
 
-    ;IF (PEEK(&H5667) AND &H7F) <> 0 THEN GOTO l1abah
+    ;IF (PEEK(BIAS+&H4A67) AND &H7F) <> 0 THEN GOTO l1abah ' Check TERMTYPE
     ld a,(5667h)
     and 7fh
     jp nz,l1abah
@@ -4816,7 +4816,7 @@ l1a9eh:
     jp l1af9h
 
 l1abah:
-    ;IF (PEEK(&H5667) AND &H7F) <> 2 THEN GOTO l1acah
+    ;IF (PEEK(BIAS+&H4A67) AND &H7F) <> 2 THEN GOTO l1acah ' Check TERMTYPE
     ld a,(5667h)
     and 7fh
     cp 02h
@@ -4831,7 +4831,7 @@ l1abah:
     jp l1af9h
 
 l1acah:
-    ;IF (PEEK(&H5667) AND &H7F) <> 1 THEN GOTO l1af6h
+    ;IF (PEEK(BIAS+&H4A67) AND &H7F) <> 1 THEN GOTO l1af6h ' Check TERMTYPE
     ld a,(5667h)
     and 7fh
     cp 01h
@@ -4839,7 +4839,7 @@ l1acah:
 
     ;REM CRT terminal emulation is HZ1500 (may be ESC or tilde lead-in)
 
-    ;IF PEEK(BIAS+&H4A68) <> &H1B THEN GOTO l1ae2h 'LEADIN
+    ;IF PEEK(BIAS+&H4A68) <> &H1B THEN GOTO l1ae2h ' Check LEADIN
     ld a,(5668h)
     cp 1bh
     jp nz,l1ae2h
@@ -4853,7 +4853,7 @@ l1acah:
     jp l1af3h
 
 l1ae2h:
-    ;IF PEEK(&H5668) <> &H7E THEN GOTO l1af0h
+    ;IF PEEK(BIAS+&H4A68) <> &H7E THEN GOTO l1af0h ' Check LEADIN
     ld a,(5668h)
     cp 7eh
     jp nz,l1af0h
