@@ -3675,7 +3675,6 @@ l1692h:
     ld a,h
     rla
     jp c,l16c5h
-l16c3h:
     add hl,de
     add hl,hl
 l16c5h:
@@ -5686,7 +5685,6 @@ l2a18h:
     call dsksta         ;Read the error channel of an IEEE-488 device
     ld (dos_err),a
     pop de
-l2a27h:
     cp 01h
     ret nz
     ld e,01h
