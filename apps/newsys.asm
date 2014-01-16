@@ -1,8 +1,14 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --labels --address newsys.com
 
+;This program was not written in assembly language.  It was written
+;in MBASIC and compiled with BASCOM.  This is a disassembly of
+;the compiled program.
+;
+
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
+dma_buf:       equ  0080h ;Default DMA buffer area (128 bytes) for disk I/O
 ccp_base:      equ 0d400h ;Start of CCP area
 errbuf:        equ 0eac0h ;Last error message returned from CBM DOS
 seldsk:        equ 0f01bh ;Select disk drive
@@ -5448,7 +5454,7 @@ buffin:
 ;return, 81h will contain the number of data bytes and the data
 ;will start at 82h.
     ld c,creadstr       ;Buffered Console Input
-    ld de,0080h
+    ld de,dma_buf
     jp bdos             ;BDOS entry point
 
 exsys:
@@ -5824,7 +5830,7 @@ cform:                  ;(TODO: Unused?)
 ;Format a hard drive for Softbox use.
     ld c,(hl)
     call seldsk         ;Select disk drive
-    ld hl,0080h
+    ld hl,dma_buf
 l2b59h:
     ld (hl),0e5h
     inc l
