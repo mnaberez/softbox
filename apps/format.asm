@@ -18,6 +18,7 @@
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
 dma_buf:       equ  0080h ;Default DMA buffer area (128 bytes) for disk I/O
+errbuf:        equ 0eac0h ;Last error message returned from CBM DOS
 seldsk:        equ 0f01bh ;Select disk drive
 settrk:        equ 0f01eh ;Set track number
 setsec:        equ 0f021h ;Set sector number
@@ -807,13 +808,16 @@ dskerr:
     inc hl
     xor a
     ld (hl),a
+
     ld a,(l083dh)
     or a
     ret z
-    ld de,l0622h
+
+    ld de,disk_error    ;cr,lf,"Disk error : $"
     ld c,cwritestr
     call bdos
-    ld hl,0eac0h
+
+    ld hl,errbuf
 l060bh:
     ld e,(hl)
     push hl
@@ -824,15 +828,17 @@ l060bh:
     ld a,(hl)
     cp cr
     jr nz,l060bh
-    ld de,l0632h
+
+    ld de,cr_lf         ;cr,lf
     ld c,cwritestr
     call bdos
+
     ret
-l0622h:
-    dec c
-    ld a,(bc)
-    db "Disk error : $"
-l0632h:
+
+disk_error:
+    db cr,lf,"Disk error : $"
+
+cr_lf:
     db cr,lf,"$"
 
 sub_0635h:
