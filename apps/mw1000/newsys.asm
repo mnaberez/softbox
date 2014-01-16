@@ -925,42 +925,42 @@ got_sbox_conf:
 
 l0505h:
     ;POKE &H5804, 7
-    ld hl,5804h         ;0505 21 04 58
-    ld (hl),07h         ;0508 36 07
+    ld hl,5804h
+    ld (hl),07h
 
 l050ah:
     ;DOKE &H5800, &H40
-    ld hl,0040h         ;050a 21 40 00
-    ld (5800h),hl       ;050d 22 00 58
+    ld hl,0040h
+    ld (5800h),hl
 
     ;POKE &H5802, &H06
-    ld hl,5802h         ;0510 21 02 58
-    ld (hl),06h         ;0513 36 06
+    ld hl,5802h
+    ld (hl),06h
 
     ;POKE &H5803, &H3F
-    inc hl              ;0515 23
-    ld (hl),3fh         ;0516 36 3f
+    inc hl
+    ld (hl),3fh
 
     ;DOKE &H5807, &H00FF
-    ld hl,00ffh         ;0518 21 ff 00
-    ld (5807h),hl       ;051b 22 07 58
+    ld hl,00ffh
+    ld (5807h),hl
 
     ;POKE &H5809, &H80
-    ld hl,5809h         ;051e 21 09 58
-    ld (hl),80h         ;0521 36 80
+    ld hl,5809h
+    ld (hl),80h
 
     ;POKE &H580A, &H00
-    inc hl              ;0523 23
-    ld (hl),00h         ;0524 36 00
+    inc hl
+    ld (hl),00h
 
     ;DOKE &H580B, 0
-    ld hl,0000h         ;0526 21 00 00
-    ld (580bh),hl       ;0529 22 0b 58
+    ld hl,0000h
+    ld (580bh),hl
 
     ;DOKE &H580D, 0
-    inc hl              ;052c 23
-    inc hl              ;052d 23
-    ld (580dh),hl       ;052e 22 0d 58
+    inc hl
+    inc hl
+    ld (580dh),hl
 
 ask_unit:
     ;PRINT "Physical unit # (0 or 1) ? ";
