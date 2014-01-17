@@ -199,7 +199,7 @@ l01eah:
     call end
 
 check_error:
-    ;IF (buf_addr AND &H40) <> 0 THEN GOTO got_error
+    ;IF (err_code AND &H40) <> 0 THEN GOTO got_error
     ld hl,(err_code)
     ld a,l
     and 40h
