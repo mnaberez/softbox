@@ -60,16 +60,19 @@ iobyte:
 
 drv:
 ;Array of 11 integers (from 0 to 10)
+    ;DIM DRV(10)
     dw  0000h,  0000h,  0000h,  0000h,  0000h,  0000h,  7700h,  782bh
     dw 0caa7h,  2910h,  2bd1h
 
 diskdev:
 ;Array of 11 integers (from 0 to 10)
+    ;DIM DISKDEV(10)
     dw  2b72h,  3d73h,  07c2h, 0c129h, 0fb11h,  19ffh,  77f1h,  003eh
     dw  7723h, 0a72bh, 0c3c0h
 
 autoload:
 ;Array of 121 integers (from 0 to 120)
+    ;DIM AUTOLOAD(120)
     dw  2761h, 0fe7eh,  3701h, 0d5c0h,  11e5h,  0005h,  5e19h,  5623h
     dw 0fe1ah, 0c2ebh,  2945h,  1a13h,  07feh,  45cah,  2129h,  0004h
     dw  7e19h, 0d1e1h, 0c9a7h, 0d1e1h, 0c937h,  71cdh, 0d62eh, 0a7e7h
@@ -89,6 +92,7 @@ autoload:
 
 scrtab:
 ;Array of 65 integers (from 0 to 64)
+    ;DIM SCRTAB(64)
     dw 0cd2ah,  4ea8h, 0eacdh, 0c34dh,  2a27h,  7ccdh,  214eh,  12bbh
     dw  2ecdh, 0cd4dh,  4d7dh, 0a7e1h,  48c2h, 0f12ah,  40f6h,  5df5h
     dw  1b54h, 0a37dh,  7c5fh, 0b3a2h,  48c2h,  062ah,  0510h, 0d229h
@@ -102,61 +106,76 @@ scrtab:
 bias:
     dw 2050h            ;Offset used to calculate start of buffer that
                         ;  stores the CP/M system data
-
 loader:
     dw 3e04h            ;Start address of the buffer that holds the
                         ;  "loader" (terminal program "K" for the PET)
-
 rr:
     dw 0c307h           ;First char of user input from any prompt,
                         ;  also used to store CP/M drive number
 dt:
     dw 2bceh            ;Drive type (from dtypes table)
+
 ee:
     dw 0e678h           ;Last error code from CBM DOS
 
 dirsize:
     dw 47bfh            ;CCP directory width: 0=1 col, 1=2 cols, 3=4 cols
+
 lpt:
     dw 20e6h            ;CBM printer (LPT:) IEEE-488 primary address
+
 rdr:
     dw 0a9cah           ;Paper Tape Reader (PTR:) IEEE-488 primary address
+
 pun:
     dw 3e2ah            ;Paper Tape Punch (PTP:) IEEE-488 primary address
+
 uu:
     dw 0c304h           ;Byte that is written to 8251 USART mode register
+
 baud:
     dw 2bceh            ;Byte that is written to COM8116 baud rate generator
+
 ul1:
     dw 0e678h           ;ASCII printer (UL1:) IEEE-488 primary address
+
 termtype:
     dw 0c804h           ;Terminal type: 0=ADM3A, 1=HZ1500, 2=TV912
                         ;  Bit 7 of low byte is set if uppercase mode
 leadin:
     dw 7e23h            ;Terminal command lead-in: 1bh=escape, 7eh=tilde
+
 order:
     dw 0fe2bh           ;X,Y order when sending move-to: 0=Y first, 1=X first
+
 rowoff:
     dw 0c004h           ;Offset added to Y when sending move-to sequence
+
 coloff:
     dw 053eh            ;Offset added to X when sending move-to sequence
+
 jj:
     dw 0cec3h           ;Loop index
+
 clock:
     dw 3e2bh            ;Frequency of PET system interrupt in Hz (50 or 60)
+
 lptype:
     dw 0158h            ;CBM printer (LPT:) type: 0=3022, 3023, 4022, 4023
                         ;                         1=8026, 8027 (daisywheel)
                         ;                         2=8024
 u1:
     dw 0007h            ;Temp variable used compare 8251 stop bits setting
+
 nn:
     dw 16cdh            ;Integer parsed from user input
+
 r1:
     dw 7327h            ;Temp variable that holds a copy of R
                         ;  (first char of user input)
 dd:
     dw 7223h            ;CP/M drive number of current drive
+
 l02deh:
     dw 0c32bh
 
@@ -225,7 +244,7 @@ l031dh:
     ld hl,empty_string
     call pv2d
 
-    ;IF MINI <> 1 THEN GOTO l0359h
+    ;IF MINI<>1 THEN GOTO l0359h
     ld hl,(mini)
     ld de,-1
     add hl,de
@@ -867,8 +886,8 @@ rs232_menu:
     ld a,h
     and 00h
     ld h,a              ;HL=HL and 000ch
-    call idva           ;HL=HL/4
-    dw 4
+    call idva
+    dw 4                ;HL=HL/4
     ld de,'5'
     add hl,de           ;HL=HL+35h
     call chr
@@ -2370,8 +2389,8 @@ l0f96h:
     ld de,0-'A'
     ld hl,(rr)
     add hl,de           ;HL=(rr)-41h
-    call idva           ;HL=HL/2
-    dw 2
+    call idva
+    dw 2                ;HL=HL/2
     ld (dd),hl          ;(dd)=HL
 
     ;PRINT
@@ -4749,8 +4768,8 @@ l1c93h:
 
     ;N = N * 10 + (PEEK(BUF+J) - &H30)
     ld hl,(nn)          ;HL=(rr)
-    call imug           ;HL=HL*10
-    dw 10
+    call imug
+    dw 10               ;HL=HL*10
     push hl             ;Save value
     ld hl,(buf)
     ex de,hl
@@ -4780,668 +4799,801 @@ l1ccah:
     call end
 
 esc_or_tilde:
-    db 23h
+    db esc_or_tilde_len
     dw esc_or_tilde+3
     db "Lead-in code E(scape) or T(ilde) ? "
+esc_or_tilde_len: equ $-esc_or_tilde-3
 
 screen_type:
-    db 25h
+    db screen_type_len
     dw screen_type+3
     db "Screen type (ADM3A, HZ1500, TV912) ? "
+screen_type_len: equ $-screen_type-3
 
 new_clock:
-    db 16h
+    db new_clock_len
     dw new_clock+3
     db "New clock frequency ? "
+new_clock_len: equ $-new_clock-3
 
 num_of_cols:
-    db 20h
+    db num_of_cols_len
     dw num_of_cols+3
     db "Number of columns (1, 2 or 4) ? "
+num_of_cols_len: equ $-num_of_cols-3
 
 alter_which_1_4:
-    db 14h
+    db alter_which_1_4_len
     dw alter_which_1_4+3
     db "Alter which (1-4) ? "
+alter_which_1_4_len: equ $-alter_which_1_4-3
 
 clock_freq:
-    db 1fh
+    db clock_freq_len
     dw clock_freq+3
     db "4.  Clock frequency (Hz) :     "
+clock_freq_len: equ $-clock_freq-3
 
 leadin_tilde:
-    db 18h
+    db leadin_tilde_len
     dw leadin_tilde+3
     db tab,tab,"     (Lead-in = TILDE)"
+leadin_tilde_len: equ $-leadin_tilde-3
 
 leadin_esc:
-    db 25h
+    db leadin_esc_len
     dw leadin_esc+3
     db "                   (Lead-in = ESCAPE)"
+leadin_esc_len: equ $-leadin_esc-3
 
 hz1500:
-    db 06h
+    db hz1500_len
     dw hz1500+3
     db "HZ1500"
+hz1500_len: equ $-hz1500-3
 
 tv912:
-    db 05h
+    db tv912_len
     dw tv912+3
     db "TV912"
+tv912_len: equ $-tv912-3
 
 adm3a:
-    db 05h
+    db adm3a_len
     dw adm3a+3
     db "ADM3A"
+adm3a_len: equ $-adm3a-3
 
 crt_term_emu:
-    db 1fh
+    db crt_term_emu_len
     dw crt_term_emu+3
     db "3.  CRT terminal emulation :   "
+crt_term_emu_len: equ $-crt_term_emu-3
 
 no:
-    db 02h
+    db no_len
     dw no+3
     db "no"
+no_len: equ $-no-3
 
 yes:
-    db 03h
+    db yes_len
     dw yes+3
     db "yes"
+yes_len: equ $-yes-3
 
 crt_in_upper:
-    db 1fh
+    db crt_in_upper_len
     dw crt_in_upper+3
     db "2.  CRT in upper case mode :   "
+crt_in_upper_len: equ $-crt_in_upper-3
 
 four:
-    db 01h
+    db four_len
     dw four+3
     db "4"
+four_len: equ $-four-3
 
 cols_in_dir:
-    db 1fh
+    db cols_in_dir_len
     dw cols_in_dir+3
     db "1.  Columns in DIR listing :   "
+cols_in_dir_len: equ $-cols_in_dir-3
 
 dashes:
-    db 1dh
+    db dashes_len
     dw dashes+3
     db "      --- -------- ----------"
+dashes_len: equ $-dashes-3
 
 pet_params:
-    db 1dh
+    db pet_params_len
     dw pet_params+3
     db "      Pet terminal parameters"
+pet_params_len: equ $-pet_params-3
 
 retry_yn:
-    db 0fh
+    db retry_yn_len
     dw retry_yn+3
     db "Re-try (Y/N) ? "
+retry_yn_len: equ $-retry_yn-3
 
 no_drive:
-    db 13h
+    db no_drive_len
     dw no_drive+3
     db "Drive not in system"
+no_drive_len: equ $-no_drive-3
 
 save_on_which:
-    db 1fh
+    db save_on_which_len
     dw save_on_which+3
     db "Save on which drive (A to P) ? "
+save_on_which_len: equ $-save_on_which-3
 
 new_command:
-    db 1fh
+    db new_command_len
     dw new_command+3
     db "Please enter the new command : "
+new_command_len: equ $-new_command-3
 
 new_aload_yn:
-    db 1dh
+    db new_aload_yn_len
     dw new_aload_yn+3
     db "New autoload command (Y/N) ? "
+new_aload_yn_len: equ $-new_aload_yn-3
 
 cur_aload_is:
-    db 1dh
+    db cur_aload_is_len
     dw cur_aload_is+3
     db "Current autoload command is :"
+cur_aload_is_len: equ $-cur_aload_is-3
 
 no_aload_cmd:
-    db 1bh
+    db no_aload_cmd_len
     dw no_aload_cmd+3
     db "No current autoload command"
+no_aload_cmd_len: equ $-no_aload_cmd-3
 
 mw_12mb_half:
-    db 0eh
+    db mw_12mb_half_len
     dw mw_12mb_half+3
     db "12Mbyte (half)"
+mw_12mb_half_len: equ $-mw_12mb_half-3
 
 mw_6mb_half:
-    db 0eh
+    db mw_6mb_half_len
     dw mw_6mb_half+3
     db "6 Mbyte (half)"
+mw_6mb_half_len: equ $-mw_6mb_half-3
 
 mw_3mb_half:
-    db 0eh
+    db mw_3mb_half_len
     dw mw_3mb_half+3
     db "3 Mbyte (half)"
+mw_3mb_half_len: equ $-mw_3mb_half-3
 
 mw_12mb:
-    db 0dh
+    db mw_12mb_len
     dw mw_12mb+3
     db "12 Mbyte     "
+mw_12mb_len: equ $-mw_12mb-3
 
 mw_6mb:
-    db 07h
+    db mw_6mb_len
     dw mw_6mb+3
     db "6 Mbyte"
+mw_6mb_len: equ $-mw_6mb-3
 
 mw_3mb:
-    db 0ch
+    db mw_3mb_len
     dw mw_3mb+3
     db "3 Mbyte     "
+mw_3mb_len: equ $-mw_3mb-3
 
 winchester:
-    db 0eh
+    db winchester_len
     dw winchester+3
     db "Winchester    "
+winchester_len: equ $-winchester-3
 
 device_num:
-    db 0bh
+    db device_num_len
     dw device_num+3
     db "   Device #"
+device_num_len: equ $-device_num-3
 
 cor_5mb_star:
-    db 0bh
+    db cor_5mb_star_len
     dw cor_5mb_star+3
     db "Corvus 5Mb*"
+cor_5mb_star_len: equ $-cor_5mb_star-3
 
 cor_5mb:
-    db 0bh
+    db cor_5mb_len
     dw cor_5mb+3
     db "Corvus 5Mb "
+cor_5mb_len: equ $-cor_5mb-3
 
 cor_20mb:
-    db 0bh
+    db cor_20mb_len
     dw cor_20mb+3
     db "Corvus 20Mb"
+cor_20mb_len: equ $-cor_20mb-3
 
 cor_10mb:
-    db 0bh
+    db cor_10mb_len
     dw cor_10mb+3
     db "Corvus 10Mb"
+cor_10mb_len: equ $-cor_10mb-3
 
 not_used:
-    db 08h
+    db not_used_len
     dw not_used+3
     db "not used"
+not_used_len: equ $-not_used-3
 
 cbm_8050:
-    db 0bh
+    db cbm_8050_len
     dw cbm_8050+3
     db "8050       "
+cbm_8050_len: equ $-cbm_8050-3
 
 cbm_3040:
-    db 0bh
+    db cbm_3040_len
     dw cbm_3040+3
     db "3040/4040  "
+cbm_3040_len: equ $-cbm_3040-3
 
 use_first_half:
-    db 1ch
+    db use_first_half_len
     dw use_first_half+3
     db "use the FIRST HALF (E/H)  ? "
+use_first_half_len: equ $-use_first_half-3
 
 use_entire_drv:
-    db 27h
+    db use_entire_drv_len
     dw use_entire_drv+3
     db "Use the ENTIRE drive for CP/M,  or just"
+use_entire_drv_len: equ $-use_entire_drv-3
 
 drv_3_6_12:
-    db 19h
+    db drv_3_6_12_len
     dw drv_3_6_12+3
     db "3, 6 or 12 Mbyte drive ? "
+drv_3_6_12_len: equ $-drv_3_6_12-3
 
 config_as_1_or_2:
-    db 22h
+    db config_as_1_or_2_len
     dw config_as_1_or_2+3
     db "Configure as 1 or 2 CP/M drives ? "
+config_as_1_or_2_len: equ $-config_as_1_or_2-3
 
 dev_num_for_drv:
-    db 1ah
+    db dev_num_for_drv_len
     dw dev_num_for_drv+3
     db "Device number for drive ? "
+dev_num_for_drv_len: equ $-dev_num_for_drv-3
 
 drv_5_10_20:
-    db 1ah
+    db drv_5_10_20_len
     dw drv_5_10_20+3
     db "5, 10 or 20 Mbyte drive ? "
+drv_5_10_20_len: equ $-drv_5_10_20-3
 
 cbm_hard_unused:
-    db 25h
+    db cbm_hard_unused_len
     dw cbm_hard_unused+3
     db "3(040), 8(050), h(ard) or u(nused) ? "
+cbm_hard_unused_len: equ $-cbm_hard_unused-3
 
 alter_which_pair:
-    db 22h
+    db alter_which_pair_len
     dw alter_which_pair+3
     db "Alter which drive pair (A to O) ? "
+alter_which_pair_len: equ $-alter_which_pair-3
 
 drives_o_p:
-    db 0bh
+    db drives_o_p_len
     dw drives_o_p+3
     db "O, P :     "
+drives_o_p_len: equ $-drives_o_p-3
 
 drives_m_n:
-    db 0bh
+    db drives_m_n_len
     dw drives_m_n+3
     db "M, N :     "
+drives_m_n_len: equ $-drives_m_n-3
 
 drives_k_l:
-    db 0bh
+    db drives_k_l_len
     dw drives_k_l+3
     db "K, L :     "
+drives_k_l_len: equ $-drives_k_l-3
 
 drives_i_j:
-    db 0bh
+    db drives_i_j_len
     dw drives_i_j+3
     db "I, J :     "
+drives_i_j_len: equ $-drives_i_j-3
 
 drives_g_h:
-    db 0bh
+    db drives_g_h_len
     dw drives_g_h+3
     db "G, H :     "
+drives_g_h_len: equ $-drives_g_h-3
 
 drives_e_f:
-    db 0bh
+    db drives_e_f_len
     dw drives_e_f+3
     db "E, F :     "
+drives_e_f_len: equ $-drives_e_f-3
 
 drives_c_d:
-    db 0bh
+    db drives_c_d_len
     dw drives_c_d+3
     db "C, D :     "
+drives_c_d_len: equ $-drives_c_d-3
 
 drives_a_b:
-    db 0bh
+    db drives_a_b_len
     dw drives_a_b+3
     db "A, B :     "
+drives_a_b_len: equ $-drives_a_b-3
 
 dashes_2:
-    db 21h
+    db dashes_2_len
     dw dashes_2+3
     db "            ---- ----- ----------"
+dashes_2_len: equ $-dashes_2-3
 
 drv_assgnmt:
-    db 21h
+    db drv_assgnmt_len
     dw drv_assgnmt+3
     db "            Disk drive assignment"
+drv_assgnmt_len: equ $-drv_assgnmt-3
 
 which_printer:
-    db 24h
+    db which_printer_len
     dw which_printer+3
     db "Which type of printer (3, 8 or D) ? "
+which_printer_len: equ $-which_printer-3
 
 daisywheel:
-    db 1dh
+    db daisywheel_len
     dw daisywheel+3
     db "D = 8026 or 8027 (daisywheel)"
+daisywheel_len: equ $-daisywheel-3
 
 cbm8024:
-    db 08h
+    db cbm8024_len
     dw cbm8024+3
     db "8 = 8024"
+cbm8024_len: equ $-cbm8024-3
 
 cbm3022:
-    db 1ch
+    db cbm3022_len
     dw cbm3022+3
     db "3 = 3022, 3023, 4022 or 4023"
+cbm3022_len: equ $-cbm3022-3
 
 tty_or_ptp:
-    db 13h
+    db tty_or_ptp_len
     dw tty_or_ptp+3
     db "T(TY:) or P(TP:) ? "
+tty_or_ptp_len: equ $-tty_or_ptp-3
 
 tty_or_ptr:
-    db 13h
+    db tty_or_ptr_len
     dw tty_or_ptr+3
     db "T(TY:) or P(TR:) ? "
+tty_or_ptr_len: equ $-tty_or_ptr-3
 
 which_list_dev:
-    db 23h
+    db which_list_dev_len
     dw which_list_dev+3
     db "Which list device (T, C, L or U) ? "
+which_list_dev_len: equ $-which_list_dev-3
 
 ul1_ascii:
-    db 1dh
+    db ul1_ascii_len
     dw ul1_ascii+3
     db "U(L1:) --  ASCII IEEE printer"
+ul1_ascii_len: equ $-ul1_ascii-3
 
 lpt_pet:
-    db 1bh
+    db lpt_pet_len
     dw lpt_pet+3
     db "L(PT:) --  PET IEEE printer"
+lpt_pet_len: equ $-lpt_pet-3
 
 crt_pet_scrn:
-    db 15h
+    db crt_pet_scrn_len
     dw crt_pet_scrn+3
     db "C(RT:) --  PET screen"
+crt_pet_scrn_len: equ $-crt_pet_scrn-3
 
 tty_rs232:
-    db 18h
+    db tty_rs232_len
     dw tty_rs232+3
     db "T(TY:) --  RS232 printer"
+tty_rs232_len: equ $-tty_rs232-3
 
 new_dev_num:
-    db 0fh
+    db new_dev_num_len
     dw new_dev_num+3
     db "New device # ? "
+new_dev_num_len: equ $-new_dev_num-3
 
 alter_which_1_8:
-    db 14h
+    db alter_which_1_8_len
     dw alter_which_1_8+3
     db "Alter which (1-8) ? "
+alter_which_1_8_len: equ $-alter_which_1_8-3
 
 cbm8024_2:
-    db 04h
+    db cbm8024_2_len
     dw cbm8024_2+3
     db "8024"
+cbm8024_2_len: equ $-cbm8024_2-3
 
 daisywheel_2:
-    db 09h
+    db daisywheel_2_len
     dw daisywheel_2+3
     db "8026/8027"
+daisywheel_2_len: equ $-daisywheel_2-3
 
 cbm_3022_2:
-    db 09h
+    db cbm_3022_2_len
     dw cbm_3022_2+3
     db "3022/4022"
+cbm_3022_2_len: equ $-cbm_3022_2-3
 
 pet_prtr_type:
-    db 1eh
+    db pet_prtr_type_len
     dw pet_prtr_type+3
     db "8.  PET printer type :        "
+pet_prtr_type_len: equ $-pet_prtr_type-3
 
 ptp:
-    db 04h
+    db ptp_len
     dw ptp+3
     db "PTP:"
+ptp_len: equ $-ptp-3
 
 default_pun:
-    db 1eh
+    db default_pun_len
     dw default_pun+3
     db "7.  Default PUN: device :     "
+default_pun_len: equ $-default_pun-3
 
 ptr:
-    db 04h
+    db ptr_len
     dw ptr+3
     db "PTR:"
+ptr_len: equ $-ptr-3
 
 default_rdr:
-    db 1eh
+    db default_rdr_len
     dw default_rdr+3
     db "6.  Default RDR: device :     "
+default_rdr_len: equ $-default_rdr-3
 
 ul1_colon:
-    db 04h
+    db ul1_colon_len
     dw ul1_colon+3
     db "UL1:"
+ul1_colon_len: equ $-ul1_colon-3
 
 lpt_colon:
-    db 04h
+    db lpt_colon_len
     dw lpt_colon+3
     db "LPT:"
+lpt_colon_len: equ $-lpt_colon-3
 
 crt:
-    db 04h
+    db crt_len
     dw crt+3
     db "CRT:"
+crt_len: equ $-crt-3
 
 tty:
-    db 04h
+    db tty_len
     dw tty+3
     db "TTY:"
+tty_len: equ $-tty-3
 
 io_lst_device:
-    db 1eh
+    db io_lst_device_len
     dw io_lst_device+3
     db "5.  Default LST: device :     "
+io_lst_device_len: equ $-io_lst_device-3
 
 io_pun_device:
-    db 1eh
+    db io_pun_device_len
     dw io_pun_device+3
     db "4.  Punch device # :          "
+io_pun_device_len: equ $-io_pun_device-3
 
 io_rdr_device:
-    db 1eh
+    db io_rdr_device_len
     dw io_rdr_device+3
     db "3.  Reader device # :         "
+io_rdr_device_len: equ $-io_rdr_device-3
 
 io_ul1_device:
-    db 1eh
+    db io_ul1_device_len
     dw io_ul1_device+3
     db "2.  ASCII printer device # :  "
+io_ul1_device_len: equ $-io_ul1_device-3
 
 io_lpt_device:
-    db 1eh
+    db io_lpt_device_len
     dw io_lpt_device+3
     db "1.  Pet printer device # :    "
+io_lpt_device_len: equ $-io_lpt_device-3
 
 dashes_6:
-    db 22h
+    db dashes_6_len
     dw dashes_6+3
     db "             --- ------ ----------"
+dashes_6_len: equ $-dashes_6-3
 
 io_dev_asgn:
-    db 22h
+    db io_dev_asgn_len
     dw io_dev_asgn+3
     db "             I/O device assignment"
+io_dev_asgn_len: equ $-io_dev_asgn-3
 
 ask_19200:
-    db 0dh
+    db ask_19200_len
     dw ask_19200+3
     db "19200 baud ? "
+ask_19200_len: equ $-ask_19200-3
 
 ask_bauds:
-    db 1dh
+    db ask_bauds_len
     dw ask_bauds+3
     db "110, 300, 1200, 4800, 9600 or"
+ask_bauds_len: equ $-ask_bauds-3
 
 odd_even_none:
-    db 1fh
+    db odd_even_none_len
     dw odd_even_none+3
     db "O(dd), E(ven) or N(o parity) ? "
+odd_even_none_len: equ $-odd_even_none-3
 
 num_stop_bits:
-    db 20h
+    db num_stop_bits_len
     dw num_stop_bits+3
     db "Number of stop bits (1 or 2)  ? "
+num_stop_bits_len: equ $-num_stop_bits-3
 
 new_char_len:
-    db 20h
+    db new_char_len_len
     dw new_char_len+3
     db "New character length (5 to 8) ? "
+new_char_len_len: equ $-new_char_len-3
 
 alter_chr_1_4:
-    db 23h
+    db alter_chr_1_4_len
     dw alter_chr_1_4  +3
     db "Alter which characteristic (1-4) ? "
+alter_chr_1_4_len: equ $-alter_chr_1_4-3
 
 baud_4800:
-    db 04h
+    db baud_4800_len
     dw baud_4800+3
     db "4800"
+baud_4800_len: equ $-baud_4800-3
 
 baud_19200:
-    db 05h
+    db baud_19200_len
     dw baud_19200+3
     db "19200"
+baud_19200_len: equ $-baud_19200-3
 
 baud_9600:
-    db 04h
+    db baud_9600_len
     dw baud_9600+3
     db "9600"
+baud_9600_len: equ $-baud_9600-3
 
 baud_1200:
-    db 04h
+    db baud_1200_len
     dw baud_1200+3
     db "1200"
+baud_1200_len: equ $-baud_1200-3
 
 baud_300:
-    db 03h
+    db baud_300_len
     dw baud_300+3
     db "300"
+baud_300_len: equ $-baud_300-3
 
 baud_110:
-    db 03h
+    db baud_110_len
     dw baud_110+3
     db "110"
+baud_110_len: equ $-baud_110-3
 
 rs232_4_baud:
-    db 1fh
+    db rs232_4_baud_len
     dw rs232_4_baud+3
     db " 4.  Baud rate :               "
+rs232_4_baud_len: equ $-rs232_4_baud-3
 
 odd:
-    db 03h
+    db odd_len
     dw odd+3
     db "odd"
+odd_len: equ $-odd-3
 
 even:
-    db 04h
+    db even_len
     dw even+3
     db "even"
+even_len: equ $-even-3
 
 none:
-    db 04h
+    db none_len
     dw none+3
     db "none"
+none_len: equ $-none-3
 
 rs232_3_par:
-    db 1fh
+    db rs232_3_par_len
     dw rs232_3_par+3
     db " 3.  Parity :                  "
+rs232_3_par_len: equ $-rs232_3_par-3
 
 two:
-    db 01h
+    db two_len
     dw two+3
     db "2"
+two_len: equ $-two-3
 
 one_dot_five:
-    db 03h
+    db one_dot_five_len
     dw one_dot_five+3
     db "1.5"
+one_dot_five_len: equ $-one_dot_five-3
 
 one:
-    db 01h
+    db one_len
     dw one+3
     db "1"
+one_len: equ $-one-3
 
 undefined:
-    db 09h
+    db undefined_len
     dw undefined+3
     db "undefined"
+undefined_len: equ $-undefined-3
 
 rs232_2_stop:
-    db 1fh
+    db rs232_2_stop_len
     dw rs232_2_stop+3
     db " 2.  Number of stop bits :     "
+rs232_2_stop_len: equ $-rs232_2_stop-3
 
 rs232_1_chr:
-    db 1fh
+    db rs232_1_chr_len
     dw rs232_1_chr+3
     db " 1.  Character size :          "
+rs232_1_chr_len: equ $-rs232_1_chr-3
 
 dashes_5:
-    db 20h
+    db dashes_5_len
     dw dashes_5+3
     db "           ----- ---------------"
+dashes_5_len: equ $-dashes_5-3
 
 rs232_chrs:
-    db 20h
+    db rs232_chrs_len
     dw rs232_chrs+3
     db "           RS232 Characteristics"
+rs232_chrs_len: equ $-rs232_chrs-3
 
 pls_letter:
-    db 26h
+    db pls_letter_len
     dw pls_letter+3
     db "Please enter the appropriate letter : "
+pls_letter_len: equ $-pls_letter-3
 
 q_quit:
-    db 15h
+    db q_quit_len
     dw q_quit+3
     db "Q - Quit this program"
+q_quit_len: equ $-q_quit-3
 
 e_execute:
-    db 16h
+    db e_execute_len
     dw e_execute+3
     db "E - Execute new system"
+e_execute_len: equ $-e_execute-3
 
 s_save:
-    db 13h
+    db s_save_len
     dw s_save+3
     db "S - Save new system"
+s_save_len: equ $-s_save-3
 
 r_rs232:
-    db 19h
+    db r_rs232_len
     dw r_rs232+3
     db "R - RS232 characteristics"
+r_rs232_len: equ $-r_rs232-3
 
 p_pet_term:
-    db 1bh
+    db p_pet_term_len
     dw p_pet_term+3
     db "P - PET terminal parameters"
+p_pet_term_len: equ $-p_pet_term-3
 
 i_io_asgn:
-    db 12h
+    db i_io_asgn_len
     dw i_io_asgn+3
     db "I - I/O assignment"
+i_io_asgn_len: equ $-i_io_asgn-3
 
 d_drv_asgn:
-    db 19h
+    db d_drv_asgn_len
     dw d_drv_asgn+3
     db "D - Disk drive assignment"
+d_drv_asgn_len: equ $-d_drv_asgn-3
 
 a_autoload:
-    db 14h
+    db a_autoload_len
     dw a_autoload+3
     db "A - Autoload command"
+a_autoload_len: equ $-a_autoload-3
 
 dashes_4:
-    db 16h
+    db dashes_4_len
     dw dashes_4+3
     db "----  ----------------"
+dashes_4_len: equ $-dashes_4-3
 
 cpm_reconfig_2:
-    db 16h
+    db cpm_reconfig_2_len
     dw cpm_reconfig_2+3
     db "CP/M  Re-configuration"
+cpm_reconfig_2_len: equ $-cpm_reconfig_2-3
 
 source_drv_a_p:
-    db 18h
+    db source_drv_a_p_len
     dw source_drv_a_p+3
     db "Source drive (A to P) ? "
+source_drv_a_p_len: equ $-source_drv_a_p-3
 
 rev_3_feb_1982:
-    db 22h
+    db rev_3_feb_1982_len
     dw rev_3_feb_1982+3
     db "Revision 3   --   19 February 1982"
+rev_3_feb_1982_len: equ $-rev_3_feb_1982-3
 
 mw_version:
-    db 17h
+    db mw_version_len
     dw mw_version+3
     db "Mini-winchester version"
+mw_version_len: equ $-mw_version-3
 
 dashes_3:
-    db 15h
+    db dashes_3_len
     dw dashes_3+3
     db "----  ---------------"
+dashes_3_len: equ $-dashes_3-3
 
 cpm_reconfig:
-    db 15h
+    db cpm_reconfig_len
     dw cpm_reconfig+3
     db "CP/M  Reconfiguration"
+cpm_reconfig_len: equ $-cpm_reconfig-3
 
 empty_string:
-    db 00h
+    db empty_string_len
     dw empty_string+3
+empty_string_len: equ $-empty_string-3
 
     db 0cdh,24h,2dh,01h,00h,00h
 
