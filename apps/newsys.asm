@@ -2452,7 +2452,7 @@ l0fe7h:
     jp l109fh
 
 l1004h:
-    ;IF R<>&H54 THEN GOTO l1021h
+    ;IF R<>&H55 THEN GOTO l1021h
     ld hl,(rr)
     ld de,0-'U'         ;u(nused)
     add hl,de
@@ -2474,7 +2474,7 @@ l1004h:
     jp drive_menu
 
 l1021h:
-    ;IF R<>&H47 THEN GOTO drive_menu  ' h(ard)
+    ;IF R<>&H48 THEN GOTO drive_menu  ' h(ard)
     ld hl,(rr)
     ld de,0-'H'         ;(h)ard
     add hl,de
