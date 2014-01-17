@@ -506,23 +506,22 @@ l0376h:
     or l                ;037b b5
     jp z,l03a6h         ;037c ca a6 03
 
-    ;N=N*10+(PEEK(BUF+J)-&H30)
-    ld hl,(nn)          ;037f 2a 18 01
-    call imug           ;0382 cd 4d 06
-    ld a,(bc)           ;0385 0a
-    nop                 ;0386 00
-    push hl             ;0387 e5
-    ld hl,(buf)         ;0388 2a 16 01
-    ex de,hl            ;038b eb
-    ld hl,(jj)          ;038c 2a 1a 01
-    add hl,de           ;038f 19
-    ld l,(hl)           ;0390 6e
-    ld h,00h            ;0391 26 00
-    pop de              ;0393 d1
-    add hl,de           ;0394 19
-    ld de,0-'0'         ;0395 11 d0 ff
-    add hl,de           ;0398 19
-    ld (nn),hl          ;0399 22 18 01
+    ;N = N * 10 + (PEEK(BUF+J) - &H30)
+    ld hl,(nn)          ;HL=(nn)
+    call imug
+    dw 10               ;HL=HL*10
+    push hl             ;Save value
+    ld hl,(buf)
+    ex de,hl
+    ld hl,(jj)
+    add hl,de           ;HL=(buf)+(jj)
+    ld l,(hl)
+    ld h,00h            ;HL=PEEK(HL)
+    pop de              ;Restore value
+    add hl,de
+    ld de,0-'0'
+    add hl,de           ;HL=HL+DE-30h
+    ld (nn),hl          ;(nn)=HL
 
     ;J = J + 1
     ld hl,(jj)          ;039c 2a 1a 01
