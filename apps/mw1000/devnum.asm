@@ -436,7 +436,7 @@ l0331h:
     ld (jj),hl
 
 l033dh:
-    ;WHILE(PEEK(BUF+J)>=&H30) AND (PEEK(BUF+J)<&H39) AND (J-2 < PEEK(BUF+1))
+    ;WHILE(PEEK(BUF+J)>=&H30) AND (PEEK(BUF+J)<=&H39) AND (J-2 < PEEK(BUF+1))
     ld hl,(buf)
     ex de,hl
     ld hl,(jj)

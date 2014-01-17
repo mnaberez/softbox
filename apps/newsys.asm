@@ -2821,24 +2821,24 @@ l11b7h:
     jp l1285h
 
 l11d9h:
-    ;IF DRV(D)<129 THEN GOTO l11fdh
+    ;IF NOT(DRV(D)>128) THEN GOTO l11fdh
     ld hl,(dd)
     add hl,hl
     ld de,drv
-    add hl,de
+    add hl,de           ;HL=(dd)*2+drv
     ld e,(hl)
     inc hl
-    ld d,(hl)
-    push de
-    pop hl
-    ld de,0-129
+    ld d,(hl)           ;DE=(HL)
+    push de             ;Save value
+    pop hl              ;Restore value
+    ld de,0-(128+1)     ;DE=-129
     ld a,h
     rla
     jp c,l11f0h
     add hl,de
     add hl,hl
 l11f0h:
-    jp c,l11fdh
+    jp c,l11fdh         ;IF HL<DE THEN GOTO l11fdh
 
     ;PRINT "not used"
     call pr0a
