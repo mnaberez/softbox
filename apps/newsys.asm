@@ -49,6 +49,7 @@ cls:           equ 1ah    ;Clear Screen
 
     jp start
 
+unused_1:
     db 0,0,0,0,0,0,0
 
 ; Start of BASIC variables ==================================================
@@ -182,8 +183,6 @@ l02deh:
 buf:
     dw 275dh            ;Address of buffer used in readline
 
-; End of BASIC variables ====================================================
-
     dw  57d5h
     dw  8287h
     dw 0db21h
@@ -194,10 +193,13 @@ l02eah:
 
     dw  235eh
 
+; End of BASIC variables ====================================================
+
 start:
     ld hl,main
-    jp ini
+    jp ini              ;Perform JP (main)
 
+unused_2:
     db  9fh, 28h,0f0h, 14h,0a1h, 28h, 03h, 01h
     db 0e2h, 02h, 00h, 00h,0eeh, 02h
 
@@ -383,7 +385,7 @@ l03fbh:
     ld l,a              ;HL=HL and DE
     ld a,h
     or l
-    jp z,l0413h         ;IF HL = 0 THEN GOTO l0413h
+    jp z,l0413h         ;IF HL=0 THEN GOTO l0413h
 
     ;CALL CREAD(R)
     ld hl,rr
@@ -1227,7 +1229,7 @@ l0903h:
     ld l,a              ;HL=HL and DE
     ld a,h
     or l
-    jp z,l092dh         ;IF HL = 0 THEN GOTO l092dh
+    jp z,l092dh         ;IF HL=0 THEN GOTO l092dh
 
     ;U=(U AND &HF3) OR (R*4)
     ld hl,(uu)          ;HL=(uu)
@@ -3673,7 +3675,7 @@ l1692h:
     ld l,a              ;HL=HL or DE
     ld a,h
     or l
-    jp nz,main_menu     ;IF HL <> 0 THEN GOTO main_menu
+    jp nz,main_menu     ;IF HL<>0 THEN GOTO main_menu
 
     ;D = R - &H41
     ld de,0-'A'
@@ -3746,7 +3748,7 @@ l16f6h:
     ld l,a              ;HL=HL and DE
     ld a,h
     or l
-    jp z,l170eh         ;IF HL = 0 THEN GOTO l170eh
+    jp z,l170eh         ;IF HL=0 THEN GOTO l170eh
 
     ;CALL CWRITE (D)
     ld hl,dd
@@ -4673,7 +4675,7 @@ l1c1eh:
     ld l,a              ;HL=HL and DE
     ld a,h
     or l
-    jp z,l1c37h         ;IF HL = 0 THEN GOTO l1c37h
+    jp z,l1c37h         ;IF HL=0 THEN GOTO l1c37h
 
     ;R = R - &H20
     ld de,0-('a'-'A')
@@ -4764,7 +4766,7 @@ l1c93h:
     ld l,a              ;HL=HL and DE
     ld a,h
     or l
-    jp z,l1ccah         ;IF HL = 0 THEN GOTO l1ccah
+    jp z,l1ccah         ;IF HL=0 THEN GOTO l1ccah
 
     ;N = N * 10 + (PEEK(BUF+J) - &H30)
     ld hl,(nn)          ;HL=(rr)
@@ -6080,14 +6082,14 @@ tmp:
 print_spc:
 ;Print a space
     ld a,' '
-    call conout
+    call conout         ;Write the char in A to the console
     ret
 
 print_eol:
     ld a,lf
-    call conout
+    call conout         ;Write the char in A to the console
     ld a,cr
-    call conout
+    call conout         ;Write the char in A to the console
     ret
 
 hex:
@@ -6297,16 +6299,16 @@ pv1c:
 ;N16: PV0C and PV1C
     call sub_2cd6h
     ld a,' '
-    call conout
+    call conout         ;Write the char in A to the console
     ret
 
 pv2c:
 ;N16: PV2C
     call sub_2cd6h
     ld a,lf
-    call conout
+    call conout         ;Write the char in A to the console
     ld a,cr
-    call conout
+    call conout         ;Write the char in A to the console
     ret
 
 sub_2cd6h:
@@ -6322,7 +6324,7 @@ sub_2cd6h:
     ld h,a
     inc hl
     ld a,'-'
-    call conout
+    call conout         ;Write the char in A to the console
 l2ce9h:
     ld c,'0'
     ld de,10000
@@ -6346,7 +6348,7 @@ sub_2d0bh:
 
 l2d15h:
     ld a,c
-    call conout
+    call conout         ;Write the char in A to the console
     add hl,de
     ld c,30h
     ret
@@ -6423,7 +6425,7 @@ conin:
 char:
 ;CPMIO: CHAR
     ld a,(hl)
-    jp conout
+    jp conout           ;Write the char in A to the console
 
 ;TODO: Unknown code below ---------------------------------------------------
 
