@@ -15,7 +15,6 @@ corvus:        equ  18h   ;Corvus data bus
 
 warm:          equ  0000h ;Warm start entry point
 bdos:          equ  0005h ;BDOS entry point
-dma_buf:       equ  0080h ;Default DMA buffer area (128 bytes) for disk I/O
 
 cread:         equ 01h    ;Console Input
 cwrite:        equ 02h    ;Console Output
@@ -37,28 +36,20 @@ unused_1:
 
 rr:
     dw 0                ;First char of user input from any prompt
-
-ii:
-    dw 0                ;Loop index
-
-buf_addr:
-    dw 0                ;Buffer address to read and write sectors
-
-sec_addr:
-    dw 0                ;Absolute sector address to read and write sectors
-
-err_code:
-    dw 0                ;Error code from read and write sectors
-
+l010ch:
+    dw 0
+l010eh:
+    dw 0
+l0110h:
+    dw 0
+l0112h:
+    dw 0
 l0114h:
-    dw 0                ;This error code is displayed in got_error
-
+    dw 0
 buf:
     dw 0                ;Address of buffer used in readline
-
 nn:
     dw 0                ;Integer parsed from user input
-
 jj:
     dw 0                ;Loop index
 
@@ -68,7 +59,7 @@ jj:
     dw 0
 
 l0124h:
-    dw 0                ;Temporary used for complex expression
+    dw 0
 
     dw 0
 
@@ -79,8 +70,17 @@ start:
     jp ini              ;Perform JP (main)
 
 unused_2:
-    db 0dfh, 04h, 00h, 00h,0e1h, 04h, 03h, 01h
-    db  1ch, 01h, 00h, 00h, 28h, 01h
+    rst 18h             ;012e df
+    inc b               ;012f 04
+    nop                 ;0130 00
+    nop                 ;0131 00
+    pop hl              ;0132 e1
+    inc b               ;0133 04
+    inc bc              ;0134 03
+    ld bc,011ch         ;0135 01 1c 01
+    nop                 ;0138 00
+    nop                 ;0139 00
+    jr z,$+3            ;013a 28 01
 
 main:
     call n5_0
@@ -124,7 +124,7 @@ main:
     ;GOSUB readline
     call readline
 
-    ;IF R=&H59 THEN GOTO l0193h
+    ;IF R = &H59 THEN GOTO l0193h
     ld hl,(rr)
     ld de,0-'Y'
     add hl,de
@@ -146,61 +146,64 @@ l0193h:
     ld hl,writing_code
     call pv2d
 
-    ;FOR I=1 TO 31
-    ld hl,1
-    jp l01dah
+    ;TODO: FOR-NEXT?
+    ;l010ch = 1
+    ld hl,0001h         ;01a5 21 01 00
+    jp l01dah           ;01a8 c3 da 01
 
 l01abh:
-    ;buf_addr = &H4000 + I * 256
-    ld hl,(ii)
-    add hl,hl
-    add hl,hl
-    add hl,hl
-    add hl,hl
-    add hl,hl
-    add hl,hl
-    add hl,hl
-    add hl,hl
-    ld de,4000h
-    add hl,de
-    ld (buf_addr),hl
+    ;l010eh = &H4000 + l010ch * 256
+    ld hl,(l010ch)      ;01ab 2a 0c 01
+    add hl,hl           ;01ae 29
+    add hl,hl           ;01af 29
+    add hl,hl           ;01b0 29
+    add hl,hl           ;01b1 29
+    add hl,hl           ;01b2 29
+    add hl,hl           ;01b3 29
+    add hl,hl           ;01b4 29
+    add hl,hl           ;01b5 29
+    ld de,l4000h        ;01b6 11 00 40
+    add hl,de           ;01b9 19
+    ld (l010eh),hl      ;01ba 22 0e 01
 
-    ;sec_addr = I + 32
-    ld de,32
-    ld hl,(ii)
-    add hl,de
-    ld (sec_addr),hl
+    ;l0110h = 32 + l010ch
+    ld de,0020h         ;01bd 11 20 00
+    ld hl,(l010ch)      ;01c0 2a 0c 01
+    add hl,de           ;01c3 19
+    ld (l0110h),hl      ;01c4 22 10 01
 
-    ;CALL MW_WRITE (buf_addr, sec_addr, err_code)
-    ld bc,buf_addr      ;bc = pointer to buffer address
-    ld de,sec_addr      ;de = pointer to absolute sector address
-    ld hl,err_code      ;hl = pointer to error code
+    ;CALL mw_write (l010eh, l0110h, l0112h)
+    ld bc,l010eh
+    ld de,l0110h
+    ld hl,l0112h
     call mw_write
 
     ;GOSUB check_error
     call check_error
 
-    ;NEXT
-    ld hl,(ii)
-    inc hl
+    ;l010ch = l010ch + 1
+    ld hl,(l010ch)      ;01d6 2a 0c 01
+    inc hl              ;01d9 23
 l01dah:
-    ld (ii),hl
-    ld hl,(ii)
-    ld de,-(31+1)
-    ld a,h
-    rla
-    jp c,l01eah
-    add hl,de
-    add hl,hl
+    ld (l010ch),hl      ;01da 22 0c 01
+
+    ;IF l010ch < &H20 THEN GOTO l01abh
+    ld hl,(l010ch)      ;01dd 2a 0c 01
+    ld de,-0020h        ;01e0 11 e0 ff
+    ld a,h              ;01e3 7c
+    rla                 ;01e4 17
+    jp c,l01eah         ;01e5 da ea 01
+    add hl,de           ;01e8 19
+    add hl,hl           ;01e9 29
 l01eah:
-    jp c,l01abh
+    jp c,l01abh         ;01ea da ab 01
 
     ;END
     call end
 
 check_error:
-    ;IF (err_code AND &H40) <> 0 THEN GOTO got_error
-    ld hl,(err_code)
+    ;IF (l010eh AND &H40) <> 0 THEN GOTO got_error
+    ld hl,(l0112h)
     ld a,l
     and 40h
     ld l,a
@@ -332,12 +335,12 @@ unknown_error:
 
 readline:
     ;BUF = &H80
-    ld hl,80h
+    ld hl,0080h
     ld (buf),hl
 
     ;POKE BUF, 80
     ld hl,(buf)
-    ld (hl),80
+    ld (hl),50h
 
     ;CALL BUFFIN
     call buffin
@@ -351,13 +354,13 @@ readline:
     ld hl,(buf)
     inc hl
     ld l,(hl)
-    ld h,0
+    ld h,00h
     ld a,h
     or l
     jp nz,l02d0h
 
     ;R = 0
-    ld hl,0
+    ld hl,0000h
     ld (rr),hl
 
     ;RETURN
@@ -373,41 +376,41 @@ l02d0h:
     ld (rr),hl
 
     ;IF NOT(R >= &H61 AND R <= &H7A) THEN GOTO l0313h
-    ld hl,(rr)          ;HL=(rr)
-    ld de,0-'a'         ;DE=-61h
-    ld a,h
-    rla
-    jp c,l02e8h
-    add hl,de
-    add hl,hl
+    ld hl,(rr)          ;02db 2a 0a 01
+    ld de,0-'a'         ;02de 11 9f ff
+    ld a,h              ;02e1 7c
+    rla                 ;02e2 17
+    jp c,l02e8h         ;02e3 da e8 02
+    add hl,de           ;02e6 19
+    add hl,hl           ;02e7 29
 l02e8h:
-    ccf
-    sbc a,a
-    ld h,a
-    ld l,a              ;HL=HL>=DE
-    push hl             ;Save value
-    ld hl,(rr)          ;HL=(rr)
-    ld de,0-('z'+1)     ;DE=-7bh
+    ccf                 ;02e8 3f
+    sbc a,a             ;02e9 9f
+    ld h,a              ;02ea 67
+    ld l,a              ;02eb 6f
+    push hl             ;02ec e5
+    ld hl,(rr)          ;02ed 2a 0a 01
+    ld de,0-('z'+1)     ;02f0 11 85 ff
 sub_02f3h:
-    ld a,h
-    rla
-    jp c,l02fah
-    add hl,de
-    add hl,hl
+    ld a,h              ;02f3 7c
+    rla                 ;02f4 17
+    jp c,l02fah         ;02f5 da fa 02
+    add hl,de           ;02f8 19
+    add hl,hl           ;02f9 29
 l02fah:
-    sbc a,a
-    ld h,a
-    ld l,a              ;HL=HL<DE
-    pop de              ;Restore value
-    ld a,h
-    and d
-    ld h,a
-    ld a,l
-    and e
-    ld l,a              ;HL=HL and DE
-    ld a,h
-    or l
-    jp z,l0313h         ;IF HL=0 THEN GOTO l0313h
+    sbc a,a             ;02fa 9f
+    ld h,a              ;02fb 67
+    ld l,a              ;02fc 6f
+    pop de              ;02fd d1
+    ld a,h              ;02fe 7c
+    and d               ;02ff a2
+    ld h,a              ;0300 67
+    ld a,l              ;0301 7d
+    and e               ;0302 a3
+    ld l,a              ;0303 6f
+    ld a,h              ;0304 7c
+    or l                ;0305 b5
+    jp z,l0313h         ;0306 ca 13 03
 
     ;R = R - &H20
     ld de,0-('a'-'A')
@@ -425,97 +428,101 @@ l0313h:
     ld (jj),hl
 
 l031fh:
-    ;WHILE(PEEK(BUF+J) >= &H30) AND (PEEK(BUF+J) <= &H39) AND (J-2 < PEEK(BUF+1))
-    ld hl,(buf)
-    ex de,hl
-    ld hl,(jj)
-    add hl,de           ;HL=(buf)+(jj)
-    ld l,(hl)
-    ld h,0              ;HL=PEEK(HL)
-    push hl             ;Save value
-    ld de,0-'0'         ;DE=-30h
-    ld a,h
-    rla
-    jp c,l0335h
-    add hl,de
-    add hl,hl
+    ;WHILE(PEEK(BUF+J) >= &H30) AND (PEEK(BUF+J) < &H39) AND (J-2 < PEEK(BUF+1))
+    ld hl,(buf)         ;031f 2a 16 01
+    ex de,hl            ;0322 eb
+    ld hl,(jj)          ;0323 2a 1a 01
+    add hl,de           ;0326 19
+    ld l,(hl)           ;0327 6e
+    ld h,00h            ;0328 26 00
+    push hl             ;032a e5
+    ld de,0-'0'         ;032b 11 d0 ff
+    ld a,h              ;032e 7c
+    rla                 ;032f 17
+    jp c,l0335h         ;0330 da 35 03
+    add hl,de           ;0333 19
+    add hl,hl           ;0334 29
 l0335h:
-    ccf
-    sbc a,a
-    ld h,a
-    ld l,a              ;HL=HL>=DE
-    ld (l0124h),hl      ;(l0124h)=HL
-    pop hl              ;Restore value
-    ld de,0-('9'+1)     ;DE=-3ah
-    ld a,h
-    rla
-    jp c,l0347h
-    add hl,de
-    add hl,hl
+    ccf                 ;0335 3f
+    sbc a,a             ;0336 9f
+    ld h,a              ;0337 67
+sub_0338h:
+    ld l,a              ;0338 6f
+    ld (l0124h),hl      ;0339 22 24 01
+    pop hl              ;033c e1
+    ld de,0-('9'+1)     ;033d 11 c6 ff
+    ld a,h              ;0340 7c
+    rla                 ;0341 17
+    jp c,l0347h         ;0342 da 47 03
+    add hl,de           ;0345 19
+    add hl,hl           ;0346 29
 l0347h:
-    sbc a,a
-    ld h,a
-    ld l,a              ;HL=HL<DE
-    push hl             ;Save value
-    ld hl,(l0124h)
-    ex de,hl            ;DE=(l0124h)
-    pop hl              ;Restore value
-    ld a,h
-    and d
-    ld h,a
-    ld a,l
-    and e
-    ld l,a              ;HL=HL and DE
-    push hl             ;Save value
-    ld hl,(buf)
-    inc hl              ;HL=(buf)+1
-    ld l,(hl)
-    ld h,0              ;HL=PEEK(HL)
-    push hl             ;Save value
-    ld hl,(jj)
-    dec hl
-    dec hl              ;HL=(jj)-2
-    pop de              ;Restore value
-    ld a,d
-    xor h
-    ld a,h
-    jp m,l036fh
-    ld a,l
-    sub e
-    ld a,h
-    sbc a,d
+    sbc a,a             ;0347 9f
+    ld h,a              ;0348 67
+    ld l,a              ;0349 6f
+    push hl             ;034a e5
+    ld hl,(l0124h)      ;034b 2a 24 01
+    ex de,hl            ;034e eb
+    pop hl              ;034f e1
+    ld a,h              ;0350 7c
+    and d               ;0351 a2
+    ld h,a              ;0352 67
+    ld a,l              ;0353 7d
+    and e               ;0354 a3
+    ld l,a              ;0355 6f
+    push hl             ;0356 e5
+    ld hl,(buf)         ;0357 2a 16 01
+    inc hl              ;035a 23
+    ld l,(hl)           ;035b 6e
+    ld h,00h            ;035c 26 00
+    push hl             ;035e e5
+    ld hl,(jj)          ;035f 2a 1a 01
+    dec hl              ;0362 2b
+    dec hl              ;0363 2b
+    pop de              ;0364 d1
+    ld a,d              ;0365 7a
+    xor h               ;0366 ac
+    ld a,h              ;0367 7c
+    jp m,l036fh         ;0368 fa 6f 03
+    ld a,l              ;036b 7d
+    sub e               ;036c 93
+    ld a,h              ;036d 7c
+    sbc a,d             ;036e 9a
 l036fh:
-    rla
-    sbc a,a
-    ld h,a
-    ld l,a              ;HL=HL<DE
-    pop de              ;Restore value
-    ld a,h
-    and d
-    ld h,a
-    ld a,l
-    and e
-    ld l,a              ;HL=HL and DE
-    ld a,h
-    or l
-    jp z,l03a6h         ;IF HL=0 THEN GOTO l03a6h
+    rla                 ;036f 17
+    sbc a,a             ;0370 9f
+l0371h:
+    ld h,a              ;0371 67
+    ld l,a              ;0372 6f
+    pop de              ;0373 d1
+    ld a,h              ;0374 7c
+    and d               ;0375 a2
+l0376h:
+    ld h,a              ;0376 67
+    ld a,l              ;0377 7d
+    and e               ;0378 a3
+    ld l,a              ;0379 6f
+    ld a,h              ;037a 7c
+    or l                ;037b b5
+    jp z,l03a6h         ;037c ca a6 03
 
-    ;N = N * 10 + (PEEK(BUF+J) - &H30)
-    ld hl,(nn)          ;HL=(nn)
-    call imug
-    dw 10               ;HL=HL*10
-    push hl             ;Save value
-    ld hl,(buf)
-    ex de,hl
-    ld hl,(jj)
-    add hl,de           ;HL=(buf)+(jj)
-    ld l,(hl)
-    ld h,00h            ;HL=PEEK(HL)
-    pop de              ;Restore value
-    add hl,de
-    ld de,0-'0'
-    add hl,de           ;HL=HL+DE-30h
-    ld (nn),hl          ;(nn)=HL
+    ;N=N*10+(PEEK(BUF+J)-&H30)
+    ld hl,(nn)          ;037f 2a 18 01
+    call imug           ;0382 cd 4d 06
+    ld a,(bc)           ;0385 0a
+    nop                 ;0386 00
+    push hl             ;0387 e5
+    ld hl,(buf)         ;0388 2a 16 01
+    ex de,hl            ;038b eb
+    ld hl,(jj)          ;038c 2a 1a 01
+    add hl,de           ;038f 19
+    ld l,(hl)           ;0390 6e
+    ld h,00h            ;0391 26 00
+    pop de              ;0393 d1
+    add hl,de           ;0394 19
+    ld de,0-'0'         ;0395 11 d0 ff
+    add hl,de           ;0398 19
+    ld (nn),hl          ;0399 22 18 01
 
     ;J = J + 1
     ld hl,(jj)          ;039c 2a 1a 01
@@ -624,15 +631,11 @@ buffin:
 ;return, 81h will contain the number of data bytes and the data
 ;will start at 82h.
     ld c,creadstr       ;Buffered Console Input
-    ld de,dma_buf
+    ld de,0080h
     jp bdos             ;BDOS entry point
 
 mw_read:
 ;Read a sector from the Konan David Junior II controller.
-;
-;  BC = pointer to buffer address
-;  DE = pointer to absolute sector address
-;  HL = pointer to error code
 ;
     ld (err_ptr),hl     ;Save pointer to error word
 
@@ -642,24 +645,22 @@ mw_read:
     inc hl              ;  Increment to high byte
     ld (hl),a           ;  Error word high byte = 0
 
-                        ;Store the absolute sector number
-    ld (var_1+2),a      ;  Absolute sector address high byte = 0  
-    ld a,(de)           ;  Get absolute sector address low byte
-    ld (var_1),a        ;  Store it
-    inc de
-    ld a,(de)           ;  Get absolute sector address middle byte
-    ld (var_1+1),a      ;  Store it
-
-                        ;Store the buffer address
-    ld a,(bc)           ;  Get buffer address low byte
-    ld l,a              ;  Move it
-    inc bc
-    ld a,(bc)           ;  Get buffer address high byte
-    ld h,a              ;  move it
-    push hl             ;  save it
+    ld (var_3),a        ;04f1 32 d5 05
+    ld a,(de)           ;04f4 1a
+    ld (var_1),a        ;04f5 32 d3 05
+    inc de              ;04f8 13
+    ld a,(de)           ;04f9 1a
+    ld (var_2),a        ;04fa 32 d4 05
+    ld a,(bc)           ;04fd 0a
+    ld l,a              ;04fe 6f
+    inc bc              ;04ff 03
+    ld a,(bc)           ;0500 0a
+    ld h,a              ;0501 67
+    push hl             ;0502 e5
 
     ld a,21h            ;A = 21h (Read Disk)
     call mw_comout      ;Send command
+sub_0508h:
     call mw_send_addr   ;Send disk/track/sector sequence
 
     call mw_status      ;Read status
@@ -686,32 +687,26 @@ l0518h:
 mw_write:
 ;Write a sector to the Konan David Junior II controller.
 ;
-;  BC = pointer to buffer address
-;  DE = pointer to absolute sector address
-;  HL = pointer to error code
-;
     ld (err_ptr),hl     ;Save pointer to error word
 
                         ;Initialize error word to 0:
     xor a               ;  A=0
+l052bh:
     ld (hl),a           ;  Error word low byte = 0
     inc hl              ;  Increment to high byte
     ld (hl),a           ;  Error word high byte = 0
 
-                        ;Store the absolute sector number
-    ld (var_1+2),a      ;  Absolute sector address high byte = 0  
-    ld a,(de)           ;  Get absolute sector address low byte
-    ld (var_1),a        ;  Store it
-    inc de
-    ld a,(de)           ;  Get absolute sector address middle byte
-    ld (var_1+1),a      ;  Store it
-
-                        ;Store the buffer address
-    ld a,(bc)           ;  Get buffer address low byte
-    ld l,a              ;  Move it
-    inc bc
-    ld a,(bc)           ;  Get buffer address high byte
-    ld h,a              ;  move it
+    ld (var_3),a        ;052e 32 d5 05
+    ld a,(de)           ;0531 1a
+    ld (var_1),a        ;0532 32 d3 05
+    inc de              ;0535 13
+    ld a,(de)           ;0536 1a
+    ld (var_2),a        ;0537 32 d4 05
+    ld a,(bc)           ;053a 0a
+    ld l,a              ;053b 6f
+    inc bc              ;053c 03
+    ld a,(bc)           ;053d 0a
+    ld h,a              ;053e 67
 
     ld a,42h            ;A = 42h (Write Buffer)
     call mw_comout      ;Send Command
@@ -741,6 +736,7 @@ mw_error:
 ;An error occurred from the Konan David Junior II controller.
 ;
     ld hl,(err_ptr)     ;HL = pointer to error word
+l0562h:
     ld (hl),a           ;Save A as error word low byte (high byte always 0)
     ret
 
@@ -752,6 +748,7 @@ mw_comout:
     out (corvus),a      ;Clear David Junior II port
 mw_rdy1:
     in a,(corvus)
+l056ah:
     cp 0a0h
     jr nz,mw_rdy1       ;Wait for David Junior II to go ready
     ld a,b              ;Recall command
@@ -762,7 +759,7 @@ mw_rdy2:
     jr nz,mw_rdy2       ;Wait until the David Junior II has it
     ld a,0ffh
     out (corvus),a      ;Send execute code
-    ld b,20
+    ld b,14h
 mw_rdy3:
     nop
     djnz mw_rdy3        ;Delay loop
@@ -789,7 +786,9 @@ l058eh:
     bit 6,a             ;Bit 6 of David Junior status is set if error
                         ;  Z = opposite of bit 6 (Z=1 if OK, Z=0 if error)
     push af             ;Save status byte
+sub_0598h:
     xor a
+l0599h:
     out (corvus),a      ;Clear the port to acknowledge receiving the status
     pop af              ;Recall status byte
     ret
@@ -800,8 +799,8 @@ mw_send_addr:
     xor a
     out (corvus),a      ;Send byte 0: unit number (always 0)
     ld hl,(var_1)
-    ld a,(var_1+2)
-    ld b,5
+    ld a,(var_3)
+    ld b,05h
 l05a8h:
     rra
     rr h
@@ -832,13 +831,11 @@ l05b6h:
     ret
 
 var_1:
-    db 14h,00h,10h      ;Absolute sector address (24 Bit)
-                        ;x=unused, t=track, h=head, s=sector
-                        ;76543210 76543210 76543210 bits
-                        ;xxtttttt tttttttt tthsssss - for heads (4033h) = 1
-                        ;xttttttt tttttttt thhsssss - for heads (4033h) = 3
-                        ;tttttttt tttttttt hhhsssss - for heads (4033h) = 7
-
+    db 14h
+var_2:
+    db 00h
+var_3:
+    db 10h
 err_ptr:
     dw 0c9fdh           ;Pointer: error code
 
@@ -853,14 +850,14 @@ tmp:
 
 print_spc:
     ld a,' '
-    call conout         ;Write the char in A to the console
+    call conout
     ret
 
 print_eol:
     ld a,lf
-    call conout         ;Write the char in A to the console
+    call conout
     ld a,cr
-    call conout         ;Write the char in A to the console
+    call conout
     ret
 
 hex:
@@ -869,7 +866,7 @@ hex:
 ;representation of the byte in HL and return a pointer to it in HL.
 ;Implements BASIC function: HEX$(x)
 ;
-    ld a,2              ;A = 2 bytes in string
+    ld a,02h            ;A = 2 bytes in string
     ld (tmp),a          ;Store length in temp string header
     ld a,l              ;A = L
     call xstrin_3       ;Convert high nibble in A to ASCII
@@ -887,11 +884,11 @@ xstrin_3:
     rrca
 xstrin_4:
     and 0fh
-    cp 10
+    cp 0ah
     jp m,xstrin_5
-    add a,0+'A'-('9'+1)
+    add a,07h
 xstrin_5:
-    add a,'0'
+    add a,30h
     ret
 
 chr:
@@ -900,7 +897,7 @@ chr:
 ;return a pointer to it in HL.
 ;Implements BASIC function: CHR$(x)
 ;
-    ld a,1              ;A = 1 byte in string
+    ld a,01h            ;A = 1 byte in string
     ld (tmp),a          ;Store length in temp string header
     ld a,l              ;A = L
     ld (tmp+3),a        ;Store A as the temp string data
@@ -948,7 +945,7 @@ print_str:
     inc hl
 l0643h:
     ld a,(hl)
-    call conout         ;Write the char in A to the console
+    call conout
     dec b
     inc hl
     jp nz,l0643h
@@ -980,7 +977,8 @@ imuh:
     ret z
     ld b,h
     ld c,l
-    ld hl,0
+sub_0660h:
+    ld hl,0000h
     ld a,10h
 l0665h:
     add hl,hl
@@ -1057,7 +1055,7 @@ conin:
 char:
 ;CPMIO: CHAR
     ld a,(hl)
-    jp conout          ;Write the char in A to the console
+    jp conout
 
 ;TODO: Unknown code below ---------------------------------------------------
 
@@ -1121,7 +1119,7 @@ l06afh:
     dec a               ;06ed 3d
     jp nz,l0665h        ;06ee c2 65 06
     ret                 ;06f1 c9
-    jp warm             ;06f2 c3 00 00
+    jp 0000h            ;06f2 c3 00 00
     jp (hl)             ;06f5 e9
     ret                 ;06f6 c9
     ld hl,0fffeh        ;06f7 21 fe ff
@@ -1130,16 +1128,16 @@ l06afh:
     push de             ;06fe d5
     push bc             ;06ff c5
     ld c,a              ;0700 4f
-    ld hl,0562h         ;0701 21 62 05
+    ld hl,l0562h        ;0701 21 62 05
     add hl,bc           ;0704 09
     call sub_02f3h      ;0705 cd f3 02
-    jp 0371h            ;0708 c3 71 03
+    jp l0371h           ;0708 c3 71 03
 l070bh:
     ld hl,n5_0          ;070b 21 76 06
     call sub_02f3h      ;070e cd f3 02
     ld a,d              ;0711 7a
     call 0692h          ;0712 cd 92 06
-    jp 0371h            ;0715 c3 71 03
+    jp l0371h           ;0715 c3 71 03
     call 002eh          ;0718 cd 2e 00
     ld c,3fh            ;071b 0e 3f
     call 0015h          ;071d cd 15 00
@@ -1148,14 +1146,14 @@ l070bh:
     ld hl,0000h         ;0724 21 00 00
     add hl,sp           ;0727 39
     ld (0013h),hl       ;0728 22 13 00
-    call 0338h          ;072b cd 38 03
+    call sub_0338h      ;072b cd 38 03
     ld (0011h),hl       ;072e 22 11 00
     call 0689h          ;0731 cd 89 06
     call 015ah          ;0734 cd 5a 01
 l0737h:
     ld hl,(0011h)       ;0737 2a 11 00
     ld (000ch),hl       ;073a 22 0c 00
-    jp 052bh            ;073d c3 2b 05
+    jp l052bh           ;073d c3 2b 05
     ld hl,(0013h)       ;0740 2a 13 00
     ld sp,hl            ;0743 f9
     ret                 ;0744 c9
@@ -1184,19 +1182,253 @@ l074eh:
     or 0feh             ;075e f6 fe
     ld (322ah),hl       ;0760 22 2a 32
     ld a,(0cdc3h)       ;0763 3a c3 cd
-
-    db "EI  ","SPHL","DI  ","XCHG","PCHL","XTHL","RET ","HLT "
-    db "CMC ","STC ","CMA ","DAA ","RAR ","RAL ","RRC ","RLC "
-    db "NOP ","CPI ","ORI ","XRI ","ANI ","SBI ","IN  ","SUI "
-    db "OUT ","ACI ","ADI ","CALL","JMP ","LDA ","STA ","LHLD"
-    db "SHLD","MOV ","ADD ","ADC ","SUB ","SBB ","ANA ","XRA "
-    db "ORA ","CMP ","INR ","DCR ","MVI ","LXI ","STAX","INX "
-    db "DAD ","LDAX","DCX ","RST ","PSW ","POP ","PUSH","NZZ "
-    db "NCC ","POPE"
-    db "P M B C D E H L M A B   D   H   SP  PSW"
-    db " ??= "
-
-    jp l0f96h           ;0879 c3 96 0f
+    ld b,l              ;0766 45
+    ld c,c              ;0767 49
+    jr nz,$+34          ;0768 20 20
+    ld d,e              ;076a 53
+    ld d,b              ;076b 50
+    ld c,b              ;076c 48
+    ld c,h              ;076d 4c
+    ld b,h              ;076e 44
+    ld c,c              ;076f 49
+    jr nz,$+34          ;0770 20 20
+    ld e,b              ;0772 58
+    ld b,e              ;0773 43
+    ld c,b              ;0774 48
+    ld b,a              ;0775 47
+    ld d,b              ;0776 50
+    ld b,e              ;0777 43
+    ld c,b              ;0778 48
+    ld c,h              ;0779 4c
+    ld e,b              ;077a 58
+    ld d,h              ;077b 54
+l077ch:
+    ld c,b              ;077c 48
+    ld c,h              ;077d 4c
+    ld d,d              ;077e 52
+    ld b,l              ;077f 45
+    ld d,h              ;0780 54
+    jr nz,l07cbh        ;0781 20 48
+    ld c,h              ;0783 4c
+    ld d,h              ;0784 54
+    jr nz,$+69          ;0785 20 43
+    ld c,l              ;0787 4d
+    ld b,e              ;0788 43
+    jr nz,$+85          ;0789 20 53
+    ld d,h              ;078b 54
+    ld b,e              ;078c 43
+    jr nz,$+69          ;078d 20 43
+    ld c,l              ;078f 4d
+    ld b,c              ;0790 41
+    jr nz,l07d7h        ;0791 20 44
+    ld b,c              ;0793 41
+    ld b,c              ;0794 41
+sub_0795h:
+    jr nz,l07e9h        ;0795 20 52
+    ld b,c              ;0797 41
+    ld d,d              ;0798 52
+    jr nz,l07edh        ;0799 20 52
+    ld b,c              ;079b 41
+    ld c,h              ;079c 4c
+    jr nz,l07f1h        ;079d 20 52
+    ld d,d              ;079f 52
+    ld b,e              ;07a0 43
+    jr nz,l07f5h        ;07a1 20 52
+    ld c,h              ;07a3 4c
+    ld b,e              ;07a4 43
+    jr nz,l07f5h        ;07a5 20 4e
+    ld c,a              ;07a7 4f
+    ld d,b              ;07a8 50
+    jr nz,$+69          ;07a9 20 43
+    ld d,b              ;07ab 50
+    ld c,c              ;07ac 49
+    jr nz,$+81          ;07ad 20 4f
+    ld d,d              ;07af 52
+    ld c,c              ;07b0 49
+    jr nz,l080bh        ;07b1 20 58
+    ld d,d              ;07b3 52
+    ld c,c              ;07b4 49
+    jr nz,l07f8h        ;07b5 20 41
+    ld c,(hl)           ;07b7 4e
+    ld c,c              ;07b8 49
+    jr nz,$+85          ;07b9 20 53
+    ld b,d              ;07bb 42
+    ld c,c              ;07bc 49
+    jr nz,l0808h        ;07bd 20 49
+    ld c,(hl)           ;07bf 4e
+    jr nz,$+34          ;07c0 20 20
+    ld d,e              ;07c2 53
+    ld d,l              ;07c3 55
+    ld c,c              ;07c4 49
+    jr nz,$+81          ;07c5 20 4f
+    ld d,l              ;07c7 55
+l07c8h:
+    ld d,h              ;07c8 54
+    jr nz,l080ch        ;07c9 20 41
+l07cbh:
+    ld b,e              ;07cb 43
+    ld c,c              ;07cc 49
+    jr nz,l0810h        ;07cd 20 41
+    ld b,h              ;07cf 44
+    ld c,c              ;07d0 49
+    jr nz,$+69          ;07d1 20 43
+    ld b,c              ;07d3 41
+    ld c,h              ;07d4 4c
+    ld c,h              ;07d5 4c
+    ld c,d              ;07d6 4a
+l07d7h:
+    ld c,l              ;07d7 4d
+    ld d,b              ;07d8 50
+    jr nz,l0827h        ;07d9 20 4c
+    ld b,h              ;07db 44
+    ld b,c              ;07dc 41
+    jr nz,$+85          ;07dd 20 53
+    ld d,h              ;07df 54
+    ld b,c              ;07e0 41
+    jr nz,l082fh        ;07e1 20 4c
+    ld c,b              ;07e3 48
+    ld c,h              ;07e4 4c
+    ld b,h              ;07e5 44
+    ld d,e              ;07e6 53
+    ld c,b              ;07e7 48
+    ld c,h              ;07e8 4c
+l07e9h:
+    ld b,h              ;07e9 44
+    ld c,l              ;07ea 4d
+    ld c,a              ;07eb 4f
+    ld d,(hl)           ;07ec 56
+l07edh:
+    jr nz,l0830h        ;07ed 20 41
+    ld b,h              ;07ef 44
+    ld b,h              ;07f0 44
+l07f1h:
+    jr nz,l0834h        ;07f1 20 41
+    ld b,h              ;07f3 44
+l07f4h:
+    ld b,e              ;07f4 43
+l07f5h:
+    jr nz,$+85          ;07f5 20 53
+    ld d,l              ;07f7 55
+l07f8h:
+    ld b,d              ;07f8 42
+    jr nz,l084eh        ;07f9 20 53
+    ld b,d              ;07fb 42
+    ld b,d              ;07fc 42
+    jr nz,l0840h        ;07fd 20 41
+    ld c,(hl)           ;07ff 4e
+    ld b,c              ;0800 41
+    jr nz,l085bh        ;0801 20 58
+    ld d,d              ;0803 52
+    ld b,c              ;0804 41
+    jr nz,$+81          ;0805 20 4f
+l0807h:
+    ld d,d              ;0807 52
+l0808h:
+    ld b,c              ;0808 41
+    jr nz,l084eh        ;0809 20 43
+l080bh:
+    ld c,l              ;080b 4d
+l080ch:
+    ld d,b              ;080c 50
+    jr nz,$+75          ;080d 20 49
+    ld c,(hl)           ;080f 4e
+l0810h:
+    ld d,d              ;0810 52
+l0811h:
+    jr nz,l0857h        ;0811 20 44
+    ld b,e              ;0813 43
+    ld d,d              ;0814 52
+    jr nz,$+79          ;0815 20 4d
+    ld d,(hl)           ;0817 56
+    ld c,c              ;0818 49
+    jr nz,l0867h        ;0819 20 4c
+    ld e,b              ;081b 58
+    ld c,c              ;081c 49
+    jr nz,l0872h        ;081d 20 53
+    ld d,h              ;081f 54
+l0820h:
+    ld b,c              ;0820 41
+    ld e,b              ;0821 58
+l0822h:
+    ld c,c              ;0822 49
+    ld c,(hl)           ;0823 4e
+    ld e,b              ;0824 58
+    jr nz,l086bh        ;0825 20 44
+l0827h:
+    ld b,c              ;0827 41
+    ld b,h              ;0828 44
+    jr nz,l0877h        ;0829 20 4c
+    ld b,h              ;082b 44
+    ld b,c              ;082c 41
+    ld e,b              ;082d 58
+    ld b,h              ;082e 44
+l082fh:
+    ld b,e              ;082f 43
+l0830h:
+    ld e,b              ;0830 58
+    jr nz,$+84          ;0831 20 52
+    ld d,e              ;0833 53
+l0834h:
+    ld d,h              ;0834 54
+    jr nz,$+82          ;0835 20 50
+    ld d,e              ;0837 53
+    ld d,a              ;0838 57
+    jr nz,$+82          ;0839 20 50
+    ld c,a              ;083b 4f
+l083ch:
+    ld d,b              ;083c 50
+    jr nz,l088fh        ;083d 20 50
+    ld d,l              ;083f 55
+l0840h:
+    ld d,e              ;0840 53
+    ld c,b              ;0841 48
+l0842h:
+    ld c,(hl)           ;0842 4e
+    ld e,d              ;0843 5a
+    ld e,d              ;0844 5a
+    jr nz,l0895h        ;0845 20 4e
+    ld b,e              ;0847 43
+    ld b,e              ;0848 43
+    jr nz,l089bh        ;0849 20 50
+    ld c,a              ;084b 4f
+l084ch:
+    ld d,b              ;084c 50
+    ld b,l              ;084d 45
+l084eh:
+    ld d,b              ;084e 50
+    jr nz,l089eh        ;084f 20 4d
+    jr nz,l0895h        ;0851 20 42
+    jr nz,l0898h        ;0853 20 43
+    jr nz,l089bh        ;0855 20 44
+l0857h:
+    jr nz,l089eh        ;0857 20 45
+    jr nz,$+74          ;0859 20 48
+l085bh:
+    jr nz,l08a9h        ;085b 20 4c
+    jr nz,l08ach        ;085d 20 4d
+    jr nz,$+67          ;085f 20 41
+    jr nz,l08a5h        ;0861 20 42
+    jr nz,$+34          ;0863 20 20
+    jr nz,$+70          ;0865 20 44
+l0867h:
+    jr nz,l0889h        ;0867 20 20
+    jr nz,$+74          ;0869 20 48
+l086bh:
+    jr nz,$+34          ;086b 20 20
+    jr nz,l08c2h        ;086d 20 53
+    ld d,b              ;086f 50
+    jr nz,l0892h        ;0870 20 20
+l0872h:
+    ld d,b              ;0872 50
+    ld d,e              ;0873 53
+    ld d,a              ;0874 57
+    jr nz,$+65          ;0875 20 3f
+l0877h:
+    ccf                 ;0877 3f
+    dec a               ;0878 3d
+    jr nz,$-59          ;0879 20 c3
+    sub (hl)            ;087b 96
+    rrca                ;087c 0f
     jp l0fd1h           ;087d c3 d1 0f
     jp l06a4h           ;0880 c3 a4 06
     jp l06aah+2         ;0883 c3 ac 06
@@ -1371,8 +1603,8 @@ l0980h:
     jp nz,07beh         ;09ae c2 be 07
     ld a,(174ch)        ;09b1 3a 4c 17
     or a                ;09b4 b7
-    jp z,07c8h          ;09b5 ca c8 07
-    call 0795h          ;09b8 cd 95 07
+    jp z,l07c8h         ;09b5 ca c8 07
+    call sub_0795h      ;09b8 cd 95 07
     jp l070bh           ;09bb c3 0b 07
     dec a               ;09be 3d
     jp nz,l0fe1h        ;09bf c2 e1 0f
@@ -1383,17 +1615,17 @@ l0980h:
     call sub_0b96h      ;09ce cd 96 0b
     jp nc,l0fe1h        ;09d1 d2 e1 0f
     call 1251h          ;09d4 cd 51 12
-    jp z,07f2h          ;09d7 ca f2 07
+    jp z,l07f1h+1       ;09d7 ca f2 07
     call 10e8h          ;09da cd e8 10
     ld (000ch),hl       ;09dd 22 0c 00
     dec a               ;09e0 3d
-    jp z,07f2h          ;09e1 ca f2 07
+    jp z,l07f1h+1       ;09e1 ca f2 07
     call 10e8h          ;09e4 cd e8 10
     ld (000eh),hl       ;09e7 22 0e 00
     dec a               ;09ea 3d
     jp nz,l0fe1h        ;09eb c2 e1 0f
     xor a               ;09ee af
-    jp 07f4h            ;09ef c3 f4 07
+    jp l07f4h           ;09ef c3 f4 07
     ld a,0ch            ;09f2 3e 0c
     ld (0010h),a        ;09f4 32 10 00
     call 0006h          ;09f7 cd 06 00
@@ -1415,7 +1647,7 @@ l0a11h:
 l0a19h:
     push hl             ;0a19 e5
     dec a               ;0a1a 3d
-    jp nz,0822h         ;0a1b c2 22 08
+    jp nz,l0822h        ;0a1b c2 22 08
     push bc             ;0a1e c5
     jp 0826h            ;0a1f c3 26 08
     call 10e8h          ;0a22 cd e8 10
@@ -1427,17 +1659,17 @@ l0a19h:
     jp (hl)             ;0a2c e9
 l0a2dh:
     call sub_1242h      ;0a2d cd 42 12
-    jp z,084ch          ;0a30 ca 4c 08
+    jp z,l084ch         ;0a30 ca 4c 08
     call 10e8h          ;0a33 cd e8 10
-    jp c,083ch          ;0a36 da 3c 08
+    jp c,l083ch         ;0a36 da 3c 08
     ld (l1765h),hl      ;0a39 22 65 17
     and 7fh             ;0a3c e6 7f
     dec a               ;0a3e 3d
-    jp z,084ch          ;0a3f ca 4c 08
+    jp z,l084ch         ;0a3f ca 4c 08
     call 10e8h          ;0a42 cd e8 10
     dec a               ;0a45 3d
     jp nz,l0fe1h        ;0a46 c2 e1 0f
-    jp 0857h            ;0a49 c3 57 08
+    jp l0857h           ;0a49 c3 57 08
     ld hl,(l1765h)      ;0a4c 2a 65 17
     ld a,l              ;0a4f 7d
     and 0f0h            ;0a50 e6 f0
@@ -2171,7 +2403,7 @@ l0f3eh:
     jp c,0d50h          ;0f46 da 50 0d
     ld a,(l174dh+1)     ;0f49 3a 4e 17
     or a                ;0f4c b7
-    call z,0795h        ;0f4d cc 95 07
+    call z,sub_0795h    ;0f4d cc 95 07
     ld a,55h            ;0f50 3e 55
     ld bc,l544ch        ;0f52 01 4c 54
     call sub_0b77h      ;0f55 cd 77 0b
@@ -2204,7 +2436,6 @@ l0f8fh:
     call 0d1fh          ;0f8f cd 1f 0d
     push af             ;0f92 f5
     call sub_0d1ch      ;0f93 cd 1c 0d
-l0f96h:
     pop de              ;0f96 d1
     ld e,a              ;0f97 5f
     ld hl,(l17afh)      ;0f98 2a af 17
@@ -3160,7 +3391,7 @@ sub_15f9h:
     ld d,b              ;1600 50
     or 0f4h             ;1601 f6 f4
     call m,0fefah       ;1603 fc fa fe
-    ld bc,0807h         ;1606 01 07 08
+    ld bc,l0807h        ;1606 01 07 08
     inc bc              ;1609 03
     dec b               ;160a 05
     ld hl,0000h         ;160b 21 00 00
@@ -4093,7 +4324,7 @@ l1b27h:
     jr nz,l1b78h        ;1b2e 20 48
     ld de,2220h         ;1b30 11 20 22
     djnz l1b55h         ;1b33 10 20
-    ld (0842h),hl       ;1b35 22 42 08
+    ld (l0842h),hl      ;1b35 22 42 08
     ld c,c              ;1b38 49
     nop                 ;1b39 00
     inc b               ;1b3a 04
@@ -4137,7 +4368,7 @@ l1b5ch:
     ld c,b              ;1b66 48
     jr nz,l1b6dh        ;1b67 20 04
     adc a,c             ;1b69 89
-    ld bc,0820h         ;1b6a 01 20 08
+    ld bc,l0820h        ;1b6a 01 20 08
 l1b6dh:
     inc b               ;1b6d 04
     sub b               ;1b6e 90
@@ -4253,7 +4484,7 @@ l1bf2h:
     ld (bc),a           ;1bf4 02
 l1bf5h:
     nop                 ;1bf5 00
-    ld (0811h),hl       ;1bf6 22 11 08
+    ld (l0811h),hl      ;1bf6 22 11 08
     ld (l4410h),hl      ;1bf9 22 10 44
     add a,h             ;1bfc 84
     ld (8410h),hl       ;1bfd 22 10 84
@@ -5191,7 +5422,7 @@ l42fah:
     out (15h),a         ;4319 d3 15
     ld a,(2af0h)        ;431b 3a f0 2a
     or a                ;431e b7
-    jp z,0376h          ;431f ca 76 03
+    jp z,l0376h         ;431f ca 76 03
     bit 2,a             ;4322 cb 57
     jr nz,l4355h        ;4324 20 2f
     in a,(15h)          ;4326 db 15
@@ -5200,7 +5431,7 @@ l42fah:
     ld a,(2ae7h)        ;432c 3a e7 2a
     or a                ;432f b7
 l4330h:
-    jp z,0376h          ;4330 ca 76 03
+    jp z,l0376h         ;4330 ca 76 03
     and 0fh             ;4333 e6 0f
     ld (2ae7h),a        ;4335 32 e7 2a
     cp 0fh              ;4338 fe 0f
@@ -5209,7 +5440,7 @@ l433dh:
     ld hl,(2af1h)       ;433d 2a f1 2a
     ld a,(hl)           ;4340 7e
     call 0510h          ;4341 cd 10 05
-    jp c,0376h          ;4344 da 76 03
+    jp c,l0376h         ;4344 da 76 03
     ld a,(hl)           ;4347 7e
     inc hl              ;4348 23
     cp 0dh              ;4349 fe 0d
@@ -5221,7 +5452,7 @@ l4350h:
 l4355h:
     ld a,(2ae7h)        ;4355 3a e7 2a
     or a                ;4358 b7
-    jp z,0376h          ;4359 ca 76 03
+    jp z,l0376h         ;4359 ca 76 03
     push af             ;435c f5
     and 0fh             ;435d e6 0f
     ld (2ae7h),a        ;435f 32 e7 2a
@@ -5233,7 +5464,7 @@ l4355h:
     ld b,7fh            ;436e 06 7f
 l4370h:
     call 04c1h          ;4370 cd c1 04
-    jp c,0376h          ;4373 da 76 03
+    jp c,l0376h         ;4373 da 76 03
     bit 7,b             ;4376 cb 78
     jr nz,l437dh        ;4378 20 03
     ld (hl),a           ;437a 77
@@ -5252,14 +5483,14 @@ l437dh:
     ld de,2bf5h         ;4390 11 f5 2b
     ld bc,0080h         ;4393 01 80 00
     ldir                ;4396 ed b0
-    jp 056ah            ;4398 c3 6a 05
+    jp l056ah           ;4398 c3 6a 05
     ld a,(2ae7h)        ;439b 3a e7 2a
     cp 0fh              ;439e fe 0f
     jp nz,0a48h         ;43a0 c2 48 0a
     ld hl,(2af3h)       ;43a3 2a f3 2a
 l43a6h:
     call 04c1h          ;43a6 cd c1 04
-    jp c,0376h          ;43a9 da 76 03
+    jp c,l0376h         ;43a9 da 76 03
     ld (hl),a           ;43ac 77
     ld a,l              ;43ad 7d
     cp 74h              ;43ae fe 74
@@ -5271,7 +5502,7 @@ l43b6h:
     or a                ;43b9 b7
     jr z,l43a6h         ;43ba 28 ea
     ld (hl),0dh         ;43bc 36 0d
-    jp 056ah            ;43be c3 6a 05
+    jp l056ah           ;43be c3 6a 05
     in a,(14h)          ;43c1 db 14
     and 01h             ;43c3 e6 01
     jr nz,l4406h        ;43c5 20 3f
@@ -5385,7 +5616,7 @@ l445ah:
     out (11h),a         ;4467 d3 11
     ret                 ;4469 c9
     call 05d8h          ;446a cd d8 05
-    ld de,0599h         ;446d 11 99 05
+    ld de,l0599h        ;446d 11 99 05
     ld hl,2bf5h         ;4470 21 f5 2b
     ld (2af3h),hl       ;4473 22 f3 2a
     ld b,12h            ;4476 06 12
@@ -5404,8 +5635,8 @@ l447ch:
 cmd_found:
     ld l,(ix+00h)       ;448c dd 6e 00
     ld h,(ix+01h)       ;448f dd 66 01
-    call 0598h          ;4492 cd 98 05
-    jp 0376h            ;4495 c3 76 03
+    call sub_0598h      ;4492 cd 98 05
+    jp l0376h           ;4495 c3 76 03
 
 do_cmd:
     jp (hl)             ;4498 e9
@@ -5435,7 +5666,7 @@ cmd_addr:
     jp po,0cd0ch        ;44cd e2 0c cd
     in a,(05h)          ;44d0 db 05
     ld sp,4a93h         ;44d2 31 93 4a
-    jp 0376h            ;44d5 c3 76 03
+    jp l0376h           ;44d5 c3 76 03
     call 064ch          ;44d8 cd 4c 06
     ld (2050h),a        ;44db 32 50 20
     ld hl,l1a81h        ;44de 21 81 1a
@@ -5457,7 +5688,7 @@ l44f0h:
     push de             ;44f2 d5
     ld hl,2cf5h         ;44f3 21 f5 2c
     ld de,0000h         ;44f6 11 00 00
-    call 0660h          ;44f9 cd 60 06
+    call sub_0660h      ;44f9 cd 60 06
     ld (hl),2ch         ;44fc 36 2c
     inc hl              ;44fe 23
     pop de              ;44ff d1
@@ -5500,12 +5731,12 @@ l4523h:
     inc hl              ;452b 23
     ld a,(2051h)        ;452c 3a 51 20
     ld de,(2052h)       ;452f ed 5b 52 20
-    call 0660h          ;4533 cd 60 06
+    call sub_0660h      ;4533 cd 60 06
     ld (hl),2ch         ;4536 36 2c
     inc hl              ;4538 23
     ld a,(2054h)        ;4539 3a 54 20
     ld de,(2055h)       ;453c ed 5b 55 20
-    call 0660h          ;4540 cd 60 06
+    call sub_0660h      ;4540 cd 60 06
     ld (hl),0dh         ;4543 36 0d
     ld hl,2cf5h         ;4545 21 f5 2c
     ld (2af1h),hl       ;4548 22 f1 2a
@@ -5672,7 +5903,7 @@ l4663h:
     set 3,(iy+28h)      ;4671 fd cb 28 de
 l4675h:
     bit 3,(iy+28h)      ;4675 fd cb 28 5e
-    jp z,0810h          ;4679 ca 10 08
+    jp z,l0810h         ;4679 ca 10 08
     call sub_163bh      ;467c cd 3b 16
     ld a,21h            ;467f 3e 21
     jp c,05cfh          ;4681 da cf 05
@@ -5734,7 +5965,7 @@ l46e8h:
     ldir                ;4707 ed b0
     pop de              ;4709 d1
     call sub_1789h      ;470a cd 89 17
-    jp 0376h            ;470d c3 76 03
+    jp l0376h           ;470d c3 76 03
 l4710h:
     ld hl,2d45h         ;4710 21 45 2d
     ld a,(2d67h)        ;4713 3a 67 2d
@@ -5744,7 +5975,7 @@ l4710h:
     ld a,(iy+00h)       ;471f fd 7e 00
     and 03h             ;4722 e6 03
     cp 03h              ;4724 fe 03
-    jp z,077ch          ;4726 ca 7c 07
+    jp z,l077ch         ;4726 ca 7c 07
     ld a,3eh            ;4729 3e 3e
     jp 05cfh            ;472b c3 cf 05
 l472eh:
@@ -5799,7 +6030,7 @@ l47aah:
     call 0bcah          ;47aa cd ca 0b
     call l17e0h         ;47ad cd e0 17
 l47b0h:
-    jp 0376h            ;47b0 c3 76 03
+    jp l0376h           ;47b0 c3 76 03
 l47b3h:
     ld a,(iy+12h)       ;47b3 fd 7e 12
     add a,01h           ;47b6 c6 01
@@ -5814,11 +6045,11 @@ l47b3h:
     ld a,(2d6bh)        ;47ce 3a 6b 2d
     or a                ;47d1 b7
     call nz,l17e0h      ;47d2 c4 e0 17
-    jp 0376h            ;47d5 c3 76 03
+    jp l0376h           ;47d5 c3 76 03
     set 7,(iy+28h)      ;47d8 fd cb 28 fe
     set 6,(iy+28h)      ;47dc fd cb 28 f6
     ld (iy+20h),000h    ;47e0 fd 36 20 00
-    jp 0376h            ;47e4 c3 76 03
+    jp l0376h           ;47e4 c3 76 03
     call sub_1689h      ;47e7 cd 89 16
     bit 7,(iy+28h)      ;47ea fd cb 28 7e
     ret z               ;47ee c8
@@ -5865,13 +6096,13 @@ l4833h:
     ret                 ;4840 c9
     call sub_1689h      ;4841 cd 89 16
     bit 7,(iy+28h)      ;4844 fd cb 28 7e
-    jp z,0376h          ;4848 ca 76 03
+    jp z,l0376h         ;4848 ca 76 03
     bit 6,(iy+28h)      ;484b fd cb 28 76
     jp nz,09e9h         ;484f c2 e9 09
     bit 4,(iy+28h)      ;4852 fd cb 28 66
-    jp nz,0376h         ;4856 c2 76 03
+    jp nz,l0376h        ;4856 c2 76 03
     bit 3,(iy+28h)      ;4859 fd cb 28 5e
-    jp nz,0376h         ;485d c2 76 03
+    jp nz,l0376h        ;485d c2 76 03
     bit 2,(iy+28h)      ;4860 fd cb 28 56
     jp nz,l0a11h        ;4864 c2 11 0a
     call 0bcah          ;4867 cd ca 0b
@@ -5929,11 +6160,11 @@ l48d5h:
     jr l4885h           ;48d8 18 ab
 l48dah:
     ld a,(hl)           ;48da 7e
-    call 0508h          ;48db cd 08 05
-    jp c,0376h          ;48de da 76 03
+    call sub_0508h      ;48db cd 08 05
+    jp c,l0376h         ;48de da 76 03
     jr l48dah           ;48e1 18 f7
     inc (iy+25h)        ;48e3 fd 34 25
-    jp 0376h            ;48e6 c3 76 03
+    jp l0376h           ;48e6 c3 76 03
 l48e9h:
     ld hl,(2aech)       ;48e9 2a ec 2a
     ld c,(iy+20h)       ;48ec fd 4e 20
@@ -5944,14 +6175,14 @@ l48e9h:
     jr z,l4904h         ;48f6 28 0c
     ld a,(hl)           ;48f8 7e
     call 0510h          ;48f9 cd 10 05
-    jp c,0376h          ;48fc da 76 03
+    jp c,l0376h         ;48fc da 76 03
     inc (iy+20h)        ;48ff fd 34 20
     jr l48e9h           ;4902 18 e5
 l4904h:
     ld a,(hl)           ;4904 7e
-    call 0508h          ;4905 cd 08 05
+    call sub_0508h      ;4905 cd 08 05
 l4908h:
-    jp c,0376h          ;4908 da 76 03
+    jp c,l0376h         ;4908 da 76 03
     ld (iy+20h),000h    ;490b fd 36 20 00
     jr l48e9h           ;490f 18 d8
 l4911h:
@@ -5961,7 +6192,7 @@ l4911h:
     jr z,l493fh         ;4918 28 25
     ld a,(hl)           ;491a 7e
     call l0518h+1       ;491b cd 19 05
-    jp c,0376h          ;491e da 76 03
+    jp c,l0376h         ;491e da 76 03
     inc hl              ;4921 23
     ld (45f0h),hl       ;4922 22 f0 45
     ld a,(l45f1h+1)     ;4925 3a f2 45
@@ -5980,12 +6211,12 @@ l4930h:
     jr nz,l4911h        ;493d 20 d2
 l493fh:
     xor a               ;493f af
-    call 0508h          ;4940 cd 08 05
+    call sub_0508h      ;4940 cd 08 05
     jr nc,l493fh        ;4943 30 fa
-    jp 0376h            ;4945 c3 76 03
+    jp l0376h           ;4945 c3 76 03
     call sub_1689h      ;4948 cd 89 16
     bit 7,(iy+28h)      ;494b fd cb 28 7e
-    jp z,0376h          ;494f ca 76 03
+    jp z,l0376h         ;494f ca 76 03
     bit 6,(iy+28h)      ;4952 fd cb 28 76
     jp nz,l0bb5h        ;4956 c2 b5 0b
     ld a,(iy+00h)       ;4959 fd 7e 00
@@ -5995,7 +6226,7 @@ l493fh:
     bit 3,(iy+28h)      ;4962 fd cb 28 5e
     jr nz,l496fh        ;4966 20 07
     bit 4,(iy+28h)      ;4968 fd cb 28 66
-    jp z,0376h          ;496c ca 76 03
+    jp z,l0376h         ;496c ca 76 03
 l496fh:
     call 0bcah          ;496f cd ca 0b
     ld a,(2d6bh)        ;4972 3a 6b 2d
@@ -6005,7 +6236,7 @@ l496fh:
     add hl,de           ;497b 19
 l497ch:
     call 04c1h          ;497c cd c1 04
-    jp c,0376h          ;497f da 76 03
+    jp c,l0376h         ;497f da 76 03
     ld (hl),a           ;4982 77
     set 7,(iy+27h)      ;4983 fd cb 27 fe
     set 4,(iy+27h)      ;4987 fd cb 27 e6
@@ -6027,7 +6258,7 @@ l49a6h:
     jr l496fh           ;49ad 18 c0
 l49afh:
     call 04c1h          ;49af cd c1 04
-    jp c,0376h          ;49b2 da 76 03
+    jp c,l0376h         ;49b2 da 76 03
     push af             ;49b5 f5
     call 05d8h          ;49b6 cd d8 05
     call 0bcah          ;49b9 cd ca 0b
@@ -6112,7 +6343,7 @@ l4a5bh:
     call 04c1h          ;4a5b cd c1 04
     jr nc,l4a66h        ;4a5e 30 06
     call 17ebh          ;4a60 cd eb 17
-    jp 0376h            ;4a63 c3 76 03
+    jp l0376h           ;4a63 c3 76 03
 l4a66h:
     ld c,a              ;4a66 4f
     ld a,(iy+25h)       ;4a67 fd 7e 25
@@ -6156,7 +6387,7 @@ l4aa5h:
     ret                 ;4ab4 c9
 l4ab5h:
     call 04c1h          ;4ab5 cd c1 04
-    jp c,0376h          ;4ab8 da 76 03
+    jp c,l0376h         ;4ab8 da 76 03
     ld hl,(2aech)       ;4abb 2a ec 2a
     ld c,(iy+20h)       ;4abe fd 4e 20
     inc (iy+20h)        ;4ac1 fd 34 20
@@ -7238,7 +7469,7 @@ l527dh:
     ld a,(2002h)        ;52d8 3a 02 20
     push de             ;52db d5
     ld de,0000h         ;52dc 11 00 00
-    call 0660h          ;52df cd 60 06
+    call sub_0660h      ;52df cd 60 06
     pop de              ;52e2 d1
     ld (hl),00h         ;52e3 36 00
     inc hl              ;52e5 23
@@ -7255,11 +7486,11 @@ l527dh:
     ld hl,l45f4h+3      ;52ff 21 f7 45
     ld a,(hl)           ;5302 7e
     or a                ;5303 b7
-    jp nz,0376h         ;5304 c2 76 03
+    jp nz,l0376h        ;5304 c2 76 03
     ld (hl),2ah         ;5307 36 2a
     inc hl              ;5309 23
     ld (hl),00h         ;530a 36 00
-    jp 0376h            ;530c c3 76 03
+    jp l0376h           ;530c c3 76 03
     ld hl,l45f4h+3      ;530f 21 f7 45
     ld a,(l45f4h+2)     ;5312 3a f6 45
     call 1544h          ;5315 cd 44 15
