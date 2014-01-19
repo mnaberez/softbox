@@ -2280,7 +2280,7 @@ drive_menu:
     call pv1d
 
     ;D = 5
-    ld hl,5
+    ld hl,0005h
     ld (dd),hl
 
     ;GOSUB sub_119ah
