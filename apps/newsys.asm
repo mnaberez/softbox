@@ -2329,7 +2329,7 @@ drive_menu:
     or l
     jp z,main_menu
 
-    ;IF (R<&H41) OR (R> &H50) THEN GOTO
+    ;IF (R < &H41) OR (R > &H50) THEN GOTO drive_menu
     ld hl,(rr)          ;HL=(rr)
     ld de,0-'A'         ;DE=-41h
     ld a,h
@@ -2363,7 +2363,7 @@ l0f96h:
     ld l,a              ;HL=HL or DE
     ld a,h
     or l
-    jp nz,drive_menu    ;IF HL <>0 THEN GOTO drive_menu
+    jp nz,drive_menu
 
     ;D=(R-&H41)\2
     ld de,0-'A'
