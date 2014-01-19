@@ -40,6 +40,7 @@ cwrite:        equ 02h    ;Console Output
 cwritestr:     equ 09h    ;Output String
 creadstr:      equ 0ah    ;Buffered Console Input
 
+tab:           equ 09h    ;Tab
 lf:            equ 0ah    ;Line Feed
 cr:            equ 0dh    ;Carriage Return
 cls:           equ 1ah    ;Clear Screen
@@ -4813,7 +4814,7 @@ clock_freq:
 leadin_tilde:
     db 18h
     dw leadin_tilde+3
-    db 09h,09h,"     (Lead-in = TILDE)"
+    db tab,tab,"     (Lead-in = TILDE)"
 
 leadin_esc:
     db 25h
