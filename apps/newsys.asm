@@ -2329,7 +2329,7 @@ drive_menu:
     or l
     jp z,main_menu
 
-    ;IF (R<&H41) OR (R> &H50) THEN GOTO 
+    ;IF (R<&H41) OR (R> &H50) THEN GOTO
     ld hl,(rr)          ;HL=(rr)
     ld de,0-'A'         ;DE=-41h
     ld a,h
@@ -2430,7 +2430,7 @@ l0fe7h:
     jp l109fh
 
 l1004h:
-    ;IF R <> &H54 THEN GOTO l1021h
+    ;IF R <> &H55 THEN GOTO l1021h
     ld hl,(rr)
     ld de,0-'U'         ;u(nused)
     add hl,de
@@ -2452,7 +2452,7 @@ l1004h:
     jp drive_menu
 
 l1021h:
-    ;IF R <> &H47 THEN GOTO drive_menu  ' h(ard)
+    ;IF R <> &H48 THEN GOTO drive_menu  ' h(ard)
     ld hl,(rr)
     ld de,0-'H'         ;(h)ard
     add hl,de
@@ -4692,7 +4692,7 @@ l1c59h:
     sbc a,a
     ld h,a
     ld l,a              ;HL=HL>=DE
-    ld (l02eah),hl      ;(l02eah)=HL 
+    ld (l02eah),hl      ;(l02eah)=HL
     pop hl              ;Restore value
     ld de,0-('9'+1)     ;DE=-3ah
     ld a,h
