@@ -133,7 +133,7 @@ main:
     ;GOSUB check_error
     call check_error
 
-    ;PRINT "current device number is :  "
+    ;PRINT "current device number is :  ";
     call pr0a
     ld hl,cur_dev_num
     call pv1d
@@ -149,7 +149,7 @@ main:
     ld hl,empty_string
     call pv2d
 
-    ;PRINT "new device number ? "
+    ;PRINT "new device number ? ";
     call pr0a
     ld hl,new_dev_num
     call pv1d
