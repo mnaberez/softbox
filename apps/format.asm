@@ -199,8 +199,8 @@ check_letter:
     add hl,de
     add hl,hl
 l01b3h:
-    ccf                 ;Clear carry flag
-    sbc a,a             ;Sets A=0, carry flag stays cleared
+    ccf                 ;Invert the carry flag
+    sbc a,a             ;Sets A=0, carry flag stays the same
     ld h,a              ;H = 0
     ld l,a              ;L = 0
     pop de
@@ -504,8 +504,8 @@ l0323h:
     add hl,de
     add hl,hl
 l0330h:
-    ccf                 ;Clear carry flag
-    sbc a,a             ;Sets A=0, carry stays the same
+    ccf                 ;Invert the carry flag
+    sbc a,a             ;Sets A=0, carry flag stays the same
     ld h,a              ;H = 0
     ld l,a              ;L = 0
     push hl             ;Push 0000h onto stack

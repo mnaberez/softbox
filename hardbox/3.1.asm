@@ -3398,8 +3398,8 @@ IF version = 31         ;This is for a SUNOL Hard Drive
     call sub_fae8h
     jp nz,lf036h
 
-    scf
-    ccf                 ;Clear carry flag
+    scf                 ;Set the carry flag
+    ccf                 ;Invert the carry flag (it is now clear)
 
     ld a,(rdbuf+107)
     adc a,4             ;Add 4 to round the value after devided by 8
@@ -3408,8 +3408,8 @@ IF version = 31         ;This is for a SUNOL Hard Drive
     srl a               ;A=A/8
     ld (errsec),a
 
-    scf
-    ccf                 ;Clear carry flag
+    scf                 ;Set the carry flag
+    ccf                 ;Invert the carry flag (it is now clear)
 
     ld a,(rdbuf+107+1)
     sla a
@@ -3418,8 +3418,8 @@ IF version = 31         ;This is for a SUNOL Hard Drive
     sla a
     sla a               ;A=A*32
 
-    scf
-    ccf                 ;Clear carry flag
+    scf                 ;Set the carry flag
+    ccf                 ;Invert the carry flag (it is now clear)
 
     push hl
     ld hl,errsec
@@ -5795,7 +5795,7 @@ corv_send_cmd:
 l19f4h:
     in a,(corvus)       ;Read from Konan David Junior II controller
     cp 0a0h
-    jr nz,l19f4h        ;Wait until readed data = 0a0h (Ready to received commands) 
+    jr nz,l19f4h        ;Wait until readed data = 0a0h (Ready to received commands)
 
     ld a,b              ;Restore the command
     out (corvus),a      ;Send byte (command) to the Konan David Junior II controller
