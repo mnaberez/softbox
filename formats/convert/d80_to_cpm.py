@@ -19,6 +19,7 @@ def d80_to_cpm(input_filename, output_filename):
         # each 256-byte pet sector holds two 128-byte cp/m sectors
         if i & 1 == 0:
             pet_sector_data = inp.read(256)
+            assert len(pet_sector_data) == 256
             cpm_sector_data = pet_sector_data[0:128]
         else:
             cpm_sector_data = pet_sector_data[128:256]
