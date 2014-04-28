@@ -72,15 +72,16 @@ if __name__ == '__main__':
     with open(image_filename, "wb") as image:
         with open(csv_filename, "w") as csv:
             while not end_of_disk:
-                first_half = ("%04X" % i).ljust(128, chr(0))
+                first_half = chr(0) + chr(0) + ("%04X" % i).ljust(126, chr(0))
                 csv.write("%02X,%02X,0,%04X\n" % (pet_track, pet_sector, i))
                 i += 1
 
-                second_half = ("%04X" % i).ljust(128, chr(0))
+                second_half = chr(0) + chr(0) + ("%04X" % i).ljust(126, chr(0))
                 csv.write("%02X,%02X,1,%04X\n" % (pet_track, pet_sector, i))
                 i += 1
 
                 sector_data = first_half + second_half
+                assert len(sector_data) == 256
                 image.write(sector_data)
 
                 pet_sector += 1

@@ -2,6 +2,7 @@
 ;  CP/M track, CP/M sector, first four bytes of sector
 
 warm:           equ  0000h  ;Warm start
+dma_buf:        equ  0080h  ;Default DMA buffer area (128 bytes) for disk I/O
 const:          equ 0f006h  ;Console status
 conin:          equ 0f009h  ;Console input
 seldsk:         equ 0f01bh  ;Select disk drive
@@ -37,7 +38,7 @@ loop:
     ld c,drive_num
     call seldsk         ;select disk
 
-    ld bc,0080h         ;usual cp/m dma area
+    ld bc,dma_buf       ;usual cp/m dma area
     call setdma         ;set dma address
 
     ld b,0              ;BC = current track
@@ -64,20 +65,20 @@ loop:
     ld c,','
     call conout         ;print comma
 
-    ;print first four bytes of sector
+    ;print bytes 2-5 of sector
 
-    ld hl,0080h
+    ld hl,dma_buf+2
     ld c,(hl)
-    call conout         ;print first byte
+    call conout         ;print byte 2
     inc hl
     ld c,(hl)
-    call conout         ;print second byte
+    call conout         ;print byte 3
     inc hl
     ld c,(hl)
-    call conout         ;print third byte
+    call conout         ;print byte 4
     inc hl
     ld c,(hl)
-    call conout         ;print fourth byte
+    call conout         ;print byte 5
 
     ;print newline
 
