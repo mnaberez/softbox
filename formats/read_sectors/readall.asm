@@ -30,6 +30,7 @@ loop:
     ;check for user abort
 
     call const          ;0=no key, 0ffh=key
+    or a                ;set flags
     jp nz,abort         ;abort if key pressed
 
     ;read sector
