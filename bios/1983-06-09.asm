@@ -2082,7 +2082,8 @@ ieeenum:
 ;
 ;TODO: This routine is used to send track numbers for CBM DOS commands but
 ;      it can only send 2 digits.  It needs to be fixed to send 3 digits
-;      because the 8250 has 154 tracks.
+;      because the 8250 has 154 tracks.  It has been confirmed that
+;      reading tracks 100+ does not work with a real CBM 8250.
 ;
     push af
     ld a,' '
