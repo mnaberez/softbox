@@ -22,7 +22,7 @@
 ;
 ;IEEE-488 primary addresses:
 ;  "SET P=#"  LPT:
-;  "SET A=#"  UL1:
+;  "SET A=#"  UL1:  (Broken, see note in set_a routine)
 ;  "SET R=#"  PTR:
 ;  "SET N=#"  PTP:
 ;
