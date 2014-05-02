@@ -105,6 +105,17 @@ loop:
     cp last_track+1     ;past last track?
     jp nz,loop          ;  no: loop to do next track
 
+done:
+    jp warm             ;all done
+
+abort:
+    call conin          ;consume the key pressed
+                        ;fall through into error
+error:
+    ld c,'!'
+    call conout
+    jp warm
+
 put_hex_byte:
 ;Write the byte in A to console out as a two digit hex number.
 ;
@@ -127,17 +138,6 @@ nib1:
     add a,30h
     ld c,a
     jp conout           ;Write char to console out and return.
-
-done:
-    jp warm             ;all done
-
-abort:
-    call conin          ;consume the key pressed
-                        ;fall through into error
-error:
-    ld c,'!'
-    call conout
-    jp warm
 
 cur_track:
     db 00h
