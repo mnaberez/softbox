@@ -160,7 +160,7 @@ dtype_ef: equ dtypes+2  ;  E:, F:    02h = Corvus 10MB
 dtype_gh: equ dtypes+3  ;  G:, H:    03h = Corvus 20MB
 dtype_ij: equ dtypes+4  ;  I:, J:    04h = Corvus 5MB (as 1 CP/M drive)
 dtype_kl: equ dtypes+5  ;  L:, K:    05h = Corvus 5MB (as 2 CP/M drives)
-dtype_mn: equ dtypes+6  ;  M:, N:    06h = CBM 8250
+dtype_mn: equ dtypes+6  ;  M:, N:    06h = CBM 8250 (Broken, see ieeenum)
 dtype_op: equ dtypes+7  ;  O:, P:   0ffh = No device
 
 ddevs:    equ 0ea78h    ;Disk drive device addresses:
