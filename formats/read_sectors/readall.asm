@@ -11,7 +11,6 @@ setsec:         equ 0f021h  ;Set sector number
 setdma:         equ 0f024h  ;Set DMA address
 read:           equ 0f027h  ;Read selected sector
 conout:         equ 0f00ch  ;Print char in C
-put_hex_byte:   equ 0f402h  ;Print byte in A as hex
 
 lf:             equ 0ah     ;Line Feed
 cr:             equ 0dh     ;Carriage Return
@@ -105,6 +104,29 @@ loop:
     ld (cur_track),a    ;save it
     cp last_track+1     ;past last track?
     jp nz,loop          ;  no: loop to do next track
+
+put_hex_byte:
+;Write the byte in A to console out as a two digit hex number.
+;
+    push af             ;Preserve A
+    rra                 ;Rotate high nibble into low
+    rra
+    rra
+    rra
+    call put_hex_nib    ;Write it to console out
+    pop af              ;Recall A for the low nibble
+                        ;Fall through to write it to console out
+put_hex_nib:
+;Write the nibble in A to console out as a one digit hex number.
+;
+    and 0fh             ;Mask off high nibble
+    cp 0ah              ;Convert low nibble to ASCII char
+    jr c,nib1
+    add a,07h
+nib1:
+    add a,30h
+    ld c,a
+    jp conout           ;Write char to console out and return.
 
 done:
     jp warm             ;all done
