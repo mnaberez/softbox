@@ -565,7 +565,7 @@ tstdrv:
     ret nc              ;Return with carry clear if drive is greater than P:
 
     push hl             ;Save original HL
-    push af             ;Save A (CP/M drive type)
+    push af             ;Save A (CP/M drive number)
 
                         ;Find index of this drive in the dtypes table:
     or a                ;  Clear carry flag
