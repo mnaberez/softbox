@@ -66,8 +66,8 @@ Addresses: (x0 = x000-x7FF, x8= x800-xfff)
 18 18 18 18  38 38 38 38  58 58 58 58  78 78 78 78  config
 98 98 98 98  b8 b8 b8 b8  d8 d8 d8 d8  f8 f8 f8 f8 /
 
-Equalations:
-============
+Equations:
+==========
 D0          = /A1    + (A5  + A6)                & A4  & A3  & A2  & A0
 RAS         = /-BOOT + (A12 + S_H)               & A15 & A14 & A13 & -RSFH
 
