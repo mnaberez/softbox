@@ -2043,7 +2043,7 @@ ieeenum:
     ld a,' '
     call wrieee         ;Send space character
     pop af
-    ld e,2fh
+    ld e,'0'-1
 num1:
     sub 0ah
     inc e

@@ -359,7 +359,7 @@ bas_num:
     ex de,hl            ;HL is now the BASIC line number
                         ;Don't care about DE
 
-    ld a,2fh            ;Seed A with 2Fh = ASCII "0" - 1
+    ld a,'0'-1          ;Seed A with 2Fh = ASCII "0" - 1
 
 bn1:                    ;Subtract BC from HL until HL goes negative:
     inc a               ;  Increment to next ASCII digit (e.g. "0" to "1")
