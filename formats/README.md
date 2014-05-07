@@ -3,10 +3,6 @@
 This directory contains reverse engineering work to determine how
 the SoftBox stores CP/M data on Commodore floppy disks.
 
- - ``find_trk_sec/`` maps the disk layout without actually accessing the
-   disk.  For every CP/M track and sector, it calls the SoftBox BIOS
-   routines that look up the Commodore track/sector number.
-
  - ``read_sectors/`` maps the disk layout by generating a special disk
    image and then reading sectors from it.  Each Commodore sector (256
    bytes) is known to hold two CP/M sectors (128 bytes each).  The disk
