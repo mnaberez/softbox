@@ -22,3 +22,15 @@ diskdef softbox-d80
   boottrk 0
   os 2.2
 end
+
+# SoftBox disk for Commodore 8250 (D82 image)
+diskdef softbox-d82
+  seclen 128
+  tracks 253
+  sectrk 32
+  blocksize 4096
+  maxdir 128
+  skew 0
+  boottrk 0
+  os 2.2
+end
