@@ -1422,7 +1422,7 @@ le3a8h:
     bit 7,b             ;Is bit 7 of B set, this means B is negative and we read more than 128 bytes
     jr nz,le3b5h        ;  YES: Don't store the readed character
 
-    ld (hl),a           ;Store the charcater in getbuf
+    ld (hl),a           ;Store the character in getbuf
     inc hl              ;Increment the position in getbuf
     dec b               ;Decrement the counter B
 
@@ -1454,7 +1454,7 @@ le3d3h:
 le3deh:
     call rdieee
     jp c,le2aeh
-    ld (hl),a           ;Store the charcater in cmdbuf
+    ld (hl),a           ;Store the character in cmdbuf
     ld a,l
     cp low (cmdbuf+127)
     jr z,le3eeh
