@@ -51,12 +51,12 @@ ppi2_pb:  equ ppi2+1    ;  Port B:
 ppi2_pc:  equ ppi2+2    ;  Port C:
                         ;    PC7 Unused
                         ;    PC6 Unused
-                        ;    PC5 Corvus DIRC
-                        ;    PC4 Corvus READY
+                        ;    PC5 Corvus DIRC in
+                        ;    PC4 Corvus READY in
                         ;    PC3 Unused
-                        ;    PC2 LED "Ready"
-                        ;    PC1 LED "B"
-                        ;    PC0 LED "A"
+                        ;    PC2 LED "Ready" out
+                        ;    PC1 LED "B" out
+                        ;    PC0 LED "A" out
 ppi2_cr:  equ ppi2+3    ;  Control Register
 
 corvus:   equ 18h       ;Corvus data bus
