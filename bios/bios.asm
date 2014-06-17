@@ -875,8 +875,10 @@ cinit1:
 
     in a,(ppi2_pc)
     and dirc
-    jr nz,corv_init     ;Loop until Corvus DIRC=low
-    call corv_wait_read ;Wait until Corvus READY=high, then read byte
+    jr nz,corv_init     ;Loop until Corvus DIRC=low (drive-to-host)
+
+    call corv_wait_read ;Wait until Corvus READY=high (drive is ready),
+                        ;  then read byte
 
     cp 8fh              ;Response should be 8fh (Illegal Command)
     jr nz,corv_init     ;Loop until the expected response is received
@@ -906,10 +908,12 @@ corv_read_sec:
     jr nz,corv_ret_err  ;Jump if error code is not OK
 
     ld b,80h            ;B = 128 bytes to read
+
 crds1:
     in a,(ppi2_pc)
     and ready
-    jr z,crds1          ;Wait until Corvus READY=high
+    jr z,crds1          ;Wait until Corvus READY=high (drive is ready)
+
     in a,(corvus)       ;Read data byte from Corvus
     ld (hl),a           ;Store it in the buffer
     inc hl              ;Increment to next position in DMA buffer
@@ -1006,7 +1010,8 @@ corv_read_err:
     in a,(ppi2_pc)
     xor ready           ;Flip bit 4 (Corvus READY)
     and ready+dirc      ;Mask off all except bits 4 (READY) and 5 (DIRC)
-    jr nz,corv_read_err
+    jr nz,corv_read_err ;Wait until READY=high (drive is ready) and
+                        ;  DIRC=low (drive-to-host)
 
     ld b,19h
 crde1:
@@ -1015,7 +1020,9 @@ crde1:
     in a,(ppi2_pc)
     xor ready           ;Flip bit 4 (Corvus READY)
     and ready+dirc      ;Mask off all except bits 4 (READY) and 5 (DIRC)
-    jr nz,corv_read_err
+    jr nz,corv_read_err ;Wait until READY=high (drive is ready) and
+                        ;  DIRC=low (drive-to-host)
+
                         ;Fall through into corv_wait_read
 
 corv_wait_read:
@@ -1025,8 +1032,9 @@ corv_wait_read:
 ;
     in a,(ppi2_pc)
     and ready           ;Mask off all but bit 4 (Corvus READY)
-    jr z,corv_wait_read ;Wait until Corvus READY=high
-    in a,(corvus)
+    jr z,corv_wait_read ;Wait until Corvus READY=high (drive is ready)
+
+    in a,(corvus)       ;Read response byte from Corvus data bus
     bit 7,a             ;Bit 7 of Corvus error byte is set if fatal error
                         ;Z = opposite of bit 7 (Z=1 if OK, Z=0 if error)
     ret
@@ -1041,7 +1049,7 @@ corv_put_byte:
 corpb1:
     in a,(ppi2_pc)
     and ready           ;Mask off all except bit 4 (Corvus READY)
-    jr z,corpb1         ;Wait until Corvus READY=high
+    jr z,corpb1         ;Wait until Corvus READY=high (drive is ready)
     pop af
     out (corvus),a      ;Put byte on Corvus data bus
     ret
