@@ -867,8 +867,8 @@ corv_init:
 ;Initialize the Corvus hard drive controller
 ;
     ld a,0ffh           ;0ffh = byte that is an invalid command
-    out (corvus),a      ;Send it to the controller
-
+    out (corvus),a      ;Write byte to Corvus data bus
+                        ;  (Hardware will pulse Corvus /STROBE on write)
     ld b,0ffh
 cinit1:
     djnz cinit1         ;Delay loop
@@ -914,8 +914,10 @@ crds1:
     and ready
     jr z,crds1          ;Wait until Corvus READY=high (drive is ready)
 
-    in a,(corvus)       ;Read data byte from Corvus
-    ld (hl),a           ;Store it in the buffer
+    in a,(corvus)       ;Read byte from Corvus data bus
+                        ;  (Hardware will pulse Corvus /STROBE on read)
+
+    ld (hl),a           ;Store data byte in the buffer
     inc hl              ;Increment to next position in DMA buffer
     djnz crds1          ;Decrement B, loop until all bytes read
 
@@ -951,7 +953,8 @@ cwrs1:
     and ready           ;Mask off all but bit 4 (Corvus READY)
     jr z,cwrs1          ;Wait until Corvus READY=high
     ld a,(hl)           ;Read data byte from DMA buffer
-    out (corvus),a      ;Send it to the Corvus
+    out (corvus),a      ;Write byte to Corvus data bus
+                        ;  (Hardware will pulse Corvus /STROBE on write)
     inc hl              ;Increment to next position in DMA buffer
     djnz cwrs1          ;Decrement B, loop until all bytes written
 
@@ -1034,7 +1037,8 @@ corv_wait_read:
     and ready           ;Mask off all but bit 4 (Corvus READY)
     jr z,corv_wait_read ;Wait until Corvus READY=high (drive is ready)
 
-    in a,(corvus)       ;Read response byte from Corvus data bus
+    in a,(corvus)       ;Read byte from Corvus data bus
+                        ;  (Hardware will pulse Corvus /STROBE on read)
     bit 7,a             ;Bit 7 of Corvus error byte is set if fatal error
                         ;Z = opposite of bit 7 (Z=1 if OK, Z=0 if error)
     ret
@@ -1051,7 +1055,8 @@ corpb1:
     and ready           ;Mask off all except bit 4 (Corvus READY)
     jr z,corpb1         ;Wait until Corvus READY=high (drive is ready)
     pop af
-    out (corvus),a      ;Put byte on Corvus data bus
+    out (corvus),a      ;Write byte to Corvus data bus
+                        ;  (Hardware will pulse Corvus /STROBE on write)
     ret
 
 corv_find_dadr:
