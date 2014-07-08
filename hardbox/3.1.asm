@@ -1246,7 +1246,7 @@ le2aeh:
 
     in a,(ppi2_pb)
     and 00000000b
-    out (ppi2_pb),a     ;ATNA=high (inactice), EOI_out=high, NRFD_out=high, NDAC_out=high, DAV_out=high, ATN_out=high
+    out (ppi2_pb),a     ;ATNA=high (inactive), EOI_out=high, NRFD_out=high, NDAC_out=high, DAV_out=high, ATN_out=high
 
 le2b9h:
     in a,(ppi2_pa)
