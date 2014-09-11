@@ -10,7 +10,7 @@ MBASIC program compiled with BASCOM.
 format.com
 ----------
 
-Unknown compiler.
+CORAL 66 program compiled with RCC80.
 
     Disk formatting program
     For Softbox CP/M
@@ -40,7 +40,7 @@ MBASIC program compiled with BASCOM.
 newdos.com
 ----------
 
-Unknown compiler.
+CORAL 66 program compiled with RCC80.
 
     HardBox configuration program
     For Mini-Winchester
@@ -49,7 +49,7 @@ Unknown compiler.
 newsys.com
 ----------
 
-Unknown compiler.
+CORAL 66 program compiled with RCC80.
 
     CP/M Reconfiguration
     ---- ---------------
