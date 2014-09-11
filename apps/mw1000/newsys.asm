@@ -2,7 +2,7 @@
 ;  Configure SoftBox settings on the MW-1000.
 ;
 ;This program was not written in assembly language.  It was written
-;in a high level language but the compiler is unknown.  This is a
+;in CORAL 66 and compiled with RCC80 from Micro Focus Ltd.  This is a
 ;disassembly of the compiled program.
 ;
 
