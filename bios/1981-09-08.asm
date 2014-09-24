@@ -2180,31 +2180,43 @@ ms1:
     ret
 
 conin:
-    ld a,(0003h)        ;faf7 3a 03 00   3a 03 00    : . .
-    rra                 ;fafa 1f   1f  .
-    jp nc,ser_in        ;fafb d2 d6 fb   d2 d6 fb    . . .
-    in a,(15h)          ;fafe db 15   db 15   . .
-    or 04h              ;fb00 f6 04   f6 04   . .
-    out (15h),a         ;fb02 d3 15   d3 15   . .
-    ld a,02h            ;fb04 3e 02   3e 02   > .
-    call cbm_srq        ;fb06 cd df fb   cd df fb    . . .
-    call rdieee         ;fb09 cd 1c fe   cd 1c fe    . . .
-    push af             ;fb0c f5   f5  .
-    in a,(15h)          ;fb0d db 15   db 15   . .
-    and 0f3h            ;fb0f e6 f3   e6 f3   . .
-    out (15h),a         ;fb11 d3 15   d3 15   . .
-    pop af              ;fb13 f1   f1  .
-    ret                 ;fb14 c9   c9  .
+;Console input
+;Blocks until a key is available, then returns the key in A.
+;
+    ld a,(iobyte)
+    rra
+    jp nc,ser_in        ;Jump out if console is RS-232 port (CON: = TTY:)
+
+    in a,(ppi2_pb)
+    or ndac
+    out (ppi2_pb),a     ;NDAC_OUT=low
+
+    ld a,02h            ;Command 02h = Wait for a key and send it
+    call cbm_srq
+    call rdieee
+
+    push af
+    in a,(ppi2_pb)
+    and 255-ndac-nrfd
+    out (ppi2_pb),a     ;NDAC_OUT=high, NRFD_OUT=high
+    pop af
+    ret
+
 const:
-    ld a,(0003h)        ;fb15 3a 03 00   3a 03 00    : . .
-    rra                 ;fb18 1f   1f  .
-    jp nc,ser_rx_status ;fb19 d2 c3 fb   d2 c3 fb    . . .
-    ld a,01h            ;fb1c 3e 01   3e 01   > .
-    call cbm_srq        ;fb1e cd df fb   cd df fb    . . .
-    ld a,00h            ;fb21 3e 00   3e 00   > .
-    ret nc              ;fb23 d0   d0  .
-    ld a,0ffh           ;fb24 3e ff   3e ff   > .
-    ret                 ;fb26 c9   c9  .
+;Console status
+;
+;Returns A=0 if no character is ready, A=0FFh if one is.
+;
+    ld a,(iobyte)
+    rra
+    jp nc,ser_rx_status ;Jump out if console is RS-232 port (CON: = TTY:)
+
+    ld a,01h            ;Command 01h = Check if a key has been pressed
+    call cbm_srq
+    ld a,00h
+    ret nc              ;Return with A=0 if no key
+    ld a,0ffh
+    ret                 ;Return with A=0ffh if a key is available
 
 conout:
 ;Console output.
