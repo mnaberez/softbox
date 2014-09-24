@@ -741,27 +741,7 @@ lf353h:
     ld a,h              ;f37e 7c   7c  |
     jp sub_f32bh        ;f37f c3 2b f3   c3 2b f3    . + .
 lf382h:
-    dec c               ;f382 0d   0d  .
-    ld a,(bc)           ;f383 0a   0a  .
-    rlca                ;f384 07   07  .
-    ld hl,(2a2ah)       ;f385 2a 2a 2a   2a 2a 2a    * * *
-    jr nz,$+74          ;f388 20 48   20 48     H
-    ld b,c              ;f38a 41   41  A
-    ld d,d              ;f38b 52   52  R
-    ld b,h              ;f38c 44   44  D
-    jr nz,$+70          ;f38d 20 44   20 44     D
-    ld c,c              ;f38f 49   49  I
-    ld d,e              ;f390 53   53  S
-    ld c,e              ;f391 4b   4b  K
-    jr nz,$+71          ;f392 20 45   20 45     E
-    ld d,d              ;f394 52   52  R
-    ld d,d              ;f395 52   52  R
-    ld c,a              ;f396 4f   4f  O
-    ld d,d              ;f397 52   52  R
-    jr nz,$+44          ;f398 20 2a   20 2a     *
-    ld hl,(0d2ah)       ;f39a 2a 2a 0d   2a 2a 0d    * * .
-    ld a,(bc)           ;f39d 0a   0a  .
-    nop                 ;f39e 00   00  .
+    db cr,lf,bell,"*** HARD DISK ERROR ***",cr,lf,00h
     ld e,h              ;f39f 5c   5c  \
     nop                 ;f3a0 00   00  .
     nop                 ;f3a1 00   00  .
@@ -1075,51 +1055,51 @@ lf605h:
     call idrive         ;f613 cd 28 fa   cd 28 fa    . ( .
     jr lf5cdh           ;f616 18 b5   18 b5   . .
 lf618h:
-    ld hl,lf7a8h        ;f618 21 a8 f7   21 a8 f7    ! . .
+    ld hl,bdos_err_on        ;f618 21 a8 f7   21 a8 f7    ! . .
     call sub_fcf1h      ;f61b cd f1 fc   cd f1 fc    . . .
     ld a,(0045h)        ;f61e 3a 45 00   3a 45 00    : E .
     add a,41h           ;f621 c6 41   c6 41   . A
     ld c,a              ;f623 4f   4f  O
     call conout         ;f624 cd 27 fb   cd 27 fb    . ' .
-    ld hl,lf7a5h        ;f627 21 a5 f7   21 a5 f7    ! . .
+    ld hl,colon_space        ;f627 21 a5 f7   21 a5 f7    ! . .
     call sub_fcf1h      ;f62a cd f1 fc   cd f1 fc    . . .
     ld a,(004fh)        ;f62d 3a 4f 00   3a 4f 00    : O .
-    ld hl,lf6c0h        ;f630 21 c0 f6   21 c0 f6    ! . .
+    ld hl,cbm_err_26        ;f630 21 c0 f6   21 c0 f6    ! . .
     cp 1ah              ;f633 fe 1a   fe 1a   . .
     jr z,lf684h         ;f635 28 4d   28 4d   ( M
-    ld hl,lf6d5h        ;f637 21 d5 f6   21 d5 f6    ! . .
+    ld hl,cbm_err_25        ;f637 21 d5 f6   21 d5 f6    ! . .
     cp 19h              ;f63a fe 19   fe 19   . .
     jr z,lf684h         ;f63c 28 46   28 46   ( F
-    ld hl,lf6e8h        ;f63e 21 e8 f6   21 e8 f6    ! . .
+    ld hl,cbm_err_28        ;f63e 21 e8 f6   21 e8 f6    ! . .
     cp 1ch              ;f641 fe 1c   fe 1c   . .
     jr z,lf684h         ;f643 28 3f   28 3f   ( ?
-    ld hl,lf6f8h        ;f645 21 f8 f6   21 f8 f6    ! . .
+    ld hl,cbm_err_20        ;f645 21 f8 f6   21 f8 f6    ! . .
     cp 14h              ;f648 fe 14   fe 14   . .
     jr z,lf684h         ;f64a 28 38   28 38   ( 8
-    ld hl,lf707h        ;f64c 21 07 f7   21 07 f7    ! . .
+    ld hl,cbm_err_21        ;f64c 21 07 f7   21 07 f7    ! . .
     cp 15h              ;f64f fe 15   fe 15   . .
     jr z,lf684h         ;f651 28 31   28 31   ( 1
     cp 4ah              ;f653 fe 4a   fe 4a   . J
     jr z,lf684h         ;f655 28 2d   28 2d   ( -
-    ld hl,lf716h        ;f657 21 16 f7   21 16 f7    ! . .
+    ld hl,cbm_err_22        ;f657 21 16 f7   21 16 f7    ! . .
     cp 16h              ;f65a fe 16   fe 16   . .
     jr z,lf684h         ;f65c 28 26   28 26   ( &
-    ld hl,lf729h        ;f65e 21 29 f7   21 29 f7    ! ) .
+    ld hl,cbm_err_23        ;f65e 21 29 f7   21 29 f7    ! ) .
     cp 17h              ;f661 fe 17   fe 17   . .
     jr z,lf684h         ;f663 28 1f   28 1f   ( .
-    ld hl,lf740h        ;f665 21 40 f7   21 40 f7    ! @ .
+    ld hl,cbm_err_27        ;f665 21 40 f7   21 40 f7    ! @ .
     cp 1bh              ;f668 fe 1b   fe 1b   . .
     jr z,lf684h         ;f66a 28 18   28 18   ( .
-    ld hl,lf759h        ;f66c 21 59 f7   21 59 f7    ! Y .
+    ld hl,cbm_err_24        ;f66c 21 59 f7   21 59 f7    ! Y .
     cp 18h              ;f66f fe 18   fe 18   . .
     jr z,lf684h         ;f671 28 11   28 11   ( .
-    ld hl,lf780h        ;f673 21 80 f7   21 80 f7    ! . .
+    ld hl,cbm_err_70        ;f673 21 80 f7   21 80 f7    ! . .
     cp 46h              ;f676 fe 46   fe 46   . F
     jr z,lf684h         ;f678 28 0a   28 0a   ( .
-    ld hl,lf794h        ;f67a 21 94 f7   21 94 f7    ! . .
+    ld hl,cbm_err_73        ;f67a 21 94 f7   21 94 f7    ! . .
     cp 49h              ;f67d fe 49   fe 49   . I
     jr z,lf684h         ;f67f 28 03   28 03   ( .
-    ld hl,lf76dh        ;f681 21 6d f7   21 6d f7    ! m .
+    ld hl,cbm_err_xx        ;f681 21 6d f7   21 6d f7    ! m .
 lf684h:
     call sub_fcf1h      ;f684 cd f1 fc   cd f1 fc    . . .
 lf687h:
@@ -1151,248 +1131,49 @@ lf6aah:
     jp z,lf5c8h         ;f6ba ca c8 f5   ca c8 f5    . . .
     ld a,00h            ;f6bd 3e 00   3e 00   > .
     ret                 ;f6bf c9   c9  .
-lf6c0h:
-    ld b,h              ;f6c0 44   44  D
-    ld l,c              ;f6c1 69   69  i
-    ld (hl),e           ;f6c2 73   73  s
-    ld l,e              ;f6c3 6b   6b  k
-    jr nz,lf73dh        ;f6c4 20 77   20 77     w
-    ld (hl),d           ;f6c6 72   72  r
-    ld l,c              ;f6c7 69   69  i
-    ld (hl),h           ;f6c8 74   74  t
-    ld h,l              ;f6c9 65   65  e
-    jr nz,lf73ch        ;f6ca 20 70   20 70     p
-    ld (hl),d           ;f6cc 72   72  r
-    ld l,a              ;f6cd 6f   6f  o
-    ld (hl),h           ;f6ce 74   74  t
-    ld h,l              ;f6cf 65   65  e
-    ld h,e              ;f6d0 63   63  c
-    ld (hl),h           ;f6d1 74   74  t
-    ld h,l              ;f6d2 65   65  e
-    ld h,h              ;f6d3 64   64  d
-    nop                 ;f6d4 00   00  .
-lf6d5h:
-    ld d,a              ;f6d5 57   57  W
-    ld (hl),d           ;f6d6 72   72  r
-    ld l,c              ;f6d7 69   69  i
-    ld (hl),h           ;f6d8 74   74  t
-    ld h,l              ;f6d9 65   65  e
-    jr nz,$+120         ;f6da 20 76   20 76     v
-    ld h,l              ;f6dc 65   65  e
-    ld (hl),d           ;f6dd 72   72  r
-    ld l,c              ;f6de 69   69  i
-    ld h,(hl)           ;f6df 66   66  f
-    ld a,c              ;f6e0 79   79  y
-    jr nz,lf748h        ;f6e1 20 65   20 65     e
-    ld (hl),d           ;f6e3 72   72  r
-    ld (hl),d           ;f6e4 72   72  r
-    ld l,a              ;f6e5 6f   6f  o
-    ld (hl),d           ;f6e6 72   72  r
-    nop                 ;f6e7 00   00  .
-lf6e8h:
-    ld c,h              ;f6e8 4c   4c  L
-    ld l,a              ;f6e9 6f   6f  o
-    ld l,(hl)           ;f6ea 6e   6e  n
-    ld h,a              ;f6eb 67   67  g
-    jr nz,$+102         ;f6ec 20 64   20 64     d
-    ld h,c              ;f6ee 61   61  a
-    ld (hl),h           ;f6ef 74   74  t
-    ld h,c              ;f6f0 61   61  a
-    jr nz,lf755h        ;f6f1 20 62   20 62     b
-    ld l,h              ;f6f3 6c   6c  l
-    ld l,a              ;f6f4 6f   6f  o
-    ld h,e              ;f6f5 63   63  c
-    ld l,e              ;f6f6 6b   6b  k
-    nop                 ;f6f7 00   00  .
-lf6f8h:
-    ld c,l              ;f6f8 4d   4d  M
-    ld l,c              ;f6f9 69   69  i
-    ld (hl),e           ;f6fa 73   73  s
-    ld (hl),e           ;f6fb 73   73  s
-    ld l,c              ;f6fc 69   69  i
-    ld l,(hl)           ;f6fd 6e   6e  n
-    ld h,a              ;f6fe 67   67  g
-    jr nz,lf769h        ;f6ff 20 68   20 68     h
-    ld h,l              ;f701 65   65  e
-    ld h,c              ;f702 61   61  a
-lf703h:
-    ld h,h              ;f703 64   64  d
-    ld h,l              ;f704 65   65  e
-    ld (hl),d           ;f705 72   72  r
-    nop                 ;f706 00   00  .
-lf707h:
-    ld b,h              ;f707 44   44  D
-    ld l,c              ;f708 69   69  i
-    ld (hl),e           ;f709 73   73  s
-    ld l,e              ;f70a 6b   6b  k
-    jr nz,$+112         ;f70b 20 6e   20 6e     n
-    ld l,a              ;f70d 6f   6f  o
-    ld (hl),h           ;f70e 74   74  t
-    jr nz,lf783h        ;f70f 20 72   20 72     r
-    ld h,l              ;f711 65   65  e
-    ld h,c              ;f712 61   61  a
-    ld h,h              ;f713 64   64  d
-    ld a,c              ;f714 79   79  y
-    nop                 ;f715 00   00  .
-lf716h:
-    ld c,l              ;f716 4d   4d  M
-    ld l,c              ;f717 69   69  i
-    ld (hl),e           ;f718 73   73  s
-    ld (hl),e           ;f719 73   73  s
-    ld l,c              ;f71a 69   69  i
-    ld l,(hl)           ;f71b 6e   6e  n
-    ld h,a              ;f71c 67   67  g
-    jr nz,lf783h        ;f71d 20 64   20 64     d
-    ld h,c              ;f71f 61   61  a
-    ld (hl),h           ;f720 74   74  t
-    ld h,c              ;f721 61   61  a
-    jr nz,lf786h        ;f722 20 62   20 62     b
-    ld l,h              ;f724 6c   6c  l
-    ld l,a              ;f725 6f   6f  o
-    ld h,e              ;f726 63   63  c
-    ld l,e              ;f727 6b   6b  k
-    nop                 ;f728 00   00  .
-lf729h:
-    ld b,e              ;f729 43   43  C
-    ld l,b              ;f72a 68   68  h
-    ld h,l              ;f72b 65   65  e
-    ld h,e              ;f72c 63   63  c
-    ld l,e              ;f72d 6b   6b  k
-    ld (hl),e           ;f72e 73   73  s
-    ld (hl),l           ;f72f 75   75  u
-    ld l,l              ;f730 6d   6d  m
-    jr nz,lf798h        ;f731 20 65   20 65     e
-    ld (hl),d           ;f733 72   72  r
-    ld (hl),d           ;f734 72   72  r
-    ld l,a              ;f735 6f   6f  o
-    ld (hl),d           ;f736 72   72  r
-    jr nz,lf7a2h        ;f737 20 69   20 69     i
-    ld l,(hl)           ;f739 6e   6e  n
-    jr nz,lf7a0h        ;f73a 20 64   20 64     d
-lf73ch:
-    ld h,c              ;f73c 61   61  a
-lf73dh:
-    ld (hl),h           ;f73d 74   74  t
-    ld h,c              ;f73e 61   61  a
-    nop                 ;f73f 00   00  .
-lf740h:
-    ld b,e              ;f740 43   43  C
-    ld l,b              ;f741 68   68  h
-    ld h,l              ;f742 65   65  e
-    ld h,e              ;f743 63   63  c
-    ld l,e              ;f744 6b   6b  k
-    ld (hl),e           ;f745 73   73  s
-    ld (hl),l           ;f746 75   75  u
-    ld l,l              ;f747 6d   6d  m
-lf748h:
-    jr nz,$+103         ;f748 20 65   20 65     e
-    ld (hl),d           ;f74a 72   72  r
-    ld (hl),d           ;f74b 72   72  r
-    ld l,a              ;f74c 6f   6f  o
-    ld (hl),d           ;f74d 72   72  r
-    jr nz,$+107         ;f74e 20 69   20 69     i
-    ld l,(hl)           ;f750 6e   6e  n
-    jr nz,lf7bbh        ;f751 20 68   20 68     h
-    ld h,l              ;f753 65   65  e
-    ld h,c              ;f754 61   61  a
-lf755h:
-    ld h,h              ;f755 64   64  d
-    ld h,l              ;f756 65   65  e
-    ld (hl),d           ;f757 72   72  r
-    nop                 ;f758 00   00  .
-lf759h:
-    ld b,d              ;f759 42   42  B
-    ld a,c              ;f75a 79   79  y
-    ld (hl),h           ;f75b 74   74  t
-    ld h,l              ;f75c 65   65  e
-    jr nz,lf7c3h        ;f75d 20 64   20 64     d
-    ld h,l              ;f75f 65   65  e
-    ld h,e              ;f760 63   63  c
-    ld l,a              ;f761 6f   6f  o
-    ld h,h              ;f762 64   64  d
-    ld l,c              ;f763 69   69  i
-    ld l,(hl)           ;f764 6e   6e  n
-    ld h,a              ;f765 67   67  g
-    jr nz,$+103         ;f766 20 65   20 65     e
-    ld (hl),d           ;f768 72   72  r
-lf769h:
-    ld (hl),d           ;f769 72   72  r
-    ld l,a              ;f76a 6f   6f  o
-    ld (hl),d           ;f76b 72   72  r
-    nop                 ;f76c 00   00  .
-lf76dh:
-    ld d,l              ;f76d 55   55  U
-    ld l,(hl)           ;f76e 6e   6e  n
-    ld l,e              ;f76f 6b   6b  k
-    ld l,(hl)           ;f770 6e   6e  n
-    ld l,a              ;f771 6f   6f  o
-    ld (hl),a           ;f772 77   77  w
-    ld l,(hl)           ;f773 6e   6e  n
-    jr nz,lf7dbh        ;f774 20 65   20 65     e
-    ld (hl),d           ;f776 72   72  r
-    ld (hl),d           ;f777 72   72  r
-    ld l,a              ;f778 6f   6f  o
-    ld (hl),d           ;f779 72   72  r
-    jr nz,$+101         ;f77a 20 63   20 63     c
-    ld l,a              ;f77c 6f   6f  o
-    ld h,h              ;f77d 64   64  d
-    ld h,l              ;f77e 65   65  e
-    nop                 ;f77f 00   00  .
-lf780h:
-    ld b,e              ;f780 43   43  C
-    ld l,a              ;f781 6f   6f  o
-    ld l,l              ;f782 6d   6d  m
-lf783h:
-    ld l,l              ;f783 6d   6d  m
-    ld l,a              ;f784 6f   6f  o
-    ld h,h              ;f785 64   64  d
-lf786h:
-    ld l,a              ;f786 6f   6f  o
-    ld (hl),d           ;f787 72   72  r
-    ld h,l              ;f788 65   65  e
-    jr nz,$+70          ;f789 20 44   20 44     D
-    ld c,a              ;f78b 4f   4f  O
-    ld d,e              ;f78c 53   53  S
-    jr nz,lf7f1h        ;f78d 20 62   20 62     b
-    ld (hl),l           ;f78f 75   75  u
-    ld h,a              ;f790 67   67  g
-    jr nz,lf7b4h        ;f791 20 21   20 21     !
-    nop                 ;f793 00   00  .
-lf794h:
-    ld d,a              ;f794 57   57  W
-    ld (hl),d           ;f795 72   72  r
-    ld l,a              ;f796 6f   6f  o
-    ld l,(hl)           ;f797 6e   6e  n
-lf798h:
-    ld h,a              ;f798 67   67  g
-    jr nz,$+70          ;f799 20 44   20 44     D
-    ld c,a              ;f79b 4f   4f  O
-    ld d,e              ;f79c 53   53  S
-    jr nz,lf805h        ;f79d 20 66   20 66     f
-    ld l,a              ;f79f 6f   6f  o
-lf7a0h:
-    ld (hl),d           ;f7a0 72   72  r
-    ld l,l              ;f7a1 6d   6d  m
-lf7a2h:
-    ld h,c              ;f7a2 61   61  a
-    ld (hl),h           ;f7a3 74   74  t
-    nop                 ;f7a4 00   00  .
-lf7a5h:
-    ld a,(0020h)        ;f7a5 3a 20 00   3a 20 00    :   .
-lf7a8h:
-    dec c               ;f7a8 0d   0d  .
-    ld a,(bc)           ;f7a9 0a   0a  .
-    ld b,d              ;f7aa 42   42  B
-    ld b,h              ;f7ab 44   44  D
-    ld c,a              ;f7ac 4f   4f  O
-    ld d,e              ;f7ad 53   53  S
-    jr nz,lf815h        ;f7ae 20 65   20 65     e
-    ld (hl),d           ;f7b0 72   72  r
-    ld (hl),d           ;f7b1 72   72  r
-    jr nz,lf823h        ;f7b2 20 6f   20 6f     o
-lf7b4h:
-    ld l,(hl)           ;f7b4 6e   6e  n
-    jr nz,lf7b7h        ;f7b5 20 00   20 00     .
+
+cbm_err_26:
+    db "Disk write protected",0
+
+cbm_err_25:
+    db "Write verify error",0
+
+cbm_err_28:
+    db "Long data block",0
+
+cbm_err_20:
+    db "Missing header",0
+
+cbm_err_21:
+    db "Disk not ready",0
+
+cbm_err_22:
+    db "Missing data block",0
+
+cbm_err_23:
+    db "Checksum error in data",0
+
+cbm_err_27:
+    db "Checksum error in header",0
+
+cbm_err_24:
+    db "Byte decoding error",0
+
+cbm_err_xx:
+    db "Unknown error code",0
+
+cbm_err_70:
+    db "Commodore DOS bug !",0
+
+cbm_err_73:
+    db "Wrong DOS format",0
+
+colon_space:
+    db ": ",0
+
+bdos_err_on:
+    db cr,lf,"BDOS err on ",0
+
 lf7b7h:
     ld d,l              ;f7b7 55   55  U
     ld sp,3220h         ;f7b8 31 20 32   31 20 32    1   2
@@ -1572,7 +1353,7 @@ lf871h:
     inc bc              ;f8b2 03   03  .
     cp l                ;f8b3 bd   bd  .
     inc bc              ;f8b4 03   03  .
-    jp c,lf703h         ;f8b5 da 03 f7   da 03 f7    . . .
+    jp c,0f703h         ;f8b5 da 03 f7   da 03 f7    . . .
     inc bc              ;f8b8 03   03  .
     inc d               ;f8b9 14   14  .
     inc b               ;f8ba 04   04  .
