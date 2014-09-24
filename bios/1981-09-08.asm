@@ -781,6 +781,7 @@ copy_from_dma:
 ;Copy from dma_buf to dos_buf
 ;
     ld a,01h            ;A=1: dma_buf -> dos_buf
+                        ;Fall through into copy_dos_dma
 
 copy_dos_dma:
 ;Copy a 128-byte CP/M sector between the CBM DOS buffer (dos_buf)
@@ -982,7 +983,7 @@ boot:
     in a,(14h)          ;f3f4 db 14   db 14   . .
     cpl                 ;f3f6 2f   2f  /
     and 40h             ;f3f7 e6 40   e6 40   . @
-    jr nz,lf41bh        ;f3f9 20 20   20 20
+    jr nz,try_load_cpm        ;f3f9 20 20   20 20
     ld a,01h            ;f3fb 3e 01   3e 01   > .
     ld (0003h),a        ;f3fd 32 03 00   32 03 00    2 . .
 lf400h:
@@ -1002,123 +1003,192 @@ lf414h:
     cpl                 ;f416 2f   2f  /
     and 02h             ;f417 e6 02   e6 02   . .
     jr z,lf414h         ;f419 28 f9   28 f9   ( .
-lf41bh:
-    ld hl,loading       ;f41b 21 1b f5   21 1b f5    ! . .
-    call puts           ;f41e cd f1 fc   cd f1 fc    . . .
-    ld de,080fh         ;f421 11 0f 08   11 0f 08    . . .
-    call listen         ;f424 cd 90 fa   cd 90 fa    . . .
-    ld bc,0007h         ;f427 01 07 00   01 07 00    . . .
-    call delay          ;f42a cd e5 fa   cd e5 fa    . . .
-    in a,(14h)          ;f42d db 14   db 14   . .
-    cpl                 ;f42f 2f   2f  /
-    and 04h             ;f430 e6 04   e6 04   . .
-    jr z,lf445h         ;f432 28 11   28 11   ( .
-    ld a,02h            ;f434 3e 02   3e 02   > .
-    ld (0ea70h),a       ;f436 32 70 ea   32 70 ea    2 p .
-    ld a,01h            ;f439 3e 01   3e 01   > .
-    ld (0ea78h),a       ;f43b 32 78 ea   32 78 ea    2 x .
-    ld b,38h            ;f43e 06 38   06 38   . 8
-    call corv_load_cpm  ;f440 cd f4 f0   cd f4 f0    . . .
-    jr runcpm           ;f443 18 23   18 23   . #
-lf445h:
-    call unlisten       ;f445 cd a6 fa   cd a6 fa    . . .
-    ld de,080fh         ;f448 11 0f 08   11 0f 08    . . .
-    ld c,02h            ;f44b 0e 02   0e 02   . .
-    ld hl,dos_i0_0        ;f44d 21 6c f5   21 6c f5    ! l .
-    call open           ;f450 cd b5 fa   cd b5 fa    . . .
-    ld d,08h            ;f453 16 08   16 08   . .
-    ld c,1ch            ;f455 0e 1c   0e 1c   . .
-    call ieee_load_cpm  ;f457 cd 2e f5   cd 2e f5    . . .
-    jp nz,lf41bh        ;f45a c2 1b f4   c2 1b f4    . . .
-    ld de,0802h         ;f45d 11 02 08   11 02 08    . . .
-    ld c,02h            ;f460 0e 02   0e 02   . .
-    ld hl,dos_num2        ;f462 21 64 f5   21 64 f5    ! d .
-    call open           ;f465 cd b5 fa   cd b5 fa    . . .
+
+try_load_cpm:
+;Try to load the CP/M system and then run it.
+;
+;If an IEEE-488 drive responds on primary address 8, try to load
+;CP/M from it.  If the drive is not present, try to load from
+;a Corvus hard drive on ID 1.
+;
+;Loops forever until CP/M is successfully loaded, then
+;jumps to run CP/M.
+;
+    ld hl,loading
+    call puts           ;Write "Loading CP/M ..." to console out
+
+    ld de,080fh         ;D = IEEE-488 primary address 8
+                        ;E = IEEE-488 secondary address 15
+    call listen         ;Send LISTEN
+
+    ld bc,0007h         ;Wait 7 ms to allow IEEE-488 device 8
+    call delay          ;  time to respond to LISTEN
+
+    in a,(ppi2_pa)
+    cpl
+    and ndac            ;If NDAC_IN=low, it means device 8 is present.
+    jr z,try_load_ieee  ;  Jump to load CP/M from it.
+
+try_load_corvus:
+    ld a,02h            ;Load CP/M from Corvus hard drive:
+    ld (dtypes),a       ;  Drive A: type = 2 (Corvus 10MB)
+    ld a,01h
+    ld (ddevs),a        ;  Drive A: address = 1 (Corvus ID 1)
+    ld b,38h            ;  B = 56 sectors to load: D400-EFFF
+    call corv_load_cpm  ;  Load CP/M from Corvus drive (A = Corvus error)
+    jr runcpm           ;Jump to run CP/M
+
+try_load_ieee:
+    call unlisten       ;Send UNLISTEN.  Device 8 should still be
+                        ;  listening from when we tested it above.
+
+    ld de,080fh         ;D = IEEE-488 primary address 8
+                        ;E = IEEE-488 secondary address 15
+    ld c,02h            ;2 bytes in string
+    ld hl,dos_i0_0      ;"I0"
+    call open
+
+    ld d,08h            ;D = IEEE-488 primary address 8
+    ld c,1ch            ;C = 28 pages to load: D400-EFFF
+    call ieee_load_cpm  ;Load CP/M from image file (A = CBM DOS error)
+    jp nz,try_load_cpm
+
+    ld de,0802h         ;D = IEEE-488 primary address 8
+                        ;E = IEEE-488 secondary address 2
+    ld c,02h            ;2 bytes in string
+    ld hl,dos_num2      ;"#2"
+    call open           ;Open the channel
+                        ;Fall through to run CP/M
 runcpm:
-    ld sp,0100h         ;f468 31 00 01   31 00 01    1 . .
-    xor a               ;f46b af   af  .
-    push af             ;f46c f5   f5  .
-    ld ix,0eb00h        ;f46d dd 21 00 eb   dd 21 00 eb     . ! . .
-    ld hl,0ec00h        ;f471 21 00 ec   21 00 ec    ! . .
-    ld de,0ea70h        ;f474 11 70 ea   11 70 ea    . p .
-lf477h:
-    ld a,(de)           ;f477 1a   1a  .
-    or a                ;f478 b7   b7  .
-    jp m,lf4b2h         ;f479 fa b2 f4   fa b2 f4    . . .
-    cp 02h              ;f47c fe 02   fe 02   . .
-    ld bc,004ah         ;f47e 01 4a 00   01 4a 00    . J .
-    jr z,lf49bh         ;f481 28 18   28 18   ( .
-    cp 03h              ;f483 fe 03   fe 03   . .
-    jr z,lf49bh         ;f485 28 14   28 14   ( .
-    cp 04h              ;f487 fe 04   fe 04   . .
-    ld bc,0058h         ;f489 01 58 00   01 58 00    . X .
-    jr z,lf49bh         ;f48c 28 0d   28 0d   ( .
-    ld (ix+0ch),l       ;f48e dd 75 0c   dd 75 0c    . u .
-    ld (ix+0dh),h       ;f491 dd 74 0d   dd 74 0d    . t .
-    ld bc,0010h         ;f494 01 10 00   01 10 00    . . .
-    add hl,bc           ;f497 09   09  .
-    ld bc,0020h         ;f498 01 20 00   01 20 00    .   .
-lf49bh:
-    ld (ix+0eh),l       ;f49b dd 75 0e   dd 75 0e    . u .
-    ld (ix+0fh),h       ;f49e dd 74 0f   dd 74 0f    . t .
-    add hl,bc           ;f4a1 09   09  .
-    ld (ix+08h),080h    ;f4a2 dd 36 08 80   dd 36 08 80     . 6 . .
-    ld (ix+09h),0eeh    ;f4a6 dd 36 09 ee   dd 36 09 ee     . 6 . .
-    ld (ix+00h),000h    ;f4aa dd 36 00 00   dd 36 00 00     . 6 . .
-    ld (ix+01h),000h    ;f4ae dd 36 01 00   dd 36 01 00     . 6 . .
-lf4b2h:
-    ld bc,0010h         ;f4b2 01 10 00   01 10 00    . . .
-    add ix,bc           ;f4b5 dd 09   dd 09   . .
-    pop af              ;f4b7 f1   f1  .
-    inc a               ;f4b8 3c   3c  <
-    push af             ;f4b9 f5   f5  .
-    or a                ;f4ba b7   b7  .
-    rra                 ;f4bb 1f   1f  .
-    jr c,lf477h         ;f4bc 38 b9   38 b9   8 .
-    inc de              ;f4be 13   13  .
-    cp 08h              ;f4bf fe 08   fe 08   . .
-    jr nz,lf477h        ;f4c1 20 b4   20 b4     .
-    pop af              ;f4c3 f1   f1  .
-    ld a,(0d8b2h)       ;f4c4 3a b2 d8   3a b2 d8    : . .
-    ld (0ea40h),a       ;f4c7 32 40 ea   32 40 ea    2 @ .
-    ld a,(0003h)        ;f4ca 3a 03 00   3a 03 00    : . .
-    and 01h             ;f4cd e6 01   e6 01   . .
-    ld b,a              ;f4cf 47   47  G
-    ld a,(0ea60h)       ;f4d0 3a 60 ea   3a 60 ea    : ` .
-    and 0fch            ;f4d3 e6 fc   e6 fc   . .
-    or b                ;f4d5 b0   b0  .
-    ld (0003h),a        ;f4d6 32 03 00   32 03 00    2 . .
-    xor a               ;f4d9 af   af  .
-    out (09h),a         ;f4da d3 09   d3 09   . .
-    nop                 ;f4dc 00   00  .
-    out (09h),a         ;f4dd d3 09   d3 09   . .
-    nop                 ;f4df 00   00  .
-    out (09h),a         ;f4e0 d3 09   d3 09   . .
-    ld a,40h            ;f4e2 3e 40   3e 40   > @
-    out (09h),a         ;f4e4 d3 09   d3 09   . .
-    ld a,(0ea64h)       ;f4e6 3a 64 ea   3a 64 ea    : d .
-    out (09h),a         ;f4e9 d3 09   d3 09   . .
-    ld a,37h            ;f4eb 3e 37   3e 37   > 7
-    out (09h),a         ;f4ed d3 09   d3 09   . .
-    ld a,(0ea65h)       ;f4ef 3a 65 ea   3a 65 ea    : e .
-    out (0ch),a         ;f4f2 d3 0c   d3 0c   . .
-    call clear          ;f4f4 cd fd fc   cd fd fc    . . .
-    ld a,(0003h)        ;f4f7 3a 03 00   3a 03 00    : . .
-    rra                 ;f4fa 1f   1f  .
-    jr nc,lf508h        ;f4fb 30 0b   30 0b   0 .
-    ld a,(0ea67h)       ;f4fd 3a 67 ea   3a 67 ea    : g .
-    rla                 ;f500 17   17  .
-    jr nc,lf508h        ;f501 30 05   30 05   0 .
-    ld c,15h            ;f503 0e 15   0e 15   . .
-    call conout         ;f505 cd 27 fb   cd 27 fb    . ' .
-lf508h:
-    ld hl,signon        ;f508 21 87 f0   21 87 f0    ! . .
-    call puts           ;f50b cd f1 fc   cd f1 fc    . . .
-    call const          ;f50e cd 15 fb   cd 15 fb    . . .
-    inc a               ;f511 3c   3c  <
-    call z,conin        ;f512 cc f7 fa   cc f7 fa    . . .
-    ld hl,0d400h        ;f515 21 00 d4   21 00 d4    ! . .
-    jp start_ccp        ;f518 c3 1e f1   c3 1e f1    . . .
+;Perform system init and then run CP/M
+;
+;Initializes data at 0eb00h (DPH), initialize USART, displays
+;the SoftBox signon, then jumps to start the CCP.
+;
+    ld sp,0100h         ;Initialize stack pointer
+    xor a
+    push af
+    ld ix,dph_base      ;IX = destination address to write to (?)
+    ld hl,0ec00h        ;HL = source address to read from (?)
+    ld de,dtypes        ;DE = pointer to drive types
+
+run1:
+    ld a,(de)           ;A = drive type
+    or a
+    jp m,run3           ;Jump if bit 7 is set (indicates no device)
+
+    cp 02h              ;02h = Corvus 10MB
+    ld bc,004ah
+    jr z,run2
+
+    cp 03h              ;03h = Corvus 20MB
+    jr z,run2
+
+    cp 04h              ;04h = Corvus 5MB (as 1 CP/M drive)
+    ld bc,0058h
+    jr z,run2
+
+;Build the DPH for the current drive
+;
+    ld (ix+0ch),l       ;CSV: address of the directory checksum vector
+    ld (ix+0dh),h       ;     for this drive
+
+    ld bc,0010h
+    add hl,bc
+    ld bc,0020h
+
+run2:
+    ld (ix+0eh),l       ;ALV: address of the allocation vector
+    ld (ix+0fh),h       ;     for this drive
+
+    add hl,bc
+
+    ld (ix+08h),80h     ;DIRBUF: address of 128-byte directory buffer
+    ld (ix+09h),0eeh    ;        shared for all drives
+
+    ld (ix+00h),00h     ;XLT: address of sector translation table
+    ld (ix+01h),00h     ;     (address of zero indicates no translation)
+
+run3:
+;Increment to the next drive
+;
+    ld bc,0010h
+    add ix,bc           ;IX = IX + 10h
+
+    pop af
+    inc a
+    push af
+    or a
+    rra
+    jr c,run1
+
+    inc de
+    cp 08h              ;Last drive?
+    jr nz,run1          ;  No: continue until all 8 are done
+    pop af
+
+    ld a,(dirsize)      ;Get CCP directory width
+    ld (dirsave),a      ;Save it
+
+    ld a,(iobyte)       ;Get current IOBYTE
+    and 01h             ;Mask off all but bit 0 (low bit of CON:)
+    ld b,a              ;Save current CON: assignment (TTY: or CRT:) in B
+
+    ld a,(iosetup)      ;Get user defaults for IOBYTE
+    and 0fch            ;Clear CON: bits
+    or b                ;Merge current CON: assignment with defaults
+    ld (iobyte),a       ;Update IOBYTE with defaults
+
+    xor a               ;8251 USART initialization sequence
+    out (usart_st),a
+    nop
+    out (usart_st),a
+    nop
+    out (usart_st),a
+
+    ld a,40h            ;Reset
+    out (usart_st),a
+
+    ld a,(ser_mode)
+    out (usart_st),a    ;Set mode
+
+    ld a,37h            ;Set command
+                        ;  Bit 7: EH   0 = Normal (not hunt mode)
+                        ;  Bit 6: IR   0 = Normal (not internal reset)
+                        ;  Bit 5: RTS  1 = RTS output = 0
+                        ;  Bit 4: ER   1 = Reset error flag
+                        ;  Bit 3: SBRK 0 = Normal (not send break)
+                        ;  Bit 2: RxE  1 = Receive enable
+                        ;  Bit 1: DTR  1 = DTR output = 0
+                        ;  Bit 0: TxE  1 = Transmit enable
+    out (usart_st),a
+
+    ld a,(ser_baud)
+    out (baud_gen),a    ;Set baud rate
+
+    call clear          ;Clear CBM screen (no-op if console is RS-232)
+
+    ld a,(iobyte)
+    rra
+    jr nc,run4          ;Jump if console is CBM Computer (CON: = CRT:)
+
+    ld a,(termtype)     ;Get terminal type
+    rla                 ;Rotate uppercase graphics flag into carry
+    jr nc,run4          ;Jump if lowercase mode
+
+    ld c,ucase          ;Go to uppercase mode
+    call conout
+
+run4:
+    ld hl,signon
+    call puts           ;Write "60K SoftBox CP/M" signon to console out
+
+    call const          ;Check if a key is waiting (0=key, 0ffh=no key)
+    inc a
+    call z,conin        ;Get a key if one is waiting
+
+    ld hl,ccp_base      ;HL = address that starts CCP with initial command
+    jp start_ccp        ;Start CCP via HL
 
 loading:
     db cr,lf,"Loading CP/M ...",0
