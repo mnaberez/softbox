@@ -1697,12 +1697,12 @@ lfaf1h:
 conin:
     ld a,(0003h)        ;faf7 3a 03 00   3a 03 00    : . .
     rra                 ;fafa 1f   1f  .
-    jp nc,lfbd6h        ;fafb d2 d6 fb   d2 d6 fb    . . .
+    jp nc,ser_in        ;fafb d2 d6 fb   d2 d6 fb    . . .
     in a,(15h)          ;fafe db 15   db 15   . .
     or 04h              ;fb00 f6 04   f6 04   . .
     out (15h),a         ;fb02 d3 15   d3 15   . .
     ld a,02h            ;fb04 3e 02   3e 02   > .
-    call sub_fbdfh      ;fb06 cd df fb   cd df fb    . . .
+    call cbm_srq      ;fb06 cd df fb   cd df fb    . . .
     call rdieee         ;fb09 cd 1c fe   cd 1c fe    . . .
     push af             ;fb0c f5   f5  .
     in a,(15h)          ;fb0d db 15   db 15   . .
@@ -1713,9 +1713,9 @@ conin:
 const:
     ld a,(0003h)        ;fb15 3a 03 00   3a 03 00    : . .
     rra                 ;fb18 1f   1f  .
-    jp nc,lfbc3h        ;fb19 d2 c3 fb   d2 c3 fb    . . .
+    jp nc,ser_rx_status        ;fb19 d2 c3 fb   d2 c3 fb    . . .
     ld a,01h            ;fb1c 3e 01   3e 01   > .
-    call sub_fbdfh      ;fb1e cd df fb   cd df fb    . . .
+    call cbm_srq      ;fb1e cd df fb   cd df fb    . . .
     ld a,00h            ;fb21 3e 00   3e 00   > .
     ret nc              ;fb23 d0   d0  .
     ld a,0ffh           ;fb24 3e ff   3e ff   > .
@@ -1723,7 +1723,7 @@ const:
 conout:
     ld a,(0003h)        ;fb27 3a 03 00   3a 03 00    : . .
     rra                 ;fb2a 1f   1f  .
-    jp nc,lfbcbh        ;fb2b d2 cb fb   d2 cb fb    . . .
+    jp nc,ser_out        ;fb2b d2 cb fb   d2 cb fb    . . .
     ld a,(005ah)        ;fb2e 3a 5a 00   3a 5a 00    : Z .
     or a                ;fb31 b7   b7  .
     jp nz,lfb7ch        ;fb32 c2 7c fb   c2 7c fb    . | .
@@ -1765,7 +1765,7 @@ lfb5eh:
     ld c,a              ;fb6c 4f   4f  O
 lfb6dh:
     ld a,04h            ;fb6d 3e 04   3e 04   > .
-    call sub_fbdfh      ;fb6f cd df fb   cd df fb    . . .
+    call cbm_srq      ;fb6f cd df fb   cd df fb    . . .
     ld a,c              ;fb72 79   79  y
     jp cbm_put_byte           ;fb73 c3 e5 fd   c3 e5 fd    . . .
 lfb76h:
@@ -1785,11 +1785,12 @@ lfb87h:
     ld e,c              ;fb8b 59   59  Y
     ld a,(0ea69h)       ;fb8c 3a 69 ea   3a 69 ea    : i .
     or a                ;fb8f b7   b7  .
-    jr z,lfb95h         ;fb90 28 03   28 03   ( .
+    jr z,move_send         ;fb90 28 03   28 03   ( .
     ld a,e              ;fb92 7b   7b  {
     ld e,d              ;fb93 5a   5a  Z
     ld d,a              ;fb94 57   57  W
-lfb95h:
+
+move_send:
     ld a,(0003h)        ;fb95 3a 03 00   3a 03 00    : . .
     and 03h             ;fb98 e6 03   e6 03   . .
     cp 01h              ;fb9a fe 01   fe 01   . .
@@ -1816,58 +1817,95 @@ lfbb0h:
     or 20h              ;fbbd f6 20   f6 20   .
     ld c,a              ;fbbf 4f   4f  O
     jp lfb6dh           ;fbc0 c3 6d fb   c3 6d fb    . m .
-lfbc3h:
-    in a,(09h)          ;fbc3 db 09   db 09   . .
-    and 02h             ;fbc5 e6 02   e6 02   . .
-    ret z               ;fbc7 c8   c8  .
-    or 0ffh             ;fbc8 f6 ff   f6 ff   . .
-    ret                 ;fbca c9   c9  .
-lfbcbh:
-    in a,(09h)          ;fbcb db 09   db 09   . .
-    cpl                 ;fbcd 2f   2f  /
-    and 84h             ;fbce e6 84   e6 84   . .
-    jr nz,lfbcbh        ;fbd0 20 f9   20 f9     .
-    ld a,c              ;fbd2 79   79  y
-    out (08h),a         ;fbd3 d3 08   d3 08   . .
-    ret                 ;fbd5 c9   c9  .
-lfbd6h:
-    in a,(09h)          ;fbd6 db 09   db 09   . .
-    and 02h             ;fbd8 e6 02   e6 02   . .
-    jr z,lfbd6h         ;fbda 28 fa   28 fa   ( .
-    in a,(08h)          ;fbdc db 08   db 08   . .
-    ret                 ;fbde c9   c9  .
-sub_fbdfh:
-    push af             ;fbdf f5   f5  .
-lfbe0h:
-    in a,(10h)          ;fbe0 db 10   db 10   . .
-    or a                ;fbe2 b7   b7  .
-    jr nz,lfbe0h        ;fbe3 20 fb   20 fb     .
-    pop af              ;fbe5 f1   f1  .
-    out (11h),a         ;fbe6 d3 11   d3 11   . .
-    in a,(15h)          ;fbe8 db 15   db 15   . .
-    or 20h              ;fbea f6 20   f6 20   .
-    out (15h),a         ;fbec d3 15   d3 15   . .
-    in a,(15h)          ;fbee db 15   db 15   . .
-    and 0dfh            ;fbf0 e6 df   e6 df   . .
-    out (15h),a         ;fbf2 d3 15   d3 15   . .
-lfbf4h:
-    in a,(10h)          ;fbf4 db 10   db 10   . .
-    and 0c0h            ;fbf6 e6 c0   e6 c0   . .
-    jr z,lfbf4h         ;fbf8 28 fa   28 fa   ( .
-    rla                 ;fbfa 17   17  .
-    push af             ;fbfb f5   f5  .
-    ld a,00h            ;fbfc 3e 00   3e 00   > .
-    out (11h),a         ;fbfe d3 11   d3 11   . .
-lfc00h:
-    in a,(10h)          ;fc00 db 10   db 10   . .
-    or a                ;fc02 b7   b7  .
-    jr nz,lfc00h        ;fc03 20 fb   20 fb     .
-    pop af              ;fc05 f1   f1  .
-    ret                 ;fc06 c9   c9  .
+
+ser_rx_status:
+;RS-232 serial port receive status
+;Returns A=0 if no byte is ready, A=0FFh if one is.
+;
+    in a,(usart_st)     ;Read USART status register
+    and 02h             ;Mask off all but RxRDY bit
+    ret z               ;Return A=0 if no byte
+    or 0ffh
+    ret                 ;Return A=FF if a byte is ready
+
+ser_out:
+;RS-232 serial port output
+;C = byte to write to the port
+;
+    in a,(usart_st)     ;Read USART status register
+    cpl                 ;Invert it
+    and 84h             ;Mask off all but bits 7 (DSR) and 2 (TxEMPTY)
+    jr nz,ser_out       ;Wait until DSR=1 and TxEMPTY=1
+
+    ld a,c
+    out (usart_db),a    ;Write data byte
+    ret
+
+ser_in:
+;RS-232 serial port input
+;Blocks until a byte is available, then returns it in A.
+;
+    in a,(usart_st)     ;Read USART status register
+    and 02h             ;Mask off all but bit 1 (RxRDY)
+    jr z,ser_in         ;Wait until a byte is available
+
+    in a,(usart_db)     ;Read data byte
+    ret
+
+cbm_srq:
+;Send a Service Request (SRQ) to the CBM computer.
+;
+;A = command to send, one of:
+;  01h = Check if a key has been pressed
+;  02h = Wait for a key and send it
+;  04h = Write to the terminal screen
+;  08h = Jump to a subroutine in CBM memory
+;  10h = Transfer bytes from CBM memory to the SoftBox
+;  20h = Transfer bytes from the SoftBox to CBM memory
+;
+;This routine queries the CBM keyboard status each time it is called.
+;The carry flag will be set if a key is available, clear if not.
+;
+    push af
+srq1:
+    in a,(ppi1_pa)
+    or a
+    jr nz,srq1          ;Wait for IEEE data bus to be released
+
+    pop af
+    out (ppi1_pb),a     ;Write data byte to IEEE data bus
+
+    in a,(ppi2_pb)
+    or srq
+    out (ppi2_pb),a     ;SRQ_OUT=low
+
+    in a,(ppi2_pb)
+    and 255-srq
+    out (ppi2_pb),a     ;SRQ_OUT=high
+
+srq2:
+    in a,(ppi1_pa)      ;Read IEEE data byte
+    and 0c0h            ;Mask off all except bits 6 and 7
+    jr z,srq2           ;Wait until CBM changes one of those bits
+
+    rla                 ;Rotate bit 7 (key available status) into carry flag
+    push af             ;Push flags to save carry
+
+    ld a,00h
+    out (ppi1_pb),a     ;Release IEEE data lines
+
+srq3:
+    in a,(ppi1_pa)
+    or a
+    jr nz,srq3          ;Wait for IEEE data bus to be released
+
+    pop af              ;Pop flags to restore carry
+    ret
+
 list:
     ld a,(0003h)        ;fc07 3a 03 00   3a 03 00    : . .
     and 0c0h            ;fc0a e6 c0   e6 c0   . .
-    jp z,lfbcbh         ;fc0c ca cb fb   ca cb fb    . . .
+    jp z,ser_out         ;fc0c ca cb fb   ca cb fb    . . .
     jp p,lfb6dh         ;fc0f f2 6d fb   f2 6d fb    . m .
     ld e,0ffh           ;fc12 1e ff   1e ff   . .
     and 40h             ;fc14 e6 40   e6 40   . @
@@ -1970,7 +2008,7 @@ lfcbch:
 punch:
     ld a,(0003h)        ;fcbf 3a 03 00   3a 03 00    : . .
     and 30h             ;fcc2 e6 30   e6 30   . 0
-    jp z,lfbcbh         ;fcc4 ca cb fb   ca cb fb    . . .
+    jp z,ser_out         ;fcc4 ca cb fb   ca cb fb    . . .
     ld de,(0ea63h)      ;fcc7 ed 5b 63 ea   ed 5b 63 ea     . [ c .
     ld e,0ffh           ;fccb 1e ff   1e ff   . .
     call listen         ;fccd cd 90 fa   cd 90 fa    . . .
@@ -1981,7 +2019,7 @@ lfcd0h:
 reader:
     ld a,(0003h)        ;fcd7 3a 03 00   3a 03 00    : . .
     and 0ch             ;fcda e6 0c   e6 0c   . .
-    jp z,lfbd6h         ;fcdc ca d6 fb   ca d6 fb    . . .
+    jp z,ser_in         ;fcdc ca d6 fb   ca d6 fb    . . .
     ld de,(0ea62h)      ;fcdf ed 5b 62 ea   ed 5b 62 ea     . [ b .
     ld e,0ffh           ;fce3 1e ff   1e ff   . .
     call talk           ;fce5 cd 5d fa   cd 5d fa    . ] .
@@ -2008,14 +2046,14 @@ clear:
     jp lfb6dh           ;fd04 c3 6d fb   c3 6d fb    . m .
 execute:
     ld a,08h            ;fd07 3e 08   3e 08   > .
-    call sub_fbdfh      ;fd09 cd df fb   cd df fb    . . .
+    call cbm_srq      ;fd09 cd df fb   cd df fb    . . .
     ld a,l              ;fd0c 7d   7d  }
     call wrieee         ;fd0d cd a6 fd   cd a6 fd    . . .
     ld a,h              ;fd10 7c   7c  |
     jp wrieee           ;fd11 c3 a6 fd   c3 a6 fd    . . .
 peek:
     ld a,10h            ;fd14 3e 10   3e 10   > .
-    call sub_fbdfh      ;fd16 cd df fb   cd df fb    . . .
+    call cbm_srq      ;fd16 cd df fb   cd df fb    . . .
     ld a,c              ;fd19 79   79  y
     call cbm_put_byte         ;fd1a cd e5 fd   cd e5 fd    . . .
     ld a,b              ;fd1d 78   78  x
@@ -2041,7 +2079,7 @@ lfd2fh:
     ret                 ;fd3f c9   c9  .
 poke:
     ld a,20h            ;fd40 3e 20   3e 20   >
-    call sub_fbdfh      ;fd42 cd df fb   cd df fb    . . .
+    call cbm_srq      ;fd42 cd df fb   cd df fb    . . .
     ld a,c              ;fd45 79   79  y
     call cbm_put_byte         ;fd46 cd e5 fd   cd e5 fd    . . .
     ld a,b              ;fd49 78   78  x
