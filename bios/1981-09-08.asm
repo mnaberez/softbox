@@ -1680,13 +1680,13 @@ close:
     call wrieee         ;fae0 cd a6 fd   cd a6 fd    . . .
     jr unlisten         ;fae3 18 c1   18 c1   . .
 delay:
-    call sub_faeeh      ;fae5 cd ee fa   cd ee fa    . . .
+    call delay_1ms      ;fae5 cd ee fa   cd ee fa    . . .
     dec bc              ;fae8 0b   0b  .
     ld a,b              ;fae9 78   78  x
     or c                ;faea b1   b1  .
     jr nz,delay         ;faeb 20 f8   20 f8     .
     ret                 ;faed c9   c9  .
-sub_faeeh:
+delay_1ms:
     push bc             ;faee c5   c5  .
     ld b,0c8h           ;faef 06 c8   06 c8   . .
 lfaf1h:
@@ -1767,7 +1767,7 @@ lfb6dh:
     ld a,04h            ;fb6d 3e 04   3e 04   > .
     call sub_fbdfh      ;fb6f cd df fb   cd df fb    . . .
     ld a,c              ;fb72 79   79  y
-    jp lfde5h           ;fb73 c3 e5 fd   c3 e5 fd    . . .
+    jp cbm_put_byte           ;fb73 c3 e5 fd   c3 e5 fd    . . .
 lfb76h:
     ld a,02h            ;fb76 3e 02   3e 02   > .
     ld (005ah),a        ;fb78 32 5a 00   32 5a 00    2 Z .
@@ -1882,7 +1882,7 @@ lfc22h:
     in a,(15h)          ;fc26 db 15   db 15   . .
     or 01h              ;fc28 f6 01   f6 01   . .
     out (15h),a         ;fc2a d3 15   d3 15   . .
-    call sub_faeeh      ;fc2c cd ee fa   cd ee fa    . . .
+    call delay_1ms      ;fc2c cd ee fa   cd ee fa    . . .
     call listen         ;fc2f cd 90 fa   cd 90 fa    . . .
     ld hl,0051h         ;fc32 21 51 00   21 51 00    ! Q .
     ld a,(hl)           ;fc35 7e   7e  ~
@@ -1894,12 +1894,12 @@ lfc22h:
     ld a,c              ;fc3f 79   79  y
     cp 0ah              ;fc40 fe 0a   fe 0a   . .
     jr z,lfc54h         ;fc42 28 10   28 10   ( .
-    call sub_faeeh      ;fc44 cd ee fa   cd ee fa    . . .
+    call delay_1ms      ;fc44 cd ee fa   cd ee fa    . . .
     ld a,8dh            ;fc47 3e 8d   3e 8d   > .
     call wrieee         ;fc49 cd a6 fd   cd a6 fd    . . .
 lfc4ch:
     ld a,11h            ;fc4c 3e 11   3e 11   > .
-    call sub_faeeh      ;fc4e cd ee fa   cd ee fa    . . .
+    call delay_1ms      ;fc4e cd ee fa   cd ee fa    . . .
     call wrieee         ;fc51 cd a6 fd   cd a6 fd    . . .
 lfc54h:
     ld a,c              ;fc54 79   79  y
@@ -1914,7 +1914,7 @@ lfc5bh:
     ld a,0dh            ;fc63 3e 0d   3e 0d   > .
 lfc65h:
     call sub_fcafh      ;fc65 cd af fc   cd af fc    . . .
-    call sub_faeeh      ;fc68 cd ee fa   cd ee fa    . . .
+    call delay_1ms      ;fc68 cd ee fa   cd ee fa    . . .
     call wrieee         ;fc6b cd a6 fd   cd a6 fd    . . .
 lfc6eh:
     in a,(15h)          ;fc6e db 15   db 15   . .
@@ -1937,7 +1937,7 @@ lfc8fh:
     ld d,a              ;fc8f 57   57  W
     ld e,0ffh           ;fc90 1e ff   1e ff   . .
     call listen         ;fc92 cd 90 fa   cd 90 fa    . . .
-    call sub_faeeh      ;fc95 cd ee fa   cd ee fa    . . .
+    call delay_1ms      ;fc95 cd ee fa   cd ee fa    . . .
     in a,(14h)          ;fc98 db 14   db 14   . .
     cpl                 ;fc9a 2f   2f  /
     and 08h             ;fc9b e6 08   e6 08   . .
@@ -2017,13 +2017,13 @@ peek:
     ld a,10h            ;fd14 3e 10   3e 10   > .
     call sub_fbdfh      ;fd16 cd df fb   cd df fb    . . .
     ld a,c              ;fd19 79   79  y
-    call lfde5h         ;fd1a cd e5 fd   cd e5 fd    . . .
+    call cbm_put_byte         ;fd1a cd e5 fd   cd e5 fd    . . .
     ld a,b              ;fd1d 78   78  x
-    call lfde5h         ;fd1e cd e5 fd   cd e5 fd    . . .
+    call cbm_put_byte         ;fd1e cd e5 fd   cd e5 fd    . . .
     ld a,e              ;fd21 7b   7b  {
-    call lfde5h         ;fd22 cd e5 fd   cd e5 fd    . . .
+    call cbm_put_byte         ;fd22 cd e5 fd   cd e5 fd    . . .
     ld a,d              ;fd25 7a   7a  z
-    call lfde5h         ;fd26 cd e5 fd   cd e5 fd    . . .
+    call cbm_put_byte         ;fd26 cd e5 fd   cd e5 fd    . . .
     in a,(15h)          ;fd29 db 15   db 15   . .
     or 04h              ;fd2b f6 04   f6 04   . .
     out (15h),a         ;fd2d d3 15   d3 15   . .
@@ -2043,16 +2043,16 @@ poke:
     ld a,20h            ;fd40 3e 20   3e 20   >
     call sub_fbdfh      ;fd42 cd df fb   cd df fb    . . .
     ld a,c              ;fd45 79   79  y
-    call lfde5h         ;fd46 cd e5 fd   cd e5 fd    . . .
+    call cbm_put_byte         ;fd46 cd e5 fd   cd e5 fd    . . .
     ld a,b              ;fd49 78   78  x
-    call lfde5h         ;fd4a cd e5 fd   cd e5 fd    . . .
+    call cbm_put_byte         ;fd4a cd e5 fd   cd e5 fd    . . .
     ld a,e              ;fd4d 7b   7b  {
-    call lfde5h         ;fd4e cd e5 fd   cd e5 fd    . . .
+    call cbm_put_byte         ;fd4e cd e5 fd   cd e5 fd    . . .
     ld a,d              ;fd51 7a   7a  z
-    call lfde5h         ;fd52 cd e5 fd   cd e5 fd    . . .
+    call cbm_put_byte         ;fd52 cd e5 fd   cd e5 fd    . . .
 lfd55h:
     ld a,(hl)           ;fd55 7e   7e  ~
-    call lfde5h         ;fd56 cd e5 fd   cd e5 fd    . . .
+    call cbm_put_byte         ;fd56 cd e5 fd   cd e5 fd    . . .
     inc hl              ;fd59 23   23  #
     dec bc              ;fd5a 0b   0b  .
     ld a,b              ;fd5b 78   78  x
@@ -2086,141 +2086,220 @@ gettime:
     ld a,(0ea45h)       ;fd9e 3a 45 ea   3a 45 ea    : E .
     ld bc,(0ea46h)      ;fda1 ed 4b 46 ea   ed 4b 46 ea     . K F .
     ret                 ;fda5 c9   c9  .
+
 wrieee:
-    push af             ;fda6 f5   f5  .
-lfda7h:
-    in a,(14h)          ;fda7 db 14   db 14   . .
-    cpl                 ;fda9 2f   2f  /
-    and 08h             ;fdaa e6 08   e6 08   . .
-    jr z,lfda7h         ;fdac 28 f9   28 f9   ( .
-    in a,(14h)          ;fdae db 14   db 14   . .
-    cpl                 ;fdb0 2f   2f  /
-    and 04h             ;fdb1 e6 04   e6 04   . .
-    jr nz,lfde2h        ;fdb3 20 2d   20 2d     -
-    pop af              ;fdb5 f1   f1  .
-    out (11h),a         ;fdb6 d3 11   d3 11   . .
-    in a,(15h)          ;fdb8 db 15   db 15   . .
-    or 02h              ;fdba f6 02   f6 02   . .
-    out (15h),a         ;fdbc d3 15   d3 15   . .
-lfdbeh:
-    in a,(14h)          ;fdbe db 14   db 14   . .
-    cpl                 ;fdc0 2f   2f  /
-    and 04h             ;fdc1 e6 04   e6 04   . .
-    jr z,lfdbeh         ;fdc3 28 f9   28 f9   ( .
-    in a,(15h)          ;fdc5 db 15   db 15   . .
-    and 0fdh            ;fdc7 e6 fd   e6 fd   . .
-    out (15h),a         ;fdc9 d3 15   d3 15   . .
-    xor a               ;fdcb af   af  .
-    out (11h),a         ;fdcc d3 11   d3 11   . .
-lfdceh:
-    in a,(14h)          ;fdce db 14   db 14   . .
-    cpl                 ;fdd0 2f   2f  /
-    and 04h             ;fdd1 e6 04   e6 04   . .
-    jr nz,lfdceh        ;fdd3 20 f9   20 f9     .
-    ex (sp),hl          ;fdd5 e3   e3  .
-    ex (sp),hl          ;fdd6 e3   e3  .
-    ex (sp),hl          ;fdd7 e3   e3  .
-    ex (sp),hl          ;fdd8 e3   e3  .
-    in a,(14h)          ;fdd9 db 14   db 14   . .
-    cpl                 ;fddb 2f   2f  /
-    and 04h             ;fddc e6 04   e6 04   . .
-    jr nz,lfdceh        ;fdde 20 ee   20 ee     .
-    or a                ;fde0 b7   b7  .
-    ret                 ;fde1 c9   c9  .
-lfde2h:
-    pop af              ;fde2 f1   f1  .
-    scf                 ;fde3 37   37  7
-    ret                 ;fde4 c9   c9  .
-lfde5h:
-    out (11h),a         ;fde5 d3 11   d3 11   . .
-lfde7h:
-    in a,(14h)          ;fde7 db 14   db 14   . .
-    cpl                 ;fde9 2f   2f  /
-    and 08h             ;fdea e6 08   e6 08   . .
-    jr z,lfde7h         ;fdec 28 f9   28 f9   ( .
-    in a,(15h)          ;fdee db 15   db 15   . .
-    or 02h              ;fdf0 f6 02   f6 02   . .
-    out (15h),a         ;fdf2 d3 15   d3 15   . .
-lfdf4h:
-    in a,(14h)          ;fdf4 db 14   db 14   . .
-    cpl                 ;fdf6 2f   2f  /
-    and 04h             ;fdf7 e6 04   e6 04   . .
-    jr z,lfdf4h         ;fdf9 28 f9   28 f9   ( .
-    in a,(15h)          ;fdfb db 15   db 15   . .
-    and 0fdh            ;fdfd e6 fd   e6 fd   . .
-    out (15h),a         ;fdff d3 15   d3 15   . .
-    xor a               ;fe01 af   af  .
-    out (11h),a         ;fe02 d3 11   d3 11   . .
-    ret                 ;fe04 c9   c9  .
+;Send a byte to an IEEE-488 device
+;
+;A = byte to send
+;
+;Returns carry flag set if an error occurred, clear if OK.
+;
+    push af             ;Push data byte
+wri1:
+    in a,(ppi2_pa)
+    cpl
+    and nrfd
+    jr z,wri1           ;Wait until NRFD_IN=high
+
+    in a,(ppi2_pa)
+    cpl
+    and ndac
+    jr nz,wri4          ;Jump to error if NDAC_IN=high
+
+    pop af              ;Push data byte
+    out (ppi1_pb),a     ;Write byte to IEEE-488 data lines
+
+    in a,(ppi2_pb)
+    or dav
+    out (ppi2_pb),a     ;DAV_OUT=low
+
+wri2:
+    in a,(ppi2_pa)
+    cpl
+    and ndac
+    jr z,wri2           ;Wait until NDAC_IN=high
+
+    in a,(ppi2_pb)
+    and 255-dav
+    out (ppi2_pb),a     ;DAV_OUT=high
+
+    xor a
+    out (ppi1_pb),a     ;Release IEEE-488 data lines
+
+wri3:
+    in a,(ppi2_pa)
+    cpl
+    and ndac
+    jr nz,wri3          ;Wait until NDAC_IN=low
+
+    ex (sp),hl          ;Waste time
+    ex (sp),hl
+    ex (sp),hl
+    ex (sp),hl
+
+    in a,(ppi2_pa)
+    cpl
+    and ndac
+    jr nz,wri3          ;Wait until NDAC_IN=low
+
+    or a                ;Clear carry flag to indicate OK
+    ret
+
+wri4:
+    pop af              ;Pop data byte
+    scf                 ;Set carry flag to indicate error
+    ret
+
+cbm_put_byte:
+;Send a single byte to the CBM
+;
+;A = byte to send
+;
+    out (ppi1_pb),a     ;Put byte on IEEE data bus
+
+cpb1:
+    in a,(ppi2_pa)
+    cpl
+    and nrfd
+    jr z,cpb1           ;Wait until NRFD_IN=high
+
+    in a,(ppi2_pb)
+    or dav
+    out (ppi2_pb),a     ;DAV_OUT=low
+
+cpb2:
+    in a,(ppi2_pa)
+    cpl
+    and ndac
+    jr z,cpb2           ;Wait until NDAC_IN=high
+
+    in a,(ppi2_pb)
+    and 255-dav
+    out (ppi2_pb),a     ;DAV_OUT=high
+
+    xor a
+    out (ppi1_pb),a     ;Release IEEE-488 data lines
+    ret
+
 rdimm:
-    in a,(15h)          ;fe05 db 15   db 15   . .
-    and 0f7h            ;fe07 e6 f7   e6 f7   . .
-    out (15h),a         ;fe09 d3 15   d3 15   . .
-lfe0bh:
-    in a,(14h)          ;fe0b db 14   db 14   . .
-    cpl                 ;fe0d 2f   2f  /
-    and 02h             ;fe0e e6 02   e6 02   . .
-    jr z,lfe29h         ;fe10 28 17   28 17   ( .
-    call sub_faeeh      ;fe12 cd ee fa   cd ee fa    . . .
-    dec bc              ;fe15 0b   0b  .
-    ld a,b              ;fe16 78   78  x
-    or c                ;fe17 b1   b1  .
-    jr nz,lfe0bh        ;fe18 20 f1   20 f1     .
-    scf                 ;fe1a 37   37  7
-    ret                 ;fe1b c9   c9  .
+;Read a byte from IEEE-488 device with timeout
+;BC = number milliseconds before timeout
+;
+;Returns carry flag set if a timeout occurred.
+;Returns the byte in A.
+;Stores ppi2_pa in eoisav so EOI state can be checked later.
+;
+    in a,(ppi2_pb)
+    and 255-nrfd
+    out (ppi2_pb),a     ;NRFD_OUT=high
+rdm1:
+    in a,(ppi2_pa)
+    cpl
+    and dav
+    jr z,ieee_dav_get   ;Jump out to read the byte if DAV_IN=low
+    call delay_1ms
+    dec bc              ;Decrement BC
+    ld a,b
+    or c
+    jr nz,rdm1          ;Loop until BC=0
+    scf
+    ret
+
 rdieee:
-    in a,(15h)          ;fe1c db 15   db 15   . .
-    and 0f7h            ;fe1e e6 f7   e6 f7   . .
-    out (15h),a         ;fe20 d3 15   d3 15   . .
-lfe22h:
-    in a,(14h)          ;fe22 db 14   db 14   . .
-    cpl                 ;fe24 2f   2f  /
-    and 02h             ;fe25 e6 02   e6 02   . .
-    jr nz,lfe22h        ;fe27 20 f9   20 f9     .
-lfe29h:
-    in a,(10h)          ;fe29 db 10   db 10   . .
-    push af             ;fe2b f5   f5  .
-    in a,(14h)          ;fe2c db 14   db 14   . .
-    ld (0ea6ch),a       ;fe2e 32 6c ea   32 6c ea    2 l .
-    in a,(15h)          ;fe31 db 15   db 15   . .
-    or 08h              ;fe33 f6 08   f6 08   . .
-    out (15h),a         ;fe35 d3 15   d3 15   . .
-    in a,(15h)          ;fe37 db 15   db 15   . .
-    and 0fbh            ;fe39 e6 fb   e6 fb   . .
-    out (15h),a         ;fe3b d3 15   d3 15   . .
-lfe3dh:
-    in a,(14h)          ;fe3d db 14   db 14   . .
-    cpl                 ;fe3f 2f   2f  /
-    and 02h             ;fe40 e6 02   e6 02   . .
-    jr z,lfe3dh         ;fe42 28 f9   28 f9   ( .
-    in a,(15h)          ;fe44 db 15   db 15   . .
-    or 04h              ;fe46 f6 04   f6 04   . .
-    out (15h),a         ;fe48 d3 15   d3 15   . .
-    pop af              ;fe4a f1   f1  .
-    or a                ;fe4b b7   b7  .
-    ret                 ;fe4c c9   c9  .
+;Read a byte from the current IEEE-488 device
+;No timeout; waits forever for DAV_IN=low.
+;
+;Returns the byte in A.
+;Stores ppi2_pa in eoisav so EOI state can be checked later.
+;
+    in a,(ppi2_pb)
+    and 255-nrfd
+    out (ppi2_pb),a     ;NRFD_OUT=high
+rdi1:
+    in a,(ppi2_pa)
+    cpl
+    and dav
+    jr nz,rdi1          ;Wait until DAV_IN=low
+                        ;Fall through to read the byte
+
+
+ieee_dav_get:
+;Read a byte from the current IEEE-488 device.  The caller
+;must wait for DAV_IN=low before calling this routine.
+;
+;This routine is not called from a BIOS entry point.  It is only
+;used internally to implement rdieee and rdimm.
+;
+;Returns the byte in A.
+;Stores ppi2_pa in eoisav so EOI state can be checked later.
+;
+    in a,(ppi1_pa)      ;Read byte from IEEE data bus
+    push af             ;Push it on the stack
+
+    in a,(ppi2_pa)      ;Read state of IEEE-488 control lines in
+    ld (eoisav),a       ;Save it so EOI state can be checked later
+
+    in a,(ppi2_pb)
+    or nrfd
+    out (ppi2_pb),a     ;NRFD_OUT=low
+
+    in a,(ppi2_pb)
+    and 255-ndac
+    out (ppi2_pb),a     ;NDAC_OUT=high
+
+idg1:
+    in a,(ppi2_pa)
+    cpl
+    and dav
+    jr z,idg1           ;Wait until DAV_IN=high
+
+    in a,(ppi2_pb)
+    or ndac
+    out (ppi2_pb),a     ;NDAC_OUT=low
+
+    pop af              ;Pop the IEEE data byte off the stack
+    or a                ;Set flags
+    ret
+
 creoi:
-    ld a,0dh            ;fe4d 3e 0d   3e 0d   > .
+;Send a carriage return to IEEE-488 device with EOI
+;
+    ld a,cr             ;A = carriage return
+                        ;Fall through into wreoi
+
 wreoi:
-    push af             ;fe4f f5   f5  .
-    in a,(15h)          ;fe50 db 15   db 15   . .
-    or 10h              ;fe52 f6 10   f6 10   . .
-    out (15h),a         ;fe54 d3 15   d3 15   . .
-    pop af              ;fe56 f1   f1  .
-    call wrieee         ;fe57 cd a6 fd   cd a6 fd    . . .
-    push af             ;fe5a f5   f5  .
-    in a,(15h)          ;fe5b db 15   db 15   . .
-    and 0efh            ;fe5d e6 ef   e6 ef   . .
-    out (15h),a         ;fe5f d3 15   d3 15   . .
-    pop af              ;fe61 f1   f1  .
-    ret                 ;fe62 c9   c9  .
+;Send the byte in A to IEEE-488 device with EOI asserted
+;
+    push af
+    in a,(ppi2_pb)
+    or eoi
+    out (ppi2_pb),a     ;EOI_OUT=low
+
+    pop af
+    call wrieee         ;Send the byte
+    push af
+
+    in a,(ppi2_pb)
+    and 255-eoi
+    out (ppi2_pb),a     ;EOI_OUT=high
+
+    pop af
+    ret
+
 ieeemsg:
-    ld a,(hl)           ;fe63 7e   7e  ~
-    inc hl              ;fe64 23   23  #
-    call wrieee         ;fe65 cd a6 fd   cd a6 fd    . . .
-    dec c               ;fe68 0d   0d  .
-    jr nz,ieeemsg       ;fe69 20 f8   20 f8     .
-    ret                 ;fe6b c9   c9  .
+;Send a string to the current IEEE-488 device
+;HL = pointer to string
+;C = number of bytes in string
+;
+    ld a,(hl)           ;A = get first char from string
+    inc hl              ;Increment pointer to next char in string
+    call wrieee         ;Send byte in A to IEEE-488 device
+    dec c               ;Decrement number of chars remaining to send
+    jr nz,ieeemsg       ;If any chars remain, jump out to ieeemsg to
+                        ;  send them.  It will return to the caller.
+    ret
+
+
     inc hl              ;fe6c 23   23  #
     ld (hl),a           ;fe6d 77   77  w
     call 36edh          ;fe6e cd ed 36   cd ed 36    . . 6
