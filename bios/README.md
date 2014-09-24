@@ -9,14 +9,18 @@ the lower half (F000-F7FF) and IC4 contains the upper half (F800-FFFF).
 Several BIOS versions are available.  The dates were taken from the
 version strings inside them.
 
- - `1981-10-27` is the October 27, 1981 version.  It was found in
-   an early version of the SoftBox hardware (brown case with three LEDs).
+ - `1981-09-08` is the September 8, 1981 version.  It was found by Nils
+   Eilers in a very early SoftBox (brown case, one LED, PCB slides in on
+   rails, PCB is very different from all others found).
 
+ - `1981-10-27` is the October 27, 1981 version.  It was found by Mike
+   Naberezny in an early SoftBox (brown case, three LEDs, no rails inside).
 
- - `1983-06-09` is the June 9, 1983 version.  This version adds CBM 8250
-   support but a bug in the `ieeenum` routine causes it to fail for tracks
-   100+.  It is believed that SSE produced a later BIOS to fix this bug
-   but it has not been found.
+ - `1983-06-09` is the June 9, 1983 version.  It was found by Mike Naberezny
+   in a later SoftBox (beige case with three LEDs, like all HardBox units
+   found).  This version adds CBM 8250 support but a bug in the `ieeenum`
+   routine causes it to fail for tracks 100+.  It is believed that SSE
+   produced a later BIOS to fix this bug but it has not been found.
 
  - `bios` is not an original BIOS from SSE.  It is a present-day version
    based on `1983-06-09` that fixes CBM 8250 support.
