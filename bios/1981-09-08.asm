@@ -2564,7 +2564,7 @@ lfc54h:
     ld a,0a4h           ;fc59 3e a4   3e a4   > .
 lfc5bh:
     cp cr               ;fc5b fe 0d   fe 0d   . .
-    jr z,lfc6eh         ;fc5d 28 0f   28 0f   ( .
+    jr z,list_lpt_unlsn         ;fc5d 28 0f   28 0f   ( .
     cp lf               ;fc5f fe 0a   fe 0a   . .
     jr nz,lfc65h        ;fc61 20 02   20 02     .
     ld a,cr             ;fc63 3e 0d   3e 0d   > .
@@ -2572,11 +2572,15 @@ lfc65h:
     call ascii_to_pet   ;fc65 cd af fc   cd af fc    . . .
     call delay_1ms      ;fc68 cd ee fa   cd ee fa    . . .
     call wrieee         ;fc6b cd a6 fd   cd a6 fd    . . .
-lfc6eh:
-    in a,(ppi2_pb)      ;fc6e db 15   db 15   . .
-    or 01h              ;fc70 f6 01   f6 01   . .
-    out (ppi2_pb),a     ;fc72 d3 15   d3 15   . .
-    jp unlisten         ;fc74 c3 a6 fa   c3 a6 fa    . . .
+
+list_lpt_unlsn:
+;Send UNLISTEN to the printer and return.
+;
+    in a,(ppi2_pb)
+    or atn
+    out (ppi2_pb),a     ;ATN_OUT=low
+    jp unlisten         ;Jump out to send UNLISTEN,
+                        ;  it will return to the caller.
 
 listst:
 ;List (printer) status
