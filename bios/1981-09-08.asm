@@ -1450,255 +1450,177 @@ newline:
     db cr,lf,0
 
 find_trk_sec:
-    ld a,(0045h)        ;f7c4 3a 45 00   3a 45 00    : E .
-    call tstdrv         ;f7c7 cd f8 f1   cd f8 f1    . . .
-    ld a,c              ;f7ca 79   79  y
-    or a                ;f7cb b7   b7  .
-    ld ix,0057h         ;f7cc dd 21 57 00   dd 21 57 00     . ! W .
-    ld bc,lf82fh        ;f7d0 01 2f f8   01 2f f8    . / .
-    ld e,10h            ;f7d3 1e 10   1e 10   . .
-    jr z,lf7e0h         ;f7d5 28 09   28 09   ( .
-    ld ix,0058h         ;f7d7 dd 21 58 00   dd 21 58 00     . ! X .
-lf7dbh:
-    ld bc,lf871h        ;f7db 01 71 f8   01 71 f8    . q .
-    ld e,25h            ;f7de 1e 25   1e 25   . %
-lf7e0h:
-    push de             ;f7e0 d5   d5  .
-    ld hl,(0046h)       ;f7e1 2a 46 00   2a 46 00    * F .
-    ld h,00h            ;f7e4 26 00   26 00   & .
-    add hl,hl           ;f7e6 29   29  )
-    add hl,hl           ;f7e7 29   29  )
-    add hl,hl           ;f7e8 29   29  )
-    add hl,hl           ;f7e9 29   29  )
-    ld de,(0047h)       ;f7ea ed 5b 47 00   ed 5b 47 00     . [ G .
-    ld d,00h            ;f7ee 16 00   16 00   . .
-    add hl,de           ;f7f0 19   19  .
-lf7f1h:
-    ex de,hl            ;f7f1 eb   eb  .
-    ld l,(ix+00h)       ;f7f2 dd 6e 00   dd 6e 00    . n .
-    ld h,00h            ;f7f5 26 00   26 00   & .
-    add hl,hl           ;f7f7 29   29  )
-    add hl,bc           ;f7f8 09   09  .
-lf7f9h:
-    ld a,e              ;f7f9 7b   7b  {
-    sub (hl)            ;f7fa 96   96  .
-    inc hl              ;f7fb 23   23  #
-    ld a,d              ;f7fc 7a   7a  z
-    sbc a,(hl)          ;f7fd 9e   9e  .
-    jr nc,lf808h        ;f7fe 30 08   30 08   0 .
-    dec (ix+00h)        ;f800 dd 35 00   dd 35 00    . 5 .
-    dec hl              ;f803 2b   2b  +
-    dec hl              ;f804 2b   2b  +
-lf805h:
-    dec hl              ;f805 2b   2b  +
-    jr lf7f9h           ;f806 18 f1   18 f1   . .
-lf808h:
-    inc hl              ;f808 23   23  #
-    ld a,e              ;f809 7b   7b  {
-    cp (hl)             ;f80a be   be  .
-    inc hl              ;f80b 23   23  #
-    ld a,d              ;f80c 7a   7a  z
-    sbc a,(hl)          ;f80d 9e   9e  .
-    jr c,lf815h         ;f80e 38 05   38 05   8 .
-    inc (ix+00h)        ;f810 dd 34 00   dd 34 00    . 4 .
-    jr lf808h           ;f813 18 f3   18 f3   . .
-lf815h:
-    inc (ix+00h)        ;f815 dd 34 00   dd 34 00    . 4 .
-    dec hl              ;f818 2b   2b  +
-    dec hl              ;f819 2b   2b  +
-    dec hl              ;f81a 2b   2b  +
-    ld a,e              ;f81b 7b   7b  {
-    sub (hl)            ;f81c 96   96  .
-    ld (004eh),a        ;f81d 32 4e 00   32 4e 00    2 N .
-    ld a,(ix+00h)       ;f820 dd 7e 00   dd 7e 00    . ~ .
-lf823h:
-    ld (004dh),a        ;f823 32 4d 00   32 4d 00    2 M .
-    pop de              ;f826 d1   d1  .
-    cp e                ;f827 bb   bb  .
-    ret c               ;f828 d8   d8  .
-    add a,03h           ;f829 c6 03   c6 03   . .
-    ld (004dh),a        ;f82b 32 4d 00   32 4d 00    2 M .
-    ret                 ;f82e c9   c9  .
-lf82fh:
-    nop                 ;f82f 00   00  .
-    nop                 ;f830 00   00  .
-    dec d               ;f831 15   15  .
-    nop                 ;f832 00   00  .
-    ld hl,(3f00h)       ;f833 2a 00 3f   2a 00 3f    * . ?
-    nop                 ;f836 00   00  .
-    ld d,h              ;f837 54   54  T
-    nop                 ;f838 00   00  .
-    ld l,c              ;f839 69   69  i
-    nop                 ;f83a 00   00  .
-    ld a,(hl)           ;f83b 7e   7e  ~
-    nop                 ;f83c 00   00  .
-    sub e               ;f83d 93   93  .
-    nop                 ;f83e 00   00  .
-    xor b               ;f83f a8   a8  .
-    nop                 ;f840 00   00  .
-    cp l                ;f841 bd   bd  .
-    nop                 ;f842 00   00  .
-    jp nc,0e700h        ;f843 d2 00 e7   d2 00 e7    . . .
-    nop                 ;f846 00   00  .
-    call m,1100h        ;f847 fc 00 11   fc 00 11    . . .
-    ld bc,0126h         ;f84a 01 26 01   01 26 01    . & .
-    dec sp              ;f84d 3b   3b
-    ld bc,014eh         ;f84e 01 4e 01   01 4e 01    . N .
-    ld h,c              ;f851 61   61  a
-    ld bc,0174h         ;f852 01 74 01   01 74 01    . t .
-    add a,a             ;f855 87   87  .
-    ld bc,019ah         ;f856 01 9a 01   01 9a 01    . . .
-    xor l               ;f859 ad   ad  .
-    ld bc,01bfh         ;f85a 01 bf 01   01 bf 01    . . .
-    pop de              ;f85d d1   d1  .
-    ld bc,01e3h         ;f85e 01 e3 01   01 e3 01    . . .
-    push af             ;f861 f5   f5  .
-    ld bc,0207h         ;f862 01 07 02   01 07 02    . . .
-    add hl,de           ;f865 19   19  .
-    ld (bc),a           ;f866 02   02  .
-    ld hl,(3b02h)       ;f867 2a 02 3b   2a 02 3b    * .
-    ld (bc),a           ;f86a 02   02  .
-    ld c,h              ;f86b 4c   4c  L
-    ld (bc),a           ;f86c 02   02  .
-    ld e,l              ;f86d 5d   5d  ]
-    ld (bc),a           ;f86e 02   02  .
-    rst 38h             ;f86f ff   ff  .
-    rst 38h             ;f870 ff   ff  .
-lf871h:
-    nop                 ;f871 00   00  .
-    nop                 ;f872 00   00  .
-    dec e               ;f873 1d   1d  .
-    nop                 ;f874 00   00  .
-    ld a,(5700h)        ;f875 3a 00 57   3a 00 57    : . W
-    nop                 ;f878 00   00  .
-    ld (hl),h           ;f879 74   74  t
-    nop                 ;f87a 00   00  .
-    sub c               ;f87b 91   91  .
-    nop                 ;f87c 00   00  .
-    xor (hl)            ;f87d ae   ae  .
-    nop                 ;f87e 00   00  .
-    rlc b               ;f87f cb 00   cb 00   . .
-    ret pe              ;f881 e8   e8  .
-    nop                 ;f882 00   00  .
-    dec b               ;f883 05   05  .
-    ld bc,0122h         ;f884 01 22 01   01 22 01    . " .
-    ccf                 ;f887 3f   3f  ?
-    ld bc,015ch         ;f888 01 5c 01   01 5c 01    . \ .
-    ld a,c              ;f88b 79   79  y
-    ld bc,0196h         ;f88c 01 96 01   01 96 01    . . .
-    or e                ;f88f b3   b3  .
-    ld bc,01d0h         ;f890 01 d0 01   01 d0 01    . . .
-    defb 0edh           ;next byte illegal after ed
-    ld bc,020ah         ;f894 01 0a 02   01 0a 02    . . .
-    daa                 ;f897 27   27  '
-    ld (bc),a           ;f898 02   02  .
-    ld b,h              ;f899 44   44  D
-    ld (bc),a           ;f89a 02   02  .
-    ld h,c              ;f89b 61   61  a
-    ld (bc),a           ;f89c 02   02  .
-    ld a,(hl)           ;f89d 7e   7e  ~
-    ld (bc),a           ;f89e 02   02  .
-    sbc a,e             ;f89f 9b   9b  .
-    ld (bc),a           ;f8a0 02   02  .
-    cp b                ;f8a1 b8   b8  .
-    ld (bc),a           ;f8a2 02   02  .
-    push de             ;f8a3 d5   d5  .
-    ld (bc),a           ;f8a4 02   02  .
-    jp p,0f02h          ;f8a5 f2 02 0f   f2 02 0f    . . .
-    inc bc              ;f8a8 03   03  .
-    inc l               ;f8a9 2c   2c  ,
-    inc bc              ;f8aa 03   03  .
-    ld c,c              ;f8ab 49   49  I
-    inc bc              ;f8ac 03   03  .
-    ld h,(hl)           ;f8ad 66   66  f
-    inc bc              ;f8ae 03   03  .
-    add a,e             ;f8af 83   83  .
-    inc bc              ;f8b0 03   03  .
-    and b               ;f8b1 a0   a0  .
-    inc bc              ;f8b2 03   03  .
-    cp l                ;f8b3 bd   bd  .
-    inc bc              ;f8b4 03   03  .
-    jp c,0f703h         ;f8b5 da 03 f7   da 03 f7    . . .
-    inc bc              ;f8b8 03   03  .
-    inc d               ;f8b9 14   14  .
-    inc b               ;f8ba 04   04  .
-    cpl                 ;f8bb 2f   2f  /
-    inc b               ;f8bc 04   04  .
-    ld c,d              ;f8bd 4a   4a  J
-    inc b               ;f8be 04   04  .
-    ld h,l              ;f8bf 65   65  e
-    inc b               ;f8c0 04   04  .
-    add a,b             ;f8c1 80   80  .
-    inc b               ;f8c2 04   04  .
-    sbc a,e             ;f8c3 9b   9b  .
-    inc b               ;f8c4 04   04  .
-    or (hl)             ;f8c5 b6   b6  .
-    inc b               ;f8c6 04   04  .
-    pop de              ;f8c7 d1   d1  .
-    inc b               ;f8c8 04   04  .
-    call pe,0704h       ;f8c9 ec 04 07   ec 04 07    . . .
-    dec b               ;f8cc 05   05  .
-    ld (3d05h),hl       ;f8cd 22 05 3d   22 05 3d    " . =
-    dec b               ;f8d0 05   05  .
-    ld e,b              ;f8d1 58   58  X
-    dec b               ;f8d2 05   05  .
-    ld (hl),e           ;f8d3 73   73  s
-    dec b               ;f8d4 05   05  .
-    adc a,(hl)          ;f8d5 8e   8e  .
-    dec b               ;f8d6 05   05  .
-    and a               ;f8d7 a7   a7  .
-    dec b               ;f8d8 05   05  .
-    ret nz              ;f8d9 c0   c0  .
-    dec b               ;f8da 05   05  .
-    exx                 ;f8db d9   d9  .
-    dec b               ;f8dc 05   05  .
-    jp p,0b05h          ;f8dd f2 05 0b   f2 05 0b    . . .
-    ld b,24h            ;f8e0 06 24   06 24   . $
-    ld b,3dh            ;f8e2 06 3d   06 3d   . =
-    ld b,56h            ;f8e4 06 56   06 56   . V
-    ld b,6fh            ;f8e6 06 6f   06 6f   . o
-    ld b,88h            ;f8e8 06 88   06 88   . .
-    ld b,0a1h           ;f8ea 06 a1   06 a1   . .
-    ld b,0b8h           ;f8ec 06 b8   06 b8   . .
-    ld b,0cfh           ;f8ee 06 cf   06 cf   . .
-    ld b,0e6h           ;f8f0 06 e6   06 e6   . .
-    ld b,0fdh           ;f8f2 06 fd   06 fd   . .
-    ld b,14h            ;f8f4 06 14   06 14   . .
-    rlca                ;f8f6 07   07  .
-    dec hl              ;f8f7 2b   2b  +
-    rlca                ;f8f8 07   07  .
-    ld b,d              ;f8f9 42   42  B
-    rlca                ;f8fa 07   07  .
-    ld e,c              ;f8fb 59   59  Y
-    rlca                ;f8fc 07   07  .
-    ld (hl),b           ;f8fd 70   70  p
-    rlca                ;f8fe 07   07  .
-    add a,a             ;f8ff 87   87  .
-    rlca                ;f900 07   07  .
-    sbc a,(hl)          ;f901 9e   9e  .
-    rlca                ;f902 07   07  .
-    or l                ;f903 b5   b5  .
-    rlca                ;f904 07   07  .
-    rst 38h             ;f905 ff   ff  .
-    rst 38h             ;f906 ff   ff  .
+;Find the CBM DOS track and sector for the current CP/M track and sector.
+;
+;  Inputs:
+;    x_drive:      equ 0045h   CP/M drive number
+;    x_track:      equ 0046h   CP/M track
+;    x_sector:     equ 0047h   CP/M sector
+;
+;  Outputs:
+;    dos_trk:      equ 004dh   CBM track
+;    dos_sec:      equ 004eh   CBM sector
+;
+;  Testing:
+;    Set x_drive = 0
+;    Set dtype for drive 0 (0ea70h): 0=3040/4040, 1=8050
+;    Set x_track and x_sector with CP/M track and sector.
+;    Call find_trk_sec.
+;    Read dos_trk and dos_sec for CBM DOS track and sector.
+;
+    ld a,(x_drive)
+    call tstdrv         ;C = drive type
+    ld a,c              ;A = C
+    or a
+    ld ix,trk_3040      ;IX = 0057h for CBM 3040/4040 (TODO what is 0057h?)
+
+    ld bc,ts_cbm3040    ;BC = table for CBM 3040
+    ld e,10h            ;E = 16 (first reserved track on CBM 3040/4040)
+    jr z,fts1           ;Jump if drive type = 0 (CBM 3040/4040)
+
+    ld ix,trk_8050      ;IX = 0058h for CBM 8050 (TODO what is 0058h?)
+    ld bc,ts_cbm8050    ;BC = table for CBM 8050
+    ld e,25h            ;E = 37 (first reserved track on CBM 8050)
+fts1:
+    ;BC = drive specific table
+    ;E = 16 for 3040/4040
+    ;E = 37 for 8050
+
+    push de
+    ld hl,(x_track)     ;HL = CP/M track number
+    ld h,00h            ;H = 0
+
+    add hl,hl           ;HL = CP/M track * 16
+    add hl,hl
+    add hl,hl
+    add hl,hl
+
+    ld de,(x_sector)    ;DE = CP/M sector number
+    ld d,00h            ;D = 0
+    add hl,de           ;HL = HL + DE
+
+    ex de,hl
+    ld l,(ix+00h)       ;Get max tracks? (ToDo: Who writes this value?)
+    ld h,00h            ;H = 0
+    add hl,hl           ;HL = HL * 2 (One word for one track)
+    add hl,bc
+fts2:
+    ;DE = (CP/M track * 16) + (CP/M sector)
+    ld a,e              ;A = low absolute sector count
+    sub (hl)            ;Subtract the low absolute sector count
+    inc hl              ;Increment HL to high byte
+    ld a,d              ;A = high absolute  sector count
+    sbc a,(hl)          ;Subtract the high absolute sector count
+    jr nc,fts3          ;Is sector in this or higher DOS track
+    dec (ix+00h)        ;Decrement DOS track
+    dec hl              ;Decrement HL to low byte
+
+    dec hl
+    dec hl              ;Decrement HL by 2 for next track
+    jr fts2
+
+fts3:
+    inc hl              ;Increment HL for next track
+    ld a,e              ;A = low absolute sector count
+    cp (hl)             ;Compare the low absolute sector count
+    inc hl              ;Increment HL to high byte
+    ld a,d              ;A = high absolute sector count
+    sbc a,(hl)          ;Subtract the high absolute sector count
+    jr c,fts4           ;Is sector in this track?
+    inc (ix+00h)        ;Increment DOS track
+    jr fts3
+
+fts4:
+    inc (ix+00h)        ;Increment DOS track
+    dec hl              ;Decrement HL to low byte
+
+    dec hl
+    dec hl              ;Decrement HL by 2 for next track
+    ld a,e              ;A = low absolute sector count
+    sub (hl)            ;Calculate the DOS sector
+
+    ld (dos_sec),a      ;Save A as the sector
+
+    ld a,(ix+00h)       ;A = value at 0057h/0058h
+    ld (dos_trk),a      ;Save it as the track
+
+    pop de              ;Recall DE.  E contains the first reserved track:
+                        ;  E = 16 for 3040/4040
+                        ;  E = 37 for 8050
+    cp e                ;If computed track is < the first reserved track,
+    ret c               ;  return with the track as-is.
+    add a,03h           ;Increment to skip over the 3 reserved tracks
+    ld (dos_trk),a      ;Save the updated track number
+    ret
+
+ts_cbm3040:
+    ;Start mark: track 0
+    dw    0
+    ;Tracks 1..15: 21 sectors per track
+    dw   21,  42,  63,  84, 105, 126, 147, 168, 189, 210
+    dw  231, 252, 273, 294, 315
+    ;Tracks 16..18: reserved for CBM DOS
+    ;Tracks 19..24: 19 sectors per track
+    dw  334, 353, 372, 391, 410, 429
+    ;Tracks 25..30: 18 sectors per track
+    dw  447, 465, 483, 501, 519, 537
+    ;Tracks 31..34: 17 sectors per track
+    dw  554, 571, 588, 605
+    ;End mark: track 35
+    dw  -1
+
+ts_cbm8050:
+    ;Start mark: track 0
+    dw    0
+    ;Tracks 1..36: 29 sectors per track
+    dw   29,  58,  87, 116, 145, 174, 203, 232, 261, 290
+    dw  319, 348, 377, 406, 435, 464, 493, 522, 551, 580
+    dw  609, 638, 667, 696, 725, 754, 783, 812, 841, 870
+    dw  899, 928, 957, 986,1015,1044
+    ;Tracks 37..39: reserved for CBM DOS
+    ;Tracks 40..53: 27 sectors per track
+    dw 1071,1098,1125,1152,1179,1206,1233,1260,1287,1314,1341,1368,1395,1422
+    ;Tracks 54..64: 25 sectors per track
+    dw 1447,1472,1497,1522,1547,1572,1597,1622,1647,1672,1697
+    ;Tracks 65..76: 23 sectors per track
+    dw 1720,1743,1766,1789,1812,1835,1858,1881,1904,1927,1950,1973
+    ;End mark: track 77
+    dw  -1
+
 ieeenum:
-    push af             ;f907 f5   f5  .
-    ld a,20h            ;f908 3e 20   3e 20   >
-    call wrieee         ;f90a cd a6 fd   cd a6 fd    . . .
-    pop af              ;f90d f1   f1  .
-    ld e,2fh            ;f90e 1e 2f   1e 2f   . /
-lf910h:
-    sub 0ah             ;f910 d6 0a   d6 0a   . .
-    inc e               ;f912 1c   1c  .
-    jr nc,lf910h        ;f913 30 fb   30 fb   0 .
-    add a,3ah           ;f915 c6 3a   c6 3a   . :
-    push af             ;f917 f5   f5  .
-    ld a,e              ;f918 7b   7b  {
-    call wrieee         ;f919 cd a6 fd   cd a6 fd    . . .
-    pop af              ;f91c f1   f1  .
-    jp wrieee           ;f91d c3 a6 fd   c3 a6 fd    . . .
+;Send a number as decimal string to IEEE-488 device
+;A = number (e.g. A=2ah sends " 42")
+;
+;TODO: This routine is used to send track numbers for CBM DOS commands but
+;      it can only send 2 digits.  It needs to be fixed to send 3 digits
+;      because the 8250 has 154 tracks.
+;
+    push af
+    ld a,' '
+    call wrieee         ;Send space character
+    pop af
+    ld e,'0'-1
+num1:
+    sub 0ah
+    inc e
+    jr nc,num1
+    add a,3ah
+    push af
+    ld a,e
+    call wrieee         ;Send the first digit
+    pop af
+    jp wrieee           ;Jump out to send the second digit
+                        ;  and it will return to the caller.
+
 disksta:
-    call dskdev         ;f920 cd 11 fa   cd 11 fa    . . .
+;Read the error channel of an IEEE-488 device
+;A = CP/M drive number
+;
+;Returns the CBM DOS error code in A (0=OK)
+;
+    call dskdev         ;D = IEEE-488 primary address
+                        ;Fall through into ieee_rd_err_d
+
 ieee_rd_err_d:
     ld e,0fh            ;f923 1e 0f   1e 0f   . .
     call talk           ;f925 cd 5d fa   cd 5d fa    . ] .
