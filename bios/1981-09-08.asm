@@ -943,66 +943,132 @@ corv_offs:
     db 00h
 
 boot:
-    ld sp,0100h         ;f3a5 31 00 01   31 00 01    1 . .
-    ld a,99h            ;f3a8 3e 99   3e 99   > .
-    out (13h),a         ;f3aa d3 13   d3 13   . .
-    ld a,98h            ;f3ac 3e 98   3e 98   > .
-    out (17h),a         ;f3ae d3 17   d3 17   . .
-    xor a               ;f3b0 af   af  .
-    out (11h),a         ;f3b1 d3 11   d3 11   . .
-    out (15h),a         ;f3b3 d3 15   d3 15   . .
-    in a,(15h)          ;f3b5 db 15   db 15   . .
-    or 80h              ;f3b7 f6 80   f6 80   . .
-    out (15h),a         ;f3b9 d3 15   d3 15   . .
+    ld sp,0100h         ;Initialize stack pointer
+
+    ld a,10011001b      ;Set PPI #1 control
+                        ;  Bit 7: IO   1 = I/O mode (not BSR)
+                        ;  Bit 6: GA1  0 = Group A as Mode 1 (Simple I/O)
+                        ;  Bit 5: GA0  0
+                        ;  Bit 4: PA   1 = Group A, Port A as Input
+                        ;  Bit 3: PCu  1 = Group A, Port C upper as Input
+                        ;  Bit 2: GB   0 = Group B as Mode 1 (Simple I/O)
+                        ;  Bit 1: PB   0 = Group B, Port B as Output
+                        ;  Bit 0: PCl  1 = Group B, Port C lower as Input
+    out (ppi1_cr),a
+
+    ld a,10011000b      ;Set PPI #2 control
+                        ;  Bit 7: IO   1 = I/O mode (not BSR)
+                        ;  Bit 6: GA1  0 = Group A as Mode 1 (Simple I/O)
+                        ;  Bit 5: GA0  0
+                        ;  Bit 4: PA   1 = Group A, Port A as Input
+                        ;  Bit 3: PCu  1 = Group A, Port C upper as Input
+                        ;  Bit 2: GB   0 = Group B as Mode 1 (Simple I/O)
+                        ;  Bit 1: PB   0 = Group B, Port B as Output
+                        ;  Bit 0: PCl  0 = Group B, Port C lower as Output
+    out (ppi2_cr),a
+
+    xor a               ;A=0
+    out (ppi1_pb),a     ;Clear IEEE data out
+    out (ppi2_pb),a     ;Clear IEEE control out
+
+    in a,(ppi2_pb)
+    or ifc
+    out (ppi2_pb),a     ;IFC_OUT=low
+
     ld bc,0fa0h         ;f3bb 01 a0 0f   01 a0 0f    . . .
     call delay          ;f3be cd e5 fa   cd e5 fa    . . .
-    xor a               ;f3c1 af   af  .
-    ld (0003h),a        ;f3c2 32 03 00   32 03 00    2 . .
-    ld (0004h),a        ;f3c5 32 04 00   32 04 00    2 . .
-    ld (0054h),a        ;f3c8 32 54 00   32 54 00    2 T .
-    ld (0059h),a        ;f3cb 32 59 00   32 59 00    2 Y .
-    ld (005ah),a        ;f3ce 32 5a 00   32 5a 00    2 Z .
-    ld (0ea80h),a       ;f3d1 32 80 ea   32 80 ea    2 . .
-    ld a,0ffh           ;f3d4 3e ff   3e ff   > .
-    ld a,1bh            ;f3d6 3e 1b   3e 1b   > .
-    ld (0ea68h),a       ;f3d8 32 68 ea   32 68 ea    2 h .
-    xor a               ;f3db af   af  .
-    out (09h),a         ;f3dc d3 09   d3 09   . .
-    nop                 ;f3de 00   00  .
-    out (09h),a         ;f3df d3 09   d3 09   . .
-    nop                 ;f3e1 00   00  .
-    out (09h),a         ;f3e2 d3 09   d3 09   . .
-    ld a,40h            ;f3e4 3e 40   3e 40   > @
-    out (09h),a         ;f3e6 d3 09   d3 09   . .
-    ld a,7ah            ;f3e8 3e 7a   3e 7a   > z
-    out (09h),a         ;f3ea d3 09   d3 09   . .
-    ld a,37h            ;f3ec 3e 37   3e 37   > 7
-    out (09h),a         ;f3ee d3 09   d3 09   . .
-    ld a,0eeh           ;f3f0 3e ee   3e ee   > .
-    out (0ch),a         ;f3f2 d3 0c   d3 0c   . .
-    in a,(14h)          ;f3f4 db 14   db 14   . .
-    cpl                 ;f3f6 2f   2f  /
-    and 40h             ;f3f7 e6 40   e6 40   . @
-    jr nz,try_load_cpm        ;f3f9 20 20   20 20
-    ld a,01h            ;f3fb 3e 01   3e 01   > .
-    ld (0003h),a        ;f3fd 32 03 00   32 03 00    2 . .
-lf400h:
-    in a,(14h)          ;f400 db 14   db 14   . .
-    cpl                 ;f402 2f   2f  /
-    and 03h             ;f403 e6 03   e6 03   . .
-    in a,(10h)          ;f405 db 10   db 10   . .
-    jr nz,lf400h        ;f407 20 f7   20 f7     .
-    cp 39h              ;f409 fe 39   fe 39   . 9
-    jr nz,lf400h        ;f40b 20 f3   20 f3     .
-    in a,(14h)          ;f40d db 14   db 14   . .
-    cpl                 ;f40f 2f   2f  /
-    and 02h             ;f410 e6 02   e6 02   . .
-    jr nz,lf400h        ;f412 20 ec   20 ec     .
-lf414h:
-    in a,(14h)          ;f414 db 14   db 14   . .
-    cpl                 ;f416 2f   2f  /
-    and 02h             ;f417 e6 02   e6 02   . .
-    jr z,lf414h         ;f419 28 f9   28 f9   ( .
+
+    xor a               ;A=0
+    ld (iobyte),a       ;IOBYTE=0 (CON:=TTY:, the RS-232 port)
+    ld (cdisk),a        ;CDISK=0 (User=0, Drive=A:)
+    ld (0054h),a
+    ld (leadrcvd),a     ;Last char received was not the lead-in
+    ld (move_cnt),a     ;Not in a cursor move-to sequence
+    ld (scrtab),a       ;Disable terminal character translation
+
+    ld a,0ffh           ;XXX This load does not do anything because the
+                        ;    accumulator is loaded again on the next line.
+
+    ld a,esc
+    ld (leadin),a       ;Terminal lead-in = escape
+
+    xor a               ;8251 USART initialization sequence
+    out (usart_st),a
+    nop
+    out (usart_st),a
+    nop
+    out (usart_st),a
+
+    ld a,40h            ;Reset
+    out (usart_st),a
+
+    ld a,01111010b      ;Set mode
+                        ;  Bit 7: S2   0 = 1 stop bit
+                        ;  Bit 6: S1   1
+                        ;  Bit 5: EP   1 = Even parity
+                        ;  Bit 4: PEN  1
+                        ;  Bit 3: L2   1 = 7 bit character
+                        ;  Bit 2: L1   0
+                        ;  Bit 1: B2   1 = 16X baud rate factor
+                        ;  Bit 0: B1   0
+    out (usart_st),a
+
+    ld a,00110111b      ;Set command
+                        ;  Bit 7: EH   0 = Normal (not hunt mode)
+                        ;  Bit 6: IR   0 = Normal (not internal reset)
+                        ;  Bit 5: RTS  1 = RTS output = 0
+                        ;  Bit 4: ER   1 = Reset error flag
+                        ;  Bit 3: SBRK 0 = Normal (not send break)
+                        ;  Bit 2: RxE  1 = Receive enable
+                        ;  Bit 1: DTR  1 = DTR output = 0
+                        ;  Bit 0: TxE  1 = Transmit enable
+    out (usart_st),a
+
+    ld a,0eeh           ;Baud rate:
+                        ;  0ffh = 19200 baud
+                        ;  0eeh =  9600 baud
+                        ;  0cch =  4800 buad
+                        ;  0aah =  2400 baud
+                        ;   77h =  1200 baud
+                        ;   55h =   300 baud
+                        ;   22h =   110 baud
+    out (baud_gen),a    ;Set baud rate to 9600 baud
+
+                        ;Detect if a CBM computer is on the IEEE-488 bus:
+    in a,(ppi2_pa)      ;  IEEE-488 control lines in
+    cpl                 ;  Invert byte
+    and ren             ;  Mask off all but bit 6 (REN in)
+    jr nz,try_load_cpm  ;  Jump if REN=high (a CBM holds REN=low)
+
+                        ;CBM computer detected.  Set console in IOBYTE:
+    ld a,01h            ;
+    ld (iobyte),a       ;  IOBYTE=1 (CON:=CRT:, the CBM computer)
+
+wait_for_atn:
+;Wait until the CBM computer addresses the SoftBox.  The SoftBox
+;must stay off the bus until a program on the CBM side wakes it up
+;by sending attention to its address (57).  At that point, the CBM
+;must start waiting for SRQs and the SoftBox can take over the bus.
+;
+    in a,(ppi2_pa)
+    cpl
+    and atn+dav
+    in a,(ppi1_pa)
+    jr nz,wait_for_atn  ;Wait until ATN_IN=low and DAV_IN=low
+
+    cp 39h
+    jr nz,wait_for_atn  ;Wait until data byte = 57 (SoftBox address)
+
+    in a,(ppi2_pa)
+    cpl
+    and dav
+    jr nz,wait_for_atn  ;Wait until DAV_IN=low
+
+atn1:
+    in a,(ppi2_pa)
+    cpl
+    and dav
+    jr z,atn1           ;Wait until DAV_IN=high
 
 try_load_cpm:
 ;Try to load the CP/M system and then run it.
