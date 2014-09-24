@@ -913,59 +913,71 @@ crde1:
                         ;Fall through into corv_wait_read
 
 lf320h:
-    in a,(ppi2_pc)          ;f320 db 16   db 16   . .
-    and 10h             ;f322 e6 10   e6 10   . .
+    in a,(ppi2_pc)      ;f320 db 16   db 16   . .
+    and ready           ;f322 e6 10   e6 10   . .
     jr z,lf320h         ;f324 28 fa   28 fa   ( .
-    in a,(corvus)          ;f326 db 18   db 18   . .
+    in a,(corvus)       ;f326 db 18   db 18   . .
     and 80h             ;f328 e6 80   e6 80   . .
     ret                 ;f32a c9   c9  .
+
 sub_f32bh:
     ld b,a              ;f32b 47   47  G
 lf32ch:
-    in a,(ppi2_pc)          ;f32c db 16   db 16   . .
-    and 10h             ;f32e e6 10   e6 10   . .
+    in a,(ppi2_pc)      ;f32c db 16   db 16   . .
+    and ready             ;f32e e6 10   e6 10   . .
     jr z,lf32ch         ;f330 28 fa   28 fa   ( .
     ld a,b              ;f332 78   78  x
     out (corvus),a      ;f333 d3 18   d3 18   . .
     ret                 ;f335 c9   c9  .
+
 sub_f336h:
     call sub_f32bh      ;f336 cd 2b f3   cd 2b f3    . + .
-    ld hl,(0041h)       ;f339 2a 41 00   2a 41 00    * A .
-    ld a,00h            ;f33c 3e 00   3e 00   > .
-    ld b,06h            ;f33e 06 06   06 06   . .
-lf340h:
-    add hl,hl           ;f340 29   29  )
-    rla                 ;f341 17   17  .
-    djnz lf340h         ;f342 10 fc   10 fc   . .
-    ld b,a              ;f344 47   47  G
-    ld a,(0043h)        ;f345 3a 43 00   3a 43 00    : C .
-    or l                ;f348 b5   b5  .
-    ld l,a              ;f349 6f   6f  o
-    ld ix,0f39ch        ;f34a dd 21 9c f3   dd 21 9c f3     . ! . .
-    ld a,(0040h)        ;f34e 3a 40 00   3a 40 00    : @ .
-    and 01h             ;f351 e6 01   e6 01   . .
-lf353h:
-    inc ix              ;f353 dd 23   dd 23   . #
-    inc ix              ;f355 dd 23   dd 23   . #
-    inc ix              ;f357 dd 23   dd 23   . #
-    dec a               ;f359 3d   3d  =
-    jp p,lf353h         ;f35a f2 53 f3   f2 53 f3    . S .
-    ld e,(ix+00h)       ;f35d dd 5e 00   dd 5e 00    . ^ .
-    ld d,(ix+01h)       ;f360 dd 56 01   dd 56 01    . V .
-    add hl,de           ;f363 19   19  .
-    ld a,(ix+02h)       ;f364 dd 7e 02   dd 7e 02    . ~ .
-    adc a,b             ;f367 88   88  .
-    add a,a             ;f368 87   87  .
-    add a,a             ;f369 87   87  .
-    add a,a             ;f36a 87   87  .
-    add a,a             ;f36b 87   87  .
-    push hl             ;f36c e5   e5  .
-    push af             ;f36d f5   f5  .
-    ld a,(0040h)        ;f36e 3a 40 00   3a 40 00    : @ .
-    call dskdev         ;f371 cd 11 fa   cd 11 fa    . . .
-    pop af              ;f374 f1   f1  .
-    pop hl              ;f375 e1   e1  .
-    add a,d             ;f376 82   82  .
+
+    ld hl,(track)       ;HL = CP/M current track
+    ld a,00h
+    ld b,06h
+
+dadr1:
+    add hl,hl
+    rla
+    djnz dadr1          ;Decrement B, loop until B=0
+
+    ld b,a
+    ld a,(sector)       ;A = CP/M current sector
+    or l
+    ld l,a
+
+    ld ix,corv_offs-3
+
+    ld a,(drive)        ;  A = CP/M drive number
+    and 01h             ;  Is it the first drive in drive pair (e.g. A:/B:)?
+
+dadr2:
+    inc ix
+    inc ix
+    inc ix
+    dec a
+    jp p,dadr2
+    ld e,(ix+00h)
+    ld d,(ix+01h)
+    add hl,de
+    ld a,(ix+02h)
+    adc a,b
+                        ;Set upper nibble of A to high bits of Corvus sector:
+    add a,a             ;
+    add a,a             ;  Multiply by 16 to shift the
+    add a,a             ;    lower nibble into the upper nibble
+    add a,a             ;
+
+                        ;Set lower nibble of A to the Corvus unit ID:
+    push hl             ;
+    push af             ;
+    ld a,(drive)        ;  A = CP/M drive number
+    call dskdev         ;  D = its Corvus unit ID
+    pop af              ;
+    pop hl              ;
+    add a,d             ;  A lower nibble = Corvus unit ID
+
     call sub_f32bh      ;f377 cd 2b f3   cd 2b f3    . + .
     ld a,l              ;f37a 7d   7d  }
     call sub_f32bh      ;f37b cd 2b f3   cd 2b f3    . + .
