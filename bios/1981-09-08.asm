@@ -554,38 +554,79 @@ sectran:
     ret
 
 tstdrv:
-    cp 10h              ;f1f8 fe 10   fe 10   . .
-    ret nc              ;f1fa d0   d0  .
-    push hl             ;f1fb e5   e5  .
-    push af             ;f1fc f5   f5  .
-    or a                ;f1fd b7   b7  .
-    rra                 ;f1fe 1f   1f  .
-    ld c,a              ;f1ff 4f   4f  O
-    ld b,00h            ;f200 06 00   06 00   . .
-    ld hl,0ea70h        ;f202 21 70 ea   21 70 ea    ! p .
-    add hl,bc           ;f205 09   09  .
-    ld c,(hl)           ;f206 4e   4e  N
-    ld a,c              ;f207 79   79  y
-    cp 04h              ;f208 fe 04   fe 04   . .
-    pop hl              ;f20a e1   e1  .
-    ld a,h              ;f20b 7c   7c  |
-    jr nz,lf212h        ;f20c 20 04   20 04     .
-    bit 0,a             ;f20e cb 47   cb 47   . G
-    jr lf214h           ;f210 18 02   18 02   . .
-lf212h:
-    bit 7,c             ;f212 cb 79   cb 79   . y
-lf214h:
-    pop hl              ;f214 e1   e1  .
-    scf                 ;f215 37   37  7
-    ret z               ;f216 c8   c8  .
-    or a                ;f217 b7   b7  .
-    ret                 ;f218 c9   c9  .
+;Get the drive type for a CP/M drive number from the dtypes table
+;
+;A = CP/M drive number
+;
+;Returns drive type in C.  Preserves drive number in A.
+;
+;Sets carry flag is drive is valid, clears it otherwise.
+;
+    cp 10h              ;Valid drives are 0 (A:) through 0Fh (P:)
+    ret nc              ;Return with carry clear if drive is greater than P:
+
+    push hl             ;Save original HL
+    push af             ;Save A (CP/M drive number)
+
+                        ;Find index of this drive in the dtypes table:
+    or a                ;  Clear carry flag
+    rra                 ;  A = index into dtypes table for this drive
+                        ;      Dividing the CP/M drive number by 2 finds its
+                        ;      index in the ddevs or dtypes tables.  There
+                        ;      are 16 possible CP/M drives, which the SoftBox
+                        ;      maps to 8 units (each unit may provide up to
+                        ;      2 drives).  Bit 0 of the CP/M drive number
+                        ;      indicates which drive in the unit's pair.
+
+                        ;Calculate address of drive in dtypes table:
+    ld c,a              ;  C = index of this drive in dtypes table
+    ld b,00h            ;  B = 0
+    ld hl,dtypes        ;  HL = address of dtypes table
+    add hl,bc           ;  HL = HL + BC (address of this drive in dtypes)
+
+                        ;Load drive type into C:
+    ld c,(hl)           ;  C = drive type
+    ld a,c              ;  A = C
+
+    cp 04h              ;Drive type 4?
+                        ;  (4 = Corvus 5MB as 1 CP/M drive)
+
+                        ;Load drive number back into A:
+    pop hl              ;  H = CP/M drive number
+    ld a,h              ;  A = H
+
+    jr nz,tst1          ;If drive type is not 4:
+                        ;  Jump over check specific to type 4
+
+                        ;If drive type is 4:
+    bit 0,a             ;  Z flag = opposite of bit 0 in drive number
+                        ;  For drive type 4 (Corvus 5MB as 1 CP/M drive),
+                        ;    only the first drive in each pair is valid.
+    jr tst2             ;  Jump over drive type check
+
+tst1:                   ;If drive type is not 4:
+    bit 7,c             ;  Z flag = opposite of bit 7 of drive type
+                        ;  If bit 7 of the drive type is set, it indicates
+                        ;    no drive is installed.
+
+tst2:
+    pop hl              ;Recall original HL
+
+                        ;If Z flag is clear:
+    scf                 ;  Set carry flag to indicate drive is valid
+    ret z               ;  and return
+
+                        ;If Z flag is set:
+    or a                ;  Clear carry flag to indicate drive is not valid
+    ret                 ;  and return
+
 tstdrv_corv:
     cp 06h              ;f219 fe 06   fe 06   . .
     ret nc              ;f21b d0   d0  .
     cp 02h              ;f21c fe 02   fe 02   . .
     ccf                 ;f21e 3f   3f  ?
     ret                 ;f21f c9   c9  .
+
 read:
     ld a,(0044h)        ;f220 3a 44 00   3a 44 00    : D .
     call tstdrv_corv    ;f223 cd 19 f2   cd 19 f2    . . .
