@@ -2463,19 +2463,23 @@ srq3:
     ret
 
 list:
-    ld a,(0003h)        ;fc07 3a 03 00   3a 03 00    : . .
-    and 0c0h            ;fc0a e6 c0   e6 c0   . .
-    jp z,ser_out        ;fc0c ca cb fb   ca cb fb    . . .
-    jp p,conout_cbm     ;fc0f f2 6d fb   f2 6d fb    . m .
-    ld e,0ffh           ;fc12 1e ff   1e ff   . .
-    and 40h             ;fc14 e6 40   e6 40   . @
-    jr z,lfc22h         ;fc16 28 0a   28 0a   ( .
+    ld a,(iobyte)
+    and 0c0h            ;Mask off all but buts 6 and 7
+    jp z,ser_out        ;Jump out if List is RS-232 port (LST: = TTY:)
+    jp p,conout_cbm     ;Jump out if List is CBM computer (LST: = CRT:)
+
+    ld e,0ffh           ;E = no IEEE-488 secondary address
+
+    and 40h             ;Mask off all but bit 6
+    jr z,list_lpt       ;Jump if List is CBM printer (LST: = LPT:)
+
+list_ul1:
     ld a,(0ea66h)       ;fc18 3a 66 ea   3a 66 ea    : f .
     ld d,a              ;fc1b 57   57  W
     call listen         ;fc1c cd 90 fa   cd 90 fa    . . .
     jp ieee_unl_byte    ;fc1f c3 d0 fc   c3 d0 fc    . . .
 
-lfc22h:
+list_lpt:
     ld a,(0ea61h)       ;fc22 3a 61 ea   3a 61 ea    : a .
     ld d,a              ;fc25 57   57  W
     in a,(15h)          ;fc26 db 15   db 15   . .
@@ -2520,40 +2524,57 @@ lfc6eh:
     or 01h              ;fc70 f6 01   f6 01   . .
     out (15h),a         ;fc72 d3 15   d3 15   . .
     jp unlisten         ;fc74 c3 a6 fa   c3 a6 fa    . . .
+
 listst:
-    ld a,(0003h)        ;fc77 3a 03 00   3a 03 00    : . .
-    and 0c0h            ;fc7a e6 c0   e6 c0   . .
-    jr z,lfca5h         ;fc7c 28 27   28 27   ( '
-    rla                 ;fc7e 17   17  .
-    ld a,0ffh           ;fc7f 3e ff   3e ff   > .
-    ret nc              ;fc81 d0   d0  .
-    ld a,(0003h)        ;fc82 3a 03 00   3a 03 00    : . .
-    and 40h             ;fc85 e6 40   e6 40   . @
-    ld a,(0ea61h)       ;fc87 3a 61 ea   3a 61 ea    : a .
-    jr z,lfc8fh         ;fc8a 28 03   28 03   ( .
-    ld a,(0ea66h)       ;fc8c 3a 66 ea   3a 66 ea    : f .
-lfc8fh:
-    ld d,a              ;fc8f 57   57  W
-    ld e,0ffh           ;fc90 1e ff   1e ff   . .
-    call listen         ;fc92 cd 90 fa   cd 90 fa    . . .
-    call delay_1ms      ;fc95 cd ee fa   cd ee fa    . . .
-    in a,(14h)          ;fc98 db 14   db 14   . .
-    cpl                 ;fc9a 2f   2f  /
-    and 08h             ;fc9b e6 08   e6 08   . .
-    push af             ;fc9d f5   f5  .
-    call unlisten       ;fc9e cd a6 fa   cd a6 fa    . . .
-    pop af              ;fca1 f1   f1  .
-    ret z               ;fca2 c8   c8  .
-    dec a               ;fca3 3d   3d  =
-    ret                 ;fca4 c9   c9  .
-lfca5h:
-    in a,(09h)          ;fca5 db 09   db 09   . .
-    cpl                 ;fca7 2f   2f  /
-    and 84h             ;fca8 e6 84   e6 84   . .
-    ld a,0ffh           ;fcaa 3e ff   3e ff   > .
-    ret z               ;fcac c8   c8  .
-    inc a               ;fcad 3c   3c  <
-    ret                 ;fcae c9   c9  .
+;List (printer) status
+;
+;Returns A=0 (not ready) or A=0FFh (ready).
+;
+    ld a,(iobyte)
+    and 0c0h
+    jr z,ser_tx_status  ;Jump out if List is RS-232 port (LST: = TTY:)
+
+    rla
+    ld a,0ffh           ;A=0FFh (indicates ready)
+    ret nc              ;Return if List is Console (LST: = CRT:)
+
+    ld a,(iobyte)
+    and 40h             ;Mask off all except bit 6
+    ld a,(lpt_dev)      ;A = IEEE-488 primary address of LPT:
+    jr z,listst_ieee    ;Jump to keep A if CBM printer (LST: = LPT:)
+
+                        ;List must be ASCII printer (LST: = UL1:)
+    ld a,(ul1_dev)      ;A = IEEE-488 primary address of UL1:
+
+listst_ieee:
+    ld d,a              ;D = IEEE-488 primary address of LPT: or UL1:
+    ld e,0ffh           ;E = no IEEE-488 secondary address
+    call listen
+    call delay_1ms
+
+    in a,(ppi2_pa)      ;Read IEEE-488 control lines in
+    cpl                 ;Invert byte
+    and nrfd            ;Mask off all except bit 3 (NRFD in)
+
+    push af
+    call unlisten
+    pop af
+
+    ret z               ;Return with 0 if NRFD_IN=low
+    dec a
+    ret                 ;Return with 0FFh if NRFD_IN=high
+
+ser_tx_status:
+;RS-232 serial port transmit status
+;Returns A=0 (not ready) or A=0FFh (ready).
+;
+    in a,(usart_st)     ;Read USART status register
+    cpl                 ;Invert it
+    and 84h             ;Mask off all but bits 7 (DSR) and 2 (TxEMPTY)
+    ld a,0ffh
+    ret z               ;Return A=0FFh if ready to transmit
+    inc a
+    ret                 ;Return A=0 if not ready
 
 ascii_to_pet:
 ;Convert an ASCII char to its equivalent PETSCII char.
