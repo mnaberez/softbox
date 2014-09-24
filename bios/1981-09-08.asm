@@ -951,7 +951,7 @@ lf445h:
     jp nz,lf41bh        ;f45a c2 1b f4   c2 1b f4    . . .
     ld de,0802h         ;f45d 11 02 08   11 02 08    . . .
     ld c,02h            ;f460 0e 02   0e 02   . .
-    ld hl,lf564h        ;f462 21 64 f5   21 64 f5    ! d .
+    ld hl,dos_num2        ;f462 21 64 f5   21 64 f5    ! d .
     call open           ;f465 cd b5 fa   cd b5 fa    . . .
 runcpm:
     ld sp,0100h         ;f468 31 00 01   31 00 01    1 . .
@@ -1074,7 +1074,7 @@ lf54eh:
     call close          ;f55d cd d1 fa   cd d1 fa    . . .
     pop de              ;f560 d1   d1  .
     jp ieee_rd_err_d    ;f561 c3 23 f9   c3 23 f9    . # .
-lf564h:
+dos_num2:
     inc hl              ;f564 23   23  #
     ld (3a30h),a        ;f565 32 30 3a   32 30 3a    2 0 :
     ld b,e              ;f568 43   43  C
@@ -1664,38 +1664,72 @@ lfa08h:
     jr ieee_read_sec_hl ;fa0f 18 91   18 91   . .
 
 dskdev:
-    push hl             ;fa11 e5   e5  .
-    push af             ;fa12 f5   f5  .
-    or a                ;fa13 b7   b7  .
-    rra                 ;fa14 1f   1f  .
-    ld e,a              ;fa15 5f   5f  _
-    ld d,00h            ;fa16 16 00   16 00   . .
-    ld hl,0ea78h        ;fa18 21 78 ea   21 78 ea    ! x .
-    add hl,de           ;fa1b 19   19  .
-    ld d,(hl)           ;fa1c 56   56  V
-    pop af              ;fa1d f1   f1  .
-    pop hl              ;fa1e e1   e1  .
-    ret                 ;fa1f c9   c9  .
+;Get the device address for a CP/M drive number from the ddevs table
+;
+;A = CP/M drive number (0=A:, 1=B:, ...)
+;
+;Returns either an IEEE-488 primary address or a Corvus ID in D.
+;
+    push hl
+    push af
+                        ;Find index of this drive in the ddevs table:
+    or a                ;  Clear carry flag
+    rra                 ;  A = index into ddevs table for this drive
+                        ;      Dividing the CP/M drive number by 2 finds its
+                        ;      index in the ddevs or dtypes tables.  There
+                        ;      are 16 possible CP/M drives, which the SoftBox
+                        ;      maps to 8 units (each unit may provide up to
+                        ;      2 drives).  Bit 0 of the CP/M drive number
+                        ;      indicates which drive in the unit's pair.
+
+                        ;Calculate address of this drive in ddevs table:
+    ld e,a              ;  E = index of this drive in ddevs table
+    ld d,00h            ;  D = 0
+    ld hl,ddevs         ;  HL = base address of ddevs table
+    add hl,de           ;  HL = HL + DE (address of this drive in ddevs)
+
+    ld d,(hl)           ;D = device number of this drive
+                        ;    (IEEE-488 primary address or Corvus ID)
+    pop af
+    pop hl
+    ret
+
 diskcmd:
-    call dskdev         ;fa20 cd 11 fa   cd 11 fa    . . .
-    ld e,0fh            ;fa23 1e 0f   1e 0f   . .
-    jp listen           ;fa25 c3 90 fa   c3 90 fa    . . .
+;Open command channel on IEEE-488
+;A = CP/M drive number (0=A:, 1=B:, ...)
+;HL = pointer to string
+;C = number of bytes in string
+;
+    call dskdev         ;D = IEEE-488 primary address
+    ld e,0fh            ;E = IEEE-488 secondary address 15 (command channel)
+    jp listen
+
 idrive:
-    call dskdev         ;fa28 cd 11 fa   cd 11 fa    . . .
-    ld e,0fh            ;fa2b 1e 0f   1e 0f   . .
-    push de             ;fa2d d5   d5  .
-    ld c,02h            ;fa2e 0e 02   0e 02   . .
-    ld hl,dos_i0        ;fa30 21 47 fa   21 47 fa    ! G .
-    rra                 ;fa33 1f   1f  .
-    jr nc,lfa39h        ;fa34 30 03   30 03   0 .
-    ld hl,0fa49h        ;fa36 21 49 fa   21 49 fa    ! I .
-lfa39h:
-    call open           ;fa39 cd b5 fa   cd b5 fa    . . .
-    pop de              ;fa3c d1   d1  .
-    ld e,02h            ;fa3d 1e 02   1e 02   . .
-    ld c,02h            ;fa3f 0e 02   0e 02   . .
-    ld hl,lf564h        ;fa41 21 64 f5   21 64 f5    ! d .
-    jp open             ;fa44 c3 b5 fa   c3 b5 fa    . . .
+;Initialize an IEEE-488 disk drive
+;A = CP/M drive number (0=A:, 1=B:, ...)
+;
+    call dskdev         ;D = IEEE-488 primary address
+    ld e,0fh            ;E = IEEE-488 secondary address 15 (command channel)
+    push de
+
+    ld c,02h            ;C = 2 bytes in string
+    ld hl,dos_i0        ;HL = pointer to "I0" string for CBM DOS drive 0
+
+    rra                 ;Rotate bit 0 of CP/M drive number into carry flag
+                        ;  For CBM dual drive units, bit 0 of the CP/M drive
+                        ;  number indicates either drive 0 (bit 0 clear)
+                        ;  or drive 1 (bit 0 set).
+
+    jr nc,idrv1         ;Jump to keep "I0" string if CBM drive 0
+
+    ld hl,dos_i1        ;HL = pointer to "I1" string for CBM drive 1
+idrv1:
+    call open
+    pop de
+    ld e,02h            ;E = IEEE-488 secondary address 2
+    ld c,02h            ;C = 2 bytes in string
+    ld hl,dos_num2      ;HL = pointer to "#2"
+    jp open
 
 dos_i0:
     db "I0"
