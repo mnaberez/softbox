@@ -943,7 +943,7 @@ lf445h:
     call unlisten       ;f445 cd a6 fa   cd a6 fa    . . .
     ld de,080fh         ;f448 11 0f 08   11 0f 08    . . .
     ld c,02h            ;f44b 0e 02   0e 02   . .
-    ld hl,lf56ch        ;f44d 21 6c f5   21 6c f5    ! l .
+    ld hl,dos_i0_0        ;f44d 21 6c f5   21 6c f5    ! l .
     call open           ;f450 cd b5 fa   cd b5 fa    . . .
     ld d,08h            ;f453 16 08   16 08   . .
     ld c,1ch            ;f455 0e 1c   0e 1c   . .
@@ -1074,27 +1074,36 @@ lf54eh:
     call close          ;f55d cd d1 fa   cd d1 fa    . . .
     pop de              ;f560 d1   d1  .
     jp ieee_rd_err_d    ;f561 c3 23 f9   c3 23 f9    . # .
+
 dos_num2:
-    inc hl              ;f564 23   23  #
-    ld (3a30h),a        ;f565 32 30 3a   32 30 3a    2 0 :
-    ld b,e              ;f568 43   43  C
-lf569h:
-    ld d,b              ;f569 50   50  P
-    cpl                 ;f56a 2f   2f  /
-    ld c,l              ;f56b 4d   4d  M
-lf56ch:
-    ld c,c              ;f56c 49   49  I
-    jr nc,$+64          ;f56d 30 3e   30 3e   0 >
-    djnz $+52           ;f56f 10 32   10 32   . 2
-    ld c,b              ;f571 48   48  H
-    nop                 ;f572 00   00  .
-    ld a,(0040h)        ;f573 3a 40 00   3a 40 00    : @ .
-    ld (0049h),a        ;f576 32 49 00   32 49 00    2 I .
-    ld a,(0041h)        ;f579 3a 41 00   3a 41 00    : A .
-    ld (004ah),a        ;f57c 32 4a 00   32 4a 00    2 J .
-    ld a,(0043h)        ;f57f 3a 43 00   3a 43 00    : C .
-    ld (004bh),a        ;f582 32 4b 00   32 4b 00    2 K .
-    ret                 ;f585 c9   c9  .
+    db "#2"
+
+filename:
+    db "0:CP/M"
+
+dos_i0_0:
+    db "I0"
+
+deblock_2:
+;Called only from write, and only if deblocking code = 2
+;  (2 = Write can be deferred, no pre-read is necessary)
+;
+;TODO: sec_cnt decreases as y_sector increases.  Find out what
+;      exactly this is doing and why.
+;
+    ld a,10h            ;A=10h for all drives
+    ld (sec_cnt),a      ;Store A in sec_cnt (sector countdown)
+
+    ld a,(drive)
+    ld (y_drive),a      ;y_drive = drive
+
+    ld a,(track)
+    ld (y_track),a      ;y_track = track
+
+    ld a,(sector)
+    ld (y_sector),a     ;y_sector = sector
+    ret
+
 sub_rw:
     ld a,(0040h)        ;f586 3a 40 00   3a 40 00    : @ .
     ld hl,0045h         ;f589 21 45 00   21 45 00    ! E .
