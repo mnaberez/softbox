@@ -260,7 +260,6 @@ lf033h:
     jp delay            ;f084  Programmable millisecond delay
 
 signon:
-;    db cr,lf,"60K SoftBox CP/M vers. 2.2"
     db cr,lf,"60K PET CP/M vers. 2.2"
     db cr,lf,"(c) 1981 Keith Frewin"
     db cr,lf,"Revision 8/9/81"
@@ -379,17 +378,30 @@ ccp1:
     jp (hl)             ;  and jump to it
 
 home:
-    ld bc,0000h         ;f15a 01 00 00   01 00 00    . . .
+;Set the CP/M track to 0.
+;
+    ld bc,0000h         ;Fall through into settrk
+
 settrk:
-    ld (0041h),bc       ;f15d ed 43 41 00   ed 43 41 00     . C A .
-    ret                 ;f161 c9   c9  .
+;Set the CP/M track to BC.
+;
+    ld (track),bc
+    ret
+
 setsec:
-    ld a,c              ;f162 79   79  y
-    ld (0043h),a        ;f163 32 43 00   32 43 00    2 C .
-    ret                 ;f166 c9   c9  .
+;Set the CP/M sector to BC.
+;
+    ld a,c
+    ld (sector),a
+    ret
+
 setdma:
-    ld (0052h),bc       ;f167 ed 43 52 00   ed 43 52 00     . C R .
-    ret                 ;f16b c9   c9  .
+;The next disk operation will read data from, or write data to,
+;the file buffer address given in BC.
+;
+    ld (dma),bc
+    ret
+
 seldsk:
     ld a,c              ;f16c 79   79  y
     call tstdrv         ;f16d cd f8 f1   cd f8 f1    . . .
