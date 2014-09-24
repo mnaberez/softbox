@@ -1,5 +1,20 @@
-; z80dasm 1.1.3
-; command line: z80dasm --labels --source --origin=61440 1981-09-08.bin
+;SoftBox CP/M 2.2 BIOS
+;Revision 8/9/81
+;
+;This is a disassembly of two original 2716 EPROMs from a SoftBox,
+;labeled "375" (IC3) and "376" (IC4).
+;
+;SoftBox Memory Map:
+;  F800-FFFF  BIOS ROM High (IC4)   2048
+;  F000-F7FF  BIOS ROM Low (IC3)    2048
+;  EA80-EFFF  BIOS Working Storage  1408
+;  EA00-EA7F  BIOS Configuration     128
+;  DC00-E9FF  BDOS                  3584
+;  D400-DBFF  CCP                   2048
+;  0100-D3FF  TPA                  54016
+;  0000-00FF  Low Storage            256
+;
+
 usart:    equ 08h       ;8251 USART (IC15)
 usart_db: equ usart+0   ;  Data Buffer
 usart_st: equ usart+1   ;  Status Register
@@ -1720,6 +1735,7 @@ const:
     ret nc              ;fb23 d0   d0  .
     ld a,0ffh           ;fb24 3e ff   3e ff   > .
     ret                 ;fb26 c9   c9  .
+
 conout:
     ld a,(0003h)        ;fb27 3a 03 00   3a 03 00    : . .
     rra                 ;fb2a 1f   1f  .
@@ -1736,6 +1752,7 @@ conout:
     ld a,01h            ;fb3f 3e 01   3e 01   > .
     ld (0059h),a        ;fb41 32 59 00   32 59 00    2 Y .
     ret                 ;fb44 c9   c9  .
+
 lfb45h:
     ld a,(0059h)        ;fb45 3a 59 00   3a 59 00    : Y .
     or a                ;fb48 b7   b7  .
