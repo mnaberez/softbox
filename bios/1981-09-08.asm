@@ -1151,123 +1151,171 @@ sub_rw:
     or 0ffh
     ret
 
-lf5c2h:
-    ld (0055h),hl       ;f5c2 22 55 00   22 55 00    " U .
-    call find_trk_sec   ;f5c5 cd c4 f7   cd c4 f7    . . .
-lf5c8h:
-    ld a,03h            ;f5c8 3e 03   3e 03   > .
-    ld (0050h),a        ;f5ca 32 50 00   32 50 00    2 P .
-lf5cdh:
-    ld a,(0045h)        ;f5cd 3a 45 00   3a 45 00    : E .
-    call diskcmd        ;f5d0 cd 20 fa   cd 20 fa    .   .
-    ld hl,(0055h)       ;f5d3 2a 55 00   2a 55 00    * U .
-    ld c,05h            ;f5d6 0e 05   0e 05   . .
-    call ieeemsg        ;f5d8 cd 63 fe   cd 63 fe    . c .
-    ld a,(0045h)        ;f5db 3a 45 00   3a 45 00    : E .
-    and 01h             ;f5de e6 01   e6 01   . .
-    add a,30h           ;f5e0 c6 30   c6 30   . 0
-    call wrieee         ;f5e2 cd a6 fd   cd a6 fd    . . .
-    ld a,(004dh)        ;f5e5 3a 4d 00   3a 4d 00    : M .
-    call ieeenum        ;f5e8 cd 07 f9   cd 07 f9    . . .
-    ld a,(004eh)        ;f5eb 3a 4e 00   3a 4e 00    : N .
-    call ieeenum        ;f5ee cd 07 f9   cd 07 f9    . . .
-    call creoi          ;f5f1 cd 4d fe   cd 4d fe    . M .
-    call unlisten       ;f5f4 cd a6 fa   cd a6 fa    . . .
-    ld a,(0045h)        ;f5f7 3a 45 00   3a 45 00    : E .
-    call disksta        ;f5fa cd 20 f9   cd 20 f9    .   .
-    cp 16h              ;f5fd fe 16   fe 16   . .
-    jr nz,lf605h        ;f5ff 20 04   20 04     .
-    ex af,af'           ;f601 08   08  .
-    or a                ;f602 b7   b7  .
-    ret z               ;f603 c8   c8  .
-    ex af,af'           ;f604 08   08  .
-lf605h:
-    ld (004fh),a        ;f605 32 4f 00   32 4f 00    2 O .
-    or a                ;f608 b7   b7  .
-    ret z               ;f609 c8   c8  .
-    ld hl,0050h         ;f60a 21 50 00   21 50 00    ! P .
-    dec (hl)            ;f60d 35   35  5
-    jr z,lf618h         ;f60e 28 08   28 08   ( .
-    ld a,(0045h)        ;f610 3a 45 00   3a 45 00    : E .
-    call idrive         ;f613 cd 28 fa   cd 28 fa    . ( .
-    jr lf5cdh           ;f616 18 b5   18 b5   . .
-lf618h:
-    ld hl,bdos_err_on   ;f618 21 a8 f7   21 a8 f7    ! . .
-    call puts           ;f61b cd f1 fc   cd f1 fc    . . .
-    ld a,(0045h)        ;f61e 3a 45 00   3a 45 00    : E .
-    add a,41h           ;f621 c6 41   c6 41   . A
-    ld c,a              ;f623 4f   4f  O
-    call conout         ;f624 cd 27 fb   cd 27 fb    . ' .
-    ld hl,colon_space   ;f627 21 a5 f7   21 a5 f7    ! . .
-    call puts           ;f62a cd f1 fc   cd f1 fc    . . .
-    ld a,(004fh)        ;f62d 3a 4f 00   3a 4f 00    : O .
-    ld hl,cbm_err_26    ;f630 21 c0 f6   21 c0 f6    ! . .
-    cp 1ah              ;f633 fe 1a   fe 1a   . .
-    jr z,lf684h         ;f635 28 4d   28 4d   ( M
-    ld hl,cbm_err_25    ;f637 21 d5 f6   21 d5 f6    ! . .
-    cp 19h              ;f63a fe 19   fe 19   . .
-    jr z,lf684h         ;f63c 28 46   28 46   ( F
-    ld hl,cbm_err_28    ;f63e 21 e8 f6   21 e8 f6    ! . .
-    cp 1ch              ;f641 fe 1c   fe 1c   . .
-    jr z,lf684h         ;f643 28 3f   28 3f   ( ?
-    ld hl,cbm_err_20    ;f645 21 f8 f6   21 f8 f6    ! . .
-    cp 14h              ;f648 fe 14   fe 14   . .
-    jr z,lf684h         ;f64a 28 38   28 38   ( 8
-    ld hl,cbm_err_21    ;f64c 21 07 f7   21 07 f7    ! . .
-    cp 15h              ;f64f fe 15   fe 15   . .
-    jr z,lf684h         ;f651 28 31   28 31   ( 1
-    cp 4ah              ;f653 fe 4a   fe 4a   . J
-    jr z,lf684h         ;f655 28 2d   28 2d   ( -
-    ld hl,cbm_err_22    ;f657 21 16 f7   21 16 f7    ! . .
-    cp 16h              ;f65a fe 16   fe 16   . .
-    jr z,lf684h         ;f65c 28 26   28 26   ( &
-    ld hl,cbm_err_23    ;f65e 21 29 f7   21 29 f7    ! ) .
-    cp 17h              ;f661 fe 17   fe 17   . .
-    jr z,lf684h         ;f663 28 1f   28 1f   ( .
-    ld hl,cbm_err_27    ;f665 21 40 f7   21 40 f7    ! @ .
-    cp 1bh              ;f668 fe 1b   fe 1b   . .
-    jr z,lf684h         ;f66a 28 18   28 18   ( .
-    ld hl,cbm_err_24    ;f66c 21 59 f7   21 59 f7    ! Y .
-    cp 18h              ;f66f fe 18   fe 18   . .
-    jr z,lf684h         ;f671 28 11   28 11   ( .
-    ld hl,cbm_err_70    ;f673 21 80 f7   21 80 f7    ! . .
-    cp 46h              ;f676 fe 46   fe 46   . F
-    jr z,lf684h         ;f678 28 0a   28 0a   ( .
-    ld hl,cbm_err_73    ;f67a 21 94 f7   21 94 f7    ! . .
-    cp 49h              ;f67d fe 49   fe 49   . I
-    jr z,lf684h         ;f67f 28 03   28 03   ( .
-    ld hl,cbm_err_xx    ;f681 21 6d f7   21 6d f7    ! m .
-lf684h:
-    call puts           ;f684 cd f1 fc   cd f1 fc    . . .
-lf687h:
-    call conin          ;f687 cd f7 fa   cd f7 fa    . . .
-    cp 03h              ;f68a fe 03   fe 03   . .
-    jp z,0000h          ;f68c ca 00 00   ca 00 00    . . .
-    cp 3fh              ;f68f fe 3f   fe 3f   . ?
-    jr nz,lf6aah        ;f691 20 17   20 17     .
-    ld hl,0f7c1h        ;f693 21 c1 f7   21 c1 f7    ! . .
-    call puts           ;f696 cd f1 fc   cd f1 fc    . . .
-    ld hl,0eac0h        ;f699 21 c0 ea   21 c0 ea    ! . .
-lf69ch:
-    ld a,(hl)           ;f69c 7e   7e  ~
-    cp 0dh              ;f69d fe 0d   fe 0d   . .
-    jr z,lf687h         ;f69f 28 e6   28 e6   ( .
-    ld c,a              ;f6a1 4f   4f  O
-    push hl             ;f6a2 e5   e5  .
-    call conout         ;f6a3 cd 27 fb   cd 27 fb    . ' .
-    pop hl              ;f6a6 e1   e1  .
-    inc hl              ;f6a7 23   23  #
-    jr lf69ch           ;f6a8 18 f2   18 f2   . .
-lf6aah:
-    ld a,(0045h)        ;f6aa 3a 45 00   3a 45 00    : E .
-    call idrive         ;f6ad cd 28 fa   cd 28 fa    . ( .
-    ld a,(004fh)        ;f6b0 3a 4f 00   3a 4f 00    : O .
-    cp 1ah              ;f6b3 fe 1a   fe 1a   . .
-    jp z,lf5c8h         ;f6b5 ca c8 f5   ca c8 f5    . . .
-    cp 15h              ;f6b8 fe 15   fe 15   . .
-    jp z,lf5c8h         ;f6ba ca c8 f5   ca c8 f5    . . .
-    ld a,00h            ;f6bd 3e 00   3e 00   > .
-    ret                 ;f6bf c9   c9  .
+ieee_u1_or_u2:
+;Perform a CBM DOS block read or block write.
+;
+;HL = pointer to string, either "U1 2 " (Block Read)
+;       or "U1 2 " (Block Write)
+;
+;A' = flag for how to handle a CBM DOS read error 22 (no data block)
+;       If A'=0, error 22 will be ignored.
+;       If A'=1, error 22 will be handled like any other error.
+;
+    ld (hl_tmp),hl      ;Preserve HL
+    call find_trk_sec   ;Update dos_trk and dos_sec
+blk1:
+    ld a,03h
+    ld (tries),a        ;3 tries
+blk2:
+    ld a,(x_drive)      ;A = CP/M drive number
+    call diskcmd        ;Open the command channel
+
+    ld hl,(hl_tmp)      ;Recall HL (pointer to "U1 2 " or "U2 2 ")
+    ld c,05h            ;5 bytes in string
+    call ieeemsg        ;Send the string
+
+    ld a,(x_drive)      ;A = CP/M drive number
+    and 01h             ;Mask off all except bit 0
+    add a,30h           ;Convert to ASCII
+    call wrieee         ;Send CBM drive number (either "0" or "1")
+
+    ld a,(dos_trk)
+    call ieeenum        ;Send the CBM DOS track
+
+    ld a,(dos_sec)
+    call ieeenum        ;Send the CBM DOS sector
+
+    call creoi          ;Send carriage return with EOI
+    call unlisten       ;Send UNLISTEN
+
+    ld a,(x_drive)      ;A = CP/M drive number
+    call disksta        ;Read the error channel
+    cp 16h              ;Is it 22 Read Error (no data block)?
+    jr nz,blk3          ;  No: jump to blk3 to handle error
+
+                        ;The error is 22 Read Error.  This error is a
+                        ;special case.  If A'=0, it will be ignored.
+                        ;If A'=1, it will be retried like any other error.
+
+    ex af,af'           ;A=retry error 22 flag, A'=CBM DOS error code
+    or a
+    ret z               ;Return with A=0 if the flag is 0
+    ex af,af'           ;A=CBM DOS error code, A'=retry error 22 flag
+
+blk3:
+    ld (dos_err),a      ;Save A as last error code returned from CBM DOS
+    or a                ;Set flags
+    ret z               ;Return if error code = 0 (OK)
+
+    ld hl,tries
+    dec (hl)            ;Decrement tries
+    jr z,blk4           ;Give up if number of tries exceeded
+
+    ld a,(x_drive)      ;A = CP/M drive number
+    call idrive         ;Initialize the disk drive
+    jr blk2             ;Try again
+
+blk4:
+    ld hl,bdos_err_on
+    call puts           ;Write "BDOS err on " to console out
+
+    ld a,(x_drive)      ;Get current drive number
+    add a,41h           ;Convert it to ASCII (0=A, 1=B, 2=C, etc)
+    ld c,a
+    call conout         ;Write drive letter to console out
+
+    ld hl,colon_space
+    call puts           ;Write ": " to console out
+
+    ld a,(dos_err)      ;A=last error code returned from CBM DOS
+
+    ld hl,cbm_err_26
+    cp 26
+    jr z,blk5
+
+    ld hl,cbm_err_25
+    cp 25
+    jr z,blk5
+
+    ld hl,cbm_err_28
+    cp 28
+    jr z,blk5
+
+    ld hl,cbm_err_20
+    cp 20
+    jr z,blk5
+
+    ld hl,cbm_err_21
+    cp 21
+    jr z,blk5
+
+    cp 74
+    jr z,blk5
+
+    ld hl,cbm_err_22
+    cp 22
+    jr z,blk5
+
+    ld hl,cbm_err_23
+    cp 23
+    jr z,blk5
+
+    ld hl,cbm_err_27
+    cp 27
+    jr z,blk5
+
+    ld hl,cbm_err_24
+    cp 24
+    jr z,blk5
+
+    ld hl,cbm_err_70
+    cp 70
+    jr z,blk5
+
+    ld hl,cbm_err_73
+    cp 73
+    jr z,blk5
+
+    ld hl,cbm_err_xx
+blk5:
+    call puts
+
+blk6:
+    call conin          ;Wait for a key to be pressed
+
+    cp ctrl_c           ;Control-C pressed?
+    jp z,jp_warm        ;  Yes: Jump to BDOS warm start
+
+    cp '?'              ;Question mark pressed?
+    jr nz,blk8          ;  No: Jump over printing CBM DOS error msg
+
+    ld hl,newline
+    call puts           ;Write a newline to console out
+
+    ld hl,errbuf        ;HL = pointer to CBM DOS error message
+                        ;     like "23,READ ERROR,45,27,0",0Dh
+blk7:
+    ld a,(hl)           ;Get a char from CBM DOS error message
+    cp cr
+    jr z,blk6           ;Jump if end of CBM DOS error message reached
+
+    ld c,a
+    push hl
+    call conout         ;Write char from CBM DOS error msg to console out
+    pop hl
+    inc hl              ;Increment to next char
+    jr blk7             ;Loop to continue printing the error msg
+
+blk8:
+    ld a,(x_drive)      ;A = CP/M drive number
+    call idrive         ;Initialize the disk drive
+    ld a,(dos_err)
+    cp 1ah
+    jp z,blk1           ;Try again if error is write protect on
+    cp 15h
+    jp z,blk1           ;Try again if error is drive not ready
+    ld a,00h
+    ret
 
 cbm_err_26:
     db "Disk write protected",0
@@ -1636,12 +1684,12 @@ ieee_writ_sec_hl:
     call ieeemsg        ;f996 cd 63 fe   cd 63 fe    . c .
     call unlisten       ;f999 cd a6 fa   cd a6 fa    . . .
     ld hl,dos_u2_2      ;f99c 21 bc f7   21 bc f7    ! . .
-    jp lf5c2h           ;f99f c3 c2 f5   c3 c2 f5    . . .
+    jp ieee_u1_or_u2           ;f99f c3 c2 f5   c3 c2 f5    . . .
 
 ieee_read_sec_hl:
     push hl             ;f9a2 e5   e5  .
     ld hl,dos_u1_2      ;f9a3 21 b7 f7   21 b7 f7    ! . .
-    call lf5c2h         ;f9a6 cd c2 f5   cd c2 f5    . . .
+    call ieee_u1_or_u2         ;f9a6 cd c2 f5   cd c2 f5    . . .
     ld hl,0fa58h        ;f9a9 21 58 fa   21 58 fa    ! X .
     ld c,05h            ;f9ac 0e 05   0e 05   . .
     ld a,(0045h)        ;f9ae 3a 45 00   3a 45 00    : E .
