@@ -839,6 +839,7 @@ lf382h:
     inc e               ;f3a2 1c   1c  .
     sub h               ;f3a3 94   94  .
     nop                 ;f3a4 00   00  .
+
 boot:
     ld sp,0100h         ;f3a5 31 00 01   31 00 01    1 . .
     ld a,99h            ;f3a8 3e 99   3e 99   > .
@@ -1887,103 +1888,164 @@ const:
     ret                 ;fb26 c9   c9  .
 
 conout:
-    ld a,(0003h)        ;fb27 3a 03 00   3a 03 00    : . .
-    rra                 ;fb2a 1f   1f  .
-    jp nc,ser_out       ;fb2b d2 cb fb   d2 cb fb    . . .
-    ld a,(005ah)        ;fb2e 3a 5a 00   3a 5a 00    : Z .
-    or a                ;fb31 b7   b7  .
-    jp nz,lfb7ch        ;fb32 c2 7c fb   c2 7c fb    . | .
-    ld a,c              ;fb35 79   79  y
-    rla                 ;fb36 17   17  .
-    jr c,conout_cbm     ;fb37 38 34   38 34   8 4
-    ld a,(0ea68h)       ;fb39 3a 68 ea   3a 68 ea    : h .
-    cp c                ;fb3c b9   b9  .
-    jr nz,lfb45h        ;fb3d 20 06   20 06     .
-    ld a,01h            ;fb3f 3e 01   3e 01   > .
-    ld (0059h),a        ;fb41 32 59 00   32 59 00    2 Y .
-    ret                 ;fb44 c9   c9  .
+;Console output.
+;C = character to write to the screen
+;
+    ld a,(iobyte)
+    rra                 ;If the console is the RS-232 port (CON: = TTY:),
+    jp nc,ser_out       ;  jump out to send the char directly to the port
 
-lfb45h:
-    ld a,(0059h)        ;fb45 3a 59 00   3a 59 00    : Y .
-    or a                ;fb48 b7   b7  .
-    jp z,lfb52h         ;fb49 ca 52 fb   ca 52 fb    . R .
-    xor a               ;fb4c af   af  .
-    ld (0059h),a        ;fb4d 32 59 00   32 59 00    2 Y .
-    set 7,c             ;fb50 cb f9   cb f9   . .
-lfb52h:
-    ld a,c              ;fb52 79   79  y
-    cp 20h              ;fb53 fe 20   fe 20   .
-    jr c,lfb5bh         ;fb55 38 04   38 04   8 .
-    cp 7bh              ;fb57 fe 7b   fe 7b   . {
-    jr c,conout_cbm     ;fb59 38 12   38 12   8 .
-lfb5bh:
-    ld hl,0ea80h        ;fb5b 21 80 ea   21 80 ea    ! . .
-lfb5eh:
-    ld a,(hl)           ;fb5e 7e   7e  ~
-    inc hl              ;fb5f 23   23  #
-    or a                ;fb60 b7   b7  .
-    jr z,conout_cbm     ;fb61 28 0a   28 0a   ( .
-    cp c                ;fb63 b9   b9  .
-    ld a,(hl)           ;fb64 7e   7e  ~
-    inc hl              ;fb65 23   23  #
-    jr nz,lfb5eh        ;fb66 20 f6   20 f6     .
-    cp 1bh              ;fb68 fe 1b   fe 1b   . .
-    jr z,lfb76h         ;fb6a 28 0a   28 0a   ( .
-    ld c,a              ;fb6c 4f   4f  O
+    ld a,(move_cnt)
+    or a                ;If handling a move-to sequence, jump to consume
+    jp nz,move_consume  ;  the next byte in the sequence.
+
+    ld a,c
+    rla                 ;If bit 7 of the char is set,
+    jr c,conout_cbm     ;  jump out to send it directly to the CBM screen.
+
+    ld a,(leadin)
+    cp c                ;If the char is not the lead-in code,
+    jr nz,conout_char   ;  jump to handle it.
+
+    ld a,01h
+    ld (leadrcvd),a     ;If the char is the lead-in code,
+    ret                 ;  set a flag and return.
+
+conout_char:
+    ld a,(leadrcvd)
+    or a                ;If the last char received was not the lead-in
+    jp z,conout_range   ;  jump to check char range
+
+    xor a
+    ld (leadrcvd),a     ;Clear the lead-in received flag
+    set 7,c             ;Set bit 7 of the char
+
+
+conout_range:
+;Check if the character is in the range the needs translation
+;before sending it to the CBM.
+;
+    ld a,c              ;A = C
+
+    cp 20h              ;Is A < 20h?
+    jr c,conout_tr      ;  Yes: jump to conout_tr
+
+    cp 7bh              ;Is A < 7bh?
+    jr c,conout_cbm     ;  Yes: jump to conout_cbm
+
+conout_tr:
+;Translate the character before sending it to the CBM.
+;Entered if C < 20h or C >= 7bh.
+;
+;The table at scrtab contains pairs of bytes in the form:
+;  from,to,from,to,from,to,...
+;
+;If the character CP/M sends to the console is a "from" byte, it will
+;be replaced with the corresponding "to" byte before it is sent to
+;the CBM.  A "from" byte of 0 indicates the end of the table.
+;
+    ld hl,scrtab        ;HL = scrtab
+conout_tr_loop:
+    ld a,(hl)           ;A = "from" byte
+    inc hl              ;HL=HL+1
+    or a                ;Byte = 0 (end of table)?
+    jr z,conout_cbm     ;  Yes: no change, jump to conout_cbm
+
+    cp c                ;Found the char in the table?
+    ld a,(hl)           ;A = "to" byte
+    inc hl              ;HL=HL+1 (move to next pair in table)
+    jr nz,conout_tr_loop  ;If char was not found, continue in the table
+
+    cp esc              ;Replacement char = ESC (start cursor move-to)?
+    jr z,move_start     ;  Yes: Jump to start move-to sequence
+    ld c,a              ;   No: Replace the char with the one from the table
+                        ;         and fall through to send it to the console
+
+
 conout_cbm:
-    ld a,04h            ;fb6d 3e 04   3e 04   > .
-    call cbm_srq        ;fb6f cd df fb   cd df fb    . . .
-    ld a,c              ;fb72 79   79  y
-    jp cbm_put_byte     ;fb73 c3 e5 fd   c3 e5 fd    . . .
-lfb76h:
-    ld a,02h            ;fb76 3e 02   3e 02   > .
-    ld (005ah),a        ;fb78 32 5a 00   32 5a 00    2 Z .
-    ret                 ;fb7b c9   c9  .
-lfb7ch:
-    dec a               ;fb7c 3d   3d  =
-    ld (005ah),a        ;fb7d 32 5a 00   32 5a 00    2 Z .
-    jr z,lfb87h         ;fb80 28 05   28 05   ( .
-    ld a,c              ;fb82 79   79  y
-    ld (005bh),a        ;fb83 32 5b 00   32 5b 00    2 [ .
-    ret                 ;fb86 c9   c9  .
-lfb87h:
-    ld a,(005bh)        ;fb87 3a 5b 00   3a 5b 00    : [ .
-    ld d,a              ;fb8a 57   57  W
-    ld e,c              ;fb8b 59   59  Y
-    ld a,(0ea69h)       ;fb8c 3a 69 ea   3a 69 ea    : i .
-    or a                ;fb8f b7   b7  .
-    jr z,move_send      ;fb90 28 03   28 03   ( .
-    ld a,e              ;fb92 7b   7b  {
-    ld e,d              ;fb93 5a   5a  Z
-    ld d,a              ;fb94 57   57  W
+;Put the character in C on the CBM screen
+;
+    ld a,04h            ;Command 04h = Write to the terminal screen
+    call cbm_srq
+    ld a,c              ;A=C
+    jp cbm_put_byte     ;Jump out to send byte in A
+
+move_start:
+;Start a cursor move sequence.  The next two bytes received will be
+;the X and Y positions.
+;
+    ld a,02h            ;2 more bytes to consume (X and Y positions)
+    ld (move_cnt),a
+    ret
+
+move_consume:
+;Consume the next byte in a cursor move position.  When both X and
+;Y position bytes have been received, jump to do the move.
+;
+;A = current value of MOVE_CNT
+;C = byte received
+;
+    dec a               ;Decrement bytes remaining to consume
+    ld (move_cnt),a
+    jr z,move_prep_xy   ;Jump if no more bytes to consume
+
+    ld a,c
+    ld (move_tmp),a     ;Remember C in MOVE_TMP
+    ret
+
+move_prep_xy:
+;Prepare to send the move-to sequence.  Both X and Y position bytes
+;have been received.  Swap them in necessary, then send the move-to
+;sequence to the CBM.
+;
+;C = one position (X or Y), other position is in MOVE_TMP
+;
+    ld a,(move_tmp)     ;A = contains other position (X or Y)
+    ld d,a              ;D = A
+    ld e,c              ;E = C
+
+    ld a,(xy_order)     ;xy_order: 0=Y first, 1=X first
+    or a
+    jr z,move_send      ;Jump if positions don't need to be swapped
+
+    ld a,e
+    ld e,d
+    ld d,a              ;Swap D and E
+                        ;Fall through into MOVE_SEND
 
 move_send:
-    ld a,(0003h)        ;fb95 3a 03 00   3a 03 00    : . .
-    and 03h             ;fb98 e6 03   e6 03   . .
-    cp 01h              ;fb9a fe 01   fe 01   . .
-    ret nz              ;fb9c c0   c0  .
-    push de             ;fb9d d5   d5  .
-    ld c,1bh            ;fb9e 0e 1b   0e 1b   . .
-    call conout_cbm     ;fba0 cd 6d fb   cd 6d fb    . m .
-    pop de              ;fba3 d1   d1  .
-    push de             ;fba4 d5   d5  .
-    ld a,e              ;fba5 7b   7b  {
-    ld hl,0ea6bh        ;fba6 21 6b ea   21 6b ea    ! k .
-    sub (hl)            ;fba9 96   96  .
-    cp 60h              ;fbaa fe 60   fe 60   . `
-    jr c,lfbb0h         ;fbac 38 02   38 02   8 .
-    sub 60h             ;fbae d6 60   d6 60   . `
-lfbb0h:
-    add a,20h           ;fbb0 c6 20   c6 20   .
-    ld c,a              ;fbb2 4f   4f  O
-    call conout_cbm     ;fbb3 cd 6d fb   cd 6d fb    . m .
-    pop af              ;fbb6 f1   f1  .
-    ld hl,0ea6ah        ;fbb7 21 6a ea   21 6a ea    ! j .
-    sub (hl)            ;fbba 96   96  .
-    and 1fh             ;fbbb e6 1f   e6 1f   . .
-    or 20h              ;fbbd f6 20   f6 20   .
-    ld c,a              ;fbbf 4f   4f  O
-    jp conout_cbm       ;fbc0 c3 6d fb   c3 6d fb    . m .
+;Send move-to sequence
+;D = X-position, E = Y-position
+;
+    ld a,(iobyte)
+    and 03h             ;Mask off all but bits 1 and 0
+    cp 01h              ;Compare to 1 (CON: = CRT:)
+    ret nz              ;Return if console is not CBM computer (CRT:)
+
+    push de
+    ld c,esc            ;LSI ADM-3A command to start move-to sequence
+    call conout_cbm     ;Send start of move-to
+    pop de
+
+    push de
+    ld a,e
+    ld hl,x_offset
+    sub (hl)
+    cp 60h
+    jr c,movsnd1
+    sub 60h
+movsnd1:
+    add a,20h
+    ld c,a
+    call conout_cbm     ;Send X-position byte for move-to
+
+    pop af
+    ld hl,y_offset
+    sub (hl)
+    and 1fh
+    or 20h
+    ld c,a
+    jp conout_cbm       ;Jump out to send Y-position byte for move-to
 
 ser_rx_status:
 ;RS-232 serial port receive status
@@ -2081,6 +2143,7 @@ list:
     ld d,a              ;fc1b 57   57  W
     call listen         ;fc1c cd 90 fa   cd 90 fa    . . .
     jp ieee_unl_byte           ;fc1f c3 d0 fc   c3 d0 fc    . . .
+
 lfc22h:
     ld a,(0ea61h)       ;fc22 3a 61 ea   3a 61 ea    : a .
     ld d,a              ;fc25 57   57  W
