@@ -1673,12 +1673,13 @@ lfa39h:
     ld c,02h            ;fa3f 0e 02   0e 02   . .
     ld hl,lf564h        ;fa41 21 64 f5   21 64 f5    ! d .
     jp open             ;fa44 c3 b5 fa   c3 b5 fa    . . .
+
 lfa47h:
     ld c,c              ;fa47 49   49  I
     jr nc,$+75          ;fa48 30 49   30 49   0 I
     ld sp,2d42h         ;fa4a 31 42 2d   31 42 2d    1 B -
     ld d,b              ;fa4d 50   50  P
-    jr nz,lfa82h        ;fa4e 20 32   20 32     2
+    jr nz,0fa82h        ;fa4e 20 32   20 32     2
     jr nz,$+51          ;fa50 20 31   20 31     1
 lfa52h:
     ld c,l              ;fa52 4d   4d  M
@@ -1690,100 +1691,171 @@ lfa52h:
     ld d,d              ;fa5a 52   52  R
     nop                 ;fa5b 00   00  .
     inc de              ;fa5c 13   13  .
+
 talk:
-    in a,(15h)          ;fa5d db 15   db 15   . .
-    or 01h              ;fa5f f6 01   f6 01   . .
-    out (15h),a         ;fa61 d3 15   d3 15   . .
-    ld a,40h            ;fa63 3e 40   3e 40   > @
-    or d                ;fa65 b2   b2  .
-    call wrieee         ;fa66 cd a6 fd   cd a6 fd    . . .
-    jr c,lfa77h         ;fa69 38 0c   38 0c   8 .
-    ld a,e              ;fa6b 7b   7b  {
-    or 60h              ;fa6c f6 60   f6 60   . `
-    call p,wrieee       ;fa6e f4 a6 fd   f4 a6 fd    . . .
-    in a,(15h)          ;fa71 db 15   db 15   . .
-    or 0ch              ;fa73 f6 0c   f6 0c   . .
-    out (15h),a         ;fa75 d3 15   d3 15   . .
-lfa77h:
+;Send TALK to an IEEE-488 device
+;D = primary address
+;E = secondary address (0ffh if none)
+;
+    in a,(ppi2_pb)
+    or atn
+    out (ppi2_pb),a     ;ATN_OUT=low
+
+                        ;Send primary address:
+    ld a,40h            ;  High nibble (4) = Talk Address Group
+    or d                ;  Low nibble (D) = primary address
+    call wrieee         ;Send the byte
+
+    jr c,release_atn    ;If an error occurred during wrieee       ,
+                        ;  jump out to release ATN.
+
+                        ;Send secondary address if any:
+    ld a,e              ;  Low nibble (E) = secondary address
+    or 60h              ;  High nibble (6) = Secondary Command Group
+    call p,wrieee       ;Send the byte only if bit 7 is clear
+
+    in a,(ppi2_pb)
+    or ndac+nrfd
+    out (ppi2_pb),a     ;NDAC_OUT=low, NRFD_OUT=low
+                        ;Fall through into release_atn
+
+release_atn:
     push af             ;fa77 f5   f5  .
     in a,(15h)          ;fa78 db 15   db 15   . .
     and 0feh            ;fa7a e6 fe   e6 fe   . .
     out (15h),a         ;fa7c d3 15   d3 15   . .
     pop af              ;fa7e f1   f1  .
     ret                 ;fa7f c9   c9  .
+
 untalk:
-    in a,(15h)          ;fa80 db 15   db 15   . .
-lfa82h:
-    or 01h              ;fa82 f6 01   f6 01   . .
-    out (15h),a         ;fa84 d3 15   d3 15   . .
-    in a,(15h)          ;fa86 db 15   db 15   . .
-    and 0f3h            ;fa88 e6 f3   e6 f3   . .
-    out (15h),a         ;fa8a d3 15   d3 15   . .
-    ld a,5fh            ;fa8c 3e 5f   3e 5f   > _
-    jr wratn            ;fa8e 18 18   18 18   . .
+;Send UNTALK to all IEEE-488 devices.
+;
+    in a,(ppi2_pb)
+    or atn
+    out (ppi2_pb),a     ;ATN_OUT=low
+
+    in a,(ppi2_pb)
+    and 255-ndac-nrfd
+    out (ppi2_pb),a     ;NDAC_OUT=high, NRFD_OUT=high
+
+    ld a,5fh            ;5fh = UNTALK
+    jr wratn
+
 listen:
-    in a,(15h)          ;fa90 db 15   db 15   . .
-    or 01h              ;fa92 f6 01   f6 01   . .
-    out (15h),a         ;fa94 d3 15   d3 15   . .
-    ld a,20h            ;fa96 3e 20   3e 20   >
-    or d                ;fa98 b2   b2  .
-    call wrieee         ;fa99 cd a6 fd   cd a6 fd    . . .
-    jr c,lfa77h         ;fa9c 38 d9   38 d9   8 .
-    ld a,e              ;fa9e 7b   7b  {
-    or 60h              ;fa9f f6 60   f6 60   . `
-    call p,wrieee       ;faa1 f4 a6 fd   f4 a6 fd    . . .
-    jr lfa77h           ;faa4 18 d1   18 d1   . .
+;Send LISTEN to an IEEE-488 device
+;D = primary address
+;E = secondary address (0ffh if none)
+;
+    in a,(ppi2_pb)
+    or atn
+    out (ppi2_pb),a     ;ATN_OUT=low
+
+                        ;Send primary address:
+    ld a,20h            ;  High nibble (2) = Listen Address Group
+    or d                ;  Low nibble (D) = primary address
+    call wrieee
+
+    jr c,release_atn    ;If an error occurred during wrieee       ,
+                        ;  jump out to release ATN_OUT.
+
+                        ;Send secondary address if any:
+    ld a,e              ;  Low nibble (E) = secondary address
+    or 60h              ;  High nibble (6) = Secondary Command Group
+    call p,wrieee       ;Send the byte only if bit 7 is clear
+
+    jr release_atn      ;Jump out to release ATN
+
 unlisten:
-    ld a,3fh            ;faa6 3e 3f   3e 3f   > ?
+;Send UNLISTEN to all IEEE-488 devices.
+;
+    ld a,3fh            ;3fh = UNLISTEN
+                        ;Fall through into wratn
+
 wratn:
-    push af             ;faa8 f5   f5  .
-    in a,(15h)          ;faa9 db 15   db 15   . .
-    or 01h              ;faab f6 01   f6 01   . .
-    out (15h),a         ;faad d3 15   d3 15   . .
-    pop af              ;faaf f1   f1  .
-    call wrieee         ;fab0 cd a6 fd   cd a6 fd    . . .
-    jr lfa77h           ;fab3 18 c2   18 c2   . .
+;Send a byte to an IEEE-488 device with ATN asserted
+;ATN_OUT=low, put byte, ATN_OUT=high, wait
+;
+    push af
+
+    in a,(ppi2_pb)
+    or atn
+    out (ppi2_pb),a     ;ATN_OUT=low
+
+    pop af
+    call wrieee         ;Send the byte
+    jr release_atn      ;Jump out to release ATN
+
 open:
-    in a,(15h)          ;fab5 db 15   db 15   . .
-    or 01h              ;fab7 f6 01   f6 01   . .
-    out (15h),a         ;fab9 d3 15   d3 15   . .
-    ld a,d              ;fabb 7a   7a  z
-    or 20h              ;fabc f6 20   f6 20   .
-    call wrieee         ;fabe cd a6 fd   cd a6 fd    . . .
-    ld a,e              ;fac1 7b   7b  {
-    or 0f0h             ;fac2 f6 f0   f6 f0   . .
-    call wratn          ;fac4 cd a8 fa   cd a8 fa    . . .
-    dec c               ;fac7 0d   0d  .
-    call nz,ieeemsg     ;fac8 c4 63 fe   c4 63 fe    . c .
-    ld a,(hl)           ;facb 7e   7e  ~
-    call wreoi          ;facc cd 4f fe   cd 4f fe    . O .
-    jr unlisten         ;facf 18 d5   18 d5   . .
+;Open a file on an IEEE-488 device.
+;
+;D = primary address
+;E = file number
+;C = number of bytes in filename
+;HL = pointer to filename
+;
+    in a,(ppi2_pb)
+    or atn
+    out (ppi2_pb),a     ;ATN_OUT=low
+
+    ld a,d              ;Low nibble (D) = primary address
+    or 20h              ;High nibble (2) = Listen Address Group
+    call wrieee
+
+    ld a,e              ;Low nibble (E)
+    or 0f0h             ;High nibble (0Fh) = Secondary Command Group
+                        ;                    OPEN"file" and SAVE only
+    call wratn
+
+    dec c
+    call nz,ieeemsg     ;Send string except for last char
+
+    ld a,(hl)
+    call wreoi          ;Send the last char with EOI asserted
+
+    jr unlisten         ;Send UNLISTEN
+
 close:
-    in a,(15h)          ;fad1 db 15   db 15   . .
-    or 01h              ;fad3 f6 01   f6 01   . .
-    out (15h),a         ;fad5 d3 15   d3 15   . .
-    ld a,d              ;fad7 7a   7a  z
-    or 20h              ;fad8 f6 20   f6 20   .
-    call wrieee         ;fada cd a6 fd   cd a6 fd    . . .
-    ld a,e              ;fadd 7b   7b  {
-    or 0e0h             ;fade f6 e0   f6 e0   . .
-    call wrieee         ;fae0 cd a6 fd   cd a6 fd    . . .
-    jr unlisten         ;fae3 18 c1   18 c1   . .
+;Close an open file on an IEEE-488 device.
+;
+;D = primary address
+;E = file number
+;
+    in a,(ppi2_pb)
+    or atn
+    out (ppi2_pb),a     ;ATN_OUT=low
+
+    ld a,d              ;Low nibble (D) = primary address
+    or 20h              ;High nibble (2) = Listen Address Group
+    call wrieee
+
+    ld a,e              ;Low nibble (E) = file number
+    or 0e0h             ;High nibble (0Eh) = CLOSE
+    call wrieee
+
+    jr unlisten         ;Send UNLISTEN
+
 delay:
-    call delay_1ms      ;fae5 cd ee fa   cd ee fa    . . .
-    dec bc              ;fae8 0b   0b  .
-    ld a,b              ;fae9 78   78  x
-    or c                ;faea b1   b1  .
-    jr nz,delay         ;faeb 20 f8   20 f8     .
-    ret                 ;faed c9   c9  .
+;Programmable millisecond delay
+;BC = number of milliseconds to wait
+;
+    call delay_1ms
+    dec bc              ;Decrement BC
+    ld a,b
+    or c
+    jr nz,delay         ;Loop until BC=0
+    ret
+
 delay_1ms:
-    push bc             ;faee c5   c5  .
-    ld b,0c8h           ;faef 06 c8   06 c8   . .
-lfaf1h:
-    add a,00h           ;faf1 c6 00   c6 00   . .
-    djnz lfaf1h         ;faf3 10 fc   10 fc   . .
-    pop bc              ;faf5 c1   c1  .
-    ret                 ;faf6 c9   c9  .
+;Wait for 1 millisecond
+;
+    push bc             ;Preserve BC
+    ld b,0c8h           ;B=0c8h
+ms1:
+    add a,00h           ;A=A+0
+    djnz ms1            ;Decrement B, loop until B=0
+    pop bc              ;Restore BC
+    ret
+
 conin:
     ld a,(0003h)        ;faf7 3a 03 00   3a 03 00    : . .
     rra                 ;fafa 1f   1f  .
