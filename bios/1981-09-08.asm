@@ -2533,22 +2533,22 @@ list_lpt:
 ;Converts ASCII to equivalent PETSCII.  Converts line endings
 ;if needed and sets lowercase mode after each new line if needed.
 ;
-    ld a,(0ea61h)       ;fc22 3a 61 ea   3a 61 ea    : a .
+    ld a,(lpt_dev)      ;fc22 3a 61 ea   3a 61 ea    : a .
     ld d,a              ;fc25 57   57  W
-    in a,(15h)          ;fc26 db 15   db 15   . .
+    in a,(ppi2_pb)      ;fc26 db 15   db 15   . .
     or 01h              ;fc28 f6 01   f6 01   . .
-    out (15h),a         ;fc2a d3 15   d3 15   . .
+    out (ppi2_pb),a     ;fc2a d3 15   d3 15   . .
     call delay_1ms      ;fc2c cd ee fa   cd ee fa    . . .
     call listen         ;fc2f cd 90 fa   cd 90 fa    . . .
-    ld hl,0051h         ;fc32 21 51 00   21 51 00    ! Q .
+    ld hl,list_tmp      ;fc32 21 51 00   21 51 00    ! Q .
     ld a,(hl)           ;fc35 7e   7e  ~
     ld (hl),c           ;fc36 71   71  q
-    cp 0ah              ;fc37 fe 0a   fe 0a   . .
+    cp lf               ;fc37 fe 0a   fe 0a   . .
     jr z,lfc4ch         ;fc39 28 11   28 11   ( .
-    cp 0dh              ;fc3b fe 0d   fe 0d   . .
+    cp cr               ;fc3b fe 0d   fe 0d   . .
     jr nz,lfc54h        ;fc3d 20 15   20 15     .
     ld a,c              ;fc3f 79   79  y
-    cp 0ah              ;fc40 fe 0a   fe 0a   . .
+    cp lf               ;fc40 fe 0a   fe 0a   . .
     jr z,lfc54h         ;fc42 28 10   28 10   ( .
     call delay_1ms      ;fc44 cd ee fa   cd ee fa    . . .
     ld a,8dh            ;fc47 3e 8d   3e 8d   > .
@@ -2563,19 +2563,19 @@ lfc54h:
     jr nz,lfc5bh        ;fc57 20 02   20 02     .
     ld a,0a4h           ;fc59 3e a4   3e a4   > .
 lfc5bh:
-    cp 0dh              ;fc5b fe 0d   fe 0d   . .
+    cp cr               ;fc5b fe 0d   fe 0d   . .
     jr z,lfc6eh         ;fc5d 28 0f   28 0f   ( .
-    cp 0ah              ;fc5f fe 0a   fe 0a   . .
+    cp lf               ;fc5f fe 0a   fe 0a   . .
     jr nz,lfc65h        ;fc61 20 02   20 02     .
-    ld a,0dh            ;fc63 3e 0d   3e 0d   > .
+    ld a,cr             ;fc63 3e 0d   3e 0d   > .
 lfc65h:
     call ascii_to_pet   ;fc65 cd af fc   cd af fc    . . .
     call delay_1ms      ;fc68 cd ee fa   cd ee fa    . . .
     call wrieee         ;fc6b cd a6 fd   cd a6 fd    . . .
 lfc6eh:
-    in a,(15h)          ;fc6e db 15   db 15   . .
+    in a,(ppi2_pb)      ;fc6e db 15   db 15   . .
     or 01h              ;fc70 f6 01   f6 01   . .
-    out (15h),a         ;fc72 d3 15   d3 15   . .
+    out (ppi2_pb),a     ;fc72 d3 15   d3 15   . .
     jp unlisten         ;fc74 c3 a6 fa   c3 a6 fa    . . .
 
 listst:
