@@ -1815,122 +1815,157 @@ disksta:
                         ;Fall through into ieee_rd_err_d
 
 ieee_rd_err_d:
-    ld e,0fh            ;f923 1e 0f   1e 0f   . .
-    call talk           ;f925 cd 5d fa   cd 5d fa    . ] .
-    ld hl,0eac0h        ;f928 21 c0 ea   21 c0 ea    ! . .
-lf92bh:
-    call rdieee         ;f92b cd 1c fe   cd 1c fe    . . .
-    ld (hl),a           ;f92e 77   77  w
-    sub 30h             ;f92f d6 30   d6 30   . 0
-    jr c,lf92bh         ;f931 38 f8   38 f8   8 .
-    cp 0ah              ;f933 fe 0a   fe 0a   . .
-    jr nc,lf92bh        ;f935 30 f4   30 f4   0 .
-    inc hl              ;f937 23   23  #
-    ld b,a              ;f938 47   47  G
-    add a,a             ;f939 87   87  .
-    add a,a             ;f93a 87   87  .
-    add a,b             ;f93b 80   80  .
-    add a,a             ;f93c 87   87  .
-    ld b,a              ;f93d 47   47  G
-    call rdieee         ;f93e cd 1c fe   cd 1c fe    . . .
-    ld (hl),a           ;f941 77   77  w
-    inc hl              ;f942 23   23  #
-    sub 30h             ;f943 d6 30   d6 30   . 0
-    add a,b             ;f945 80   80  .
-    push af             ;f946 f5   f5  .
-    ld c,3ch            ;f947 0e 3c   0e 3c   . <
-lf949h:
-    call rdieee         ;f949 cd 1c fe   cd 1c fe    . . .
-    dec c               ;f94c 0d   0d  .
-    jp m,lf952h         ;f94d fa 52 f9   fa 52 f9    . R .
-    ld (hl),a           ;f950 77   77  w
-    inc hl              ;f951 23   23  #
-lf952h:
-    cp 0dh              ;f952 fe 0d   fe 0d   . .
-    jr nz,lf949h        ;f954 20 f3   20 f3     .
-    call untalk         ;f956 cd 80 fa   cd 80 fa    . . .
-    pop af              ;f959 f1   f1  .
-    ret                 ;f95a c9   c9  .
+;Read the error channel of an IEEE-488 device
+;D = IEEE-488 primary address
+;
+;Returns the CBM DOS error code in A (0=OK)
+;
+    ld e,0fh
+    call talk
+    ld hl,errbuf
+rderr1:
+    call rdieee
+    ld (hl),a
+    sub 30h
+    jr c,rderr1
+    cp 0ah
+    jr nc,rderr1
+    inc hl
+    ld b,a
+    add a,a
+    add a,a
+    add a,b
+    add a,a
+    ld b,a
+    call rdieee
+    ld (hl),a
+    inc hl
+    sub 30h
+    add a,b
+    push af
+    ld c,3ch
+rderr2:
+    call rdieee
+    dec c
+    jp m,rderr3
+    ld (hl),a
+    inc hl
+rderr3:
+    cp cr
+    jr nz,rderr2
+    call untalk
+    pop af
+    ret
+
 ieee_writ_sec_hl:
-    push hl             ;f95b e5   e5  .
-    ld hl,dos_mw        ;f95c 21 52 fa   21 52 fa    ! R .
-    ld c,06h            ;f95f 0e 06   0e 06   . .
-    ld a,(0045h)        ;f961 3a 45 00   3a 45 00    : E .
-    call diskcmd        ;f964 cd 20 fa   cd 20 fa    .   .
-    call ieeemsg        ;f967 cd 63 fe   cd 63 fe    . c .
-    pop hl              ;f96a e1   e1  .
-    ld a,(hl)           ;f96b 7e   7e  ~
-    push hl             ;f96c e5   e5  .
-    call wreoi          ;f96d cd 4f fe   cd 4f fe    . O .
-    call unlisten       ;f970 cd a6 fa   cd a6 fa    . . .
-    ld hl,0fa4bh        ;f973 21 4b fa   21 4b fa    ! K .
-    ld c,07h            ;f976 0e 07   0e 07   . .
-    ld a,(0045h)        ;f978 3a 45 00   3a 45 00    : E .
-    call diskcmd        ;f97b cd 20 fa   cd 20 fa    .   .
-    call ieeemsg        ;f97e cd 63 fe   cd 63 fe    . c .
-    call creoi          ;f981 cd 4d fe   cd 4d fe    . M .
-    call unlisten       ;f984 cd a6 fa   cd a6 fa    . . .
-    ld a,(0045h)        ;f987 3a 45 00   3a 45 00    : E .
-    call dskdev         ;f98a cd 11 fa   cd 11 fa    . . .
-    ld e,02h            ;f98d 1e 02   1e 02   . .
-    call listen         ;f98f cd 90 fa   cd 90 fa    . . .
-    pop hl              ;f992 e1   e1  .
-    inc hl              ;f993 23   23  #
-    ld c,0ffh           ;f994 0e ff   0e ff   . .
-    call ieeemsg        ;f996 cd 63 fe   cd 63 fe    . c .
-    call unlisten       ;f999 cd a6 fa   cd a6 fa    . . .
-    ld hl,dos_u2_2      ;f99c 21 bc f7   21 bc f7    ! . .
-    jp ieee_u1_or_u2           ;f99f c3 c2 f5   c3 c2 f5    . . .
+;Write a sector to the CBM disk drive from buffer at HL.
+;
+    push hl
+                        ;Send memory-write (M-W) command:
+    ld hl,dos_mw        ;  HL = pointer to "M-W",00h,13h,01h
+    ld c,06h            ;  C = 6 bytes in string
+    ld a,(x_drive)      ;  A = CP/M drive number
+    call diskcmd        ;  Open command channel
+    call ieeemsg        ;  Send the command
+    pop hl
+
+                        ;Send first byte of sector to M-W:
+    ld a,(hl)           ;  Get first byte
+    push hl
+    call wreoi          ;  Send it for M-W
+    call unlisten       ;  Send UNLISTEN
+
+                        ;Move pointer to second byte of buffer:
+    ld hl,dos_bp        ;  HL = pointer "B-P 2 1" (Buffer-Pointer) string
+    ld c,07h            ;  C = 7 bytes in string
+    ld a,(x_drive)      ;  A = CP/M drive number
+    call diskcmd        ;  Open command channel
+    call ieeemsg        ;  Send B-P command
+    call creoi          ;  Send carriage return with EOI
+    call unlisten       ;  Send UNLISTEN
+
+                        ;Send remaining 255 bytes of block:
+    ld a,(x_drive)      ;  A = CP/M drive number
+    call dskdev         ;  D = its IEEE-488 primary address
+    ld e,02h            ;  E = IEEE-488 secondary address 2
+    call listen         ;  Send LISTEN
+    pop hl
+    inc hl
+    ld c,0ffh           ;  255 bytes to send
+    call ieeemsg        ;  Send the bytes
+    call unlisten       ;  Send UNLISTEN
+
+                        ;Perform block write (U2):
+    ld hl,dos_u2_2      ;  HL = pointer to "U2 2 " string (Block Write)
+    jp ieee_u1_or_u2    ;  Jump out to perform the block write.  It will
+                        ;    return to the caller.
 
 ieee_read_sec_hl:
-    push hl             ;f9a2 e5   e5  .
-    ld hl,dos_u1_2      ;f9a3 21 b7 f7   21 b7 f7    ! . .
-    call ieee_u1_or_u2         ;f9a6 cd c2 f5   cd c2 f5    . . .
-    ld hl,0fa58h        ;f9a9 21 58 fa   21 58 fa    ! X .
-    ld c,05h            ;f9ac 0e 05   0e 05   . .
-    ld a,(0045h)        ;f9ae 3a 45 00   3a 45 00    : E .
-    call diskcmd        ;f9b1 cd 20 fa   cd 20 fa    .   .
-    call ieeemsg        ;f9b4 cd 63 fe   cd 63 fe    . c .
-    call creoi          ;f9b7 cd 4d fe   cd 4d fe    . M .
-    call unlisten       ;f9ba cd a6 fa   cd a6 fa    . . .
-    ld a,(0045h)        ;f9bd 3a 45 00   3a 45 00    : E .
-    call dskdev         ;f9c0 cd 11 fa   cd 11 fa    . . .
-    ld e,0fh            ;f9c3 1e 0f   1e 0f   . .
-    call talk           ;f9c5 cd 5d fa   cd 5d fa    . ] .
-    call rdieee         ;f9c8 cd 1c fe   cd 1c fe    . . .
-    pop hl              ;f9cb e1   e1  .
-    ld (hl),a           ;f9cc 77   77  w
-    push hl             ;f9cd e5   e5  .
-    call untalk         ;f9ce cd 80 fa   cd 80 fa    . . .
-    ld a,(0045h)        ;f9d1 3a 45 00   3a 45 00    : E .
-    call diskcmd        ;f9d4 cd 20 fa   cd 20 fa    .   .
-    ld hl,0fa4bh        ;f9d7 21 4b fa   21 4b fa    ! K .
-    ld c,07h            ;f9da 0e 07   0e 07   . .
-    call ieeemsg        ;f9dc cd 63 fe   cd 63 fe    . c .
-    call creoi          ;f9df cd 4d fe   cd 4d fe    . M .
-    call unlisten       ;f9e2 cd a6 fa   cd a6 fa    . . .
-    ld a,(0045h)        ;f9e5 3a 45 00   3a 45 00    : E .
-    call disksta        ;f9e8 cd 20 f9   cd 20 f9    .   .
-    cp 46h              ;f9eb fe 46   fe 46   . F
-    jr z,lfa08h         ;f9ed 28 19   28 19   ( .
-    ld a,(0045h)        ;f9ef 3a 45 00   3a 45 00    : E .
-    call dskdev         ;f9f2 cd 11 fa   cd 11 fa    . . .
-    ld e,02h            ;f9f5 1e 02   1e 02   . .
-    call talk           ;f9f7 cd 5d fa   cd 5d fa    . ] .
-    pop de              ;f9fa d1   d1  .
-    inc de              ;f9fb 13   13  .
-    ld b,0ffh           ;f9fc 06 ff   06 ff   . .
-lf9feh:
-    call rdieee         ;f9fe cd 1c fe   cd 1c fe    . . .
-    ld (de),a           ;fa01 12   12  .
-    inc de              ;fa02 13   13  .
-    djnz lf9feh         ;fa03 10 f9   10 f9   . .
-    jp untalk           ;fa05 c3 80 fa   c3 80 fa    . . .
-lfa08h:
-    ld a,(0045h)        ;fa08 3a 45 00   3a 45 00    : E .
-    call idrive         ;fa0b cd 28 fa   cd 28 fa    . ( .
-    pop hl              ;fa0e e1   e1  .
-    jr ieee_read_sec_hl ;fa0f 18 91   18 91   . .
+;Read a sector from a CBM disk drive into buffer at HL.
+;
+;There is special handling for a CBM DOS error 22 depending on the
+;contents of A'.  See ieee_read_sec and ieee_u1_or_u2.
+;
+    push hl
+                        ;Perform block read (U1):
+    ld hl,dos_u1_2      ;  HL = pointer to "U1 2 " string
+    call ieee_u1_or_u2  ;  Call to perform the block read
+
+                        ;Send memory read (M-R) command:
+    ld hl,dos_mr        ;  HL = pointer to "M-R",00h,13h string
+    ld c,05h            ;  C = 5 bytes in string
+    ld a,(x_drive)      ;  A = CP/M drive number
+    call diskcmd        ;  Open command channel
+    call ieeemsg        ;  Send M-R command
+    call creoi          ;  Send carriage return with EOI
+    call unlisten       ;  Send UNLISTEN
+
+                        ;Read first byte of sector from M-R:
+    ld a,(x_drive)      ;  A = CP/M drive number
+    call dskdev         ;  D = its IEEE-488 primary address
+    ld e,0fh            ;  E = Command channel number (15)
+    call talk           ;  Send TALK
+    call rdieee         ;  Read the byte returned by M-R
+    pop hl
+    ld (hl),a           ;  Save as first byte of sector
+    push hl
+    call untalk         ;  Send UNTALK
+
+                        ;Move pointer to second byte of buffer:
+    ld a,(x_drive)      ;  A = CP/M drive number
+    call diskcmd        ;  Open command channel
+    ld hl,dos_bp        ;  HL = pointer to "B-P 2 1" (Buffer-Pointer)
+    ld c,07h            ;  C = 7 bytes in string
+    call ieeemsg        ;  Send B-P command
+    call creoi          ;  Send carriage return with EOI
+    call unlisten       ;  Send UNLISTEN
+
+                        ;Check for CBM DOS bug:
+    ld a,(x_drive)      ;  A = CP/M drive number
+    call disksta        ;  Read CBM DOS error channel
+    cp 46h              ;  Error code = 70 No Channel?
+    jr z,read_sec_retry ;    Yes: CBM DOS bug, jump to retry
+
+                        ;Read remaining 255 bytes of block:
+    ld a,(x_drive)      ;  A = CP/M drive number
+    call dskdev         ;  D = its IEEE-488 primary address
+    ld e,02h            ;  E = IEEE-488 secondary address 2
+    call talk           ;  Send TALK
+    pop de
+    inc de
+    ld b,0ffh           ;  255 bytes to read
+read_sec_loop:
+    call rdieee         ;  Read byte
+    ld (de),a           ;  Store it
+    inc de
+    djnz read_sec_loop  ;  Decrement B, loop until all bytes read
+    jp untalk           ;  Send UNTALK and return to caller
+
+read_sec_retry:
+    ld a,(x_drive)      ;A = CP/M drive number
+    call idrive         ;Initialize the CBM disk drive
+    pop hl              ;Recall original HL
+    jr ieee_read_sec_hl ;Try again
 
 dskdev:
 ;Get the device address for a CP/M drive number from the ddevs table
