@@ -638,23 +638,28 @@ tstdrv_corv:
     ret
 
 read:
-    ld a,(0044h)        ;f220 3a 44 00   3a 44 00    : D .
-    call tstdrv_corv    ;f223 cd 19 f2   cd 19 f2    . . .
-    jp c,lf2d5h         ;f226 da d5 f2   da d5 f2    . . .
-    call sub_f586h      ;f229 cd 86 f5   cd 86 f5    . . .
-    ld a,01h            ;f22c 3e 01   3e 01   > .
-    call nz,sub_f29dh   ;f22e c4 9d f2   c4 9d f2    . . .
-    ld a,(0043h)        ;f231 3a 43 00   3a 43 00    : C .
-    rrca                ;f234 0f   0f  .
-    call sub_f2aah      ;f235 cd aa f2   cd aa f2    . . .
-    xor a               ;f238 af   af  .
-    ld (0048h),a        ;f239 32 48 00   32 48 00    2 H .
-    ret                 ;f23c c9   c9  .
+;Read the currently set track and sector at the current DMA address.
+;Returns A=0 for OK, 1 for unrecoverable error, 0FFh if media changed.
+;
+    ld a,(drvtype)      ;A = CP/M drive type
+    call tstdrv_corv    ;Is it a Corvus hard drive?
+    jp c,corv_read_sec  ;  Yes: jump to Corvus read sector
+
+    call sub_rw
+    ld a,01h            ;Flag: if a CBM DOS error 22 occurs, retry it.
+    call nz,ieee_read_sec
+
+    ld a,(sector)
+    rrca
+    call copy_to_dma
+    xor a               ;A=0
+    ld (sec_cnt),a      ;sec_cnt=0
+    ret
 
 write:
     ld a,(0044h)        ;f23d 3a 44 00   3a 44 00    : D .
     call tstdrv_corv    ;f240 cd 19 f2   cd 19 f2    . . .
-    jp c,lf2f2h         ;f243 da f2 f2   da f2 f2    . . .
+    jp c,corv_writ_sec         ;f243 da f2 f2   da f2 f2    . . .
     ld a,c              ;f246 79   79  y
     push af             ;f247 f5   f5  .
     cp 02h              ;f248 fe 02   fe 02   . .
@@ -677,14 +682,14 @@ write:
     cp (hl)             ;f26d be   be  .
     jr nz,lf276h        ;f26e 20 06   20 06     .
     inc (hl)            ;f270 34   34  4
-    call sub_f586h      ;f271 cd 86 f5   cd 86 f5    . . .
+    call sub_rw      ;f271 cd 86 f5   cd 86 f5    . . .
     jr lf282h           ;f274 18 0c   18 0c   . .
 lf276h:
     xor a               ;f276 af   af  .
     ld (0048h),a        ;f277 32 48 00   32 48 00    2 H .
-    call sub_f586h      ;f27a cd 86 f5   cd 86 f5    . . .
+    call sub_rw      ;f27a cd 86 f5   cd 86 f5    . . .
     ld a,00h            ;f27d 3e 00   3e 00   > .
-    call nz,sub_f29dh   ;f27f c4 9d f2   c4 9d f2    . . .
+    call nz,ieee_read_sec   ;f27f c4 9d f2   c4 9d f2    . . .
 lf282h:
     ld a,(0043h)        ;f282 3a 43 00   3a 43 00    : C .
     rrca                ;f285 0f   0f  .
@@ -702,14 +707,14 @@ lf296h:
     ld (004ch),a        ;f298 32 4c 00   32 4c 00    2 L .
     xor a               ;f29b af   af  .
     ret                 ;f29c c9   c9  .
-sub_f29dh:
+ieee_read_sec:
     ld hl,0ef00h        ;f29d 21 00 ef   21 00 ef    ! . .
     ex af,af'           ;f2a0 08   08  .
     jp ieee_read_sec_hl           ;f2a1 c3 a2 f9   c3 a2 f9    . . .
 sub_f2a4h:
     ld hl,0ef00h        ;f2a4 21 00 ef   21 00 ef    ! . .
     jp ieee_writ_sec_hl           ;f2a7 c3 5b f9   c3 5b f9    . [ .
-sub_f2aah:
+copy_to_dma:
     ld a,00h            ;f2aa 3e 00   3e 00   > .
     jr lf2b0h           ;f2ac 18 02   18 02   . .
 sub_f2aeh:
@@ -738,7 +743,7 @@ lf2cah:
     and 20h             ;f2ce e6 20   e6 20   .
     jr nz,corv_init     ;f2d0 20 f2   20 f2     .
     jp lf320h           ;f2d2 c3 20 f3   c3 20 f3    .   .
-lf2d5h:
+corv_read_sec:
     ld a,12h            ;f2d5 3e 12   3e 12   > .
     call sub_f336h      ;f2d7 cd 36 f3   cd 36 f3    . 6 .
     ld hl,(0052h)       ;f2da 2a 52 00   2a 52 00    * R .
@@ -755,7 +760,7 @@ lf2e4h:
     djnz lf2e4h         ;f2ee 10 f4   10 f4   . .
     xor a               ;f2f0 af   af  .
     ret                 ;f2f1 c9   c9  .
-lf2f2h:
+corv_writ_sec:
     ld a,13h            ;f2f2 3e 13   3e 13   > .
     call sub_f336h      ;f2f4 cd 36 f3   cd 36 f3    . 6 .
     ld b,80h            ;f2f7 06 80   06 80   . .
@@ -1090,7 +1095,7 @@ lf56ch:
     ld a,(0043h)        ;f57f 3a 43 00   3a 43 00    : C .
     ld (004bh),a        ;f582 32 4b 00   32 4b 00    2 K .
     ret                 ;f585 c9   c9  .
-sub_f586h:
+sub_rw:
     ld a,(0040h)        ;f586 3a 40 00   3a 40 00    : @ .
     ld hl,0045h         ;f589 21 45 00   21 45 00    ! E .
     xor (hl)            ;f58c ae   ae  .
