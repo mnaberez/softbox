@@ -403,42 +403,64 @@ setdma:
     ret
 
 seldsk:
-    ld a,c              ;f16c 79   79  y
-    call tstdrv         ;f16d cd f8 f1   cd f8 f1    . . .
-    ld hl,0000h         ;f170 21 00 00   21 00 00    ! . .
-    ret nc              ;f173 d0   d0  .
-    ld (0040h),a        ;f174 32 40 00   32 40 00    2 @ .
-    ld l,a              ;f177 6f   6f  o
-    add hl,hl           ;f178 29   29  )
-    add hl,hl           ;f179 29   29  )
-    add hl,hl           ;f17a 29   29  )
-    add hl,hl           ;f17b 29   29  )
-    ld de,0eb00h        ;f17c 11 00 eb   11 00 eb    . . .
-    add hl,de           ;f17f 19   19  .
-    push hl             ;f180 e5   e5  .
-    ld a,c              ;f181 79   79  y
-    ld (0044h),a        ;f182 32 44 00   32 44 00    2 D .
-    ld l,c              ;f185 69   69  i
-    ld h,00h            ;f186 26 00   26 00   & .
-    add hl,hl           ;f188 29   29  )
-    add hl,hl           ;f189 29   29  )
-    add hl,hl           ;f18a 29   29  )
-    add hl,hl           ;f18b 29   29  )
-    ld bc,0f1a5h        ;f18c 01 a5 f1   01 a5 f1    . . .
-    add hl,bc           ;f18f 09   09  .
-    ex de,hl            ;f190 eb   eb  .
-    pop hl              ;f191 e1   e1  .
-    push hl             ;f192 e5   e5  .
-    ld bc,000ah         ;f193 01 0a 00   01 0a 00    . . .
-    add hl,bc           ;f196 09   09  .
-    ld (hl),e           ;f197 73   73  s
-    inc hl              ;f198 23   23  #
-    ld (hl),d           ;f199 72   72  r
-    ld a,(0044h)        ;f19a 3a 44 00   3a 44 00    : D .
-    call tstdrv_corv    ;f19d cd 19 f2   cd 19 f2    . . .
-    call c,sub_f2c4h    ;f1a0 dc c4 f2   dc c4 f2    . . .
-    pop hl              ;f1a3 e1   e1  .
-    ret                 ;f1a4 c9   c9  .
+;Select the disk drive in C (0=A:, 1=B:, ...).
+;
+;Called with DE=0 or 0FFFFh:
+;  If bit 0 of E is 0, the disk will be logged in as new.
+;  If bit 0 of E is 1, the disk has already been logged in.
+;
+;Returns the address of a DPH (Disk Parameter Header) in HL.  If the
+;disk could not be selected, HL = 0.
+;
+                        ;Check if requested drive is valid:
+    ld a,c              ;  A = requested drive number
+    call tstdrv         ;  Check if drive number is valid
+    ld hl,0000h         ;  HL = error code
+    ret nc              ;  Return if drive is invalid
+
+                        ;Calculate pointer to a Disk Parameter Header (DPH):
+    ld (drive),a        ;  Save requested CP/M drive number
+    ld l,a              ;  HL = A * 8
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    ld de,dph_base
+    add hl,de           ;  HL = dph_base + HL
+    push hl
+
+                        ;Save the drive type:
+    ld a,c              ;  A = drive type (returned by tstdrv in C)
+    ld (drvtype),a      ;  Save it in drvtype
+
+                        ;Calculate pointer to a Disk Parameter Block (DPB):
+    ld l,c              ;  C = requested drive number
+    ld h,00h            ;  HL = C * 8
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    add hl,hl
+    ld bc,dpb_base
+    add hl,bc           ;  HL = dpb_base + HL
+
+                        ;Load both pointers:
+    ex de,hl            ;  DE = pointer to a DPB
+    pop hl              ;  HL = pointer to a DPH
+    push hl
+                        ;Install pointer to the DPB in the DPH:
+    ld bc,000ah         ;
+    add hl,bc           ;  DPH + 0ah = E (DPB low byte)
+    ld (hl),e
+    inc hl              ;  DPH + 0bh = D (DPB high byte)
+    ld (hl),d
+
+                        ;Special handling if requested drive is a Corvus:
+    ld a,(drvtype)      ;  A = CP/M drive type
+    call tstdrv_corv    ;  Is it a Corvus hard drive?
+    call c,corv_init    ;    Yes: initialize the Corvus controller
+
+    pop hl              ;HL = address of the DPH
+    ret
 
 dpb_base:
 ;Disk Parameter Block (DPB) tables.  One DPB for each drive type:
@@ -653,7 +675,7 @@ lf2bdh:
 lf2c1h:
     ldir                ;f2c1 ed b0   ed b0   . .
     ret                 ;f2c3 c9   c9  .
-sub_f2c4h:
+corv_init:
     ld a,0ffh           ;f2c4 3e ff   3e ff   > .
     out (18h),a         ;f2c6 d3 18   d3 18   . .
     ld b,0ffh           ;f2c8 06 ff   06 ff   . .
@@ -661,7 +683,7 @@ lf2cah:
     djnz lf2cah         ;f2ca 10 fe   10 fe   . .
     in a,(16h)          ;f2cc db 16   db 16   . .
     and 20h             ;f2ce e6 20   e6 20   .
-    jr nz,sub_f2c4h     ;f2d0 20 f2   20 f2     .
+    jr nz,corv_init     ;f2d0 20 f2   20 f2     .
     jp lf320h           ;f2d2 c3 20 f3   c3 20 f3    .   .
 lf2d5h:
     ld a,12h            ;f2d5 3e 12   3e 12   > .
