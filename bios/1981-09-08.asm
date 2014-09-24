@@ -827,8 +827,13 @@ lf2cah:
     jp lf320h           ;f2d2 c3 20 f3   c3 20 f3    .   .
 
 corv_read_sec:
-    ld a,12h            ;f2d5 3e 12   3e 12   > .
-    call sub_f336h      ;f2d7 cd 36 f3   cd 36 f3    . 6 .
+;Read a sector from a Corvus hard drive into the DMA buffer.
+;
+;Returns error code in A: 0=OK, 0ffh=Error.
+;
+    ld a,12h            ;12h = Read Sector (128 bytes)
+    call corv_sec_cmd   ;Send command to read the sector
+
     ld hl,(0052h)       ;f2da 2a 52 00   2a 52 00    * R .
     call corv_read_err  ;f2dd cd 16 f3   cd 16 f3    . . .
     jr nz,lf30ch        ;f2e0 20 2a   20 2a     *
@@ -845,8 +850,13 @@ lf2e4h:
     ret                 ;f2f1 c9   c9  .
 
 corv_writ_sec:
-    ld a,13h            ;f2f2 3e 13   3e 13   > .
-    call sub_f336h      ;f2f4 cd 36 f3   cd 36 f3    . 6 .
+;Write a sector from the DMA buffer to a Corvus hard drive.
+;
+;Returns error code in A: 0=OK, 0ffh=Error.
+;
+    ld a,13h            ;12h = Write Sector (128 bytes)
+    call corv_sec_cmd   ;Send command to write the sector
+
     ld b,80h            ;f2f7 06 80   06 80   . .
     ld hl,(0052h)       ;f2f9 2a 52 00   2a 52 00    * R .
 lf2fch:
@@ -935,8 +945,33 @@ lf32ch:
     out (corvus),a      ;Put byte on Corvus data bus
     ret
 
-sub_f336h:
-    call corv_put_byte  ;f336 cd 2b f3   cd 2b f3    . + .
+corv_sec_cmd:
+;Send the Corvus command to read or write a sector followed by a DADR.
+;
+;A = command code (12h=read, 13h=write)
+;
+;First, the command code in A will be sent.  Next, the Corvus DADR ("Disk
+;Address") will be computed for the current CP/M drive, track, and
+;sector in memory.  Finally, the three byte DADR will be sent to the drive.
+;
+;After calling this routine, the caller must read the result byte(s)
+;from the Corvus.
+;
+;The DADR is 3 bytes (24 bits), consisting of a 4-bit Corvus unit ID
+;and a 20-bit logical sector address.
+;
+;DADR format:
+;  DADR byte 0 "D"
+;    Upper nibble: Bits 16-19 of the logical sector address
+;    Lower nibble: Corvus unit ID (1 to 15)
+;
+;  DADR byte 1 "LSB"
+;    Bits 0-7 of the logical sector address
+;
+;  DADR byte 2 "MSB"
+;    Bits 8-15 of the logical sector address
+;
+    call corv_put_byte  ;Send the command byte to the Corvus
 
     ld hl,(track)       ;HL = CP/M current track
     ld a,00h
@@ -983,11 +1018,12 @@ dadr2:
     pop hl              ;
     add a,d             ;  A lower nibble = Corvus unit ID
 
-    call corv_put_byte  ;f377 cd 2b f3   cd 2b f3    . + .
-    ld a,l              ;f37a 7d   7d  }
-    call corv_put_byte  ;f37b cd 2b f3   cd 2b f3    . + .
-    ld a,h              ;f37e 7c   7c  |
-    jp corv_put_byte    ;f37f c3 2b f3   c3 2b f3    . + .
+    call corv_put_byte  ;Send A (DADR byte 0)
+    ld a,l
+    call corv_put_byte  ;Send L (DADR byte 1)
+    ld a,h
+    jp corv_put_byte    ;Send H (DADR byte 2)
+                        ;Jump out: corv_put_byte will return to the caller.
 
 corv_fault:
     db cr,lf,bell,"*** HARD DISK ERROR ***",cr,lf,00h
