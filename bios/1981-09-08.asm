@@ -621,11 +621,21 @@ tst2:
     ret                 ;  and return
 
 tstdrv_corv:
-    cp 06h              ;f219 fe 06   fe 06   . .
-    ret nc              ;f21b d0   d0  .
-    cp 02h              ;f21c fe 02   fe 02   . .
-    ccf                 ;f21e 3f   3f  ?
-    ret                 ;f21f c9   c9  .
+;Check if the drive type in A is a Corvus hard drive.
+;
+;A = CP/M drive type
+;
+;Sets the carry flag if the CP/M drive number is valid and if
+;it corresponds to a Corvus hard drive.  Clears it otherwise.
+;
+                        ;Check if drive type is >= 6:
+    cp 06h              ;  Set carry if A < 6, clear carry if A >= 6
+    ret nc              ;  Return if no carry
+
+                        ;Check if drive type is < 2:
+    cp 02h              ;  Set carry if A < 2, clear carry if A >= 2
+    ccf                 ;  Invert the carry flag
+    ret
 
 read:
     ld a,(0044h)        ;f220 3a 44 00   3a 44 00    : D .
