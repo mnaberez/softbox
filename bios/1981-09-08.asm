@@ -920,18 +920,23 @@ lf320h:
     and 80h             ;f328 e6 80   e6 80   . .
     ret                 ;f32a c9   c9  .
 
-sub_f32bh:
-    ld b,a              ;f32b 47   47  G
+corv_put_byte:
+;Send a byte to the Corvus hard drive.  Waits until the Corvus
+;is ready to accept the byte, sends it, then returns immediately.
+;
+;A = byte to send
+;
+    ld b,a              ;Save A in B
 lf32ch:
-    in a,(ppi2_pc)      ;f32c db 16   db 16   . .
-    and ready             ;f32e e6 10   e6 10   . .
-    jr z,lf32ch         ;f330 28 fa   28 fa   ( .
-    ld a,b              ;f332 78   78  x
-    out (corvus),a      ;f333 d3 18   d3 18   . .
-    ret                 ;f335 c9   c9  .
+    in a,(ppi2_pc)
+    and ready           ;Mask off all except bit 4 (Corvus READY)
+    jr z,lf32ch         ;Wait until Corvus READY=high
+    ld a,b              ;Recall A from B
+    out (corvus),a      ;Put byte on Corvus data bus
+    ret
 
 sub_f336h:
-    call sub_f32bh      ;f336 cd 2b f3   cd 2b f3    . + .
+    call corv_put_byte  ;f336 cd 2b f3   cd 2b f3    . + .
 
     ld hl,(track)       ;HL = CP/M current track
     ld a,00h
@@ -978,11 +983,11 @@ dadr2:
     pop hl              ;
     add a,d             ;  A lower nibble = Corvus unit ID
 
-    call sub_f32bh      ;f377 cd 2b f3   cd 2b f3    . + .
+    call corv_put_byte  ;f377 cd 2b f3   cd 2b f3    . + .
     ld a,l              ;f37a 7d   7d  }
-    call sub_f32bh      ;f37b cd 2b f3   cd 2b f3    . + .
+    call corv_put_byte  ;f37b cd 2b f3   cd 2b f3    . + .
     ld a,h              ;f37e 7c   7c  |
-    jp sub_f32bh        ;f37f c3 2b f3   c3 2b f3    . + .
+    jp corv_put_byte    ;f37f c3 2b f3   c3 2b f3    . + .
 
 corv_fault:
     db cr,lf,bell,"*** HARD DISK ERROR ***",cr,lf,00h
