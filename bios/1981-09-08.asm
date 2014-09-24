@@ -657,81 +657,162 @@ read:
     ret
 
 write:
-    ld a,(0044h)        ;f23d 3a 44 00   3a 44 00    : D .
-    call tstdrv_corv    ;f240 cd 19 f2   cd 19 f2    . . .
-    jp c,corv_writ_sec  ;f243 da f2 f2   da f2 f2    . . .
-    ld a,c              ;f246 79   79  y
-    push af             ;f247 f5   f5  .
-    cp 02h              ;f248 fe 02   fe 02   . .
-    call z,0f56eh       ;f24a cc 6e f5   cc 6e f5    . n .
-    ld hl,0048h         ;f24d 21 48 00   21 48 00    ! H .
-    ld a,(hl)           ;f250 7e   7e  ~
-    or a                ;f251 b7   b7  .
-    jr z,lf276h         ;f252 28 22   28 22   ( "
-    dec (hl)            ;f254 35   35  5
-    ld a,(0040h)        ;f255 3a 40 00   3a 40 00    : @ .
-    ld hl,0049h         ;f258 21 49 00   21 49 00    ! I .
-    cp (hl)             ;f25b be   be  .
-    jr nz,lf276h        ;f25c 20 18   20 18     .
-    ld a,(0041h)        ;f25e 3a 41 00   3a 41 00    : A .
-    ld hl,004ah         ;f261 21 4a 00   21 4a 00    ! J .
-    cp (hl)             ;f264 be   be  .
-    jr nz,lf276h        ;f265 20 0f   20 0f     .
-    ld a,(0043h)        ;f267 3a 43 00   3a 43 00    : C .
-    ld hl,004bh         ;f26a 21 4b 00   21 4b 00    ! K .
-    cp (hl)             ;f26d be   be  .
-    jr nz,lf276h        ;f26e 20 06   20 06     .
-    inc (hl)            ;f270 34   34  4
-    call sub_rw         ;f271 cd 86 f5   cd 86 f5    . . .
-    jr lf282h           ;f274 18 0c   18 0c   . .
-lf276h:
-    xor a               ;f276 af   af  .
-    ld (0048h),a        ;f277 32 48 00   32 48 00    2 H .
-    call sub_rw         ;f27a cd 86 f5   cd 86 f5    . . .
-    ld a,00h            ;f27d 3e 00   3e 00   > .
-    call nz,ieee_read_sec;f27f c4 9d f2   c4 9d f2    . . .
-lf282h:
-    ld a,(0043h)        ;f282 3a 43 00   3a 43 00    : C .
-    rrca                ;f285 0f   0f  .
-    call sub_f2aeh      ;f286 cd ae f2   cd ae f2    . . .
-    pop af              ;f289 f1   f1  .
-    dec a               ;f28a 3d   3d  =
-    jr nz,lf296h        ;f28b 20 09   20 09     .
-    ld a,(004fh)        ;f28d 3a 4f 00   3a 4f 00    : O .
-    or a                ;f290 b7   b7  .
-    call z,ieee_writ_sec    ;f291 cc a4 f2   cc a4 f2    . . .
-    xor a               ;f294 af   af  .
-    ret                 ;f295 c9   c9  .
-lf296h:
-    ld a,01h            ;f296 3e 01   3e 01   > .
-    ld (004ch),a        ;f298 32 4c 00   32 4c 00    2 L .
-    xor a               ;f29b af   af  .
-    ret                 ;f29c c9   c9  .
+;Write the currently set track and sector.
+;
+;Called with deblocking code in C:
+;  C=0 - Write can be deferred
+;  C=1 - Write must be immediate
+;  C=2 - Write can be deferred, no pre-read is necessary.
+;
+;Returns A=0 for OK, 1 for unrecoverable error,
+;  2 if disc is readonly, 0FFh if media changed.
+;
+    ld a,(drvtype)      ;A = CP/M drive type
+    call tstdrv_corv    ;Is it a Corvus hard drive?
+    jp c,corv_writ_sec  ;  Yes: jump to Corvus write sector
+
+    ld a,c              ;A = deblocking code in C
+    push af             ;Save it on the stack
+
+    cp 02h              ;Deblocking code = 2?
+    call z,deblock_2    ;  Yes: call deblock_2, which sets sec_cnt nonzero,
+                        ;         sets y_drive/y_track/y_sector to be
+                        ;         drive/track/sector, then returns here.
+
+                        ;Compare sector countdown value to zero:
+    ld hl,sec_cnt       ;  HL = address of sector countdown
+    ld a,(hl)           ;  A = value of sector countdown
+    or a
+    jr z,wr1            ;  Jump if A=0
+
+    dec (hl)            ;Decrement sector countdown
+
+                        ;Compare CP/M drive number:
+    ld a,(drive)        ;  A = CP/M drive number
+    ld hl,y_drive       ;  HL = address of y_drive
+    cp (hl)
+    jr nz,wr1           ;  Jump if drive != y_drive
+
+                        ;Compare CP/M track number:
+    ld a,(track)        ;  A = CP/M track number
+    ld hl,y_track       ;  HL = address of y_track
+    cp (hl)
+    jr nz,wr1           ;  Jump if track != y_track
+
+                        ;Compare CP/M sector number:
+    ld a,(sector)       ;  A = CP/M sector number
+    ld hl,y_sector      ;  HL = address of y_sector
+    cp (hl)
+    jr nz,wr1           ;  Jump if sector != y_sector
+
+    inc (hl)            ;Increment y_sector
+
+    call sub_rw
+    jr wr2
+
+wr1:
+;Entered if (sec_cnt)=0 or if drive/track/sector != y_drive/y_track/y_sector
+;
+    xor a               ;A=0
+    ld (sec_cnt),a      ;sec_cnt=0
+    call sub_rw
+    ld a,00h            ;Flag: if a CBM DOS error 22 occurs, ignore it.
+    call nz,ieee_read_sec
+                           ;Fall through into wr2
+
+wr2:
+;Entered if (sec_cnt)>0 or if drive/track/sector = y_drive/y_track/y_sector
+;
+    ld a,(sector)       ;A = CP/M sector number
+    rrca                ;Rotate bit 0 of CP/M sector into the carry flag
+                        ;  The carry flag selects which half of the 256-byte
+                        ;  CBM DOS buffer will receive the contents of
+                        ;  the 128-byte CP/M DMA buffer
+    call copy_from_dma  ;Copy from CP/M DMA buffer into CBM DOS buffer
+                        ;  (dma_buf -> dos_buf)
+
+    pop af              ;A = deblocking code
+    dec a               ;Decrement deblocking code to test it
+    jr nz,wr3           ;Jump if deblocking code was 0 or 2
+                        ;  (write can be deferred)
+
+                        ;Write must be immediate
+
+    ld a,(dos_err)      ;A = last error code from CBM DOS (0=OK)
+    or a
+    call z,ieee_writ_sec  ;Write the CBM DOS sector if OK
+
+    xor a               ;Return A=0 (OK)
+    ret
+
+wr3:
+;Entered if write can be deferred
+;
+    ld a,01h
+    ld (wrt_pend),a     ;Set flag to indicate a write is pending for CBM DOS
+
+    xor a               ;Return with A=0 (OK)
+    ret
+
 ieee_read_sec:
-    ld hl,0ef00h        ;f29d 21 00 ef   21 00 ef    ! . .
-    ex af,af'           ;f2a0 08   08  .
-    jp ieee_read_sec_hl ;f2a1 c3 a2 f9   c3 a2 f9    . . .
+;Read a sector from CBM DOS into the dos_buf buffer.
+;
+;A = flag for how to handle a CBM DOS read error 22 (no data block)
+;       If A=0, error 22 will be ignored.
+;       If A=1, error 22 will be handled like any other error.
+;
+    ld hl,dos_buf       ;HL = address of CBM DOS buffer area
+    ex af,af'           ;Save A in A' to be used in ieee_u1_or_u2
+    jp ieee_read_sec_hl ;Read a CBM sector into buffer at HL
+
 ieee_writ_sec:
-    ld hl,0ef00h        ;f2a4 21 00 ef   21 00 ef    ! . .
-    jp ieee_writ_sec_hl ;f2a7 c3 5b f9   c3 5b f9    . [ .
+;Write a sector from the dos_buf out to CBM DOS.
+;
+    ld hl,dos_buf       ;HL = address of CBM DOS buffer area
+    jp ieee_writ_sec_hl ;Read a CBM sector into buffer at HL
+
 copy_to_dma:
-    ld a,00h            ;f2aa 3e 00   3e 00   > .
-    jr lf2b0h           ;f2ac 18 02   18 02   . .
-sub_f2aeh:
-    ld a,01h            ;f2ae 3e 01   3e 01   > .
-lf2b0h:
-    ld hl,0ef00h        ;f2b0 21 00 ef   21 00 ef    ! . .
-    ld de,(0052h)       ;f2b3 ed 5b 52 00   ed 5b 52 00     . [ R .
-    ld bc,0080h         ;f2b7 01 80 00   01 80 00    . . .
-    jr nc,lf2bdh        ;f2ba 30 01   30 01   0 .
-    add hl,bc           ;f2bc 09   09  .
-lf2bdh:
-    or a                ;f2bd b7   b7  .
-    jr z,lf2c1h         ;f2be 28 01   28 01   ( .
-    ex de,hl            ;f2c0 eb   eb  .
-lf2c1h:
-    ldir                ;f2c1 ed b0   ed b0   . .
-    ret                 ;f2c3 c9   c9  .
+;Copy from dos_buf to dma_buf
+;
+    ld a,00h            ;A=0: dos_buf -> dma_buf
+    jr copy_dos_dma
+
+copy_from_dma:
+;Copy from dma_buf to dos_buf
+;
+    ld a,01h            ;A=1: dma_buf -> dos_buf
+
+copy_dos_dma:
+;Copy a 128-byte CP/M sector between the CBM DOS buffer (dos_buf)
+;and the CP/M DMA buffer (dma_buf).
+;
+;A selects direction of copy:
+;  A=0: dos_buf -> dma_buf
+;  A=1: dma_buf -> dos_buf
+;
+;Carry flag selects which half of the 256-byte CBM DOS buffer:
+;  Carry clear: first half
+;  Carry set:   second half
+;
+    ld hl,dos_buf       ;HL = pointer to CBM DOS buffer
+    ld de,(dma)         ;DE = pointer to DMA buffer
+    ld bc,0080h         ;BC = 128 bytes to copy
+
+    jr nc,cp1           ;If carry is clear, jump to keep HL pointing
+                        ;  at the first half of the CBM DOS buffer
+
+    add hl,bc           ;If carry is set, add 0080h to HL to point
+                        ;  at the second half of the CBM DOS buffer
+cp1:
+    or a
+    jr z,cp2            ;If A = 0, keep HL and DE so that the copy
+                        ;  direction is CBM DOS buffer -> DMA buffer
+
+    ex de,hl            ;If A != 0, exchange HL and DE so that the copy
+                        ;  direction is DMA buffer -> CBM DOS buffer
+cp2:
+    ldir                ;Copy BC bytes from (HL) to (DE)
+    ret
 
 corv_init:
     ld a,0ffh           ;f2c4 3e ff   3e ff   > .
