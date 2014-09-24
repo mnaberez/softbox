@@ -985,6 +985,8 @@ corv_offs:
     db 00h
 
 boot:
+;Cold start
+;
     ld sp,0100h         ;Initialize stack pointer
 
     ld a,10011001b      ;Set PPI #1 control
@@ -2502,6 +2504,11 @@ srq3:
     ret
 
 list:
+;List to a CBM printer (LST: = LPT:)
+;
+;Converts ASCII to equivalent PETSCII.  Converts line endings
+;if needed and sets lowercase mode after each new line if needed.
+;
     ld a,(iobyte)
     and 0c0h            ;Mask off all but buts 6 and 7
     jp z,ser_out        ;Jump out if List is RS-232 port (LST: = TTY:)
@@ -2513,12 +2520,19 @@ list:
     jr z,list_lpt       ;Jump if List is CBM printer (LST: = LPT:)
 
 list_ul1:
+;List to an ASCII printer (LST: = UL1:)
+;
     ld a,(0ea66h)       ;fc18 3a 66 ea   3a 66 ea    : f .
     ld d,a              ;fc1b 57   57  W
     call listen         ;fc1c cd 90 fa   cd 90 fa    . . .
     jp ieee_unl_byte    ;fc1f c3 d0 fc   c3 d0 fc    . . .
 
 list_lpt:
+;List to a CBM printer (LST: = LPT:)
+;
+;Converts ASCII to equivalent PETSCII.  Converts line endings
+;if needed and sets lowercase mode after each new line if needed.
+;
     ld a,(0ea61h)       ;fc22 3a 61 ea   3a 61 ea    : a .
     ld d,a              ;fc25 57   57  W
     in a,(15h)          ;fc26 db 15   db 15   . .
