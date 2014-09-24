@@ -817,11 +817,11 @@ cp2:
 
 corv_init:
     ld a,0ffh           ;f2c4 3e ff   3e ff   > .
-    out (18h),a         ;f2c6 d3 18   d3 18   . .
+    out (corvus),a      ;f2c6 d3 18   d3 18   . .
     ld b,0ffh           ;f2c8 06 ff   06 ff   . .
 lf2cah:
     djnz lf2cah         ;f2ca 10 fe   10 fe   . .
-    in a,(16h)          ;f2cc db 16   db 16   . .
+    in a,(ppi2_pc)      ;f2cc db 16   db 16   . .
     and 20h             ;f2ce e6 20   e6 20   .
     jr nz,corv_init     ;f2d0 20 f2   20 f2     .
     jp lf320h           ;f2d2 c3 20 f3   c3 20 f3    .   .
@@ -834,10 +834,10 @@ corv_read_sec:
     jr nz,lf30ch        ;f2e0 20 2a   20 2a     *
     ld b,80h            ;f2e2 06 80   06 80   . .
 lf2e4h:
-    in a,(16h)          ;f2e4 db 16   db 16   . .
+    in a,(ppi2_pc)      ;f2e4 db 16   db 16   . .
     and 10h             ;f2e6 e6 10   e6 10   . .
     jr z,lf2e4h         ;f2e8 28 fa   28 fa   ( .
-    in a,(18h)          ;f2ea db 18   db 18   . .
+    in a,(corvus)       ;f2ea db 18   db 18   . .
     ld (hl),a           ;f2ec 77   77  w
     inc hl              ;f2ed 23   23  #
     djnz lf2e4h         ;f2ee 10 f4   10 f4   . .
@@ -850,11 +850,11 @@ corv_writ_sec:
     ld b,80h            ;f2f7 06 80   06 80   . .
     ld hl,(0052h)       ;f2f9 2a 52 00   2a 52 00    * R .
 lf2fch:
-    in a,(16h)          ;f2fc db 16   db 16   . .
+    in a,(ppi2_pc)      ;f2fc db 16   db 16   . .
     and 10h             ;f2fe e6 10   e6 10   . .
     jr z,lf2fch         ;f300 28 fa   28 fa   ( .
     ld a,(hl)           ;f302 7e   7e  ~
-    out (18h),a         ;f303 d3 18   d3 18   . .
+    out (corvus),a      ;f303 d3 18   d3 18   . .
     inc hl              ;f305 23   23  #
     djnz lf2fch         ;f306 10 f4   10 f4   . .
     call corv_read_err  ;f308 cd 16 f3   cd 16 f3    . . .
@@ -913,20 +913,20 @@ crde1:
                         ;Fall through into corv_wait_read
 
 lf320h:
-    in a,(16h)          ;f320 db 16   db 16   . .
+    in a,(ppi2_pc)          ;f320 db 16   db 16   . .
     and 10h             ;f322 e6 10   e6 10   . .
     jr z,lf320h         ;f324 28 fa   28 fa   ( .
-    in a,(18h)          ;f326 db 18   db 18   . .
+    in a,(corvus)          ;f326 db 18   db 18   . .
     and 80h             ;f328 e6 80   e6 80   . .
     ret                 ;f32a c9   c9  .
 sub_f32bh:
     ld b,a              ;f32b 47   47  G
 lf32ch:
-    in a,(16h)          ;f32c db 16   db 16   . .
+    in a,(ppi2_pc)          ;f32c db 16   db 16   . .
     and 10h             ;f32e e6 10   e6 10   . .
     jr z,lf32ch         ;f330 28 fa   28 fa   ( .
     ld a,b              ;f332 78   78  x
-    out (18h),a         ;f333 d3 18   d3 18   . .
+    out (corvus),a      ;f333 d3 18   d3 18   . .
     ret                 ;f335 c9   c9  .
 sub_f336h:
     call sub_f32bh      ;f336 cd 2b f3   cd 2b f3    . + .
