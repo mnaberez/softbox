@@ -659,7 +659,7 @@ read:
 write:
     ld a,(0044h)        ;f23d 3a 44 00   3a 44 00    : D .
     call tstdrv_corv    ;f240 cd 19 f2   cd 19 f2    . . .
-    jp c,corv_writ_sec         ;f243 da f2 f2   da f2 f2    . . .
+    jp c,corv_writ_sec  ;f243 da f2 f2   da f2 f2    . . .
     ld a,c              ;f246 79   79  y
     push af             ;f247 f5   f5  .
     cp 02h              ;f248 fe 02   fe 02   . .
@@ -682,14 +682,14 @@ write:
     cp (hl)             ;f26d be   be  .
     jr nz,lf276h        ;f26e 20 06   20 06     .
     inc (hl)            ;f270 34   34  4
-    call sub_rw      ;f271 cd 86 f5   cd 86 f5    . . .
+    call sub_rw         ;f271 cd 86 f5   cd 86 f5    . . .
     jr lf282h           ;f274 18 0c   18 0c   . .
 lf276h:
     xor a               ;f276 af   af  .
     ld (0048h),a        ;f277 32 48 00   32 48 00    2 H .
-    call sub_rw      ;f27a cd 86 f5   cd 86 f5    . . .
+    call sub_rw         ;f27a cd 86 f5   cd 86 f5    . . .
     ld a,00h            ;f27d 3e 00   3e 00   > .
-    call nz,ieee_read_sec   ;f27f c4 9d f2   c4 9d f2    . . .
+    call nz,ieee_read_sec;f27f c4 9d f2   c4 9d f2    . . .
 lf282h:
     ld a,(0043h)        ;f282 3a 43 00   3a 43 00    : C .
     rrca                ;f285 0f   0f  .
@@ -710,10 +710,10 @@ lf296h:
 ieee_read_sec:
     ld hl,0ef00h        ;f29d 21 00 ef   21 00 ef    ! . .
     ex af,af'           ;f2a0 08   08  .
-    jp ieee_read_sec_hl           ;f2a1 c3 a2 f9   c3 a2 f9    . . .
+    jp ieee_read_sec_hl ;f2a1 c3 a2 f9   c3 a2 f9    . . .
 sub_f2a4h:
     ld hl,0ef00h        ;f2a4 21 00 ef   21 00 ef    ! . .
-    jp ieee_writ_sec_hl           ;f2a7 c3 5b f9   c3 5b f9    . [ .
+    jp ieee_writ_sec_hl ;f2a7 c3 5b f9   c3 5b f9    . [ .
 copy_to_dma:
     ld a,00h            ;f2aa 3e 00   3e 00   > .
     jr lf2b0h           ;f2ac 18 02   18 02   . .
@@ -776,7 +776,7 @@ lf2fch:
     call sub_f316h      ;f308 cd 16 f3   cd 16 f3    . . .
     ret z               ;f30b c8   c8  .
 lf30ch:
-    ld hl,corv_fault        ;f30c 21 82 f3   21 82 f3    ! . .
+    ld hl,corv_fault    ;f30c 21 82 f3   21 82 f3    ! . .
     call puts           ;f30f cd f1 fc   cd f1 fc    . . .
     ld a,01h            ;f312 3e 01   3e 01   > .
     or a                ;f314 b7   b7  .
@@ -1051,7 +1051,7 @@ ieee_load_cpm:
     call open           ;f537 cd b5 fa   cd b5 fa    . . .
     pop de              ;f53a d1   d1  .
     push de             ;f53b d5   d5  .
-    call ieee_rd_err_d      ;f53c cd 23 f9   cd 23 f9    . # .
+    call ieee_rd_err_d  ;f53c cd 23 f9   cd 23 f9    . # .
     pop de              ;f53f d1   d1  .
     ld e,00h            ;f540 1e 00   1e 00   . .
     pop bc              ;f542 c1   c1  .
@@ -1073,7 +1073,7 @@ lf54eh:
     push de             ;f55c d5   d5  .
     call close          ;f55d cd d1 fa   cd d1 fa    . . .
     pop de              ;f560 d1   d1  .
-    jp ieee_rd_err_d        ;f561 c3 23 f9   c3 23 f9    . # .
+    jp ieee_rd_err_d    ;f561 c3 23 f9   c3 23 f9    . # .
 lf564h:
     inc hl              ;f564 23   23  #
     ld (3a30h),a        ;f565 32 30 3a   32 30 3a    2 0 :
@@ -1128,7 +1128,7 @@ sub_rw:
     ret                 ;f5c1 c9   c9  .
 lf5c2h:
     ld (0055h),hl       ;f5c2 22 55 00   22 55 00    " U .
-    call sub_f7c4h      ;f5c5 cd c4 f7   cd c4 f7    . . .
+    call find_trk_sec   ;f5c5 cd c4 f7   cd c4 f7    . . .
 lf5c8h:
     ld a,03h            ;f5c8 3e 03   3e 03   > .
     ld (0050h),a        ;f5ca 32 50 00   32 50 00    2 P .
@@ -1286,17 +1286,16 @@ colon_space:
 bdos_err_on:
     db cr,lf,"BDOS err on ",0
 
-lf7b7h:
-    ld d,l              ;f7b7 55   55  U
-    ld sp,3220h         ;f7b8 31 20 32   31 20 32    1   2
-lf7bbh:
-    jr nz,$+87          ;f7bb 20 55   20 55     U
-    ld (3220h),a        ;f7bd 32 20 32   32 20 32    2   2
-    jr nz,$+15          ;f7c0 20 0d   20 0d     .
-    ld a,(bc)           ;f7c2 0a   0a  .
-lf7c3h:
-    nop                 ;f7c3 00   00  .
-sub_f7c4h:
+dos_u1_2:
+    db "U1 2 "
+
+dos_u2_2:
+    db "U2 2 "
+
+newline:
+    db cr,lf,0
+
+find_trk_sec:
     ld a,(0045h)        ;f7c4 3a 45 00   3a 45 00    : E .
     call tstdrv         ;f7c7 cd f8 f1   cd f8 f1    . . .
     ld a,c              ;f7ca 79   79  y
@@ -1611,12 +1610,12 @@ ieee_writ_sec_hl:
     ld c,0ffh           ;f994 0e ff   0e ff   . .
     call ieeemsg        ;f996 cd 63 fe   cd 63 fe    . c .
     call unlisten       ;f999 cd a6 fa   cd a6 fa    . . .
-    ld hl,lf7bbh+1      ;f99c 21 bc f7   21 bc f7    ! . .
+    ld hl,dos_u2_2      ;f99c 21 bc f7   21 bc f7    ! . .
     jp lf5c2h           ;f99f c3 c2 f5   c3 c2 f5    . . .
 
 ieee_read_sec_hl:
     push hl             ;f9a2 e5   e5  .
-    ld hl,lf7b7h        ;f9a3 21 b7 f7   21 b7 f7    ! . .
+    ld hl,dos_u1_2      ;f9a3 21 b7 f7   21 b7 f7    ! . .
     call lf5c2h         ;f9a6 cd c2 f5   cd c2 f5    . . .
     ld hl,0fa58h        ;f9a9 21 58 fa   21 58 fa    ! X .
     ld c,05h            ;f9ac 0e 05   0e 05   . .
@@ -1662,7 +1661,7 @@ lfa08h:
     ld a,(0045h)        ;fa08 3a 45 00   3a 45 00    : E .
     call idrive         ;fa0b cd 28 fa   cd 28 fa    . ( .
     pop hl              ;fa0e e1   e1  .
-    jr ieee_read_sec_hl           ;fa0f 18 91   18 91   . .
+    jr ieee_read_sec_hl ;fa0f 18 91   18 91   . .
 
 dskdev:
     push hl             ;fa11 e5   e5  .
@@ -2162,7 +2161,7 @@ list:
     ld a,(0ea66h)       ;fc18 3a 66 ea   3a 66 ea    : f .
     ld d,a              ;fc1b 57   57  W
     call listen         ;fc1c cd 90 fa   cd 90 fa    . . .
-    jp ieee_unl_byte           ;fc1f c3 d0 fc   c3 d0 fc    . . .
+    jp ieee_unl_byte    ;fc1f c3 d0 fc   c3 d0 fc    . . .
 
 lfc22h:
     ld a,(0ea61h)       ;fc22 3a 61 ea   3a 61 ea    : a .
