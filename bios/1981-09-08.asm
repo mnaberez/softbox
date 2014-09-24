@@ -1584,7 +1584,7 @@ lf952h:
     ret                 ;f95a c9   c9  .
 ieee_writ_sec_hl:
     push hl             ;f95b e5   e5  .
-    ld hl,lfa52h        ;f95c 21 52 fa   21 52 fa    ! R .
+    ld hl,dos_mw        ;f95c 21 52 fa   21 52 fa    ! R .
     ld c,06h            ;f95f 0e 06   0e 06   . .
     ld a,(0045h)        ;f961 3a 45 00   3a 45 00    : E .
     call diskcmd        ;f964 cd 20 fa   cd 20 fa    .   .
@@ -1685,7 +1685,7 @@ idrive:
     ld e,0fh            ;fa2b 1e 0f   1e 0f   . .
     push de             ;fa2d d5   d5  .
     ld c,02h            ;fa2e 0e 02   0e 02   . .
-    ld hl,lfa47h        ;fa30 21 47 fa   21 47 fa    ! G .
+    ld hl,dos_i0        ;fa30 21 47 fa   21 47 fa    ! G .
     rra                 ;fa33 1f   1f  .
     jr nc,lfa39h        ;fa34 30 03   30 03   0 .
     ld hl,0fa49h        ;fa36 21 49 fa   21 49 fa    ! I .
@@ -1697,23 +1697,20 @@ lfa39h:
     ld hl,lf564h        ;fa41 21 64 f5   21 64 f5    ! d .
     jp open             ;fa44 c3 b5 fa   c3 b5 fa    . . .
 
-lfa47h:
-    ld c,c              ;fa47 49   49  I
-    jr nc,$+75          ;fa48 30 49   30 49   0 I
-    ld sp,2d42h         ;fa4a 31 42 2d   31 42 2d    1 B -
-    ld d,b              ;fa4d 50   50  P
-    jr nz,0fa82h        ;fa4e 20 32   20 32     2
-    jr nz,$+51          ;fa50 20 31   20 31     1
-lfa52h:
-    ld c,l              ;fa52 4d   4d  M
-    dec l               ;fa53 2d   2d  -
-    ld d,a              ;fa54 57   57  W
-    nop                 ;fa55 00   00  .
-    inc de              ;fa56 13   13  .
-    ld bc,2d4dh         ;fa57 01 4d 2d   01 4d 2d    . M -
-    ld d,d              ;fa5a 52   52  R
-    nop                 ;fa5b 00   00  .
-    inc de              ;fa5c 13   13  .
+dos_i0:
+    db "I0"
+
+dos_i1:
+    db "I1"
+
+dos_bp:
+    db "B-P 2 1"
+
+dos_mw:
+    db "M-W",00h,13h,01h
+
+dos_mr:
+    db "M-R",00h,13h
 
 talk:
 ;Send TALK to an IEEE-488 device
