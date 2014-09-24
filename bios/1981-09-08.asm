@@ -727,6 +727,7 @@ lf2bdh:
 lf2c1h:
     ldir                ;f2c1 ed b0   ed b0   . .
     ret                 ;f2c3 c9   c9  .
+
 corv_init:
     ld a,0ffh           ;f2c4 3e ff   3e ff   > .
     out (18h),a         ;f2c6 d3 18   d3 18   . .
@@ -770,7 +771,7 @@ lf2fch:
     call sub_f316h      ;f308 cd 16 f3   cd 16 f3    . . .
     ret z               ;f30b c8   c8  .
 lf30ch:
-    ld hl,lf382h        ;f30c 21 82 f3   21 82 f3    ! . .
+    ld hl,corv_fault        ;f30c 21 82 f3   21 82 f3    ! . .
     call puts           ;f30f cd f1 fc   cd f1 fc    . . .
     ld a,01h            ;f312 3e 01   3e 01   > .
     or a                ;f314 b7   b7  .
@@ -841,14 +842,18 @@ lf353h:
     call sub_f32bh      ;f37b cd 2b f3   cd 2b f3    . + .
     ld a,h              ;f37e 7c   7c  |
     jp sub_f32bh        ;f37f c3 2b f3   c3 2b f3    . + .
-lf382h:
+
+corv_fault:
     db cr,lf,bell,"*** HARD DISK ERROR ***",cr,lf,00h
-    ld e,h              ;f39f 5c   5c  \
-    nop                 ;f3a0 00   00  .
-    nop                 ;f3a1 00   00  .
-    inc e               ;f3a2 1c   1c  .
-    sub h               ;f3a3 94   94  .
-    nop                 ;f3a4 00   00  .
+
+corv_offs:
+;Logical sector offsets for calculating a Corvus DADR
+;
+    dw 005ch            ;005ch = First half of a Corvus hard drive
+    db 00h
+
+    dw 941ch            ;941ch = Second half of a Corvus hard drive
+    db 00h
 
 boot:
     ld sp,0100h         ;f3a5 31 00 01   31 00 01    1 . .
