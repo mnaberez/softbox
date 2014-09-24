@@ -2196,7 +2196,7 @@ lfc5bh:
     jr nz,lfc65h        ;fc61 20 02   20 02     .
     ld a,0dh            ;fc63 3e 0d   3e 0d   > .
 lfc65h:
-    call sub_fcafh      ;fc65 cd af fc   cd af fc    . . .
+    call ascii_to_pet   ;fc65 cd af fc   cd af fc    . . .
     call delay_1ms      ;fc68 cd ee fa   cd ee fa    . . .
     call wrieee         ;fc6b cd a6 fd   cd a6 fd    . . .
 lfc6eh:
@@ -2238,18 +2238,31 @@ lfca5h:
     ret z               ;fcac c8   c8  .
     inc a               ;fcad 3c   3c  <
     ret                 ;fcae c9   c9  .
-sub_fcafh:
-    cp 41h              ;fcaf fe 41   fe 41   . A
-    ret c               ;fcb1 d8   d8  .
-    cp 60h              ;fcb2 fe 60   fe 60   . `
-    jr c,lfcbch         ;fcb4 38 06   38 06   8 .
-    cp 7bh              ;fcb6 fe 7b   fe 7b   . {
-    ret nc              ;fcb8 d0   d0  .
-    xor 20h             ;fcb9 ee 20   ee 20   .
-    ret                 ;fcbb c9   c9  .
-lfcbch:
-    xor 80h             ;fcbc ee 80   ee 80   . .
-    ret                 ;fcbe c9   c9  .
+
+ascii_to_pet:
+;Convert an ASCII char to its equivalent PETSCII char.
+;A = ASCII char
+;Returns the PETSCII equivalent in A.
+;
+                        ;00-40h (Numbers, Punctuation, Control Codes)
+    cp 41h              ;  Is A < 41h?
+    ret c               ;    Yes: return with A unchanged
+
+                        ;41h-59h (Uppercase letters)
+    cp 60h              ;  Is A < 60h?
+    jr c,ascii_upper    ;    Yes: jump to convert it
+
+                        ;7bh-ffh (Braces, Pipe, Extended Characters)
+    cp 7bh              ;  Is A >= 7bh?
+    ret nc              ;    Yes: return with A unchanged
+
+                        ;60h-7ah (Backtick, Lowercase Letters)
+    xor 20h             ;  Flip bit 5 to convert to lowercase ASCII char
+    ret                 ;    to PETSCII equivalent and return
+
+ascii_upper:
+    xor 80h             ;Flip bit 7 to convert uppercase ASCII char
+    ret                 ;  to PETSCII equivalent and return
 
 punch:
     ld a,(0003h)        ;fcbf 3a 03 00   3a 03 00    : . .
