@@ -699,7 +699,7 @@ lf282h:
     jr nz,lf296h        ;f28b 20 09   20 09     .
     ld a,(004fh)        ;f28d 3a 4f 00   3a 4f 00    : O .
     or a                ;f290 b7   b7  .
-    call z,sub_f2a4h    ;f291 cc a4 f2   cc a4 f2    . . .
+    call z,ieee_writ_sec    ;f291 cc a4 f2   cc a4 f2    . . .
     xor a               ;f294 af   af  .
     ret                 ;f295 c9   c9  .
 lf296h:
@@ -711,7 +711,7 @@ ieee_read_sec:
     ld hl,0ef00h        ;f29d 21 00 ef   21 00 ef    ! . .
     ex af,af'           ;f2a0 08   08  .
     jp ieee_read_sec_hl ;f2a1 c3 a2 f9   c3 a2 f9    . . .
-sub_f2a4h:
+ieee_writ_sec:
     ld hl,0ef00h        ;f2a4 21 00 ef   21 00 ef    ! . .
     jp ieee_writ_sec_hl ;f2a7 c3 5b f9   c3 5b f9    . [ .
 copy_to_dma:
@@ -1105,36 +1105,52 @@ deblock_2:
     ret
 
 sub_rw:
-    ld a,(0040h)        ;f586 3a 40 00   3a 40 00    : @ .
-    ld hl,0045h         ;f589 21 45 00   21 45 00    ! E .
-    xor (hl)            ;f58c ae   ae  .
-    ld b,a              ;f58d 47   47  G
-    ld a,(0041h)        ;f58e 3a 41 00   3a 41 00    : A .
-    ld hl,0046h         ;f591 21 46 00   21 46 00    ! F .
-    xor (hl)            ;f594 ae   ae  .
-    or b                ;f595 b0   b0  .
-    ld b,a              ;f596 47   47  G
-    ld a,(0043h)        ;f597 3a 43 00   3a 43 00    : C .
-    rra                 ;f59a 1f   1f  .
-    ld hl,0047h         ;f59b 21 47 00   21 47 00    ! G .
-    xor (hl)            ;f59e ae   ae  .
-    or b                ;f59f b0   b0  .
-    ret z               ;f5a0 c8   c8  .
-    ld hl,004ch         ;f5a1 21 4c 00   21 4c 00    ! L .
-    ld a,(hl)           ;f5a4 7e   7e  ~
-    ld (hl),00h         ;f5a5 36 00   36 00   6 .
-    or a                ;f5a7 b7   b7  .
-    call nz,sub_f2a4h   ;f5a8 c4 a4 f2   c4 a4 f2    . . .
-    ld a,(0040h)        ;f5ab 3a 40 00   3a 40 00    : @ .
-    ld (0045h),a        ;f5ae 32 45 00   32 45 00    2 E .
-    ld a,(0041h)        ;f5b1 3a 41 00   3a 41 00    : A .
-    ld (0046h),a        ;f5b4 32 46 00   32 46 00    2 F .
-    ld a,(0043h)        ;f5b7 3a 43 00   3a 43 00    : C .
-    or a                ;f5ba b7   b7  .
-    rra                 ;f5bb 1f   1f  .
-    ld (0047h),a        ;f5bc 32 47 00   32 47 00    2 G .
-    or 0ffh             ;f5bf f6 ff   f6 ff   . .
-    ret                 ;f5c1 c9   c9  .
+;Called from read and write
+;
+    ld a,(drive)        ;A = CP/M drive number
+
+    ld hl,x_drive       ;HL = address of x_drive
+    xor (hl)            ;x_drive = 0
+
+    ld b,a              ;B = CP/M drive number
+
+    ld a,(track)        ;A = CP/M track number
+
+    ld hl,x_track       ;HL = address of x_track
+    xor (hl)            ;x_track = 0
+
+    or b
+
+    ld b,a              ;B = CP/M track number
+
+    ld a,(sector)
+    rra
+
+    ld hl,x_sector      ;HL = addresses of x_sector
+    xor (hl)            ;x_sector = 0
+
+    or b
+    ret z
+
+    ld hl,wrt_pend
+    ld a,(hl)           ;A = CBM DOS write pending flag
+    ld (hl),00h         ;Reset the flag
+    or a
+    call nz,ieee_writ_sec ;Perform the write if one is pending
+
+    ld a,(drive)
+    ld (x_drive),a      ;x_drive = drive
+
+    ld a,(track)
+    ld (x_track),a      ;x_track = track
+
+    ld a,(sector)
+    or a
+    rra
+    ld (x_sector),a
+    or 0ffh
+    ret
+
 lf5c2h:
     ld (0055h),hl       ;f5c2 22 55 00   22 55 00    " U .
     call find_trk_sec   ;f5c5 cd c4 f7   cd c4 f7    . . .
