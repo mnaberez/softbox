@@ -825,6 +825,7 @@ lf2cah:
     and 20h             ;f2ce e6 20   e6 20   .
     jr nz,corv_init     ;f2d0 20 f2   20 f2     .
     jp lf320h           ;f2d2 c3 20 f3   c3 20 f3    .   .
+
 corv_read_sec:
     ld a,12h            ;f2d5 3e 12   3e 12   > .
     call sub_f336h      ;f2d7 cd 36 f3   cd 36 f3    . 6 .
@@ -842,6 +843,7 @@ lf2e4h:
     djnz lf2e4h         ;f2ee 10 f4   10 f4   . .
     xor a               ;f2f0 af   af  .
     ret                 ;f2f1 c9   c9  .
+
 corv_writ_sec:
     ld a,13h            ;f2f2 3e 13   3e 13   > .
     call sub_f336h      ;f2f4 cd 36 f3   cd 36 f3    . 6 .
@@ -2078,12 +2080,14 @@ talk:
                         ;Fall through into release_atn
 
 release_atn:
-    push af             ;fa77 f5   f5  .
-    in a,(15h)          ;fa78 db 15   db 15   . .
-    and 0feh            ;fa7a e6 fe   e6 fe   . .
-    out (15h),a         ;fa7c d3 15   d3 15   . .
-    pop af              ;fa7e f1   f1  .
-    ret                 ;fa7f c9   c9  .
+;Set ATN_OUT=high
+;
+    push af
+    in a,(ppi2_pb)
+    and 255-atn
+    out (ppi2_pb),a     ;ATN_OUT=high
+    pop af
+    ret
 
 untalk:
 ;Send UNTALK to all IEEE-488 devices.
