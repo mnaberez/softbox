@@ -2136,59 +2136,82 @@ clear:
     ret nc              ;fd01 d0   d0  .
     ld c,1ah            ;fd02 0e 1a   0e 1a   . .
     jp lfb6dh           ;fd04 c3 6d fb   c3 6d fb    . m .
+
 execute:
-    ld a,08h            ;fd07 3e 08   3e 08   > .
-    call cbm_srq      ;fd09 cd df fb   cd df fb    . . .
-    ld a,l              ;fd0c 7d   7d  }
-    call wrieee         ;fd0d cd a6 fd   cd a6 fd    . . .
-    ld a,h              ;fd10 7c   7c  |
-    jp wrieee           ;fd11 c3 a6 fd   c3 a6 fd    . . .
+;Jump to a subroutine in CBM memory
+;
+;HL = Subroutine address on CBM
+;
+    ld a,08h            ;Command 08h = Jump to a subroutine in CBM memory
+    call cbm_srq
+    ld a,l
+    call wrieee         ;Send low byte of address
+    ld a,h
+    jp wrieee           ;Send high byte
+
 peek:
-    ld a,10h            ;fd14 3e 10   3e 10   > .
-    call cbm_srq      ;fd16 cd df fb   cd df fb    . . .
-    ld a,c              ;fd19 79   79  y
-    call cbm_put_byte         ;fd1a cd e5 fd   cd e5 fd    . . .
-    ld a,b              ;fd1d 78   78  x
-    call cbm_put_byte         ;fd1e cd e5 fd   cd e5 fd    . . .
-    ld a,e              ;fd21 7b   7b  {
-    call cbm_put_byte         ;fd22 cd e5 fd   cd e5 fd    . . .
-    ld a,d              ;fd25 7a   7a  z
-    call cbm_put_byte         ;fd26 cd e5 fd   cd e5 fd    . . .
-    in a,(15h)          ;fd29 db 15   db 15   . .
-    or 04h              ;fd2b f6 04   f6 04   . .
-    out (15h),a         ;fd2d d3 15   d3 15   . .
-lfd2fh:
-    call rdieee         ;fd2f cd 1c fe   cd 1c fe    . . .
-    ld (hl),a           ;fd32 77   77  w
-    inc hl              ;fd33 23   23  #
-    dec bc              ;fd34 0b   0b  .
-    ld a,b              ;fd35 78   78  x
-    or c                ;fd36 b1   b1  .
-    jr nz,lfd2fh        ;fd37 20 f6   20 f6     .
-    in a,(15h)          ;fd39 db 15   db 15   . .
-    and 0f3h            ;fd3b e6 f3   e6 f3   . .
-    out (15h),a         ;fd3d d3 15   d3 15   . .
-    ret                 ;fd3f c9   c9  .
+;Transfer bytes from CBM memory to the SoftBox
+;
+;DE = Start address on CBM
+;HL = Start address on SoftBox
+;BC = Number of bytes to transfer
+;
+    ld a,10h            ;Command 10h = Transfer from CBM to SoftBox
+    call cbm_srq
+    ld a,c
+    call cbm_put_byte   ;Send low byte of byte counter
+    ld a,b
+    call cbm_put_byte   ;Send high byte
+    ld a,e
+    call cbm_put_byte   ;Send low byte of CBM start address
+    ld a,d
+    call cbm_put_byte   ;Send high byte
+
+    in a,(ppi2_pb)
+    or ndac
+    out (ppi2_pb),a     ;NDAC_OUT=low
+
+peek_loop:
+    call rdieee         ;Read a byte from the CBM
+    ld (hl),a           ;Store it at the pointer
+    inc hl              ;Increment pointer
+    dec bc              ;Decrement bytes remaining to transfer
+    ld a,b
+    or c
+    jr nz,peek_loop     ;Loop until no bytes are remaining
+
+    in a,(ppi2_pb)
+    and 255-nrfd-ndac
+    out (ppi2_pb),a     ;NRFD_OUT=high, NDAC_OUT=high
+    ret
+
 poke:
-    ld a,20h            ;fd40 3e 20   3e 20   >
-    call cbm_srq      ;fd42 cd df fb   cd df fb    . . .
-    ld a,c              ;fd45 79   79  y
-    call cbm_put_byte         ;fd46 cd e5 fd   cd e5 fd    . . .
-    ld a,b              ;fd49 78   78  x
-    call cbm_put_byte         ;fd4a cd e5 fd   cd e5 fd    . . .
-    ld a,e              ;fd4d 7b   7b  {
-    call cbm_put_byte         ;fd4e cd e5 fd   cd e5 fd    . . .
-    ld a,d              ;fd51 7a   7a  z
-    call cbm_put_byte         ;fd52 cd e5 fd   cd e5 fd    . . .
-lfd55h:
-    ld a,(hl)           ;fd55 7e   7e  ~
-    call cbm_put_byte         ;fd56 cd e5 fd   cd e5 fd    . . .
-    inc hl              ;fd59 23   23  #
-    dec bc              ;fd5a 0b   0b  .
-    ld a,b              ;fd5b 78   78  x
-    or c                ;fd5c b1   b1  .
-    jr nz,lfd55h        ;fd5d 20 f6   20 f6     .
-    ret                 ;fd5f c9   c9  .
+;Transfer bytes from the SoftBox to CBM memory
+;
+;DE = Start address on CBM
+;HL = Start address on SoftBox
+;BC = Number of bytes to transfer
+;
+    ld a,20h            ;Command 20h = Transfer from SoftBox to CBM
+    call cbm_srq
+    ld a,c
+    call cbm_put_byte   ;Send low byte of byte counter
+    ld a,b
+    call cbm_put_byte   ;Send high byte
+    ld a,e
+    call cbm_put_byte   ;Send low byte of CBM start address
+    ld a,d
+    call cbm_put_byte   ;Send high byte
+
+poke_loop:
+    ld a,(hl)           ;Read byte at pointer
+    call cbm_put_byte   ;Send it to the CBM
+    inc hl              ;Increment pointer
+    dec bc              ;Decrement bytes remaining to transfer
+    ld a,b
+    or c
+    jr nz,poke_loop     ;Loop until no bytes are remaining
+    ret
 
 settime:
 ;Set the time on the CBM real time clock
