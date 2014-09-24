@@ -2533,45 +2533,75 @@ list_lpt:
 ;Converts ASCII to equivalent PETSCII.  Converts line endings
 ;if needed and sets lowercase mode after each new line if needed.
 ;
-    ld a,(lpt_dev)      ;fc22 3a 61 ea   3a 61 ea    : a .
-    ld d,a              ;fc25 57   57  W
-    in a,(ppi2_pb)      ;fc26 db 15   db 15   . .
-    or 01h              ;fc28 f6 01   f6 01   . .
-    out (ppi2_pb),a     ;fc2a d3 15   d3 15   . .
-    call delay_1ms      ;fc2c cd ee fa   cd ee fa    . . .
-    call listen         ;fc2f cd 90 fa   cd 90 fa    . . .
-    ld hl,list_tmp      ;fc32 21 51 00   21 51 00    ! Q .
-    ld a,(hl)           ;fc35 7e   7e  ~
-    ld (hl),c           ;fc36 71   71  q
-    cp lf               ;fc37 fe 0a   fe 0a   . .
-    jr z,lfc4ch         ;fc39 28 11   28 11   ( .
-    cp cr               ;fc3b fe 0d   fe 0d   . .
-    jr nz,lfc54h        ;fc3d 20 15   20 15     .
-    ld a,c              ;fc3f 79   79  y
-    cp lf               ;fc40 fe 0a   fe 0a   . .
-    jr z,lfc54h         ;fc42 28 10   28 10   ( .
-    call delay_1ms      ;fc44 cd ee fa   cd ee fa    . . .
-    ld a,8dh            ;fc47 3e 8d   3e 8d   > .
-    call wrieee         ;fc49 cd a6 fd   cd a6 fd    . . .
-lfc4ch:
-    ld a,11h            ;fc4c 3e 11   3e 11   > .
-    call delay_1ms      ;fc4e cd ee fa   cd ee fa    . . .
-    call wrieee         ;fc51 cd a6 fd   cd a6 fd    . . .
-lfc54h:
-    ld a,c              ;fc54 79   79  y
-    cp 5fh              ;fc55 fe 5f   fe 5f   . _
-    jr nz,lfc5bh        ;fc57 20 02   20 02     .
-    ld a,0a4h           ;fc59 3e a4   3e a4   > .
-lfc5bh:
-    cp cr               ;fc5b fe 0d   fe 0d   . .
-    jr z,list_lpt_unlsn         ;fc5d 28 0f   28 0f   ( .
-    cp lf               ;fc5f fe 0a   fe 0a   . .
-    jr nz,lfc65h        ;fc61 20 02   20 02     .
-    ld a,cr             ;fc63 3e 0d   3e 0d   > .
-lfc65h:
-    call ascii_to_pet   ;fc65 cd af fc   cd af fc    . . .
-    call delay_1ms      ;fc68 cd ee fa   cd ee fa    . . .
-    call wrieee         ;fc6b cd a6 fd   cd a6 fd    . . .
+    ld a,(lpt_dev)
+    ld d,a              ;D = IEEE-488 primary address of LPT:
+
+    in a,(ppi2_pb)
+    or atn
+    out (ppi2_pb),a     ;ATN_OUT=low
+
+    call delay_1ms      ;Wait 1ms
+
+    call listen         ;Send LISTEN
+
+    ld hl,list_tmp      ;HL = address holding the last char sent to LIST
+    ld a,(hl)           ;A = last character
+    ld (hl),c           ;Update the last char for the next time around.
+
+    cp lf               ;Was the last character a Line Feed?
+    jr z,list_lpt_lower ;  Yes: jump to put the printer back to lowercase,
+                        ;       then send this char.
+                        ;   No: continue to check for CR.
+
+
+    cp cr               ;Was the last character a Carriage Return?
+    jr nz,list_lpt_undr ;   No: jump to send this char as-is.
+                        ;  Yes: continue to check for CR followed by LF.
+
+    ld a,c              ;A = C (this character)
+    cp lf               ;Last char was a CR.  Is this char a Line Feed?
+    jr z,list_lpt_undr  ;  Yes: jump to send the LF as-is.
+                        ;   No: continue to send 8Dh to the printer.
+
+    call delay_1ms      ;Wait 1ms
+
+    ld a,8dh            ;8dh = PETSCII Shift Carriage Return
+                        ;        (Carriage return without line feed)
+    call wrieee         ;Send it to the printer
+
+list_lpt_lower:
+;Set the printer to lowercase mode if needed.  Commodore printers
+;that have uppercase/lowercase mode will default to uppercase mode
+;and reset back to uppercase mode after every carriage return.
+;
+    ld a,11h            ;11h = PETSCII Cursor Down
+                        ;        (Go to lowercase mode)
+    call delay_1ms      ;Wait 1ms
+    call wrieee         ;Send it to the printer
+
+list_lpt_undr:
+;Convert an ASCII underscore to its equivalent PETSCII graphic char.
+;
+    ld a,c              ;A = C (ASCII char to print)
+
+    cp '_'              ;Is the char an underscore?
+    jr nz,list_lpt_crlf ;  No:  Leave it alone
+    ld a,0a4h           ;  Yes: Change it to 0a4h (PETSCII underscore)
+
+list_lpt_crlf:
+;Convert Carriage Return and Line Feed.
+;
+    cp cr               ;Is it a Carriage Return?
+    jr z,list_lpt_unlsn ;  Yes: Jump to send nothing, then UNLISTEN
+
+    cp lf               ;Is it a Line Feed?
+    jr nz,list_lpt_char ;  No:  Jump to send it as-is
+    ld a,cr             ;  Yes: Change it to a Carriage Return
+
+list_lpt_char:
+    call ascii_to_pet   ;A = equivalent char in PETSCII
+    call delay_1ms      ;Yes: Wait 1ms before sending the char
+    call wrieee         ;Send the PETSCII char to the printer
 
 list_lpt_unlsn:
 ;Send UNLISTEN to the printer and return.
