@@ -1124,37 +1124,54 @@ loading:
     db cr,lf,"Loading CP/M ...",0
 
 ieee_load_cpm:
-    push bc             ;f52e c5   c5  .
-    push de             ;f52f d5   d5  .
-    ld hl,0f566h        ;f530 21 66 f5   21 66 f5    ! f .
-    ld c,06h            ;f533 0e 06   0e 06   . .
-    ld e,00h            ;f535 1e 00   1e 00   . .
-    call open           ;f537 cd b5 fa   cd b5 fa    . . .
-    pop de              ;f53a d1   d1  .
-    push de             ;f53b d5   d5  .
-    call ieee_rd_err_d  ;f53c cd 23 f9   cd 23 f9    . # .
-    pop de              ;f53f d1   d1  .
-    ld e,00h            ;f540 1e 00   1e 00   . .
-    pop bc              ;f542 c1   c1  .
-    or a                ;f543 b7   b7  .
-    ret nz              ;f544 c0   c0  .
-    push de             ;f545 d5   d5  .
-    call talk           ;f546 cd 5d fa   cd 5d fa    . ] .
-    ld hl,0d400h        ;f549 21 00 d4   21 00 d4    ! . .
-    ld b,00h            ;f54c 06 00   06 00   . .
-lf54eh:
-    call rdieee         ;f54e cd 1c fe   cd 1c fe    . . .
-    ld (hl),a           ;f551 77   77  w
-    inc hl              ;f552 23   23  #
-    djnz lf54eh         ;f553 10 f9   10 f9   . .
-    dec c               ;f555 0d   0d  .
-    jr nz,lf54eh        ;f556 20 f6   20 f6     .
-    call untalk         ;f558 cd 80 fa   cd 80 fa    . . .
-    pop de              ;f55b d1   d1  .
-    push de             ;f55c d5   d5  .
-    call close          ;f55d cd d1 fa   cd d1 fa    . . .
-    pop de              ;f560 d1   d1  .
-    jp ieee_rd_err_d    ;f561 c3 23 f9   c3 23 f9    . # .
+;Load the CP/M system from an IEEE-488 disk drive.
+;
+;The CP/M image is a CBM DOS program file called "CP/M" on the SoftBox
+;boot disk.  The file is 7168 bytes total.  During cold start, the entire
+;file is loaded into memory from D400-EFFF (28 pages).  During warm start,
+;only D400-E9FF (22 pages) is reloaded from the file.
+;
+;D = IEEE-488 primary address of CBM disk drive
+;C = number of 256-byte pages to load from the image file
+;
+;Returns the CBM DOS error code in A (0=OK)
+;
+    push bc
+    push de
+    ld hl,filename      ;HL = pointer to "0:CP/M" string
+    ld c,06h            ;C = 6 bytes in string
+    ld e,00h            ;E = IEEE-488 secondary address 0
+    call open           ;Send LOAD and filename
+    pop de
+    push de
+    call ieee_rd_err_d  ;A = CBM DOS error code
+    pop de
+    ld e,00h
+    pop bc
+    or a
+    ret nz              ;Return if CBM DOS error is not 0 (OK)
+
+    push de
+    call talk           ;Send TALK
+    ld hl,ccp_base      ;HL = base address of CP/M system
+                        ;C = number of pages to load (1 page = 256 bytes),
+                        ;      which is set by the caller
+    ld b,00h            ;B = counts down bytes within each page
+ilc1:
+    call rdieee         ;Get byte from CP/M image file
+    ld (hl),a           ;Store it in memory
+    inc hl              ;Increment memory pointer
+    djnz ilc1           ;Decrement B and loop until current page is done
+    dec c               ;Decrement C
+    jr nz,ilc1          ;Loop until all pages are done
+    call untalk         ;Send UNTALK
+    pop de
+
+    push de
+    call close          ;Close the file
+    pop de
+    jp ieee_rd_err_d    ;Jump out to read CBM DOS error channel.  It will
+                        ;  return to the caller.
 
 dos_num2:
     db "#2"
