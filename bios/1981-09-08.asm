@@ -1,5 +1,171 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --labels --source --origin=61440 1981-09-08.bin
+usart:    equ 08h       ;8251 USART (IC15)
+usart_db: equ usart+0   ;  Data Buffer
+usart_st: equ usart+1   ;  Status Register
+
+baud_gen: equ 0ch       ;COM8116 Baud Rate Generator (IC14)
+                        ;  D7-D4: TD-TA
+                        ;  D3-D0: RD-RA
+
+ppi1:     equ 10h       ;8255 PPI #1 (IC17)
+ppi1_pa:  equ ppi1+0    ;  Port A: IEEE-488 Data In
+ppi1_pb:  equ ppi1+1    ;  Port B: IEEE-488 Data Out
+ppi1_pc:  equ ppi1+2    ;  Port C: DIP Switches (Unused)
+ppi1_cr:  equ ppi1+3    ;  Control Register
+
+ppi2:     equ 14h       ;8255 PPI #2 (IC16)
+ppi2_pa:  equ ppi2+0    ;  Port A:
+                        ;    PA7 IEEE-488 IFC in
+                        ;    PA6 IEEE-488 REN in
+                        ;    PA5 IEEE-488 SRQ in
+                        ;    PA4 IEEE-488 EOI in
+                        ;    PA3 IEEE-488 NRFD in
+                        ;    PA2 IEEE-488 NDAC in
+                        ;    PA1 IEEE-488 DAV in
+                        ;    PA0 IEEE-488 ATN in
+ppi2_pb:  equ ppi2+1    ;  Port B:
+                        ;    PB7 IEEE-488 IFC out
+                        ;    PB6 IEEE-488 REN out
+                        ;    PB5 IEEE-488 SRQ out
+                        ;    PB4 IEEE-488 EOI out
+                        ;    PB3 IEEE-488 NRFD out
+                        ;    PB2 IEEE-488 NDAC out
+                        ;    PB1 IEEE-488 DAV out
+                        ;    PB0 IEEE-488 ATN out
+ppi2_pc:  equ ppi2+2    ;  Port C:
+                        ;    PC7 Unused
+                        ;    PC6 Unused
+                        ;    PC5 Corvus DIRC in
+                        ;    PC4 Corvus READY in
+                        ;    PC3 Unused
+                        ;    PC2 LED "Ready" out
+                        ;    PC1 LED "B" out
+                        ;    PC0 LED "A" out
+ppi2_cr:  equ ppi2+3    ;  Control Register
+
+corvus:   equ 18h       ;Corvus data bus
+
+jp_warm:  equ 0000h     ;Jump to BDOS warm start (3 byte instruction)
+iobyte:   equ 0003h     ;CP/M I/O Mapping
+                        ;
+                        ;                  List    Punch   Reader  Console
+                        ;  Device          LST:    PUN:    RDR:    CON:
+                        ;  Bit Positions   7,6     5,4     3,2     1,0
+                        ;
+                        ;  Dec   Binary
+                        ;   0      00      TTY:    TTY:    TTY:    TTY:
+                        ;   1      01      CRT:    PTP:    PTR:    CRT:
+                        ;   2      10      LPT:    UP1:    UR1:    BAT:
+                        ;   3      11      UL1:    UP2:    UR2:    UC1:
+                        ;
+                        ;  TTY:    TeleTYpe                    (RS-232 port)
+                        ;  CRT:    Cathode Ray Tube           (CBM computer)
+                        ;  BAT:    BATch (RDR=in, LST=out)
+                        ;  UC1:    User defined Console
+                        ;  LPT:    Line PrinTer                (CBM printer)
+                        ;  UL1:    User-def. List            (ASCII printer)
+                        ;  PTR:    Paper Tape Reader          (Other device)
+                        ;  UR1:    User-def. Reader 1
+                        ;  UR2:    User-def. Reader 2
+                        ;  PTP:    Paper Tape Punch           (Other device)
+                        ;  UP1:    User-def. Punch 1
+                        ;  UP2:    User-def. Punch 2
+
+cdisk:    equ  0004h    ;Current drive and user number
+                        ;  Bits 7-4: Current user number
+                        ;  Bits 3-0: Current drive number (0=A,1=B,etc.)
+
+jp_sysc:  equ  0005h    ;Jump to BDOS system call (3 byte instruction)
+
+                        ;Latest disk position set by BDOS:
+drive:    equ  0040h    ;  Drive number (0=A, 1=B, 2=C, etc.)
+track:    equ  0041h    ;  Track number (2 bytes)
+sector:   equ  0043h    ;  Sector number
+drvtype:  equ  0044h    ;  Drive type (from dtypes table)
+
+                        ;Alternate copy of disk position (??):
+x_drive:  equ  0045h    ;  Drive number (0=A, 1=B, 2=C, etc.)
+x_track:  equ  0046h    ;  Track number (only 1 byte)
+x_sector: equ  0047h    ;  Sector number
+
+                        ;Alternate copy of disk position (??):
+sec_cnt:  equ  0048h    ;  Counts down sectors, related to y_* (TODO how?)
+y_drive:  equ  0049h    ;  Drive number (0=A, 1=B, 2=C, etc.)
+y_track:  equ  004ah    ;  Track number (only 1 byte)
+y_sector: equ  004bh    ;  Sector number
+
+wrt_pend: equ  004ch    ;CBM DOS buffer state (1=write is pending, 0=none)
+dos_trk:  equ  004dh    ;CBM DOS track number
+dos_sec:  equ  004eh    ;CBM DOS sector number
+dos_err:  equ  004fh    ;Last CBM DOS error code saved by ieee_u1_or_u2
+tries:    equ  0050h    ;Counter used to retry drive faults in ieee_u1_or_u2
+list_tmp: equ  0051h    ;Stores the last character sent to the LIST routine
+dma:      equ  0052h    ;DMA buffer area address
+hl_tmp:   equ  0055h    ;Temporary storage for HL reg used in ieee_u1_or_u2
+trk_3040: equ  0057h    ;Temporary CBM DOS track number for CBM 3040/4040
+trk_8050: equ  0058h    ;Temporary CBM DOS track number for CBM 8050
+leadrcvd: equ  0059h    ;Lead-in received flag: 1=last char was lead-in
+move_cnt: equ  005ah    ;Counts down bytes to consume in a cursor move seq
+move_tmp: equ  005bh    ;Holds first byte received (X or Y pos) in move seq
+dma_buf:  equ  0080h    ;Default DMA buffer area (128 bytes) for disk I/O
+ccp_base: equ 0d400h    ;Start of CCP area
+dirsize:  equ 0d8b2h    ;CCP directory width: 0=1 col, 1=2 cols, 3=4 cols
+syscall:  equ 0dc06h    ;BDOS system call
+b_warm:   equ 0ea03h    ;BDOS warm boot
+dirsave:  equ 0ea40h    ;Saves the original value of DIRSIZE after boot
+jiffies:  equ 0ea41h    ;CBM clock data: Jiffies (counts up to 50 or 60)
+secs:     equ 0ea42h    ;CBM clock data: Seconds
+mins:     equ 0ea43h    ;CBM clock data: Minutes
+hours:    equ 0ea44h    ;CBM clock data: Hours
+jiffy2:   equ 0ea45h    ;CBM clock data: Jiffy counter (MSB)
+jiffy1:   equ 0ea46h    ;CBM clock data: Jiffy counter
+jiffy0:   equ 0ea47h    ;CBM clock data: Jiffy counter (LSB)
+iosetup:  equ 0ea60h    ;Byte that is written to IOBYTE
+lpt_dev:  equ 0ea61h    ;CBM printer (LPT:) IEEE-488 primary address
+ptr_dev:  equ 0ea62h    ;Paper Tape Reader (PTR:) IEEE-488 primary address
+ptp_dev:  equ 0ea63h    ;Paper Tape Punch (PTP:) IEEE-488 primary address
+ser_mode: equ 0ea64h    ;Byte that is written to 8251 USART mode register
+ser_baud: equ 0ea65h    ;Byte that is written to COM8116 baud rate generator
+ul1_dev:  equ 0ea66h    ;ASCII printer (UL1:) IEEE-488 primary address
+termtype: equ 0ea67h    ;Terminal type:
+                        ;  0=ADM3A, 1=HZ1500, 2=TV912
+                        ;  Bit 7 is set if uppercase graphics mode
+leadin:   equ 0ea68h    ;Terminal command lead-in: 1bh=escape, 7eh=tilde
+xy_order: equ 0ea69h    ;X,Y order when sending move-to: 0=Y first, 1=X first
+y_offset: equ 0ea6ah    ;Offset added to Y when sending move-to sequence
+x_offset: equ 0ea6bh    ;Offset added to X when sending move-to sequence
+eoisav:   equ 0ea6ch    ;Stores ppi2_pa IEEE-488 control lines after get byte
+                        ;  This allows a program to check for EOI after it
+                        ;  calls rdieee or rdimm.
+lptype:   equ 0ea6dh    ;CBM printer (LPT:) type: 0=3022, 3023, 4022, 4023
+                        ;                         1=8026, 8027 (daisywheel)
+                        ;                         2=8024
+dtypes:   equ 0ea70h    ;Disk drive types:
+dtype_ab: equ dtypes+0  ;  A:, B:    00h = CBM 3040/4040
+dtype_cd: equ dtypes+1  ;  C:, D:    01h = CBM 8050
+dtype_ef: equ dtypes+2  ;  E:, F:    02h = Corvus 10MB
+dtype_gh: equ dtypes+3  ;  G:, H:    03h = Corvus 20MB
+dtype_ij: equ dtypes+4  ;  I:, J:    04h = Corvus 5MB
+dtype_kl: equ dtypes+5  ;  L:, K:   0ffh = No device
+dtype_mn: equ dtypes+6  ;  M:, N:
+dtype_op: equ dtypes+7  ;  O:, P:
+
+ddevs:    equ 0ea78h    ;Disk drive device addresses:
+ddev_ab:  equ ddevs+0   ;  A:, B:
+ddev_cd:  equ ddevs+1   ;  C:, D:    For CBM floppy drives, the number
+ddev_ef:  equ ddevs+2   ;  E:, F:    is an IEEE-488 primary address.
+ddev_gh:  equ ddevs+3   ;  G:, H:
+ddev_ij:  equ ddevs+4   ;  I:, J:    For Corvus hard drives, the number
+ddev_kl:  equ ddevs+5   ;  L:, K:    is an ID on a Corvus unit.
+ddev_mn:  equ ddevs+6   ;  M:, N:
+ddev_op:  equ ddevs+7   ;  O:, P:
+
+scrtab:   equ 0ea80h    ;64 byte table for terminal character translation
+errbuf:   equ 0eac0h    ;Last error message returned from CBM DOS
+dph_base: equ 0eb00h    ;CP/M Disk Parameter Headers (DPH)
+dos_buf:  equ 0ef00h    ;256 byte buffer for CBM DOS sector data
+
 ctrl_c:   equ 03h       ;Control-C
 bell:     equ 07h       ;Bell
 lf:       equ 0ah       ;Line Feed
@@ -25,52 +191,58 @@ leda:     equ 00000001b ;LED "A"
 
     org 0f000h
 
-    jp boot             ;f000 c3 a5 f3   c3 a5 f3    . . .
-    jp wboot            ;f003 c3 c8 f0   c3 c8 f0    . . .
-    jp const            ;f006 c3 15 fb   c3 15 fb    . . .
-    jp conin            ;f009 c3 f7 fa   c3 f7 fa    . . .
-    jp conout           ;f00c c3 27 fb   c3 27 fb    . ' .
-    jp list             ;f00f c3 07 fc   c3 07 fc    . . .
-    jp punch            ;f012 c3 bf fc   c3 bf fc    . . .
-    jp reader           ;f015 c3 d7 fc   c3 d7 fc    . . .
-    jp home             ;f018 c3 5a f1   c3 5a f1    . Z .
-    jp seldsk           ;f01b c3 6c f1   c3 6c f1    . l .
-    jp settrk           ;f01e c3 5d f1   c3 5d f1    . ] .
-    jp setsec           ;f021 c3 62 f1   c3 62 f1    . b .
-    jp setdma           ;f024 c3 67 f1   c3 67 f1    . g .
-    jp read             ;f027 c3 20 f2   c3 20 f2    .   .
-    jp write            ;f02a c3 3d f2   c3 3d f2    . = .
-    jp listst           ;f02d c3 77 fc   c3 77 fc    . w .
-    jp sectran          ;f030 c3 f5 f1   c3 f5 f1    . . .
+lf000h:
+;Standard CP/M 2.2 BIOS entry points
+;
+    jp boot             ;f000  Cold start
+    jp wboot            ;f003  Warm start
+    jp const            ;f006  Console status
+    jp conin            ;f009  Console input
+    jp conout           ;f00c  Console output
+    jp list             ;f00f  List (printer) output
+    jp punch            ;f012  Punch (paper tape) output
+    jp reader           ;f015  Reader (paper tape) input
+    jp home             ;f018  Move to track 0 on selected disk
+    jp seldsk           ;f01b  Select disk drive
+    jp settrk           ;f01e  Set track number
+    jp setsec           ;f021  Set sector number
+    jp setdma           ;f024  Set DMA address
+    jp read             ;f027  Read selected sector
+    jp write            ;f02a  Write selected sector
+    jp listst           ;f02d  List (printer) status
+    jp sectran          ;f030  Sector translation for skewing
 
-    jp listen           ;f033 c3 90 fa   c3 90 fa    . . .
-    jp unlisten         ;f036 c3 a6 fa   c3 a6 fa    . . .
-    jp talk             ;f039 c3 5d fa   c3 5d fa    . ] .
-    jp untalk           ;f03c c3 80 fa   c3 80 fa    . . .
-    jp rdieee           ;f03f c3 1c fe   c3 1c fe    . . .
-    jp wrieee           ;f042 c3 a6 fd   c3 a6 fd    . . .
-    jp wreoi            ;f045 c3 4f fe   c3 4f fe    . O .
-    jp creoi            ;f048 c3 4d fe   c3 4d fe    . M .
-    jp ieeemsg          ;f04b c3 63 fe   c3 63 fe    . c .
-    jp ieeenum          ;f04e c3 07 f9   c3 07 f9    . . .
-    jp tstdrv           ;f051 c3 f8 f1   c3 f8 f1    . . .
-    jp dskdev           ;f054 c3 11 fa   c3 11 fa    . . .
-    jp diskcmd          ;f057 c3 20 fa   c3 20 fa    .   .
-    jp disksta          ;f05a c3 20 f9   c3 20 f9    .   .
-    jp open             ;f05d c3 b5 fa   c3 b5 fa    . . .
-    jp close            ;f060 c3 d1 fa   c3 d1 fa    . . .
-    jp clear            ;f063 c3 fd fc   c3 fd fc    . . .
-    jp execute          ;f066 c3 07 fd   c3 07 fd    . . .
-    jp poke             ;f069 c3 40 fd   c3 40 fd    . @ .
-    jp peek             ;f06c c3 14 fd   c3 14 fd    . . .
-    jp settime          ;f06f c3 60 fd   c3 60 fd    . ` .
-    jp gettime          ;f072 c3 8b fd   c3 8b fd    . . .
-    jp runcpm           ;f075 c3 68 f4   c3 68 f4    . h .
-    jp idrive           ;f078 c3 28 fa   c3 28 fa    . ( .
-    jp wratn            ;f07b c3 a8 fa   c3 a8 fa    . . .
-    jp rdimm            ;f07e c3 05 fe   c3 05 fe    . . .
-    jp resclk           ;f081 c3 75 fd   c3 75 fd    . u .
-    jp delay            ;f084 c3 e5 fa   c3 e5 fa    . . .
+lf033h:
+;SoftBox-specific entry points
+;
+    jp listen           ;f033  Send LISTEN to an IEEE-488 device
+    jp unlisten         ;f036  Send UNLISTEN to all IEEE-488 devices
+    jp talk             ;f039  Send TALK to an IEEE-488 device
+    jp untalk           ;f03c  Send UNTALK to all IEEE-488 devices
+    jp rdieee           ;f03f  Read byte from an IEEE-488 device
+    jp wrieee           ;f042  Send byte to an IEEE-488 device
+    jp wreoi            ;f045  Send byte to IEEE-488 device with EOI asserted
+    jp creoi            ;f048  Send carriage return to IEEE-488 dev with EOI
+    jp ieeemsg          ;f04b  Send string to the current IEEE-488 device
+    jp ieeenum          ;f04e  Send number as decimal string to IEEE-488 dev
+    jp tstdrv           ;f051  Get drive type for a CP/M drive number
+    jp dskdev           ;f054  Get device address for a CP/M drive number
+    jp diskcmd          ;f057  Open the command channel on IEEE-488 device
+    jp disksta          ;f05a  Read the error channel of an IEEE-488 device
+    jp open             ;f05d  Open a file on an IEEE-488 device
+    jp close            ;f060  Close an open file on an IEEE-488 device
+    jp clear            ;f063  Clear the CBM screen
+    jp execute          ;f066  Execute a subroutine in CBM memory
+    jp poke             ;f069  Transfer bytes from the SoftBox to CBM memory
+    jp peek             ;f06c  Transfer bytes from CBM memory to the SoftBox
+    jp settime          ;f06f  Set the time on the CBM real time clock
+    jp gettime          ;f072  Read the CBM clocks (both RTC and jiffies)
+    jp runcpm           ;f075  Perform system init and then run CP/M
+    jp idrive           ;f078  Initialize an IEEE-488 disk drive
+    jp wratn            ;f07b  Send byte to IEEE-488 device with ATN asserted
+    jp rdimm            ;f07e  Read byte from IEEE-488 device with timeout
+    jp resclk           ;f081  Reset the CBM jiffy clock (not RTC)
+    jp delay            ;f084  Programmable millisecond delay
 
 signon:
 ;    db cr,lf,"60K SoftBox CP/M vers. 2.2"
@@ -80,83 +252,117 @@ signon:
     db 00h
 
 wboot:
-    ld c,16h            ;f0c8 0e 16   0e 16   . .
-    ld sp,0100h         ;f0ca 31 00 01   31 00 01    1 . .
-    ld a,(0ea70h)       ;f0cd 3a 70 ea   3a 70 ea    : p .
-    call tstdrv_corv    ;f0d0 cd 19 f2   cd 19 f2    . . .
-    jr c,wboot_corvus   ;f0d3 38 09   38 09   8 .
+;Warm start
+;
+    ld c,16h            ;C = 22 pages to load: D400-E9FF
+    ld sp,0100h         ;Initialize stack pointer
+    ld a,(dtypes)       ;A = drive type of CP/M drive number 0 (A:)
+    call tstdrv_corv    ;Is it a Corvus hard drive?
+    jr c,wboot_corvus   ;  Yes: jump to warm boot from Corvus
 
-wboot_ieee:
-    xor a               ;f0d5 af   af  .
-    call dskdev         ;f0d6 cd 11 fa   cd 11 fa    . . .
-    call sub_f52eh      ;f0d9 cd 2e f5   cd 2e f5    . . .
-    jr lf0e3h           ;f0dc 18 05   18 05   . .
+wboot_ieee:             ;Reload the system from an IEEE-488 drive:
+    xor a               ;  A = CP/M drive number 0 (A:)
+    call dskdev         ;  D = its IEEE-488 primary address
+    call ieee_load_cpm  ;  Load CP/M from image file (A = CBM DOS error)
+    jr wboot_start_ccp
 
-wboot_corvus:
-    ld b,2ch            ;f0de 06 2c   06 2c   . ,
-    call sub_f0f4h      ;f0e0 cd f4 f0   cd f4 f0    . . .
-lf0e3h:
-    ld a,(0ea40h)       ;f0e3 3a 40 ea   3a 40 ea    : @ .
-    ld (0d8b2h),a       ;f0e6 32 b2 d8   32 b2 d8    2 . .
-    ld hl,0d403h        ;f0e9 21 03 d4   21 03 d4    ! . .
-    jr z,lf11eh         ;f0ec 28 30   28 30   ( 0
-    xor a               ;f0ee af   af  .
-    call idrive         ;f0ef cd 28 fa   cd 28 fa    . ( .
-    jr wboot            ;f0f2 18 d4   18 d4   . .
-sub_f0f4h:
-    push bc             ;f0f4 c5   c5  .
-    ld hl,0000h         ;f0f5 21 00 00   21 00 00    ! . .
-lf0f8h:
-    ld (0041h),hl       ;f0f8 22 41 00   22 41 00    " A .
-    xor a               ;f0fb af   af  .
-    ld (0043h),a        ;f0fc 32 43 00   32 43 00    2 C .
-    ld c,a              ;f0ff 4f   4f  O
-    call seldsk         ;f100 cd 6c f1   cd 6c f1    . l .
-    pop bc              ;f103 c1   c1  .
-    ld hl,0d400h        ;f104 21 00 d4   21 00 d4    ! . .
-lf107h:
-    ld (0052h),hl       ;f107 22 52 00   22 52 00    " R .
-    push hl             ;f10a e5   e5  .
-    push bc             ;f10b c5   c5  .
-    call read           ;f10c cd 20 f2   cd 20 f2    .   .
-    ld hl,0043h         ;f10f 21 43 00   21 43 00    ! C .
-    inc (hl)            ;f112 34   34  4
-    pop bc              ;f113 c1   c1  .
-    pop hl              ;f114 e1   e1  .
-    or a                ;f115 b7   b7  .
-    ret nz              ;f116 c0   c0  .
-    ld de,0080h         ;f117 11 80 00   11 80 00    . . .
-    add hl,de           ;f11a 19   19  .
-    djnz lf107h         ;f11b 10 ea   10 ea   . .
-    ret                 ;f11d c9   c9  .
-lf11eh:
-    push hl             ;f11e e5   e5  .
-    ld bc,0080h         ;f11f 01 80 00   01 80 00    . . .
-    call setdma         ;f122 cd 67 f1   cd 67 f1    . g .
-    ld a,0c3h           ;f125 3e c3   3e c3   > .
-    ld (0000h),a        ;f127 32 00 00   32 00 00    2 . .
-    ld hl,0ea03h        ;f12a 21 03 ea   21 03 ea    ! . .
-    ld (0001h),hl       ;f12d 22 01 00   22 01 00    " . .
-    ld (0005h),a        ;f130 32 05 00   32 05 00    2 . .
-    ld hl,0dc06h        ;f133 21 06 dc   21 06 dc    ! . .
-    ld (0006h),hl       ;f136 22 06 00   22 06 00    " . .
-    ld hl,0004h         ;f139 21 04 00   21 04 00    ! . .
-    ld a,(hl)           ;f13c 7e   7e  ~
-    and 0fh             ;f13d e6 0f   e6 0f   . .
-    call tstdrv         ;f13f cd f8 f1   cd f8 f1    . . .
-    jr c,lf146h         ;f142 38 02   38 02   8 .
-    ld (hl),00h         ;f144 36 00   36 00   6 .
-lf146h:
-    ld c,(hl)           ;f146 4e   4e  N
-    xor a               ;f147 af   af  .
-    ld (0057h),a        ;f148 32 57 00   32 57 00    2 W .
-    ld (0058h),a        ;f14b 32 58 00   32 58 00    2 X .
-    ld (0048h),a        ;f14e 32 48 00   32 48 00    2 H .
-    ld (004ch),a        ;f151 32 4c 00   32 4c 00    2 L .
-    dec a               ;f154 3d   3d  =
-    ld (0045h),a        ;f155 32 45 00   32 45 00    2 E .
-    pop hl              ;f158 e1   e1  .
-    jp (hl)             ;f159 e9   e9  .
+wboot_corvus:           ;Reload the system from a Corvus drive:
+    ld b,2ch            ;  B = 44 sectors to load: D400-E9FF
+    call corv_load_cpm  ;  Load CP/M from Corvus drive (A = Corvus error)
+
+wboot_start_ccp:        ;System reload finished, now start the CCP:
+    ld a,(dirsave)      ;  Get original CCP directory width
+    ld (dirsize),a      ;  Restore it
+    ld hl,ccp_base+3    ;  HL = address that clears the initial command,
+                        ;       then starts the CCP
+
+                        ;  If system reload succeeded:
+    jr z,start_ccp      ;    Jump to start CCP via HL
+
+                        ;  If system reload failed:
+    xor a               ;    A = CP/M drive number 0 (A:)
+    call idrive         ;    Initialize disk drive
+    jr wboot            ;    Jump to do warm start over again
+
+corv_load_cpm:
+;Load the CP/M system from a Corvus hard drive.
+;
+;B = number of 128-byte sectors to load
+;
+;Returns an error code in A (0=OK)
+;
+    push bc
+    ld hl,0000h         ;HL = 0
+    ld (track),hl       ;Track = 0
+
+    xor a               ;A = 0
+    ld (sector),a       ;Sector = 0
+    ld c,a              ;C = CP/M drive number 0 (A:)
+
+    call seldsk         ;Select CP/M drive number 0 (A:)
+    pop bc
+    ld hl,ccp_base      ;HL = base address of CP/M system
+
+corv_load_loop:
+    ld (dma),hl         ;Set DMA buffer address to HL.  Instead of the usual
+                        ;  DMA buffer, data from the next sector read will
+                        ;  be loaded into the CP/M system area.
+    push hl
+    push bc
+    call read           ;Read a 128-byte sector into the CP/M system area
+                        ;A = error code (0=OK)
+
+    ld hl,sector        ;HL = address that stores the current sector
+    inc (hl)            ;Increment to the next sector
+    pop bc
+    pop hl
+
+    or a                ;Set flags from error code
+    ret nz              ;Return if not OK
+
+    ld de,0080h         ;DE = 128 bytes were read
+    add hl,de           ;Advance HL pointer: HL = HL + 128
+
+    djnz corv_load_loop ;Decrement B, loop until all sectors are read
+    ret
+
+start_ccp:
+;Initialize low memory locations as required by CP/M and
+;then jump to the address in HL to start the CCP.
+;
+    push hl             ;Save CCP entry address
+    ld bc,dma_buf
+    call setdma         ;Initialize DMA pointer
+
+    ld a,0c3h           ;0c3h = JP
+    ld (jp_warm),a
+    ld hl,b_warm        ;Install BDOS warm boot jump
+    ld (jp_warm+1),hl   ;  0000h JP 0ea03h
+
+    ld (jp_sysc),a
+    ld hl,syscall       ;Install BDOS system call jump
+    ld (jp_sysc+1),hl   ;  0005h JP 0dc06h
+
+    ld hl,cdisk
+    ld a,(hl)           ;A = current user and disk
+    and 0fh             ;Mask off user nibble leaving A = current disk
+
+    call tstdrv         ;Drive number valid?
+    jr c,ccp1           ;  Yes: keep it
+    ld (hl),00h         ;   No: reset drive number to 0 (A:)
+
+ccp1:
+    ld c,(hl)           ;C = pass current drive number to CCP
+    xor a               ;A=0
+    ld (trk_3040),a     ;for CBM 3040/4040 = 0
+    ld (trk_8050),a     ;for CBM 8050 = 0
+    ld (sec_cnt),a      ;sec_cnt = 0
+    ld (wrt_pend),a     ;No write pending for CBM DOS
+    dec a               ;A=0ffh
+    ld (x_drive),a
+    pop hl              ;Recall CCP entry address
+    jp (hl)             ;  and jump to it
+
 home:
     ld bc,0000h         ;f15a 01 00 00   01 00 00    . . .
 settrk:
@@ -191,7 +397,7 @@ seldsk:
     add hl,hl           ;f189 29   29  )
     add hl,hl           ;f18a 29   29  )
     add hl,hl           ;f18b 29   29  )
-    ld bc,lf1a5h        ;f18c 01 a5 f1   01 a5 f1    . . .
+    ld bc,0f1a5h        ;f18c 01 a5 f1   01 a5 f1    . . .
     add hl,bc           ;f18f 09   09  .
     ex de,hl            ;f190 eb   eb  .
     pop hl              ;f191 e1   e1  .
@@ -206,84 +412,98 @@ seldsk:
     call c,sub_f2c4h    ;f1a0 dc c4 f2   dc c4 f2    . . .
     pop hl              ;f1a3 e1   e1  .
     ret                 ;f1a4 c9   c9  .
-lf1a5h:
-    jr nz,lf1a7h        ;f1a5 20 00   20 00     .
-lf1a7h:
-    inc b               ;f1a7 04   04  .
-    rrca                ;f1a8 0f   0f  .
-    ld bc,004ch         ;f1a9 01 4c 00   01 4c 00    . L .
-    ccf                 ;f1ac 3f   3f  ?
-    nop                 ;f1ad 00   00  .
-    add a,b             ;f1ae 80   80  .
-    nop                 ;f1af 00   00  .
-    djnz lf1b2h         ;f1b0 10 00   10 00   . .
-lf1b2h:
-    nop                 ;f1b2 00   00  .
-    nop                 ;f1b3 00   00  .
-    nop                 ;f1b4 00   00  .
-    jr nz,lf1b7h        ;f1b5 20 00   20 00     .
-lf1b7h:
-    inc b               ;f1b7 04   04  .
-    rrca                ;f1b8 0f   0f  .
-    ld bc,00f8h         ;f1b9 01 f8 00   01 f8 00    . . .
-    ccf                 ;f1bc 3f   3f  ?
-    nop                 ;f1bd 00   00  .
-    add a,b             ;f1be 80   80  .
-    nop                 ;f1bf 00   00  .
-    djnz lf1c2h         ;f1c0 10 00   10 00   . .
-lf1c2h:
-    nop                 ;f1c2 00   00  .
-    nop                 ;f1c3 00   00  .
-    nop                 ;f1c4 00   00  .
-    ld b,b              ;f1c5 40   40  @
-    nop                 ;f1c6 00   00  .
-    ld b,3fh            ;f1c7 06 3f   06 3f   . ?
-    inc bc              ;f1c9 03   03  .
-    ld c,h              ;f1ca 4c   4c  L
-    ld (bc),a           ;f1cb 02   02  .
-    rst 38h             ;f1cc ff   ff  .
-    nop                 ;f1cd 00   00  .
-    add a,b             ;f1ce 80   80  .
-    nop                 ;f1cf 00   00  .
-    nop                 ;f1d0 00   00  .
-    nop                 ;f1d1 00   00  .
-    ld (bc),a           ;f1d2 02   02  .
-    nop                 ;f1d3 00   00  .
-    nop                 ;f1d4 00   00  .
-    ld b,b              ;f1d5 40   40  @
-    nop                 ;f1d6 00   00  .
-    ld b,3fh            ;f1d7 06 3f   06 3f   . ?
-    inc bc              ;f1d9 03   03  .
-    ld c,h              ;f1da 4c   4c  L
-    ld (bc),a           ;f1db 02   02  .
-    rst 38h             ;f1dc ff   ff  .
-    nop                 ;f1dd 00   00  .
-    add a,b             ;f1de 80   80  .
-    nop                 ;f1df 00   00  .
-    nop                 ;f1e0 00   00  .
-    nop                 ;f1e1 00   00  .
-    ld (bc),a           ;f1e2 02   02  .
-    nop                 ;f1e3 00   00  .
-    nop                 ;f1e4 00   00  .
-    ld b,b              ;f1e5 40   40  @
-    nop                 ;f1e6 00   00  .
-    ld b,3fh            ;f1e7 06 3f   06 3f   . ?
-    inc bc              ;f1e9 03   03  .
-    cp b                ;f1ea b8   b8  .
-    ld (bc),a           ;f1eb 02   02  .
-    rst 38h             ;f1ec ff   ff  .
-    nop                 ;f1ed 00   00  .
-    add a,b             ;f1ee 80   80  .
-    nop                 ;f1ef 00   00  .
-    nop                 ;f1f0 00   00  .
-    nop                 ;f1f1 00   00  .
-    ld (bc),a           ;f1f2 02   02  .
-    nop                 ;f1f3 00   00  .
-    nop                 ;f1f4 00   00  .
+
+dpb_base:
+;Disk Parameter Block (DPB) tables.  One DPB for each drive type:
+;
+
+dpb_0_cbm_3040:
+;Commodore 2040/3040/4040 floppy drive
+;
+    dw 0020h            ;SPT  Number of 128-byte records per track
+    db 04h              ;BSH  Block shift
+    db 0fh              ;BLM  Block mask
+    db 01h              ;EXM  Extent mask
+    dw 004ch            ;DSM  Number of blocks on disk - 1
+    dw 003fh            ;DRM  Number of directory entries - 1
+    db 80h              ;AL0  Directory allocation bitmap, first byte
+    db 00h              ;AL1  Directory allocation bitmap, second byte
+    dw 0010h            ;CKS  Checksum vector size
+    dw 0000h            ;OFF  Offset: number of reserved tracks
+    db 00h              ;     Unused
+
+dpb_1_cbm_8050:
+;Commodore 8050 floppy drive
+;
+    dw 0020h            ;SPT  Number of 128-byte records per track
+    db 04h              ;BSH  Block shift
+    db 0fh              ;BLM  Block mask
+    db 01h              ;EXM  Extent mask
+    dw 00f8h            ;DSM  Number of blocks on disk - 1
+    dw 003fh            ;DRM  Number of directory entries - 1
+    db 80h              ;AL0  Directory allocation bitmap, first byte
+    db 00h              ;AL1  Directory allocation bitmap, second byte
+    dw 0010h            ;CKS  Checksum vector size
+    dw 0000h            ;OFF  Offset: number of reserved tracks
+    db 00h              ;     Unused
+
+
+dpb_2_corvus_10mb:
+;Corvus 10MB hard drive
+;
+    dw 0040h            ;SPT  Number of 128-byte records per track
+    db 06h              ;BSH  Block shift
+    db 3fh              ;BLM  Block mask
+    db 03h              ;EXM  Extent mask
+    dw 024ch            ;DSM  Number of blocks on disk - 1
+    dw 00ffh            ;DRM  Number of directory entries - 1
+    db 80h              ;AL0  Directory allocation bitmap, first byte
+    db 00h              ;AL1  Directory allocation bitmap, second byte
+    dw 0000h            ;CKS  Checksum vector size
+    dw 0002h            ;OFF  Offset: number of reserved tracks
+    db 00h              ;     Unused
+
+dpb_3_corvus_20mb:
+;Corvus 20MB hard drive
+;
+    dw 0040h            ;SPT  Number of 128-byte records per track
+    db 06h              ;BSH  Block shift
+    db 3fh              ;BLM  Block mask
+    db 03h              ;EXM  Extent mask
+    dw 024ch            ;DSM  Number of blocks on disk - 1
+    dw 00ffh            ;DRM  Number of directory entries - 1
+    db 80h              ;AL0  Directory allocation bitmap, first byte
+    db 00h              ;AL1  Directory allocation bitmap, second byte
+    dw 0000h            ;CKS  Checksum vector size
+    dw 0002h            ;OFF  Offset: number of reserved tracks
+    db 00h              ;     Unused
+
+dpb_4_corvus_5mb_1:
+;Corvus 5MB hard drive (as 1 CP/M drive)
+;
+    dw 0040h            ;SPT  Number of 128-byte records per track
+    db 06h              ;BSH  Block shift
+    db 3fh              ;BLM  Block mask
+    db 03h              ;EXM  Extent mask
+    dw 02b8h            ;DSM  Number of blocks on disk - 1
+    dw 00ffh            ;DRM  Number of directory entries - 1
+    db 80h              ;AL0  Directory allocation bitmap, first byte
+    db 00h              ;AL1  Directory allocation bitmap, second byte
+    dw 0000h            ;CKS  Checksum vector size
+    dw 0002h            ;OFF  Offset: number of reserved tracks
+    db 00h              ;     Unused
+
 sectran:
-    ld l,c              ;f1f5 69   69  i
-    ld h,b              ;f1f6 60   60  `
-    ret                 ;f1f7 c9   c9  .
+;Translate a logical sector number into a physical sector number
+;to take account of skewing.
+;
+;Called with BC=logical sector number and DE=address of translation table.
+;Returns a physical sector number in HL.
+;
+    ld l,c              ;HL=BC
+    ld h,b
+    ret
+
 tstdrv:
     cp 10h              ;f1f8 fe 10   fe 10   . .
     ret nc              ;f1fa d0   d0  .
@@ -610,7 +830,7 @@ lf414h:
     and 02h             ;f417 e6 02   e6 02   . .
     jr z,lf414h         ;f419 28 f9   28 f9   ( .
 lf41bh:
-    ld hl,lf51bh        ;f41b 21 1b f5   21 1b f5    ! . .
+    ld hl,loading        ;f41b 21 1b f5   21 1b f5    ! . .
     call sub_fcf1h      ;f41e cd f1 fc   cd f1 fc    . . .
     ld de,080fh         ;f421 11 0f 08   11 0f 08    . . .
     call listen         ;f424 cd 90 fa   cd 90 fa    . . .
@@ -625,7 +845,7 @@ lf41bh:
     ld a,01h            ;f439 3e 01   3e 01   > .
     ld (0ea78h),a       ;f43b 32 78 ea   32 78 ea    2 x .
     ld b,38h            ;f43e 06 38   06 38   . 8
-    call sub_f0f4h      ;f440 cd f4 f0   cd f4 f0    . . .
+    call corv_load_cpm      ;f440 cd f4 f0   cd f4 f0    . . .
     jr runcpm           ;f443 18 23   18 23   . #
 lf445h:
     call unlisten       ;f445 cd a6 fa   cd a6 fa    . . .
@@ -635,7 +855,7 @@ lf445h:
     call open           ;f450 cd b5 fa   cd b5 fa    . . .
     ld d,08h            ;f453 16 08   16 08   . .
     ld c,1ch            ;f455 0e 1c   0e 1c   . .
-    call sub_f52eh      ;f457 cd 2e f5   cd 2e f5    . . .
+    call ieee_load_cpm      ;f457 cd 2e f5   cd 2e f5    . . .
     jp nz,lf41bh        ;f45a c2 1b f4   c2 1b f4    . . .
     ld de,0802h         ;f45d 11 02 08   11 02 08    . . .
     ld c,02h            ;f460 0e 02   0e 02   . .
@@ -725,25 +945,12 @@ lf508h:
     inc a               ;f511 3c   3c  <
     call z,conin        ;f512 cc f7 fa   cc f7 fa    . . .
     ld hl,0d400h        ;f515 21 00 d4   21 00 d4    ! . .
-    jp lf11eh           ;f518 c3 1e f1   c3 1e f1    . . .
-lf51bh:
-    dec c               ;f51b 0d   0d  .
-    ld a,(bc)           ;f51c 0a   0a  .
-    ld c,h              ;f51d 4c   4c  L
-    ld l,a              ;f51e 6f   6f  o
-    ld h,c              ;f51f 61   61  a
-    ld h,h              ;f520 64   64  d
-    ld l,c              ;f521 69   69  i
-    ld l,(hl)           ;f522 6e   6e  n
-    ld h,a              ;f523 67   67  g
-    jr nz,lf569h        ;f524 20 43   20 43     C
-    ld d,b              ;f526 50   50  P
-    cpl                 ;f527 2f   2f  /
-    ld c,l              ;f528 4d   4d  M
-    jr nz,$+48          ;f529 20 2e   20 2e     .
-    ld l,2eh            ;f52b 2e 2e   2e 2e   . .
-    nop                 ;f52d 00   00  .
-sub_f52eh:
+    jp start_ccp           ;f518 c3 1e f1   c3 1e f1    . . .
+
+loading:
+    db cr,lf,"Loading CP/M ...",0
+
+ieee_load_cpm:
     push bc             ;f52e c5   c5  .
     push de             ;f52f d5   d5  .
     ld hl,0f566h        ;f530 21 66 f5   21 66 f5    ! f .
