@@ -2059,33 +2059,66 @@ lfd55h:
     or c                ;fd5c b1   b1  .
     jr nz,lfd55h        ;fd5d 20 f6   20 f6     .
     ret                 ;fd5f c9   c9  .
+
 settime:
-    ld e,00h            ;fd60 1e 00   1e 00   . .
-    ld (0ea41h),de      ;fd62 ed 53 41 ea   ed 53 41 ea     . S A .
-    ld (0ea43h),hl      ;fd66 22 43 ea   22 43 ea    " C .
-    ld de,0014h         ;fd69 11 14 00   11 14 00    . . .
-    ld hl,0ea41h        ;fd6c 21 41 ea   21 41 ea    ! A .
-    ld bc,0004h         ;fd6f 01 04 00   01 04 00    . . .
-    jp poke             ;fd72 c3 40 fd   c3 40 fd    . @ .
+;Set the time on the CBM real time clock
+;
+;H = Hours
+;L = Minutes
+;D = Seconds
+;E = Jiffies (ignored: E is always reset to 0)
+;
+    ld e,00h            ;E = 0 to reset jiffies
+
+    ld (jiffies),de     ;Store E in jiffies
+                        ;Store D in secs
+    ld (mins),hl        ;Store L in mins
+                        ;Store H in hours
+
+    ld de,0014h         ;DE = CBM start address
+    ld hl,jiffies       ;HL = SoftBox start address
+    ld bc,0004h         ;BC = 4 bytes to transfer
+    jp poke             ;Transfer from SoftBox to CBM
+
 resclk:
-    xor a               ;fd75 af   af  .
-    ld (0ea45h),a       ;fd76 32 45 ea   32 45 ea    2 E .
-    ld (0ea46h),a       ;fd79 32 46 ea   32 46 ea    2 F .
-    ld (0ea47h),a       ;fd7c 32 47 ea   32 47 ea    2 G .
-    ld hl,0ea45h        ;fd7f 21 45 ea   21 45 ea    ! E .
-    ld de,0018h         ;fd82 11 18 00   11 18 00    . . .
-    ld bc,0003h         ;fd85 01 03 00   01 03 00    . . .
-    jp poke             ;fd88 c3 40 fd   c3 40 fd    . @ .
+;Reset the CBM jiffy clock
+;
+    xor a               ;A=0
+    ld (jiffy2),a       ;Clear jiffy counter values
+    ld (jiffy1),a
+    ld (jiffy0),a
+    ld hl,jiffy2        ;HL = SoftBox start address
+    ld de,0018h         ;DE = CBM start address
+    ld bc,0003h         ;BC = 3 bytes to transfer
+    jp poke             ;Transfer from SoftBox to CBM
+
 gettime:
-    ld bc,0007h         ;fd8b 01 07 00   01 07 00    . . .
-    ld hl,0ea41h        ;fd8e 21 41 ea   21 41 ea    ! A .
-    ld de,0014h         ;fd91 11 14 00   11 14 00    . . .
-    call peek           ;fd94 cd 14 fd   cd 14 fd    . . .
-    ld de,(0ea41h)      ;fd97 ed 5b 41 ea   ed 5b 41 ea     . [ A .
-    ld hl,(0ea43h)      ;fd9b 2a 43 ea   2a 43 ea    * C .
-    ld a,(0ea45h)       ;fd9e 3a 45 ea   3a 45 ea    : E .
-    ld bc,(0ea46h)      ;fda1 ed 4b 46 ea   ed 4b 46 ea     . K F .
-    ret                 ;fda5 c9   c9  .
+;Read the CBM clocks (both RTC and jiffy counter)
+;
+;Returns RTC values in H,L,D,E:
+;  H = Hours
+;  L = Minutes
+;  D = Seconds
+;  E = Jiffies (counts up to 50 or 60)
+;
+;Returns jiffy counter values in A,B,C:
+;  A = Jiffy0 (MSB)
+;  B = Jiffy1
+;  C = Jiffy2 (LSB)
+;
+    ld bc,0007h         ;BC = 7 bytes to transfer
+    ld hl,jiffies       ;HL = SoftBox start address
+    ld de,0014h         ;DE = CBM start address
+    call peek           ;Transfer from CBM to SoftBox
+
+    ld de,(jiffies)     ;E = jiffies
+                        ;D = secs
+    ld hl,(mins)        ;L = mins
+                        ;H = hours
+    ld a,(jiffy2)       ;A = jiffy2 (MSB)
+    ld bc,(jiffy1)      ;B = jiffy1
+                        ;C = jiffy0 (LSB)
+    ret
 
 wrieee:
 ;Send a byte to an IEEE-488 device
