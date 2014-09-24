@@ -760,7 +760,7 @@ lf2fch:
     ret z               ;f30b c8   c8  .
 lf30ch:
     ld hl,lf382h        ;f30c 21 82 f3   21 82 f3    ! . .
-    call sub_fcf1h      ;f30f cd f1 fc   cd f1 fc    . . .
+    call puts           ;f30f cd f1 fc   cd f1 fc    . . .
     ld a,01h            ;f312 3e 01   3e 01   > .
     or a                ;f314 b7   b7  .
     ret                 ;f315 c9   c9  .
@@ -900,8 +900,8 @@ lf414h:
     and 02h             ;f417 e6 02   e6 02   . .
     jr z,lf414h         ;f419 28 f9   28 f9   ( .
 lf41bh:
-    ld hl,loading        ;f41b 21 1b f5   21 1b f5    ! . .
-    call sub_fcf1h      ;f41e cd f1 fc   cd f1 fc    . . .
+    ld hl,loading       ;f41b 21 1b f5   21 1b f5    ! . .
+    call puts           ;f41e cd f1 fc   cd f1 fc    . . .
     ld de,080fh         ;f421 11 0f 08   11 0f 08    . . .
     call listen         ;f424 cd 90 fa   cd 90 fa    . . .
     ld bc,0007h         ;f427 01 07 00   01 07 00    . . .
@@ -915,7 +915,7 @@ lf41bh:
     ld a,01h            ;f439 3e 01   3e 01   > .
     ld (0ea78h),a       ;f43b 32 78 ea   32 78 ea    2 x .
     ld b,38h            ;f43e 06 38   06 38   . 8
-    call corv_load_cpm      ;f440 cd f4 f0   cd f4 f0    . . .
+    call corv_load_cpm  ;f440 cd f4 f0   cd f4 f0    . . .
     jr runcpm           ;f443 18 23   18 23   . #
 lf445h:
     call unlisten       ;f445 cd a6 fa   cd a6 fa    . . .
@@ -925,7 +925,7 @@ lf445h:
     call open           ;f450 cd b5 fa   cd b5 fa    . . .
     ld d,08h            ;f453 16 08   16 08   . .
     ld c,1ch            ;f455 0e 1c   0e 1c   . .
-    call ieee_load_cpm      ;f457 cd 2e f5   cd 2e f5    . . .
+    call ieee_load_cpm  ;f457 cd 2e f5   cd 2e f5    . . .
     jp nz,lf41bh        ;f45a c2 1b f4   c2 1b f4    . . .
     ld de,0802h         ;f45d 11 02 08   11 02 08    . . .
     ld c,02h            ;f460 0e 02   0e 02   . .
@@ -1010,12 +1010,12 @@ lf4b2h:
     call conout         ;f505 cd 27 fb   cd 27 fb    . ' .
 lf508h:
     ld hl,signon        ;f508 21 87 f0   21 87 f0    ! . .
-    call sub_fcf1h      ;f50b cd f1 fc   cd f1 fc    . . .
+    call puts           ;f50b cd f1 fc   cd f1 fc    . . .
     call const          ;f50e cd 15 fb   cd 15 fb    . . .
     inc a               ;f511 3c   3c  <
     call z,conin        ;f512 cc f7 fa   cc f7 fa    . . .
     ld hl,0d400h        ;f515 21 00 d4   21 00 d4    ! . .
-    jp start_ccp           ;f518 c3 1e f1   c3 1e f1    . . .
+    jp start_ccp        ;f518 c3 1e f1   c3 1e f1    . . .
 
 loading:
     db cr,lf,"Loading CP/M ...",0
@@ -1145,53 +1145,53 @@ lf605h:
     call idrive         ;f613 cd 28 fa   cd 28 fa    . ( .
     jr lf5cdh           ;f616 18 b5   18 b5   . .
 lf618h:
-    ld hl,bdos_err_on        ;f618 21 a8 f7   21 a8 f7    ! . .
-    call sub_fcf1h      ;f61b cd f1 fc   cd f1 fc    . . .
+    ld hl,bdos_err_on   ;f618 21 a8 f7   21 a8 f7    ! . .
+    call puts           ;f61b cd f1 fc   cd f1 fc    . . .
     ld a,(0045h)        ;f61e 3a 45 00   3a 45 00    : E .
     add a,41h           ;f621 c6 41   c6 41   . A
     ld c,a              ;f623 4f   4f  O
     call conout         ;f624 cd 27 fb   cd 27 fb    . ' .
-    ld hl,colon_space        ;f627 21 a5 f7   21 a5 f7    ! . .
-    call sub_fcf1h      ;f62a cd f1 fc   cd f1 fc    . . .
+    ld hl,colon_space   ;f627 21 a5 f7   21 a5 f7    ! . .
+    call puts           ;f62a cd f1 fc   cd f1 fc    . . .
     ld a,(004fh)        ;f62d 3a 4f 00   3a 4f 00    : O .
-    ld hl,cbm_err_26        ;f630 21 c0 f6   21 c0 f6    ! . .
+    ld hl,cbm_err_26    ;f630 21 c0 f6   21 c0 f6    ! . .
     cp 1ah              ;f633 fe 1a   fe 1a   . .
     jr z,lf684h         ;f635 28 4d   28 4d   ( M
-    ld hl,cbm_err_25        ;f637 21 d5 f6   21 d5 f6    ! . .
+    ld hl,cbm_err_25    ;f637 21 d5 f6   21 d5 f6    ! . .
     cp 19h              ;f63a fe 19   fe 19   . .
     jr z,lf684h         ;f63c 28 46   28 46   ( F
-    ld hl,cbm_err_28        ;f63e 21 e8 f6   21 e8 f6    ! . .
+    ld hl,cbm_err_28    ;f63e 21 e8 f6   21 e8 f6    ! . .
     cp 1ch              ;f641 fe 1c   fe 1c   . .
     jr z,lf684h         ;f643 28 3f   28 3f   ( ?
-    ld hl,cbm_err_20        ;f645 21 f8 f6   21 f8 f6    ! . .
+    ld hl,cbm_err_20    ;f645 21 f8 f6   21 f8 f6    ! . .
     cp 14h              ;f648 fe 14   fe 14   . .
     jr z,lf684h         ;f64a 28 38   28 38   ( 8
-    ld hl,cbm_err_21        ;f64c 21 07 f7   21 07 f7    ! . .
+    ld hl,cbm_err_21    ;f64c 21 07 f7   21 07 f7    ! . .
     cp 15h              ;f64f fe 15   fe 15   . .
     jr z,lf684h         ;f651 28 31   28 31   ( 1
     cp 4ah              ;f653 fe 4a   fe 4a   . J
     jr z,lf684h         ;f655 28 2d   28 2d   ( -
-    ld hl,cbm_err_22        ;f657 21 16 f7   21 16 f7    ! . .
+    ld hl,cbm_err_22    ;f657 21 16 f7   21 16 f7    ! . .
     cp 16h              ;f65a fe 16   fe 16   . .
     jr z,lf684h         ;f65c 28 26   28 26   ( &
-    ld hl,cbm_err_23        ;f65e 21 29 f7   21 29 f7    ! ) .
+    ld hl,cbm_err_23    ;f65e 21 29 f7   21 29 f7    ! ) .
     cp 17h              ;f661 fe 17   fe 17   . .
     jr z,lf684h         ;f663 28 1f   28 1f   ( .
-    ld hl,cbm_err_27        ;f665 21 40 f7   21 40 f7    ! @ .
+    ld hl,cbm_err_27    ;f665 21 40 f7   21 40 f7    ! @ .
     cp 1bh              ;f668 fe 1b   fe 1b   . .
     jr z,lf684h         ;f66a 28 18   28 18   ( .
-    ld hl,cbm_err_24        ;f66c 21 59 f7   21 59 f7    ! Y .
+    ld hl,cbm_err_24    ;f66c 21 59 f7   21 59 f7    ! Y .
     cp 18h              ;f66f fe 18   fe 18   . .
     jr z,lf684h         ;f671 28 11   28 11   ( .
-    ld hl,cbm_err_70        ;f673 21 80 f7   21 80 f7    ! . .
+    ld hl,cbm_err_70    ;f673 21 80 f7   21 80 f7    ! . .
     cp 46h              ;f676 fe 46   fe 46   . F
     jr z,lf684h         ;f678 28 0a   28 0a   ( .
-    ld hl,cbm_err_73        ;f67a 21 94 f7   21 94 f7    ! . .
+    ld hl,cbm_err_73    ;f67a 21 94 f7   21 94 f7    ! . .
     cp 49h              ;f67d fe 49   fe 49   . I
     jr z,lf684h         ;f67f 28 03   28 03   ( .
-    ld hl,cbm_err_xx        ;f681 21 6d f7   21 6d f7    ! m .
+    ld hl,cbm_err_xx    ;f681 21 6d f7   21 6d f7    ! m .
 lf684h:
-    call sub_fcf1h      ;f684 cd f1 fc   cd f1 fc    . . .
+    call puts           ;f684 cd f1 fc   cd f1 fc    . . .
 lf687h:
     call conin          ;f687 cd f7 fa   cd f7 fa    . . .
     cp 03h              ;f68a fe 03   fe 03   . .
@@ -1199,7 +1199,7 @@ lf687h:
     cp 3fh              ;f68f fe 3f   fe 3f   . ?
     jr nz,lf6aah        ;f691 20 17   20 17     .
     ld hl,0f7c1h        ;f693 21 c1 f7   21 c1 f7    ! . .
-    call sub_fcf1h      ;f696 cd f1 fc   cd f1 fc    . . .
+    call puts           ;f696 cd f1 fc   cd f1 fc    . . .
     ld hl,0eac0h        ;f699 21 c0 ea   21 c0 ea    ! . .
 lf69ch:
     ld a,(hl)           ;f69c 7e   7e  ~
@@ -1792,7 +1792,7 @@ conin:
     or 04h              ;fb00 f6 04   f6 04   . .
     out (15h),a         ;fb02 d3 15   d3 15   . .
     ld a,02h            ;fb04 3e 02   3e 02   > .
-    call cbm_srq      ;fb06 cd df fb   cd df fb    . . .
+    call cbm_srq        ;fb06 cd df fb   cd df fb    . . .
     call rdieee         ;fb09 cd 1c fe   cd 1c fe    . . .
     push af             ;fb0c f5   f5  .
     in a,(15h)          ;fb0d db 15   db 15   . .
@@ -1803,9 +1803,9 @@ conin:
 const:
     ld a,(0003h)        ;fb15 3a 03 00   3a 03 00    : . .
     rra                 ;fb18 1f   1f  .
-    jp nc,ser_rx_status        ;fb19 d2 c3 fb   d2 c3 fb    . . .
+    jp nc,ser_rx_status ;fb19 d2 c3 fb   d2 c3 fb    . . .
     ld a,01h            ;fb1c 3e 01   3e 01   > .
-    call cbm_srq      ;fb1e cd df fb   cd df fb    . . .
+    call cbm_srq        ;fb1e cd df fb   cd df fb    . . .
     ld a,00h            ;fb21 3e 00   3e 00   > .
     ret nc              ;fb23 d0   d0  .
     ld a,0ffh           ;fb24 3e ff   3e ff   > .
@@ -1814,13 +1814,13 @@ const:
 conout:
     ld a,(0003h)        ;fb27 3a 03 00   3a 03 00    : . .
     rra                 ;fb2a 1f   1f  .
-    jp nc,ser_out        ;fb2b d2 cb fb   d2 cb fb    . . .
+    jp nc,ser_out       ;fb2b d2 cb fb   d2 cb fb    . . .
     ld a,(005ah)        ;fb2e 3a 5a 00   3a 5a 00    : Z .
     or a                ;fb31 b7   b7  .
     jp nz,lfb7ch        ;fb32 c2 7c fb   c2 7c fb    . | .
     ld a,c              ;fb35 79   79  y
     rla                 ;fb36 17   17  .
-    jr c,lfb6dh         ;fb37 38 34   38 34   8 4
+    jr c,conout_cbm     ;fb37 38 34   38 34   8 4
     ld a,(0ea68h)       ;fb39 3a 68 ea   3a 68 ea    : h .
     cp c                ;fb3c b9   b9  .
     jr nz,lfb45h        ;fb3d 20 06   20 06     .
@@ -1840,14 +1840,14 @@ lfb52h:
     cp 20h              ;fb53 fe 20   fe 20   .
     jr c,lfb5bh         ;fb55 38 04   38 04   8 .
     cp 7bh              ;fb57 fe 7b   fe 7b   . {
-    jr c,lfb6dh         ;fb59 38 12   38 12   8 .
+    jr c,conout_cbm     ;fb59 38 12   38 12   8 .
 lfb5bh:
     ld hl,0ea80h        ;fb5b 21 80 ea   21 80 ea    ! . .
 lfb5eh:
     ld a,(hl)           ;fb5e 7e   7e  ~
     inc hl              ;fb5f 23   23  #
     or a                ;fb60 b7   b7  .
-    jr z,lfb6dh         ;fb61 28 0a   28 0a   ( .
+    jr z,conout_cbm     ;fb61 28 0a   28 0a   ( .
     cp c                ;fb63 b9   b9  .
     ld a,(hl)           ;fb64 7e   7e  ~
     inc hl              ;fb65 23   23  #
@@ -1855,11 +1855,11 @@ lfb5eh:
     cp 1bh              ;fb68 fe 1b   fe 1b   . .
     jr z,lfb76h         ;fb6a 28 0a   28 0a   ( .
     ld c,a              ;fb6c 4f   4f  O
-lfb6dh:
+conout_cbm:
     ld a,04h            ;fb6d 3e 04   3e 04   > .
-    call cbm_srq      ;fb6f cd df fb   cd df fb    . . .
+    call cbm_srq        ;fb6f cd df fb   cd df fb    . . .
     ld a,c              ;fb72 79   79  y
-    jp cbm_put_byte           ;fb73 c3 e5 fd   c3 e5 fd    . . .
+    jp cbm_put_byte     ;fb73 c3 e5 fd   c3 e5 fd    . . .
 lfb76h:
     ld a,02h            ;fb76 3e 02   3e 02   > .
     ld (005ah),a        ;fb78 32 5a 00   32 5a 00    2 Z .
@@ -1877,7 +1877,7 @@ lfb87h:
     ld e,c              ;fb8b 59   59  Y
     ld a,(0ea69h)       ;fb8c 3a 69 ea   3a 69 ea    : i .
     or a                ;fb8f b7   b7  .
-    jr z,move_send         ;fb90 28 03   28 03   ( .
+    jr z,move_send      ;fb90 28 03   28 03   ( .
     ld a,e              ;fb92 7b   7b  {
     ld e,d              ;fb93 5a   5a  Z
     ld d,a              ;fb94 57   57  W
@@ -1889,7 +1889,7 @@ move_send:
     ret nz              ;fb9c c0   c0  .
     push de             ;fb9d d5   d5  .
     ld c,1bh            ;fb9e 0e 1b   0e 1b   . .
-    call lfb6dh         ;fba0 cd 6d fb   cd 6d fb    . m .
+    call conout_cbm     ;fba0 cd 6d fb   cd 6d fb    . m .
     pop de              ;fba3 d1   d1  .
     push de             ;fba4 d5   d5  .
     ld a,e              ;fba5 7b   7b  {
@@ -1901,14 +1901,14 @@ move_send:
 lfbb0h:
     add a,20h           ;fbb0 c6 20   c6 20   .
     ld c,a              ;fbb2 4f   4f  O
-    call lfb6dh         ;fbb3 cd 6d fb   cd 6d fb    . m .
+    call conout_cbm     ;fbb3 cd 6d fb   cd 6d fb    . m .
     pop af              ;fbb6 f1   f1  .
     ld hl,0ea6ah        ;fbb7 21 6a ea   21 6a ea    ! j .
     sub (hl)            ;fbba 96   96  .
     and 1fh             ;fbbb e6 1f   e6 1f   . .
     or 20h              ;fbbd f6 20   f6 20   .
     ld c,a              ;fbbf 4f   4f  O
-    jp lfb6dh           ;fbc0 c3 6d fb   c3 6d fb    . m .
+    jp conout_cbm       ;fbc0 c3 6d fb   c3 6d fb    . m .
 
 ser_rx_status:
 ;RS-232 serial port receive status
@@ -1997,8 +1997,8 @@ srq3:
 list:
     ld a,(0003h)        ;fc07 3a 03 00   3a 03 00    : . .
     and 0c0h            ;fc0a e6 c0   e6 c0   . .
-    jp z,ser_out         ;fc0c ca cb fb   ca cb fb    . . .
-    jp p,lfb6dh         ;fc0f f2 6d fb   f2 6d fb    . m .
+    jp z,ser_out        ;fc0c ca cb fb   ca cb fb    . . .
+    jp p,conout_cbm     ;fc0f f2 6d fb   f2 6d fb    . m .
     ld e,0ffh           ;fc12 1e ff   1e ff   . .
     and 40h             ;fc14 e6 40   e6 40   . @
     jr z,lfc22h         ;fc16 28 0a   28 0a   ( .
@@ -2100,7 +2100,7 @@ lfcbch:
 punch:
     ld a,(0003h)        ;fcbf 3a 03 00   3a 03 00    : . .
     and 30h             ;fcc2 e6 30   e6 30   . 0
-    jp z,ser_out         ;fcc4 ca cb fb   ca cb fb    . . .
+    jp z,ser_out        ;fcc4 ca cb fb   ca cb fb    . . .
     ld de,(0ea63h)      ;fcc7 ed 5b 63 ea   ed 5b 63 ea     . [ c .
     ld e,0ffh           ;fccb 1e ff   1e ff   . .
     call listen         ;fccd cd 90 fa   cd 90 fa    . . .
@@ -2120,22 +2120,31 @@ reader:
     call untalk         ;fcec cd 80 fa   cd 80 fa    . . .
     pop af              ;fcef f1   f1  .
     ret                 ;fcf0 c9   c9  .
-sub_fcf1h:
-    ld a,(hl)           ;fcf1 7e   7e  ~
-    or a                ;fcf2 b7   b7  .
-    ret z               ;fcf3 c8   c8  .
-    push hl             ;fcf4 e5   e5  .
-    ld c,a              ;fcf5 4f   4f  O
-    call conout         ;fcf6 cd 27 fb   cd 27 fb    . ' .
-    pop hl              ;fcf9 e1   e1  .
-    inc hl              ;fcfa 23   23  #
-    jr sub_fcf1h        ;fcfb 18 f4   18 f4   . .
+
+puts:
+;Write a null-terminated string to console out
+;
+;HL = Pointer to the string
+;
+    ld a,(hl)           ;Get the byte at pointer HL
+    or a
+    ret z               ;Return if byte is 0
+    push hl             ;Save HL pointer
+    ld c,a
+    call conout         ;Send byte to console out
+    pop hl              ;Recall HL pointer
+    inc hl              ;Increment HL pointer
+    jr puts             ;Loop to handle the next byte
+
 clear:
-    ld a,(0003h)        ;fcfd 3a 03 00   3a 03 00    : . .
-    rra                 ;fd00 1f   1f  .
-    ret nc              ;fd01 d0   d0  .
-    ld c,1ah            ;fd02 0e 1a   0e 1a   . .
-    jp lfb6dh           ;fd04 c3 6d fb   c3 6d fb    . m .
+;Clear the CBM screen
+;
+    ld a,(iobyte)
+    rra
+    ret nc              ;Do nothing if console is RS-232 (CRT: = TTY:)
+
+    ld c,cls            ;Lear Siegler ADM-3A clear screen code
+    jp conout_cbm
 
 execute:
 ;Jump to a subroutine in CBM memory
