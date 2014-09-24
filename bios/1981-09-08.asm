@@ -640,6 +640,7 @@ read:
     xor a               ;f238 af   af  .
     ld (0048h),a        ;f239 32 48 00   32 48 00    2 H .
     ret                 ;f23c c9   c9  .
+
 write:
     ld a,(0044h)        ;f23d 3a 44 00   3a 44 00    : D .
     call tstdrv_corv    ;f240 cd 19 f2   cd 19 f2    . . .
@@ -694,10 +695,10 @@ lf296h:
 sub_f29dh:
     ld hl,0ef00h        ;f29d 21 00 ef   21 00 ef    ! . .
     ex af,af'           ;f2a0 08   08  .
-    jp lf9a2h           ;f2a1 c3 a2 f9   c3 a2 f9    . . .
+    jp ieee_read_sec_hl           ;f2a1 c3 a2 f9   c3 a2 f9    . . .
 sub_f2a4h:
     ld hl,0ef00h        ;f2a4 21 00 ef   21 00 ef    ! . .
-    jp lf95bh           ;f2a7 c3 5b f9   c3 5b f9    . [ .
+    jp ieee_writ_sec_hl           ;f2a7 c3 5b f9   c3 5b f9    . [ .
 sub_f2aah:
     ld a,00h            ;f2aa 3e 00   3e 00   > .
     jr lf2b0h           ;f2ac 18 02   18 02   . .
@@ -1029,7 +1030,7 @@ ieee_load_cpm:
     call open           ;f537 cd b5 fa   cd b5 fa    . . .
     pop de              ;f53a d1   d1  .
     push de             ;f53b d5   d5  .
-    call sub_f923h      ;f53c cd 23 f9   cd 23 f9    . # .
+    call ieee_rd_err_d      ;f53c cd 23 f9   cd 23 f9    . # .
     pop de              ;f53f d1   d1  .
     ld e,00h            ;f540 1e 00   1e 00   . .
     pop bc              ;f542 c1   c1  .
@@ -1051,7 +1052,7 @@ lf54eh:
     push de             ;f55c d5   d5  .
     call close          ;f55d cd d1 fa   cd d1 fa    . . .
     pop de              ;f560 d1   d1  .
-    jp sub_f923h        ;f561 c3 23 f9   c3 23 f9    . # .
+    jp ieee_rd_err_d        ;f561 c3 23 f9   c3 23 f9    . # .
 lf564h:
     inc hl              ;f564 23   23  #
     ld (3a30h),a        ;f565 32 30 3a   32 30 3a    2 0 :
@@ -1524,7 +1525,7 @@ lf910h:
     jp wrieee           ;f91d c3 a6 fd   c3 a6 fd    . . .
 disksta:
     call dskdev         ;f920 cd 11 fa   cd 11 fa    . . .
-sub_f923h:
+ieee_rd_err_d:
     ld e,0fh            ;f923 1e 0f   1e 0f   . .
     call talk           ;f925 cd 5d fa   cd 5d fa    . ] .
     ld hl,0eac0h        ;f928 21 c0 ea   21 c0 ea    ! . .
@@ -1561,7 +1562,7 @@ lf952h:
     call untalk         ;f956 cd 80 fa   cd 80 fa    . . .
     pop af              ;f959 f1   f1  .
     ret                 ;f95a c9   c9  .
-lf95bh:
+ieee_writ_sec_hl:
     push hl             ;f95b e5   e5  .
     ld hl,lfa52h        ;f95c 21 52 fa   21 52 fa    ! R .
     ld c,06h            ;f95f 0e 06   0e 06   . .
@@ -1591,7 +1592,8 @@ lf95bh:
     call unlisten       ;f999 cd a6 fa   cd a6 fa    . . .
     ld hl,lf7bbh+1      ;f99c 21 bc f7   21 bc f7    ! . .
     jp lf5c2h           ;f99f c3 c2 f5   c3 c2 f5    . . .
-lf9a2h:
+
+ieee_read_sec_hl:
     push hl             ;f9a2 e5   e5  .
     ld hl,lf7b7h        ;f9a3 21 b7 f7   21 b7 f7    ! . .
     call lf5c2h         ;f9a6 cd c2 f5   cd c2 f5    . . .
@@ -1639,7 +1641,8 @@ lfa08h:
     ld a,(0045h)        ;fa08 3a 45 00   3a 45 00    : E .
     call idrive         ;fa0b cd 28 fa   cd 28 fa    . ( .
     pop hl              ;fa0e e1   e1  .
-    jr lf9a2h           ;fa0f 18 91   18 91   . .
+    jr ieee_read_sec_hl           ;fa0f 18 91   18 91   . .
+
 dskdev:
     push hl             ;fa11 e5   e5  .
     push af             ;fa12 f5   f5  .
@@ -2077,7 +2080,7 @@ list:
     ld a,(0ea66h)       ;fc18 3a 66 ea   3a 66 ea    : f .
     ld d,a              ;fc1b 57   57  W
     call listen         ;fc1c cd 90 fa   cd 90 fa    . . .
-    jp lfcd0h           ;fc1f c3 d0 fc   c3 d0 fc    . . .
+    jp ieee_unl_byte           ;fc1f c3 d0 fc   c3 d0 fc    . . .
 lfc22h:
     ld a,(0ea61h)       ;fc22 3a 61 ea   3a 61 ea    : a .
     ld d,a              ;fc25 57   57  W
@@ -2169,6 +2172,7 @@ sub_fcafh:
 lfcbch:
     xor 80h             ;fcbc ee 80   ee 80   . .
     ret                 ;fcbe c9   c9  .
+
 punch:
     ld a,(0003h)        ;fcbf 3a 03 00   3a 03 00    : . .
     and 30h             ;fcc2 e6 30   e6 30   . 0
@@ -2176,10 +2180,14 @@ punch:
     ld de,(0ea63h)      ;fcc7 ed 5b 63 ea   ed 5b 63 ea     . [ c .
     ld e,0ffh           ;fccb 1e ff   1e ff   . .
     call listen         ;fccd cd 90 fa   cd 90 fa    . . .
-lfcd0h:
-    ld a,c              ;fcd0 79   79  y
-    call wrieee         ;fcd1 cd a6 fd   cd a6 fd    . . .
-    jp unlisten         ;fcd4 c3 a6 fa   c3 a6 fa    . . .
+
+ieee_unl_byte:
+;Send the byte in A to IEEE-488 device then send UNLISTEN.
+;
+    ld a,c              ;C = byte to send to IEEE-488 device
+    call wrieee
+    jp unlisten
+
 reader:
     ld a,(0003h)        ;fcd7 3a 03 00   3a 03 00    : . .
     and 0ch             ;fcda e6 0c   e6 0c   . .
