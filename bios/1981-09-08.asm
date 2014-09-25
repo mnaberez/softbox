@@ -3142,7 +3142,13 @@ ieeemsg:
                         ;  send them.  It will return to the caller.
     ret
 
-
+filler:
+;The code from here to the end of the file is filler.  It is valid Z80 code
+;from some unknown program, but it is not part of this BIOS, and is never
+;used.  It only serves to fill the remaining space in the EPROM.  It is
+;probably just what happened to be in RAM or on disk when the BIOS was
+;assembled.  Later versions of the BIOS are padded with zeroes instead.
+;
     inc hl              ;fe6c 23   23  #
     ld (hl),a           ;fe6d 77   77  w
     call 36edh          ;fe6e cd ed 36   cd ed 36    . . 6
