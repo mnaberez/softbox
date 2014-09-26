@@ -950,10 +950,10 @@ corv_put_byte:
 ;A = byte to send
 ;
     ld b,a              ;Save A in B
-corvpb1:
+corpb1:
     in a,(ppi2_pc)
     and ready           ;Mask off all except bit 4 (Corvus READY)
-    jr z,corvpb1        ;Wait until Corvus READY=high
+    jr z,corpb1         ;Wait until Corvus READY=high
     ld a,b              ;Recall A from B
     out (corvus),a      ;Put byte on Corvus data bus
     ret
