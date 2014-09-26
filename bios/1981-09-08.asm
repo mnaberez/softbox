@@ -2557,10 +2557,8 @@ srq3:
     ret
 
 list:
-;List to a CBM printer (LST: = LPT:)
-;
-;Converts ASCII to equivalent PETSCII.  Converts line endings
-;if needed and sets lowercase mode after each new line if needed.
+;List (printer) output.
+;C = character to write to the printer
 ;
     ld a,(iobyte)
     and 0c0h            ;Mask off all but buts 6 and 7
