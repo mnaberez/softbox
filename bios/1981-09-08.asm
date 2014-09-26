@@ -829,7 +829,7 @@ cinit1:
     and dirc
     jr nz,corv_init     ;Loop until Corvus DIRC=low
                         ;TODO: the next line changed in 1981-10-27 version
-    jp lf320h           ;f2d2 c3 20 f3   c3 20 f3    .   .
+    jp corv_wait_read   ;f2d2 c3 20 f3   c3 20 f3    .   .
 
 corv_read_sec:
 ;Read a sector from a Corvus hard drive into the DMA buffer.
@@ -927,13 +927,16 @@ crde1:
     djnz crde1          ;Delay loop
                         ;Fall through into corv_wait_read
 
-lf320h:
-    in a,(ppi2_pc)      ;f320 db 16   db 16   . .
-    and ready           ;f322 e6 10   e6 10   . .
-    jr z,lf320h         ;f324 28 fa   28 fa   ( .
-    in a,(corvus)       ;f326 db 18   db 18   . .
+corv_wait_read:
+;Wait until Corvus READY=high, then read a data byte from the Corvus.
+;
+    in a,(ppi2_pc)
+    and ready           ;Mask off all except bit 4 (Corvus READY)
+    jr z,corv_wait_read ;Wait until Corvus READY=high
+    in a,(corvus)
+                        ;TODO: the next line changed in 1981-10-27 version
     and 80h             ;f328 e6 80   e6 80   . .
-    ret                 ;f32a c9   c9  .
+    ret
 
 corv_put_byte:
 ;Send a byte to the Corvus hard drive.  Waits until the Corvus
