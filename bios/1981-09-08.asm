@@ -2652,6 +2652,9 @@ list_lpt_crlf:
     ld a,cr             ;  Yes: Change it to a Carriage Return
 
 list_lpt_char:
+;Convert the character from ASCII to PETSCII, send it to the
+;printer, then fall through to send UNLISTEN and return.
+;
     call ascii_to_pet   ;A = equivalent char in PETSCII
     call delay_1ms      ;Yes: Wait 1ms before sending the char
     call wrieee         ;Send the PETSCII char to the printer
