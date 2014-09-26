@@ -839,20 +839,21 @@ corv_read_sec:
     ld a,12h            ;12h = Read Sector (128 bytes)
     call corv_sec_cmd   ;Send command to read the sector
 
-    ld hl,(0052h)       ;f2da 2a 52 00   2a 52 00    * R .
+    ld hl,(dma)         ;f2da 2a 52 00   2a 52 00    * R .
     call corv_read_err  ;f2dd cd 16 f3   cd 16 f3    . . .
     jr nz,lf30ch        ;f2e0 20 2a   20 2a     *
-    ld b,80h            ;f2e2 06 80   06 80   . .
-lf2e4h:
-    in a,(ppi2_pc)      ;f2e4 db 16   db 16   . .
-    and 10h             ;f2e6 e6 10   e6 10   . .
-    jr z,lf2e4h         ;f2e8 28 fa   28 fa   ( .
-    in a,(corvus)       ;f2ea db 18   db 18   . .
-    ld (hl),a           ;f2ec 77   77  w
-    inc hl              ;f2ed 23   23  #
-    djnz lf2e4h         ;f2ee 10 f4   10 f4   . .
-    xor a               ;f2f0 af   af  .
-    ret                 ;f2f1 c9   c9  .
+
+    ld b,80h            ;B = 128 bytes to read
+crds1:
+    in a,(ppi2_pc)
+    and ready
+    jr z,crds1          ;Wait until Corvus READY=high
+    in a,(corvus)       ;Read data byte from Corvus
+    ld (hl),a           ;Store it in the buffer
+    inc hl              ;Increment to next position in DMA buffer
+    djnz crds1          ;Decrement B, loop until all bytes read
+    xor a               ;A = 0
+    ret
 
 corv_writ_sec:
 ;Write a sector from the DMA buffer to a Corvus hard drive.
