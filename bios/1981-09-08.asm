@@ -2764,17 +2764,23 @@ ieee_unl_byte:
     jp unlisten
 
 reader:
-    ld a,(0003h)        ;fcd7 3a 03 00   3a 03 00    : . .
-    and 0ch             ;fcda e6 0c   e6 0c   . .
-    jp z,ser_in         ;fcdc ca d6 fb   ca d6 fb    . . .
-    ld de,(0ea62h)      ;fcdf ed 5b 62 ea   ed 5b 62 ea     . [ b .
-    ld e,0ffh           ;fce3 1e ff   1e ff   . .
-    call talk           ;fce5 cd 5d fa   cd 5d fa    . ] .
-    call rdieee         ;fce8 cd 1c fe   cd 1c fe    . . .
-    push af             ;fceb f5   f5  .
-    call untalk         ;fcec cd 80 fa   cd 80 fa    . . .
-    pop af              ;fcef f1   f1  .
-    ret                 ;fcf0 c9   c9  .
+;Reader (paper tape) input
+;Blocks until a byte is available, then returns it in A.
+;
+    ld a,(iobyte)
+    and 0ch
+    jp z,ser_in         ;Jump out if Reader is RS-232 port (RDR: = TTY:)
+
+                        ;Reader must be Other Device (RDR: = PTR:)
+                        ;TODO: the next line changed in 1981-10-27 version
+    ld de,(ptr_dev)     ;fcdf ed 5b 62 ea   ed 5b 62 ea     . [ b .
+    ld e,0ffh           ;E = no IEEE-488 secondary address
+    call talk
+    call rdieee         ;A = byte read from IEEE-488 device
+    push af
+    call untalk
+    pop af
+    ret
 
 puts:
 ;Write a null-terminated string to console out
