@@ -2575,10 +2575,10 @@ list:
 list_ul1:
 ;List to an ASCII printer (LST: = UL1:)
 ;
-    ld a,(0ea66h)       ;fc18 3a 66 ea   3a 66 ea    : f .
-    ld d,a              ;fc1b 57   57  W
-    call listen         ;fc1c cd 90 fa   cd 90 fa    . . .
-    jp ieee_unl_byte    ;fc1f c3 d0 fc   c3 d0 fc    . . .
+    ld a,(ul1_dev)
+    ld d,a              ;D = IEEE-488 primary address of UL1:
+    call listen         ;Send LISTEN
+    jp ieee_unl_byte    ;Jump out to send byte, UNLISTEN, then return.
 
 list_lpt:
 ;List to a CBM printer (LST: = LPT:)
@@ -2658,6 +2658,7 @@ list_lpt_char:
     call ascii_to_pet   ;A = equivalent char in PETSCII
     call delay_1ms      ;Yes: Wait 1ms before sending the char
     call wrieee         ;Send the PETSCII char to the printer
+                        ;Fall through into list_lpt_unlsn
 
 list_lpt_unlsn:
 ;Send UNLISTEN to the printer and return.
