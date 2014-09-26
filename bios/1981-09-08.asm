@@ -1072,8 +1072,8 @@ boot:
     or ifc
     out (ppi2_pb),a     ;IFC_OUT=low
 
-    ld bc,0fa0h         ;f3bb 01 a0 0f   01 a0 0f    . . .
-    call delay          ;f3be cd e5 fa   cd e5 fa    . . .
+    ld bc,0fa0h
+    call delay          ;Wait 4 seconds
 
     xor a               ;A=0
     ld (iobyte),a       ;IOBYTE=0 (CON:=TTY:, the RS-232 port)
