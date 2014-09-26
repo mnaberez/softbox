@@ -863,18 +863,18 @@ corv_writ_sec:
     ld a,13h            ;12h = Write Sector (128 bytes)
     call corv_sec_cmd   ;Send command to write the sector
 
-    ld b,80h            ;f2f7 06 80   06 80   . .
-    ld hl,(0052h)       ;f2f9 2a 52 00   2a 52 00    * R .
-lf2fch:
-    in a,(ppi2_pc)      ;f2fc db 16   db 16   . .
-    and 10h             ;f2fe e6 10   e6 10   . .
-    jr z,lf2fch         ;f300 28 fa   28 fa   ( .
-    ld a,(hl)           ;f302 7e   7e  ~
-    out (corvus),a      ;f303 d3 18   d3 18   . .
-    inc hl              ;f305 23   23  #
-    djnz lf2fch         ;f306 10 f4   10 f4   . .
-    call corv_read_err  ;f308 cd 16 f3   cd 16 f3    . . .
-    ret z               ;f30b c8   c8  .
+    ld b,80h            ;B = 128 bytes to write
+    ld hl,(dma)         ;HL = start address of DMA buffer area
+cwrs1:
+    in a,(ppi2_pc)
+    and ready           ;Mask off all but bit 4 (Corvus READY)
+    jr z,cwrs1          ;Wait until Corvus READY=high
+    ld a,(hl)           ;Read data byte from DMA buffer
+    out (corvus),a      ;Send it to the Corvus
+    inc hl              ;Increment to next position in DMA buffer
+    djnz cwrs1          ;Decrement B, loop until all bytes written
+    call corv_read_err  ;A = Corvus error
+    ret z               ;Return if error code is OK
 
 corv_ret_err:
 ;Return to the caller with A=01h (error status) indicating
