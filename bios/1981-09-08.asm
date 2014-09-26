@@ -816,14 +816,19 @@ cp2:
     ret
 
 corv_init:
-    ld a,0ffh           ;f2c4 3e ff   3e ff   > .
-    out (corvus),a      ;f2c6 d3 18   d3 18   . .
-    ld b,0ffh           ;f2c8 06 ff   06 ff   . .
-lf2cah:
-    djnz lf2cah         ;f2ca 10 fe   10 fe   . .
-    in a,(ppi2_pc)      ;f2cc db 16   db 16   . .
-    and 20h             ;f2ce e6 20   e6 20   .
-    jr nz,corv_init     ;f2d0 20 f2   20 f2     .
+;Initialize the Corvus hard drive controller
+;
+    ld a,0ffh           ;0ffh = byte that is an invalid command
+    out (corvus),a      ;Send it to the controller
+
+    ld b,0ffh
+cinit1:
+    djnz cinit1         ;Delay loop
+
+    in a,(ppi2_pc)
+    and dirc
+    jr nz,corv_init     ;Loop until Corvus DIRC=low
+                        ;TODO: the next line changed in 1981-10-27 version
     jp lf320h           ;f2d2 c3 20 f3   c3 20 f3    .   .
 
 corv_read_sec:
