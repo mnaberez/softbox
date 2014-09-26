@@ -839,9 +839,9 @@ corv_read_sec:
     ld a,12h            ;12h = Read Sector (128 bytes)
     call corv_sec_cmd   ;Send command to read the sector
 
-    ld hl,(dma)         ;f2da 2a 52 00   2a 52 00    * R .
-    call corv_read_err  ;f2dd cd 16 f3   cd 16 f3    . . .
-    jr nz,corv_ret_err        ;f2e0 20 2a   20 2a     *
+    ld hl,(dma)         ;HL = start address of DMA buffer area
+    call corv_read_err  ;A = Corvus error code
+    jr nz,corv_ret_err  ;Jump if error code is not OK
 
     ld b,80h            ;B = 128 bytes to read
 crds1:
