@@ -841,7 +841,7 @@ corv_read_sec:
 
     ld hl,(dma)         ;f2da 2a 52 00   2a 52 00    * R .
     call corv_read_err  ;f2dd cd 16 f3   cd 16 f3    . . .
-    jr nz,lf30ch        ;f2e0 20 2a   20 2a     *
+    jr nz,corv_ret_err        ;f2e0 20 2a   20 2a     *
 
     ld b,80h            ;B = 128 bytes to read
 crds1:
@@ -875,12 +875,16 @@ lf2fch:
     djnz lf2fch         ;f306 10 f4   10 f4   . .
     call corv_read_err  ;f308 cd 16 f3   cd 16 f3    . . .
     ret z               ;f30b c8   c8  .
-lf30ch:
-    ld hl,corv_fault    ;f30c 21 82 f3   21 82 f3    ! . .
-    call puts           ;f30f cd f1 fc   cd f1 fc    . . .
-    ld a,01h            ;f312 3e 01   3e 01   > .
-    or a                ;f314 b7   b7  .
-    ret                 ;f315 c9   c9  .
+
+corv_ret_err:
+;Return to the caller with A=01h (error status) indicating
+;that the last Corvus operation failed.
+;
+    ld hl,corv_fault    ;HL = address of "*** HARD DISK ERROR" string
+    call puts           ;Write fault message to console out
+    ld a,01h            ;A=01h (Error)
+    or a                ;Set flags
+    ret
 
 corv_read_err:
 ;Read the error code from a Corvus hard drive.
@@ -946,10 +950,10 @@ corv_put_byte:
 ;A = byte to send
 ;
     ld b,a              ;Save A in B
-lf32ch:
+corvpb1:
     in a,(ppi2_pc)
     and ready           ;Mask off all except bit 4 (Corvus READY)
-    jr z,lf32ch         ;Wait until Corvus READY=high
+    jr z,corvpb1        ;Wait until Corvus READY=high
     ld a,b              ;Recall A from B
     out (corvus),a      ;Put byte on Corvus data bus
     ret
