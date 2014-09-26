@@ -2742,12 +2742,19 @@ ascii_upper:
     ret                 ;  to PETSCII equivalent and return
 
 punch:
-    ld a,(0003h)        ;fcbf 3a 03 00   3a 03 00    : . .
-    and 30h             ;fcc2 e6 30   e6 30   . 0
-    jp z,ser_out        ;fcc4 ca cb fb   ca cb fb    . . .
-    ld de,(0ea63h)      ;fcc7 ed 5b 63 ea   ed 5b 63 ea     . [ c .
-    ld e,0ffh           ;fccb 1e ff   1e ff   . .
-    call listen         ;fccd cd 90 fa   cd 90 fa    . . .
+;Punch (paper tape) output
+;C = character to write to the punch
+;
+    ld a,(iobyte)
+    and 30h
+    jp z,ser_out        ;Jump out if Punch is RS-232 port (PUN: = TTY:)
+
+                        ;Punch must be Other Device (PUN: = PTP:)
+                        ;TODO: the next line changed in 1981-10-27 version
+    ld de,(ptp_dev)     ;fcc7 ed 5b 63 ea   ed 5b 63 ea     . [ c .
+    ld e,0ffh           ;E = no IEEE-488 secondary address
+    call listen         ;Send LISTEN
+                        ;Fall through into ieee_unl_byte
 
 ieee_unl_byte:
 ;Send the byte in A to IEEE-488 device then send UNLISTEN.
