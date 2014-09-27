@@ -825,8 +825,8 @@ cinit1:
     in a,(ppi2_pc)
     and dirc
     jr nz,corv_init     ;Loop until Corvus DIRC=low
-                        ;TODO: the next line changed in 1981-10-27 version
-    jp corv_wait_read   ;f2d2 c3 20 f3   c3 20 f3    .   .
+    jp corv_wait_read   ;Jump out to wait until Corvus READY=high, then read
+                        ;  the response byte.  The response is never checked.
 
 corv_read_sec:
 ;Read a sector from a Corvus hard drive into the DMA buffer.
