@@ -153,9 +153,6 @@ x_offset: equ 0ea6bh    ;Offset added to X when sending move-to sequence
 eoisav:   equ 0ea6ch    ;Stores ppi2_pa IEEE-488 control lines after get byte
                         ;  This allows a program to check for EOI after it
                         ;  calls rdieee or rdimm.
-lptype:   equ 0ea6dh    ;CBM printer (LPT:) type: 0=3022, 3023, 4022, 4023
-                        ;                         1=8026, 8027 (daisywheel)
-                        ;                         2=8024
 dtypes:   equ 0ea70h    ;Disk drive types:
 dtype_ab: equ dtypes+0  ;  A:, B:    00h = CBM 3040/4040
 dtype_cd: equ dtypes+1  ;  C:, D:    01h = CBM 8050
