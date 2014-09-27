@@ -852,7 +852,12 @@ crds1:
     ld (hl),a           ;Store it in the buffer
     inc hl              ;Increment to next position in DMA buffer
     djnz crds1          ;Decrement B, loop until all bytes read
-    xor a               ;A = 0
+
+corv_ret_ok:
+;Return to the caller with A=0 (OK status) indicating
+;that the last Corvus operation succeeded.
+;
+    xor a               ;A=0 (OK)
     ret
 
 corv_writ_sec:
