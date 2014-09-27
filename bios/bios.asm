@@ -892,7 +892,7 @@ corv_read_sec:
     call corv_find_dadr ;A,H,L = Corvus DADR ("Disk Address")
 
     push af
-    ld a,12h            ;12h = Read Sector (128 bytes)
+    ld a,12h            ;12h = Read sector (128 bytes)
     call corv_put_byte  ;Send command byte
     pop af
 
