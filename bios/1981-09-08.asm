@@ -975,6 +975,10 @@ corv_sec_cmd:
 ;After calling this routine, the caller must read the result byte(s)
 ;from the Corvus.
 ;
+;Sectors on Corvus hard drives are not addressed by physical track
+;and sector.  Instead, they are addressed as a single large
+;logical sector space.
+;
 ;The DADR is 3 bytes (24 bits), consisting of a 4-bit Corvus unit ID
 ;and a 20-bit logical sector address.
 ;
