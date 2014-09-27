@@ -860,7 +860,7 @@ corv_writ_sec:
 ;
 ;Returns error code in A: 0=OK, 0ffh=Error.
 ;
-    ld a,13h            ;12h = Write sector (128 bytes)
+    ld a,13h            ;13h = Write sector (128 bytes)
     call corv_sec_cmd   ;Send command to write the sector
 
     ld b,80h            ;B = 128 bytes to write
