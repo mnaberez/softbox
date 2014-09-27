@@ -2774,8 +2774,13 @@ punch:
     jp z,ser_out        ;Jump out if Punch is RS-232 port (PUN: = TTY:)
 
                         ;Punch must be Other Device (PUN: = PTP:)
-                        ;TODO: the next line changed in 1981-10-27 version
-    ld de,(ptp_dev)     ;fcc7 ed 5b 63 ea   ed 5b 63 ea     . [ c .
+
+    ld de,(ptp_dev)     ;XXX This is a bug.  The intention was to load the
+                        ;Paper Tape Punch (PTP) IEEE-488 primary address
+                        ;into D.  This instruction actually loads it into E.
+                        ;D is loaded with ser_mode (USART initial mode).
+                        ;This bug was fixed in the 1981-10-27 version.
+
     ld e,0ffh           ;E = no IEEE-488 secondary address
     call listen         ;Send LISTEN
                         ;Fall through into ieee_unl_byte
@@ -2796,8 +2801,13 @@ reader:
     jp z,ser_in         ;Jump out if Reader is RS-232 port (RDR: = TTY:)
 
                         ;Reader must be Other Device (RDR: = PTR:)
-                        ;TODO: the next line changed in 1981-10-27 version
-    ld de,(ptr_dev)     ;fcdf ed 5b 62 ea   ed 5b 62 ea     . [ b .
+
+    ld de,(ptr_dev)     ;XXX This is a bug.  The intention was to load the
+                        ;Paper Tape Reader (PTR) IEEE-488 primary address
+                        ;into D.  This instruction actually loads it into E.
+                        ;D is loaded with ptp_dev (Paper Tape Punch address).
+                        ;This bug was fixed in the 1981-10-27 version.
+
     ld e,0ffh           ;E = no IEEE-488 secondary address
     call talk
     call rdieee         ;A = byte read from IEEE-488 device
