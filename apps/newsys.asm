@@ -1,6 +1,8 @@
-; z80dasm 1.1.3
-; command line: z80dasm --origin=256 --labels --address newsys.com
-
+;NEWSYS.COM
+;  Configure SoftBox settings.
+;
+;Usage: "NEWSYS"
+;
 ;This program was not written in assembly language.  It was written
 ;in MBASIC and compiled with BASCOM.  This is a disassembly of
 ;the compiled program.
