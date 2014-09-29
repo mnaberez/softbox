@@ -293,10 +293,9 @@ set_a:
 ;  SET A=?
 ;
     ld de,ul1_dev       ;DE = address of UL1: device number
-    ;XXX no jump
-                        ;TODO: This is a bug.  There should be a jump here.
-                        ;      Instead it just falls through, where DE will
-                        ;      be immediately overwritten.
+                        ;XXX This is a bug.  There should be a "jp store_dev"
+                        ;    here.  Instead it just falls through, where DE
+                        ;    will be immediately overwritten.
 
 set_p:
 ;Set IEEE-488 primary address of LPT:
