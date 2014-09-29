@@ -47,25 +47,28 @@ time_output:
     call put_dec        ;  Print A as a decimal number
 
                         ;Write a colon after the hour:
-    push hl             ;
-    push de             ;
+    push hl             ;  Push hours (H) and minutes (L) onto stack
+    push de             ;  Push seconds (D) and jiffies (E) onto stack
     ld e,':'            ;  E = colon character
     ld c,cwrite         ;  Console Output
     call bdos           ;  BDOS System Call
-    pop de              ;
-    pop hl              ;
+    pop de              ;  Pop seconds and jiffies off stack
+    pop hl              ;  Pop hours and minutes off stack
 
                         ;Write the minute to console out:
     ld a,l              ;  A = Minutes
     call put_dec        ;  Print A as a decimal number
 
                         ;Write a colon after the minute:
-    push de             ;
+    push de             ;  Push seconds (D) and jiffies (E) onto stack
     ld e,':'            ;  E = colon character
     ld c,cwrite         ;  Console Output
     call bdos           ;  BDOS System Call
-    pop hl              ;  XXX
-                        ;  TODO: pushes DE but pops HL.  Is this a bug?
+    pop hl              ;  XXX This is a bug.  It should be "pop de".  The
+                        ;      intention was to preserve DE during the BDOS
+                        ;      call so that D can be used by the next line.
+                        ;      However, it turns out that the BDOS call does
+                        ;      not destroy D, so this code works anyway.
 
                         ;Write the second to console out:
     ld a,d              ;  A = Seconds
@@ -103,7 +106,7 @@ time_input:
     cp ctrl_c           ;  Control-C pressed?
     jp z,warm           ;    Yes: jump to warm start
 
-                        ;Pop time from stack:
+                        ;Pop time off stack:
     pop de              ;  D=seconds, E=jiffies
     pop hl              ;  H=hours, L=minutes
 
