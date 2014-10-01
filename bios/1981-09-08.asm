@@ -834,7 +834,7 @@ corv_read_sec:
 ;Returns error code in A: 0=OK, 0ffh=Error.
 ;
     ld a,12h            ;12h = Read sector (128 bytes)
-    call corv_sec_cmd   ;Send command to read the sector
+    call corv_sec_cmd   ;Send command byte, then compute and send the DADR
 
     ld hl,(dma)         ;HL = start address of DMA buffer area
     call corv_read_err  ;A = Corvus error code
@@ -863,7 +863,7 @@ corv_writ_sec:
 ;Returns error code in A: 0=OK, 0ffh=Error.
 ;
     ld a,13h            ;13h = Write sector (128 bytes)
-    call corv_sec_cmd   ;Send command to write the sector
+    call corv_sec_cmd   ;Send command byte, then compute and send the DADR
 
     ld b,80h            ;B = 128 bytes to write
     ld hl,(dma)         ;HL = start address of DMA buffer area
