@@ -32,21 +32,21 @@
         RET
 
 $HEX:
-;XSTRIN: HEX
 ;Make a temporary string (length 2 bytes) with the hexadecimal
 ;representation of the byte in HL and return a pointer to it in HL.
 ;Implements BASIC function: HEX$(x)
 ;
-        LD      A,02H
-        LD      (@DATA),A
-        LD      A,L
-        CALL    @L3
-        LD      (@L4),A
-        LD      A,L
-        CALL    @L5
-        LD      (@L6),A
-        LD      HL,@DATA
+        LD      A,02H           ;A = 2 bytes in string
+        LD      (@DATA),A       ;Store length in temp string header
+        LD      A,L             ;A = L
+        CALL    @L3             ;Convert high nibble in A to ASCII
+        LD      (@L4),A         ;Save it as first char of string
+        LD      A,L             ;A = L
+        CALL    @L5             ;Convert low nibble in A to ASCII
+        LD      (@L6),A         ;Save it as second char of string
+        LD      HL,@DATA        ;HL = address of the string
         RET
+
 @L3:
         RRCA
         RRCA
@@ -62,60 +62,59 @@ $HEX:
         RET
 
 $CHR:
-;XSTRIN: CHR
 ;Make a temporary string from the char in L and
 ;return a pointer to it in HL.
 ;Implements BASIC function: CHR$(x)
 ;
-        LD      A,01H
-        LD      (@DATA),A
-        LD      A,L
-        LD      (@L4),A
-        LD      HL,@DATA
+        LD      A,01H           ;A = 1 byte in string
+        LD      (@DATA),A       ;Store length in temp string header
+        LD      A,L             ;A = L
+        LD      (@L4),A         ;Store A as the temp string data
+        LD      HL,@DATA        ;HL = address of the string
         RET
 
 $PV2D:
 ;Print string in HL followed by CR+LF
 ;Implements BASIC command: PRINT"foo"
 ;
-        LD      A,(HL)
-        OR      A
-        JP      Z,@L8
-        CALL    @L9
-        JP      @L8
+        LD      A,(HL)          ;Get the length of the string
+        OR      A               ;Set flags
+        JP      Z,@L8           ;If length = 0, jump to print CR+LF only.
+        CALL    @L9             ;Print the string
+        JP      @L8             ;Jump out to print CR+LF
 
 $PV1D:
 ;Print string in HL but do not send CR+LF
 ;Implements BASIC command: PRINT"foo";
 ;
-        LD      A,(HL)
-        OR      A
-        RET     Z
-        CALL    @L9
+        LD      A,(HL)          ;Get the length of the string
+        OR      A               ;Set flags
+        RET     Z               ;If length = 0, return (nothing to do).
+        CALL    @L9             ;Print the string
         RET
 
 $PV0D:
 ;Print string in HL followed by a space
 ;
-        LD      A,(HL)
-        OR      A
-        JP      Z,@CODE
-        CALL    @L9
-        JP      @CODE
+        LD      A,(HL)          ;Get the length of the string
+        OR      A               ;Set flags
+        JP      Z,@CODE         ;If length = 0, jump out print a space only.
+        CALL    @L9             ;Print the string
+        JP      @CODE           ;Jump out to print a space
 
 @L9:
 ;Print string of length A at pointer HL.
 ;
-        LD      B,A
-        INC     HL
-        INC     HL
-        INC     HL
+        LD      B,A             ;B = A
+        INC     HL              ;Skip string length byte
+        INC     HL              ;Skip string start address low byte
+        INC     HL              ;Skip string start address low byte
 @L12:
-        LD      A,(HL)
-        CALL    CONOUT
-        DEC     B
-        INC     HL
-        JP      NZ,@L12
+        LD      A,(HL)          ;Read char from string
+        CALL    CONOUT          ;Print it
+        DEC     B               ;Decrement number of chars remaining
+        INC     HL              ;Increment pointer
+        JP      NZ,@L12         ;Loop until all chars have been printed
         RET
 ;
         DSEG
