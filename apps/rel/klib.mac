@@ -10,36 +10,48 @@
         ORG     0
 @DATA:
         CSEG
-        GLOBAL  $CHR
-        GLOBAL  $PV0D
-        GLOBAL  $PV1D
-        GLOBAL  $PV2D
-        GLOBAL  $HEX
+        GLOBAL  $CHR            ;Implements BASIC function: CHR$(x)
+        GLOBAL  $PV0D           ;Print string in HL followed by a space
+        GLOBAL  $PV1D           ;Print string in HL but do not send CR+LF
+        GLOBAL  $PV2D           ;Print string in HL followed by CR+LF
+        GLOBAL  $HEX            ;Implements BASIC function: HEX$(x)
+
+;Print a space
+;
         LD      A,020H
         CALL    CONOUT
-        RET                     ;I      0C9H
+        RET
+
 @L8:
+;Print CR+LF
+;
         LD      A,0AH
         CALL    CONOUT
         LD      A,0DH
         CALL    CONOUT
-        RET                     ;I      0C9H
+        RET
+
 $HEX:
+;XSTRIN: HEX
+;Make a temporary string (length 2 bytes) with the hexadecimal
+;representation of the byte in HL and return a pointer to it in HL.
+;Implements BASIC function: HEX$(x)
+;
         LD      A,02H
         LD      (@DATA),A
-        LD      A,L             ;}      07DH
+        LD      A,L
         CALL    @L3
         LD      (@L4),A
-        LD      A,L             ;}      07DH
+        LD      A,L
         CALL    @L5
         LD      (@L6),A
         LD      HL,@DATA
-        RET                     ;I      0C9H
+        RET
 @L3:
-        RRCA                    ;0FH    0FH
-        RRCA                    ;0FH    0FH
-        RRCA                    ;0FH    0FH
-        RRCA                    ;0FH    0FH
+        RRCA
+        RRCA
+        RRCA
+        RRCA
 @L5:
         AND     0FH
         CP      0AH
@@ -47,44 +59,64 @@ $HEX:
         ADD     A,07H
 @L7:
         ADD     A,030H
-        RET                     ;I      0C9H
+        RET
+
 $CHR:
+;XSTRIN: CHR
+;Make a temporary string from the char in L and
+;return a pointer to it in HL.
+;Implements BASIC function: CHR$(x)
+;
         LD      A,01H
         LD      (@DATA),A
-        LD      A,L             ;}      07DH
+        LD      A,L
         LD      (@L4),A
         LD      HL,@DATA
-        RET                     ;I      0C9H
+        RET
+
 $PV2D:
-        LD      A,(HL)          ;~      07EH
-        OR      A               ;7      0B7H
+;Print string in HL followed by CR+LF
+;Implements BASIC command: PRINT"foo"
+;
+        LD      A,(HL)
+        OR      A
         JP      Z,@L8
         CALL    @L9
         JP      @L8
+
 $PV1D:
-        LD      A,(HL)          ;~      07EH
-        OR      A               ;7      0B7H
-        RET     Z               ;H      0C8H
+;Print string in HL but do not send CR+LF
+;Implements BASIC command: PRINT"foo";
+;
+        LD      A,(HL)
+        OR      A
+        RET     Z
         CALL    @L9
-        RET                     ;I      0C9H
+        RET
+
 $PV0D:
-        LD      A,(HL)          ;~      07EH
-        OR      A               ;7      0B7H
+;Print string in HL followed by a space
+;
+        LD      A,(HL)
+        OR      A
         JP      Z,@CODE
         CALL    @L9
         JP      @CODE
+
 @L9:
-        LD      B,A             ;G      047H
-        INC     HL              ;#      023H
-        INC     HL              ;#      023H
-        INC     HL              ;#      023H
+;Print string of length A at pointer HL.
+;
+        LD      B,A
+        INC     HL
+        INC     HL
+        INC     HL
 @L12:
-        LD      A,(HL)          ;~      07EH
+        LD      A,(HL)
         CALL    CONOUT
-        DEC     B               ;05H    05H
-        INC     HL              ;#      023H
+        DEC     B
+        INC     HL
         JP      NZ,@L12
-        RET                     ;I      0C9H
+        RET
 ;
         DSEG
         ORG     05H
