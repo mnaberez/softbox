@@ -5,7 +5,7 @@ Dim Values(255)
 Set objStream = CreateObject("ADODB.Stream")
   objStream.Open
   objStream.Type = adTypeBinary
-  objStream.LoadFromFile("TBP24S10.bin")
+  objStream.LoadFromFile("softbox.bin")
   For I = 0 To 255
     Values(I) = AscB(objStream.Read(1))
   Next
@@ -37,7 +37,7 @@ For I = 0 TO 255
   If Cs_Rom_All Then D = D Or 2 'Is inverted
   If Ras        Then D = D Or 1 'Is inverted
 
-  If Out <> "" Then  
+  If Out <> "" Then
     If I mod 16 = 0 Then
       Out = Out & VBCrLf
     Else
