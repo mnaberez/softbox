@@ -16,7 +16,8 @@ lf:             equ 0ah     ;Line Feed
 cr:             equ 0dh     ;Carriage Return
 
 drive_num:      equ 02h     ;Drive number of disk to read (2 = C:)
-last_track:     equ 7dh     ;Last CP/M track (4040=27h, 8050=7Dh, 8250=0FDh)
+tracks:         equ 7eh     ;Total CP/M tracks (4040=28h, 8050=7Eh, 8250=0FEh)
+sectors:        equ 20h     ;CP/M sectors per track (same for all CBM drives)
 
     org 0100h   ;CP/M TPA
 
@@ -92,7 +93,7 @@ loop:
     ld a,(cur_sector)   ;get current sector
     inc a               ;increment it
     ld (cur_sector),a   ;save it
-    cp 20h              ;past last sector on track?
+    cp sectors          ;past last sector on track?
     jp nz,loop          ;  no: loop to do next sector
 
     ;increment track
@@ -102,7 +103,7 @@ loop:
     ld a,(cur_track)    ;track
     inc a               ;increment to next track
     ld (cur_track),a    ;save it
-    cp last_track+1     ;past last track?
+    cp tracks           ;past last track?
     jp nz,loop          ;  no: loop to do next track
 
 done:
