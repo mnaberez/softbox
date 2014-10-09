@@ -608,9 +608,9 @@ l03b1h:
     call print_str_eol
 
     ;CALL cform(D)
-    ld hl,dd            ;03bd 21 00 30
-    ld c,(hl)           ;03c0 4e
-    call cform          ;03c1 cd 21 08
+    ld hl,dd            ;HL = address of variable D
+    ld c,(hl)           ;C = contents of variable D (CP/M drive number)
+    call cform          ;Format a Corvus hard drive
 
     ;GOTO l0419h
     jp l0419h
@@ -654,17 +654,17 @@ l03f0h:
     call print_str
 
     ;CALL format(D)
-    ld hl,dd            ;03f9 21 00 30
-    ld c,(hl)           ;03fc 4e
-    call format         ;03fd cd 5d 07
+    ld hl,dd            ;HL = address of variable D
+    ld c,(hl)           ;C = contents of variable D (CP/M drive number)
+    call format         ;Format a CBM floppy drive
 
     ;PRINT
-    call print_eol      ;0400 cd 79 01
+    call print_eol
 
     ;IF CALL dskerr() <> 0 THEN GOTO l0413h
-    call dskerr         ;0403 cd 1e 01
-    or a                ;0406 b7
-    jp nz,l0413h        ;0407 c2 13 04
+    call dskerr
+    or a
+    jp nz,l0413h
 
     ;PRINT "Format complete"
     ld bc,complete
@@ -1022,6 +1022,9 @@ l0742h:
 
 format:
 ;Format an IEEE-488 drive for SoftBox use.
+;
+;C = CP/M drive number to format
+;
     ld a,c
     ld (cpm_drive),a
     call dskdev         ;Get device address for a CP/M drive number
@@ -1105,6 +1108,9 @@ sub_07b6h:
 
 cform:
 ;Format a hard drive for Softbox use.
+;
+;C = CP/M drive number to format
+;
     call seldsk         ;Select disk drive
     ld hl,0080h
 l0827h:
