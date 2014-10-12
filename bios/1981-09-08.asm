@@ -937,12 +937,13 @@ crde1:
 corv_wait_read:
 ;Wait until Corvus READY=high, then read a data byte from the Corvus.
 ;
+;Sets Z flag: Z=1 if fatal error on Corvus, Z=0 if no fatal error.
+;
     in a,(ppi2_pc)
     and ready           ;Mask off all except bit 4 (Corvus READY)
     jr z,corv_wait_read ;Wait until Corvus READY=high
     in a,(corvus)
-                        ;TODO: the next line changed in 1981-10-27 version
-    and 80h             ;f328 e6 80   e6 80   . .
+    and 80h             ;Mask off all except bit 7 (1=fatal, 0=not fatal)
     ret
 
 corv_put_byte:
