@@ -875,11 +875,12 @@ cinit1:
 
     in a,(ppi2_pc)
     and dirc
-    jr nz,corv_init     ;Loop until Corvus DIRC=low
+    jr nz,corv_init     ;Retry until Corvus DIRC=low (drive-to-host)
+
     call corv_wait_read ;Wait until Corvus READY=high, then read byte
 
     cp 8fh              ;Response should be 8fh (Illegal Command)
-    jr nz,corv_init     ;Loop until the expected response is received
+    jr nz,corv_init     ;Retry until the expected response is received
     ret
 
 corv_read_sec:
@@ -1004,18 +1005,21 @@ corv_read_err:
 ;  0F Illegal Command           1F (Unused)
 ;
     in a,(ppi2_pc)
-    xor ready           ;Flip bit 4 (Corvus READY)
-    and ready+dirc      ;Mask off all except bits 4 (READY) and 5 (DIRC)
-    jr nz,corv_read_err
+    xor ready
+    and ready+dirc
+    jr nz,corv_read_err ;Wait until READY=high (drive is ready)
+                        ;  and DIRC=low (drive-to-host)
 
     ld b,19h
 crde1:
     djnz crde1          ;Delay loop
 
     in a,(ppi2_pc)
-    xor ready           ;Flip bit 4 (Corvus READY)
-    and ready+dirc      ;Mask off all except bits 4 (READY) and 5 (DIRC)
-    jr nz,corv_read_err
+    xor ready
+    and ready+dirc
+    jr nz,corv_read_err ;Retry until READY-high (drive is ready)
+                        ;  and DIRC=low (drive-to-host)
+
                         ;Fall through into corv_wait_read
 
 corv_wait_read:
@@ -1024,8 +1028,9 @@ corv_wait_read:
 ;Returns the data byte in A and sets the Z flag: Z=1 if OK, Z=0 if error.
 ;
     in a,(ppi2_pc)
-    and ready           ;Mask off all but bit 4 (Corvus READY)
-    jr z,corv_wait_read ;Wait until Corvus READY=high
+    and ready
+    jr z,corv_wait_read ;Wait until Corvus READY=high (drive is ready)
+
     in a,(corvus)
     bit 7,a             ;Bit 7 of Corvus error byte is set if fatal error
                         ;Z = opposite of bit 7 (Z=1 if OK, Z=0 if error)
@@ -1040,8 +1045,9 @@ corv_put_byte:
     push af
 corpb1:
     in a,(ppi2_pc)
-    and ready           ;Mask off all except bit 4 (Corvus READY)
-    jr z,corpb1         ;Wait until Corvus READY=high
+    and ready
+    jr z,corpb1         ;Wait until Corvus READY=high (drive is ready)
+
     pop af
     out (corvus),a      ;Put byte on Corvus data bus
     ret
