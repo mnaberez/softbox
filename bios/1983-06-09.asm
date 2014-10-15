@@ -60,6 +60,8 @@ ppi2_pc:  equ ppi2+2    ;  Port C:
 ppi2_cr:  equ ppi2+3    ;  Control Register
 
 corvus:   equ 18h       ;Corvus data bus
+                        ;  SoftBox hardware will pulse the Corvus /STROBE
+                        ;  line on each read or write to this port.
 
 jp_warm:  equ 0000h     ;Jump to BDOS warm start (3 byte instruction)
 iobyte:   equ 0003h     ;CP/M I/O Mapping
