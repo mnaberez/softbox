@@ -1012,6 +1012,10 @@ corv_read_err:
     jr nz,corv_read_err ;Wait until READY=high (drive is ready)
                         ;  and DIRC=low (drive-to-host)
 
+                        ;Now, we delay and then check again.  This is to
+                        ;handle the READY line glitch described on page 204
+                        ;of the Corvus Mass Storage GTI manual.
+
     ld b,19h
 crde1:
     djnz crde1          ;Delay loop
