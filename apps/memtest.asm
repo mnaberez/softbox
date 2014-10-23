@@ -119,6 +119,8 @@ l017eh:
     djnz l0151h
     push bc
 
+                        ;"Pass=002a Err=00220020 0026-0028 Bit 24"
+
     ld hl,pass_msg      ;HL = address of "Pass=" string
     call puts           ;Write string to console out
 
@@ -127,14 +129,14 @@ l017eh:
     ld (passes),hl      ;Store passes
     call put_hex_word   ;Write number of passes to console out
 
-    ld hl,err_msg
-    call puts
+    ld hl,err_msg       ;HL = address of " Err=" string
+    call puts           ;Write string to console out
 
     ld hl,(0022h)
-    call put_hex_word
+    call put_hex_word   ;Write First word after "Err="
 
     ld hl,(0020h)
-    call put_hex_word
+    call put_hex_word   ;Write Second word after "Err="
 
     ld ix,0020h
     ld a,(ix+00h)
@@ -142,21 +144,28 @@ l017eh:
     or (ix+02h)
     or (ix+03h)
     jr z,l01e1h
-    ld a,' '
-    call putc
+
+    ld a,' '            ;A = space character
+    call putc           ;Write character to console out
+
     ld hl,(0026h)
     call put_hex_word
-    ld a,'-'
-    call putc
+
+    ld a,'-'            ;A = dash character
+    call putc           ;Write character to console out
+
     ld hl,(0028h)
     call put_hex_word
-    ld hl,bit_msg
-    call puts
+
+    ld hl,bit_msg       ;HL = address of " Bit " string
+    call puts           ;Write string to console out
+
     ld a,(0024h)
     call put_hex_byte
 
 l01e1h:
-    call newline
+    call newline        ;Write newline to console out
+
     pop bc
     inc c
     ld a,c
