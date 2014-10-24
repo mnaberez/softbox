@@ -3685,36 +3685,19 @@ lea8ch:
     inc de              ;eab9
     jp m,5025h          ;eaba
     ld bc,2139h         ;eabd
-    ld e,d              ;eac0
-    add hl,de           ;eac1
-    call 0b7bh          ;eac2
-    call 0ae9h          ;eac5
-    cp 22h              ;eac8
-    jp z,245ch          ;eaca
-    cp 27h              ;eacd
-    jp nz,24d8h         ;eacf
-    ld b,a              ;ead2
-    call 0adch          ;ead3
-    call 0adch          ;ead6
-    ld hl,(37c1h)       ;ead9
-    dec hl              ;eadc
-    dec hl              ;eadd
-    push hl             ;eade
-    cp b                ;eadf
-    ld c,00h            ;eae0
-    jp z,247ch          ;eae2
-    inc c               ;eae5
-    call 0adch          ;eae6
-    cp 0dh              ;eae9
-    jp z,2483h          ;eaeb
-    cp b                ;eaee
-    jp nz,246fh         ;eaef
-    call 0a9dh          ;eaf2
-    cp b                ;eaf5
-    jp z,246fh          ;eaf6
-    call 0ae9h          ;eaf9
-    call 0b7bh          ;eafc
-    cp 00h              ;eaff
+
+errbuf:
+;eac0-eaff
+;64 byte buffer for last error message returned from CBM DOS
+    db 5ah,   19h, 0cdh,  7bh,  0bh, 0cdh, 0e9h,  0ah, 0feh,  22h
+    db 0cah,  5ch,  24h, 0feh,  27h, 0c2h, 0d8h,  24h,  47h, 0cdh
+    db 0dch,  0ah, 0cdh, 0dch,  0ah,  2ah, 0c1h,  37h,  2bh,  2bh
+    db 0e5h, 0b8h,  0eh,  00h, 0cah,  7ch,  24h,  0ch, 0cdh, 0dch
+    db  0ah, 0feh,  0dh, 0cah,  83h,  24h, 0b8h, 0c2h,  6fh,  24h
+    db 0cdh, 09dh,  0ah, 0b8h, 0cah,  6fh,  24h, 0cdh, 0e9h,  0ah
+    db 0cdh,  7bh,  0bh, 0feh
+
+    nop                 ;eb00
     nop                 ;eb01
     sbc a,c             ;eb02
     inc h               ;eb03
