@@ -3619,7 +3619,7 @@ sub_ea30h:
     ld (bc),a           ;ea67
     dec de              ;ea68
     nop                 ;ea69
-    jr nz,lea8ch        ;ea6a
+    jr nz,0ea8ch        ;ea6a
     nop                 ;ea6c
     nop                 ;ea6d
     nop                 ;ea6e
@@ -3636,55 +3636,39 @@ sub_ea30h:
     nop                 ;ea7d
     nop                 ;ea7e
     nop                 ;ea7f
-    or c                ;ea80
-    inc b               ;ea81
-    or d                ;ea82
-    dec b               ;ea83
-    or e                ;ea84
-    ld b,0eah           ;ea85
-    ld c,0ebh           ;ea87
-    rrca                ;ea89
-    pop de              ;ea8a
-    inc e               ;ea8b
-lea8ch:
-    rst 10h             ;ea8c
-    dec e               ;ea8d
-    push bc             ;ea8e
-    ld de,12d2h         ;ea8f
-    call nc,0f413h      ;ea92
-    inc de              ;ea95
-    exx                 ;ea96
-    inc d               ;ea97
-    ld sp,hl            ;ea98
-    inc d               ;ea99
-    xor e               ;ea9a
-    ld a,(de)           ;ea9b
-    xor d               ;ea9c
-    ld a,(de)           ;ea9d
-    cp d                ;ea9e
-    ld a,(de)           ;ea9f
-    cp e                ;eaa0
-    ld a,(de)           ;eaa1
-    jp c,0bd1ah         ;eaa2
-    dec de              ;eaa5
-    xor b               ;eaa6
-    nop                 ;eaa7
-    xor c               ;eaa8
-    nop                 ;eaa9
-    nop                 ;eaaa
-    dec b               ;eaab
-    jp p,20cdh          ;eaac
-    jp 0ca30h           ;eaaf
-    dec h               ;eab2
-    push hl             ;eab3
-    rst 38h             ;eab4
-    ex de,hl            ;eab5
-    ld (hl),e           ;eab6
-    ld (hl),d           ;eab7
-    pop de              ;eab8
-    inc de              ;eab9
-    jp m,5025h          ;eaba
-    ld bc,2139h         ;eabd
+
+scrtab:
+;ea80-eabf
+;64 byte table for terminal character translation
+;
+;This is the table for Lear Siegler ADM-3A and TeleVideo 912
+;
+    db 0b1h,04h         ;0B1h -> 04h Set a TAB stop at current position
+    db 0b2h,05h         ;0B2h -> 05h Clear TAB stop at current position
+    db 0b3h,06h         ;0B3h -> 06h Clear all TAB stops
+    db 0eah,0eh         ;0EAh -> 0Eh Reverse video on
+    db 0ebh,0fh         ;0EBh -> 0Fh Reverse video off
+    db 0d1h,1ch         ;0D1h -> 1Ch Insert a space on current line
+    db 0d7h,1dh         ;0D7h -> 1Dh Delete character at cursor
+    db 0c5h,11h         ;0C5h -> 11h Insert a blank line
+    db 0d2h,12h         ;0D2h -> 12h Scroll up one line
+    db 0d4h,13h         ;0D4h -> 13h Clear to end of line
+    db 0f4h,13h         ;0F4h -> 13h Clear to end of line
+    db 0d9h,14h         ;0D9h -> 14h Clear to end of screen
+    db 0f9h,14h         ;0F9h -> 14h Clear to end of screen
+    db 0abh,1ah         ;0ABh -> 1Ah Clear screen
+    db 0aah,1ah         ;0AAh -> 1Ah Clear screen
+    db 0bah,1ah         ;0Bah -> 1Ah Clear screen
+    db 0bbh,1ah         ;0BBh -> 1Ah Clear screen
+    db 0dah,1ah         ;0DAh -> 1Ah Clear screen
+    db 0bdh,1bh         ;0BDh -> 1Bh Move cursor to X,Y position
+    db 0a8h,00h         ;0A8h -> 00h Null
+    db 0a9h,00h         ;0A9h -> 00h Null
+    db 00h              ;End of table
+
+    ;Unused space at the end of the scrtab area
+    db 05h, 0f2h, 0cdh, 20h, 0c3h, 30h, 0cah, 25h, 0e5h, 0ffh, 0ebh
+    db 73h,  72h, 0d1h, 13h, 0fah, 25h,  50h, 01h,  39h,  21h
 
 errbuf:
 ;eac0-eaff
