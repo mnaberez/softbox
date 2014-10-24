@@ -4375,57 +4375,13 @@ leedeh:
     ld (0809h),hl       ;eef8
     add a,h             ;eefb
     ld (0912h),hl       ;eefc
-    jr nz,lef0eh        ;eeff
+    jr nz,0ef0eh        ;eeff
     ld a,(bc)           ;ef01
-    ld (hl),30h         ;ef02
-    ld c,e              ;ef04
-    jr nz,lef57h        ;ef05
-    ld b,l              ;ef07
-    ld d,h              ;ef08
-    jr nz,lef4eh        ;ef09
-    ld d,b              ;ef0b
-    cpl                 ;ef0c
-    ld c,l              ;ef0d
-lef0eh:
-    jr nz,lef86h        ;ef0e
-    ld h,l              ;ef10
-    ld (hl),d           ;ef11
-    ld (hl),e           ;ef12
-    ld l,20h            ;ef13
-    ld (322eh),a        ;ef15
-    dec c               ;ef18
-    ld a,(bc)           ;ef19
-    jr z,lef7fh         ;ef1a
-    add hl,hl           ;ef1c
-    jr nz,lef50h        ;ef1d
-    add hl,sp           ;ef1f
-    jr c,lef53h         ;ef20
-    jr nz,lef6fh        ;ef22
-    ld h,l              ;ef24
-    ld l,c              ;ef25
-    ld (hl),h           ;ef26
-    ld l,b              ;ef27
-    jr nz,lef70h        ;ef28
-    ld (hl),d           ;ef2a
-    ld h,l              ;ef2b
-    ld (hl),a           ;ef2c
-    ld l,c              ;ef2d
-    ld l,(hl)           ;ef2e
-    dec c               ;ef2f
-    ld a,(bc)           ;ef30
-    ld d,d              ;ef31
-    ld h,l              ;ef32
-    halt                ;ef33
-    ld l,c              ;ef34
-    ld (hl),e           ;ef35
-    ld l,c              ;ef36
-    ld l,a              ;ef37
-    ld l,(hl)           ;ef38
-    jr nz,lef6fh        ;ef39
-    cpl                 ;ef3b
-    scf                 ;ef3c
-    cpl                 ;ef3d
-    jr c,lef71h         ;ef3e
+
+    db "60K PET CP/M vers. 2.2",0dh,0ah
+    db "(c) 1981 Keith Frewin",0dh,0ah
+    db "Revision 4/7/81"
+
     nop                 ;ef40
     nop                 ;ef41
     nop                 ;ef42
