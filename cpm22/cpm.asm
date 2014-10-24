@@ -3624,18 +3624,48 @@ sub_ea30h:
     nop                 ;ea6d
     nop                 ;ea6e
     nop                 ;ea6f
-    ld bc,0ff02h        ;ea70
-    rst 38h             ;ea73
-    rst 38h             ;ea74
-    rst 38h             ;ea75
-    rst 38h             ;ea76
-    rst 38h             ;ea77
-    ex af,af'           ;ea78
-    ld bc,0002h         ;ea79
-    nop                 ;ea7c
-    nop                 ;ea7d
-    nop                 ;ea7e
-    nop                 ;ea7f
+
+dtypes:
+;ea70-ea77
+;Disk drive types:
+
+dtype_ab:
+    db 1                ;A:, B: = CBM 8050
+dtype_cd:
+    db 2                ;C:, D: = Corvus 10MB
+dtype_ef:
+    db 0ffh             ;E:, F: = No device
+dtype_gh:
+    db 0ffh             ;G:, H: = No device
+dtype_ij:
+    db 0ffh             ;I:, J: = No device
+dtype_kl:
+    db 0ffh             ;K:, L: = No device
+dtype_mn:
+    db 0ffh             ;M:, N: = No device
+dtype_op:
+    db 0ffh             ;O:, P: = No device
+
+ddevs:
+;ea78-ea7f
+;Disk drive device addresses:
+
+ddev_ab:
+    db 8                ;A:, B: = 8
+ddev_cd:
+    db 1                ;C:, D: = 1
+ddev_ef:
+    db 2                ;E:, F: = 2
+ddev_gh:
+    db 0                ;G:, H: = 0
+ddev_ij:
+    db 0                ;I:, J: = 0
+ddev_kl:
+    db 0                ;K:, L: = 0
+ddev_mn:
+    db 0                ;M:, N: = 0
+ddev_op:
+    db 0                ;O:, P: = 0
 
 scrtab:
 ;ea80-eabf
