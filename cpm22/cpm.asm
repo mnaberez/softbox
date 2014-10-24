@@ -9,129 +9,20 @@ ld400h:
 ld406h:
     ld a,a              ;d406
 ld407h:
-    nop                 ;d407
+    db 0                ;d407
 ld408h:
-    nop                 ;d408
-    dec c               ;d409
-    ld a,(bc)           ;d40a
-    ld d,e              ;d40b
-    ld b,l              ;d40c
-    ld d,h              ;d40d
-    jr nz,ld465h        ;d40e
-    ld d,b              ;d410
-    ld d,b              ;d411
-    ld b,l              ;d412
-    ld d,d              ;d413
-    dec c               ;d414
-    ld a,(bc)           ;d415
-    ld b,h              ;d416
-    ld c,c              ;d417
-    ld d,d              ;d418
-    dec c               ;d419
-    ld a,(bc)           ;d41a
-    ld d,e              ;d41b
-    ld b,l              ;d41c
-    ld d,h              ;d41d
-    jr nz,ld46ch        ;d41e
-    ld c,a              ;d420
-    ld d,a              ;d421
-    ld b,l              ;d422
-    ld d,d              ;d423
-    dec c               ;d424
-    ld a,(bc)           ;d425
-    ld d,e              ;d426
-    ld d,h              ;d427
-    ld b,c              ;d428
-    ld d,h              ;d429
-    jr nz,ld456h        ;d42a
-    ld l,2ah            ;d42c
-    dec c               ;d42e
-    ld a,(bc)           ;d42f
-    ld d,e              ;d430
-    ld d,l              ;d431
-    ld b,d              ;d432
-    ld c,l              ;d433
-    ld c,c              ;d434
-    ld d,h              ;d435
-    jr nz,ld47fh        ;d436
-    ld c,(hl)           ;d438
-    ld b,c              ;d439
-    ld d,e              ;d43a
-    ld c,b              ;d43b
-    ld b,l              ;d43c
-    ld d,d              ;d43d
-    dec c               ;d43e
-    ld a,(bc)           ;d43f
-    ld a,(de)           ;d440
-    ld a,(de)           ;d441
-    ld a,(de)           ;d442
-    ld a,(de)           ;d443
-    ld a,(de)           ;d444
-    ld a,(de)           ;d445
-    ld a,(de)           ;d446
-    ld a,(de)           ;d447
-    ld a,(de)           ;d448
-    ld a,(de)           ;d449
-    ld a,(de)           ;d44a
-    ld a,(de)           ;d44b
-    ld a,(de)           ;d44c
-    ld a,(de)           ;d44d
-    ld a,(de)           ;d44e
-    ld a,(de)           ;d44f
-    ld a,(de)           ;d450
-    ld a,(de)           ;d451
-    ld a,(de)           ;d452
-    ld a,(de)           ;d453
-    ld a,(de)           ;d454
-    ld a,(de)           ;d455
-ld456h:
-    ld a,(de)           ;d456
-    ld a,(de)           ;d457
-    nop                 ;d458
-    nop                 ;d459
-    nop                 ;d45a
-    nop                 ;d45b
-    nop                 ;d45c
-    nop                 ;d45d
-    nop                 ;d45e
-    nop                 ;d45f
-    jr z,$+101          ;d460
-    add hl,hl           ;d462
-    jr nz,ld4a8h        ;d463
-ld465h:
-    ld l,a              ;d465
-    ld (hl),b           ;d466
-    ld a,c              ;d467
-    ld (hl),d           ;d468
-    ld l,c              ;d469
-    ld h,a              ;d46a
-    ld l,b              ;d46b
-ld46ch:
-    ld (hl),h           ;d46c
-    jr nz,$+51          ;d46d
-    add hl,sp           ;d46f
-    jr c,$+51           ;d470
-    jr nz,ld4b8h        ;d472
-    ld l,c              ;d474
-    ld h,a              ;d475
-    ld l,c              ;d476
-    ld (hl),h           ;d477
-    ld h,c              ;d478
-    ld l,h              ;d479
-    jr nz,$+84          ;d47a
-    ld h,l              ;d47c
-    ld (hl),e           ;d47d
-    ld h,l              ;d47e
-ld47fh:
-    ld h,c              ;d47f
-    ld (hl),d           ;d480
-    ld h,e              ;d481
-    ld l,b              ;d482
-    nop                 ;d483
-    nop                 ;d484
-    nop                 ;d485
-    nop                 ;d486
-    nop                 ;d487
+    db 0,0dh,0ah
+    db "SET UPPER",0dh,0ah
+    db "DIR",0dh,0ah
+    db "SET LOWER",0dh,0ah
+    db "STAT *.*",0dh,0ah
+    db "SUBMIT GNASHER",0dh,0ah
+    db 1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah
+    db 1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah
+    db 1ah,1ah,1ah,1ah,1ah,1ah,1ah,1ah
+    db 0,0,0,0,0,0,0,0
+    db "(c) Copyright 1981 Digital Research"
+    db 0,0,0,0,0
 ld488h:
     ex af,af'           ;d488
     call nc,0000h       ;d489
@@ -154,7 +45,6 @@ sub_d4a2h:
     jp sub_d492h        ;d4a4
 ld4a7h:
     push bc             ;d4a7
-ld4a8h:
     call sub_d498h      ;d4a8
     pop hl              ;d4ab
 ld4ach:
@@ -520,27 +410,12 @@ ld709h:
     ld a,b              ;d70d
     or a                ;d70e
     ret                 ;d70f
-    ld b,h              ;d710
-    ld c,c              ;d711
-    ld d,d              ;d712
-    jr nz,$+71          ;d713
-    ld d,d              ;d715
-    ld b,c              ;d716
-    jr nz,$+86          ;d717
-    ld e,c              ;d719
-    ld d,b              ;d71a
-    ld b,l              ;d71b
-    ld d,e              ;d71c
-    ld b,c              ;d71d
-    ld d,(hl)           ;d71e
-    ld b,l              ;d71f
-    ld d,d              ;d720
-    ld b,l              ;d721
-    ld c,(hl)           ;d722
-    jr nz,$+87          ;d723
-    ld d,e              ;d725
-    ld b,l              ;d726
-    ld d,d              ;d727
+    db "DIR "
+    db "ERA "
+    db "TYPE"
+    db "SAVE"
+    db "REN "
+    db "USER"
 ld728h:
     ld e,e              ;d728
     ld d,01h            ;d729
@@ -650,27 +525,12 @@ sub_d7d9h:
     ld bc,ld7dfh        ;d7d9
     jp ld4a7h           ;d7dc
 ld7dfh:
-    ld d,d              ;d7df
-    ld b,l              ;d7e0
-    ld b,c              ;d7e1
-    ld b,h              ;d7e2
-    jr nz,ld82ah        ;d7e3
-    ld d,d              ;d7e5
-    ld d,d              ;d7e6
-    ld c,a              ;d7e7
-    ld d,d              ;d7e8
-    nop                 ;d7e9
+    db "READ ERROR",0
 sub_d7eah:
     ld bc,ld7f0h        ;d7ea
     jp ld4a7h           ;d7ed
 ld7f0h:
-    ld c,(hl)           ;d7f0
-    ld c,a              ;d7f1
-    jr nz,ld83ah        ;d7f2
-    ld c,c              ;d7f4
-    ld c,h              ;d7f5
-    ld b,l              ;d7f6
-    nop                 ;d7f7
+    db "NO FILE",0
 sub_d7f8h:
     call sub_d65eh      ;d7f8
     ld a,(ldbf0h)       ;d7fb
@@ -699,7 +559,6 @@ ld808h:
     add a,b             ;d825
     jp c,ld609h         ;d826
     add a,d             ;d829
-ld82ah:
     jp c,ld609h         ;d82a
     ld b,a              ;d82d
     dec c               ;d82e
@@ -710,7 +569,6 @@ ld833h:
     cp 20h              ;d834
     jp nz,ld609h        ;d836
     inc hl              ;d839
-ld83ah:
     dec c               ;d83a
     jp nz,ld833h        ;d83b
     ld a,b              ;d83e
@@ -864,16 +722,7 @@ ld942h:
     call z,sub_d7eah    ;d94c
     jp ldb86h           ;d94f
 ld952h:
-    ld b,c              ;d952
-    ld c,h              ;d953
-    ld c,h              ;d954
-    jr nz,$+42          ;d955
-    ld e,c              ;d957
-    cpl                 ;d958
-    ld c,(hl)           ;d959
-    add hl,hl           ;d95a
-    ccf                 ;d95b
-    nop                 ;d95c
+    db "ALL (Y/N)?",0
     call sub_d65eh      ;d95d
     jp nz,ld609h        ;d960
     call sub_d854h      ;d963
@@ -957,14 +806,7 @@ lda01h:
     call sub_d5d5h      ;da01
     jp ldb86h           ;da04
 lda07h:
-    ld c,(hl)           ;da07
-    ld c,a              ;da08
-    jr nz,lda5eh        ;da09
-    ld d,b              ;da0b
-    ld b,c              ;da0c
-    ld b,e              ;da0d
-    ld b,l              ;da0e
-    nop                 ;da0f
+    db "NO SPACE",0
     call sub_d65eh      ;da10
     jp nz,ld609h        ;da13
     ld a,(ldbf0h)       ;da16
@@ -1002,7 +844,6 @@ lda59h:
     ld (hl),b           ;da59
     xor a               ;da5a
     ld (ldbcdh),a       ;da5b
-lda5eh:
     call sub_d4e9h      ;da5e
     jp z,lda6dh         ;da61
     ld de,ldbcdh        ;da64
@@ -1019,17 +860,7 @@ lda79h:
     call ld4a7h         ;da7c
     jp ldb86h           ;da7f
 lda82h:
-    ld b,(hl)           ;da82
-    ld c,c              ;da83
-    ld c,h              ;da84
-    ld b,l              ;da85
-    jr nz,ldacdh        ;da86
-    ld e,b              ;da88
-    ld c,c              ;da89
-    ld d,e              ;da8a
-    ld d,h              ;da8b
-    ld d,e              ;da8c
-    nop                 ;da8d
+    db "FILE EXISTS",0
     call sub_d7f8h      ;da8e
     cp 10h              ;da91
     jp nc,ld609h        ;da93
@@ -1057,7 +888,6 @@ ldac4h:
     ld a,(de)           ;dac7
     cp 20h              ;dac8
     jp nz,ld609h        ;daca
-ldacdh:
     push de             ;dacd
     call sub_d854h      ;dace
     pop de              ;dad1
@@ -1144,14 +974,7 @@ ldb71h:
     call ld4a7h         ;db74
     jp ldb86h           ;db77
 ldb7ah:
-    ld b,d              ;db7a
-    ld b,c              ;db7b
-    ld b,h              ;db7c
-    jr nz,ldbcbh        ;db7d
-    ld c,a              ;db7f
-    ld b,c              ;db80
-    ld b,h              ;db81
-    nop                 ;db82
+    db "BAD LOAD",0
 ldb83h:
     ld b,e              ;db83
     ld c,a              ;db84
@@ -1186,15 +1009,7 @@ ldbabh:
     nop                 ;dbab
 ldbach:
     nop                 ;dbac
-    inc h               ;dbad
-    inc h               ;dbae
-    inc h               ;dbaf
-    jr nz,ldbd2h        ;dbb0
-    jr nz,ldbd4h        ;dbb2
-    jr nz,$+85          ;dbb4
-    ld d,l              ;dbb6
-    ld b,d              ;dbb7
-    nop                 ;dbb8
+    db "$$$     SUB",0
     nop                 ;dbb9
 ldbbah:
     nop                 ;dbba
@@ -1215,7 +1030,6 @@ ldbbbh:
     nop                 ;dbc8
     nop                 ;dbc9
     nop                 ;dbca
-ldbcbh:
     nop                 ;dbcb
 ldbcch:
     nop                 ;dbcc
@@ -1226,10 +1040,8 @@ ldbceh:
     nop                 ;dbcf
     nop                 ;dbd0
     nop                 ;dbd1
-ldbd2h:
     nop                 ;dbd2
     nop                 ;dbd3
-ldbd4h:
     nop                 ;dbd4
     nop                 ;dbd5
 ldbd6h:
@@ -1400,45 +1212,13 @@ ldcb4h:
     call sub_dce5h      ;dcb4
     jp 0000h            ;dcb7
 ldcbah:
-    ld b,d              ;dcba
-    ld h,h              ;dcbb
-    ld l,a              ;dcbc
-    ld (hl),e           ;dcbd
-    jr nz,$+71          ;dcbe
-    ld (hl),d           ;dcc0
-    ld (hl),d           ;dcc1
-    jr nz,ldd13h        ;dcc2
-    ld l,(hl)           ;dcc4
-    jr nz,$+34          ;dcc5
-    ld a,(2420h)        ;dcc7
+    db "Bdos Err On  : $"
 ldccah:
-    ld b,d              ;dcca
-    ld h,c              ;dccb
-    ld h,h              ;dccc
-    jr nz,ldd22h        ;dccd
-    ld h,l              ;dccf
-    ld h,e              ;dcd0
-    ld (hl),h           ;dcd1
-    ld l,a              ;dcd2
-    ld (hl),d           ;dcd3
-    inc h               ;dcd4
+    db "Bad Sector$"
 ldcd5h:
-    ld d,e              ;dcd5
-    ld h,l              ;dcd6
-    ld l,h              ;dcd7
-    ld h,l              ;dcd8
-    ld h,e              ;dcd9
-    ld (hl),h           ;dcda
-    inc h               ;dcdb
+    db "Select$"
 ldcdch:
-    ld b,(hl)           ;dcdc
-    ld l,c              ;dcdd
-    ld l,h              ;dcde
-    ld h,l              ;dcdf
-    jr nz,$+84          ;dce0
-    cpl                 ;dce2
-    ld c,a              ;dce3
-    inc h               ;dce4
+    db "File R/O$"
 sub_dce5h:
     push hl             ;dce5
     call sub_ddc9h      ;dce6
@@ -1464,7 +1244,6 @@ sub_dd06h:
     ld c,a              ;dd0e
     call sub_dd90h      ;dd0f
     pop af              ;dd12
-ldd13h:
     ret                 ;dd13
 sub_dd14h:
     cp 0dh              ;dd14
@@ -1476,7 +1255,6 @@ sub_dd14h:
     cp 08h              ;dd1d
     ret z               ;dd1f
     cp 20h              ;dd20
-ldd22h:
     ret                 ;dd22
 sub_dd23h:
     ld a,(ldf0eh)       ;dd23
