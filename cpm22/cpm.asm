@@ -3579,51 +3579,156 @@ sub_ea30h:
     nop                 ;ea3d
     nop                 ;ea3e
     nop                 ;ea3f
-    nop                 ;ea40
-    nop                 ;ea41
-    nop                 ;ea42
-    nop                 ;ea43
-    nop                 ;ea44
-    nop                 ;ea45
-    nop                 ;ea46
-    nop                 ;ea47
-    nop                 ;ea48
-    nop                 ;ea49
-    nop                 ;ea4a
-    nop                 ;ea4b
-    nop                 ;ea4c
-    nop                 ;ea4d
-    nop                 ;ea4e
-    nop                 ;ea4f
-    nop                 ;ea50
-    nop                 ;ea51
-    nop                 ;ea52
-    nop                 ;ea53
-    nop                 ;ea54
-    nop                 ;ea55
-    nop                 ;ea56
-    nop                 ;ea57
-    nop                 ;ea58
-    nop                 ;ea59
-    nop                 ;ea5a
-    nop                 ;ea5b
-    nop                 ;ea5c
-    nop                 ;ea5d
-    nop                 ;ea5e
-    nop                 ;ea5f
-    nop                 ;ea60
-    inc b               ;ea61
-    ld b,05h            ;ea62
-    ld a,d              ;ea64
-    xor 04h             ;ea65
-    ld (bc),a           ;ea67
-    dec de              ;ea68
-    nop                 ;ea69
-    jr nz,0ea8ch        ;ea6a
-    nop                 ;ea6c
-    nop                 ;ea6d
-    nop                 ;ea6e
-    nop                 ;ea6f
+
+dirsave:
+;ea40
+;Saves the original value of DIRSIZE after boot
+    db 0
+
+jiffies:
+;ea41
+;CBM clock data: Jiffies (counts up to 50 or 60)
+;
+    db 0
+
+secs:
+;ea42
+;CBM clock data: Seconds
+;
+    db 0
+
+mins:
+;ea43
+;CBM clock data: Minutes
+;
+    db 0
+
+hours:
+;ea44
+;CBM clock data: Hours
+;
+    db 0
+
+jiffy2:
+;ea45
+;CBM clock data: Jiffy counter (MSB)
+;
+    db 0
+
+jiffy1:
+;ea46
+;CBM clock data: Jiffy counter
+;
+    db 0
+
+jiffy0:
+;ea47
+;CBM clock data: Jiffy counter (LSB)
+;
+    db 0
+
+unused_ea48_ea5f:
+;ea48-ea5f
+;Not used by any known SoftBox BIOS
+;
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+iosetup:
+;ea60
+;Byte that is written to IOBYTE
+;
+    db 0
+
+lpt_dev:
+;ea61
+;CBM printer (LPT:) IEEE-488 primary address
+;
+    db 4
+
+ptr_dev:
+;ea62
+;Paper Tape Reader (PTR:) IEEE-488 primary address
+;
+    db 6
+
+ptp_dev:
+;ea63
+;Paper Tape Punch (PTP:) IEEE-488 primary address
+;
+    db 5
+
+ser_mode:
+;ea64
+;Byte that is written to 8251 USART mode register
+;
+    db 7ah
+
+ser_baud:
+;ea65
+;Byte that is written to COM8116 baud rate generator
+;
+    db 0eeh             ;9600 baud
+
+ul1_dev:
+;ea66
+;ASCII printer (UL1:) IEEE-488 primary address
+;
+    db 4
+
+termtype:
+;ea67
+;Terminal type: 0=ADM3A, 1=HZ1500, 2=TV912
+;               Bit 7 is set if uppercase graphics mode
+;
+    db 2                ;TV912
+
+leadin:
+;ea68
+;Terminal command lead-in: 1bh=escape, 7eh=tilde
+;
+    db 1bh              ;Escape for ADM-3A or TV912
+
+xy_order:
+;ea69
+;X,Y order when sending move-to: 0=Y first, 1=X first
+;
+    db 0                ;Y-first for ADM-3A or TV912
+
+y_offset:
+;ea6a
+;Offset added to Y when sending move-to sequence
+;
+    db 20h              ;Offset for ADM-3A or TV912
+
+x_offset:
+;ea6b
+;Offset added to X when sending move-to sequence
+;
+    db 20h              ;Offset for ADM-3A or TV912
+
+eoisav:
+;ea6c
+;Stores ppi2_pa IEEE-488 control lines after get byte
+;
+    db 0
+
+lptype:
+;ea6d
+;CBM printer (LPT:) type
+;
+    db 0                ;CBM 3022
+
+list_tmp:
+;ea6e
+;Stores the last character sent to the LIST routine
+;
+    db 0
+
+unused_ea6f:
+;ea6f
+;Not used by any known SoftBox BIOS
+;
+    db 0
 
 dtypes:
 ;ea70-ea77
@@ -3703,6 +3808,7 @@ scrtab:
 errbuf:
 ;eac0-eaff
 ;64 byte buffer for last error message returned from CBM DOS
+;
     db 5ah,   19h, 0cdh,  7bh,  0bh, 0cdh, 0e9h,  0ah, 0feh,  22h
     db 0cah,  5ch,  24h, 0feh,  27h, 0c2h, 0d8h,  24h,  47h, 0cdh
     db 0dch,  0ah, 0cdh, 0dch,  0ah,  2ah, 0c1h,  37h,  2bh,  2bh
