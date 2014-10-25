@@ -1141,7 +1141,7 @@ ldc47h:
     defb 0ddh,0ceh,0deh ;illegal sequence
     ld (de),a           ;dc4f
     jp pe,lea0fh        ;dc50
-    call nc,sub_eddeh   ;dc53
+    call nc,0eddeh      ;dc53
     sbc a,0f3h          ;dc56
     sbc a,0f8h          ;dc58
     sbc a,0e1h          ;dc5a
@@ -3595,126 +3595,203 @@ errbuf:
     db 0cdh, 09dh,  0ah, 0b8h, 0cah,  6fh,  24h, 0cdh, 0e9h,  0ah
     db 0cdh,  7bh,  0bh, 0feh
 
-    nop                 ;eb00
-    nop                 ;eb01
-    sbc a,c             ;eb02
-    inc h               ;eb03
-    cp 3bh              ;eb04
-    jp z,2499h          ;eb06
-    cp b                ;eb09
-    jp z,2499h          ;eb0a
-    cp 0dh              ;eb0d
-    pop hl              ;eb0f
-    ld (37c1h),hl       ;eb10
-    jp nz,24d8h         ;eb13
-    ld a,c              ;eb16
-    cp 02h              ;eb17
-    jp c,24d8h          ;eb19
-    call 0ad6h          ;eb1c
-    ld b,a              ;eb1f
-    call 0adch          ;eb20
-    call 0adch          ;eb23
-    jp 24bbh            ;eb26
-    push bc             ;eb29
-    call 15d3h          ;eb2a
-    pop bc              ;eb2d
-    call 0adch          ;eb2e
-    cp 0dh              ;eb31
-    ret z               ;eb33
-    cp b                ;eb34
-    jp nz,24b3h         ;eb35
-    call 0ad6h          ;eb38
-    cp b                ;eb3b
-    jp z,24d2h          ;eb3c
-    call 0a9dh          ;eb3f
-    cp 2ch              ;eb42
-    jp z,2449h          ;eb44
-    ret                 ;eb47
-    call 15d3h          ;eb48
-    jp 2449h            ;eb4b
-    call 0f03h          ;eb4e
-    push af             ;eb51
-    ld a,(3924h)        ;eb52
-    or a                ;eb55
-    jp m,1713h          ;eb56
-    pop af              ;eb59
-    call 15d3h          ;eb5a
-    ld a,c              ;eb5d
-    cp 2ch              ;eb5e
-    jp z,2449h          ;eb60
-    ret                 ;eb63
-    call 1e49h          ;eb64
-    push af             ;eb67
-    ld a,b              ;eb68
-    and 83h             ;eb69
-    call nz,04aah       ;eb6b
-    pop af              ;eb6e
-    ret                 ;eb6f
-    call 195ah          ;eb70
-    call 0b7bh          ;eb73
-    cp 22h              ;eb76
-    jp z,250ah          ;eb78
-    cp 27h              ;eb7b
-    call nz,0474h       ;eb7d
-    ld c,a              ;eb80
-    call 0adch          ;eb81
-    cp 0dh              ;eb84
-    ret z               ;eb86
-    ld b,a              ;eb87
-    call 0ad6h          ;eb88
-    cp c                ;eb8b
-    jp z,2520h          ;eb8c
-    ld a,b              ;eb8f
-    call 15d3h          ;eb90
-    jp 250bh            ;eb93
-    call 0af3h          ;eb96
-    call 0ad6h          ;eb99
-    cp c                ;eb9c
-    jp z,2539h          ;eb9d
-    ld a,b              ;eba0
-    or 80h              ;eba1
-    call 15d3h          ;eba3
-    call 0a9dh          ;eba6
-    cp 2ch              ;eba9
-    jp z,24fah          ;ebab
-    ret                 ;ebae
-    ld a,b              ;ebaf
-    call 15d3h          ;ebb0
-    ld a,c              ;ebb3
-    call 0af3h          ;ebb4
-    jp 2511h            ;ebb7
-    call 195ah          ;ebba
-    call 2558h          ;ebbd
-    call 2424h          ;ebc0
-    ld hl,(384dh)       ;ebc3
-    add hl,de           ;ebc6
-    ld a,(384ch)        ;ebc7
-    ld b,a              ;ebca
-    jp 2371h            ;ebcb
-    call 24eeh          ;ebce
-    ld a,(376ah)        ;ebd1
-    or a                ;ebd4
-    ret nz              ;ebd5
-    ld a,(3876h)        ;ebd6
-    cp 55h              ;ebd9
-    ret nz              ;ebdb
-    inc a               ;ebdc
-    ld (3876h),a        ;ebdd
-    ret                 ;ebe0
-    call 195ah          ;ebe1
-    call 2424h          ;ebe4
-    call 1e49h          ;ebe7
-    call 1635h          ;ebea
-    ld a,c              ;ebed
-    cp 2ch              ;ebee
-    jp z,256bh          ;ebf0
-    ret                 ;ebf3
-    ld a,(3771h)        ;ebf4
-    dec a               ;ebf7
-    jp m,25a6h          ;ebf8
-    ld b,a              ;ebfb
-    ld (3771h),a        ;ebfc
-    ld a,(3772h)        ;ebff
+dbp_base:
+;eb00-ebff
+;Disk Parameter Blocks (DPB), 16 blocks for each drive A: to P:
+
+dpb_a:
+;eb00-eb0f
+;
+    dw 0000h            ;XLT: Address of sector translation table
+    dw 2499h            ;Used as workspace by CP/M (3 words)
+    dw 3bfeh
+    dw 99cah
+    dw 0b824h           ;DIRBUF: Address of 128-byte sector buffer
+    dw 99cah            ;CSV: Address of the directory checksum vector
+    dw 0fe24h           ;ALV: Address of the allocation vector
+    dw 0e10dh           ;Unused
+
+dpb_b:
+;eb10-eb1f
+;
+    dw 0c122h           ;XLT: Address of sector translation table
+    dw 0c237h           ;Used as workspace by CP/M (3 words)
+    dw 24d8h
+    dw 0fe79h
+    dw 0da02h           ;DIRBUF: Address of 128-byte sector buffer
+    dw 24d8h            ;CSV: Address of the directory checksum vector
+    dw 0d6cdh           ;ALV: Address of the allocation vector
+    dw 470ah            ;Unused
+
+dpb_c:
+;eb20-eb2f
+;
+    dw 0dccdh           ;XLT: Address of sector translation table
+    dw 0cd0ah           ;Used as workspace by CP/M (3 words)
+    dw 0adch
+    dw 0bbc3h
+    dw 0c524h           ;DIRBUF: Address of 128-byte sector buffer
+    dw 0d3cdh           ;CSV: Address of the directory checksum vector
+    dw 0c115h           ;ALV: Address of the allocation vector
+    dw 0dccdh           ;Unused
+
+dpb_d:
+;eb30-eb3f
+;
+    dw 0fe0ah           ;XLT: Address of sector translation table
+    dw 0c80dh           ;Used as workspace by CP/M (3 words)
+    dw 0c2b8h
+    dw 24b3h
+    dw 0d6cdh           ;DIRBUF: Address of 128-byte sector buffer
+    dw 0b80ah           ;CSV: Address of the directory checksum vector
+    dw 0d2cah           ;ALV: Address of the allocation vector
+    dw 0cd24h           ;Unused
+
+dpb_e:
+;eb40-eb4f
+;
+    dw 0a9dh            ;XLT: Address of sector translation table
+    dw 2cfeh            ;Used as workspace by CP/M (3 words)
+    dw 49cah
+    dw 0c924h
+    dw 0d3cdh           ;DIRBUF: Address of 128-byte sector buffer
+    dw 0c315h           ;CSV: Address of the directory checksum vector
+    dw 2449h            ;ALV: Address of the allocation vector
+    dw 03cdh            ;Unused
+
+dpb_f:
+;eb50-eb5f
+;
+    dw 0f50fh           ;XLT: Address of sector translation table
+    dw 243ah            ;Used as workspace by CP/M (3 words)
+    dw 0b739h
+    dw 13fah
+    dw 0f117h           ;DIRBUF: Address of 128-byte sector buffer
+    dw 0d3cdh           ;CSV: Address of the directory checksum vector
+    dw 7915h            ;ALV: Address of the allocation vector
+    dw 2cfeh            ;Unused
+
+dpb_g:
+;eb60-eb6f
+;
+    dw 49cah            ;XLT: Address of sector translation table
+    dw 0c924h           ;Used as workspace by CP/M (3 words)
+    dw 49cdh
+    dw 0f51eh
+    dw 0e678h           ;DIRBUF: Address of 128-byte sector buffer
+    dw 0c483h           ;CSV: Address of the directory checksum vector
+    dw 04aah            ;ALV: Address of the allocation vector
+    dw 0c9f1h           ;Unused
+
+dpb_h:
+;eb70-eb7f
+;
+    dw 5acdh            ;XLT: Address of sector translation table
+    dw 0cd19h           ;Used as workspace by CP/M (3 words)
+    dw 0b7bh
+    dw 22feh
+    dw 0acah            ;DIRBUF: Address of 128-byte sector buffer
+    dw 0fe25h           ;CSV: Address of the directory checksum vector
+    dw 0c427h           ;ALV: Address of the allocation vector
+    dw 0474h            ;Unused
+
+dpb_i:
+;eb80-eb8f
+;
+    dw 0cd4fh           ;XLT: Address of sector translation table
+    dw 0adch            ;Used as workspace by CP/M (3 words)
+    dw 0dfeh
+    dw 47c8h
+    dw 0d6cdh           ;DIRBUF: Address of 128-byte sector buffer
+    dw 0b90ah           ;CSV: Address of the directory checksum vector
+    dw 20cah            ;ALV: Address of the allocation vector
+    dw 7825h            ;Unused
+
+dpb_j:
+;eb90-eb9f
+;
+    dw 0d3cdh           ;XLT: Address of sector translation table
+    dw 0c315h           ;Used as workspace by CP/M (3 words)
+    dw 250bh
+    dw 0f3cdh
+    dw 0cd0ah           ;DIRBUF: Address of 128-byte sector buffer
+    dw 0ad6h            ;CSV: Address of the directory checksum vector
+    dw 0cab9h           ;ALV: Address of the allocation vector
+    dw 2539h            ;Unused
+
+dpb_k:
+;eba0-ebaf
+;
+    dw 0f678h           ;XLT: Address of sector translation table
+    dw 0cd80h           ;Used as workspace by CP/M (3 words)
+    dw 15d3h
+    dw 9dcdh
+    dw 0fe0ah           ;DIRBUF: Address of 128-byte sector buffer
+    dw 0ca2ch           ;CSV: Address of the directory checksum vector
+    dw 24fah            ;ALV: Address of the allocation vector
+    dw 78c9h            ;Unused
+
+dpb_l:
+;ebb0-ebbf
+;
+    dw 0d3cdh           ;XLT: Address of sector translation table
+    dw 7915h            ;Used as workspace by CP/M (3 words)
+    dw 0f3cdh
+    dw 0c30ah
+    dw 2511h            ;DIRBUF: Address of 128-byte sector buffer
+    dw 5acdh            ;CSV: Address of the directory checksum vector
+    dw 0cd19h           ;ALV: Address of the allocation vector
+    dw 2558h            ;Unused
+
+dpb_m:
+;ebc0-ebcf
+;
+    dw 24cdh            ;XLT: Address of sector translation table
+    dw 2a24h            ;Used as workspace by CP/M (3 words)
+    dw 384dh
+    dw 3a19h
+    dw 384ch            ;DIRBUF: Address of 128-byte sector buffer
+    dw 0c347h           ;CSV: Address of the directory checksum vector
+    dw 2371h            ;ALV: Address of the allocation vector
+    dw 0eecdh           ;Unused
+
+dpb_n:
+;ebd0-ebdf
+;
+    dw 3a24h            ;XLT: Address of sector translation table
+    dw 376ah            ;Used as workspace by CP/M (3 words)
+    dw 0c0b7h
+    dw 763ah
+    dw 0fe38h           ;DIRBUF: Address of 128-byte sector buffer
+    dw 0c055h           ;CSV: Address of the directory checksum vector
+    dw 323ch            ;ALV: Address of the allocation vector
+    dw 3876h            ;Unused
+
+dpb_o:
+;ebe0-ebef
+;
+    dw 0cdc9h           ;XLT: Address of sector translation table
+    dw 195ah            ;Used as workspace by CP/M (3 words)
+    dw 24cdh
+    dw 0cd24h
+    dw 1e49h            ;DIRBUF: Address of 128-byte sector buffer
+    dw 35cdh            ;CSV: Address of the directory checksum vector
+    dw 7916h            ;ALV: Address of the allocation vector
+    dw 2cfeh            ;Unused
+
+dpb_p:
+;ebf0-ebff
+;
+    dw 6bcah            ;XLT: Address of sector translation table
+    dw 0c925h           ;Used as workspace by CP/M (3 words)
+    dw 713ah
+    dw 3d37h
+    dw 0a6fah           ;DIRBUF: Address of 128-byte sector buffer
+    dw 4725h            ;CSV: Address of the directory checksum vector
+    dw 7132h            ;ALV: Address of the allocation vector
+    dw 3a37h            ;Unused
+
+    db 72h, 37h         ;ec00
     dec a               ;ec02
     cp b                ;ec03
     jp nz,2594h         ;ec04
@@ -3987,7 +4064,6 @@ errbuf:
     nop                 ;eddb
     nop                 ;eddc
     nop                 ;eddd
-sub_eddeh:
     nop                 ;edde
     nop                 ;eddf
     nop                 ;ede0
@@ -4033,7 +4109,6 @@ sub_eddeh:
     nop                 ;ee08
     nop                 ;ee09
     nop                 ;ee0a
-lee0bh:
     nop                 ;ee0b
     nop                 ;ee0c
     nop                 ;ee0d
@@ -4055,7 +4130,6 @@ lee0bh:
     nop                 ;ee1d
     nop                 ;ee1e
     nop                 ;ee1f
-lee20h:
     nop                 ;ee20
     nop                 ;ee21
     nop                 ;ee22
@@ -4137,7 +4211,6 @@ lee20h:
     nop                 ;ee6e
     nop                 ;ee6f
     nop                 ;ee70
-lee71h:
     nop                 ;ee71
     nop                 ;ee72
     nop                 ;ee73
@@ -4145,9 +4218,8 @@ lee71h:
     nop                 ;ee75
     nop                 ;ee76
     nop                 ;ee77
-lee78h:
     nop                 ;ee78
-    jr nz,lee0bh        ;ee79
+    jr nz,0ee0bh        ;ee79
     nop                 ;ee7b
     ld b,d              ;ee7c
     nop                 ;ee7d
@@ -4176,11 +4248,10 @@ lee78h:
     ex af,af'           ;ee96
     ld bc,4200h         ;ee97
     ex af,af'           ;ee9a
-    djnz leea1h         ;ee9b
+    djnz 0eea1h         ;ee9b
     inc h               ;ee9d
-    djnz lee20h         ;ee9e
+    db 10h, 80h         ;ee9e
     adc a,c             ;eea0
-leea1h:
     ex af,af'           ;eea1
     ld b,b              ;eea2
     inc h               ;eea3
@@ -4195,7 +4266,7 @@ leea1h:
     ld b,b              ;eeac
     ld hl,0824h         ;eead
     ld b,h              ;eeb0
-    jr nz,leec3h        ;eeb1
+    jr nz,0eec3h        ;eeb1
     adc a,c             ;eeb3
     add hl,bc           ;eeb4
     ex af,af'           ;eeb5
@@ -4210,13 +4281,11 @@ leea1h:
     inc h               ;eec0
     inc h               ;eec1
     inc h               ;eec2
-leec3h:
     sub b               ;eec3
     sub d               ;eec4
     inc h               ;eec5
-    djnz leec9h         ;eec6
+    djnz 0eec9h         ;eec6
     add hl,bc           ;eec8
-leec9h:
     ex af,af'           ;eec9
     ld b,d              ;eeca
     ld b,c              ;eecb
@@ -4225,7 +4294,7 @@ leec9h:
     sub b               ;eed0
     ex af,af'           ;eed1
     add hl,bc           ;eed2
-    jr nz,leedeh        ;eed3
+    jr nz,0eedeh        ;eed3
     ex af,af'           ;eed5
     ld b,d              ;eed6
     ld bc,0211h         ;eed7
@@ -4233,7 +4302,6 @@ leec9h:
     ld b,d              ;eedb
     inc b               ;eedc
     inc b               ;eedd
-leedeh:
     add a,h             ;eede
     inc h               ;eedf
     add a,h             ;eee0
@@ -4241,11 +4309,11 @@ leedeh:
     inc h               ;eee2
     jr nz,$+35          ;eee3
     ex af,af'           ;eee5
-    djnz lee78h         ;eee6
+    djnz 0ee78h         ;eee6
     inc h               ;eee8
     inc h               ;eee9
     ld b,d              ;eeea
-    djnz lee71h         ;eeeb
+    djnz 0ee71h         ;eeeb
     inc h               ;eeed
     add a,c             ;eeee
     ld hl,2009h         ;eeef
