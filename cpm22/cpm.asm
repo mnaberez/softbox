@@ -3597,7 +3597,7 @@ errbuf:
 
 dbp_base:
 ;eb00-ebff
-;Disk Parameter Blocks (DPB), 16 blocks for each drive A: to P:
+;Disk Parameter Blocks (DPB), 16 bytes for each drive A: to P:
 
 dpb_a:
 ;eb00-eb0f
