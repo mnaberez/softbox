@@ -3556,27 +3556,27 @@ scrtab:
 ;
 ;This is the table for Lear Siegler ADM-3A and TeleVideo 912
 ;
-    db 0b1h,04h         ;0B1h -> 04h Set a TAB stop at current position
-    db 0b2h,05h         ;0B2h -> 05h Clear TAB stop at current position
-    db 0b3h,06h         ;0B3h -> 06h Clear all TAB stops
-    db 0eah,0eh         ;0EAh -> 0Eh Reverse video on
-    db 0ebh,0fh         ;0EBh -> 0Fh Reverse video off
-    db 0d1h,1ch         ;0D1h -> 1Ch Insert a space on current line
-    db 0d7h,1dh         ;0D7h -> 1Dh Delete character at cursor
-    db 0c5h,11h         ;0C5h -> 11h Insert a blank line
-    db 0d2h,12h         ;0D2h -> 12h Scroll up one line
-    db 0d4h,13h         ;0D4h -> 13h Clear to end of line
-    db 0f4h,13h         ;0F4h -> 13h Clear to end of line
-    db 0d9h,14h         ;0D9h -> 14h Clear to end of screen
-    db 0f9h,14h         ;0F9h -> 14h Clear to end of screen
-    db 0abh,1ah         ;0ABh -> 1Ah Clear screen
-    db 0aah,1ah         ;0AAh -> 1Ah Clear screen
-    db 0bah,1ah         ;0Bah -> 1Ah Clear screen
-    db 0bbh,1ah         ;0BBh -> 1Ah Clear screen
-    db 0dah,1ah         ;0DAh -> 1Ah Clear screen
-    db 0bdh,1bh         ;0BDh -> 1Bh Move cursor to X,Y position
-    db 0a8h,00h         ;0A8h -> 00h Null
-    db 0a9h,00h         ;0A9h -> 00h Null
+    db 31h+80h, 04h     ;31h -> 04h Set a TAB stop at current position
+    db 32h+80h, 05h     ;32h -> 05h Clear TAB stop at current position
+    db 33h+80h, 06h     ;33h -> 06h Clear all TAB stops
+    db 6ah+80h, 0eh     ;6Ah -> 0Eh Reverse video on
+    db 6bh+80h, 0fh     ;6Bh -> 0Fh Reverse video off
+    db 51h+80h, 1ch     ;51h -> 1Ch Insert a space on current line
+    db 57h+80h, 1dh     ;57h -> 1Dh Delete character at cursor
+    db 45h+80h, 11h     ;45h -> 11h Insert a blank line
+    db 52h+80h, 12h     ;52h -> 12h Scroll up one line
+    db 54h+80h, 13h     ;54h -> 13h Clear to end of line
+    db 74h+80h, 13h     ;74h -> 13h Clear to end of line
+    db 59h+80h, 14h     ;59h -> 14h Clear to end of screen
+    db 79h+80h, 14h     ;79h -> 14h Clear to end of screen
+    db 2bh+80h, 1ah     ;2Bh -> 1Ah Clear screen
+    db 2ah+80h, 1ah     ;2Ah -> 1Ah Clear screen
+    db 3ah+80h, 1ah     ;3Ah -> 1Ah Clear screen
+    db 3bh+80h, 1ah     ;3Bh -> 1Ah Clear screen
+    db 5ah+80h, 1ah     ;5Ah -> 1Ah Clear screen
+    db 3dh+80h, 1bh     ;3Dh -> 1Bh Move cursor to X,Y position
+    db 28h+80h, 00h     ;28h -> 00h Null
+    db 29h+80h, 00h     ;29h -> 00h Null
     db 00h              ;End of table
 
     ;Unused space at the end of the scrtab area

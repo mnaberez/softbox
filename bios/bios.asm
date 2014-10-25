@@ -2595,16 +2595,22 @@ conout:
     ret                 ;  set a flag and return.
 
 conout_char:
+;A character has been received that is not the lead-in.  Check if the
+;previous character received was the lead-in.  If it was, set bit 7
+;of this char (see conout_tr).
+;
     ld a,(leadrcvd)
-    or a                ;If the last char received was not the lead-in
-    jp z,conout_range   ;  jump to check char range
+    or a                ;If the last char received was not the lead-in,
+    jp z,conout_range   ;  jump over so we don't set bit 7.
 
     xor a
     ld (leadrcvd),a     ;Clear the lead-in received flag
-    set 7,c             ;Set bit 7 of the char
+
+    set 7,c             ;Set bit 7 of the char to indicate that it was
+                        ;  immediately preceeded by the lead-in code.
 
 conout_range:
-;Check if the character is in the range the needs translation
+;Check if the character is in the range that needs translation.
 ;before sending it to the CBM.
 ;
     ld a,c              ;A = C
@@ -2620,7 +2626,11 @@ conout_tr:
 ;Entered if C < 20h or C >= 7bh.
 ;
 ;The table at scrtab contains pairs of bytes in the form:
-;  from,to,from,to,from,to,...
+;  from,to,from,to,from,to,...,0
+;
+;The conout_char routine will set bit 7 of the char if it was immediately
+;preceed by the lead-in code.  Correspondingly, each "from" byte in the
+;scrtab table have bit 7 set if it must be preceeded by the lead-in.
 ;
 ;If the character CP/M sends to the console is a "from" byte, it will
 ;be replaced with the corresponding "to" byte before it is sent to
