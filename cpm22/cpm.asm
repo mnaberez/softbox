@@ -1140,7 +1140,7 @@ ldc47h:
     sub b               ;dc4b
     defb 0ddh,0ceh,0deh ;illegal sequence
     ld (de),a           ;dc4f
-    jp pe,lea0fh        ;dc50
+    jp pe,jp_list       ;dc50
     call nc,0eddeh      ;dc53
     sbc a,0f3h          ;dc56
     sbc a,0f8h          ;dc58
@@ -1235,7 +1235,7 @@ sub_dcfbh:
     ld (hl),00h         ;dcff
     or a                ;dd01
     ret nz              ;dd02
-    jp lea09h           ;dd03
+    jp jp_conin         ;dd03
 sub_dd06h:
     call sub_dcfbh      ;dd06
     call sub_dd14h      ;dd09
@@ -1260,13 +1260,13 @@ sub_dd23h:
     ld a,(ldf0eh)       ;dd23
     or a                ;dd26
     jp nz,ldd45h        ;dd27
-    call sub_ea06h      ;dd2a
+    call jp_const       ;dd2a
     and 01h             ;dd2d
     ret z               ;dd2f
-    call lea09h         ;dd30
+    call jp_conin       ;dd30
     cp 13h              ;dd33
     jp nz,ldd42h        ;dd35
-    call lea09h         ;dd38
+    call jp_conin       ;dd38
     cp 03h              ;dd3b
     jp z,0000h          ;dd3d
     xor a               ;dd40
@@ -1284,12 +1284,12 @@ sub_dd48h:
     call sub_dd23h      ;dd50
     pop bc              ;dd53
     push bc             ;dd54
-    call sub_ea0ch      ;dd55
+    call jp_conout      ;dd55
     pop bc              ;dd58
     push bc             ;dd59
     ld a,(ldf0dh)       ;dd5a
     or a                ;dd5d
-    call nz,lea0fh      ;dd5e
+    call nz,jp_list     ;dd5e
     pop bc              ;dd61
 ldd62h:
     ld a,c              ;dd62
@@ -1337,10 +1337,10 @@ ldd96h:
 sub_dda4h:
     call sub_ddach      ;dda4
     ld c,20h            ;dda7
-    call sub_ea0ch      ;dda9
+    call jp_conout      ;dda9
 sub_ddach:
     ld c,08h            ;ddac
-    jp sub_ea0ch        ;ddae
+    jp jp_conout        ;ddae
 sub_ddb1h:
     ld c,23h            ;ddb1
     call sub_dd48h      ;ddb3
@@ -1509,19 +1509,19 @@ ldec1h:
 ldec8h:
     call sub_dd06h      ;dec8
     jp ldf01h           ;decb
-    call sub_ea15h      ;dece
+    call jp_reader      ;dece
     jp ldf01h           ;ded1
     ld a,c              ;ded4
     inc a               ;ded5
     jp z,ldee0h         ;ded6
     inc a               ;ded9
-    jp z,sub_ea06h      ;deda
-    jp sub_ea0ch        ;dedd
+    jp z,jp_const       ;deda
+    jp jp_conout        ;dedd
 ldee0h:
-    call sub_ea06h      ;dee0
+    call jp_const       ;dee0
     or a                ;dee3
     jp z,le991h         ;dee4
-    call lea09h         ;dee7
+    call jp_conin       ;dee7
     jp ldf01h           ;deea
     ld a,(0003h)        ;deed
     jp ldf01h           ;def0
@@ -1631,7 +1631,7 @@ ldf50h:
 sub_df59h:
     ld a,(ldf42h)       ;df59
     ld c,a              ;df5c
-    call sub_ea1bh      ;df5d
+    call jp_seldsk      ;df5d
     ld a,h              ;df60
     or l                ;df61
     ret z               ;df62
@@ -1670,7 +1670,7 @@ ldf9dh:
     or a                ;df9f
     ret                 ;dfa0
 sub_dfa1h:
-    call sub_ea18h      ;dfa1
+    call jp_home        ;dfa1
     xor a               ;dfa4
     ld hl,(le9b5h)      ;dfa5
     ld (hl),a           ;dfa8
@@ -1682,10 +1682,10 @@ sub_dfa1h:
     ld (hl),a           ;dfb0
     ret                 ;dfb1
 sub_dfb2h:
-    call sub_ea27h      ;dfb2
+    call jp_read        ;dfb2
     jp ldfbbh           ;dfb5
 sub_dfb8h:
-    call sub_ea2ah      ;dfb8
+    call jp_write       ;dfb8
 ldfbbh:
     or a                ;dfbb
     ret z               ;dfbc
@@ -1752,7 +1752,7 @@ le00fh:
     add hl,de           ;e017
     ld b,h              ;e018
     ld c,l              ;e019
-    call sub_ea1eh      ;e01a
+    call jp_settrk      ;e01a
     pop de              ;e01d
     ld hl,(le9b5h)      ;e01e
     ld (hl),e           ;e021
@@ -1772,10 +1772,10 @@ le00fh:
     ld b,a              ;e031
     ld hl,(le9d0h)      ;e032
     ex de,hl            ;e035
-    call sub_ea30h      ;e036
+    call jp_sectran     ;e036
     ld c,l              ;e039
     ld b,h              ;e03a
-    jp lea21h           ;e03b
+    jp jp_setsec        ;e03b
 sub_e03eh:
     ld hl,le9c3h        ;e03e
     ld c,(hl)           ;e041
@@ -2061,7 +2061,7 @@ le1e3h:
     ld c,(hl)           ;e1e3
     inc hl              ;e1e4
     ld b,(hl)           ;e1e5
-    jp lea24h           ;e1e6
+    jp jp_setdma        ;e1e6
 le1e9h:
     ld hl,(le9b9h)      ;e1e9
     ex de,hl            ;e1ec
@@ -3314,36 +3314,42 @@ le9ech:
     nop                 ;e9fd
     nop                 ;e9fe
     nop                 ;e9ff
-    jp 0f000h           ;ea00
-    jp 0f003h           ;ea03
-sub_ea06h:
-    jp 0f006h           ;ea06
-lea09h:
-    jp 0f009h           ;ea09
-sub_ea0ch:
-    jp 0f00ch           ;ea0c
-lea0fh:
-    jp 0f00fh           ;ea0f
-    jp 0f012h           ;ea12
-sub_ea15h:
-    jp 0f015h           ;ea15
-sub_ea18h:
-    jp 0f018h           ;ea18
-sub_ea1bh:
-    jp 0f01bh           ;ea1b
-sub_ea1eh:
-    jp 0f01eh           ;ea1e
-lea21h:
-    jp 0f021h           ;ea21
-lea24h:
-    jp 0f024h           ;ea24
-sub_ea27h:
-    jp 0f027h           ;ea27
-sub_ea2ah:
-    jp 0f02ah           ;ea2a
-    jp 0f02dh           ;ea2d
-sub_ea30h:
-    jp 0f030h           ;ea30
+
+jp_boot:
+    jp 0f000h           ;BIOS Cold start
+jp_wboot:
+    jp 0f003h           ;BIOS Warm start
+jp_const:
+    jp 0f006h           ;BIOS Console status
+jp_conin:
+    jp 0f009h           ;BIOS Console input
+jp_conout:
+    jp 0f00ch           ;BIOS Console output
+jp_list:
+    jp 0f00fh           ;BIOS List (printer) output
+jp_punch:
+    jp 0f012h           ;BIOS Punch (paper tape) output
+jp_reader:
+    jp 0f015h           ;BIOS Reader (paper tape) input
+jp_home:
+    jp 0f018h           ;BIOS Move to track 0 on selected disk
+jp_seldsk:
+    jp 0f01bh           ;BIOS Select disk drive
+jp_settrk:
+    jp 0f01eh           ;BIOS Set track number
+jp_setsec:
+    jp 0f021h           ;BIOS Set sector number
+jp_setdma:
+    jp 0f024h           ;BIOS Set DMA address
+jp_read:
+    jp 0f027h           ;BIOS Read selected sector
+jp_write:
+    jp 0f02ah           ;BIOS Write selected sector
+jp_listst:
+    jp 0f02dh           ;BIOS List (printer) status
+jp_sectran:
+    jp 0f030h           ;BIOS Sector translation for skewing
+
     nop                 ;ea33
     nop                 ;ea34
     nop                 ;ea35
