@@ -35,6 +35,13 @@
 bdos:       equ  0005h  ;BDOS entry point
 args:       equ  0080h  ;Command line arguments passed from CCP
 dirsize:    equ 0d8b2h  ;CCP directory width: 0=1 col, 1=2 cols, 3=4 cols
+jp_conout:  equ 0ea0ch  ;Jumps to conout (Console Output) routine in BIOS
+                        ;  TODO: jp_conout is in a jump table at the end of
+                        ;        the BDOS that jumps to the main BIOS jump
+                        ;        table.  We could remove this indirection
+                        ;        and use the BIOS entry point (f00c) for
+                        ;        conout instead.  All of the other SoftBox
+                        ;        utilities call the BIOS routines directly.
 lpt_dev:    equ 0ea61h  ;CBM printer (LPT:) IEEE-488 primary address
 ptr_dev:    equ 0ea62h  ;Paper Tape Reader (PTR:) IEEE-488 primary address
 ptp_dev:    equ 0ea63h  ;Paper Tape Punch (PTP:) IEEE-488 primary address
@@ -44,7 +51,6 @@ y_offset:   equ 0ea6ah  ;Offset added to Y when sending move-to sequence
 x_offset:   equ 0ea6bh  ;Offset added to X when sending move-to sequence
 ul1_dev:    equ 0ea66h  ;ASCII printer (UL1:) IEEE-488 primary address
 scrtab:     equ 0ea80h  ;64 byte table for terminal character translation
-jp_conout:  equ 0ea0ch  ;Jumps to conout (Console Output) routine in BIOS
 
 cwritestr:  equ 09h     ;Output String
 
