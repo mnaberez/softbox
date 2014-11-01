@@ -4231,6 +4231,11 @@ dpb_p:
     nop                 ;ee7d 00
     nop                 ;ee7e 00
     nop                 ;ee7f 00
+
+dirbuf:
+;ee80-eeff
+;128-byte buffer used by BDOS for CP/M directory
+
     nop                 ;ee80 00
     nop                 ;ee81 00
     nop                 ;ee82 00
@@ -4330,11 +4335,12 @@ dpb_p:
     ld (0809h),hl       ;eef8 22 09 08
     add a,h             ;eefb 84
     ld (0912h),hl       ;eefc 22 12 09
-    db 20h,0dh,0ah      ;eefd 20 0d 0a
+    db 20h              ;eeff 20
 
 dos_buf:
 ;ef00-efff
 ;256 byte buffer for CBM DOS sector data
+    db 0dh,0ah
     db "60K PET CP/M vers. 2.2",0dh,0ah
     db "(c) 1981 Keith Frewin",0dh,0ah
     db "Revision 4/7/81"
