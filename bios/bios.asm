@@ -108,7 +108,6 @@ sec_cnt:  equ  0048h    ;  Counts down sectors, related to y_* (TODO how?)
 y_drive:  equ  0049h    ;  Drive number (0=A, 1=B, 2=C, etc.)
 y_track:  equ  004ah    ;  Track number (2 bytes)
 y_sector: equ  004ch    ;  Sector number
-
 dos_trk:  equ  004dh    ;CBM DOS track number
 dos_sec:  equ  004eh    ;CBM DOS sector number
 dos_err:  equ  004fh    ;Last CBM DOS error code saved by ieee_u1_or_u2
@@ -2029,11 +2028,11 @@ fts2:
 
     ;  DE = value from table - ((CP/M track * 8) + (CP/M sector))
 
-    jp nc,fts3           ;Jump to next routine if no carry
+    jp nc,fts3          ;Jump to next routine if no carry
     inc hl              ;Move forward in table
     inc hl
     inc hl
-    jp fts2              ;Do it over with new table position
+    jp fts2             ;Do it over with new table position
 
 fts3:
     dec hl              ;HL=HL-2

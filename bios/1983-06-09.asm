@@ -2028,11 +2028,11 @@ fts2:
 
     ;  DE = value from table - ((CP/M track * 8) + (CP/M sector))
 
-    jp nc,fts3           ;Jump to next routine if no carry
+    jp nc,fts3          ;Jump to next routine if no carry
     inc hl              ;Move forward in table
     inc hl
     inc hl
-    jp fts2              ;Do it over with new table position
+    jp fts2             ;Do it over with new table position
 
 fts3:
     dec hl              ;HL=HL-2
