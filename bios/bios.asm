@@ -114,7 +114,8 @@ dos_err:  equ  004fh    ;Last CBM DOS error code saved by ieee_u1_or_u2
 tries:    equ  0050h    ;Counter used to retry drive faults in ieee_u1_or_u2
 wrt_pend: equ  0051h    ;CBM DOS buffer state (1=write is pending, 0=none)
 dma:      equ  0052h    ;DMA buffer area address
-hl_tmp:   equ  0055h    ;Temporary storage for HL reg used in ieee_u1_or_u2
+hl_tmp:   equ  0055h    ;Preserves HL register in ieee_u1_or_u2
+trk_tmp:  equ  0057:    ;Used to calculate CBM DOS track in find_trk_sec
 leadrcvd: equ  0059h    ;Lead-in received flag: 1=last char was lead-in
 move_cnt: equ  005ah    ;Counts down bytes to consume in a cursor move seq
 move_tmp: equ  005bh    ;Holds first byte received (X or Y pos) in move seq
@@ -1975,7 +1976,8 @@ find_trk_sec:
     call tstdrv         ;C = drive type
     ld a,c              ;A = C
     or a
-    ld ix,0057h         ;IX = 0057h (TODO what is 0057h?)
+    ld ix,trk_tmp       ;IX = address of trk_tmp (temp byte used to
+                        ;  calculate the CBM DOS track)
 
     ld hl,ts_cbm3040    ;HL = table for CBM 3040
     ld e,10h            ;E = 16 (first reserved track on CBM 3040/4040)
@@ -1994,7 +1996,7 @@ fts1:
 
     push de
     push hl
-    ld (ix+00h),00h     ;0057h = 0
+    ld (ix+00h),00h     ;trk_tmp = 0
     ld hl,(x_track)     ;HL = CP/M track number
     ld h,00h            ;H = 0
 
@@ -2038,7 +2040,7 @@ fts3:
     dec hl              ;HL=HL-2
     dec hl
     ld a,(hl)           ;A = value from table at HL
-    ld (ix+00h),a       ;0057h = value
+    ld (ix+00h),a       ;trk_tmp = value
 
     dec hl
     ld a,(hl)
@@ -2058,13 +2060,13 @@ fts4:
     or a
     sbc hl,bc
     jp c,fts5
-    inc (ix+00h)        ;Increment 0057h
+    inc (ix+00h)        ;Increment value at trk_tmp
     jp fts4
 fts5:
     ld (dos_sec),a      ;Save A as the sector
 
-    ld a,(ix+00h)       ;A = value at 0057h
-    ld (dos_trk),a      ;Save it as the track
+    ld a,(ix+00h)       ;A = value at trk_tmp
+    ld (dos_trk),a      ;Save it as the CBM DOS track
 
     pop de              ;Recall DE.  E contains the first reserved track:
                         ;  E = 16 for 3040/4040
