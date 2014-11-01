@@ -178,6 +178,7 @@ ddev_op:  equ ddevs+7   ;  O:, P:
 scrtab:   equ 0ea80h    ;64 byte table for terminal character translation
 errbuf:   equ 0eac0h    ;64 byte buffer for last error message from CBM DOS
 dph_base: equ 0eb00h    ;CP/M Disk Parameter Headers (DPH)
+dirbuf:   equ 0ee80h    ;128 byte buffer used by BDOS for CP/M directory
 dos_buf:  equ 0ef00h    ;256 byte buffer for CBM DOS sector data
 
 ctrl_c:   equ 03h       ;Control-C
@@ -1291,8 +1292,8 @@ run2:
 
     add hl,bc
 
-    ld (ix+08h),80h     ;DIRBUF: address of 128-byte directory buffer
-    ld (ix+09h),0eeh    ;        shared for all drives
+    ld (ix+08h), dirbuf & 0x80 ;DIRBUF: address of 128-byte directory buffer
+    ld (ix+09h), dirbuf >> 8   ;        shared for all drives
 
     ld (ix+00h),00h     ;XLT: address of sector translation table
     ld (ix+01h),00h     ;     (address of zero indicates no translation)

@@ -4234,112 +4234,21 @@ dpb_p:
 
 dirbuf:
 ;ee80-eeff
-;128-byte buffer used by BDOS for CP/M directory
-
-    nop                 ;ee80 00
-    nop                 ;ee81 00
-    nop                 ;ee82 00
-    ld b,c              ;ee83 41
-    ex af,af'           ;ee84 08
-    add a,h             ;ee85 84
-    sub b               ;ee86 90
-    add a,c             ;ee87 81
-    ex af,af'           ;ee88 08
-    sub d               ;ee89 92
-    ld c,c              ;ee8a 49
-    add hl,bc           ;ee8b 09
-    inc h               ;ee8c 24
-    ld (bc),a           ;ee8d 02
-    ld b,b              ;ee8e 40
-    add a,h             ;ee8f 84
-    ld bc,1208h         ;ee90 01 08 12
-    inc h               ;ee93 24
-    nop                 ;ee94 00
-    ld (bc),a           ;ee95 02
-    ex af,af'           ;ee96 08
-    ld bc,4200h         ;ee97 01 00 42
-    ex af,af'           ;ee9a 08
-    djnz 0eea1h         ;ee9b 10 04
-    inc h               ;ee9d 24
-    djnz 0ee20h         ;ee9e 10 80
-    adc a,c             ;eea0 89
-    ex af,af'           ;eea1 08
-    ld b,b              ;eea2 40
-    inc h               ;eea3 24
-    inc h               ;eea4 24
-    add a,d             ;eea5 82
-    inc b               ;eea6 04
-    sub b               ;eea7 90
-    ld (bc),a           ;eea8 02
-    ld (de),a           ;eea9 12
-    ld (de),a           ;eeaa 12
-    ld (de),a           ;eeab 12
-    ld b,b              ;eeac 40
-    ld hl,0824h         ;eead 21 24 08
-    ld b,h              ;eeb0 44
-    jr nz,0eec3h        ;eeb1 20 10
-    adc a,c             ;eeb3 89
-    add hl,bc           ;eeb4 09
-    ex af,af'           ;eeb5 08
-    adc a,c             ;eeb6 89
-    ld (bc),a           ;eeb7 02
-    ld de,4908h         ;eeb8 11 08 49
-    add hl,bc           ;eebb 09
-    inc h               ;eebc 24
-    sub d               ;eebd 92
-    ld c,c              ;eebe 49
-    add hl,bc           ;eebf 09
-    inc h               ;eec0 24
-    inc h               ;eec1 24
-    inc h               ;eec2 24
-    sub b               ;eec3 90
-    sub d               ;eec4 92
-    inc h               ;eec5 24
-    djnz 0eec9h         ;eec6 10 01
-    add hl,bc           ;eec8 09
-    ex af,af'           ;eec9 08
-    ld b,d              ;eeca 42
-    ld b,c              ;eecb 41
-    ld de,2422h         ;eecc 11 22 24
-    inc b               ;eecf 04
-    sub b               ;eed0 90
-    ex af,af'           ;eed1 08
-    add hl,bc           ;eed2 09
-    jr nz,0eedeh        ;eed3 20 09
-    ex af,af'           ;eed5 08
-    ld b,d              ;eed6 42
-    ld bc,0211h         ;eed7 01 11 02
-    ld c,b              ;eeda 48
-    ld b,d              ;eedb 42
-    inc b               ;eedc 04
-    inc b               ;eedd 04
-    add a,h             ;eede 84
-    inc h               ;eedf 24
-    add a,h             ;eee0 84
-    inc b               ;eee1 04
-    inc h               ;eee2 24
-    jr nz,$+35          ;eee3 20 21
-    ex af,af'           ;eee5 08
-    djnz 0ee78h         ;eee6 10 90
-    inc h               ;eee8 24
-    inc h               ;eee9 24
-    ld b,d              ;eeea 42
-    djnz 0ee71h         ;eeeb 10 84
-    inc h               ;eeed 24
-    add a,c             ;eeee 81
-    ld hl,2009h         ;eeef 21 09 20
-    ld b,d              ;eef2 42
-    ex af,af'           ;eef3 08
-    ld hl,2409h         ;eef4 21 09 24
-    inc h               ;eef7 24
-    ld (0809h),hl       ;eef8 22 09 08
-    add a,h             ;eefb 84
-    ld (0912h),hl       ;eefc 22 12 09
-    db 20h              ;eeff 20
+;128 byte buffer used by BDOS for CP/M directory
+;
+    db 00h,00h,00h,41h,08h,84h,90h,81h,08h,92h,49h,09h,24h,02h,40h,84h
+    db 01h,08h,12h,24h,00h,02h,08h,01h,00h,42h,08h,10h,04h,24h,10h,80h
+    db 89h,08h,40h,24h,24h,82h,04h,90h,02h,12h,12h,12h,40h,21h,24h,08h
+    db 44h,20h,10h,89h,09h,08h,89h,02h,11h,08h,49h,09h,24h,92h,49h,09h
+    db 24h,24h,24h,90h,92h,24h,10h,01h,09h,08h,42h,41h,11h,22h,24h,04h
+    db 90h,08h,09h,20h,09h,08h,42h,01h,11h,02h,48h,42h,04h,04h,84h,24h
+    db 84h,04h,24h,20h,21h,08h,10h,90h,24h,24h,42h,10h,84h,24h,81h,21h
+    db 09h,20h,42h,08h,21h,09h,24h,24h,22h,09h,08h,84h,22h,12h,09h,20h
 
 dos_buf:
 ;ef00-efff
 ;256 byte buffer for CBM DOS sector data
+;
     db 0dh,0ah
     db "60K PET CP/M vers. 2.2",0dh,0ah
     db "(c) 1981 Keith Frewin",0dh,0ah
