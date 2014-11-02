@@ -323,7 +323,7 @@ l03a6h:
     ;IF DT > 128 THEN GOTO l031dh 'Unassigned drive
 
     ld hl,(dt)
-    ld de,-(128+1)
+    ld de,-129
     ld a,h
     rla
     jp c,l03d9h
@@ -347,7 +347,7 @@ l03e9h:
     ld l,a              ;HL=HL>=DE
     push hl             ;Save value
     ld hl,(dt)          ;HL=(dt)
-    ld de,-(9+1)        ;DE=-10
+    ld de,-10
     ld a,h
     rla
     jp c,l03fbh
@@ -549,7 +549,7 @@ l04dfh:
 l0517h:
     ld (jj),hl
     ld hl,(jj)
-    ld de,-(7+1)
+    ld de,-8
     ld a,h
     rla
     jp c,l0527h
@@ -588,7 +588,7 @@ l0530h:
 l0550h:
     ld (jj),hl
     ld hl,(jj)
-    ld de,-(80+1)
+    ld de,-81
     ld a,h
     rla
     jp c,l0560h
@@ -627,7 +627,7 @@ l0569h:
 l0589h:
     ld (jj),hl
     ld hl,(jj)
-    ld de,-(63+1)
+    ld de,-64
     ld a,h
     rla
     jp c,l0599h
@@ -3266,7 +3266,7 @@ l1456h:
 l145ah:
     ld (jj),hl
     ld hl,(jj)
-    ld de,-(80+1)
+    ld de,-81
     ld a,h
     rla
     jp c,l146ah
@@ -3366,7 +3366,7 @@ l14a0h:
 l14dah:
     ld (jj),hl
     ld hl,(jj)
-    ld de,-(7+1)
+    ld de,-8
     ld a,h
     rla
     jp c,l14eah
@@ -3516,7 +3516,7 @@ l15bdh:
 l15dch:
     ld (jj),hl
     ld hl,(jj)
-    ld de,-(80+1)
+    ld de,-81
     ld a,h
     rla
     jp c,l15ech
@@ -3591,7 +3591,7 @@ l1629h:
 l1648h:
     ld (jj),hl
     ld hl,(jj)
-    ld de,-(63+1)
+    ld de,-64
     ld a,h
     rla
     jp c,l1658h
@@ -3710,7 +3710,7 @@ l16e4h:
     ld l,a              ;HL=HL>=DE
     push hl             ;Save HL for second expression part
     ld hl,(dt)          ;HL=(dt)
-    ld de,-(9+1)        ;DE=-10
+    ld de,-10
     ld a,h
     rla
     jp c,l16f6h
