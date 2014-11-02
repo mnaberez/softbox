@@ -1547,8 +1547,8 @@ run2:
 
     add hl,bc
 
-    ld (ix+08h),80h     ;DIRBUF: address of 128-byte directory buffer
-    ld (ix+09h),0eeh    ;        shared for all drives
+    ld (ix+08h), dirbuf & 0x80 ;DIRBUF: address of 128-byte directory buffer
+    ld (ix+09h), dirbuf >> 8   ;        shared for all drives
 
     ld (ix+00h),00h     ;XLT: address of sector translation table
     ld (ix+01h),00h     ;     (address of zero indicates no translation)
