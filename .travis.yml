@@ -3,7 +3,8 @@ before_install:
   - sudo apt-get install -y z80asm z80dasm
   - wget http://www.esw-heim.tu-clausthal.de/~marco/smorbrod/acme/current/acme091src.tar.gz
   - tar xzf acme091src.tar.gz
-  - make -C acme091/src install
+  - make -C acme091/src install BINDIR=$PWD/acme-bin
+  - export PATH=$PATH:$PWD/acme-bin
 
 language: python
 
