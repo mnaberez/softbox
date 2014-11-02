@@ -115,7 +115,7 @@ tries:    equ  0050h    ;Counter used to retry drive faults in ieee_u1_or_u2
 wrt_pend: equ  0051h    ;CBM DOS buffer state (1=write is pending, 0=none)
 dma:      equ  0052h    ;DMA buffer area address
 hl_tmp:   equ  0055h    ;Preserves HL register in ieee_u1_or_u2
-trk_tmp:  equ  0057:    ;Used to calculate CBM DOS track in find_trk_sec
+trk_tmp:  equ  0057h:   ;Used to calculate CBM DOS track in find_trk_sec
 leadrcvd: equ  0059h    ;Lead-in received flag: 1=last char was lead-in
 move_cnt: equ  005ah    ;Counts down bytes to consume in a cursor move seq
 move_tmp: equ  005bh    ;Holds first byte received (X or Y pos) in move seq
