@@ -1,0 +1,7 @@
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y z80asm z80dasm
+
+language: python
+
+script: python ./tools/tests.py
