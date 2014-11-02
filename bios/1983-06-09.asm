@@ -2092,7 +2092,9 @@ ts_cbm8250:
     db 19h,80h,0c4h,0eh,17h,8bh,0fh,27h,00h,00h
 
 ieeenum:
-;Send a number as decimal string to IEEE-488 device
+;Send an 8-bit number in A as decimal string to an IEEE-488 device.
+;A space character will be sent before the number.
+;
 ;A = number (e.g. A=2ah sends " 42")
 ;
 ;TODO: This routine is used to send track numbers for CBM DOS commands but

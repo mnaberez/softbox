@@ -2038,7 +2038,9 @@ ts_cbm8050:
     dw  -1
 
 ieeenum:
-;Send a number as decimal string to IEEE-488 device
+;Send an 8-bit number in A as decimal string to an IEEE-488 device.
+;A space character will be sent before the number.
+;
 ;A = number (e.g. A=2ah sends " 42")
 ;
 ;TODO: This routine is used to send track numbers for CBM DOS commands but
