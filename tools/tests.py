@@ -28,6 +28,8 @@ FILES = {'apps/backup.asm':          'apps/backup.com',
          'bios/1981-10-27.asm':      'bios/1981-10-27.bin',
          'bios/1983-06-09.asm':      'bios/1983-06-09.bin',
          'bios/bios.asm':            None,
+         'cbm/pet.asm':              None,
+         'cbm/cbm2.asm':             None,
          'cpm22/cpm.asm':            'cpm22/cpm.prg'}
 
 if __name__ == '__main__':
@@ -38,8 +40,13 @@ if __name__ == '__main__':
     for src in sorted(FILES.keys()):
         original = FILES[src]
 
+        # choose assembler command
+        if 'cbm' in src:
+            cmd = "acme -v1 --cpu 6502 -f cbm -o ./a.bin '%s'" % src
+        else:
+            cmd = "z80asm './%s' -o './a.bin' " % src
+
         # assemble the file
-        cmd = "z80asm './%s' -o './a.bin' " % (src)
         try:
             subprocess.check_call(cmd, shell=True)
         except subprocess.CalledProcessError:
@@ -48,7 +55,9 @@ if __name__ == '__main__':
             continue
 
         # check assembled output is identical to original binary
-        if original is not None:
+        if original is None:
+            sys.stdout.write("%s: assembled\n" % src)
+        else:
             if filecmp.cmp('./%s' % original, './a.bin'):
                 sys.stdout.write("%s: ok\n" % src)
             else:
