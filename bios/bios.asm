@@ -2377,7 +2377,7 @@ talk:
     or d                ;  Low nibble (D) = primary address
     call wrieee         ;Send the byte
 
-    jr c,release_atn    ;If an error occurred during wrieee       ,
+    jr c,release_atn    ;If an error occurred during wrieee,
                         ;  jump out to release ATN.
 
                         ;Send secondary address if any:
@@ -2432,7 +2432,7 @@ listen:
     or d                ;  Low nibble (D) = primary address
     call wrieee
 
-    jr c,release_atn    ;If an error occurred during wrieee       ,
+    jr c,release_atn    ;If an error occurred during wrieee,
                         ;  jump out to release ATN_OUT.
 
                         ;Send secondary address if any:
