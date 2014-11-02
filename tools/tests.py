@@ -8,20 +8,26 @@ import os
 import subprocess
 import sys
 
-FILES = {'apps/backup.asm':     'apps/backup.com',
-         'apps/cold.asm':       'apps/cold.com',
-         'apps/format.asm':     'apps/format.com',
-         'apps/memtest.asm':    'apps/memtest.com',
-         'apps/newsys.asm':     'apps/newsys.com',
-         'apps/read.asm':       'apps/read.com',
-         'apps/set.asm':        'apps/set.com',
-         'apps/softsoak.asm':   'apps/softsoak.com',
-         'apps/time.asm':       'apps/time.com',
-         'apps/xfer.asm':       'apps/xfer.com',
-         'bios/1981-09-08.asm': 'bios/1981-09-08.bin',
-         'bios/1981-10-27.asm': 'bios/1981-10-27.bin',
-         'bios/1983-06-09.asm': 'bios/1983-06-09.bin',
-         'bios/bios.asm':       None}
+FILES = {'apps/backup.asm':          'apps/backup.com',
+         'apps/cold.asm':            'apps/cold.com',
+         'apps/format.asm':          'apps/format.com',
+         'apps/memtest.asm':         'apps/memtest.com',
+         'apps/newsys.asm':          'apps/newsys.com',
+         'apps/read.asm':            'apps/read.com',
+         'apps/set.asm':             'apps/set.com',
+         'apps/softsoak.asm':        'apps/softsoak.com',
+         'apps/time.asm':            'apps/time.com',
+         'apps/xfer.asm':            'apps/xfer.com',
+         'apps/mw1000/devnum.asm':   'apps/mw1000/devnum.com',
+         'apps/mw1000/format.asm':   'apps/mw1000/format.com',
+         'apps/mw1000/mwdos291.asm': 'apps/mw1000/mwdos291.com',
+         'apps/mw1000/mwformat.asm': 'apps/mw1000/mwformat.com',
+         'apps/mw1000/newdos.asm':   'apps/mw1000/newdos.com',
+         'apps/mw1000/newsys.asm':   'apps/mw1000/newsys.com',
+         'bios/1981-09-08.asm':      'bios/1981-09-08.bin',
+         'bios/1981-10-27.asm':      'bios/1981-10-27.bin',
+         'bios/1983-06-09.asm':      'bios/1983-06-09.bin',
+         'bios/bios.asm':            None}
 
 if __name__ == '__main__':
     repo_root = os.path.abspath(os.path.join(__file__, "../.."))
