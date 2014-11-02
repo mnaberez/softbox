@@ -27,7 +27,8 @@ FILES = {'apps/backup.asm':          'apps/backup.com',
          'bios/1981-09-08.asm':      'bios/1981-09-08.bin',
          'bios/1981-10-27.asm':      'bios/1981-10-27.bin',
          'bios/1983-06-09.asm':      'bios/1983-06-09.bin',
-         'bios/bios.asm':            None}
+         'bios/bios.asm':            None,
+         'cpm22/cpm.asm':            'cpm22/cpm.prg'}
 
 if __name__ == '__main__':
     repo_root = os.path.abspath(os.path.join(__file__, "../.."))
