@@ -871,8 +871,8 @@ corv_init:
 ;Initialize the Corvus hard drive controller
 ;
     ld a,0ffh           ;0ffh = byte that is an invalid command
-    out (corvus),a      ;Send it to the controller
-
+    out (corvus),a      ;Write byte to Corvus data bus
+                        ;  (Hardware will pulse Corvus /STROBE on write)
     ld b,0ffh
 cinit1:
     djnz cinit1         ;Delay loop
@@ -881,7 +881,8 @@ cinit1:
     and dirc
     jr nz,corv_init     ;Retry until Corvus DIRC=low (drive-to-host)
 
-    call corv_wait_read ;Wait until Corvus READY=high, then read byte
+    call corv_wait_read ;Wait until Corvus READY=high (drive is ready),
+                        ;  then read byte
 
     cp 8fh              ;Response should be 8fh (Illegal Command)
     jr nz,corv_init     ;Retry until the expected response is received
@@ -911,12 +912,15 @@ corv_read_sec:
     jr nz,corv_ret_err  ;Jump if error code is not OK
 
     ld b,80h            ;B = 128 bytes to read
+
 crds1:
     in a,(ppi2_pc)
     and ready
-    jr z,crds1          ;Wait until Corvus READY=high
-    in a,(corvus)       ;Read data byte from Corvus
-    ld (hl),a           ;Store it in the buffer
+    jr z,crds1          ;Wait until Corvus READY=high (drive is ready)
+
+    in a,(corvus)       ;Read byte from Corvus data bus
+                        ;  (Hardware will pulse Corvus /STROBE on read)
+    ld (hl),a           ;Store data byte in the buffer
     inc hl              ;Increment to next position in DMA buffer
     djnz crds1          ;Decrement B, loop until all bytes read
 
@@ -952,7 +956,8 @@ cwrs1:
     and ready           ;Mask off all but bit 4 (Corvus READY)
     jr z,cwrs1          ;Wait until Corvus READY=high
     ld a,(hl)           ;Read data byte from DMA buffer
-    out (corvus),a      ;Send it to the Corvus
+    out (corvus),a      ;Write byte to Corvus data bus
+                        ;  (Hardware will pulse Corvus /STROBE on write)
     inc hl              ;Increment to next position in DMA buffer
     djnz cwrs1          ;Decrement B, loop until all bytes written
 
@@ -1009,24 +1014,23 @@ corv_read_err:
 ;  0F Illegal Command           1F (Unused)
 ;
     in a,(ppi2_pc)
-    xor ready
-    and ready+dirc
-    jr nz,corv_read_err ;Wait until READY=high (drive is ready)
-                        ;  and DIRC=low (drive-to-host)
+    xor ready           ;Flip bit 4 (Corvus READY)
+    and ready+dirc      ;Mask off all except bits 4 (READY) and 5 (DIRC)
+    jr nz,corv_read_err ;Wait until READY=high (drive is ready) and
+                        ;  DIRC=low (drive-to-host)
 
                         ;Now, we delay and then check again.  This is to
                         ;handle the READY line glitch described on page 204
                         ;of the Corvus Mass Storage GTI manual.
-
     ld b,19h
 crde1:
     djnz crde1          ;Delay loop
 
     in a,(ppi2_pc)
-    xor ready
-    and ready+dirc
-    jr nz,corv_read_err ;Retry until READY-high (drive is ready)
-                        ;  and DIRC=low (drive-to-host)
+    xor ready           ;Flip bit 4 (Corvus READY)
+    and ready+dirc      ;Mask off all except bits 4 (READY) and 5 (DIRC)
+    jr nz,corv_read_err ;Wait until READY=high (drive is ready) and
+                        ;  DIRC=low (drive-to-host)
 
                         ;Fall through into corv_wait_read
 
@@ -1036,10 +1040,11 @@ corv_wait_read:
 ;Returns the data byte in A and sets the Z flag: Z=1 if OK, Z=0 if error.
 ;
     in a,(ppi2_pc)
-    and ready
+    and ready           ;Mask off all but bit 4 (Corvus READY)
     jr z,corv_wait_read ;Wait until Corvus READY=high (drive is ready)
 
-    in a,(corvus)
+    in a,(corvus)       ;Read byte from Corvus data bus
+                        ;  (Hardware will pulse Corvus /STROBE on read)
     bit 7,a             ;Bit 7 of Corvus error byte is set if fatal error
                         ;Z = opposite of bit 7 (Z=1 if OK, Z=0 if error)
     ret
@@ -1053,11 +1058,11 @@ corv_put_byte:
     push af
 corpb1:
     in a,(ppi2_pc)
-    and ready
+    and ready           ;Mask off all except bit 4 (Corvus READY)
     jr z,corpb1         ;Wait until Corvus READY=high (drive is ready)
-
     pop af
-    out (corvus),a      ;Put byte on Corvus data bus
+    out (corvus),a      ;Write byte to Corvus data bus
+                        ;  (Hardware will pulse Corvus /STROBE on write)
     ret
 
 corv_find_dadr:
@@ -2067,7 +2072,7 @@ fts5:
     ld (dos_sec),a      ;Save A as the sector
 
     ld a,(ix+00h)       ;A = value at trk_tmp
-    ld (dos_trk),a      ;Save it as the track
+    ld (dos_trk),a      ;Save it as the CBM DOS track
 
     pop de              ;Recall DE.  E contains the first reserved track:
                         ;  E = 16 for 3040/4040

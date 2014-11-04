@@ -876,13 +876,13 @@ cinit1:
 
     in a,(ppi2_pc)
     and dirc
-    jr nz,corv_init     ;Loop until Corvus DIRC=low (drive-to-host)
+    jr nz,corv_init     ;Retry until Corvus DIRC=low (drive-to-host)
 
     call corv_wait_read ;Wait until Corvus READY=high (drive is ready),
                         ;  then read byte
 
     cp 8fh              ;Response should be 8fh (Illegal Command)
-    jr nz,corv_init     ;Loop until the expected response is received
+    jr nz,corv_init     ;Retry until the expected response is received
     ret
 
 corv_read_sec:
@@ -917,7 +917,6 @@ crds1:
 
     in a,(corvus)       ;Read byte from Corvus data bus
                         ;  (Hardware will pulse Corvus /STROBE on read)
-
     ld (hl),a           ;Store data byte in the buffer
     inc hl              ;Increment to next position in DMA buffer
     djnz crds1          ;Decrement B, loop until all bytes read
@@ -1017,6 +1016,9 @@ corv_read_err:
     jr nz,corv_read_err ;Wait until READY=high (drive is ready) and
                         ;  DIRC=low (drive-to-host)
 
+                        ;Now, we delay and then check again.  This is to
+                        ;handle the READY line glitch described on page 204
+                        ;of the Corvus Mass Storage GTI manual.
     ld b,19h
 crde1:
     djnz crde1          ;Delay loop
