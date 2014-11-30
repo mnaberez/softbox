@@ -675,13 +675,13 @@ IF version = 291
 
 l0103h:                 ;user data block
     db    1             ;Physical drive number (1 .. 4, 1 Byte)
-    dt    0             ;Starting sector number on drive (An Absolute Sector Number, 3 Bytes)
+    db 0,0,0            ;Starting sector number on drive (An Absolute Sector Number, 3 Bytes)
     dw 6080             ;User area size in kilobytes, there are 4 blocks (2 Bytes, Maximum is 64 Megabytes)
     db    0             ;Type of user area (Single user or Multi-user) (1 Byte) (Disallow write)
     dw  992             ;Maximum numbers of files allowed (2 Bytes, Maximum is 65535)
     dw 1017             ;Size (in kilobyte) allocated for direct access, these are 4 blocks (2 Bytes, Maximum is 64 Megabytes)
     dw   77             ;# of "tracks per drive" for direct access (2 Bytes)
-    dt   29             ;# of "sectors per track" for direct access (3 Bytes)
+    db 29,0,0           ;# of "sectors per track" for direct access (3 Bytes)
     db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 l0123h:                 ;user name
@@ -6758,9 +6758,9 @@ ENDIF
 checksum:
 IF version = 23
     db 0dfh
-ELSEIF version = 24
+ELSE IF version = 24
     db 85h
-ELSEIF version = 31
+ELSE IF version = 31
     db 32h
 ENDIF
 ENDIF
