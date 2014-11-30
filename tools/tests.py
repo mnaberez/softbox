@@ -46,9 +46,9 @@ if __name__ == '__main__':
 
         # choose assembler command
         if 'cbm' in src:
-            cmd = "acme -v1 --cpu 6502 -f cbm -o ./a.bin '%s'" % src
+            cmd = "acme -v1 --cpu 6502 -f cbm -o a.bin '%s'" % src
         else:
-            cmd = "z80asm './%s' -o './a.bin' " % src
+            cmd = "z80asm '%s' -o 'a.bin' " % src
 
         # assemble the file
         try:
@@ -61,13 +61,12 @@ if __name__ == '__main__':
 
         # check assembled output is identical to original binary
         if original is None:
-            sys.stdout.write("%s: assembled\n" % src)
+            sys.stdout.write("%s: ok\n" % src)
+        elif filecmp.cmp(original, 'a.bin'):
+            sys.stdout.write("%s: ok\n" % src)
         else:
-            if filecmp.cmp('./%s' % original, './a.bin'):
-                sys.stdout.write("%s: ok\n" % src)
-            else:
-                failures.append(src)
-                sys.stderr.write("%s: not ok\n" % src)
+            failures.append(src)
+            sys.stderr.write("%s: not ok\n" % src)
 
     if os.path.exists('a.bin'):
         os.unlink('a.bin')
