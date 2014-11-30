@@ -33,6 +33,10 @@ FILES = {'apps/backup.asm':          'apps/backup.com',
          'cpm22/cpm.asm':            'cpm22/cpm.prg'}
 
 if __name__ == '__main__':
+    if sys.version_info[:2] < (2, 7):
+        sys.stderr.write("Python 2.7 or later required\n")
+        sys.exit(1)
+
     repo_root = os.path.abspath(os.path.join(__file__, "../.."))
     os.chdir(repo_root)
 
@@ -48,8 +52,9 @@ if __name__ == '__main__':
 
         # assemble the file
         try:
-            subprocess.check_call(cmd, shell=True)
-        except subprocess.CalledProcessError:
+            subprocess.check_output(cmd, shell=True)
+        except subprocess.CalledProcessError as exc:
+            sys.stdout.write(exc.output)
             sys.stderr.write("%s: assembly failed\n" % src)
             failures.append(src)
             continue
