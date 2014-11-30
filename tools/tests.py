@@ -32,11 +32,7 @@ FILES = {'apps/backup.asm':          'apps/backup.com',
          'cbm/cbm2.asm':             None,
          'cpm22/cpm.asm':            'cpm22/cpm.prg'}
 
-if __name__ == '__main__':
-    if sys.version_info[:2] < (2, 7):
-        sys.stderr.write("Python 2.7 or later required\n")
-        sys.exit(1)
-
+def main():
     repo_root = os.path.abspath(os.path.join(__file__, "../.."))
     os.chdir(repo_root)
 
@@ -73,3 +69,10 @@ if __name__ == '__main__':
 
     if failures:
         sys.exit(1)
+
+if __name__ == '__main__':
+    if sys.version_info[:2] < (2, 7):
+        sys.stderr.write("Python 2.7 or later required\n")
+        sys.exit(1)
+
+    main()
