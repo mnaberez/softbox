@@ -39,7 +39,6 @@ FILES = {'apps/backup.asm':          'apps/backup.com',
 
 def main():
     repo_root = os.path.abspath(os.path.join(__file__, "../.."))
-    os.chdir(repo_root)
 
     failures = []
     for src in sorted(FILES.keys()):
