@@ -67,12 +67,12 @@ def main():
     if os.path.exists('a.bin'):
         os.unlink('a.bin')
 
-    if failures:
-        sys.exit(1)
+    return len(failures)
 
 if __name__ == '__main__':
     if sys.version_info[:2] < (2, 7):
         sys.stderr.write("Python 2.7 or later required\n")
         sys.exit(1)
 
-    main()
+    status = main()
+    sys.exit(status)
