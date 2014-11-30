@@ -30,7 +30,12 @@ FILES = {'apps/backup.asm':          'apps/backup.com',
          'bios/bios.asm':            None,
          'cbm/pet.asm':              None,
          'cbm/cbm2.asm':             None,
-         'cpm22/cpm.asm':            'cpm22/cpm.prg'}
+         'cpm22/cpm.asm':            'cpm22/cpm.prg',
+         'hardbox/2.3.asm':          'hardbox/2.3.bin',
+         'hardbox/2.3.asm':          'hardbox/2.4.bin',
+         'hardbox/2.91.asm':         None,
+         'hardbox/3.1.asm':          'hardbox/3.1.bin'
+        }
 
 def main():
     repo_root = os.path.abspath(os.path.join(__file__, "../.."))
@@ -38,13 +43,22 @@ def main():
 
     failures = []
     for src in sorted(FILES.keys()):
+        # find absolute path to original binary, if any
         original = FILES[src]
+        if original is not None:
+            original = os.path.join(repo_root, FILES[src])
+
+        # change to directory of source file
+        # this is necessary for files that use include directives
+        src_basename = os.path.basename(src)
+        src_dirname = os.path.join(repo_root, os.path.dirname(src))
+        os.chdir(src_dirname)
 
         # choose assembler command
         if 'cbm' in src:
-            cmd = "acme -v1 --cpu 6502 -f cbm -o a.bin '%s'" % src
+            cmd = "acme -v1 --cpu 6502 -f cbm -o a.bin '%s'" % src_basename
         else:
-            cmd = "z80asm '%s' -o 'a.bin' " % src
+            cmd = "z80asm '%s' -o 'a.bin' " % src_basename
 
         # assemble the file
         try:
