@@ -6758,9 +6758,11 @@ ENDIF
 checksum:
 IF version = 23
     db 0dfh
-ELSE IF version = 24
+ENDIF
+IF version = 24
     db 85h
-ELSE IF version = 31
+ENDIF
+IF version = 31
     db 32h
 ENDIF
 ENDIF
