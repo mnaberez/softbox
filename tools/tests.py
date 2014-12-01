@@ -77,9 +77,10 @@ def main():
             failures.append(src)
             sys.stderr.write("%s: not ok\n" % src)
 
-    for tempfile in ('a.bin', 'a.lst'):
-        if os.path.exists(tempfile):
-            os.unlink(tempfile)
+        # remove any tempfiles that we may have created
+        for tempfile in ('a.bin', 'a.lst'):
+            if os.path.exists(tempfile):
+                os.unlink(tempfile)
 
     return len(failures)
 
