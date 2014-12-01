@@ -33,7 +33,7 @@ FILES = {'apps/backup.asm':          'apps/backup.com',
          'cpm22/cpm.asm':            'cpm22/cpm.prg',
          'hardbox/2.3.asm':          'hardbox/2.3.bin',
          'hardbox/2.3.asm':          'hardbox/2.4.bin',
-         'hardbox/2.91.asm':         None,
+         'hardbox/2.91.asm':         'hardbox/2.91.bin',
          'hardbox/3.1.asm':          'hardbox/3.1.bin'
         }
 
