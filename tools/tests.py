@@ -57,7 +57,7 @@ def main():
         if 'cbm' in src:
             cmd = "acme -v1 --cpu 6502 -f cbm -o a.bin '%s'" % src_basename
         else:
-            cmd = "z80asm '%s' -o 'a.bin' " % src_basename
+            cmd = "z80asm --list=a.lst --output=a.bin '%s'" % src_basename
 
         # assemble the file
         try:
@@ -77,8 +77,9 @@ def main():
             failures.append(src)
             sys.stderr.write("%s: not ok\n" % src)
 
-    if os.path.exists('a.bin'):
-        os.unlink('a.bin')
+    for tempfile in ('a.bin', 'a.lst'):
+        if os.path.exists(tempfile):
+            os.unlink(tempfile)
 
     return len(failures)
 
