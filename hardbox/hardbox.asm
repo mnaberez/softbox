@@ -1455,7 +1455,7 @@ le3deh:
     jp c,le2aeh
     ld (hl),a           ;Store the character in cmdbuf
     ld a,l
-    cp low (cmdbuf+127)
+    cp (cmdbuf+0x7f) & 0xff
     jr z,le3eeh
 
     inc hl              ;Increment the position in cmdbuf
@@ -3278,19 +3278,30 @@ cmd_uid:
 cmd_hbv:
 ;command for get hardbox version "!H"
 ;
+IF version = 23
+    ld a,2              ;Set major version
+    ld (errtrk),a
+    ld a,3              ;Set minor version
+    ld (errsec),a
+ENDIF
+IF version = 24
+    ld a,2              ;Set major version
+    ld (errtrk),a
+    ld a,4              ;Set minor version
+    ld (errsec),a
+ENDIF
 IF version = 291
     ld a,2              ;Set major version
-ELSE
-    ld a,version / 10   ;Set major version
-ENDIF
     ld (errtrk),a
-
-IF version = 291
-    ld a,4
-ELSE
-    ld a,version mod 10 ;Set minor version
-ENDIF
+    ld a,4              ;Set minor version
     ld (errsec),a
+ENDIF
+IF version = 31
+    ld a,3              ;Set major version
+    ld (errtrk),a
+    ld a,1              ;Set minor version
+    ld (errsec),a
+ENDIF
 
     ld a,error_99       ;"SMALL SYSTEMS HARDBOX VERSION #"
     jp error
@@ -4013,7 +4024,7 @@ lf2f8h:
     djnz lf30eh         ;All bits checked? No, doit
     inc hl              ;Use next byte in the BAM
     ld a,l
-    cp low bambuf       ;All byte checked?
+    cp bambuf & 0xff    ;All byte checked?
     jr nz,lf30bh        ;No, continue
 
     ld hl,bamsec        ;Take next BAM sector
@@ -4382,9 +4393,9 @@ lf4c4h:
     ld hl,dirout        ;HL=dirout
     ld (wrtprt),hl      ;(wrtprt)=HL
 
-    ld (hl),low 0401h
+    ld (hl),01h
     inc hl              ;put start address (low from 0401h) into buffer
-    ld (hl),high 0401h
+    ld (hl),04h
     inc hl              ;put start address (high from 0401h) into buffer
 
     inc hl
