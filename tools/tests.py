@@ -6,7 +6,9 @@ is identical to the original file.
 import filecmp
 import os
 import subprocess
+import shutil
 import sys
+import tempfile
 
 FILES = {'apps/backup.asm':          'apps/backup.com',
          'apps/cold.asm':            'apps/cold.com',
@@ -30,6 +32,7 @@ FILES = {'apps/backup.asm':          'apps/backup.com',
          'bios/bios.asm':            None,
          'cbm/pet.asm':              None,
          'cbm/cbm2.asm':             None,
+         'cbm/disasm/k.disasm':      'cbm/disasm/k.prg',
          'cpm22/cpm.asm':            'cpm22/cpm.prg',
          'hardbox/2.3.asm':          'hardbox/2.3.bin',
          'hardbox/2.4.asm':          'hardbox/2.4.bin',
@@ -49,38 +52,49 @@ def main():
 
         # change to directory of source file
         # this is necessary for files that use include directives
-        src_basename = os.path.basename(src)
         src_dirname = os.path.join(repo_root, os.path.dirname(src))
         os.chdir(src_dirname)
 
-        # choose assembler command
-        if 'cbm' in src:
-            cmd = "acme -v1 --cpu 6502 -f cbm -o a.bin '%s'" % src_basename
-        else:
-            cmd = "z80asm --list=a.lst --output=a.bin '%s'" % src_basename
+        # filenames for assembly command
+        tmpdir = tempfile.mkdtemp(prefix='softbox')
+        srcfile = os.path.join(repo_root, src)
+        outfile = os.path.join(tmpdir, 'a.bin')
+        lstfile = os.path.join(tmpdir, 'a.lst')
+        subs = {'srcfile': srcfile, 'outfile': outfile, 'lstfile': lstfile}
 
-        # assemble the file
+        # choose assembler command
+        if 'disasm' in src:
+            subs['d2a'] = os.path.join(repo_root, 'cbm/disasm/disasm2acme.py')
+            subs['tmpfile'] = os.path.join(tmpdir, 'a.asm')
+            cmd = ("python '%(d2a)s' '%(srcfile)s' > '%(tmpfile)s' && "
+                   "acme -v1 --cpu 6502 -f cbm -o '%(outfile)s' '%(tmpfile)s'")
+        elif 'cbm' in src:
+            cmd = "acme -v1 --cpu 6502 -f cbm -o '%(outfile)s' '%(srcfile)s'"
+        else:
+            cmd = ("z80asm --list='%(lstfile)s' --output='%(outfile)s' "
+                   "'%(srcfile)s'")
+
+        # try to assemble the file
         try:
-            subprocess.check_output(cmd, shell=True)
+            subprocess.check_output(cmd % subs, shell=True)
+            assembled = True
         except subprocess.CalledProcessError as exc:
             sys.stdout.write(exc.output)
-            sys.stderr.write("%s: assembly failed\n" % src)
-            failures.append(src)
-            continue
+            assembled = False
 
         # check assembled output is identical to original binary
-        if original is None:
+        if not assembled:
+            sys.stderr.write("%s: assembly failed\n" % src)
+            failures.append(src)
+        elif original is None:
             sys.stdout.write("%s: ok\n" % src)
-        elif filecmp.cmp(original, 'a.bin'):
+        elif filecmp.cmp(original, outfile):
             sys.stdout.write("%s: ok\n" % src)
         else:
-            failures.append(src)
             sys.stderr.write("%s: not ok\n" % src)
+            failures.append(src)
 
-        # remove any tempfiles that we may have created
-        for tempfile in ('a.bin', 'a.lst'):
-            if os.path.exists(tempfile):
-                os.unlink(tempfile)
+        shutil.rmtree(tmpdir)
 
     return len(failures)
 
