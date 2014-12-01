@@ -64,9 +64,9 @@ def main():
 
         # choose assembler command
         if 'disasm' in src:
-            subs['d2a'] = os.path.join(repo_root, 'cbm/disasm/disasm2acme.py')
+            subs['c2a'] = os.path.join(repo_root, 'tools/cbmxfer2acme.py')
             subs['tmpfile'] = os.path.join(tmpdir, 'a.asm')
-            cmd = ("python '%(d2a)s' '%(srcfile)s' > '%(tmpfile)s' && "
+            cmd = ("python '%(c2a)s' '%(srcfile)s' > '%(tmpfile)s' && "
                    "acme -v1 --cpu 6502 -f cbm -o '%(outfile)s' '%(tmpfile)s'")
         elif 'cbm' in src:
             cmd = "acme -v1 --cpu 6502 -f cbm -o '%(outfile)s' '%(srcfile)s'"

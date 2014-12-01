@@ -11,15 +11,12 @@ terminal program for Commodore PET/CBM computers.
    [CBMXfer](http://www.6502.org/users/sjgray/software/cbmxfer/cbmxfer.html),
    then reverse engineered and commented.
 
- - `disasm2acme.py` is a Python script that will convert the disassembly
-   into [ACME](http://www.esw-heim.tu-clausthal.de/~marco/smorbrod/acme/)
-   assembler format.
-
 ## Assemble
 
-Convert `k.disasm` into ACME assembler source code:
+Use `cbmxfer2acme` from the `tools` directory to convert the CBMXfer
+disassembly into ACME assembler source:
 
-    $ python disasm2acme.py k.disasm > k2.asm
+    $ python cbmxfer2acme.py k.disasm > k2.asm
 
 Assemble the source:
 

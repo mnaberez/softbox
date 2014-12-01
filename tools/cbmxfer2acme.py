@@ -6,7 +6,7 @@ written to reassemble the SoftBox code and only converts what
 was necessary for that program.
 
 Usage:
-  python disasm2acme.py file.disasm > file.asm
+  python cbmxfer2acme.py file.disasm > file.asm
 
 """
 
