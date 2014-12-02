@@ -1,6 +1,6 @@
 install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y vice z80asm z80dasm
+  - sudo apt-get install -y cpmtools vice z80asm z80dasm
   - wget http://www.esw-heim.tu-clausthal.de/~marco/smorbrod/acme/current/acme091src.tar.gz
   - tar xzf acme091src.tar.gz
   - make -C acme091/src install BINDIR=$PWD/acme-bin
