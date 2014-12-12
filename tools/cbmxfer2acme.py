@@ -10,9 +10,9 @@ Usage:
 
 """
 
-import sys
 import os
 import re
+import sys
 
 if len(sys.argv) > 1 and os.path.exists(sys.argv[1]):
     filename = sys.argv[1]
@@ -27,7 +27,7 @@ f.close()
 for line in lines:
     # Indented comment line
     if re.match(r" {12,};", line):
-        print(line[13:])
+        sys.stdout.write("%s\n" % line[13:])
         continue
 
     line = line.lstrip()
@@ -40,7 +40,7 @@ for line in lines:
         line = parts[0].lower()
         if len(parts) > 1:
             line += ";" + parts[1]
-        print(line)
+        sys.stdout.write("%s\n" % line)
         continue
 
     # Add hexadecimal prefix to program counter directive
@@ -106,4 +106,4 @@ for line in lines:
         if len(parts) > 1:
             line += ";" + parts[1]
 
-    print(line)
+    sys.stdout.write("%s\n" % line)
