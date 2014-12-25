@@ -1,5 +1,4 @@
-bios/*.bin
-cbm/disasm/*.prg
+*.bin
 *.lst
 *.prg
 *.pyc
