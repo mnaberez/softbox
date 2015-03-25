@@ -276,9 +276,8 @@ DTYPE:
 ;HL = pointer to a two-byte signed integer that contains a CP/M
 ;     drive number.  It will be overwritten with the drive's type.
 ;
-;TODO: The BIOS routine at TSTDRV (get_dtype) uses the carry to indicate
-;if the drive is valid but this code does not check the carry.  Is
-;this a bug?
+;TODO: The BIOS routine TSTDRV uses the carry to indicate if the drive
+;is valid but this code does not check the carry.  Is this a bug?
 ;
                                 ;Read drive number from two-byte signed int:
         LD      A,(HL)          ;  A = CP/M drive number from low byte
