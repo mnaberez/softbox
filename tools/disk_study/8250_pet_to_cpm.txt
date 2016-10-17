@@ -4068,7 +4068,7 @@
 154_06: [253_28, 253_29]
 154_07: [253_30, 253_31]
 
-PET tracks that are completely unused by CP/M:
-  037
-  038
-  039
+;PET tracks that are completely unused by CP/M:
+;  037
+;  038
+;  039

@@ -626,7 +626,7 @@
 035_15: [038_24, 038_25]
 035_16: [038_26, 038_27]
 
-PET tracks that are completely unused by CP/M:
-  016
-  017
-  018
+;PET tracks that are completely unused by CP/M:
+;  016
+;  017
+;  018
