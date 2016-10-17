@@ -85,6 +85,6 @@ for pet_ts in pet_to_cpm.keys():
 all_tracks = set(range(1, max_pet_track+1))
 unused_tracks = sorted(all_tracks - used_tracks)
 if unused_tracks:
-    msg = "\nPET tracks that are completely unused: \n  %s\n" % (
+    msg = "\nPET tracks that are completely unused by CP/M: \n  %s\n" % (
         "\n  ".join(["%03d" % t for t in unused_tracks]))
     sys.stdout.write(msg)
