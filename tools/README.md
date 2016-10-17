@@ -5,8 +5,7 @@
    CBM DOS sectors.  The CP/M filesystem needs to be extracted to its
    own image file so CP/M utilities like ``cpmtools`` can work with it.
 
- - ``cpmtools/`` has a ``diskdefs`` file for the           
-   [cpmtools](http://www.moria.de/~michael/cpmtools/) package.  After the
+ - ``cpmtools/`` has a ``diskdefs`` file for the [cpmtools](http://www.moria.de/~michael/cpmtools/) package.  After the
    CP/M filesystem has been extracted into its own image file,
    ``cpmtools`` can manipulate that image.
 
