@@ -5,8 +5,9 @@
    CBM DOS sectors.  The CP/M filesystem needs to be extracted to its
    own image file so CP/M utilities like ``cpmtools`` can work with it.
 
- - ``cpmtools/`` has a ``diskdefs`` file for the ``cpmtools`` package.
-   After the CP/M filesystem has been extracted into its own image file,
+ - ``cpmtools/`` has a ``diskdefs`` file for the           
+   [cpmtools](http://www.moria.de/~michael/cpmtools/) package.  After the
+   CP/M filesystem has been extracted into its own image file,
    ``cpmtools`` can manipulate that image.
 
  - ``disk_study/`` was used to study how the SoftBox uses the CBM DOS
@@ -17,7 +18,3 @@
    contains a unique number at every 128 bytes.  A program is then run on
    the SoftBox that reads every CP/M sector and prints the number found in the
    sector buffer.
-
- - ``convert/`` contains programs to convert between the CP/M disk
-   images used by [cpmtools](http://www.moria.de/~michael/cpmtools/)
-   and Commodore disk images.
