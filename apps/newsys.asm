@@ -212,7 +212,7 @@ l031dh:
     ld hl,empty_string
     call pv2d
 
-    ;"CP/M  Reconfiguration"
+    ;PRINT "CP/M  Reconfiguration"
     call pr0a
     ld hl,cpm_reconfig
     call pv2d
