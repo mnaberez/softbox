@@ -5,10 +5,19 @@ This repository holds files related to the
 a Z80-based single board computer for CP/M that attaches to
 Commodore PET/CBM computers as an IEEE-488 peripheral.
 
-## Files
+## Directories
 
- - `apps/` contains applications that run under CP/M.
+ - `apps/`: disassemblies of SoftBox applications that run under CP/M
 
- - `bios/` contains the BIOS (SoftBox EPROMs) and a disassembly of it.
+ - `bios/`: SoftBox EPROMs (CP/M BIOS)
 
- - `cbm/` contains terminal programs that run on the Commodore side.
+ - `cbm/`: SoftBox terminal programs that run on the Commodore side (`K.PRG`)
+
+ - `cpm22/`: SoftBox system image with BDOS and configuration data (`CPM.PRG`)
+
+ - `hardbox/`: HardBox EPROMs
+
+ - `ls287/`: address decoding PROMs and equivalent equations
+
+ - `tools/`: tools to convert between CBM DOS disk images and CP/M disk images
+
