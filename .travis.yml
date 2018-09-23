@@ -1,5 +1,7 @@
 sudo: false
 
+language: python
+
 addons:
   apt:
     packages:
@@ -7,12 +9,22 @@ addons:
       - z80asm
       - z80dasm
 
-install:
+before_install:
+  # srec_cat
+  - sudo apt-get install -qq -y srecord
+
+  # as6500, aslink
+  - wget -q -U travis http://6502.org/tools/asm/asxs5p20.zip
+  - unzip -q asxs5p20.zip
+  - make -C asxv5pxx/asxmak/linux/build as6500 aslink
+  - export PATH=$PATH:$PWD/asxv5pxx/asxmak/linux/build
+
+  # acme
   - wget https://www.mirrorservice.org/sites/ftp.cs.vu.nl/pub/minix/distfiles/backup/acme091src.tar.gz
   - tar xzf acme091src.tar.gz
   - make -C acme091/src install BINDIR=$PWD/acme-bin
   - export PATH=$PATH:$PWD/acme-bin
 
-language: python
-
-script: python ./tools/tests.py
+script:
+  - python ./tools/tests.py
+  - make -C cbm/disasm

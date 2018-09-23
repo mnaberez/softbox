@@ -32,7 +32,6 @@ FILES = {'apps/backup.asm':          'apps/backup.com',
          'bios/bios.asm':            None,
          'cbm/pet.asm':              None,
          'cbm/cbm2.asm':             None,
-         'cbm/disasm/k.disasm':      'cbm/disasm/k.prg',
          'cpm22/cpm.asm':            'cpm22/cpm.prg',
          'hardbox/2.3.asm':          'hardbox/2.3.bin',
          'hardbox/2.4.asm':          'hardbox/2.4.bin',
@@ -63,12 +62,7 @@ def main():
         subs = {'srcfile': srcfile, 'outfile': outfile, 'lstfile': lstfile}
 
         # choose assembler command
-        if 'disasm' in src:
-            subs['c2a'] = os.path.join(repo_root, 'tools/cbmxfer2acme.py')
-            subs['tmpfile'] = os.path.join(tmpdir, 'a.asm')
-            cmd = ("python '%(c2a)s' '%(srcfile)s' > '%(tmpfile)s' && "
-                   "acme -v1 --cpu 6502 -f cbm -o '%(outfile)s' '%(tmpfile)s'")
-        elif 'cbm' in src:
+        if 'cbm' in src:
             cmd = "acme -v1 --cpu 6502 -f cbm -o '%(outfile)s' '%(srcfile)s'"
         else:
             cmd = ("z80asm --list='%(lstfile)s' --output='%(outfile)s' "
