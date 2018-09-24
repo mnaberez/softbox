@@ -30,8 +30,8 @@ FILES = {'apps/backup.asm':          'apps/backup.com',
          'bios/1981-10-27.asm':      'bios/1981-10-27.bin',
          'bios/1983-06-09.asm':      'bios/1983-06-09.bin',
          'bios/bios.asm':            None,
-         'cbm/pet.asm':              None,
-         'cbm/cbm2.asm':             None,
+         'terminals/pet.asm':        None,
+         'terminals/cbm2.asm':       None,
          'cpm22/cpm.asm':            'cpm22/cpm.prg',
          'hardbox/2.3.asm':          'hardbox/2.3.bin',
          'hardbox/2.4.asm':          'hardbox/2.4.bin',
@@ -62,7 +62,7 @@ def main():
         subs = {'srcfile': srcfile, 'outfile': outfile, 'lstfile': lstfile}
 
         # choose assembler command
-        if 'cbm' in src:
+        if 'terminals' in src:
             cmd = "acme -v1 --cpu 6502 -f cbm -o '%(outfile)s' '%(srcfile)s'"
         else:
             cmd = ("z80asm --list='%(lstfile)s' --output='%(outfile)s' "

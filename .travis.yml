@@ -27,4 +27,4 @@ before_install:
 
 script:
   - python ./tools/tests.py
-  - make -C cbm/disasm
+  - make -C terminals/disasm
