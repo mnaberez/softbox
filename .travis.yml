@@ -27,4 +27,6 @@ before_install:
 
 script:
   - python ./tools/tests.py
-  - make -C terminals/disasm
+  - make -C terminals/cbm2
+  - make -C terminals/pet_original
+  - make -C terminals/pet_speedcode

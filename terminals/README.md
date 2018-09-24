@@ -3,21 +3,27 @@
 This directory contains SoftBox terminal programs that run on
 Commodore computers.
 
-## Files
+## Directories
 
- - `disasm/` is a disassembly of the original terminal for PET/CBM.
+ - `pet_original/`: Disassembly of the original PET terminal (`K.PRG`) with no
+   changes.  It will assemble to an identical binary.
 
- - `pet.asm` is an updated PET/CBM version.
+ - `pet_speedcode/`: Experiment in making the PET terminal faster by
+   using code generation to make faster screen routines.  It also has various other
+   changes.  It now assembles to over 2048 bytes which means it cannot be stored directly
+   on a SoftBox boot disk.
 
- - `cbm2.asm` is a port for CBM-II computers.
+ - `superpet`: Disassembly of the original PET terminal by Doug Staley with changes
+   for the SuperPET.  This was made in the 1980's and requires the Waterloo 6502 assembler,
+   which is not available.  It is for reference only.
+
+ - `cbm2/`: Port of the terminal for CBM-II (B-series and P-series).
 
 ## Assemble
 
-The `.asm` files can be assembled with the
-[ACME](http://www.esw-heim.tu-clausthal.de/~marco/smorbrod/acme/)
-assembler:
+Run `make` in each directory to assemble:
 
-    $ acme -v1 --cpu 6502 --format cbm --outfile pet.prg pet.asm
+    $ make
 
 The program file can then be copied to a Commodore disk.  The terminal does
 not need to be copied onto a SoftBox boot disk to run.  It may be loaded
