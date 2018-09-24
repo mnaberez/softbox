@@ -561,7 +561,7 @@ ctrl_codes:
 ;on the Lear Seigler ADM-3A terminal.  Some bytes that are unused on
 ;that terminal are used for other purposes here.
 ;
-;                               ;Hex  Keyboard
+;                     Hex  Keyboard
     .word ctrl_00   ; 00   CTRL-@    Do nothing
     .word ctrl_01   ; 01   CTRL-A    Go to 8-bit character mode
     .word ctrl_02   ; 02   CTRL-B    Go to 7-bit character mode
