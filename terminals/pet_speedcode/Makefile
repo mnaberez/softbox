@@ -1,7 +1,12 @@
 all: clean out.prg
 
 out.prg:
-	acme -v1 --cpu 6502 --format cbm --outfile out.prg pet.asm
+	cp -f pet.asm out.asm
+	as6500 -l -o out.asm
+	rm -f out.asm
+	aslink out -i
+	srec_cat out.ihx -intel -offset -0x0400 -o out.bin -binary
+	bash -c "printf '\x00\x04' | cat - out.bin > out.prg"
 
 clean:
 	rm -f out.*
