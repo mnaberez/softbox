@@ -1,5 +1,19 @@
 ;CBM-II Port of Softbox CP/M Loader
+;Requires expansion RAM in Bank 15 (System Bank)
 ;
+;Configure VICE
+;  Settings > CBM2 Settings > Memory > Enable Bank 15 $4000-5FFF RAM
+;
+;B-series
+;  bload"cbm2.prg",b15  ;BLOAD into bank 15
+;  sys 16384            ;Start terminal
+;
+;P-series
+;  sys 4                ;Start monitor
+;  l"cbm2.prg",08       ;"08" is the device number in hex
+;  g 4000               ;Start terminal
+;
+
 cinv_lo     = $0300   ;KERNAL IRQ vector LO
 cinv_hi     = $0301   ;KERNAL IRQ vector HI
 keyd        = $03ab   ;Keyboard Buffer
@@ -55,18 +69,6 @@ uppercase   = $1d     ;Uppercase graphics flag (lower = $00, upper = $80)
 rvs_mask    = $1e     ;Reverse video mask (normal = $00, reverse = $80)
 got_srq     = $1f     ;IEEE-488 SRQ detect: 0=no SRQ, 1=SRQ pending
 hertz       = $20     ;Stores the system interrupt frequency: 50 or 60 Hz
-
-;Configure VICE
-;  Settings > CBM2 Settings > Memory > Enable Bank 15 $4000-5FFF RAM
-;
-;B-series
-;  bload"cbm2.prg",b15  ;BLOAD into bank 15
-;  sys 16384            ;Start terminal
-;
-;P-series
-;  sys 4                ;Start monitor
-;  l"cbm2.prg",08       ;"08" is the device number in hex
-;  g 4000               ;Start terminal
 
     *=$4000
 
