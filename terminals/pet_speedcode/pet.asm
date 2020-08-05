@@ -1628,7 +1628,7 @@ nextrow:
     bne scan_row        ;Is ROW > 0 ? Yes, loop back up for next ROW
 
 ;-------------------------------------- end of scanning loops
-; Check if there is anything to do. SCANCODE will be 0xFFif no key.
+; Check if there is anything to do. SCANCODE will be 0xFF if no key.
 ; If the SCANCODE = LASTCODE then key is being held down. Don't do anything until it is released.
 ; The IRQ handler implements key repeat by clearing the SCANCODE after a short interval.
 
