@@ -1,0 +1,44 @@
+name: Run all tests
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.4, 3.5, 3.6, 3.7, 3.8]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install packages
+      run: |
+        sudo apt-get install -y cpmtools srecord z80asm z80dasm
+
+    - name: Install asxxxx
+      run: |
+        wget -q -U travis http://6502.org/tools/asm/asxs5p20.zip
+        unzip -q asxs5p20.zip
+        make -C asxv5pxx/asxmak/linux/build as6500 aslink
+        echo "$PWD/asxv5pxx/asxmak/linux/build" >> $GITHUB_PATH
+
+    - name: Install acme
+      run: |
+        wget https://www.mirrorservice.org/sites/ftp.cs.vu.nl/pub/minix/distfiles/backup/acme091src.tar.gz
+        tar xzf acme091src.tar.gz
+        make -C acme091/src install BINDIR=$PWD/acme-bin
+        echo "$PWD/acme-bin" >> $GITHUB_PATH
+
+    - name: Run all tests
+      run: |
+        python ./tools/tests.py
+        make -C terminals/cbm2
+        make -C terminals/pet_original
+        make -C terminals/pet_speedcode
