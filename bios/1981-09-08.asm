@@ -1946,8 +1946,12 @@ ieee_writ_sec_hl:
 ;Write a sector to the CBM disk drive from buffer at HL.
 ;
     push hl
+
+    ;The first byte of the sector (the track pointer) is written directly into
+    ;the drive's internal buffer using M-W, probably to work around a CBM DOS bug.
+
                         ;Send memory-write (M-W) command:
-    ld hl,dos_mw        ;  HL = pointer to "M-W",00h,13h,01h
+    ld hl,dos_mw_1300_1 ;  HL = pointer to "M-W" to write to first byte of buffer #2
     ld c,06h            ;  C = 6 bytes in string
     ld a,(x_drive)      ;  A = CP/M drive number
     call diskcmd        ;  Open command channel
@@ -1960,8 +1964,11 @@ ieee_writ_sec_hl:
     call wreoi          ;  Send it for M-W
     call unlisten       ;  Send UNLISTEN
 
+    ;The second byte of the sector (the sector pointer) and the 254 bytes
+    ;of data that follow are written normally using U2.
+
                         ;Move pointer to second byte of buffer:
-    ld hl,dos_bp        ;  HL = pointer "B-P 2 1" (Buffer-Pointer) string
+    ld hl,dos_bp_2_1    ;  HL = pointer "B-P 2 1" (Buffer-Pointer) string
     ld c,07h            ;  C = 7 bytes in string
     ld a,(x_drive)      ;  A = CP/M drive number
     call diskcmd        ;  Open command channel
@@ -1992,12 +1999,16 @@ ieee_read_sec_hl:
 ;contents of A'.  See ieee_read_sec and ieee_u1_or_u2.
 ;
     push hl
+
+    ;The first byte of the sector (the track pointer) is read directly from
+    ;the drive's internal buffer using M-R, probably to work around a CBM DOS bug.
+
                         ;Perform block read (U1):
     ld hl,dos_u1_2      ;  HL = pointer to "U1 2 " string
     call ieee_u1_or_u2  ;  Call to perform the block read
 
                         ;Send memory read (M-R) command:
-    ld hl,dos_mr        ;  HL = pointer to "M-R",00h,13h string
+    ld hl,dos_mr_1300   ;  HL = pointer to "M-R" command to read from buffer #2
     ld c,05h            ;  C = 5 bytes in string
     ld a,(x_drive)      ;  A = CP/M drive number
     call diskcmd        ;  Open command channel
@@ -2016,10 +2027,13 @@ ieee_read_sec_hl:
     push hl
     call untalk         ;  Send UNTALK
 
+    ;The second byte of the sector (the sector pointer) and the 254 bytes
+    ;of data that follow are read normally using U1.
+
                         ;Move pointer to second byte of buffer:
     ld a,(x_drive)      ;  A = CP/M drive number
     call diskcmd        ;  Open command channel
-    ld hl,dos_bp        ;  HL = pointer to "B-P 2 1" (Buffer-Pointer)
+    ld hl,dos_bp_2_1    ;  HL = pointer to "B-P 2 1" (Buffer-Pointer)
     ld c,07h            ;  C = 7 bytes in string
     call ieeemsg        ;  Send B-P command
     call creoi          ;  Send carriage return with EOI
@@ -2126,14 +2140,19 @@ dos_i0:
 dos_i1:
     db "I1"
 
-dos_bp:
-    db "B-P 2 1"
+dos_bp_2_1:
+    db "B-P"            ;"B-P <channel> <offset>"
+    db " 2"             ;Buffer #2
+    db " 1"             ;Offset 1 (offset 0=track, 1=sector, 2..255=data)
 
-dos_mw:
-    db "M-W",00h,13h,01h
+dos_mw_1300_1:
+    db "M-W"            ;"M-W"<addr low><addr high><num bytes>
+    dw 1100h+(2*256)    ;Write to address 1300h (first byte of buffer #2)
+    db 01h              ;Number of bytes to write (1)
 
-dos_mr:
-    db "M-R",00h,13h
+dos_mr_1300:
+    db "M-R"            ;"M-R"<addr low><addr high>
+    dw 1100h+(2*256)    ;Read from address 1300h (first byte of buffer #2)
 
 talk:
 ;Send TALK to an IEEE-488 device
