@@ -4,11 +4,9 @@ diff: out.prg
 	diff k.prg out.prg
 
 out.prg:
-	cp -f k.asm out.asm
-	as6500 -l -o out.asm
-	rm -f out.asm
-	aslink out -i
-	srec_cat out.ihx -intel -offset -0x0400 -o out.bin -binary
+	as6500 -l -o+out k.asm
+	aslink -i out
+	srec_cat out.hex -intel -offset -0x0400 -o out.bin -binary
 	bash -c "printf '\x00\x04' | cat - out.bin > out.prg"
 
 clean:

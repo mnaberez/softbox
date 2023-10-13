@@ -24,8 +24,8 @@ jobs:
 
     - name: Install asxxxx
       run: |
-        wget -q -U travis http://6502.org/tools/asm/asxs5p20.zip
-        unzip -q asxs5p20.zip
+        wget --no-verbose https://github.com/6502org/6502.org/raw/74f5d0c0f9b73d5e353bde7b3b25ea7f43b527a1/public/tools/asm/asxs5p50.zip
+        unzip -q asxs5p50.zip
         make -C asxv5pxx/asxmak/linux/build as6500 aslink
         echo "$PWD/asxv5pxx/asxmak/linux/build" >> $GITHUB_PATH
 
